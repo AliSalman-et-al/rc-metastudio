@@ -504,7 +504,7 @@ class DatasetTableModel(QAbstractTableModel):
         if source == "raw":
             raw = unit.get_raw_data_for_arms(self.arm_names)
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
-                return "Not estimable: zero events in both groups. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
+                return "Not estimable: zero events in both arms. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
         return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
 
@@ -520,7 +520,7 @@ class DatasetTableModel(QAbstractTableModel):
             if tooltip is not None:
                 return tooltip
         if role == Qt.ItemDataRole.TextAlignmentRole:
-            return int((Qt.AlignmentFlag.AlignRight if index.column() in (self.YEAR, *self.RAW_DATA, *self.OUTCOMES) else Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter)
+            return self._column_alignment(index.column())
         if role == Qt.ItemDataRole.CheckStateRole:
             return self._check_state_data(index, study)
         if role == Qt.ItemDataRole.BackgroundRole:
@@ -745,24 +745,31 @@ class DatasetTableModel(QAbstractTableModel):
     ):
         """Return basic header data without constructing a table model."""
         if section in (DatasetTableModel.INCLUDE_STUDY, DatasetTableModel.NAME, DatasetTableModel.YEAR):
+            if section == DatasetTableModel.NAME and not csv_schema:
+                return "Study name"
             return _display_label(DatasetTableModel.headers[section])
         if outcome_is_present and section in raw_columns:
             label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema)
             return (label) if label is not None else None
         if section in outcome_columns:
             position = outcome_columns.index(section)
-            if data_type == CONTINUOUS and current_effect == "Mean" and not csv_schema:
-                current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
-            if data_type == DIAGNOSTIC:
-                return (("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))[position]
-            if data_type in RATIO_DATA_TYPES:
-                headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
-            elif data_type == CONTINUOUS and sub_type == "generic_effect":
-                headers = (current_effect, "SE")
-            else:
-                headers = (current_effect, "Lower", "Upper")
+            headers = DatasetTableModel._effect_headers(data_type, sub_type, current_effect, csv_schema)
             return (headers[position]) if position < len(headers) else None
         return None
+
+    @staticmethod
+    def _effect_headers(data_type, sub_type, current_effect, csv_schema):
+        if data_type == CONTINUOUS and current_effect == "Mean" and not csv_schema:
+            current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
+        if data_type == DIAGNOSTIC:
+            return (("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))
+        if data_type in RATIO_DATA_TYPES:
+            headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
+        elif data_type == CONTINUOUS and sub_type == "generic_effect":
+            headers = (current_effect, "SE")
+        else:
+            headers = (current_effect, "Lower", "Upper")
+        return headers
 
     @staticmethod
     def _raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema=False):
@@ -805,7 +812,7 @@ class DatasetTableModel(QAbstractTableModel):
             label = ("Participants in {0}", "Mean for {0}", "Standard deviation for {0}")[position % 3]
             if position % 3 == 2:
                 return label.format(group)
-        rename = "\nRename group by right-clicking the column header and selecting 'rename group <name>'"
+        rename = "\nRename arm by right-clicking the column header and selecting 'Rename arm <name>'"
         return label.format(group) + rename + suffix
 
     def _outcome_header_tooltip(self, section, outcome_type, outcome_subtype):
@@ -859,10 +866,19 @@ class DatasetTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.ToolTipRole:
             return self._horizontal_header_tooltip(section)
         if role == Qt.ItemDataRole.TextAlignmentRole:
-            return self._header_alignment()
+            return self._column_alignment(section)
         if role == Qt.ItemDataRole.DisplayRole:
             return self._horizontal_header_display(section)
         return None
+
+    def _column_alignment(self, column):
+        if column == self.INCLUDE_STUDY:
+            return int(Qt.AlignmentFlag.AlignCenter)
+        numeric = column in (self.YEAR, *self.RAW_DATA, *self.OUTCOMES)
+        if self._is_covariate_column(column):
+            covariate = self.get_covariate_for_column(column)
+            numeric = covariate is not None and covariate['data_type'] == CONTINUOUS
+        return int((Qt.AlignmentFlag.AlignRight if numeric else Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter)
 
     def _vertical_header_data(self, section, role):
         if role == Qt.ItemDataRole.ToolTipRole and self._study_has_entered_data(section):

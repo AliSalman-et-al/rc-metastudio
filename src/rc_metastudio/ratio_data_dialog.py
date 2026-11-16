@@ -2,6 +2,8 @@
 
 from dataclasses import replace
 import math
+from statistics import NormalDist
+from PyQt6.QtGui import QPalette
 
 from PyQt6.QtWidgets import (
     QComboBox, QDialog, QDialogButtonBox, QFormLayout, QLabel, QLineEdit,
@@ -10,6 +12,7 @@ from PyQt6.QtWidgets import (
 
 from rc_metastudio import adaptive_window, qt_text
 from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES
+from rc_metastudio.result_formatting import NUM_DIGITS, format_effect_number
 
 
 class RatioDataDialog(QDialog):
@@ -31,14 +34,24 @@ class RatioDataDialog(QDialog):
         if metric == "IRR":
             self._add_rate_fields(record)
         self._add_reported_fields(record)
+        self.conversion_readout = QLabel(self)
+        self.conversion_readout.setWordWrap(True)
+        self.conversion_readout.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+        self.conversion_readout.setAccessibleName("Converted effect preview")
+        layout.addWidget(self.conversion_readout)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
         for field in (*self.raw_fields, *self.fields.values()):
-            field.setMinimumWidth(230)
+            field.setMinimumWidth(self.fontMetrics().height() * 14)
         self.fields["confidence"].setToolTip("Confidence level of the published interval. Analysis confidence is selected separately.")
         self._input_scale = record.scale
+        self._typed = {record.scale: self._format_texts()}
+        self._displayed_format_texts = self._format_texts()
+        for field in self.fields.values():
+            if isinstance(field, QLineEdit):
+                field.textChanged.connect(self._refresh_conversion_readout)
         self.fields["scale"].currentIndexChanged.connect(self._change_format)
         if metric == "IRR":
             self.fields["source"].currentIndexChanged.connect(self._update_fields)
@@ -62,12 +75,12 @@ class RatioDataDialog(QDialog):
         for arm_name in self.arm_names:
             for label, value in zip(("Events", "Person-time"), self.analysis_unit.get_raw_data_for_arm(arm_name)):
                 field = QLineEdit("" if value in (None, "") else str(value))
-                self.form.addRow(f"{arm_name}: {label}", field)
+                self.form.addRow(f"{arm_name} {label.lower()}", field)
                 self.raw_fields.append(field)
 
     def _add_reported_fields(self, record):
         labels = {"scale": "Input format", "estimate": self.effect_metric, "lower": "Lower bound",
-                  "upper": "Upper bound", "confidence": "Original CI (%)", "se": "Standard error (log scale)",
+                  "upper": "Upper bound", "confidence": "Original CI level (%)", "se": "Standard error (log scale)",
                   "unit": "Person-time unit"}
         for name, label in labels.items():
             if self.effect_metric == "HR" and name == "unit":
@@ -92,9 +105,17 @@ class RatioDataDialog(QDialog):
         self._update_fields()
 
     def _convert_format_fields(self, scale):
+        texts = self._format_texts()
+        if texts != self._displayed_format_texts:
+            self._typed.pop(scale, None)
+        self._typed[self._input_scale] = texts
+        cached = self._typed.get(scale)
         convert = math.log if scale == "log" else math.exp
-        for name in ("estimate", "lower", "upper"):
+        for index, name in enumerate(("estimate", "lower", "upper")):
             field = self.fields[name]
+            if cached is not None:
+                field.setText(cached[index])
+                continue
             text = field.text().strip()
             if not text:
                 continue
@@ -102,6 +123,36 @@ class RatioDataDialog(QDialog):
                 field.setText(str(convert(self._number(text))))
             except (ValueError, OverflowError):
                 field.clear()
+        self._displayed_format_texts = self._format_texts()
+
+    def _format_texts(self):
+        return tuple(self.fields[name].text() for name in ("estimate", "lower", "upper"))
+
+    def _refresh_conversion_readout(self):
+        raw = self.effect_metric == "IRR" and self.fields["source"].currentData() == "raw"
+        self.conversion_readout.setVisible(not raw)
+        text = ""
+        if not raw:
+            try:
+                estimate = self._number(self.fields["estimate"].text())
+                level = self._number(self.fields["confidence"].text())
+                quantile = NormalDist().inv_cdf((1 + level / 100) / 2)
+                display = lambda value: format_effect_number(value, NUM_DIGITS + 2)
+                if self.fields["scale"].currentData() == "ratio":
+                    lower, upper = (self._number(self.fields[name].text()) for name in ("lower", "upper"))
+                    se = (math.log(upper) - math.log(lower)) / (2 * quantile)
+                    if not lower < estimate < upper:
+                        raise ValueError("Interval is incomplete")
+                    text = f"log {self.effect_metric} {display(math.log(estimate))}  ·  SE (log scale) {display(se)}"
+                else:
+                    se = self._number(self.fields["se"].text())
+                    if se <= 0:
+                        raise ValueError("Standard error must be positive")
+                    lower, upper = math.exp(estimate - quantile * se), math.exp(estimate + quantile * se)
+                    text = f"{self.effect_metric} {display(math.exp(estimate))}  ·  {level:g}% CI {display(lower)} to {display(upper)}"
+            except (ValueError, OverflowError, ZeroDivisionError):
+                pass
+        self.conversion_readout.setText(text)
 
     def _update_fields(self):
         raw = self.effect_metric == "IRR" and self.fields["source"].currentData() == "raw"
@@ -121,12 +172,13 @@ class RatioDataDialog(QDialog):
             name = ALL_METRIC_NAMES[self.effect_metric]
             label.setText(f"Log {name.lower()}" if log else name)
         self.help_text.setText(self._input_help(raw, reported, log))
+        self._refresh_conversion_readout()
         self.adjustSize()
 
     @staticmethod
     def _input_help(raw, reported, log):
         return (
-            "Enter events and person-time for both groups in the same unit. Recurrent events are allowed."
+            "Enter events and person-time for both arms in the same unit. Recurrent events are allowed."
             if raw else "Enter the reported log ratio and its standard error."
             if reported and log else "Enter the reported ratio and the bounds of its original confidence interval."
             if reported else "Choose events and person-time or a reported IRR for this study."

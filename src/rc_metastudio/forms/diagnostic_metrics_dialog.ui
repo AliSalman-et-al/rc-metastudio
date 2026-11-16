@@ -4,7 +4,7 @@
  <widget class="QDialog" name="DiagnosticMetricsDialog">
   <property name="windowModality"><enum>Qt::ApplicationModal</enum></property>
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Diagnostic Metrics</string></property>
+  <property name="windowTitle"><string>Diagnostic metrics</string></property>
   <property name="windowIcon"><iconset><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <layout class="QVBoxLayout" name="dialog_layout">
    <item>
@@ -18,12 +18,12 @@
        <item><widget class="QLabel" name="availability_label"><property name="text"><string>Available metrics are based on complete raw counts or complete entered effect estimates and confidence intervals.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item>
         <widget class="QGroupBox" name="metrics_grp_box">
-         <property name="title"><string>Select Metrics for Analysis</string></property>
+         <property name="title"><string>Select metrics</string></property>
          <layout class="QVBoxLayout" name="metrics_layout">
           <item><widget class="QCheckBox" name="chk_box_sens"><property name="text"><string>Sensitivity</string></property><property name="checked"><bool>true</bool></property></widget></item>
           <item><widget class="QCheckBox" name="chk_box_spec"><property name="text"><string>Specificity</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item><widget class="QCheckBox" name="chk_box_lr"><property name="text"><string>Likelihood Ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item><widget class="QCheckBox" name="chk_box_dor"><property name="text"><string>Diagnostic Odds Ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item><widget class="QCheckBox" name="chk_box_lr"><property name="text"><string>Likelihood ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item><widget class="QCheckBox" name="chk_box_dor"><property name="text"><string>Diagnostic odds ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
          </layout>
         </widget>
        </item>
@@ -32,7 +32,7 @@
      </widget>
     </widget>
    </item>
-   <item><layout class="QHBoxLayout" name="actions_layout"><item><spacer name="actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item><item><widget class="QPushButton" name="btn_cancel"><property name="text"><string>Cancel</string></property></widget></item><item><widget class="QPushButton" name="btn_ok"><property name="text"><string>Next &gt;</string></property><property name="default"><bool>true</bool></property></widget></item></layout></item>
+   <item><layout class="QHBoxLayout" name="actions_layout"><item><spacer name="actions_spacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item><item><widget class="QPushButton" name="btn_ok"><property name="text"><string>Next</string></property><property name="default"><bool>true</bool></property></widget></item><item><widget class="QPushButton" name="btn_cancel"><property name="text"><string>Cancel</string></property></widget></item></layout></item>
   </layout>
  </widget>
  <tabstops><tabstop>chk_box_sens</tabstop><tabstop>chk_box_spec</tabstop><tabstop>chk_box_lr</tabstop><tabstop>chk_box_dor</tabstop><tabstop>btn_ok</tabstop></tabstops>

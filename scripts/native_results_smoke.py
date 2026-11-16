@@ -259,10 +259,10 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
         )
         _require_close(device_pixel_ratio, expected_dpr, "top-level device pixel ratio")
         if record.get("navigation") != [
+            "Forest plot",
             "Manuscript",
             "Text report",
             "Tables",
-            "Forest plot",
         ]:
             raise ValueError("native Results evidence has the wrong navigation")
         if record.get("result_text") != {
@@ -529,6 +529,8 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
     from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
     prepare_generated_ui_imports()
+    from rc_metastudio.qt6_resources import ensure_application_resources
+    ensure_application_resources()
     from local_r_test_backend import create
     backend_fake = create()
     from rc_metastudio import r_bridge

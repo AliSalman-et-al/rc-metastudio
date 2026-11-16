@@ -1,0 +1,31 @@
+{
+  "tested_source": "ac116e34c06719095d3a273f19ca85f06416dc5e",
+  "before_source": "e172181ba61bf5c6d8d979efe8d9da777361d73a",
+  "captures": [
+    {
+      "file": "plot-setup-before.png",
+      "source": "artifacts\\verification\\rcms\\20261115T201609Z-096f8b58-ui-crawl\\120-0-E-binary-plots-light.png",
+      "sha256": "5f62eed20f4908a2f63f8ee988dffc116e156c7e9937993ef0b944755045007a"
+    },
+    {
+      "file": "plot-setup-after.png",
+      "source": "artifacts\\verification\\rcms\\20261115T222347Z-1433602f-ui-crawl\\124-0-E-binary-plots-light.png",
+      "sha256": "48ee7a71d4e1b9156d7e3e6c71288cc32b8d608dfe1ddbd9df6ef33336dca85a"
+    },
+    {
+      "file": "workspace-dark.png",
+      "source": "artifacts\\verification\\rcms\\20261115T222347Z-1433602f-ui-crawl\\21-0-A-one-sheet-dark.png",
+      "sha256": "2ec8477583f9930f6d9a9aa277fcaf1b9e1d6bc51ceb60dc61cca7cc57448f4d"
+    },
+    {
+      "file": "results-tables-light.png",
+      "source": "artifacts\\verification\\rcms\\20261115T222347Z-1433602f-ui-crawl\\170-0-F-amino-tables-light.png",
+      "sha256": "ab606c795cf86d5c6c34ad953b06e107e92737e6165ca744746ca04cd942cd32"
+    },
+    {
+      "file": "about-dark.png",
+      "source": "artifacts\\verification\\rcms\\20261115T222347Z-1433602f-ui-crawl\\71-0-D-about-dark.png",
+      "sha256": "8eb93637224f250050c270525c81e4f722defc7cb1379d94adb5f5ca927daadb"
+    }
+  ]
+}

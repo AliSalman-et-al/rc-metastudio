@@ -6,7 +6,7 @@ import sys
 from functools import partial
 from weakref import WeakKeyDictionary
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter, QPaintEvent
+from PyQt6.QtGui import QBrush, QColor, QPainter, QPaintEvent
 from PyQt6.QtWidgets import (
     QLineEdit,
     QMessageBox,
@@ -39,6 +39,8 @@ class NumericSummaryDelegate(QStyledItemDelegate):
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
+        if index.data(Qt.ItemDataRole.UserRole) is False and qt_text.parse_decimal(index.data())[1]:
+            option.backgroundBrush = QBrush(QColor(214, 169, 58, 80))
         header = index.model().headerData(index.column(), Qt.Orientation.Horizontal)
         if header in {"SE", "Variance", "Lower", "Upper"}:
             number, valid = qt_text.parse_decimal(index.data())

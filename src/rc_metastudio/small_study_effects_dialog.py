@@ -54,22 +54,22 @@ SMALL_STUDY_EFFECTS_PREFERRED_WIDTH = 700
 
 
 def _available_method_text(methods) -> str:
-    primary = [
-        _TEST_LABELS.get(item.method, item.method)
-        for item in methods
-        if item.role == "primary"
-    ]
-    additional = [
-        _TEST_LABELS.get(item.method, item.method)
-        for item in methods
-        if item.role != "primary"
-    ]
-    lines = []
+    primary = []
+    additional = []
+    for item in methods:
+        label = _TEST_LABELS.get(item.method, item.method)
+        if item.role == "primary":
+            facts = ([f"{item.usable_studies} eligible studies"] if item.usable_studies is not None else [])
+            facts.extend(item.required_inputs)
+            primary.append(label + (" (" + "; ".join(facts) + ")" if facts else ""))
+        else:
+            additional.append(label)
+    clauses = []
     if primary:
-        lines.append("Primary: " + ", ".join(primary))
+        clauses.append(("Primary test " if len(primary) == 1 else "Primary tests ") + ", ".join(primary))
     if additional:
-        lines.append("Additional: " + ", ".join(additional))
-    return "\n".join(lines)
+        clauses.append(("Exploratory test " if len(additional) == 1 else "Exploratory tests ") + ", ".join(additional))
+    return " · ".join(clauses)
 
 
 class SmallStudyEffectsDialog(
@@ -83,6 +83,8 @@ class SmallStudyEffectsDialog(
         self.analysis_service = analysis_service or SmallStudyEffectsService()
         self.setupUi(self)
         self._configure_accessibility()
+        from rc_metastudio.qt_layout import configure_context_label
+        configure_context_label(self.automatic_test_label)
         self._configure_scroll_surfaces()
         self._configure_initial_values()
         self._populate_context()
@@ -240,6 +242,8 @@ class SmallStudyEffectsDialog(
             self,
             SMALL_STUDY_EFFECTS_MIN_WIDTH,
             SMALL_STUDY_EFFECTS_PREFERRED_WIDTH,
+            preferred_height=self.sizeHint().height()
+            + max(self.methods_scroll_content.sizeHint().height() - self.methods_scroll.sizeHint().height(), 0),
         )
         self._layout_controller.request_content_refit()
 
@@ -488,7 +492,12 @@ class SmallStudyEffectsDialog(
 
     def _with_report_identity(self, result):
         from rc_metastudio.analysis_identity import dataset_identity
-        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None))
+        facts = [f"k = {len(self.model.get_studies())}"]
+        report = self._eligibility_report
+        if report is not None:
+            facts.extend(_eligibility_identity(report))
+        facts.append(f"{self.model.get_confidence_level():g}% CI")
+        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None) + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]
@@ -496,3 +505,17 @@ class SmallStudyEffectsDialog(
         result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
             "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
         return result
+
+
+def _eligibility_identity(report):
+    facts = []
+    facts.append(f"{report.usable_studies} eligible")
+    for method in report.methods:
+        if method.available and method.role == 'primary':
+            label = _TEST_LABELS.get(method.method, method.method)
+            if method.method == 'deeks':
+                version = dict(report.package_versions).get('meta')
+                if version:
+                    label += f' (meta {version})'
+            facts.append('Primary test ' + label)
+    return facts

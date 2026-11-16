@@ -7,7 +7,8 @@ from tests.python.gui.qt_test_support import required, wait
 def analysis_setup(driver, capture, missing):
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     for family, sample in (("binary", "amino"), ("continuous", "continuous"),
-                           ("diagnostic", "lymph"), ("hr", "Pignon2000-HR")):
+                           ("diagnostic", "lymph"), ("hr", "Pignon2000-HR"),
+                           ("irr", "NielWeise2008-IRR")):
         driver.window.workspace.mark_saved()
         assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
         kwargs = {"diagnostic_metrics": ["dor"]} if family == "diagnostic" else {}
@@ -96,6 +97,17 @@ def results(driver, capture, missing):
         view = driver.analyze(driver.app, driver.window, "binary.random")
     finally:
         driver.record_step = original
+    menu = required(view.menubar.actions()[0].menu())
+    menu.popup(view.menubar.mapToGlobal(QtCore.QPoint(0, view.menubar.height())))
+    capture("F-results-menu", menu)
+    menu.close()
+    view.showNormal()
+    view.resize(900, 700)
+    driver.app.processEvents()
+    capture("F-results-narrow", view)
+    assert view.nav_tree.isVisible() and view.graphics_view.isVisible()
+    view.showMaximized()
+    driver.app.processEvents()
     for detail in ("Manuscript", "Text report", "Tables", "Settings"):
         item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
@@ -139,7 +151,16 @@ def exports(driver, capture, missing, view):
         program = str(Path(executable).resolve().parent)
         conversion_env["LD_LIBRARY_PATH"] = program + os.pathsep + conversion_env.get("LD_LIBRARY_PATH", "")
     try:
-        subprocess.run(["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)], check=True, capture_output=True, timeout=45, env=conversion_env)
+        if sys.platform == 'win32' and not shutil.which('soffice'):
+            command = [shutil.which('pwsh') or 'powershell', '-NoProfile', '-File',
+                       str(driver.ROOT / '.agents/skills/verify-rcms/scripts/render_word_pdf.ps1'),
+                       '-InputPath', str(docx), '-OutputPath', str(converted / 'manuscript.pdf')]
+        else:
+            command = ["soffice", "-env:UserInstallation=" + (driver.WORK / "soffice-profile").as_uri(), "--headless", "--convert-to", "pdf", "--outdir", str(converted), str(docx)]
+        conversion = subprocess.run(command, check=True, capture_output=True, timeout=45, env=conversion_env)
+        import json
+        (driver.WORK / 'docx-render-command.json').write_text(json.dumps(command), encoding='utf-8')
+        (driver.WORK / 'docx-render.log').write_bytes(conversion.stdout + conversion.stderr)
         render(converted / "manuscript.pdf", "docx-page-1")
     except (OSError, subprocess.SubprocessError) as error:
         missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")
@@ -272,6 +293,8 @@ def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
     form = kind(view.plot_service.load_params(artifact.params_path), artifact.image_path,
                           parent=view, plot_type=artifact.plot_kind)
     form.show()
+    if isinstance(form, FunnelPlotEditorDialog):
+        assert all(not control.isVisible() for control in (form.path_label, form.path_edit, form.browse_button))
     capture(f"{prefix}-{detail}-top", form)
     for area in form.findChildren(QtWidgets.QScrollArea):
         scrollbar = required(area.verticalScrollBar(), "plot editor scrollbar")
@@ -441,7 +464,7 @@ def dialogs(driver, capture, missing):
             if detail in {"add-covariate", "add-study", "rename"}:
                 assert field.alignment() & QtCore.Qt.AlignmentFlag.AlignLeft
         if isinstance(form, ConfidenceLevelDialog):
-            assert form.confidence_level_label.text() == "Confidence level:"
+            assert form.confidence_level_label.text() == "Confidence level"
         capture("D-" + detail, form)
         form.close()
     calculators(driver, capture, missing)
@@ -503,6 +526,15 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                     effect_group = form.groupBox if isinstance(form, BinaryDataDialog) else form.effect_group
                     assert effect_group.y() < form.input_mode_combo.geometry().bottom() + form.fontMetrics().lineSpacing() * 4
                 capture(f"{prefix}-calculator-{family}-{mode}", form)
+            if prefix == 'D' and isinstance(form, ContinuousDataDialog):
+                form.input_mode_combo.setCurrentIndex(form.input_mode_combo.findData('summary'))
+                form.clear_button.click()
+                form.simple_table.setCurrentCell(0, 3)
+                entered = required(form.simple_table.item(0, 3))
+                entered.setText('0.2')
+                driver.app.processEvents()
+                assert entered.text() and entered.data(QtCore.Qt.ItemDataRole.UserRole) is True
+                capture('D-calculator-continuous-entered-se', form)
         else:
             capture(f"{prefix}-calculator-{family}-counts", form)
         form.close()
@@ -587,7 +619,53 @@ def dark(driver, capture, missing):
         driver.app.setPalette(original)
 
 
+def structure(driver, capture, missing):
+    from rc_metastudio import main_wizard as wizard
+    from rc_metastudio.edit_name_dialogs import EditArmNameDialog
+    driver.window.workspace.mark_saved()
+    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    table = driver.window.tableView
+    driver.window.model.add_covariate("Dose", "continuous")
+    table.synchronize_column_widths()
+    for detail, column in (("include", 0), ("study", 1), ("arm", driver.window.model.RAW_DATA[0]),
+                           ("effect", driver.window.model.OUTCOMES[0]),
+                           ("covariate", driver.window.model.columnCount() - 1)):
+        table.scrollTo(driver.window.model.index(0, column))
+        driver.app.processEvents()
+        table.header_context_menu(QtCore.QPoint(table.columnViewportPosition(column) + 3, 5))
+        driver.app.processEvents()
+        menu = driver.app.activePopupWidget()
+        assert isinstance(menu, QtWidgets.QMenu), detail
+        capture("A-grid-context-" + detail, menu)
+        menu.close()
+    position = table.visualRect(driver.window.model.index(0, driver.window.model.NAME)).center()
+    event = QtGui.QContextMenuEvent(QtGui.QContextMenuEvent.Reason.Mouse, position,
+                                   required(table.viewport()).mapToGlobal(position))
+    table.contextMenuEvent(event)
+    driver.app.processEvents()
+    menu = driver.app.activePopupWidget()
+    assert isinstance(menu, QtWidgets.QMenu)
+    capture("A-grid-context-row", menu)
+    menu.close()
+    form = EditArmNameDialog(driver.window.model.arm_names[0], parent=driver.window)
+    form.show()
+    capture("D-rename-arm", form)
+    form.close()
+    form = wizard.MainWizard(path="new_dataset", parent=driver.window,
+                             existing_outcome_names=[sheet.name for sheet in driver.window.model.dataset.sheets])
+    form.show()
+    capture("B-add-outcome-data-type", form)
+    types = form.page(wizard.Page_DataType)
+    assert isinstance(types, wizard.DataTypePage)
+    types._button_selected(types._data_type_buttons()[0])
+    form.setStartId(wizard.Page_OutcomeName)
+    form.restart()
+    capture("B-add-outcome-name", form)
+    form.close()
+
+
 def run(driver):
+    import os
     index = driver.EVIDENCE / "ui-crawl-index.md"
     index.write_text("# UI crawl\n\n", encoding="utf-8")
     original_record = driver.record_step
@@ -597,14 +675,15 @@ def run(driver):
     def capture(step, widget):
         assert step not in captured, step
         rendered_page = isinstance(widget, QtGui.QImage)
+        expected = {"A-grid-1024": QtCore.QSize(1024, 700),
+                    "F-results-narrow": QtCore.QSize(900, 700)}.get(step, QtCore.QSize(1280, 800))
         if not rendered_page and (widget is driver.window or widget.metaObject().className() == "ResultsWindow"):
             widget.showNormal()
-            widget.resize(1024, 700) if step == "A-grid-1024" else widget.resize(1280, 800)
+            widget.resize(expected)
         driver.app.processEvents()
         wait(100)
         if not rendered_page:
             if widget is driver.window or widget.metaObject().className() == "ResultsWindow":
-                expected = QtCore.QSize(1024, 700) if step == "A-grid-1024" else QtCore.QSize(1280, 800)
                 assert widget.size() == expected, (step, widget.size(), expected)
             assert widget.isVisible(), step
         if step == "J-grid-tabs":
@@ -631,21 +710,79 @@ def run(driver):
         if rendered_page:
             original_record(step, artifacts={"Rendered page": f"{driver.STEP + 1:02d}-0-{step}.png"})
             assert image.save(str(driver.EVIDENCE / f"{driver.STEP:02d}-0-{step}.png"))
+            with index.open("a", encoding="utf-8") as stream:
+                stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | Rendered page\n")
         else:
-            original_record(step, widget)
+            original_palette = driver.app.palette()
+            original_scheme = driver.app.styleHints().colorScheme()
+            try:
+                themes = (("dark", None),) if step.startswith("J-") else (("light", QtCore.Qt.ColorScheme.Light), ("dark", QtCore.Qt.ColorScheme.Dark))
+                for theme, scheme in themes:
+                    if scheme is not None:
+                        driver.app.styleHints().setColorScheme(scheme)
+                        driver.app.processEvents()
+                    if isinstance(widget, QtWidgets.QMenu) and not widget.isVisible():
+                        widget.popup(widget.pos())
+                        driver.app.processEvents()
+                    assert (driver.app.palette().color(QtGui.QPalette.ColorRole.Window).lightness() > 128) == (theme == "light"), (step, theme)
+                    if hasattr(widget, 'nav_tree') and hasattr(widget, 'result_identity'):
+                        from tests.e2e.ui_design_direction import navigation_selection_pixels
+                        pixels, area, highlight = navigation_selection_pixels(widget)
+                        if pixels <= area / 4:
+                            tree = widget.nav_tree
+                            palette = tree.palette()
+                            original_record('selection-paint-failure', widget,
+                                            selected=required(tree.currentItem()).isSelected(),
+                                            tree_focused=tree.hasFocus(), window_active=widget.isActiveWindow(),
+                                            highlight_active=palette.color(QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorRole.Highlight).name(),
+                                            highlight_inactive=highlight, pixels=pixels, area=area)
+                        assert pixels > area / 4, (step, theme, pixels, area, highlight)
+                    if (step.startswith('H-') or (step.startswith('E-') and '-plots' in step)) and hasattr(widget, 'x_lbl_le'):
+                        fields = (widget.style_cbo, widget.accent_color, widget.col1_str_edit, widget.x_lbl_le)
+                        starts = [field.mapTo(widget, QtCore.QPoint()).x() for field in fields if field.isVisible()]
+                        assert max(starts) - min(starts) <= 2, (step, theme, starts)
+                    if hasattr(widget, 'accent_color'):
+                        assert widget.accent_color.accessibleName() == 'Plot accent color'
+                    if step.startswith('H-sroc'):
+                        fields = (widget.sroc_curve_color, widget.sroc_confidence_color, widget.sroc_prediction_color,
+                                  widget.sroc_show_labels, widget.sroc_show_confidence, widget.sroc_show_prediction)
+                        starts = [field.mapTo(widget, QtCore.QPoint()).x() for field in fields]
+                        assert max(starts) - min(starts) <= 2, (step, starts)
+                        swatches = [label for label in widget.findChildren(QtWidgets.QLabel) if label.accessibleName().startswith('SROC') and label.accessibleName().endswith('swatch')]
+                        assert len(swatches) == 3
+                    if step.endswith('calculator-binary-counts'):
+                        assert not widget.metric_readout.showGrid()
+                    themed_step = step + "-" + theme
+                    original_record(themed_step, widget, theme=theme)
+                    with index.open("a", encoding="utf-8") as stream:
+                        stream.write(f"{driver.STEP:02d}-0-{themed_step}.png | {themed_step} | {type(widget).__name__}\n")
+            finally:
+                driver.app.styleHints().setColorScheme(original_scheme)
+                driver.app.setPalette(original_palette)
+                driver.app.processEvents()
         captured.add(step)
-        with index.open("a", encoding="utf-8") as stream:
-            stream.write(f"{driver.STEP:02d}-0-{step}.png | {step} | {type(widget).__name__}\n")
 
+    sections = {"A": shell, "D": dialogs, "J": dark, "E": analysis_setup,
+                "F": results, "G": plots, "B": create_dataset, "C": imports, "S": structure}
+    requested = os.environ.get("RCMS_UI_CRAWL_SECTIONS", ",".join(sections)).split(",")
+    assert set(requested) <= sections.keys(), requested
+    with index.open("a", encoding="utf-8") as stream:
+        stream.write("Sections requested: " + ", ".join(requested) + "\n\n")
     try:
-        shell(driver, capture, missing)
-        dialogs(driver, capture, missing)
-        dark(driver, capture, missing)
-        analysis_setup(driver, capture, missing)
-        results(driver, capture, missing)
-        plots(driver, capture, missing)
-        create_dataset(driver, capture, missing)
-        imports(driver, capture, missing)
+        if "A" in requested:
+            driver.window.start()
+            capture("A-home", driver.window)
+            import shutil
+            from datetime import datetime
+            recent = driver.WORK / 'Recent project.rcms'
+            shutil.copyfile(driver.ROOT / 'sample_projects/amino.rcms', recent)
+            modified = datetime(2026, 11, 5, 12).timestamp()
+            os.utime(recent, (modified, modified))
+            driver.window.start_page.set_recent_projects([str(recent)], driver.window.open)
+            assert any(label.text() == 'Modified 5 Nov 2026' for label in driver.window.start_page.findChildren(QtWidgets.QLabel))
+            capture('A-home-with-recents', driver.window)
+        for key in requested:
+            sections[key](driver, capture, missing)
     finally:
         with index.open("a", encoding="utf-8") as stream:
             stream.write("\nNOT CAPTURED:\n" + "\n".join("- " + item for item in missing) + "\n")

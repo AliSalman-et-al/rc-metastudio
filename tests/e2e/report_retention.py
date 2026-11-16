@@ -85,7 +85,7 @@ def _restore_header_units(words: list[ET.Element], visible: list[ET.Element],
     del visible[:len(continuation)]
 
 
-def _ordered_pdf_text(bbox: str) -> str:
+def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
     words = []
     previous_page = []
     previous_height = 0.0
@@ -100,6 +100,15 @@ def _ordered_pdf_text(bbox: str) -> str:
                 clipped.append(word)
         _restore_page_cell(words, visible, clipped)
         _restore_header_units(words, visible, previous_page, previous_height)
+        # A printed table repeats its complete header at a continuation page.
+        # Remove only an exact page-prefix header already seen on an earlier page.
+        history = ' '.join(word.text or '' for word in words)
+        current_table = re.split(r'\bTable\s+\d+\.\s', history)[-1]
+        for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
+            expected = ' '.join(headers).split()
+            if expected and [word.text for word in visible[:len(expected)]] == expected and ' '.join(expected) in current_table:
+                del visible[:len(expected)]
+                break
         words.extend(visible)
         previous_page, previous_height = visible, height
     text = []
@@ -118,12 +127,12 @@ def _ordered_pdf_text(bbox: str) -> str:
     return ' '.join(text)
 
 
-def visible_pdf_text(path):
+def visible_pdf_text(path, table_headers=()):
     raw = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
     bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
-    return _ordered_pdf_text(bbox)
+    return _ordered_pdf_text(bbox, table_headers)
 
 
 
@@ -149,7 +158,7 @@ def capture(view, directory):
     write_pdf(report, target / 'report.pdf')
     doc = Document(str(target / 'report.docx'))
     doc_tables = [[[c.text for c in row.cells] for row in table.rows] for table in doc.tables]
-    pdf = visible_pdf_text(target / 'report.pdf')
+    pdf = visible_pdf_text(target / 'report.pdf', [table.headers for section in report.sections for table in section.tables])
     surfaces = {
         'copy': required(QApplication.clipboard(), 'clipboard').text(),
         'pdf': pdf,
@@ -171,15 +180,11 @@ def capture(view, directory):
 
 
 def expected_p(value):
-    from decimal import Decimal
     if not value or value in ('NA', '—'):
         return '—'
-    if value.startswith('<'):
-        bound = Decimal(value.removeprefix('<').strip())
-        return '< .001' if bound <= Decimal('.001') else '< ' + f'{bound:.3f}'.removeprefix('0')
-    if Decimal(value) < Decimal('.001'):
-        return '< .001'
-    return f'{Decimal(value):.3f}'.removeprefix('0')
+    if value.strip().startswith(('<', '>')):
+        return value.strip()
+    return '< 0.001' if float(value) < .001 else value
 
 
 def expected_pooled(result):
@@ -209,6 +214,10 @@ def expected_effect_rows(result, section, overall, calculation):
         if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
+        if table.title == 'Regression coefficients':
+            scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
+            if scale:
+                effects = [(*row[:4], '(' + ('outcome' if scale == 'display' else scale) + ' scale)', *row[5:]) for row in effects]
         if ',' in result.manuscript_metric and table.title != 'Regression coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)
@@ -225,6 +234,7 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
+
         rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, se_scale, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
     return rows
 
@@ -249,8 +259,13 @@ def expected_fit(result):
         return tuple((s.title, s.value) for s in result.sections if s.title in ('Data and eligibility', 'Tests'))
     rows = list(result.manuscript_model_info)
     for section in result.sections:
-        rows.extend(('Prediction interval note (' + section.title + ')', note) for note in section.paragraphs if 'prediction' in note.casefold())
         for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                rows.extend(expected_fit_table(result, section, table))
+    for section in result.sections:
+        for table in section.tables:
+            if table.title == 'Test of subgroup differences':
+                continue
             rows.extend(expected_fit_table(result, section, table))
     return tuple(rows)
 
@@ -267,22 +282,21 @@ def expected_fit_table(result, section, source):
     if low and high and low.partition('(')[2].removesuffix(')').strip().endswith(' PI'):
         level = low.partition('(')[2].removesuffix(')').strip()
         for row in data:
-            context = row.get('Subgroups', source.title if vertical else '')
+            context = row.get('Subgroups', source.title if vertical else section.title.removesuffix(' summary') if ',' in result.manuscript_metric else '')
             rows.append((level.removesuffix(' PI') + ' prediction interval' + (' (' + context + ')' if context else ''), row[low] + ' to ' + row[high]))
     elif 'Estimate' in headers and low and high and section.title != 'Marginal prediction':
         rows.extend(('Studies (k) (' + row['Subgroups'] + ')', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Estimate'])
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+        scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
+        if scale not in ('', 'display'):
+            labels['τ²'] += ' (squared ' + scale + ' scale)'
         for row in data:
-            if row.get('Q') not in (None, '', 'NA') and 0 < abs(float(row['Q'])) < 1e-10:
-                row['Q'] = f'{0:.{result.manuscript_digits}f}'
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if ',' in result.manuscript_metric:
                 context += ' (' + section.title.removesuffix(' summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
-        if data[0]['Test'].endswith('(Q)') and 0 < abs(float(data[0]['Statistic'])) < 1e-10:
-            data[0]['Statistic'] = f'{0:.{result.manuscript_digits}f}'
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
             ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group p')))
     elif source.title in ('Model overview', 'Residual model fit') and source.headers == ('Statistic', 'Value'):
@@ -297,7 +311,11 @@ def expected_fit_table(result, section, source):
 def assert_exports(view, data):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
-    assert data['docx_tables'] == expected, (data['docx_tables'], expected)
+    # Word keeps interval tokens together with nonbreaking spaces; only their
+    # layout whitespace differs from the producer's original cell text.
+    observed = [[[cell.replace('\u00a0', ' ') for cell in row] for row in table]
+                for table in data['docx_tables']]
+    assert observed == expected, (observed, expected)
     copied = (Path(data['directory']) / 'copy.txt').read_text(encoding="utf-8")
     # PDF wraps URLs and hyphenated labels. Compare whole tables while preserving
     # every digit, sign and punctuation mark across those physical line breaks.
@@ -318,32 +336,31 @@ def assert_exports(view, data):
         cursor = start + len(tokens)
 
 
-def presentation_rows(rows, digits):
-    from decimal import Decimal
-    return tuple(tuple(re.sub(r"(?<![\w.])-?\d+\.\d+%?(?![\w.])",
-                             lambda m: f"{Decimal(m[0][:-1]):.1f}%" if m[0].endswith("%") else f"{Decimal(m[0]):.{digits}f}", cell)
-                       for cell in row) for row in rows)
-
-
 def assert_retained_table(view, section, source):
     title = source.title if section.title == source.title else section.title + ' — ' + source.title
-    tables = [table for table in view._report_tables if table.title == 'Detailed results']
+    tables = [table for s in view.manuscript.sections if s.title == 'Supplementary details'
+              for table in s.tables if table.title == title]
     assert len(tables) == 1, [table.title for table in view._report_tables]
-    expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
-    observed = tuple(row for row in tables[0].rows if row[0] == title)
-    assert observed == expected, (title, observed, expected)
+    assert tables[0].headers == source.headers, title
+    assert tables[0].rows == source.rows, title
     return tables[0]
 
 
 def assert_report(view):
+    report_text = view.manuscript.plain_text().casefold()
+    for verdict in ('so these data do not show a clear', 'the confidence interval excludes',
+                    'which may represent', 'evidence of small-study effects'):
+        assert verdict not in report_text, verdict
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    pooled = next((table for table in tables if table.title == 'Pooled effect'), None)
+    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
     for section in view.results.sections:
         for note in section.paragraphs:
             if 'prediction' in note.casefold():
-                assert note in view.manuscript.results, (section.title, note)
+                assert note not in view.manuscript.results, (section.title, note)
+                model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
+                assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
     expected_rows = expected_pooled(view.results) if structured else tuple(
         (s.title, s.value) for s in view.results.sections
@@ -364,14 +381,13 @@ def assert_report(view):
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
         full_headers = [('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
-        expected_rows = presentation_rows(expected_rows, view.results.manuscript_digits)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:
         assert pooled is not None
         assert pooled.headers == ('Analysis', 'Output')
         assert pooled.rows == expected_rows
-    expected_model_fit = presentation_rows(expected_fit(view.results), view.results.manuscript_digits)
+    expected_model_fit = expected_fit(view.results)
     assert (fit is not None) == bool(expected_model_fit), (fit, expected_model_fit)
     if fit is not None:
         assert fit.headers == ('Statistic', 'Value')
@@ -391,12 +407,9 @@ def assert_report(view):
         assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
-            title = source.title if section.title == source.title else section.title + ' — ' + source.title
-            retained = next(t for t in tables if t.title == 'Detailed results')
-            expected = tuple((title, '\n'.join(f'{h}: {v}' for h, v in zip(source.headers, row))) for row in source.rows)
-            assert tuple(row for row in retained.rows if row[0] == title) == expected, title
+            assert_retained_table(view, section, source)
         if section.tables and section.paragraphs:
-            assert any(s.paragraphs == section.paragraphs for s in view.manuscript.sections
+            assert any(s.paragraphs == tuple(note for note in section.paragraphs if 'prediction' not in note.casefold()) for s in view.manuscript.sections
                        if s.title == 'Supplementary details'), section.title
         if section.kind == 'text' and not section.tables and section.value:
             if section.source_key == 'References':
@@ -408,8 +421,10 @@ def assert_report(view):
                                  for n, line in enumerate(filter(None, section.value.splitlines()), 1))
                 assert references[0].paragraphs == expected
             else:
-                retained = next(t for t in tables if t.title == 'Detailed results')
-                assert tuple(row for row in retained.rows if row[0] == section.title) == tuple((section.title, line) for line in section.value.splitlines())
+                retained = next(t for s in view.manuscript.sections if s.title == 'Supplementary details'
+                                for t in s.tables if t.title == section.title)
+                assert retained.headers == ('',)
+                assert retained.rows == tuple((line,) for line in section.value.splitlines())
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()

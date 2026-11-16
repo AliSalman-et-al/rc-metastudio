@@ -20,7 +20,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>Start a review</string>
+   <string>Start a project</string>
   </property>
   <layout class="QVBoxLayout" name="workflowPageLayout">
    <property name="leftMargin"><number>0</number></property>
@@ -55,7 +55,7 @@
        <item>
         <widget class="QPushButton" name="create_new_btn">
          <property name="text">
-          <string>Create a new dataset</string>
+          <string>New project</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">
@@ -88,7 +88,7 @@
        <item>
         <widget class="QPushButton" name="open_btn">
          <property name="text">
-          <string>Open existing dataset…</string>
+          <string>Open project…</string>
          </property>
          <property name="icon">
           <iconset resource="../images/icons.qrc">
@@ -154,7 +154,7 @@
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>&lt;a href=&quot;https://www.jstatsoft.org/article/view/v049i05&quot;&gt;How to cite&lt;/a&gt;</string>
+        <string>&lt;a href=&quot;https://github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff&quot;&gt;How to cite&lt;/a&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

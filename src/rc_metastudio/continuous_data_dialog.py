@@ -175,10 +175,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_back_calculation_button()
 
         if self.analysis_unit.sheet.sub_type not in {"reg_coef", "generic_effect"}:
-            self.input_mode_combo.addItem("Group summaries", "summary")
+            self.input_mode_combo.addItem("Arm summaries", "summary")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
-        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
         self._update_input_modes()
@@ -217,6 +217,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if mode_changed and previous_mode is not None:
             self._refresh_active_inputs()
         self._content_layout_changed(mode_changed=mode_changed)
+        if mode_changed:
+            QTimer.singleShot(0, lambda: required(self.content_scroll.verticalScrollBar(),
+                                                "continuous input scrollbar").setValue(0))
 
     def _refresh_active_inputs(self):
         mode = self.input_mode_combo.currentData()
@@ -275,8 +278,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
         self.ci_label.setWordWrap(False)
-        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _configure_semantic_fields(self):
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
@@ -294,25 +295,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         effect_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._effect_popup = required(effect_view.window(), "continuous metric popup")
         self._effect_popup.installEventFilter(self)
-        correlation_width = (
-            self.correlation_pre_post.fontMetrics().horizontalAdvance("-1.0000")
-            + self.correlation_pre_post.textMargins().left()
-            + self.correlation_pre_post.textMargins().right()
-            + 2
-            * required(
-                self.correlation_pre_post.style(), "correlation field style"
-            ).pixelMetric(
-                QStyle.PixelMetric.PM_DefaultFrameWidth, None, self.correlation_pre_post
-            )
-            + 12
-        )
-        # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        self.correlation_pre_post.setMinimumWidth(correlation_width)
-        # layout-audit: allow=numeric-domain-control; reason=editor width follows representative values from its numeric domain
-        self.correlation_pre_post.setMaximumWidth(QWIDGETSIZE_MAX)
-        self.correlation_pre_post.setSizePolicy(
-            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed
-        )
+        correlation_width = self.correlation_pre_post.fontMetrics().height() * 10
+        self.correlation_pre_post.setFixedWidth(correlation_width)
 
     def _configure_focus_revelation(self):
         for widget in self.content_widget.findChildren(QWidget):
@@ -346,7 +330,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _request_content_refit(self, *, mode_changed=False):
         controller = self.__dict__.get("_layout_controller")
-        if controller is not None and not self.isVisible():
+        if controller is not None and (mode_changed or not self.isVisible()):
             height = self.dialog_layout.sizeHint().height()
             if not self.content_scroll.isHidden():
                 height += (
@@ -919,7 +903,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     table.item(row, col), f"continuous table cell ({row}, {col})"
                 ).setText(str_val)
             item = required(table.item(row, col), "summary cell")
-            item.setToolTip(str_val)
+            item.setToolTip(str_val + (" · Computed from the entered values" if str_val and supplied is False else ""))
             if supplied is not None or not str_val:
                 item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
 

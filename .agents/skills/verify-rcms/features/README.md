@@ -13,6 +13,13 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 ## UX effort scoreboard
 
+`ui-design-direction` exercises Ctrl+M and Ctrl+1, lossless ratio input,
+editor field alignment including Axes, rendered inactive Results selection,
+native toolbar overflow, clipboard feedback and Word typography/quantity
+retention. `ui-crawl` checks the selected-row paint in both themes and the field
+columns in visible forest/SROC editors; palette-slot equality alone is not proof
+of native selection rendering.
+
 `hillclimb` drives the five fixed tasks from PLAN.md through the shared desktop
 driver and records gesture counts, wall time and numerical/text receipts in
 measures.json. See [SCOREBOARD.md](../../../../docs/ux-hill-climb/SCOREBOARD.md)
@@ -20,11 +27,13 @@ for fixtures, starting states, repeat comparison and baseline. This is offscreen
 effort evidence with QAction activations; native menu traversal and human timing
 remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
 diagnostic results; hillclimb T5 completes with both manuscript formats.
+`manuscript-split-figure` adds a real 95-study forest, split PDF page renders,
+clear caption bands, vector-only PDF figures and empty-viewport checks.
 
 Shared report observers compare the complete rows of Pooled effect, Model fit and
 Study results with held inputs, including sequential fit identities and diagnostic
 metric labels. Every original table row is also retained with its complete field labels and
-source section/table identity in the compact Supplementary Detailed results table. Structured notes are retained verbatim as prose beneath their source tables. Prediction-interval notes also accompany the main report prose and Model fit table; the Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
+source section/table identity in the original structured Supplementary tables. Structured notes remain prose beneath their source tables; prediction-interval explanations appear once beneath Model fit, outside Results prose and statistic rows. The Pooled effect table retains each row's producer SE scale so combined diagnostic metrics remain distinguishable.
 References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.
@@ -42,6 +51,56 @@ results and writes per-surface before/after loss inventories; each observed repo
 also retains its inputs and exports under the workflow's `report-retention/` folder.
 
 ## Proof conventions
+
+### UI surface inventory
+
+`ui-design-direction` exercises the split Meta-analysis control and real Ctrl+R,
+metric guidance and final wizard action, lossless ratio/log input drafts,
+long outcome names and the right-hand confidence status control, fixed Results identity,
+figures-first navigation, initial zoom and Ctrl+0/Ctrl+E, compact colour controls,
+quiet result tables, status expiry and per-cell DOCX numeric alignment.
+`ui-fable-polish` additionally proves all three calculator interval-field
+alignments, upright continuous headings, compact regression first-tab sizing,
+shared diagnostic/Advanced field columns in both themes and an eight-line quiet
+error-details viewport. Section-copy feedback, disabled Home analysis/Save and
+exact repeated-fit identity compaction are exercised through real controls.
+The default design drive runs all phases; its optional `numbers` phase supports
+a focused numeric-input/report-layout recovery only.
+
+
+`ui-fable-polish` drives native About theme changes, continuous pre/post mode
+entry before scrolling, real empty-selection error disclosure, and an executed
+Reitsma title/correction description. It retains failed and corrected captures;
+it does not substitute for the complete desktop or release matrix.
+
+`uv run python scripts/verify_rcms.py ui-crawl --native` records an indexed
+visual inventory of the home/shell, menus, outcome management, calculators,
+analysis setup, results, plot editors, wizards and imports. Ordinary application
+surfaces have native light/dark pairs. Custom-palette J stress views remain dark;
+exported pages are captured independently of the application theme. The strict
+typing gate still precedes GUI work.
+
+The tour asserts its requested window dimensions, including 900 × 700 for narrow
+Results. Native QMenu captures use the desktop composite while the popup is
+visible; popups are reopened after theme switches and are not activated before
+capture. Blank saved menu images fail verification. `ui-design-direction` also
+checks readable toolbar labels, native overflow and the grouped Zoom control at
+760 pixels. The final 16 November Windows evidence and recovery scope are in
+[the UI closure](../../../../docs/ui-fable-polish-2026-11-15.md#final-verification).
+
+`RCMS_UI_CRAWL_SECTIONS` can select sections for a targeted continuation:
+`A,D,J,E,F,G,B,C,S` is the full sequence; `E,S` captures analysis setup and
+current grid/context-menu/Add outcome management. F includes report exports and
+G includes plot editors. The index retains requested sections and missing paths.
+Missing external DOCX rendering (LibreOffice) still fails the completeness gate;
+retained screenshots do not turn that command into a pass. This is a surface
+inventory, not the complete statistical or release qualification matrix.
+
+The 15 November 2026 review bundle and its coverage notes are under
+`artifacts/verification/ui-ux-audit-2026-11-15/`. Its 267 indexed Windows captures
+include IRR setup and a corrected supplemental outcome-management pass. Native
+OS file pickers, external DOCX page rendering, other platforms and exhaustive
+DPI/state combinations remain outside that bundle.
 
 Pair a user action with its observed result and independent side effect. Menu and toolbar items sharing a QAction are separate entry points when a change touches their reachability. The automated scenarios use the handles documented in each feature; do not claim an unexercised shortcut or native picker is covered.
 

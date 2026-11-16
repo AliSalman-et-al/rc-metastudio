@@ -204,7 +204,7 @@ def test_configuration_controls_have_accessible_label_associations(
 
         metric_page = main_wizard.ChooseMetricPage()
         assert metric_page.label.buddy() is metric_page.metric_cbo_box
-        assert metric_page.metric_cbo_box.accessibleName() == "Effect metric"
+        assert metric_page.metric_cbo_box.accessibleName() == metric_page.label.text()
         assert metric_page.metric_cbo_box.accessibleDescription()
         metric_page.deleteLater()
     finally:
@@ -214,14 +214,14 @@ def test_configuration_controls_have_accessible_label_associations(
 @pytest.mark.parametrize(
     ("data_type", "diagnostic_metrics", "expected_title", "expected_method_label"),
     (
-        ("binary", None, "Method & Parameters", "Analysis method:"),
-        ("continuous", None, "Method & Parameters", "Analysis method:"),
-        ("hazard_ratio", None, "Method & Parameters", "Analysis method:"),
+        ("binary", None, "Method & Parameters", "Analysis method"),
+        ("continuous", None, "Method & Parameters", "Analysis method"),
+        ("hazard_ratio", None, "Method & Parameters", "Analysis method"),
         (
             "diagnostic",
             ["lr", "dor"],
-            "Method & Parameters for Likelihood Ratios and Diagnostic Odds Ratio",
-            "Analysis method:",
+            "Method & Parameters for Likelihood ratios and diagnostic odds ratio",
+            "Analysis method",
         ),
     ),
 )
@@ -246,7 +246,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
             "binary": "Outcome · Odds ratio",
             "continuous": "Outcome · Odds ratio",
             "hazard_ratio": "Outcome · Hazard ratio",
-            "diagnostic": "Outcome · Positive and negative likelihood ratios, Diagnostic odds ratio",
+            "diagnostic": "Outcome · Positive and negative likelihood ratios, diagnostic odds ratio",
         }[data_type]
         dialog.show()
         qapp.processEvents()
@@ -269,12 +269,12 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
         (
             "meta-regression",
             "Reitsma Meta-Regression",
-            "Analysis method:",
+            "Analysis method",
         ),
         (
             None,
-            "Method & Parameters for Sensitivity and Specificity",
-            "Analysis method:",
+            "Method & Parameters for Sensitivity and specificity",
+            "Analysis method",
         ),
     ),
     ids=["meta-regression", "standard"],
@@ -353,7 +353,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         dialog.show()
         qapp.processEvents()
 
-        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and Specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, Specificity")
+        assert dialog.windowTitle() == ("Meta-regression · Outcome · Sensitivity and specificity" if analysis_type == "meta-regression" else "Outcome · Sensitivity, specificity")
         dialog.show()
         qapp.processEvents()
         assert dialog.method_lbl.text() == expected_method_label
@@ -600,7 +600,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             assert dialog.contentsRect().contains(dialog.buttonBox.geometry().center())
 
             toggle = dialog.advanced_toggle
-            assert toggle.toolButtonStyle() == QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly
+            assert toggle.arrowType() == (QtCore.Qt.ArrowType.DownArrow if toggle.isChecked() else QtCore.Qt.ArrowType.RightArrow)
             assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
             assert "..." not in toggle.text() and "…" not in toggle.text()
             stable_geometry = QtCore.QRect(dialog.frameGeometry())

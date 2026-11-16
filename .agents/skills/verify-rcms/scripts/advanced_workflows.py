@@ -326,7 +326,7 @@ def mh_rd(app, window, record):
             assert model.setData(model.index(0, column), "0")
         target.tableView.set_metric_in_ui("RD")
     view = matrix(app, window, "analysis-binary.fixed.mh", record, keep_results=True,
-                  prepare=prepare_rd, parameters={"digits": 6})
+                  prepare=prepare_rd, parameters={"digits": 6, "fp_style": "revman"})
     artifact = next(iter(view._nav_plot_artifacts.values()))
     figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
     weight_nodes = [n for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text")
@@ -408,7 +408,7 @@ def zero_cells(app, window, record):
     assert "Participants in Control" not in report, report
     assert "1097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
-    assert "Group: Intervention" in manuscript, manuscript
+    assert "Arm: Intervention" in manuscript, manuscript
     view.close()
     window.workspace.mark_saved()
 
@@ -557,6 +557,7 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         if funnel:
+            assert all(not control.isVisible() for control in (dialog.path_label, dialog.path_edit, dialog.browse_button)), 'Internal render path is exposed as an export control'
             from tests.python.gui.qt_test_support import wheel_scroll
             spinner = dialog.sampling_confidence_spin
             original_confidence = spinner.value()
@@ -621,8 +622,9 @@ def plots(app, window, family, record, *, view=None):
             )):
                 dialog.favours_left.setText("Favours " + names[0])
                 dialog.favours_right.setText("Favours " + names[1])
-                for style in ("Default (metafor)", "RevMan", "BMJ"):
+                for style in ("Default", "RevMan", "BMJ"):
                     dialog.style_cbo.setCurrentText(style)
+                    assert dialog.style_cbo.currentText() == style
                     click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
                     from rc_metastudio import r_bridge
                     r_bridge.ro.globalenv["verified_footer_path"] = str(artifact.params_path) + ".plotdata"
@@ -664,7 +666,7 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
         assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
-        assert " · Comparison:" in dialog.figure_caption.text() or " · Group:" in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert " · Comparison:" in dialog.figure_caption.text() or " · Arm:" in dialog.figure_caption.text(), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
@@ -756,8 +758,9 @@ def plots(app, window, family, record, *, view=None):
             assert actual == value, (name, params[name], value)
         if family == "regression":
             from xml.etree import ElementTree as ET
-            for style in ("Default (metafor)", "RevMan", "BMJ"):
+            for style in ("Default", "RevMan", "BMJ"):
                 dialog.style_cbo.setCurrentText(style)
+                assert dialog.style_cbo.currentText() == style
                 dialog.show_legend.setChecked(True)
                 for line, confidence, prediction in ((True, False, False), (False, True, False), (True, True, True), (False, False, False)):
                     dialog.show_regression_line.setChecked(line)

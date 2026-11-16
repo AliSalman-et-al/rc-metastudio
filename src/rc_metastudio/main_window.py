@@ -16,12 +16,10 @@ from PyQt6.QtGui import (
     QKeyEvent,
     QKeySequence,
     QResizeEvent,
-    QTextDocument,
 )
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
-    QLabel,
     QMessageBox,
     QTableView,
 )
@@ -138,55 +136,6 @@ def _connect_action(action, callback):
     )
 
 
-def _format_confidence_level_status(confidence_level):
-    if confidence_level is None:
-        return "Confidence level: not set"
-    return f"Confidence level: {float(confidence_level):g}%"
-
-
-class ElidingStatusLabel(QLabel):
-    """A status label whose content cannot claim window geometry."""
-
-    def __init__(self, text="", parent=None):
-        super(ElidingStatusLabel, self).__init__(parent)
-        self._full_text = ""
-        # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
-        self.setMinimumWidth(0)
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Ignored, QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        self.setText(text)
-
-    def setText(
-        self, text: str | None
-    ) -> None:
-        text = qt_text.to_native_text(text)
-        if "<" in text and ">" in text:
-            document = QTextDocument()
-            document.setHtml(text)
-            text = document.toPlainText()
-        self._full_text = text
-        self.setToolTip(self._full_text)
-        self._refresh_elision()
-
-    def text(self):
-        """Return the semantic status text, not its width-dependent paint form."""
-        return self._full_text
-
-    def resizeEvent(
-        self, event: QResizeEvent | None
-    ) -> None:
-        super(ElidingStatusLabel, self).resizeEvent(event)
-        self._refresh_elision()
-
-    def _refresh_elision(self):
-        width = max(0, self.contentsRect().width())
-        elided = self.fontMetrics().elidedText(
-            self._full_text, Qt.TextElideMode.ElideRight, width
-        )
-        QLabel.setText(self, elided)
-
-
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
         super().__init__(parent, operation="Importing study data…")
@@ -217,8 +166,8 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
 
 
 class SheetTabBar(QtWidgets.QTabBar):
-    palette_stylesheet: str = ""
     _updating_palette: bool = False
+    _tab_width_limit: int = 0
 
     def changeEvent(self, a0: QtCore.QEvent | None) -> None:
         super().changeEvent(a0)
@@ -231,29 +180,48 @@ class SheetTabBar(QtWidgets.QTabBar):
         try:
             palette = QtWidgets.QApplication.palette()
             self._apply_tab_palette(palette)
-            self._apply_strip_palette(palette)
         finally:
             self._updating_palette = False
 
     def _apply_tab_palette(self, palette: QtGui.QPalette) -> None:
-        template = self.palette_stylesheet or self.styleSheet()
-        for name, role in (("window", QtGui.QPalette.ColorRole.Window), ("window-text", QtGui.QPalette.ColorRole.WindowText), ("alternate-base", QtGui.QPalette.ColorRole.AlternateBase), ("mid", QtGui.QPalette.ColorRole.Mid), ("highlight", QtGui.QPalette.ColorRole.Highlight)):
-            colour = palette.color(role)
-            if name == "mid":
-                colour = palette.color(QtGui.QPalette.ColorRole.Window)
-                colour = colour.lighter(140) if colour.lightness() < 128 else colour.darker(115)
-            template = template.replace("palette(" + name + ")", colour.name())
-        self.setStyleSheet(template)
+        window_color = palette.color(QtGui.QPalette.ColorRole.Window)
+        text = palette.color(QtGui.QPalette.ColorRole.WindowText)
+        base = palette.color(QtGui.QPalette.ColorRole.Base).name()
+        highlight = palette.color(QtGui.QPalette.ColorRole.Highlight).name()
 
-    def _apply_strip_palette(self, palette: QtGui.QPalette) -> None:
+        def blend(opacity):
+            return QtGui.QColor(*(round(fg * opacity + bg * (1 - opacity))
+                                 for fg, bg in zip(text.getRgb()[:3], window_color.getRgb()[:3]))).name()
+
+        rule, muted, hover = blend(.20), blend(.70), blend(.08)
+        self.setStyleSheet(f"""
+            QTabBar {{ background: {window_color.name()}; border: 0; }}
+            QTabBar::tab {{ background: {window_color.name()}; color: {muted};
+                font-weight: normal; padding: 4px 12px;
+                max-width: {(self._tab_width_limit or self.fontMetrics().height() * 28)}px;
+                border: 0; border-top: 1px solid {rule};
+                border-left: 1px solid transparent; border-right: 1px solid {rule};
+                border-bottom: 2px solid transparent; }}
+            QTabBar::tab:hover {{ background: {hover}; color: {text.name()}; }}
+            QTabBar::tab:selected {{ background: {base}; color: {text.name()};
+                border-top-color: {base}; border-left-color: {rule};
+                border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }}
+            QTabBar::tab:selected:focus {{ border-bottom-color: {highlight}; }}
+        """)
         window = self.window()
-        if not isinstance(window, MainWindow):
-            return
-        # Palette events can arrive while the sheet strip is being built.
-        if hasattr(window, "sheet_tab_content"):
-            window.sheet_tab_content.setPalette(palette)
-        if hasattr(window, "add_sheet_button"):
-            window.add_sheet_button.setStyleSheet("QToolButton { color: " + palette.color(QtGui.QPalette.ColorRole.WindowText).name() + "; background: transparent; border: 0; font-size: 18px; }")
+        if isinstance(window, MainWindow):
+            # Palette events can arrive before the strip is fully constructed.
+            if hasattr(window, "sheet_tab_content"):
+                window.sheet_tab_content.setPalette(palette)
+            if hasattr(window, "add_sheet_button"):
+                window.add_sheet_button.setStyleSheet(f"""
+                    QToolButton {{ background: transparent; color: {text.name()};
+                        border: 0; border-top: 1px solid {rule}; padding: 0; }}
+                    QToolButton:hover {{ background: {hover}; }}
+                    QToolButton:focus {{ border: 1px solid {highlight}; }}
+                """)
+            if hasattr(window, "_sheet_strip_timer"):
+                window._schedule_sheet_strip_update()
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
         if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
@@ -273,7 +241,8 @@ class SheetTabBar(QtWidgets.QTabBar):
 
     def tabSizeHint(self, index):
         size = super().tabSizeHint(index)
-        size.setWidth(min(200, max(96, size.width())))
+        size.setWidth(min((self._tab_width_limit or self.fontMetrics().height() * 28),
+                          max(self.fontMetrics().height() * 4, size.width())))
         return size
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:
@@ -316,10 +285,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         ):
             qt_layout.configure_analysis_action_icon(action, icon_name)
         self.analysis_button = QtWidgets.QToolButton(self.toolBar)
-        self.analysis_button.setText("Analyses")
-        self.analysis_button.setIcon(self.action_go.icon())
+        self.analysis_button.setDefaultAction(self.action_go)
         self.analysis_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.analysis_button.setMenu(self.menuAnalysis)
         self.analysis_button.setAccessibleName("Analyses")
         self.analysis_button.setAccessibleDescription("Choose an analysis. Unavailable analyses explain their prerequisites in the menu.")
@@ -329,13 +297,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
                        self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
             self.toolBar.removeAction(action)
-        self.menu_bar.setStyleSheet("QMenuBar { color: palette(window-text); }")
-        self.toolBar.setStyleSheet("QToolButton { color: palette(window-text); }")
+        self.action_new_dataset.setText("New project…")
         qt_layout.configure_main_toolbar(self.toolBar)
-        self.dataset_file_lbl = ElidingStatusLabel(parent=self.statusbar)
-        self.dataset_file_lbl.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        self.statusbar.addWidget(self.dataset_file_lbl, 3)
-        self.action_new_dataset.setText("Create dataset…")
+        self.analysis_button.setAccessibleName("Analyses")
         self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
@@ -355,11 +319,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView = table_view
         self.tableView.restore_column_widths(load_main_column_widths())
 
-        self.cl_label = ElidingStatusLabel(
-            _format_confidence_level_status(analysis_validation.DEFAULT_CONFIDENCE_LEVEL)
-        )
-        self.cl_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.statusbar.addWidget(self.cl_label, 1)
+        self.confidence_button = QtWidgets.QPushButton(self.statusbar)
+        self.confidence_button.setObjectName("sheet_confidence")
+        self.confidence_button.setText("95% CI…")
+        self.confidence_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.confidence_button.setAccessibleName("Sheet confidence level, 95%")
+        self.confidence_button.setToolTip("Interval level for table effects and new analyses on this sheet. An individual analysis can override it.")
+        self.confidence_button.clicked.connect(self.action_change_confidence_level.trigger)
+        self.statusbar.addPermanentWidget(self.confidence_button)
+        self.confidence_button.hide()
 
         self.frame.hide()
         self._setup_sheet_strip()
@@ -368,11 +336,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
         self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
         self.add_sheet_button.clicked.connect(self._add_sheet)
-        for sequence, delta in (("Ctrl+PgDown", 1), ("Ctrl+PgUp", -1)):
-            action = QAction(self)
+        self.menuView.addSeparator()
+        self.outcome_navigation_actions = []
+        for label, sequence, delta in (("Previous outcome", "Ctrl+PgUp", -1), ("Next outcome", "Ctrl+PgDown", 1)):
+            action = QAction(label, self)
             action.setShortcut(QKeySequence(sequence))
+            action.setToolTip(label + " (" + sequence + ")")
             action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
             self.addAction(action)
+            self.menuView.addAction(action)
+            self.outcome_navigation_actions.append(action)
+        self.add_outcome_action = QAction("Add outcome…", self)
+        self.add_outcome_action.triggered.connect(self._add_sheet)
+        self.rename_outcome_action = QAction("Rename outcome…", self.sheet_tabs)
+        self.rename_outcome_action.setShortcut(QKeySequence("F2"))
+        self.rename_outcome_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
+        self.sheet_tabs.addAction(self.rename_outcome_action)
+        self.rename_outcome_action.triggered.connect(lambda: self._rename_sheet(self.sheet_tabs.currentIndex()))
+        self.menuDataset.addSeparator()
+        self.menuDataset.addActions((self.add_outcome_action, self.rename_outcome_action))
+        for label, url in (("Project site", "https://github.com/AliSalman-et-al/rc-metastudio"),
+                           ("How to cite", "https://github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff")):
+            action = QAction(label, self)
+            action.triggered.connect(lambda _checked=False, url=url: QtGui.QDesktopServices.openUrl(QtCore.QUrl(url)))
+            self.menuHelp.addAction(action)
+        self.menuHelp.removeAction(self.action_about_legal)
+        self.menuHelp.addSeparator()
+        self.menuHelp.addAction(self.action_about_legal)
+        self.menuDataset.addSeparator()
         self.action_swap_arms = QAction("Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
@@ -402,6 +393,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.populate_open_recent_menu()
         self.workspace.mark_saved()
         self._update_project_identity()
+        self.disable_menu_options_that_require_dataset()
 
     def createPopupMenu(self):
         return None
@@ -489,6 +481,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         ):
             action.setShortcut(QKeySequence(standard_key))
         self.action_quit.setShortcut(QKeySequence("Ctrl+Q"))
+        self.action_go.setShortcut(QKeySequence("Ctrl+R"))
+        for menu in (self.menu_file, self.menuEdit, self.menuView, self.menuAnalysis, self.menuDataset, self.menuHelp):
+            menu.setTitle("&" + menu.title().replace("&", ""))
 
     def _model_about_to_be_reset(self):
         """Call all the functions here that should be called when the model is
@@ -521,13 +516,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _update_project_identity(self, state=None):
         path = getattr(self, "out_path", None)
-        name = os.path.basename(path) if path else "Untitled dataset"
+        name = os.path.basename(path) if path else "Untitled project"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        empty = not [s.name for s in self.model.dataset.sheets]
-        status = state or ("Ready to create or open a dataset" if empty and not dirty and not path else "Unsaved changes" if dirty else "Ready")
-        self.dataset_file_lbl.setText(f"{status} · {name}")
-        self.dataset_file_lbl.setToolTip(path or "Save the dataset to choose a project file.")
+        self.setWindowFilePath(path or "")
+        if state:
+            self.statusbar.showMessage(state, 4000)
 
     def toggle_menu_options_that_require_dataset(self, enable):
         enable = enable and r_runtime.is_ready()
@@ -541,14 +535,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
                               (self.action_loo_ma, "Leave-one-out meta-analysis")):
             reason = label if enable else blocked
+            if action is self.action_go:
+                reason += " (Ctrl+R)"
             action.setToolTip(reason)
             action.setStatusTip(reason)
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
         enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+        self.action_save.setEnabled(enable)
+        self.action_save_as.setEnabled(enable)
+        self.action_save.setToolTip("Save project (Ctrl+S)" if enable else "Create or open a project to save it")
+        self.action_save.setStatusTip(self.action_save.toolTip())
         self.start_page.setVisible(not enable)
         self.nav_frame.setVisible(enable)
+        self.confidence_button.setVisible(enable)
+        self.add_outcome_action.setEnabled(enable)
+        self.rename_outcome_action.setEnabled(enable)
+        for action in self.outcome_navigation_actions:
+            action.setEnabled(enable and self.sheet_tabs.count() > 1)
 
     def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
         """Enables action_meta_regression if analysis can run and covariates exist."""
@@ -559,6 +564,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
+        self.action_meta_regression.setStatusTip(self.action_meta_regression.toolTip())
 
     def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
         """Enables action_subgroup_ma if there are suitable covariate(s)
@@ -577,6 +583,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
+        self.action_subgroup_ma.setStatusTip(self.action_subgroup_ma.toolTip())
 
     def disable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(False)
@@ -590,7 +597,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if event is None:
             return
         if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-            if event.key() == QtCore.Qt.Key.Key_S:
+            if event.key() == QtCore.Qt.Key.Key_S and self.action_save.isEnabled():
                 self.save()
             elif event.key() == QtCore.Qt.Key.Key_O:
                 self.open()
@@ -756,7 +763,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _update_confidence_level_label(self):
         confidence_level = self.model.get_confidence_level()
-        self.cl_label.setText(_format_confidence_level_status(confidence_level))
+        self.confidence_button.setText(f"{confidence_level:g}% CI…")
+        self.confidence_button.setAccessibleName(f"Sheet confidence level, {confidence_level:g}%")
 
     def go(self):
         form = None
@@ -1396,30 +1404,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setAutoHide(False)
         self.sheet_tabs.setDrawBase(False)
         self.sheet_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.sheet_tabs.palette_stylesheet = """
-            QTabBar { background: palette(window); border: 0; }
-            QTabBar::tab { background: palette(window); color: palette(window-text);
-                border: 0; border-right: 1px solid palette(mid);
-                border-bottom: 3px solid transparent; padding: 6px 12px; }
-            QTabBar::tab:last { border-right: 0; }
-            QTabBar::tab:hover { background: palette(alternate-base); }
-            QTabBar::tab:selected { background: palette(window); font-weight: bold;
-                border-bottom: 3px solid palette(highlight); }
-        """
-        self.sheet_tabs.setStyleSheet(self.sheet_tabs.palette_stylesheet)
         self.add_sheet_button = QtWidgets.QToolButton(self)
         self.add_sheet_button.setText("+")
-        self.add_sheet_button.setToolTip("Add sheet")
-        self.add_sheet_button.setStyleSheet("QToolButton { color: palette(window-text); background: transparent; border: 0; font-size: 18px; padding: 0; margin: 2px; } QToolButton:hover { background: palette(alternate-base); }")
-        self.add_sheet_button.setFixedSize(26, 26)
+        self.add_sheet_button.setToolTip("Add outcome")
+        self.add_sheet_button.setAccessibleName("Add outcome")
+        add_font = self.sheet_tabs.font()
+        add_font.setPointSizeF(add_font.pointSizeF() + 2)
+        self.add_sheet_button.setFont(add_font)
         content = QtWidgets.QWidget(self)
         self.sheet_tab_content = content
         row = QtWidgets.QHBoxLayout(content)
-        row.setContentsMargins(0, 0, 4, 0)
+        row.setContentsMargins(0, 0, 0, 0)
         row.setSpacing(0)
         row.addWidget(self.sheet_tabs)
         self.sheet_tab_scroll = QtWidgets.QScrollArea(self)
         self.sheet_tab_scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        required(self.sheet_tab_scroll.viewport(), "sheet viewport").setBackgroundRole(QtGui.QPalette.ColorRole.Window)
         self.sheet_tab_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.sheet_tab_scroll.setWidget(content)
@@ -1459,6 +1459,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer = QtCore.QTimer(self)
         self._sheet_strip_timer.setSingleShot(True)
         self._sheet_strip_timer.timeout.connect(self._update_sheet_strip)
+        self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
         scroll.rangeChanged.connect(self._schedule_sheet_strip_update)
         scroll.valueChanged.connect(self._sheet_scroll_changed)
         self._schedule_sheet_strip_update()
@@ -1469,10 +1470,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.start(0)
 
     def _update_sheet_strip(self):
+        extent = max(self.sheet_tabs.fontMetrics().height() + 10, self.sheet_tabs.sizeHint().height())
+        self.add_sheet_button.setFixedSize(extent, extent)
+        em = self.sheet_tabs.fontMetrics().height()
+        natural_width = sum(min(28 * em, self.sheet_tabs.fontMetrics().horizontalAdvance(self.sheet_tabs.tabText(index)) + 24)
+                            for index in range(self.sheet_tabs.count()))
+        reserved = extent
+        if self.sheet_grid_scrollbar.isVisible():
+            reserved += 16 * em
+        limit = (28 if natural_width <= self.sheet_strip.width() - reserved else 12) * em
+        if getattr(self.sheet_tabs, "_tab_width_limit", None) != limit:
+            self.sheet_tabs._tab_width_limit = limit
+            self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
         self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
         self.sheet_tab_content.resize(self.sheet_tab_content.sizeHint())
         self.sheet_tab_scroll.setFixedHeight(self.sheet_tab_content.sizeHint().height())
-        self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width() + 2)
+        self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width())
         required(self.sheet_strip.layout(), "sheet strip layout").activate()
         overflow = self.sheet_tab_scrollbar.maximum() > 0
         self.sheet_scroll_left.setVisible(overflow)
@@ -1598,12 +1611,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         menu = QtWidgets.QMenu(self)
         menu.addAction("Rename", lambda: self._rename_sheet(index))
-        delete = menu.addAction("Delete", lambda: self._delete_sheet(index))
-        assert delete is not None
-        delete.setEnabled(self.sheet_tabs.count() > 1)
+        menu.addAction("Add outcome…", self._add_sheet)
+        menu.addSeparator()
         for label, destination in (("Move left", index - 1), ("Move right", index + 1)):
             action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
             required(action, "sheet move action").setEnabled(0 <= destination < self.sheet_tabs.count())
+        menu.addSeparator()
+        delete = required(menu.addAction(f'Delete “{self.sheet_tabs.tabText(index)}”…', lambda: self._delete_sheet(index)), "delete outcome action")
+        delete.setEnabled(self.sheet_tabs.count() > 1)
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
     def _delete_sheet(self, index):

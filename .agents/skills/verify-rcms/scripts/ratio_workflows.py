@@ -121,7 +121,7 @@ def run(app, window, scenario, record):
         assert [model.data(model.index(2, column)) for column in model.OUTCOMES[:3]] == [
             "Not estimable", "\u2014", "\u2014"
         ]
-        assert "zero events in both groups" in model.data(
+        assert "zero events in both arms" in model.data(
             model.index(2, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole
         )
     window.tableView._enable_analysis_menus_if_appropriate()
@@ -138,7 +138,8 @@ def run(app, window, scenario, record):
         assert not any(field.isVisible() for field in dialog.raw_fields)
         for field in dialog.fields.values():
             if field.isVisible():
-                assert field.width() >= 230
+                text = field.currentText() if isinstance(field, QtWidgets.QComboBox) else field.text()
+                assert field.contentsRect().width() >= field.fontMetrics().horizontalAdvance(text) + field.fontMetrics().height(), (text, field.size())
         record("ratio-calculator", dialog, source_confidence=dialog.fields["confidence"].text())
         click(dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, RatioDataDialog, calculator, lambda: window.tableView.row_header_clicked(11))

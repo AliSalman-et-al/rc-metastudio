@@ -4,6 +4,7 @@
 from decimal import Decimal, InvalidOperation
 from typing import cast, TYPE_CHECKING, TypedDict
 import csv
+import re
 from pathlib import Path
 
 if TYPE_CHECKING:
@@ -19,7 +20,7 @@ else:
     from rc_metastudio.forms import ui_outcome_name_page as _ui_outcome_name_page
     from rc_metastudio.forms import ui_welcome_page as _ui_welcome_page
 
-from rc_metastudio.qt_layout import style_inline_error
+from rc_metastudio.qt_layout import DisclosureButton, clear_inline_error, style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
     QColor,
@@ -80,16 +81,26 @@ class DatasetInfo(TypedDict, total=False):
 class MainWizardPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
-        if self.palette().color(QPalette.ColorRole.Window).lightness() < 128:
-            palette = QPalette()
-            palette.setColor(QPalette.ColorRole.Link, QColor("#80bfff"))
-            self.setPalette(palette)
+        palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Link, qt_layout.readable_link_color(self.palette()))
+        self.setPalette(palette)
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange):
+            target = qt_layout.readable_link_color(self.palette())
+            if self.palette().color(QPalette.ColorRole.Link) != target:
+                palette = QPalette()
+                palette.setColor(QPalette.ColorRole.Link, target)
+                self.setPalette(palette)
+            color = self.palette().color(QPalette.ColorRole.Link).name()
+            for label in self.findChildren(QLabel):
+                if '<a ' in label.text():
+                    text = re.sub(r'<a\s+style="[^"]*"', '<a', label.text())
+                    label.setText(text.replace('<a ', f'<a style="color: {color}" '))
 
     def style_link_button(self, button):
-        palette = QPalette(self.palette())
-        palette.setColor(QPalette.ColorRole.ButtonText, palette.color(QPalette.ColorRole.Link))
-        button.setPalette(palette)
-        button.setStyleSheet("QPushButton { text-decoration: underline; }")
+        button.setStyleSheet("QPushButton { color: palette(link); text-decoration: underline; }")
 
     def wizard(self) -> "MainWizard":
         wizard = super().wizard()
@@ -173,6 +184,8 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             self.open_recent_btn.setMenu(qm)
         else:
             self.open_recent_btn.setEnabled(False)
+            self.open_recent_btn.setToolTip("No recent projects.")
+            self.open_recent_btn.setStatusTip("No recent projects.")
 
     def dataset_selected(self, action_item=None):
         self.wizard().set_wizard_path("open")
@@ -248,6 +261,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         self._configure_data_type_buttons()
 
     def initializePage(self):
+        self.setSubTitle(self.wizard().task_label)
         self.setFocus()
 
     def _data_type_buttons(self):
@@ -411,6 +425,14 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
     def __init__(self, parent=None):
         super(ChooseMetricPage, self).__init__(parent)
         self.setupUi(self)
+        self.definition_label = QLabel(self)
+        self.definition_label.setAccessibleName("Effect measure explanation")
+        qt_layout.configure_context_label(self.definition_label)
+        self.horizontalLayout.addWidget(self.definition_label)
+        self.alternatives_label = QLabel(self)
+        self.alternatives_label.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+        qt_layout.configure_context_label(self.alternatives_label)
+        self.horizontalLayout.addWidget(self.alternatives_label)
 
         self.metric_cbo_box.currentIndexChanged[int].connect(
             app_error_handler.safe_slot(self._metric_choice_changed, parent=self)
@@ -421,6 +443,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         data_type = required(dataset_info["data_type"], "import data type")
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
+        self.setSubTitle(self.wizard().task_label + " · " + {"binary": "Two-arm binary" if dataset_info["arms"] == "two" else "Single-arm proportion", "continuous": "Continuous", "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[data_type])
         # Add metric choices to combo box
         self.metric_cbo_box.blockSignals(True)
         self.metric_cbo_box.clear()
@@ -432,7 +455,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 if metric == "Mean":
                     metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
-                    ({"PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
+                    ({"PFT": "Freeman–Tukey double-arcsine transformed proportion", "PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
                 )
             index_of_default = self.metric_cbo_box.findData(str(default_effect))
             if index_of_default < 0:
@@ -447,9 +470,38 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
                 default_item_text += " (default)"
             self.metric_cbo_box.setItemText(index_of_default, default_item_text)
             self.metric_cbo_box.blockSignals(False)
+            self._update_metric_description()
 
     def _metric_choice_changed(self, newindex):
         self.wizard().set_effect(qt_text.to_native_text(self.metric_cbo_box.itemData(newindex)))
+        self._update_metric_description()
+
+    def _update_metric_description(self):
+        metric = self.metric_cbo_box.currentData()
+        definitions = {
+            "OR": "Odds in the intervention arm divided by odds in the control arm.",
+            "RR": "Risk in the intervention arm divided by risk in the control arm.",
+            "RD": "Risk in the intervention arm minus risk in the control arm.",
+            "PR": "The proportion of participants with the outcome in one arm.",
+            "PLN": "A single-arm proportion analyzed on the log scale.",
+            "PLO": "A single-arm proportion analyzed on the logit scale.",
+            "PAS": "A single-arm proportion analyzed with the arcsine transformation.",
+            "PFT": "A single-arm proportion analyzed with the Freeman–Tukey double-arcsine transformation.",
+            "MD": "Mean in the intervention arm minus mean in the control arm, in the original units.",
+            "SMD": "The difference between arm means, expressed in standard-deviation units.",
+            "Mean": "The mean outcome in one arm, with its uncertainty.",
+            "HR": "The event hazard in the intervention arm divided by that in the control arm.",
+            "IRR": "Events per unit of person-time in the intervention arm divided by the rate in the control arm.",
+        }
+        description = definitions.get(metric, "")
+        if metric == "Mean":
+            subtype = self.wizard().require_dataset_info()["sub_type"]
+            description = {"reg_coef": "A reported regression coefficient with its uncertainty.",
+                           "generic_effect": "A reported effect estimate with its uncertainty."}.get(subtype, description)
+        self.definition_label.setText(description)
+        alternatives = [self.metric_cbo_box.itemText(i).removesuffix(" (default)")
+                        for i in range(self.metric_cbo_box.count()) if i != self.metric_cbo_box.currentIndex()]
+        self.alternatives_label.setText("Also available: " + ", ".join(alternatives) if alternatives else "")
 
     def nextId(self):
         return Page_OutcomeName
@@ -521,11 +573,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.groupBox.setTitle("")
         self.verticalLayout_2.insertWidget(0, self.select_file_btn)
         self.file_path_lbl.hide()
-        self.csv_options_btn = QPushButton("▸ CSV options", self)
-        self.csv_options_btn.setCheckable(True)
-        self.csv_options_btn.setFlat(True)
-        self.csv_options_btn.setStyleSheet("QPushButton { text-align: left; border: none; background: transparent; }")
-        self.csv_options_btn.toggled.connect(lambda checked: self.csv_options_btn.setText("▾ CSV options" if checked else "▸ CSV options"))
+        self.csv_options_btn = DisclosureButton("CSV options", self)
         self.csv_options_btn.toggled.connect(self.groupBox.setVisible)
         self.verticalLayout_2.insertWidget(2, self.csv_options_btn)
         self.groupBox.hide()
@@ -533,6 +581,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.verticalLayout_2.addWidget(self.template_btn)
         self.verticalLayout_2.setStretchFactor(self.import_tabs, 1)
         self.preview_grp_box.setTitle("")
+        self.preview_grp_box.setFlat(True)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.data_type_combo = QComboBox(self)
         self.data_type_combo.setAccessibleName("Data type")
         self.data_type_label = QLabel("Data type", self)
@@ -568,7 +618,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def initializePage(self):
         self.data_type_combo.blockSignals(True)
         self.data_type_combo.clear()
-        self.data_type_combo.addItems(["One-group proportion", "One-group mean", "Regression coefficient", "Entered effect", "Two-group proportions", "Two-group means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
+        self.data_type_combo.addItems(["Single-arm proportion", "Single-arm mean", "Regression coefficient", "Entered effect", "Two-arm proportions", "Two-arm means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
         self.data_type_combo.setItemText(8, "Hazard ratio")
         self.data_type_combo.addItem("Incidence rate ratio")
         info = self.wizard().require_dataset_info()
@@ -777,7 +827,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
             self.imported_data_ok = True
             self.import_tabs.setCurrentWidget(self.preview_grp_box)
-            self.import_status.setStyleSheet("")
+            clear_inline_error(self.import_status)
             noun = "study" if num_rows == 1 else "studies"
             self.import_status.setText(f"Ready to import {num_rows} {noun}." + (" " + " ".join(notices) if notices else ""))
             self.completeChanged.emit()
@@ -855,6 +905,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 csv.writer(stream).writerow(self.required_header_labels)
+            clear_inline_error(self.import_status)
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
     def _legacy_header_aliases(self):
@@ -963,7 +1014,10 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
             kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[required(info["sub_type"], "data subtype")]
             metric = ""
-        self.outcome_name_LineEdit.setPlaceholderText("For example, disease detection" if data_type == analysis_catalog.DIAGNOSTIC else "For example, outcome")
+        example = {"binary": "mortality at 30 days", "continuous": "pain score at 6 weeks",
+                   "diagnostic": "disease detection", "time_to_event": "overall survival",
+                   "event_rates": "catheter-related bloodstream infection"}[required(info["data_type"], "data type")]
+        self.outcome_name_LineEdit.setPlaceholderText("For example, " + example)
         self.setSubTitle(f"<p>{task} · {kind}" + (f" · {metric}" if metric else "") + "</p>")
         self.setTitle("Outcome and arms" if self._comparative else "Outcome")
         first_label = "Intervention name" if self._comparative else "Index test name" if data_type == analysis_catalog.DIAGNOSTIC else "Arm name"
@@ -974,7 +1028,6 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self.second_group_name.setVisible(self._comparative)
         self.first_group_label.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
         self.first_group_name.setVisible(self._comparative or data_type == analysis_catalog.DIAGNOSTIC)
-        self.name_note.hide()
         for field in (self.first_group_name, self.second_group_name):
             field.setAccessibleDescription("Optional. Leave blank to use " + field.placeholderText() + ".")
         self.completeChanged.emit()
@@ -994,7 +1047,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         if self._comparative:
             names[1] = self.second_group_name.text().strip() or names[1]
         elif len(names) == 2 and names[0].casefold() == names[1].casefold():
-            names[1] = "Additional group"
+            names[1] = "Additional arm"
         return names
 
     def isComplete(self):
@@ -1073,7 +1126,7 @@ class MainWizard(QWizard):
             self.setWindowTitle("Import data")
         elif path == "new_dataset":
             self.setStartId(Page_DataType)
-            self.setWindowTitle("Add Outcome" if existing_outcome_names else "Create a New Dataset")
+            self.setWindowTitle("Add outcome" if existing_outcome_names else "New project")
 
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.WORKFLOW
@@ -1148,7 +1201,7 @@ class MainWizard(QWizard):
         self.setButtonText(QWizard.WizardButton.FinishButton, "Import" if self.get_wizard_path() == "csv_import" else "Add outcome" if self.existing_outcome_names else "Create")
         next_button = self.button(QWizard.WizardButton.NextButton)
         if next_button is not None:
-            next_button.setVisible(self.currentId() not in (Page_Welcome, Page_CsvImport))
+            next_button.setVisible(self.currentId() != Page_Welcome and self.nextId() != -1)
         forward_buttons = [
             self.button(QWizard.WizardButton.NextButton),
             self.button(QWizard.WizardButton.FinishButton),
@@ -1214,7 +1267,7 @@ class MainWizard(QWizard):
     def task_label(self) -> str:
         if self.existing_outcome_names:
             return "Add outcome"
-        return "Import data" if self.get_wizard_path() == "csv_import" else "Create dataset"
+        return "Import data" if self.get_wizard_path() == "csv_import" else "New project"
 
     def get_wizard_path(self):
         if "path" in self.info_d:

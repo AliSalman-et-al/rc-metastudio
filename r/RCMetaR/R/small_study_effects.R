@@ -571,9 +571,8 @@
     coefficient <- as.numeric(test$coefficient %||% NA_real_)
     interval <- as.numeric(test$confidence.interval %||% c(NA_real_, NA_real_))
     if (length(interval) < 2L) interval <- c(interval, NA_real_)[1:2]
-    result <- if (!is.finite(p.value)) "p-value not available" else if (p.value < .05)
-        paste0("evidence of small-study effects (p = ", .small.study.p.value(p.value), ")") else
-        paste0("no clear evidence of small-study effects (p = ", .small.study.p.value(p.value), ")")
+    result <- if (!is.finite(p.value)) "P-value not available" else
+        paste0("P ", if (p.value < .001) "" else "= ", .small.study.p.value(p.value))
     text <- paste(c(
         paste0("Primary asymmetry test: ", .small.study.method.label(name)),
         paste0("Result: ", result),
@@ -905,13 +904,8 @@ publication.bias.effects <- function(om.data, params) {
     paste(vapply(tests, function(x) {
         interval <- x$confidence.interval %||% c(NA_real_, NA_real_)
         p.value <- as.numeric(x$p.value %||% NA_real_)
-        conclusion <- if (!is.finite(p.value)) {
-            "The test did not return a p-value."
-        } else if (p.value < .05) {
-            paste0("Evidence of small-study effects (p = ", .small.study.p.value(p.value), ").")
-        } else {
-            paste0("No clear evidence of small-study effects (p = ", .small.study.p.value(p.value), ").")
-        }
+        conclusion <- if (!is.finite(p.value)) "The test did not return a P-value." else
+            paste0("P ", if (p.value < .001) "" else "= ", .small.study.p.value(p.value), ".")
         role <- as.character(x$role %||% "")
         heading <- paste0(
             .small.study.method.label(x$method),
@@ -1131,7 +1125,7 @@ publication.bias.effects <- function(om.data, params) {
     if (kind == "deeks") run.params <- .small.study.deeks.params(
         run.params, plot.data, prepared, diagnostic.model)
     key <- paste0("small-study.", .small.study.plot.kind(kind), ".", index)
-    path <- tempfile(pattern=paste0("small-study-", kind, "-"), fileext=".png")
+    path <- tempfile(pattern=paste0("small-study-", kind, "-"), fileext=".svg")
     .small.study.plot.artifact(key, title, kind, path, plot.data, pooled, run.params)
 }
 
@@ -1511,7 +1505,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
 }
 
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120) {
-    path <- output.path %||% tempfile(pattern="small-study-funnel-", fileext=".png")
+    path <- output.path %||% tempfile(pattern="small-study-funnel-", fileext=".svg")
     y <- om.data@y
     se <- om.data@SE
     keep <- is.finite(y) & is.finite(se) & se > 0

@@ -186,7 +186,7 @@ def _run(app, window, work, root, record, analyze):
     app.processEvents()
     app.processEvents()
     assert not window.workspace.is_dirty
-    assert "Unsaved changes" not in window.dataset_file_lbl.text()
+    assert not window.workspace.is_dirty
     assert "*" not in window.windowTitle()
     record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):
@@ -307,9 +307,8 @@ def _run(app, window, work, root, record, analyze):
                 assert not table.horizontalScrollBar().isVisible()
                 last_row = table.visualRect(table.model().index(table.rowCount() - 1, 0))
                 row_bottom = table.viewport().mapTo(view.tables_page, last_row.bottomLeft()).y()
-                button = view.table_controls.widgetForAction(view.copy_table_action)
-                button_top = button.mapTo(view.tables_page, button.rect().topLeft()).y()
-                assert 0 <= button_top - row_bottom <= 32, (button_top, row_bottom)
+                assert table.viewport().rect().contains(last_row), (last_row, table.viewport().rect())
+                assert view.table_selector.geometry().bottom() < table.geometry().top()
             record("slice8b-results-" + page + "-" + theme, view)
     app.setPalette(original_palette)
     view.nav_tree.setCurrentItem(next(item for item in view.nav_tree.findItems("Forest plot", QtCore.Qt.MatchFlag.MatchExactly)))
@@ -318,7 +317,7 @@ def _run(app, window, work, root, record, analyze):
 
     for arm in window.model.arm_names:
         assert "Favours" in svg and arm in svg
-    assert not hasattr(view, "identity_label")
+    assert view.result_identity.isVisible()
     assert view._fit_width_active
     for width in (900, 796):
         view.resize(width, 796)
@@ -524,7 +523,7 @@ def _run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(source), "")):
         mouse_click(page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert not page.isComplete()
-    assert "Study Name" in page.import_status.text()
+    assert "study name" in page.import_status.text().casefold()
     record("ux-csv-invalid", wizard, message=page.import_status.text())
     for control, index in zip(page.mapping_controls, range(9)):
         control.setCurrentIndex(control.findData(index))
@@ -586,7 +585,7 @@ def _run(app, window, work, root, record, analyze):
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
         assert window.model.setData(window.model.index(0, column), value)
     estimate = str(window.model.data(window.model.index(0, window.model.OUTCOMES[0])))
-    assert estimate == "0.0001"
+    assert estimate == "0.00010"
     stored_estimate = float(window.model.data(window.model.index(0, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole))
     assert 0 < stored_estimate < .001
     assert abs(stored_estimate - 1 / 9999) < 1e-6
@@ -701,11 +700,10 @@ def _run(app, window, work, root, record, analyze):
         subgroup.resize(subgroup.width() + table.columnCount() * 24, subgroup.height())
         app.processEvents()
         after = [header.sectionSize(c) for c in range(table.columnCount())]
-        gains = [b - a for a, b in zip(before, after)]
-        assert min(gains) > 0 and max(gains) - min(gains) <= 1, (before, after, gains)
-        assert sum(gains) == required(table.viewport()).width() - viewport_before
-        record('table-wide-font-even-width-sharing', subgroup, title=subgroup.table_selector.currentText(),
-               font=font.toString(), minimums=minimums, before=before, after=after, gains=gains)
+        assert after == before, (before, after)
+        record('table-wide-font-content-widths', subgroup, title=subgroup.table_selector.currentText(),
+               font=font.toString(), minimums=minimums, before=before, after=after,
+               viewport_before=viewport_before, viewport_after=required(table.viewport()).width())
     close_result(subgroup)
 
 

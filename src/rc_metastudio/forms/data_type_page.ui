@@ -20,7 +20,7 @@
    <string>WizardPage</string>
   </property>
   <property name="title">
-   <string>What type of data do you have?</string>
+   <string>Data type</string>
   </property>
   <layout class="QVBoxLayout" name="workflowPageLayout">
    <property name="leftMargin"><number>0</number></property>
@@ -38,6 +38,12 @@
        <property name="spacing"><number>0</number></property>
        <property name="sizeConstraint"><enum>QLayout::SetMinimumSize</enum></property>
        <item>
+        <widget class="QLabel" name="data_type_guidance">
+         <property name="text"><string>What type of data do you have?</string></property>
+         <property name="wordWrap"><bool>true</bool></property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="label_2">
      <property name="font">
       <font>
@@ -45,7 +51,7 @@
       </font>
      </property>
      <property name="text">
-      <string>One group per study</string>
+      <string>One arm per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>
@@ -194,7 +200,7 @@
    <item>
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Two or more groups per study</string>
+      <string>Two arms per study</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>

@@ -207,7 +207,8 @@ def run(
             report = view.report_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
-            assert report.startswith("Pooled effect\n"), report
+            primary_heading = "Diagnostic summary" if view.results.analysis_method == "diagnostic.reitsma" else "Pooled effect"
+            assert report.startswith(primary_heading + "\n"), report
             assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
         if clinical:
@@ -260,11 +261,11 @@ def run(
             participant_arm = window.model.arm_names[0]
             record("onearm-participant-scope", view, report=text, manuscript=manuscript)
             assert "Other group" not in manuscript, manuscript
-            assert f"Group: {participant_arm}" in manuscript, manuscript
+            assert f"Arm: {participant_arm}" in manuscript, manuscript
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
                 assert re.search(rf"Participants in {re.escape(participant_arm)}\s+135\b", text), text
             else:
-                assert re.search(r"Participants\s+Not available", text), text
+                assert 'Participants' not in text, text
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
             assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
@@ -279,7 +280,7 @@ def run(
             from rc_metastudio import r_bridge
             r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
-            style = (parameters or {}).get("fp_style", "revman")
+            style = dialog.current_param_vals["fp_style"]
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
                                 ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
@@ -536,9 +537,9 @@ def run(
             assert restored == before, (restored, before)
             for se, readout, shown, contained in observations:
                 assert shown and contained, observations
-                assert readout.startswith(f"SE: {se:.4f}"), observations
+                assert readout.startswith(f"SE {se:.4f}"), observations
                 if se == 0:
-                    assert "Z:" not in readout and "Two-sided P" not in readout, readout
+                    assert "z " not in readout and "two-sided p" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()
@@ -804,8 +805,17 @@ def run(
                         if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))]
         plotted_weights = [float("".join(node.itertext()).removesuffix("%"))
                            for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
-        plotted_weights.remove(100.0)
-        assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
+        if dialog.current_param_vals["fp_style"] == "default":
+            assert not plotted_weights, plotted_weights
+            from rc_metastudio import r_bridge
+            r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
+            plotted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
+            assert len(plotted_weights) == len(rows), (plotted_weights, rows)
+            assert all(abs(actual - float(row[-1].removesuffix("%"))) <= 0.051
+                       for actual, row in zip(plotted_weights, rows, strict=True)), (plotted_weights, rows)
+        else:
+            plotted_weights.remove(100.0)
+            assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
         assert all(float(row[-1].removesuffix("%")) == 0 for row in omitted), omitted
         if method == "binary.fixed.mh":
             assert len(omitted) == 2 and figure.count("Not estimable") == 2, (rows, figure)

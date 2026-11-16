@@ -37,7 +37,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="style_label">
         <property name="text">
-         <string>Style:</string>
+         <string>Style</string>
         </property>
        </widget>
       </item>
@@ -72,19 +72,15 @@
       <item row="0" column="0">
        <widget class="QLabel" name="accent_label">
         <property name="text">
-         <string>Accent color:</string>
+         <string>Accent color</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="accent_color">
+      <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color"><property name="accessibleName"><string>Plot accent color</string></property>
         <property name="text">
          <string>#2f5597</string>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-      <widget class="QPushButton" name="color_btn">
+       </widget></item><item><widget class="QPushButton" name="color_btn">
         <property name="toolTip">
          <string>Choose the plot accent color</string>
         </property>
@@ -97,12 +93,11 @@
         <property name="text">
          <string>Choose color…</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
+       </widget></item></layout></item>
+<item row="1" column="0">
        <widget class="QLabel" name="point_size_label">
         <property name="text">
-         <string>Point size multiplier:</string>
+         <string>Point size multiplier</string>
         </property>
        </widget>
       </item>
@@ -131,7 +126,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Column labels</string>
+      <string>Column headings</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -139,7 +134,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Study / row heading:</string>
+           <string>Study / row heading</string>
           </property>
          </widget>
         </item>
@@ -163,7 +158,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Estimate heading:</string>
+           <string>Estimate heading</string>
           </property>
          </widget>
         </item>
@@ -187,7 +182,7 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>First group heading:</string>
+           <string>First arm heading</string>
           </property>
          </widget>
         </item>
@@ -201,7 +196,7 @@
         <item row="2" column="2">
          <widget class="QCheckBox" name="show_3">
           <property name="text">
-           <string>Show first group data</string>
+           <string>Show first arm data</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -211,7 +206,7 @@
         <item row="3" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Second group heading:</string>
+           <string>Second arm heading</string>
           </property>
          </widget>
         </item>
@@ -225,7 +220,7 @@
         <item row="3" column="2">
          <widget class="QCheckBox" name="show_4">
           <property name="text">
-           <string>Show second group data</string>
+           <string>Show second arm data</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -240,13 +235,13 @@
    <item>
     <widget class="QGroupBox" name="default_panel">
      <property name="title">
-      <string>Default Style Options</string>
+      <string>Default style options</string>
      </property>
      <layout class="QGridLayout" name="default_layout">
       <item row="0" column="1">
        <widget class="QCheckBox" name="show_raw_counts">
         <property name="text">
-         <string>Show group data columns</string>
+         <string>Arm data columns</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -256,14 +251,14 @@
       <item row="1" column="0">
        <widget class="QLabel" name="headers_label">
         <property name="text">
-         <string>Show headers:</string>
+         <string>Show</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
        <widget class="QCheckBox" name="show_headers">
         <property name="text">
-         <string>Show column headings</string>
+         <string>Column headings</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -273,7 +268,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="show_annotation">
         <property name="text">
-         <string>Show annotation</string>
+         <string>Annotation</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -286,7 +281,7 @@
    <item>
     <widget class="QGroupBox" name="regression_group">
      <property name="title">
-      <string>Regression Options</string>
+      <string>Regression options</string>
      </property>
      <layout class="QGridLayout" name="regression_layout">
       <item row="0" column="0">
@@ -327,22 +322,23 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="axis_group"><property name="title"><string>Axes</string></property>
     <layout class="QGridLayout" name="gridLayout_4">
      <item row="0" column="0">
       <widget class="QLabel" name="label_12">
        <property name="text">
-        <string>X-axis label:</string>
+        <string>X-axis label</string>
        </property>
       </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_13">
        <property name="text">
-        <string>X-axis ticks:</string>
+        <string>X-axis ticks</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="4" column="1">
       <widget class="QLineEdit" name="x_ticks_le">
        <property name="text">
         <string>[default]</string>
@@ -356,7 +352,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="1">
       <widget class="QLineEdit" name="plot_lb_le">
        <property name="text">
         <string>[default]</string>
@@ -370,7 +366,7 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="2" column="1">
       <widget class="QLineEdit" name="plot_ub_le">
        <property name="text">
         <string>[default]</string>
@@ -380,11 +376,11 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_16">
        <property name="text">
-        <string>Show summary line:</string>
+        <string>Show summary line</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="2">
+     <item row="5" column="1">
       <widget class="QCheckBox" name="show_summary_line">
        <property name="text">
         <string/>
@@ -394,7 +390,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="0" column="1">
       <widget class="QLineEdit" name="x_lbl_le">
        <property name="text">
         <string>[default]</string>
@@ -402,13 +398,14 @@
       </widget>
      </item>
     </layout>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Save image to:</string>
+        <string>Save image to</string>
        </property>
       </widget>
      </item>

@@ -29,6 +29,9 @@ from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
 SCENARIOS = (
     *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references", "precision", "round5", "bubble-metrics", "irr-context", "arm-names", *("presentation-" + family for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect", "sequential", "transforms")))),
     "review1-design",
+    "ui-fine-tuning",
+    "ui-fable-polish",
+    "ui-design-direction",
     "review-workflows",
     "subgroup-image",
     "subgroup-image-dark-large",
@@ -40,6 +43,9 @@ SCENARIOS = (
     "results-window",
     "manuscript-export-direct",
     "manuscript-export",
+    "manuscript-split-figure",
+    "results-presentation",
+    "results-values",
     "amino",
     "sheets",
     "ui-crawl",
@@ -131,6 +137,8 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
 
 
 def _scenario_timeout(scenario: str) -> int:
+    if scenario in {"ui-fine-tuning", "ui-design-direction"}:
+        return 240
     if scenario == "ui-crawl":
         return 600
     if scenario == "ratios-irr":
@@ -138,7 +146,7 @@ def _scenario_timeout(scenario: str) -> int:
     timeout_seconds = 120
     if scenario in {"sheets-legacy", "sheets-swap"}:
         return 600
-    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "results-window", "ux-improvements"}:
+    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "results-window", "ux-improvements", "results-values"}:
         return 600
     if scenario in {"ratios-hr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
         timeout_seconds = 600

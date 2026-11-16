@@ -21,7 +21,7 @@ def configure_plot_text_inputs(surface):
         if widget is None:
             continue
         widget.setProperty("plotTextWasEdited", False)
-        widget.setToolTip("Automatic headings preserve the complete group name; long headings wrap in the figure.")
+        widget.setToolTip("Automatic headings preserve the complete arm name; long headings wrap in the figure.")
         if widget.text() == "[default]":
             set_plot_text_value(widget, "[default]")
         widget.textEdited.connect(

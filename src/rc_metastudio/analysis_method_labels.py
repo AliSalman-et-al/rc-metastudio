@@ -73,12 +73,12 @@ _KNOWN_PARAMETER_LABELS = {
     "conf.level": "Confidence Level",
     "digits": "Decimal Places",
     "adjust": "Continuity correction",
-    "drop00": "Exclude studies with zero events in both groups",
+    "drop00": "Exclude studies with zero events in both arms",
 }
 
 _DIAGNOSTIC_METRIC_GROUP_LABELS = {
-    "sens_spec": "Sensitivity and Specificity",
-    "lr_dor": "Likelihood Ratios and Diagnostic Odds Ratio",
+    "sens_spec": "Sensitivity and specificity",
+    "lr_dor": "Likelihood ratios and diagnostic odds ratio",
 }
 
 
@@ -119,7 +119,7 @@ def parameter_value_display_label(param_name, value, param_metadata=None):
 def parameter_display_label(param_name, param_metadata=None):
     text = str(param_name)
     if text == "rm.method":
-        return "Heterogeneity (τ²) estimator"
+        return "τ² estimator"
     if param_metadata is not None:
         pretty_name = param_metadata.get("pretty.name")
         if pretty_name:

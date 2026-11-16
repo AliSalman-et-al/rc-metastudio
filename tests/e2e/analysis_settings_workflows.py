@@ -27,8 +27,8 @@ def run(app, window, root, record, analyze):
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
-    assert not hasattr(view, "identity_label")
-    assert view.windowTitle() == "clinical failure — Meta-analysis"
+    assert view.result_identity.isVisible()
+    assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
     report = view.report_text.toPlainText()
     from tests.e2e.report_retention import assert_report
     assert_report(view)
@@ -40,7 +40,7 @@ def run(app, window, root, record, analyze):
     dialog = setup()
     assert dialog.current_method == "binary.random"
     assert dialog.current_param_vals["digits"] == 3
-    assert dialog.style_cbo.currentText() == "RevMan"
+    assert dialog.style_cbo.currentText() == "Default"
     assert dialog.study_order.currentData() == "table"
     record("review-properties-prefilled", dialog, parameters=dialog.current_param_vals)
     dialog.reject()
@@ -52,13 +52,13 @@ def run(app, window, root, record, analyze):
     original_labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
     import json
     inputs = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(year=plot.data$years, effect=as.numeric(plot.data$res$yi), weight=as.numeric(plot.data$weights)), na="null", digits=16)')[0]))
-    expected_orders = {'table': original_labels}
+    expected_orders = {'table': list(range(len(original_labels)))}
     for key, values in inputs.items():
         assert len(values) == len(original_labels), (key, values)
         # Python's stable sort retains fixture/table order for ties; missing years go last.
         indexes = sorted(range(len(values)), key=lambda i: (values[i] is None or (key == 'year' and values[i] == 0),
                          0 if values[i] is None else -values[i] if key == 'weight' else values[i]))
-        expected_orders[key] = [original_labels[i] for i in indexes]
+        expected_orders[key] = indexes
     view.report_action.setChecked(True)
     report = view.report_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
@@ -68,16 +68,17 @@ def run(app, window, root, record, analyze):
 
     # A result belongs to its original input even after the main window opens another project.
     assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
-    for order in ("year", "effect", "weight", "table"):
+    for style, order in (("Default", "year"), ("RevMan", "year"), ("RevMan", "effect"), ("RevMan", "weight"), ("RevMan", "table")):
         view.change_settings_action.trigger()
         app.processEvents()
         dialog = setup()
         assert dialog.data_type == "binary" and dialog.model.current_outcome_name == "clinical failure"
         dialog.specs_tab.setCurrentWidget(dialog.plot_tab)
+        dialog.style_cbo.setCurrentText(style)
         dialog.study_order.setCurrentIndex(dialog.study_order.findData(order))
         dialog.content_scroll_area.ensureWidgetVisible(dialog.study_order)
         app.processEvents()
-        record("review-study-order-" + order, dialog, order=order)
+        record("review-study-order-" + style.lower() + '-' + order, dialog, order=order, style=style)
         if order == "year":
             dialog.study_order.showPopup()
             app.processEvents()
@@ -88,8 +89,10 @@ def run(app, window, root, record, analyze):
         r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
         r_bridge.load_in_r(str(next(iter(changed.params_paths.values()))) + ".plotdata")
         labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
-        assert labels == expected_orders[order], ('study order', order, labels, expected_orders[order])
-        assert list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key"))) == ["weight"]
+        display_order = [int(index) - 1 for index in r_bridge.ro.r("plot.data$display_order")]
+        assert display_order == expected_orders[order], ('study order', order, display_order, expected_orders[order])
+        last_column = list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")))
+        assert (last_column == ["weight"]) == (style == "RevMan"), (style, last_column)
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         svg = ET.parse(next(iter(changed.results.display_images.values())))

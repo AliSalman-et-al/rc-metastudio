@@ -230,7 +230,7 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
     load(paste0(path, ".params"))
     load(paste0(path, ".data"))
     load(paste0(path, ".res"))
-    regenerated <- tempfile(fileext=".png")
+    regenerated <- tempfile(fileext=".svg")
     expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
     expect_gt(file.info(regenerated)$size, 0)
     expect_identical(
@@ -241,7 +241,7 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
   }
   path <- result$plot_params_paths[["Ordinary Funnel Plot"]]
   load(paste0(path, ".params")); load(paste0(path, ".data")); load(paste0(path, ".res"))
-  for (extension in c("pdf", "svg", "tiff")) {
+  for (extension in c("pdf", "png", "tiff")) {
     exported <- tempfile(fileext=paste0(".", extension))
     expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, exported)))
     expect_gt(file.info(exported)$size, 0)
@@ -344,7 +344,7 @@ test_that("ordinary funnel sampling-region visibility is persisted for regenerat
   load(paste0(hidden.path, ".params"))
   expect_false(isTRUE(params$`funnel.sampling.region.visible`))
   load(paste0(hidden.path, ".data")); load(paste0(hidden.path, ".res"));
-  regenerated <- tempfile(fileext=".png")
+  regenerated <- tempfile(fileext=".svg")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
@@ -372,7 +372,7 @@ test_that("funnel regeneration uses the persisted funnel index for vector settin
   expect_identical(params$`funnel.contour.levels`[[2L]], "80,90")
   expect_identical(params$`funnel.label.policy`[[2L]], "all")
   load(paste0(path, ".data")); load(paste0(path, ".res"))
-  regenerated <- tempfile(fileext=".png")
+  regenerated <- tempfile(fileext=".svg")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
@@ -675,7 +675,6 @@ test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots
   expect_identical(params$`funnel.index`, 1L)
   load(paste0(path, ".data"))
   load(paste0(path, ".res"))
-  # Compare the persisted vector image with the same export format.
   regenerated <- tempfile(fileext=".svg")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
@@ -759,7 +758,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_equal(params$deeks.predictor, 1 / sqrt(params$deeks.ess))
   load(paste0(path, ".data"))
   load(paste0(path, ".res"))
-  regenerated <- tempfile(fileext=".png")
+  regenerated <- tempfile(fileext=".svg")
   expect_true(file.exists(rcmetar.regenerate.small.study.funnel(om.data, res, params, regenerated)))
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(

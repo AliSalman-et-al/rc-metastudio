@@ -52,7 +52,8 @@ def run_groups(app, window, work, record):
     app.processEvents()
     setup = next(w for w in app.topLevelWidgets() if isinstance(w,AnalysisSetupDialog) and w.isVisible())
     set_parameter(app,setup,'fp_style',old_style)
-    plots_index = next(i for i in range(setup.specs_tab.count()) if setup.specs_tab.tabText(i) == 'Plots')
+    plots_index = setup.specs_tab.indexOf(setup.plot_tab)
+    assert plots_index >= 0 and setup.specs_tab.tabText(plots_index) == 'Forest plot'
     mouse_click(setup.specs_tab.tabBar(),QtCore.Qt.MouseButton.LeftButton,
                      pos=setup.specs_tab.tabBar().tabRect(plots_index).center())
     app.processEvents()

@@ -1,6 +1,8 @@
 from typing import Any, Callable, cast
 import sys
 import gc
+import math
+import re
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
 import subprocess
@@ -105,6 +107,14 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
 
 
 def _run(app, window, work, root, record, analyze, *, direct_write):
+    def numeric_export_cell(value):
+        parts = re.split(r'\s+to\s+|,\s*|\s*–\s*', value.replace('\u00a0', ' '))
+        try:
+            numbers = [float(part.strip().lstrip('<>≤≥').removesuffix('%').replace('−', '-').replace('∞', 'inf')) for part in parts]
+        except ValueError:
+            return False
+        return bool(numbers) and not any(math.isnan(number) for number in numbers)
+
     pending_close = None
     previous_dialog: QtWidgets.QFileDialog | None = None
     picker_number = 0
@@ -288,7 +298,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 doc = Document(path)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             assert ' '.join(expected.split()) in ' '.join(text.split())
-            import re
             assert not re.search(r"\b(?:NaN|Inf)\b", text), text
         record('manuscript-correction-' + method, view, methods=view.manuscript.methods)
         close_result(view)
@@ -345,7 +354,22 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                                    if (section.title == 'Supplementary details') == supplementary for table in section.tables]
                 assert len(doc.tables) == len(expected_tables)
                 for actual, expected_table in zip(doc.tables, expected_tables):
-                    assert tuple(tuple(cell.text for cell in row.cells) for row in actual.rows) == (expected_table.headers, *expected_table.rows)
+                    # Nonbreaking spaces keep each interval together in Word.
+                    actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
+                    assert actual_text == (expected_table.headers, *expected_table.rows), expected_table.title
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
+                for exported_table in doc.tables:
+                    properties = exported_table.rows[0]._tr.trPr
+                    assert properties is not None
+                    assert properties.find('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblHeader') is not None
+                    for column in range(len(exported_table.columns)):
+                        missing = ('', 'NA', '—', 'Not estimable')
+                        values = [row.cells[column].text for row in exported_table.rows[1:] if row.cells[column].text not in missing]
+                        numeric = bool(values) and sum(numeric_export_cell(value) for value in values) >= len(values) / 2
+                        for row_index, row in enumerate(exported_table.rows):
+                            cell = row.cells[column]
+                            right = numeric if row_index == 0 or cell.text in missing else numeric_export_cell(cell.text)
+                            assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT), (row_index, column, cell.text)
                 assert len(doc.inline_shapes) >= len(view.results.images)
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -364,7 +388,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                             checked.append(content)
                             assert colours[line.attrib['font']] == '#000000', (content, colours)
                 assert 'Methods' in checked and any(line.startswith('Figure ') for line in checked), checked
-                import re
                 numbers = re.findall(r'Table (\d+)\.', text)
                 assert numbers and len(numbers) == len(set(numbers)), numbers
                 from xml.etree import ElementTree as ET
@@ -387,23 +410,33 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
             for prose in (view.manuscript.methods, view.manuscript.results):
-                assert ' '.join(unicodedata.normalize('NFKC', prose).split()) in normalized, (sample, suffix, prose, normalized)
+                # A PDF line can wrap immediately after a hyphen or dash.
+                # Compare all ordered words, digits and punctuation independently
+                # of physical line breaks, as the complete-table observer does.
+                expected = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', prose))
+                actual = re.findall(r'\w+|[^\w\s]', normalized)
+                assert any(actual[i:i+len(expected)] == expected for i in range(len(actual)-len(expected)+1)), (sample, suffix, prose, normalized)
             assert view.manuscript.methods in view.manuscript_text.toPlainText()
             assert view.manuscript.results in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
             assert text.index('Supplementary details') > text.rindex('Figure ')
             if sample == 'amino':
-                assert view.manuscript.title == 'clinical failure: random-effects meta-analysis (odds ratio)'
-                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267).' in view.manuscript.results
-                assert view.manuscript.results == '19 studies were included (1097 participants in Intervention, 1080 in Control). 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate. The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, p = .267). The confidence interval includes 1, so these data do not show a clear difference between Intervention and Control. Heterogeneity: Q = 33.360, df = 18, p = .015. I² = 46.0%, which may represent moderate heterogeneity (Cochrane Handbook ranges). Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
-                assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.2.1, meta 8.5-0."
+                assert view.manuscript.title == 'Clinical failure: random-effects meta-analysis (odds ratio)'
+                prediction_note = '95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.'
+                assert prediction_note not in view.manuscript.results
+                model_fit = next(section for section in view.manuscript.sections if section.title == "Model fit")
+                assert prediction_note in model_fit.paragraphs
+                assert view.manuscript.plain_text().count(prediction_note) == 1
+                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267).' in view.manuscript.results
+                assert view.manuscript.results == 'In total, 19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267). Heterogeneity: Q = 33.360, df = 18, P = 0.015. I² = 46.0%. Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.2.1, meta 8.5-0."
                 assert '-0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
-                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, p < .001).' in view.manuscript.results
-                assert 'The confidence interval excludes 0, with higher mean values in Intervention than in Control.' in view.manuscript.results
-                assert 'I² = 58.0%, which may represent moderate to substantial heterogeneity (Cochrane Handbook ranges).' in view.manuscript.results
+                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, P < 0.001).' in view.manuscript.results
+                assert 'The confidence interval excludes' not in view.manuscript.results
+                assert 'I² = 58.0%.' in view.manuscript.results
 
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
@@ -453,9 +486,9 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random')
     assert_manuscript_tables(view)
-    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, p < .001).'
+    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, P < 0.001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
-    assert 'The confidence interval excludes 0, with lower mean values in Control than in Intervention.' in view.manuscript.results
+    assert 'The confidence interval excludes' not in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
     assert view.results.manuscript_arms == ('Control', 'Intervention')
     for suffix in ('pdf', 'docx'):
@@ -483,15 +516,16 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         prose = view.manuscript.results
         if workflow == 'subgroup':
             assert 'In Subgroup A, the pooled odds ratio was' in prose and 'In Subgroup B, the pooled odds ratio was' in prose
-            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434], z = -1.113, p = .266).' in prose
-            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438], z = -0.673, p = .501).' in prose
-            assert 'Test for subgroup differences: Q = 0.307, df = 1, p = .579.' in prose
+            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434]).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438]).' in prose
+            assert 'Test for subgroup differences: Q = 0.307, df = 1, P = 0.579.' in prose
+            assert prose.index('Test for subgroup differences') < prose.index('In Subgroup')
         else:
-            assert 'coefficient' in prose and '95% CI' in prose and ', p = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
+            assert 'coefficient' in prose and '95% CI' in prose and ', P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose
-            assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, p = .166).' in prose
+            assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, P = 0.166).' in prose
             assert 'Residual heterogeneity: Q = ' in prose
-            assert 'The confidence interval includes 0, so these data do not show a clear association with Dose.' in prose
+            assert 'The confidence interval includes 0' not in prose
             assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
@@ -530,7 +564,12 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     app.processEvents()
     app.processEvents()
     assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
-    assert all(item.textWidth() >= view.graphics_view.viewport().width() * .9 for item in view._wrapped_text_items)
+    viewport = view.graphics_view.viewport().rect()
+    caption_bounds = [view.graphics_view.mapFromScene(item.sceneBoundingRect()).boundingRect()
+                      for item in view._wrapped_text_items]
+    assert caption_bounds and all(bounds.left() >= viewport.left()
+                                  and 0 <= viewport.right() - bounds.right() <= view.fontMetrics().height() * 2
+                                  for bounds in caption_bounds), (viewport, caption_bounds)
     record('manuscript-small-study-methods', view, methods=view.manuscript.methods,
            settled_zoom_percent=view._figure_zoom_percent)
     close_result(view)

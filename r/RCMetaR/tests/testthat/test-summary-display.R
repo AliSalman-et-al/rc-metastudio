@@ -328,6 +328,25 @@ regression_display_fixture <- function(method = "REML", inference.method = "z", 
   display
 }
 
+test_that("unavailable regression heterogeneity fields do not discard the analysis", {
+  # A missing package field must stay unavailable, not shorten the numeric array
+  # and turn an otherwise usable model into a display-construction error.
+  fixture <- regression_display_fixture()
+  for (field in c("tau2", "se.tau2", "I2", "H2", "R2")) {
+    fit <- fixture$MAResults
+    fit[[field]] <- NULL
+    display <- RCMetaR:::create.regression.display(fit,
+      list(digits=3, measure="OR", inference.method="z", conf.level=90),
+      list(cov.display.col=c("intercept", "latitude"), levels.display.col=character(),
+        studies.display.col=character(), factor.n.levels=numeric(), n.cont.covs=1,
+        cont.cov.names="latitude", cont.cov.ranges=list(latitude=c(6,55)),
+        factor.cov.names=character(), factor.ref.levels=character()))
+    table <- display$arrays[[which(display$table.titles == "Residual heterogeneity")]]
+    expect_true(any(table[-1,2] == "Not estimable"))
+    expect_equal(nrow(attr(table, "rcms.numeric")$values), nrow(table)-1L)
+  }
+})
+
 test_that("result tables identify their configured confidence level", {
   summary <- summary_display_fixture(conf.level = 90)
   expect_equal(

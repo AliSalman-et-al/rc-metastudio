@@ -110,7 +110,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.input_mode_combo.addItem("Study counts", "counts")
         self.input_mode_combo.addItem("Entered estimate", "estimate")
         self.input_mode_combo.setAccessibleName("Study input method")
-        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: group data or an entered effect estimate.")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
         self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
@@ -175,8 +175,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
         self.ci_label.setWordWrap(False)
-        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _set_content_preferred_width(self):
         """Give dense content room before the outer policy applies its cap."""

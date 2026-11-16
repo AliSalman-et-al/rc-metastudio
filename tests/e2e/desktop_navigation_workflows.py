@@ -13,9 +13,20 @@ def run(app, window, work, root, record, analyze):
 
     window.start()
     app.processEvents()
-    for card in window.start_page.findChildren(QtWidgets.QGroupBox):
-        for label in card.findChildren(QtWidgets.QLabel):
-            assert label.height() >= label.heightForWidth(label.width()), ("clipped start description", label.text(), label.size(), label.heightForWidth(label.width()), card.hasHeightForWidth())
+    original_size = window.size()
+    card_heights = []
+    for height in (480, 700):
+        window.resize(800, height)
+        app.processEvents()
+        cards = window.start_page.findChildren(QtWidgets.QGroupBox)
+        for card in cards:
+            for label in card.findChildren(QtWidgets.QLabel):
+                assert label.height() >= label.heightForWidth(label.width()), ("clipped start description", label.text(), label.size(), label.heightForWidth(label.width()), card.hasHeightForWidth())
+        card_heights.append([card.height() for card in cards])
+        record('review1-start-height-' + str(height), window)
+    assert card_heights[0] == card_heights[1], ("start cards stretched vertically", card_heights)
+    window.resize(original_size)
+    app.processEvents()
     record('review1-start-before-check', window)
     assert window.start_page.isVisible() and not window.tableView.isVisible()
     assert not app.activeModalWidget()
@@ -101,13 +112,98 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     assert window.tableView.isVisible() and not window.start_page.isVisible()
     assert window.out_path == str(present)
-    assert window.cl_label.text() == 'Confidence level: 95%'
+    assert window.confidence_button.text() == '95% CI…'
+    assert window.confidence_button.isVisible()
+    from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
+    def change_confidence(dialog):
+        dialog.confidence_level_spinbox.setValue(90)
+        record('polish-confidence-dialog', dialog)
+        mouse_click(dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
+    modal(app, ConfidenceLevelDialog, change_confidence, lambda: mouse_click(window.confidence_button, QtCore.Qt.MouseButton.LeftButton))
+    assert window.model.get_confidence_level() == 90
+    assert window.confidence_button.text() == '90% CI…'
+    window.action_undo.trigger()
+    assert window.confidence_button.text() == '95% CI…'
     assert window.sheet_tabs.count() == len(window.model.dataset.sheets)
     for index, sheet in enumerate(window.model.dataset.sheets):
         window.sheet_tabs.setCurrentIndex(index)
         app.processEvents()
         assert window.model.current_sheet.id == sheet.id
     window.sheet_tabs.setCurrentIndex(0)
+    include = window.model.index(0, window.model.INCLUDE_STUDY)
+    table = window.tableView
+    table.setCurrentIndex(include)
+    table.setFocus()
+    checked = window.model.data(include, QtCore.Qt.ItemDataRole.CheckStateRole)
+    key_click(table, QtCore.Qt.Key.Key_Space)
+    assert window.model.data(include, QtCore.Qt.ItemDataRole.CheckStateRole) != checked
+    window.action_undo.trigger()
+    include = window.model.index(0, window.model.INCLUDE_STUDY)
+    assert window.model.data(include, QtCore.Qt.ItemDataRole.CheckStateRole) == checked
+    mouse_click(table.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=table.visualRect(include).center())
+    assert window.model.data(window.model.index(0, window.model.INCLUDE_STUDY), QtCore.Qt.ItemDataRole.CheckStateRole) != checked
+    window.action_undo.trigger()
+    window.showMaximized()
+    for name, scheme in [('light', QtCore.Qt.ColorScheme.Light), ('dark', QtCore.Qt.ColorScheme.Dark)]:
+        app.styleHints().setColorScheme(scheme)
+        palette = QtGui.QPalette(original_palette)
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Button):
+            palette.setColor(role, QtGui.QColor('#efefef' if name == 'light' else '#303238'))
+        for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+            palette.setColor(role, QtGui.QColor('#202020' if name == 'light' else '#f0f0f0'))
+        palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor('#ffffff' if name == 'light' else '#25272b'))
+        app.setPalette(palette)
+        app.processEvents()
+        header = table.horizontalHeader()
+        expected_light = name == 'light'
+        assert (header.palette().color(QtGui.QPalette.ColorRole.Button).lightness() > 128) == expected_light
+        for control in (window.menu_bar, window.analysis_button, window.confidence_button, header):
+            palette = control.palette()
+            foreground = palette.color(QtGui.QPalette.ColorRole.ButtonText if isinstance(control, QtWidgets.QAbstractButton) else QtGui.QPalette.ColorRole.WindowText)
+            background = palette.color(QtGui.QPalette.ColorRole.Window)
+            assert abs(foreground.lightness() - background.lightness()) > 100, (name, control.objectName(), foreground.name(), background.name())
+        table.clearSelection()
+        table.setFocus()
+        window.raise_()
+        window.activateWindow()
+        wait(200)
+        QTest.mouseMove(window.sheet_tabs, window.sheet_tabs.tabRect(1).center())
+        wait(150)
+        tabs = window.sheet_tabs
+        tab_right = tabs.mapTo(window.sheet_strip, tabs.tabRect(tabs.count() - 1).topRight()).x()
+        add_left = window.add_sheet_button.mapTo(window.sheet_strip, QtCore.QPoint()).x()
+        gap = add_left - tab_right - 1
+        record('polish-table-' + name, window, hovered_tab=1, include_keyboard_toggle=True, tab_add_gap=gap)
+        assert gap == 0, ("gutter between outcome tabs and Add outcome", gap)
+        widths = [tabs.tabRect(i).width() for i in range(tabs.count())]
+        mouse_click(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(1).center())
+        assert window.model.current_sheet_id == tabs.tabData(1)
+        assert [tabs.tabRect(i).width() for i in range(tabs.count())] == widths
+        mouse_click(tabs, QtCore.Qt.MouseButton.LeftButton, pos=tabs.tabRect(0).center())
+        assert window.model.current_sheet_id == tabs.tabData(0)
+        record('polish-tabs-focus-' + name, window)
+        assert abs(window.add_sheet_button.height() - tabs.tabRect(0).height()) <= 1
+        table.setFocus()
+        QTest.mouseMove(window.add_sheet_button, window.add_sheet_button.rect().center())
+        wait(150)
+        record('polish-add-outcome-hover-' + name, window)
+        from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+        with patch.dict(window.model.current_sheet.settings, {}, clear=True):
+            setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95)
+        setup.show()
+        app.processEvents()
+        assert setup.style_cbo.currentText() == 'Default'
+        if setup.advanced_toggle.isChecked():
+            setup.advanced_toggle.click()
+        record('polish-advanced-collapsed-' + name, setup)
+        mouse_click(setup.advanced_toggle, QtCore.Qt.MouseButton.LeftButton)
+        app.processEvents()
+        assert setup.advanced_toggle.isChecked() and setup.advanced_panel.isVisible()
+        record('polish-advanced-' + name, setup)
+        setup.reject()
+    app.styleHints().unsetColorScheme()
+    app.setPalette(original_palette)
+    app.processEvents()
     def luminance(color):
         values = [value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4
                   for value in (color.redF(), color.greenF(), color.blueF())]

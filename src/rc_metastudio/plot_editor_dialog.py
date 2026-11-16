@@ -5,7 +5,7 @@
 import math
 from typing import TYPE_CHECKING
 
-from rc_metastudio.qt_layout import style_inline_error
+from rc_metastudio.qt_layout import style_inline_error, align_field_columns, add_color_swatch
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -17,8 +17,10 @@ from PyQt6.QtWidgets import (
     QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
+    QPushButton,
     QWidget,
 )
 
@@ -108,12 +110,12 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Sheet and arm comparison for standalone figures. Edit or clear to remove.")
         self.figure_caption.setMaxLength(1000)
-        caption_label = QLabel("Figure caption:", self)
+        caption_label = QLabel("Figure caption", self)
         caption_label.setBuddy(self.figure_caption)
         caption_row = self.style_layout.rowCount()
         caption_columns = self.style_layout.columnCount()
-        self.style_layout.addWidget(caption_label, caption_row, 0, 1, caption_columns)
-        self.style_layout.addWidget(self.figure_caption, caption_row + 1, 0, 1, caption_columns)
+        self.style_layout.addWidget(caption_label, caption_row, 0)
+        self.style_layout.addWidget(self.figure_caption, caption_row, 1, 1, caption_columns - 1)
         self._sroc_group = None
         if self.plot_type == "sroc":
             self._build_sroc_controls()
@@ -121,6 +123,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
         self.x_ticks_le.textChanged.connect(self._ticks_changed)
 
+        self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
+        self.color_btn.setText("Choose…")
+        self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
         )
@@ -138,10 +143,15 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             pass
         self.buttonBox.clicked.connect(self._button_clicked)
 
+        add_color_swatch(self.accent_color, self.accent_color_layout)
         self._load_params(image_path)
         self.setTabOrder(self.style_cbo, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
+        layouts = [self.style_layout, self.appearance_layout, self.gridLayout_2, self.default_layout, self.regression_layout, self.gridLayout_4]
+        if self._sroc_group is not None:
+            layouts.append(self._sroc_group.layout())
+        align_field_columns(layouts)
         size_plot_text_editor(self)
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
@@ -326,6 +336,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_curve_color = QLineEdit(self._sroc_group)
         self.sroc_confidence_color = QLineEdit(self._sroc_group)
         self.sroc_prediction_color = QLineEdit(self._sroc_group)
+        for field in (self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color):
+            field.setMaximumWidth(field.fontMetrics().height() * 6)
         self.sroc_curve_lty = QComboBox(self._sroc_group)
         self.sroc_confidence_lty = QComboBox(self._sroc_group)
         self.sroc_prediction_lty = QComboBox(self._sroc_group)
@@ -379,29 +391,48 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         def add_field(label_text, control):
             label = QLabel(label_text, self._sroc_group)
             label.setBuddy(control)
-            layout.addRow(label, control)
+            field = self._sroc_color_row(control) if control in (self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color) else control
+            layout.addRow(label, field)
 
-        add_field("Y-axis label:", self.sroc_ylabel)
-        add_field("Y-axis lower bound:", self.sroc_y_lower)
-        add_field("Y-axis upper bound:", self.sroc_y_upper)
-        add_field("Y-axis ticks:", self.sroc_y_ticks)
-        add_field("Marker area:", self.sroc_marker_area)
-        layout.addRow(self.sroc_show_labels)
-        layout.addRow(self.sroc_extrapolate)
-        add_field("Curve color:", self.sroc_curve_color)
-        add_field("Confidence color:", self.sroc_confidence_color)
-        add_field("Prediction color:", self.sroc_prediction_color)
-        add_field("Curve line style:", self.sroc_curve_lty)
-        add_field("Confidence line style:", self.sroc_confidence_lty)
-        add_field("Prediction line style:", self.sroc_prediction_lty)
-        add_field("Text size:", self.sroc_text_cex)
-        layout.addRow(self.sroc_show_confidence)
-        layout.addRow(self.sroc_show_prediction)
-        layout.addRow(self.sroc_show_summary)
-        layout.addRow(self.sroc_show_auc)
-        layout.addRow(self.sroc_show_curve_legend)
-        layout.addRow(self.sroc_show_marker_legend)
+        add_field("Y-axis label", self.sroc_ylabel)
+        add_field("Y-axis lower bound", self.sroc_y_lower)
+        add_field("Y-axis upper bound", self.sroc_y_upper)
+        add_field("Y-axis ticks", self.sroc_y_ticks)
+        add_field("Marker area", self.sroc_marker_area)
+        layout.addRow('', self.sroc_show_labels)
+        layout.addRow('', self.sroc_extrapolate)
+        add_field("Curve color", self.sroc_curve_color)
+        add_field("Confidence color", self.sroc_confidence_color)
+        add_field("Prediction color", self.sroc_prediction_color)
+        add_field("Curve line style", self.sroc_curve_lty)
+        add_field("Confidence line style", self.sroc_confidence_lty)
+        add_field("Prediction line style", self.sroc_prediction_lty)
+        add_field("Text size", self.sroc_text_cex)
+        layout.addRow('', self.sroc_show_confidence)
+        layout.addRow('', self.sroc_show_prediction)
+        layout.addRow('', self.sroc_show_summary)
+        layout.addRow('', self.sroc_show_auc)
+        layout.addRow('', self.sroc_show_curve_legend)
+        layout.addRow('', self.sroc_show_marker_legend)
         self.content_layout.addWidget(self._sroc_group)
+
+    def _sroc_color_row(self, edit):
+        row = QWidget(self._sroc_group)
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(edit)
+        button = QPushButton('Choose…', row)
+        button.setAccessibleName('Choose ' + edit.accessibleName())
+        button.clicked.connect(app_error_handler.safe_slot(
+            lambda checked=False: self._choose_sroc_color(edit), parent=self))
+        layout.addWidget(button)
+        add_color_swatch(edit, layout)
+        return row
+
+    def _choose_sroc_color(self, edit):
+        color = QColorDialog.getColor(QColor(edit.text()), self, edit.accessibleName())
+        if color.isValid():
+            edit.setText(color.name())
 
     def _load_params(self, image_path):
         self._loading_style = True
@@ -558,7 +589,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _set_accent_color(self, color):
         text = str(color or FOREST_STYLE_DEFAULT_COLORS["default"])
         self.accent_color.setText(text)
-        self.color_btn.setStyleSheet("background-color: %s; color: %s;" % (text, "white" if QColor(text).lightness() < 128 else "black"))
 
     def _set_text(self, widget, value):
         value = self._scalar(value)

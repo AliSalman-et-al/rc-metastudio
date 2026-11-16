@@ -422,7 +422,7 @@ def test_continuous_data_keyboard_and_accessibility_contract(monkeypatch):
         assert dialog.effect_metric_label.buddy() is dialog.effect_combo_box
         assert dialog.label_14.buddy() is dialog.effect_text_box
         assert dialog.label.buddy() is dialog.correlation_pre_post
-        assert dialog.simple_table.accessibleName() == "Continuous group summary data"
+        assert dialog.simple_table.accessibleName() == "Continuous arm summary data"
 
         dialog.effect_combo_box.setFocus()
         key_click(dialog.effect_combo_box, QtCore.Qt.Key.Key_Tab)
@@ -509,13 +509,13 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert dialog.content_scroll.widgetResizable()
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
-        assert not isinstance(dialog.simple_group, QtWidgets.QGroupBox)
-        assert not isinstance(dialog.effect_group, QtWidgets.QGroupBox)
-        assert dialog.effect_metric_label.text() == "Effect metric"
+        assert dialog.simple_group.title() == "Arm summaries"
+        assert dialog.effect_group.title() == "Effect estimate"
+        assert dialog.effect_metric_label.text() == "Effect measure"
         assert dialog.label_14.text() == "Estimate"
-        assert [dialog.label_15.text(), dialog.label_2.text()] == ["Lower", "Upper"]
-        assert dialog.label_15.buddy() is dialog.lower_text_box
-        assert dialog.label_2.buddy() is dialog.upper_text_box
+        assert dialog.lower_text_box.accessibleName() == "Lower confidence limit"
+        assert dialog.upper_text_box.accessibleName() == "Upper confidence limit"
+        assert dialog.interval_to_label.text() == "to"
         assert available.contains(dialog.frameGeometry())
         for table in (
             dialog.simple_table,
@@ -582,6 +582,10 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             )
             dialog.effect_combo_box.setCurrentIndex(smd_index)
             dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
+            app.processEvents()
+            # Explicit input-mode changes fit their content; subsequent edits
+            # must keep that settled geometry stable.
+            settled = QtCore.QRect(dialog.frameGeometry())
             dialog.correlation_pre_post.selectAll()
             key_clicks(dialog.correlation_pre_post, "0.5")
             dialog.g1_pre_post_table.setFocus()

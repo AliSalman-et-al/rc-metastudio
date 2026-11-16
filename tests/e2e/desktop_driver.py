@@ -104,11 +104,17 @@ def record_step(action, *widgets, **observations):
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
         if app.platformName() in {"windows", "xcb", "cocoa"}:
-            widget.raise_()
-            widget.activateWindow()
+            popup = isinstance(widget, QtWidgets.QMenu)
+            if popup:
+                assert widget.isVisible(), action
+            else:
+                widget.raise_()
+                widget.activateWindow()
             app.processEvents()
             cast(Callable[[int], None], QTest.qWait)(400)
-            if observations.get("capture_surface") == "desktop-composite":
+            # Activating a popup closes it; its layered window handle can also
+            # return black pixels on Windows. Capture the live desktop surface.
+            if popup or observations.get("capture_surface") == "desktop-composite":
                 capture = widget.screen().grabWindow(0)
                 ratio = capture.devicePixelRatio()
                 geometry = widget.frameGeometry()
@@ -120,6 +126,10 @@ def record_step(action, *widgets, **observations):
                 capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
+        if isinstance(widget, QtWidgets.QMenu):
+            pixels = capture.toImage()
+            assert len({pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                        for y in range(0, pixels.height(), 4)}) > 4, f"Blank menu capture: {action}"
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
         if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
@@ -263,12 +273,18 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3):
+def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=False, diagnostic_metrics=None):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
     record_step("analysis-action", window, method=method)
-    window.action_go.trigger()
+    if via_shortcut:
+        window.activateWindow()
+        window.tableView.setFocus()
+        cast(Callable[[int], None], QTest.qWait)(100)
+        key_click(window, QtCore.Qt.Key.Key_R, QtCore.Qt.KeyboardModifier.ControlModifier)
+    else:
+        window.action_go.trigger()
     app.processEvents()
     if window.model.get_current_data_type() == "diagnostic":
         metrics = next(
@@ -276,10 +292,14 @@ def analyze(app, window, method, *, digits=3):
             for w in app.topLevelWidgets()
             if isinstance(w, DiagnosticMetricsDialog) and w.isVisible()
         )
+        requested_metrics = (set(diagnostic_metrics) if diagnostic_metrics is not None else
+                             {'sens', 'spec', 'dor'} if method == 'diagnostic.reitsma' else {'dor'})
         for metric in metrics.SELECTABLE_METRICS:
             checkbox = metrics._metric_checkbox(metric)
-            if checkbox.isChecked() != (metric == "dor"):
-                mouse_click(checkbox, QtCore.Qt.MouseButton.LeftButton)
+            if checkbox.isChecked() != (metric in requested_metrics):
+                checkbox.setFocus()
+                key_click(checkbox, QtCore.Qt.Key.Key_Space)
+            assert checkbox.isChecked() == (metric in requested_metrics), metric
         mouse_click(metrics.btn_ok, QtCore.Qt.MouseButton.LeftButton)
         app.processEvents()
     dialog = next(
@@ -290,8 +310,13 @@ def analyze(app, window, method, *, digits=3):
     label = next(
         label for label, key in dialog.available_method_d.items() if key == method
     )
+    assert dialog.method_cbo_box.findText(label) >= 0, (method, label)
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
+    if confidence is not None:
+        sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
+        from analysis_matrix import set_parameter
+        set_parameter(app, dialog, 'conf.level', confidence)
     def precision_control():
         return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
                     if isinstance(control, QtWidgets.QSpinBox)
@@ -311,6 +336,7 @@ def analyze(app, window, method, *, digits=3):
                 left = control.mapTo(viewport, QtCore.QPoint()).x()
                 assert left >= 0 and left + control.width() <= viewport.width(), (control.objectName(), left, control.width(), viewport.width(), control.text() if isinstance(control, QtWidgets.QLabel) else "")
     assert precision.value() == digits, ("configured precision", precision.value(), digits)
+    assert dialog.current_method == method, ('executed method', dialog.current_method, method)
     record_step("analysis-configured", dialog, method=method, digits=precision.value())
     button = dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     assert button.isEnabled()
@@ -330,7 +356,10 @@ def analyze(app, window, method, *, digits=3):
     if selected is not None and not view.report_action.isChecked():
         viewport = required(view.graphics_view.viewport(), "figure viewport")
         plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
-        assert plot_width >= viewport.width() * .9, (plot_width, viewport.width(), view.zoom_control.value())
+        intrinsic_width = selected[1].boundingRect().width()
+        record_step('analysis-initial-fit', view, width=plot_width, viewport=viewport.width(), zoom=view.zoom_control.value())
+        assert view.zoom_control.value() <= 100, view.zoom_control.value()
+        assert plot_width >= min(intrinsic_width, viewport.width()) * .9, (plot_width, intrinsic_width, viewport.width(), view.zoom_control.value())
     if selected is not None and not view.report_action.isChecked():
         original_zoom = view.zoom_control.value()
         view.zoom_control.setValue(original_zoom + 50)
@@ -369,7 +398,7 @@ def analysis_dialog(app, window):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
             decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
             if sample == "amino" and "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))):
-                assert texts == ["0.08", "0.004", "1.44"], texts
+                assert texts == ["0.08", "0.0040", "1.44"], texts
             assert len(set(decimals)) <= 1, texts
         kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
         form = analysis_setup_dialog.AnalysisSetupDialog(
@@ -381,20 +410,20 @@ def analysis_dialog(app, window):
         from tests.python.gui.qt_test_support import wait
         wait(100)
         assert form.method_lbl.isVisible()
-        assert form.method_lbl.text().startswith("Analysis method:")
-        assert form.method_lbl.width() >= form.method_lbl.fontMetrics().horizontalAdvance("Analysis method:")
+        assert form.method_lbl.text().startswith("Analysis method")
+        assert form.method_lbl.width() >= form.method_lbl.fontMetrics().horizontalAdvance("Analysis method")
         assert (form.method_lbl.mapTo(form, QtCore.QPoint(form.method_lbl.width(), 0)).x()
                 <= form.method_cbo_box.mapTo(form, QtCore.QPoint(0, 0)).x()), (sample, form.method_lbl.geometry(), form.method_cbo_box.geometry())
         if sample == "amino":
             giamarellou = next(row for row in range(window.model.rowCount()) if "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))))
-            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "0.004"
+            assert str(window.model.data(window.model.index(giamarellou, window.model.OUTCOMES[1]))) == "0.0040"
             assert window.model.format_float(0.000401, 3) == "0.000401"
             assert window.tableView.columnWidth(window.model.columnCount() - 1) < 250
             record_step("slice2c-main", window)
             record_step("slice2c-analysis-collapsed", form)
         assert any(label.text() == "Effect measure" and label.isVisible() for label in form.findChildren(QtWidgets.QLabel))
         toggle = form.advanced_toggle
-        assert toggle.text().startswith("▸ Advanced")
+        assert toggle.text().startswith("Advanced") and toggle.arrowType() == QtCore.Qt.ArrowType.RightArrow
         assert isinstance(toggle, QtWidgets.QToolButton)
         assert not toggle.isChecked()
         collapsed_height = form.height()
@@ -405,7 +434,7 @@ def analysis_dialog(app, window):
         app.processEvents()
         assert form.height() > collapsed_height, (form.height(), collapsed_height)
         assert form.pos() == collapsed_position
-        assert toggle.text().startswith("▾ Advanced")
+        assert toggle.text().startswith("Advanced") and toggle.arrowType() == QtCore.Qt.ArrowType.DownArrow
         record_step("slice2c-analysis-expanded", form)
         form.hide()
         reopened = analysis_setup_dialog.AnalysisSetupDialog(
@@ -425,12 +454,13 @@ def analysis_dialog(app, window):
         expected_inference = inference.currentText()
 
         key_click(toggle, QtCore.Qt.Key.Key_Return)
+        app.processEvents()
         assert not toggle.isChecked()
         assert digits.value() == 4
         assert "Decimal places 4" in toggle.toolTip()
         assert expected_inference in toggle.toolTip()
-        assert toggle.text().startswith("▸ Advanced · ") and toggle.text().endswith(" changed")
-        assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12
+        assert toggle.text().startswith("Advanced · ") and toggle.arrowType() == QtCore.Qt.ArrowType.RightArrow and toggle.text().endswith(" changed")
+        assert toggle.width() >= toggle.fontMetrics().horizontalAdvance(toggle.text()) + 12, (toggle.width(), toggle.sizeHint().width(), toggle.text())
         record_step("advanced-collapsed", form, sample=sample, summary=toggle.text(), changed_options=toggle.toolTip())
         from tests.e2e.analysis_layout import check as check_tab_layout
         check_tab_layout(app, form, sample, record_step)
@@ -448,7 +478,7 @@ def assert_study_grid(app, window):
     model = window.model
     app.processEvents()
     assert model.headerData(0, QtCore.Qt.Orientation.Horizontal) == "Include"
-    assert model.headerData(model.NAME, QtCore.Qt.Orientation.Horizontal) == "Study Name"
+    assert model.headerData(model.NAME, QtCore.Qt.Orientation.Horizontal) == "Study name"
     index = model.index(0, model.NAME)
     assert index.data() == model.get_studies(False)[0].label
     rect = table.visualRect(index).adjusted(4, 4, -4, -4)
@@ -537,7 +567,7 @@ def sample_analysis(app, window, sample):
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.report_text.toPlainText()
-        assert "0.004 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
+        assert "0.0040 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
     view = analyze(app, window, method)
@@ -611,7 +641,7 @@ def add_named_sheet(app, window, name, diagnostic=False):
         assert isinstance(wizard, main_wizard.MainWizard)
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.DataTypePage)
-        assert wizard.windowTitle() == "Add Outcome"
+        assert wizard.windowTitle() == "Add outcome"
         record_step("add-sheet-data-type", wizard)
         mouse_click(page.diagnostic_Button if diagnostic else page.twoarm_means_Button, QtCore.Qt.MouseButton.LeftButton)
         wizard.next()
@@ -619,6 +649,7 @@ def add_named_sheet(app, window, name, diagnostic=False):
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.OutcomeNamePage)
         app.processEvents()
+        cast(Callable[[int], None], QTest.qWait)(100)
         edit = page.outcome_name_LineEdit
         assert edit.hasFocus()
         assert edit.selectedText() == edit.text()
@@ -835,7 +866,8 @@ def sheets_legacy(app, window):
         assert [window.sheet_tabs.tabText(i) for i in range(window.sheet_tabs.count())] == names
         for index, row in enumerate(rows):
             window.sheet_tabs.setCurrentIndex(index)
-            view = analyze(app, window, row["method"])
+            view = analyze(app, window, row["method"], diagnostic_metrics=("sens", "spec", "dor")
+                           if window.model.get_current_data_type() == "diagnostic" else None)
             actual = parsed_numeric_sections(view.results)
             assert actual == row["sections"], (filename, actual, row["sections"])
             record_step("legacy-original-numerics", view, file=filename, sha256=digest, sections=actual)
@@ -996,7 +1028,7 @@ def sheets(app, window):
     index = tabs.currentIndex()
     def delete_menu():
         menu = app.activePopupWidget()
-        action = next(a for a in menu.actions() if a.text() == "Delete")
+        action = next(a for a in menu.actions() if a.text() == f'Delete “{tabs.tabText(index)}”…')
         QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().done(QtWidgets.QMessageBox.StandardButton.Yes))
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, delete_menu)
@@ -1153,7 +1185,8 @@ def verify_sheet_strip(app, window, screens):
     index = tabs.currentIndex()
     def move_menu():
         menu = app.activePopupWidget()
-        assert {action.text() for action in menu.actions()} == {"Rename", "Delete", "Move left", "Move right"}
+        assert {action.text() for action in menu.actions() if not action.isSeparator()} == {
+            "Rename", "Add outcome…", f'Delete “{tabs.tabText(index)}”…', "Move left", "Move right"}
         action = next(action for action in menu.actions() if action.text() == "Move left")
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, move_menu)
@@ -1761,7 +1794,14 @@ def small_study_effects(app, window):
     assert selected is not None
     figure_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
     viewport_width = view.graphics_view.viewport().width()
-    assert figure_width >= viewport_width * .90, (figure_width, viewport_width)
+    assert selected[1] in view._svg_plot_items
+    renderer = selected[1].renderer()
+    body_px = (renderer.property('body_text_size') * selected[1].boundingRect().width()
+               / renderer.viewBoxF().width() * selected[1].scale())
+    assert body_px >= 12, body_px
+    if body_px > 12.01:
+        assert figure_width <= viewport_width, (figure_width, viewport_width)
+        assert selected[1].sceneBoundingRect().height() < view.graphics_view.viewport().height()
     assert view._figure_zoom_percent >= 50, view._figure_zoom_percent
     assert all(item.textWidth() >= viewport_width * .90 for item in view._wrapped_text_items)
     assert view.results.images, dict(view.texts)
@@ -1845,9 +1885,17 @@ def calculator(app, window, family):
                 assert readout_bounds.bottom() < footer_bounds.top(), (readout_bounds, footer_bounds)
                 assert dialog.content_scroll.verticalScrollBar().maximum() == 0
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
-                assert "SE" in dialog.wald_readout.text() and "Two-sided P" in dialog.wald_readout.text()
+                assert "SE" in dialog.wald_readout.text() and "two-sided p" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
-                assert max(widths) - min(widths) <= 1, widths
+                header = required(dialog.metric_readout.horizontalHeader())
+                for col, width in enumerate(widths):
+                    text_width = max(header.fontMetrics().horizontalAdvance(line)
+                                     for line in required(dialog.metric_readout.horizontalHeaderItem(col)).text().splitlines())
+                    cell_width = max(dialog.metric_readout.fontMetrics().horizontalAdvance(
+                        required(dialog.metric_readout.item(row, col)).text())
+                                     for row in range(dialog.metric_readout.rowCount()))
+                    assert width >= max(text_width, cell_width), (col, width, text_width, cell_width)
+                assert dialog.metric_readout.horizontalScrollBar().maximum() == 0
             assert dialog.grab().save(str(WORK / f"slice8a-calculator-{family}.png"))
             for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                 width = field.fontMetrics().horizontalAdvance(field.text())
@@ -1944,6 +1992,7 @@ def calculator(app, window, family):
             )
             mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
+            traceback.print_exc()
             callback_errors.append(error)
             dialog.reject()
 
@@ -2329,7 +2378,8 @@ try:
                    for w in app.topLevelWidgets())
     assert window.statusBar().currentMessage() == ""
     assert window.cursor().shape() != QtCore.Qt.CursorShape.WaitCursor
-    assert window.dataset_file_lbl.text() == "Ready to create or open a dataset · Untitled dataset"
+    assert window.windowTitle() == "Untitled project — RC MetaStudio"
+    assert not window.confidence_button.isVisible()
     if EVIDENCE is not None and os.environ.get("RCMS_DRIVE_STARTED"):
         import time
         app.processEvents()
@@ -2418,10 +2468,16 @@ try:
             header = exported.read(24)
         assert header[:8] == b"\x89PNG\r\n\x1a\n"
         width, height = struct.unpack(">II", header[16:24])
-        # The user export retains 600 dpi; it must not be decoded by Qt.
-        # Windows font metrics produce a slightly taller physical figure.
-        expected_height = 19694 if sys.platform == "win32" else 19679
-        assert (width, height) == (9676, expected_height), (width, height)
+        # Validate 600 pixels per SVG inch without decoding this huge bitmap.
+        # SVG physical extents are rounded to 0.01 pt; raster extents round up.
+        from xml.etree import ElementTree as ET
+        svg = ET.parse(artifact.display_path()).getroot()
+        assert all(svg.attrib[key].endswith("pt") for key in ("width", "height"))
+        expected_pixels = [float(svg.attrib[key].removesuffix("pt")) * 600 / 72
+                           for key in ("width", "height")]
+        assert all(abs(actual - expected) < 1.05 for actual, expected in
+                   zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
+        assert width * height * 4 > 256 * 1024**2
         assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
         record_step("meantime-raster-export", view, width=width, height=height)
         results = view.results
@@ -2444,6 +2500,17 @@ try:
         run(app, window, WORK, record_step, scenario)
     elif scenario == "analysis-dialog":
         analysis_dialog(app, window)
+    elif scenario == "ui-fine-tuning":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.ui_fine_tuning import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "ui-fable-polish":
+        from tests.e2e.ui_fable_polish import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "ui-design-direction":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
+        from tests.e2e.ui_design_direction import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review1-design":
         sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.desktop_navigation_workflows import run
@@ -2461,6 +2528,15 @@ try:
         from tests.e2e.manuscript_export import run
         run(app, window, WORK, ROOT, record_step, analyze,
             direct_write=scenario == "manuscript-export-direct")
+    elif scenario == "manuscript-split-figure":
+        from tests.e2e.manuscript_split_figure import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == "results-presentation":
+        from tests.e2e.results_presentation import run
+        run(app, window, WORK, ROOT, record_step, analyze)
+    elif scenario == 'results-values':
+        from tests.e2e.results_values import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("amino", "continuous", "lymph"):
         sample_analysis(app, window, scenario)
     elif scenario == "rm5-import":

@@ -377,8 +377,7 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
         assert window.workspace.path is None
         assert window.workspace.is_dirty
         assert not window.workspace.can_undo
-        assert "Open Project" not in window.dataset_file_lbl.text()
-        assert "Unsaved changes" in window.dataset_file_lbl.text()
+        assert " *" in window.windowTitle()
 
         save_dialog_calls = []
         monkeypatch.setattr(
@@ -940,12 +939,12 @@ def test_opening_a_second_project_updates_the_status_path_atomically(qapp):
     second = str(ROOT / "sample_projects" / "BCG.rcms")
     try:
         assert window.open(first) is True
-        assert window.dataset_file_lbl.toolTip() == first
+        assert window.windowFilePath() == first
         assert "lymph.rcms" in window.windowTitle()
         assert window.open(second) is True
         assert window.model.dataset.title == "BCG"
-        assert window.dataset_file_lbl.toolTip() == second
+        assert window.windowFilePath() == second
         assert "BCG.rcms" in window.windowTitle()
-        assert first not in window.dataset_file_lbl.text()
+        assert first != window.windowFilePath()
     finally:
         _close_shell(app, window)

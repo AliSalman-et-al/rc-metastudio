@@ -46,12 +46,12 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             == QtWidgets.QSizePolicy.Policy.Expanding
         )
         assert [button.text() for button in (getattr(window.start_page, name) for name in ("create_button", "import_button", "open_button"))] == [
-            "Create dataset", "Import data", "Open project"]
+            "New project", "Import data", "Open project"]
         labels = [label.text() for label in window.start_page.findChildren(QtWidgets.QLabel)]
         assert "Recent projects" in labels
         assert "From data to results" not in labels
         assert not window.sheet_strip.isVisible()
-        assert window.add_sheet_button.toolTip() == "Add sheet"
+        assert window.add_sheet_button.toolTip() == "Add outcome"
         assert window.sheet_tabs.expanding() is False
         assert window.sheet_tabs.isMovable()
         assert window.action_auto_fit_columns.text() == "Fit columns"
@@ -139,45 +139,6 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     assert owner.workspace.undo() is False
 
 
-def test_runtime_content_changes_do_not_resize_or_reposition_visible_main(qapp):
-    from rc_metastudio import main_window
-
-    window = main_window.MainWindow()
-    window.showNormal()
-    window.resize(920, 640)
-    window.move(40, 30)
-    window.show()
-    qapp.processEvents()
-    before = window.frameGeometry()
-
-    window.cl_label.setText("A very long runtime status message " * 30)
-    window.dataset_file_lbl.setText(
-        "Open Project: <font color='red'>C:/"
-        + "a-very-long-path/" * 30
-        + "study.rcms</font>"
-    )
-    window.model.reset_model()
-    qapp.processEvents()
-
-    try:
-        assert window.frameGeometry() == before
-        project_center = window.dataset_file_lbl.mapToGlobal(window.dataset_file_lbl.rect().center()).y()
-        confidence_center = window.cl_label.mapToGlobal(window.cl_label.rect().center()).y()
-        assert abs(project_center - confidence_center) <= 1
-        assert window.statusbar.isAncestorOf(window.dataset_file_lbl)
-        assert window.cl_label.toolTip().startswith("A very long runtime status")
-        assert window.dataset_file_lbl.toolTip().startswith("Open Project: C:/")
-        assert "<font" not in window.dataset_file_lbl.toolTip()
-        assert (
-            window.dataset_file_lbl.sizePolicy().horizontalPolicy()
-            == QtWidgets.QSizePolicy.Policy.Ignored
-        )
-    finally:
-        window.hide()
-        window.deleteLater()
-        qapp.processEvents()
-
-
 def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
     from rc_metastudio import main_window
     from rc_metastudio import qt_layout
@@ -190,8 +151,7 @@ def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
             window.centralwidget,
             window.menu_file,
             window.sheet_tabs,
-            window.dataset_file_lbl,
-            window.cl_label,
+            window.confidence_button,
         ):
             assert widget.font().family() == inherited_family
 

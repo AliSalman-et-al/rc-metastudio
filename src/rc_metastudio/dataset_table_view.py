@@ -83,6 +83,20 @@ def _connect_action(action, callback):
 class DatasetTableView(QtWidgets.QTableView):
     dataDirtied = pyqtSignal()
 
+    def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
+        super().paintEvent(event)
+        if self.main_gui is None or self.main_gui.model.current_outcome_name is None or self.main_gui.model.get_studies():
+            return
+        viewport = required(self.viewport(), 'study grid viewport')
+        rect = viewport.rect().adjusted(24, self.rowHeight(0) * 3, -24, -24)
+        if rect.height() < self.fontMetrics().height() * 3:
+            return
+        painter = QtGui.QPainter(viewport)
+        painter.setPen(self.palette().color(QtGui.QPalette.ColorRole.PlaceholderText))
+        painter.drawText(rect, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap,
+                         'Type a study name in row 1, paste rows from a spreadsheet, or use Import data.')
+        painter.end()
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
@@ -96,6 +110,9 @@ class DatasetTableView(QtWidgets.QTableView):
         self.main_gui: MainWindowProtocol | None = None
 
         header = required(self.horizontalHeader(), "workspace column header")
+        header_font = header.font()
+        header_font.setBold(True)
+        header.setFont(header_font)
         header.sectionClicked.connect(
             app_error_handler.safe_slot(self.header_clicked, parent=self)
         )
@@ -313,7 +330,7 @@ class DatasetTableView(QtWidgets.QTableView):
             arm_name = self.model().arm_names[arm_index]
 
             # renaming
-            action_rename = QAction("Rename group %s…" % arm_name, self)
+            action_rename = QAction("Rename arm %s…" % arm_name, self)
             _connect_action(
                 action_rename,
                 lambda: self._main_gui().edit_arm_name(arm_name),
@@ -863,6 +880,44 @@ class DatasetTableView(QtWidgets.QTableView):
 class StudyDelegate(QItemDelegate):
     def __init__(self, parent=None):
         super(StudyDelegate, self).__init__(parent)
+
+    @staticmethod
+    def _check_rect(option):
+        style = required(option.widget.style() if option.widget else QApplication.style(), "table checkbox style")
+        width = style.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_IndicatorWidth, option, option.widget)
+        height = style.pixelMetric(QtWidgets.QStyle.PixelMetric.PM_IndicatorHeight, option, option.widget)
+        rect = QtCore.QRect(0, 0, width, height)
+        rect.moveCenter(option.rect.center())
+        return rect
+
+    def paint(self, painter, option, index):
+        state = index.data(Qt.ItemDataRole.CheckStateRole)
+        if state is None:
+            super().paint(painter, option, index)
+            return
+        self.drawBackground(painter, option, index)
+        rect = self._check_rect(option)
+        self.drawCheck(painter, option, rect, state)
+        self.drawFocus(painter, option, rect.adjusted(-3, -3, 3, 3))
+
+    def editorEvent(self, event, model, option, index):
+        state = index.data(Qt.ItemDataRole.CheckStateRole)
+        if state is None:
+            return super().editorEvent(event, model, option, index)
+        if not model.flags(index) & Qt.ItemFlag.ItemIsEnabled:
+            return False
+        if isinstance(event, QtGui.QMouseEvent):
+            if event.button() != Qt.MouseButton.LeftButton or not self._check_rect(option).contains(event.position().toPoint()):
+                return False
+            if event.type() != QEvent.Type.MouseButtonRelease:
+                return True
+        elif isinstance(event, QKeyEvent):
+            if event.key() not in (Qt.Key.Key_Space, Qt.Key.Key_Select):
+                return False
+        else:
+            return False
+        checked = Qt.CheckState.Unchecked if state == Qt.CheckState.Checked else Qt.CheckState.Checked
+        return model.setData(index, checked, Qt.ItemDataRole.CheckStateRole)
 
     def eventFilter(
         self, editor: QObject | None, event: QEvent | None

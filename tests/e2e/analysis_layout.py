@@ -17,7 +17,8 @@ def check(app, form, sample, record):
     before = form.frameGeometry()
     assert available.contains(before), (sample, before, available)
     tabs = form.specs_tab
-    plots = next(i for i in range(tabs.count()) if tabs.tabText(i).casefold() == 'plots')
+    plots = tabs.indexOf(form.plot_tab)
+    assert plots >= 0 and tabs.tabText(plots) in ('Plots', 'Forest plot')
     bar = tabs.tabBar()
     assert bar is not None
     mouse_click(bar, QtCore.Qt.MouseButton.LeftButton, pos=bar.tabRect(plots).center())

@@ -297,7 +297,8 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         assert total_size > 0
         if total_size == 0:
             pytest.fail("results splitter has no allocated space")
-        assert sizes[0] == restored.nav_tree.sizeHintForColumn(0) + 12
+        assert sizes[0] >= restored.nav_tree.minimumWidth()
+        assert sizes[0] / total_size == pytest.approx(placement["splitter_proportions"][0], abs=.02)
     finally:
         _dispose(restored, qapp)
 
@@ -313,7 +314,7 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
         total_size = sum(sizes)
         if total_size == 0:
             pytest.fail("results splitter has no allocated space")
-        assert sizes[0] == window.nav_tree.sizeHintForColumn(0) + 12
+        assert sizes[0] >= window.nav_tree.minimumWidth()
         assert sizes[1] / total_size >= 0.70
     finally:
         _dispose(window, qapp)

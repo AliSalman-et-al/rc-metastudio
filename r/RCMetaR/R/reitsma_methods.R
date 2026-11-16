@@ -251,7 +251,10 @@ rcmetar.reitsma.display.interval <- function(interval, level, kind="CI", digits=
         paste0("Upper bound (", rcmetar.reitsma.display.level(level), "% ", kind, ")")
     )
     values <- c(interval[["estimate"]], interval[["lower"]], interval[["upper"]])
-    stats::setNames(vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits), labels)
+    display <- stats::setNames(vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits), labels)
+    rcmetar.numeric.fields(display, 1:3,
+      c("estimate", if (kind == "PI") c("pi_lower", "pi_upper") else c("ci_lower", "ci_upper")),
+      values, "proportion", c(NA, 100*level, 100*level))
 }
 
 rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
@@ -277,7 +280,7 @@ rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
     upper.label <- paste0("Upper bound (", rcmetar.reitsma.display.level(level), "% interval)")
     display[[lower.label]] <- vapply(ratios[rows, 3L], rcmetar.reitsma.display.number, character(1), digits=digits)
     display[[upper.label]] <- vapply(ratios[rows, 4L], rcmetar.reitsma.display.number, character(1), digits=digits)
-    display
+    rcmetar.numeric.fields(display, 1:4, rep("value", 4), ratios[rows, 1:4], header.row=FALSE)
 }
 
 rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
@@ -291,12 +294,13 @@ rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
         "Holling (adjusted), method 2"=if (is.data.frame(i2)) i2[["HollingAdjusted2"]] else NA_real_,
         "Holling (adjusted), method 3"=if (is.data.frame(i2)) i2[["HollingAdjusted3"]] else NA_real_
     )
-    data.frame(
+    display <- data.frame(
         Measure=names(values),
         `I-squared (%)`=vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits),
         check.names=FALSE,
         row.names=NULL
     )
+    rcmetar.numeric.fields(display, 2L, "value", values, "proportion", header.row=FALSE)
 }
 
 rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {

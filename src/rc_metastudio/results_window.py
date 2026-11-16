@@ -3,13 +3,15 @@
 """Render and export meta-analysis results."""
 
 import textwrap
-import gzip
 import math
 import csv
 import io
 import re
 from html import escape
 from pathlib import Path
+from rc_metastudio.svg_rendering import svg_bytes_for_qt
+from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
+from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
 from dataclasses import replace
 from types import MappingProxyType
@@ -23,14 +25,20 @@ from PyQt6.QtCore import (
     QTimer,
     QSignalBlocker,
     Qt,
+    QSize,
+    QSettings,
 )
 from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
     QFont,
     QFontMetrics,
+    QKeySequence,
+    QIcon,
     QImage,
     QPainter,
+    QPen,
+    QPalette,
     QPixmap,
     QResizeEvent,
     QShowEvent,
@@ -42,6 +50,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QGraphicsItem,
     QGraphicsPixmapItem,
+    QGraphicsRectItem,
     QGraphicsScene,
     QGraphicsTextItem,
     QMainWindow,
@@ -59,6 +68,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QWidget,
     QVBoxLayout,
+    QHBoxLayout,
     QToolBar,
     QAbstractItemView,
 )
@@ -83,6 +93,7 @@ from rc_metastudio.settings import (
     load_plot_export_format,
     save_plot_export_format,
     restore_results_window_state,
+    RESULTS_WORKSPACE_GROUP,
     save_results_window_state,
 )
 
@@ -224,9 +235,7 @@ def _pixmap_with_white_background(pixmap):
 
 
 def _svg_bytes_with_white_background(path):
-    opener = gzip.open if str(path).lower().endswith(".svgz") else open
-    with opener(path, "rb") as svg_file:
-        svg = svg_file.read()
+    svg = svg_bytes_for_qt(path)
     root = re.search(rb"<svg\b[^>]*>", svg, flags=re.IGNORECASE)
     if root is None:
         return svg
@@ -336,6 +345,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.y_coord = 5.0
 
         self._restored_splitter_proportions = restored_state["splitter_proportions"]
+        self._has_saved_splitter = QSettings().contains(RESULTS_WORKSPACE_GROUP + "/splitter_proportions")
         self._splitter_restore_pending = True
 
         self.scene = QGraphicsScene(self)
@@ -374,18 +384,44 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         entries = [("Manuscript", "manuscript"), ("Text report", ""), ("Tables", None)]
         if self.results.details:
             entries.append(("Settings", "model-configuration"))
-        for index, (title, anchor) in enumerate(entries):
+        for title, anchor in entries:
             item = QTreeWidgetItem([title])
-            if title == "Settings":
-                index = 2 + sum(section.kind == "text" and section.source_key != "Weights" and section.semantic_id != "text:references" for section in self.results.sections)
-            self.nav_tree.insertTopLevelItem(index, item)
-            item.setToolTip(0, "Read the report" if title == "Text report" else "Copy or export numerical tables" if title == "Tables" else "Inspect the executed model and settings")
+            self.nav_tree.addTopLevelItem(item)
+            item.setToolTip(0, {"Manuscript": "Read the manuscript report", "Text report": "Read the full text report", "Tables": "Copy or export numerical tables", "Settings": "Inspect the executed model and settings"}[title])
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
-        self.nav_tree.resizeColumnToContents(0)
-        self.nav_tree.setFixedWidth(self.nav_tree.sizeHintForColumn(0) + 12)
+        self.nav_tree.setMinimumWidth(min(self.nav_tree.sizeHintForColumn(0) + 12, self.fontMetrics().height() * 12))
+        required(self.nav_tree.header(), "Results navigation header").setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.nav_tree.setRootIsDecorated(False)
+        self._refresh_navigation_palette()
+        navigation = []
+        pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}
+        for index in range(self.nav_tree.topLevelItemCount()):
+            item = required(self.nav_tree.topLevelItem(index), 'result navigation item')
+            action = pages.get(item.text(0))
+            if action is None:
+                action = QAction(item.text(0), self)
+                action.triggered.connect(lambda checked=False, item=item: self.nav_tree.setCurrentItem(item))
+            if index < 9:
+                action.setShortcuts([*action.shortcuts(), QKeySequence(f'Ctrl+{index + 1}')])
+            action.setEnabled(not item.isDisabled())
+            self.addAction(action)
+            navigation.append(action)
+        self.results_menu.insertActions(self.copy_report_action, navigation)
+        self.results_menu.insertSeparator(self.copy_report_action)
         self._show_initial_result()
+
+    def _refresh_navigation_palette(self):
+        palette = QPalette(QApplication.palette())
+        highlight = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight)
+        text = palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText)
+        self.nav_tree.setStyleSheet(f'QTreeWidget::item:selected {{ background-color: {highlight.name()}; color: {text.name()}; }}')
+        for role in (QPalette.ColorRole.Highlight, QPalette.ColorRole.HighlightedText):
+            palette.setColor(QPalette.ColorGroup.Inactive, role, palette.color(QPalette.ColorGroup.Active, role))
+        self.nav_tree.setPalette(palette)
 
     def _show_initial_result(self):
         self._fit_width_active = True
@@ -406,24 +442,51 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         identity = self.results.identity or "Analysis results"
         parent = self.parent()
         self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
-        sheet_name = self._source_sheet.name if self._source_sheet else "Results"
-        self.setWindowTitle(sheet_name + " — " + identity.split(" — ")[0])
-        self.verticalLayout.setContentsMargins(6, 6, 6, 6)
-        self.verticalLayout.setSpacing(4)
+        self.setWindowTitle(identity.splitlines()[0])
+        first, *rest = identity.partition(" — ")[2].splitlines() if " — " in identity else identity.splitlines()
+        name, separator, description = first.partition(" · ")
+        details = [description] if separator else []
+        details.extend(line.removeprefix("Comparison: ").removeprefix("Group: ").removeprefix("Arm: ")
+                       for line in rest if line)
+        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
+        if study_count:
+            details.append('k = ' + study_count)
+        models, confidence = self._identity_model_details(self.results.details)
+        details.extend(model + (f' ({estimator})' if estimator else '')
+                       for model, estimator in dict.fromkeys(models))
+        details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
+        details.extend(dict.fromkeys(confidence))
+        self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
+                                     + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
+        self.result_identity.setToolTip(identity + '\n' + self.results.details)
+        page_margin = round(self.fontMetrics().height() * 1.5)
+        self.result_identity.setContentsMargins(page_margin, 0, page_margin, 0)
+        self.results_body_layout.setSpacing(round(self.fontMetrics().height() * .5))
+        margin = round(self.fontMetrics().height() * .75)
+        self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
+        self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    @staticmethod
+    def _identity_model_details(details):
+        models = []
+        confidence = []
+        for line in details.splitlines():
+            if line.startswith('Model: '):
+                models.append((line.removeprefix('Model: '), ''))
+            elif line.startswith('Estimator: ') and models:
+                model, estimator = models[-1]
+                value = line.removeprefix('Estimator: ')
+                models[-1] = (model, estimator + ', ' + value if estimator else value)
+            elif line.startswith('Confidence level: '):
+                confidence.append(line.removeprefix('Confidence level: ') + ' CI')
+        return models, confidence
 
     def _setup_manuscript_page(self):
         from rc_metastudio.manuscript_report import ManuscriptReport
         self.manuscript = ManuscriptReport.from_result(self.results)
         self.manuscript_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.manuscript_page)
-        actions = QToolBar("Manuscript text", self.manuscript_page)
-        actions.setMovable(False)
-        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
-            action = QAction('Copy ' + name, actions)
-            action.triggered.connect(lambda checked=False, value=text: required(QApplication.clipboard(), "clipboard").setText(value))
-            actions.addAction(action)
-        layout.addWidget(actions)
         self.manuscript_text = QTextBrowser(self.manuscript_page)
         self._manuscript_base_font = QFont(self.font())
         self._manuscript_base_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
@@ -435,9 +498,38 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         option = manuscript_document.defaultTextOption()
         option.setWrapMode(QTextOption.WrapMode.WordWrap)
         manuscript_document.setDefaultTextOption(option)
-        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True)).replace('solid black', 'solid ' + self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()).replace(' to ', '\u00a0to\u00a0'))
+        self._refresh_manuscript_theme()
         layout.addWidget(self.manuscript_text)
         self.content_stack.addWidget(self.manuscript_page)
+
+    def _refresh_manuscript_theme(self):
+        scrollbar = required(self.manuscript_text.verticalScrollBar(), "manuscript scrollbar")
+        position = scrollbar.value()
+        color = self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()
+        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True))
+                                     .replace('solid black', 'solid ' + color).replace(' to ', '\u00a0to\u00a0'))
+        scrollbar.setValue(position)
+
+    def _refresh_theme(self):
+        self._refresh_navigation_palette()
+        for item in self._wrapped_text_items:
+            item.setDefaultTextColor(self.palette().color(self.foregroundRole()))
+        self._refresh_manuscript_theme()
+        if hasattr(self, "result_table"):
+            header = required(self.result_table.horizontalHeader(), "result table header")
+            header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); padding: 0 0.5em; }")
+        for item in (*self._svg_plot_items, *self._raster_plot_items):
+            for child in item.childItems():
+                if isinstance(child, QGraphicsRectItem):
+                    pen = QPen(self.palette().color(QPalette.ColorRole.Mid))
+                    pen.setCosmetic(True)
+                    child.setPen(pen)
+
+    def changeEvent(self, event: QEvent | None) -> None:
+        super().changeEvent(event)
+        if event is not None and event.type() in (QEvent.Type.PaletteChange, QEvent.Type.ApplicationPaletteChange) and hasattr(self, "manuscript_text"):
+            self._refresh_navigation_palette()
+            QTimer.singleShot(0, self._refresh_theme)
 
     def _setup_report_document(self):
         self.report_text = QTextBrowser(self.content_stack)
@@ -490,13 +582,20 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for section in self.manuscript.sections:
             for table in section.tables:
                 self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith(("Summary", "summary")) else section.title + " — " + table.title))
-        layout.addWidget(self.table_selector)
+        self.table_selector.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.table_selector.setMinimumWidth(0)
+        self.table_header_layout = QHBoxLayout()
+        self.table_header_layout.addWidget(self.table_selector)
+        self.table_header_layout.addStretch()
+        layout.addLayout(self.table_header_layout)
         self.result_table = QTableWidget(self.tables_page)
         self.result_table.setTabKeyNavigation(False)
         self.result_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.result_table.setAlternatingRowColors(True)
+        self.result_table.setShowGrid(False)
         self.result_table.setWordWrap(False)
         header = required(self.result_table.horizontalHeader(), "result table column header")
+        header.setStyleSheet("QHeaderView::section { border: 0; border-bottom: 1px solid palette(mid); padding: 0 0.5em; }")
         header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         header.setStretchLastSection(False)
         header.setResizeContentsPrecision(-1)
@@ -507,9 +606,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
-        controls = self.table_controls = QToolBar("Table actions", self.tables_page)
-        controls.setMovable(False)
-        controls.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.copy_table_action = QAction("Copy table", self)
         self.copy_table_action.triggered.connect(self._copy_table)
         copy_shortcut = QAction(self.result_table)
@@ -517,11 +613,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         copy_shortcut.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         copy_shortcut.triggered.connect(self._copy_table)
         self.result_table.addAction(copy_shortcut)
-        self.export_table_action = QAction("Export table CSV…", self)
+        self.export_table_action = QAction("Export formatted CSV…", self)
         self.export_table_action.triggered.connect(app_error_handler.safe_slot(self._export_table, parent=self))
-        for action in (self.copy_table_action, self.export_table_action):
-            controls.addAction(action)
-        layout.addWidget(controls)
+        self.export_values_action = QAction("Export values CSV…", self)
+        self.export_values_action.triggered.connect(app_error_handler.safe_slot(self._export_values, parent=self))
+        for action in (self.export_table_action, self.export_values_action):
+            action.setIcon(QIcon(':/icons/actions/export.svg'))
+            button = QToolButton(self.tables_page)
+            button.setDefaultAction(action)
+            button.setAutoRaise(True)
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+            self.table_header_layout.addWidget(button)
         layout.addStretch()
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
@@ -531,6 +633,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not 0 <= index < len(self._report_tables):
             return
         table = self._report_tables[index]
+        self.export_values_action.setEnabled(bool(table.quantities))
+        self.export_values_action.setStatusTip('Export exact producer values, scales and interval levels' if table.quantities else 'This table holds formatted output only')
+        self.export_values_action.setToolTip(self.export_values_action.statusTip())
         self.result_table.clear()
         self.result_table.setColumnCount(len(table.headers))
         self.result_table.setRowCount(len(table.rows))
@@ -545,6 +650,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if _numeric_cell(cell):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 self.result_table.setItem(row_index, column_index, item)
+        header_font = QFont(self.result_table.font())
+        header_font.setBold(True)
+        required(self.result_table.horizontalHeader(), "result table header").setFont(header_font)
+        numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
+        for column_index in range(len(table.headers)):
+            alignment = Qt.AlignmentFlag.AlignRight if numeric[column_index] else Qt.AlignmentFlag.AlignLeft
+            required(self.result_table.horizontalHeaderItem(column_index), "result column header").setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
         self._size_result_table_columns()
 
     def _size_result_table_columns(self):
@@ -561,47 +673,64 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             metrics = header.fontMetrics()
             minimums = []
             for column, item in enumerate(headers):
-                minimum = max(
-                    header.minimumSectionSize(),
-                    max(metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()) + 8,
-                    table.sizeHintForColumn(column),
-                )
-                for row in range(table.rowCount()):
-                    cell = table.item(row, column)
-                    if cell is None:
-                        continue
-                    font = cell.data(Qt.ItemDataRole.FontRole)
-                    cell_metrics = QFontMetrics(font) if font is not None else table.fontMetrics()
-                    minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
-                                               for line in cell.text().splitlines()), default=0) + 8)
+                minimum = self._result_column_minimum(column, item, header, metrics)
                 minimums.append(minimum)
-            spare, remainder = divmod(max(0, required(table.viewport(), "table viewport").width() - sum(minimums)), count)
             for column, minimum in enumerate(minimums):
-                table.setColumnWidth(column, minimum + spare + (column < remainder))
+                table.setColumnWidth(column, minimum + 16)
+            table.setMaximumWidth(sum(table.columnWidth(column) for column in range(count)) + 2 * table.frameWidth()
+                                  + required(table.verticalScrollBar(), "table vertical scrollbar").sizeHint().width())
             table.resizeRowsToContents()
             scrollbar_height = (required(table.horizontalScrollBar(), "table scrollbar").sizeHint().height()
-                                if sum(minimums) > required(table.viewport(), "table viewport").width() else 0)
+                                if sum(table.columnWidth(column) for column in range(count)) > required(table.viewport(), "table viewport").width() else 0)
             table.setMaximumHeight(header.sizeHint().height()
                                    + sum(table.rowHeight(row) for row in range(table.rowCount()))
                                    + 2 * table.frameWidth() + scrollbar_height)
         finally:
             self._sizing_result_table = False
 
-    def _table_payload(self, delimiter, selected=False):
+    def _result_column_minimum(self, column, item, header, metrics):
+        table = self.result_table
+        minimum = max(
+            header.minimumSectionSize(),
+            max((metrics.horizontalAdvance(line) for line in required(item, "table header").text().splitlines()), default=0) + 8,
+            table.sizeHintForColumn(column),
+        )
+        for row in range(table.rowCount()):
+            cell = table.item(row, column)
+            if cell is None:
+                continue
+            font = cell.data(Qt.ItemDataRole.FontRole)
+            cell_metrics = QFontMetrics(font) if font is not None else table.fontMetrics()
+            minimum = max(minimum, max((cell_metrics.horizontalAdvance(line)
+                                       for line in cell.text().splitlines()), default=0) + 8)
+        return minimum
+
+    def _table_rows(self, selected=False):
         table = self._report_tables[self.table_selector.currentIndex()]
-        rows = [table.headers, *table.rows]
+        headers, rows = table.headers, table.rows
         indexes = self.result_table.selectedIndexes() if selected else []
         if indexes:
             top, bottom = min(item.row() for item in indexes), max(item.row() for item in indexes)
             left, right = min(item.column() for item in indexes), max(item.column() for item in indexes)
-            rows = [row[left:right + 1] for row in table.rows[top:bottom + 1]]
+            headers = ()
+            rows = tuple(row[left:right + 1] for row in table.rows[top:bottom + 1])
+        return headers, rows
+
+    def _table_payload(self, delimiter, selected=False):
+        headers, rows = self._table_rows(selected)
         stream = io.StringIO(newline="")
-        csv.writer(stream, delimiter=delimiter, lineterminator="\n").writerows(rows)
+        csv.writer(stream, delimiter=delimiter, lineterminator="\n").writerows([headers, *rows] if headers else rows)
         return stream.getvalue()
 
     def _copy_table(self):
-        required(QApplication.clipboard(), "system clipboard").setText(self._table_payload("\t", selected=True))
-        self.statusbar.showMessage("Table copied")
+        from PyQt6.QtCore import QMimeData
+        from rc_metastudio.result_formatting import table_html
+        headers, rows = self._table_rows(selected=True)
+        mime = QMimeData()
+        mime.setText(self._table_payload("\t", selected=True))
+        mime.setHtml(table_html(headers, rows))
+        required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
+        self.statusbar.showMessage("Table copied", 4000)
 
     def _export_table(self):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -609,7 +738,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 stream.write(self._table_payload(","))
-            self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}")
+            self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}", 4000)
+
+    def _export_values(self):
+        table = self._report_tables[self.table_selector.currentIndex()]
+        if not table.quantities:
+            return
+        path, _filter = QFileDialog.getSaveFileName(self, 'Export numeric result values', self._export_name(table.title + '-values', 'csv'), 'CSV values (*.csv)')
+        if not path:
+            return
+        with Path(path).open('w', encoding='utf-8-sig', newline='') as stream:
+            writer = csv.writer(stream, lineterminator='\n')
+            writer.writerow(('Table', 'Row', 'Column', 'Quantity', 'Value', 'Scale', 'Level', 'Display'))
+            for row, numbers in zip(table.rows, table.quantities):
+                identity = ' / '.join(cell for header, cell, qs in zip(table.headers, row, numbers)
+                                      if not qs and cell not in ('', '—', 'NA', 'Not estimable') and header != 'SE scale')
+                for header, cell, quantities in zip(table.headers, row, numbers):
+                    for q in quantities:
+                        writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),
+                                         q.scale, '' if q.level is None else f'{q.level:g}', cell))
+        self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}', 4000)
 
     def _show_tables(self):
         self.report_action.blockSignals(True)
@@ -633,24 +781,49 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _setup_results_actions(self):
         toolbar = required(self.addToolBar("Results actions"), "results toolbar")
         toolbar.setMovable(False)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.report_action = QAction("Text report", self)
         self.report_action.setCheckable(True)
         self.report_action.setShortcut("Ctrl+T")
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
+        self.manuscript_action = QAction('Manuscript', self)
+        self.manuscript_action.setShortcut('Ctrl+M')
+        self.manuscript_action.triggered.connect(lambda: self.nav_tree.setCurrentItem(self.nav_tree.findItems('Manuscript', Qt.MatchFlag.MatchExactly)[0]))
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
         self.copy_report_action = QAction("Copy report", self)
+        self.copy_report_action.setIcon(QIcon(':/icons/actions/copy.svg'))
         self.copy_report_action.setShortcut("Ctrl+Shift+C")
         self.copy_report_action.triggered.connect(self._copy_report)
-        toolbar.addAction(self.copy_report_action)
+        self.copy_menu = QMenu(self)
+        self.copy_menu.addAction(self.copy_report_action)
+        for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
+            action = self.copy_menu.addAction('Copy ' + name.lower() + ' section')
+            required(action, 'copy manuscript action').triggered.connect(
+                lambda checked=False, name=name, text=text: self._copy_section(name, text))
+            required(action, 'copy manuscript action').setEnabled(bool(text))
+        self.copy_menu.addSeparator()
+        self.copy_menu.addAction(self.copy_table_action)
+        self.copy_menu.aboutToShow.connect(lambda: self.copy_table_action.setVisible(
+            self.content_stack.currentWidget() is self.tables_page))
+        self.copy_button = QToolButton(toolbar)
+        self.copy_button.setDefaultAction(self.copy_report_action)
+        self.copy_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.copy_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.copy_button.setMenu(self.copy_menu)
+        toolbar.addWidget(self.copy_button)
         self.export_report_action = QAction("Export report…", self)
+        self.export_report_action.setIcon(QIcon(':/icons/actions/export.svg'))
         self.export_report_action.setShortcut("Ctrl+Shift+S")
+        self.export_report_action.setToolTip('Export the manuscript, tables and figures to a Word document (DOCX)')
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
+        self.export_plot_action.setIcon(QIcon(':/icons/actions/export.svg'))
+        self.export_plot_action.setToolTip("Select a plot to export (Ctrl+Shift+E)")
         self.export_plot_action.setShortcut("Ctrl+Shift+E")
         self.export_plot_action.setEnabled(False)
         self.export_plot_action.triggered.connect(app_error_handler.safe_slot(self._export_selected_plot, parent=self))
@@ -659,19 +832,35 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_format_control.setAccessibleName("Plot export format")
         self.export_format_control.setToolTip("Export format; remembered for your next plot and analysis.")
         self.export_format_control.currentIndexChanged.connect(lambda _index: save_plot_export_format(self.export_format_control.currentData()) if self.export_format_control.currentData() else None)
-        toolbar.addWidget(self.export_format_control)
+        export_format_widget = QWidget(toolbar)
+        format_layout = QHBoxLayout(export_format_widget)
+        format_layout.setContentsMargins(0, 0, 0, 0)
+        format_layout.addWidget(QLabel('as', export_format_widget))
+        format_layout.addWidget(self.export_format_control)
+        toolbar.addWidget(export_format_widget)
+        toolbar.addSeparator()
         self.edit_plot_action = QAction("Edit plot…", self)
+        self.edit_plot_action.setIcon(QIcon(':/icons/actions/edit-plot.svg'))
+        self.edit_plot_action.setShortcut('Ctrl+E')
+        self.edit_plot_action.setToolTip('Select a plot to edit (Ctrl+E)')
         self.edit_plot_action.setEnabled(False)
         self.edit_plot_action.triggered.connect(app_error_handler.safe_slot(self._edit_selected_plot, parent=self))
         toolbar.addAction(self.edit_plot_action)
         self.change_settings_action = QAction("Change settings…", self)
+        self.change_settings_action.setIcon(QIcon(':/icons/actions/settings.svg'))
+        self.change_settings_action.setShortcut('Ctrl+Shift+R')
         self.change_settings_action.setEnabled(self._change_settings is not None)
-        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings.")
+        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings (Ctrl+Shift+R)." if self._change_settings else "This analysis cannot be re-run from here.")
         if self._change_settings is not None:
             self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_analysis_settings, parent=self))
+        for action in (self.export_plot_action, self.edit_plot_action, self.change_settings_action):
+            action.setStatusTip(action.toolTip())
         toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Zoom:", self))
+        zoom_widget = QWidget(toolbar)
+        zoom_layout = QHBoxLayout(zoom_widget)
+        zoom_layout.setContentsMargins(0, 0, 0, 0)
+        zoom_layout.addWidget(QLabel("Zoom", zoom_widget))
         self.zoom_control = QSpinBox(self)
         self.zoom_control.setAccessibleName("Result zoom")
         self.zoom_control.setRange(10, 400)
@@ -679,22 +868,59 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.zoom_control.setSuffix("%")
         self.zoom_control.setValue(100)
         self.zoom_control.valueChanged.connect(self._set_zoom)
-        toolbar.addWidget(self.zoom_control)
+        zoom_layout.addWidget(self.zoom_control)
+        toolbar.addWidget(zoom_widget)
+        self.fit_page_action = QAction(QIcon(':/icons/actions/fit-page.svg'), 'Fit page', self)
+        self.fit_page_action.setShortcut('Ctrl+0')
+        self.fit_page_action.setToolTip('Fit the plot while keeping text readable (Ctrl+0)')
+        self.fit_page_action.triggered.connect(self._fit_page)
+        toolbar.addAction(self.fit_page_action)
         self.fit_width_action = QAction("Fit width", self)
+        self.fit_width_action.setIcon(QIcon(':/icons/actions/fit-width.svg'))
+        self.fit_width_action.setShortcut('Ctrl+Shift+0')
+        self.fit_width_action.setToolTip('Fill the available plot width (Ctrl+Shift+0)')
         self.fit_width_action.triggered.connect(self._fit_width)
         toolbar.addAction(self.fit_width_action)
+        self.fit_width_action.changed.connect(lambda: self.fit_page_action.setEnabled(self.fit_width_action.isEnabled()))
+        self.zoom_actions = []
+        for text, shortcut, delta in (('Zoom in', 'Ctrl+=', 25), ('Zoom out', 'Ctrl+-', -25)):
+            action = QAction(text, self)
+            action.setShortcut(shortcut)
+            action.triggered.connect(lambda checked=False, delta=delta: self.zoom_control.setValue(self.zoom_control.value() + delta) if self.zoom_control.isEnabled() else None)
+            self.addAction(action)
+            self.zoom_actions.append(action)
+        qt_layout.configure_main_toolbar(toolbar)
+        self.copy_button.setIconSize(QSize(qt_layout.TOOLBAR_ICON_EXTENT, qt_layout.TOOLBAR_ICON_EXTENT))
+        for action in (self.fit_page_action, self.fit_width_action):
+            button = toolbar.widgetForAction(action)
+            if isinstance(button, QToolButton):
+                button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         for button in toolbar.findChildren(QToolButton):
             action = button.defaultAction()
             if action is not None:
                 button.setAccessibleName(action.text())
                 button.setAccessibleDescription(action.toolTip() or action.text())
                 button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+                # Keep command labels readable; Qt moves whole controls into
+                # toolbar overflow when the window cannot fit them.
+                button.setMinimumWidth(button.sizeHint().width())
         self.setTabOrder(self.nav_tree, self.graphics_view)
         self.setTabOrder(self.table_selector, self.result_table)
         self.setTabOrder(self.result_table, self.nav_tree)
-        menu = self.menubar.addMenu("&Results")
-        for action in (self.report_action, self.tables_action, self.copy_report_action, self.export_report_action, self.export_plot_action, self.edit_plot_action, self.change_settings_action, self.fit_width_action):
-            required(menu, "Results menu").addAction(action)
+        self.results_menu = required(self.menubar.addMenu("&Results"), 'Results menu')
+        for group in ((self.copy_report_action, self.export_report_action, self.export_plot_action),
+                      (self.edit_plot_action, self.change_settings_action),
+                      (self.fit_page_action, self.fit_width_action, *self.zoom_actions)):
+            if self.results_menu.actions():
+                self.results_menu.addSeparator()
+            self.results_menu.addActions(group)
+
+    def _fit_page(self):
+        if self.content_stack.currentWidget() is not self.figure_page:
+            return
+        self._explicit_fit_width = False
+        self._fit_width_active = True
+        self._apply_fit_width()
 
     def _fit_width(self):
         if self.content_stack.currentWidget() is not self.figure_page:
@@ -780,6 +1006,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if self.results.details:
             yield "model-configuration", "Model configuration", (self.results.details,), ()
 
+    def _copy_section(self, name, text):
+        required(QApplication.clipboard(), "clipboard").setText(text)
+        self.statusbar.showMessage(name + " copied", 4000)
+
     def _copy_report(self):
         from PyQt6.QtCore import QMimeData
         from rc_metastudio.manuscript_report import ManuscriptReport
@@ -788,7 +1018,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         mime.setHtml(report.html() + report.html(supplementary=True))
         mime.setText(report.plain_text())
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Report copied")
+        self.statusbar.showMessage("Report copied", 4000)
 
     def _export_report(self):
         from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
@@ -801,7 +1031,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             path = destination
             report = ManuscriptReport.from_result(self.results)
             (write_docx if extension == "docx" else write_pdf)(report, path)
-            self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}")
+            self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
     def _confirm_export_destination(self, selected, destination):
         # The save dialog confirmed the entered name, before suffix normalization.
@@ -942,13 +1172,27 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         renderer = svg_item.renderer()
         text_size = renderer.property("body_text_size")
         text_pixels = text_size * item_width / renderer.viewBoxF().width() if text_size else 0
-        if not self._explicit_fit_width and text_pixels:
-            # Automatic sizing preserves 9 pt body text; explicit Fit width may shrink it.
-            target_scale = max(target_scale, math.nextafter(9 * 96 / 72 / text_pixels, math.inf))
-            scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
+        target_scale = self._automatic_plot_scale(svg_item, target_scale, item_height, text_pixels)
+        scaled_width, scaled_height = item_width * target_scale, item_height * target_scale
         if target_scale != svg_item.scale():
             svg_item.setScale(target_scale)
         return scaled_width, scaled_height
+
+    def _automatic_plot_scale(self, item, target_scale, height, body_pixels):
+        if self._explicit_fit_width:
+            return target_scale
+        target_scale = min(target_scale, 1.0)
+        kind = item.data(0)
+        if kind and not str(kind).endswith('forest'):
+            index = self._layout_items.index(item) if item in self._layout_items else len(self._layout_items)
+            heading = self._layout_items[index - 1] if index else None
+            heading_height = heading.boundingRect().height() if isinstance(heading, QGraphicsTextItem) else 0
+            available = self.graphics_view.maximumViewportSize().height() - heading_height - SECTION_SPACING - 2 * padding
+            target_scale = min(target_scale, max(1, available) / height)
+        if body_pixels:
+            # Keep measured SVG body text at least 9 pt in automatic fitting.
+            target_scale = max(target_scale, math.nextafter(12 / body_pixels, math.inf))
+        return target_scale
 
     def _plot_viewport_width(self):
         viewport_width = self._layout_viewport_width()
@@ -969,6 +1213,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_title(self, title):
         text = QGraphicsTextItem(str(title))
+        text.setDefaultTextColor(self.palette().color(self.foregroundRole()))
         title_font = QFont(self.font())
         title_font.setBold(True)
         text.setFont(title_font)
@@ -1178,7 +1423,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 logical_width, logical_height
             )
             item.setPixmap(source)
-            item.setScale(float(scaled_width) / float(logical_width) if self._fit_width_active else 1)
+            scale = self._automatic_plot_scale(item, float(scaled_width) / float(logical_width), logical_height, 0)
+            item.setScale(scale if self._fit_width_active else 1)
 
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""
@@ -1222,12 +1468,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _set_restored_splitter_sizes(self):
         splitter_extent = max(2, self.results_nav_splitter.width())
-        self.results_nav_splitter.setSizes(
-            [
-                max(1, int(splitter_extent * value))
-                for value in self._restored_splitter_proportions
-            ]
-        )
+        if self._has_saved_splitter:
+            sizes = [max(1, int(splitter_extent * value)) for value in self._restored_splitter_proportions]
+        else:
+            em = self.fontMetrics().height()
+            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), int(splitter_extent * .18))
+            sizes = [navigation, splitter_extent - navigation]
+        self.results_nav_splitter.setSizes(sizes)
 
     def resizeEvent(
         self, event: QResizeEvent | None
@@ -1256,6 +1503,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     ):
         artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
         item = ResponsivePixmapItem(QPixmap(image_path))
+        item.setData(0, artifact.plot_kind)
         item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
@@ -1277,6 +1525,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene.clearSelection()
         self.scene.addItem(item)
+        self._outline_plot_paper(item)
         self._raster_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
@@ -1286,6 +1535,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.contextMenuEvent = self._make_context_menu(artifact, item)
 
         return (item.boundingRect().size(), position, item)
+
+    def _outline_plot_paper(self, item):
+        outline = QGraphicsRectItem(item.boundingRect().adjusted(.5, .5, -.5, -.5), item)
+        pen = QPen(self.palette().color(QPalette.ColorRole.Mid))
+        pen.setCosmetic(True)
+        outline.setPen(pen)
+        outline.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
     def create_plot_item(self, artifact, position):
         if artifact.has_vector_display():
@@ -1309,6 +1565,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not renderer.isValid():
             return None
         item = _svg_item_class()()
+        item.setData(0, artifact.plot_kind)
         item.setSharedRenderer(renderer)
 
         item.setToolTip(
@@ -1329,6 +1586,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene.clearSelection()
         self.scene.addItem(item)
+        self._outline_plot_paper(item)
         self._svg_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
@@ -1615,7 +1873,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 params_path=artifact.params_path,
                 output_path=destination,
             )
-        self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}")
+        self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}", 4000)
 
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))
@@ -1625,10 +1883,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if viewport is None:
             raise RuntimeError("Results graphics view has no viewport")
         return viewport.width()
-
-
-def _numeric_cell(cell: str) -> bool:
-    return bool(re.match(r"^\s*(?:[<>]\s*)?[+−-]?(?:\d|\.\d)", cell))
 
 
 def _reference_html(text: str) -> str:

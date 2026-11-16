@@ -989,7 +989,7 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
     arrow.length <- span * 0.026
     cap.height <- 0.12 * min(c(1, diff(sort(unique(rows)))))
 
-    left.clipped <- ci.lb < alim[[1]]
+    left.clipped <- !is.na(ci.lb) & ci.lb < alim[[1]]
     if (any(left.clipped)) {
         for (row in rows[left.clipped]) {
             graphics::polygon(
@@ -1001,7 +1001,7 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
         }
     }
 
-    right.clipped <- ci.ub > alim[[2]]
+    right.clipped <- !is.na(ci.ub) & ci.ub > alim[[2]]
     if (any(right.clipped)) {
         for (row in rows[right.clipped]) {
             graphics::polygon(

@@ -14,7 +14,7 @@ Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen t
 
 These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
 
-`project-shell` verifies Escape cancels Create dataset; `sheets` verifies Escape discards an inline sheet rename.
+`project-shell` verifies Escape cancels New project; `sheets` verifies Escape discards an inline sheet rename.
 
 ## Sub-features
 
@@ -68,7 +68,7 @@ Open requires no save prompt after navigation, deliberate data edits remain dirt
 across navigation, undo/redo restores that state, and explicit Save remembers the
 selected sheet. These paths use isolated settings and owned output files.
 - **Table:** inclusion checkbox, header Include All/Exclude All, row deletion confirmation, sorting, rectangular copy/paste and clear. Trigger `action_copy`/`action_paste`; assert clipboard/live values, trailing-row expansion and one undo transaction. Invalid bulk data must roll back the whole operation. Sorting must retain values, covariates and inclusion attached to study IDs, not row positions. Auto-fit must not alter data.
-- **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `cl_label`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
+- **Confidence:** `action_change_confidence_level` → `ConfidenceLevelDialog.confidence_level_spinbox` → `button_box` OK. Check `confidence_button`, actual analysis intervals, undo/redo, save/reopen and inherited parameters.
 - **Dirty actions:** Open/New/Import/Close/Quit on an unsaved project: Cancel preserves live project and destination; No proceeds; Yes proceeds only after successful save. Cancelled/failed Save As must preserve the unsaved project. Use test-owned files and record the actual prompt/action/recovered state.
 - **Entry and shell:** drive Open/Save actions with only picker paths substituted, their standard shortcuts, `action_open_recent_2.actions()` and QAction `.data()`, and the main start page `start_page.create_button` / `import_button` / `open_button` / recent-project buttons. Open `action_about_legal`, read the version and Credits and licenses link, close it, and confirm application still responds. Restore isolated settings/geometry; never use the user's preferences as fixtures.
 
@@ -88,6 +88,15 @@ confirmed study. Covariate prerequisites are visible in the structure dialog.
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; these exercise actual menu deletion before/after sorting and identity-safe undo/redo/reopen. `ratios-samples` checks the bundled 65-study Pignon HR and nine-study Niel-Weise IRR projects, original source values, independent fits, and identical save/reopen content; the broader shared-change lane remains required.
 
 ## Main start page and navigation
+
+`review1-design --native` also captures light/dark spreadsheet headers, centered
+Include indicators and tab hover/focus/Add outcome hover, checks stable tab
+widths on selection, matched Add outcome height and zero gap between the last
+tab and Add outcome button in both themes, tests mouse/Space inclusion
+and Undo, changes
+confidence through the clickable status control and undoes it, checks fresh plot
+style Default, and captures collapsed/expanded Advanced in both themes. See
+[the UI review](../../../../docs/ui-polish-review.md) for evidence and the accepted tab design.
 
 `review1-design --native` exercises startup without a welcome modal, present and
 missing recent paths (including wrapping full paths), Create/CSV wizard Cancel,

@@ -146,8 +146,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def _configure_readable_ci_label(self):
         """Keep the confidence heading on one line at normal scaling."""
         self.ci_label.setWordWrap(False)
-        # layout-audit: allow=content-overflow-control; reason=confidence heading remains readable inside the scrollable dialog content
-        self.ci_label.setMinimumWidth(self.ci_label.sizeHint().width())
 
     def _set_content_preferred_width(self):
         """Give dense content room before the outer policy applies its cap."""
@@ -166,8 +164,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
-        # Content actions live inside the scroll area; only the persistent
-        # footer constrains the outer dialog at large native font metrics.
+        # The input controls scroll; the persistent readout and footer stay visible.
         minimum_width = (
             self.buttonBox.minimumSizeHint().width()
             + margins.left()
