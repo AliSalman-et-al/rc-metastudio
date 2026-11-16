@@ -35,7 +35,6 @@ ACTION_CONTRACTS = {
     "main-wizard": "wizard-next-cancel",
     "confidence-level": "accept-cancel",
     "add-covariate": "accept-cancel",
-    "add-study": "accept-cancel",
     "import-progress": "none",
     "shared-progress": "none",
     "startup-splash": "none",
@@ -739,7 +738,6 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
             confidence_level_dialog.ConfidenceLevelDialog, "confidence-level"
         ),
         "add-covariate": checked_factory(add_new_dialogs.AddCovariateDialog, "add-covariate"),
-        "add-study": checked_factory(add_new_dialogs.AddStudyDialog, "add-study"),
         "import-progress": checked_factory(main_window.ImportProgressDialog, "import-progress"),
         "shared-progress": checked_factory(progress_dialog.AnalysisProgressDialog, "shared-progress"),
         "startup-splash": checked_factory(launch.create_startup_splash, "startup-splash"),

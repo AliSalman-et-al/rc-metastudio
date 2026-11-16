@@ -26,7 +26,6 @@ CANONICAL_FORMS = {
     Path("src/rc_metastudio/forms/analysis_setup_dialog.ui"): Path("rc_metastudio/forms/ui_analysis_setup_dialog.py"),
     Path("src/rc_metastudio/forms/main_window.ui"): Path("rc_metastudio/ui_main_window.py"),
     Path("src/rc_metastudio/forms/new_covariate_dialog.ui"): Path("rc_metastudio/forms/ui_new_covariate_dialog.py"),
-    Path("src/rc_metastudio/forms/new_study_dialog.ui"): Path("rc_metastudio/forms/ui_new_study_dialog.py"),
     Path("src/rc_metastudio/forms/outcome_name_page.ui"): Path("rc_metastudio/forms/ui_outcome_name_page.py"),
     Path("src/rc_metastudio/forms/results_window.ui"): Path("rc_metastudio/ui_results_window.py"),
     Path("src/rc_metastudio/forms/progress_dialog.ui"): Path("rc_metastudio/forms/ui_progress_dialog.py"),

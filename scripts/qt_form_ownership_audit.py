@@ -65,7 +65,6 @@ TOP_LEVEL_FORM_INVENTORY = {
     "new_covariate_dialog.ui": (
         ("add_new_dialogs.py", "AddCovariateDialog", "TRANSACTIONAL"),
     ),
-    "new_study_dialog.ui": (("add_new_dialogs.py", "AddStudyDialog", "TRANSACTIONAL"),),
     "results_window.ui": (("results_window.py", "ResultsWindow", "RESULTS"),),
     "progress_dialog.ui": (
         ("progress_dialog.py", "AnalysisProgressDialog", "TRANSIENT"),

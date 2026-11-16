@@ -62,7 +62,6 @@ def _remaining_surface_inventory():
     from rc_metastudio import progress_dialog
 
     surfaces = [
-        ("add-study", "compact", add_new_dialogs.AddStudyDialog()),
         ("add-covariate", "choice", add_new_dialogs.AddCovariateDialog()),
         (
             "edit-group-name",

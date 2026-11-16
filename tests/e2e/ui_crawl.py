@@ -444,7 +444,7 @@ def shell(driver, capture, missing):
 def dialogs(driver, capture, missing):
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
-    from rc_metastudio.add_new_dialogs import AddCovariateDialog, AddStudyDialog
+    from rc_metastudio.add_new_dialogs import AddCovariateDialog
     from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
     from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
     driver.window.workspace.mark_saved()
@@ -456,12 +456,11 @@ def dialogs(driver, capture, missing):
         ("confidence-level", ConfidenceLevelDialog(95, driver.window)),
         ("add-covariate", AddCovariateDialog(driver.window)),
         ("covariate-type", CovariateTypeDialog(sheet, sheet.covariates[-1], parent=driver.window)),
-        ("add-study", AddStudyDialog(driver.window)),
         ("rename", EditCovariateNameDialog("Dose", parent=driver.window)),
     ):
         form.show()
         for field in form.findChildren(QtWidgets.QLineEdit):
-            if detail in {"add-covariate", "add-study", "rename"}:
+            if detail in {"add-covariate", "rename"}:
                 assert field.alignment() & QtCore.Qt.AlignmentFlag.AlignLeft
         if isinstance(form, ConfidenceLevelDialog):
             assert form.confidence_level_label.text() == "Confidence level"
