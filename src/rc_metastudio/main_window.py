@@ -886,7 +886,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def show_about_legal(self):
-        return about_legal_dialog.AboutLegalDialog(self).exec()
+        from rc_metastudio import r_bridge
+        r_version = r_bridge.get_r_version_string() if r_runtime.is_ready() else None
+        return about_legal_dialog.AboutLegalDialog(self, r_version=r_version).exec()
 
     def meta_subgroup(self, selected_covariate):
         form = None

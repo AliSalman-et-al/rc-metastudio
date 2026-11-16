@@ -2509,7 +2509,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About"
+        assert window.action_about_legal.text() == "About RCMS…"
 
         from rc_metastudio import about_legal_dialog
 
@@ -2531,7 +2531,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "GPL-3.0-or-later" in about_text
         assert "Credits and licenses" in about_text
         dialog = about_dialogs[0]
-        assert dialog.windowTitle() == "About"
+        assert dialog.windowTitle() == "About RCMS"
         assert dialog.content_scroll_area.frameShape() == QtWidgets.QFrame.Shape.NoFrame
         assert not QtGui.QImage(":/misc/about-logo.png").isNull()
         assert dialog.content_scroll_area.openExternalLinks()

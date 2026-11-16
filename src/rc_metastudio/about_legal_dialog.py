@@ -25,7 +25,7 @@ else:
 
 
 ABOUT_TEXT = """<table align="center" cellpadding="12" cellspacing="0">
-<tr><td><img src="rcms:about-logo" width="260" alt="RC MetaStudio"></td></tr>
+<tr><td bgcolor="#ffffff"><img src="rcms:about-logo" width="260" alt="RC MetaStudio"></td></tr>
 </table>
 
 <p>RC MetaStudio is open-source desktop software for advanced meta-analysis.</p>
@@ -41,11 +41,11 @@ ABOUT_TEXT = """<table align="center" cellpadding="12" cellspacing="0">
 
 
 class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, r_version: str | None = None):
         super(AboutLegalDialog, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle('About RCMS')
-        self.debug_info = f'RC MetaStudio {application_metadata.VERSION}\nPython {platform.python_version()} · Qt {QT_VERSION_STR} · PyQt {PYQT_VERSION_STR}\n{platform.platform()}'
+        self.debug_info = f'RC MetaStudio {application_metadata.VERSION}\nPython {platform.python_version()} · Qt {QT_VERSION_STR} · PyQt {PYQT_VERSION_STR}\n{r_version or 'R runtime not loaded'}\n{platform.platform()}'
         debug_button = required(self.buttonBox.addButton('Copy debug info', QDialogButtonBox.ButtonRole.ActionRole), 'debug button')
         copied_timer = QTimer(debug_button)
         copied_timer.setSingleShot(True)
@@ -90,7 +90,6 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         from rc_metastudio import r_bridge, r_runtime
         text = self.debug_info
         if r_runtime.is_ready():
-            text += '\n' + r_bridge.get_r_version_string()
             text += '\nR libraries: ' + '; '.join(r_bridge.get_r_library_paths())
             for package in ('RCMetaR', 'metafor', 'meta', 'mada'):
                 text += f'\n{package} {r_bridge.get_r_package_version(package)}'
