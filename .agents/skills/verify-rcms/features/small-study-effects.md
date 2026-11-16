@@ -70,6 +70,8 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
 
-The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. The current error presentation uses the generic unexpected-error dialog and leaves the busy indicator visible until retry; record this presentation limitation separately from successful recovery. This native evidence does not turn that recipe into an automated test.
+The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. Execution failures use the generic unexpected-error dialog after the shared running popup closes and its wait cursor is restored. Contour request-validation errors remain inline and do not open the running popup. This native evidence does not turn that recipe into an automated test.
 
 The extended small-study drives assert that the confidence selector, pseudo-confidence-region checkbox and contour-level editor do not overlap.
+
+The `small-study-effects` drive observes the shared analysis popup while the real service executes, records `small-study-running`, and requires it to be hidden before Results. The popup uses the outcome and effect measure as context; CSV import retains its separate determinate-progress semantics.

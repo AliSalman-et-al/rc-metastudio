@@ -140,3 +140,76 @@ exited zero. Across Python lanes, 1,250 tests passed and three platform-only
 tests were skipped; all 1,253 collected tests are accounted for. The two repaired
 scenarios, project-shell and project-round6-polish, passed in this final run. This is source qualification on Windows, not
 qualification of a packaged release or other operating systems.
+
+
+## Follow-up: report heading and analysis progress
+
+The user requested one persistent analysis heading and consistent analysis-running
+feedback. Opus reviewed the design and the actual native light/dark captures;
+its small alignment, explicit rich-text and lifecycle findings were applied.
+These presentation choices do not introduce a new domain term or require an ADR.
+
+- The onscreen report begins with Methods. A separate semibold outcome title at
+  1.35 times the window font sits above a wrapping facts label. Both labels retain
+  the full identity/configuration tooltip. Supporting text derives from native
+  WindowText at 160/255 opacity and refreshes on palette changes; the default
+  light PlaceholderText measured only 3.92:1. The header aligns with the content
+  card. A single eligible/included count is not repeated when equal.
+- PDF, DOCX and standalone plain text keep their title and comparison. The actual
+  source sheet name preserves outcome punctuation such as “Mortality · day 30 —
+  primary”. Small-study exports now identify outcome, metric and arm/comparison.
+- Small-study effects now uses the same progress popup as standard, cumulative,
+  leave-one-out, subgroup, regression and diagnostic analyses. It shows a short
+  Running analysis title, bold operation, separate context, native colours and
+  font-scaled width. Its primary action is Run analysis, matching setup dialogs.
+- Synchronous R blocks Qt animation, so analyses use the native wait cursor and
+  a brief expectation sentence instead of a frozen busy bar. CSV import retains
+  its determinate bar because its loop processes Qt events. Plot editing/export
+  are outside this analysis-progress change.
+- The running operation owns dismissal: close/Escape are blocked. Success and
+  failure dispose the popup and restore the cursor before results/error handling.
+  Import also deletes its finished dialog instead of retaining a hidden child.
+- Standard and small-study producer references are merged into one final numbered
+  bibliography, with RCMS first and no References table. Runtime metafor/meta
+  versions appear in small-study Methods. Reports declaring meta also cite its
+  recommended Balduzzi/Rücker/Schwarzer implementation reference, checked against
+  the bundled meta/CITATION and https://mentalhealth.bmj.com/content/22/4/153
+  (DOI 10.1136/ebmental-2019-300117).
+- Report copy preserves Freeman–Tukey and Yule's Q/Y capitalization. The existing
+  zero-cell workflow checks the Freeman–Tukey title and Methods. Numerical
+  algorithms and frozen numerical expectations are unchanged.
+
+Failure modes were selected before implementation. The original small-study
+failure test proved that no popup existed during execution (header-progress/
+before.log). Native diagnostic drives reproduced the missing package metadata
+and bibliography entries before their fixes. The rejected inline-div header and
+startup failures remain in their original evidence directories.
+
+Verification observers now distinguish onscreen report text from standalone
+manuscripts. Custom arm names are checked in the persistent header and actual
+exported PDF. Clipboard selection is cleared before matrix screenshots. The
+collection run 20261116T184042Z-3e4b40e4-complete finished with 130 passes and
+10 failures at two stale single-arm heading checks; those checks were corrected
+without relaxing statistical comparisons.
+
+Final Windows qualification uses R 4.6.2, the test-owned current RCMetaR 0.5.6
+library and generated Qt forms. Transcripts are under
+artifacts/verification/header-progress/:
+
+- typing-final.log: strict repository-wide Ty, win32 target, passed.
+- gui-final.log: 403 passed.
+- bridge-final-corrected.log: 10 required real-R bridge checks passed. The earlier
+  bridge-final.log used a mistyped path and collected no tests; it is not proof.
+- fast-final.log: 701 passed; three platform-only skips (POSIX process-group
+  teardown, native macOS BUNDLE, staged macOS R without X11).
+- complete-qualified.log: 140 desktop tests passed, followed by a passing doctor;
+  summary.json records passed=true and both commands exited zero. Evidence is
+  artifacts/verification/rcms/20261116T191557Z-cb5f8420-complete.
+- native-surfaces-qualified.log: all ten native surfaces passed at 1.0/1.5 scale.
+- Native real small-study popup: 20261116T182654Z-139925fd-small-study-effects.
+- Native diagnostic Methods/bibliography: 20261116T182227Z-8d4ab46b-small-study-diagnostic.
+- Native header/rename/exports: 20261116T182246Z-92a0d5cc-ui-refresh; 150% header
+  drive: 20261116T181422Z-eb20e265-ui-refresh.
+
+The existing 103 numerical authority comparisons and 300 R visual cases recorded
+above remain applicable: RCMetaR statistical source did not change in this pass.

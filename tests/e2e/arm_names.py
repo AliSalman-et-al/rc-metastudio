@@ -1,5 +1,6 @@
 """Outcome/arm naming through the real wizard, model, calculators and output."""
 import csv
+import subprocess
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -51,7 +52,9 @@ def run(app, window, work, record):
             assert "[default]" not in text, text
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
-                assert comparison in app.clipboard().text(), app.clipboard().text()
+                assert " vs ".join(expected) in view.result_facts.accessibleDescription(), view.result_facts.accessibleDescription()
+                exported = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'round3-report.pdf'), '-'], text=True, encoding='utf-8')
+                assert comparison in ' '.join(exported.split()), exported
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
                 else:

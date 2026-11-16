@@ -18,7 +18,7 @@ def check_report(app, view, work, record):
     view.manuscript_text.selectAll()
     view.manuscript_text.copy()
     copied = app.clipboard().text()
-    assert copied.startswith(view.manuscript.title + "\n"), copied
+    assert copied.startswith("Methods\n"), copied
     assert view.manuscript.methods in copied and view.manuscript.results in copied
     from tests.e2e.manuscript_export import assert_manuscript_tables
     assert_manuscript_tables(view)
@@ -33,6 +33,9 @@ def check_report(app, view, work, record):
         view.export_report_action.trigger()
     assert output.read_bytes().startswith(b"%PDF")
     assert app.clipboard().mimeData().hasHtml()
+    cursor = view.manuscript_text.textCursor()
+    cursor.clearSelection()
+    view.manuscript_text.setTextCursor(cursor)
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,

@@ -100,6 +100,23 @@ def run(app, window, work, root, record, analyze):
     view.report_action.trigger()
     assert view.nav_tree.currentItem().text(0) == 'Text report'
     assert view.manuscript.methods in view.manuscript_text.toPlainText()
+    assert view.manuscript_text.toPlainText().lstrip().startswith('Methods')
+    assert '<h1>' in view.manuscript.html()
+    assert view.result_identity.text() == 'Clinical failure'
+    assert view.result_facts.accessibleDescription().endswith('19 studies')
+    assert 'Intervention vs Control' in view.result_facts.accessibleDescription()
+    scheme = app.styleHints().colorScheme()
+    size = view.size()
+    view.resize(900, 700)
+    for theme in (QtCore.Qt.ColorScheme.Light, QtCore.Qt.ColorScheme.Dark):
+        app.styleHints().setColorScheme(theme)
+        app.processEvents()
+        assert view.result_identity.font().pointSizeF() > view.result_facts.font().pointSizeF()
+        assert view.result_identity.geometry().bottom() < view.result_facts.geometry().top()
+        record('report-header-narrow-' + theme.name.lower(), view)
+    app.styleHints().setColorScheme(scheme)
+    view.resize(size)
+    app.processEvents()
     assert not view.export_plot_action.isEnabled() and not view.edit_plot_action.isEnabled()
     view.manuscript_text.selectAll()
     view.manuscript_text.copy()
@@ -159,3 +176,15 @@ def run(app, window, work, root, record, analyze):
         modal(app, PlotExportDialog, cancel, context)
         assert not picker.called
     view.close()
+    from tests.python.gui.qt_test_support import key_click
+    name = 'Mortality · day 30 — primary'
+    window.rename_outcome_action.trigger()
+    editor = window.sheet_name_edit
+    assert editor is not None and editor.isVisible()
+    editor.setText(name)
+    key_click(editor, QtCore.Qt.Key.Key_Return)
+    renamed = analyze(app, window, 'binary.random')
+    assert renamed.result_identity.text() == name
+    assert 'Odds ratio' in renamed.result_facts.accessibleDescription()
+    record('report-header-punctuation', renamed)
+    renamed.close()

@@ -1770,10 +1770,27 @@ def small_study_effects(app, window):
             assert "17 eligible" in dialog.context_label.text(), dialog.context_label.text()
             assert "2 studies with no events in either arm" in dialog.context_label.text(), dialog.context_label.text()
             assert button.isEnabled()
+            assert button.text() == 'Run analysis'
             if not dialog.ordinary_funnel_check.isChecked():
                 dialog.ordinary_funnel_check.setChecked(True)
             record_step("small-study-configured", dialog, ordinary_funnel=True)
-            mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
+            from unittest.mock import patch
+            from rc_metastudio.progress_dialog import AnalysisProgressDialog
+            execute = dialog.analysis_service.execute
+            observed_progress = []
+
+            def execute_with_progress(*args, **kwargs):
+                progress = dialog.findChild(AnalysisProgressDialog)
+                assert progress is not None and progress.isVisible()
+                assert not button.isEnabled()
+                record_step('small-study-running', progress)
+                observed_progress.append(progress)
+                return execute(*args, **kwargs)
+
+            with patch.object(dialog.analysis_service, 'execute', side_effect=execute_with_progress):
+                mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
+            assert len(observed_progress) == 1
+            assert not observed_progress[0].isVisible()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
             callback_errors.append(error)

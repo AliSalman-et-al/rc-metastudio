@@ -424,7 +424,7 @@ def assert_report(view):
             assert any(s.paragraphs == tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), note) for note in section.paragraphs if 'prediction' not in note.casefold()) for s in view.manuscript.sections
                        if s.title == 'Supplementary details'), section.title
         if section.kind == 'text' and not section.tables and section.value:
-            if section.source_key == 'References':
+            if section.source_key in {'References', 'small-study.references'}:
                 references = [s for s in view.manuscript.sections if s.source_key == 'References'
                               and s.title == 'Supplementary details']
                 assert len(references) == 1
@@ -433,7 +433,14 @@ def assert_report(view):
                 assert '10.5281/zenodo.23118556' in references[0].paragraphs[0]
                 observed = [re.sub(r'^\d+[.)]\s*', '', line) for line in references[0].paragraphs[1:]]
                 expected = [re.sub(r'^[A-Z][^:]{2,60}:\s+', '', re.sub(r'^\d+[.)]\s*', '', line)) for line in section.value.splitlines() if line.strip()]
-                assert sorted(observed) == sorted(expected), (observed, expected)
+                remaining = list(observed)
+                for entry in expected:
+                    assert remaining.count(entry) == 1, (observed, expected)
+                    remaining.remove(entry)
+                if re.search(r'(^|,\s*)meta ', view.results.software) and not any('10.1136/ebmental-2019-300117' in entry for entry in expected):
+                    assert len(remaining) == 1 and '10.1136/ebmental-2019-300117' in remaining[0], remaining
+                else:
+                    assert not remaining, remaining
             else:
                 retained = next(t for s in view.manuscript.sections if s.title == 'Supplementary details'
                                 for t in s.tables if t.title == section.title)

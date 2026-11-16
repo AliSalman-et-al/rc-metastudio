@@ -246,7 +246,7 @@ def _validate_surface_fields(surface_id: str, surface: dict[str, object]) -> Non
     _validate_focus_observation(surface_id, surface["focus"])
     _validate_action_observation(surface_id, surface["actions"])
     close = surface["close_semantics"]
-    if surface_id == "import-progress":
+    if surface_id in {"import-progress", "shared-progress"}:
         closed_correctly = (
             isinstance(close, dict)
             and set(close) == {"close_blocked", "escape_blocked", "owner_completed"}
@@ -1255,10 +1255,10 @@ def _observe_capture_close(
 ) -> bool | dict[str, bool]:
     window.close()
     app.processEvents()
-    if surface_id != "import-progress":
+    if surface_id not in {"import-progress", "shared-progress"}:
         return not window.isVisible()
     from rc_metastudio import progress_dialog
-    # Import owns completion; user gestures must not release its modality.
+    # The operation owns completion; gestures must not release its modality.
     close_blocked = window.isVisible() and app.activeModalWidget() is window
     for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
         QtCore.QCoreApplication.sendEvent(window, QtGui.QKeyEvent(

@@ -4,6 +4,7 @@
 
 import importlib
 from functools import wraps
+from dataclasses import replace
 import importlib.metadata
 import locale
 import math
@@ -943,7 +944,8 @@ def run_small_study_effects(
     if preview:
         return r_object_to_python(result.rx2("eligibility"))
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result)
+    software = ', '.join(f'{name} {get_r_package_version(name)}' for name in ('metafor', 'meta'))
+    return replace(parse_out_results(result), software=software)
 
 
 @serialized_r_call

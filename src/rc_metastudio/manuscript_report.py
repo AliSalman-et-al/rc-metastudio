@@ -17,6 +17,11 @@ from docx.oxml.ns import qn
 from rc_metastudio import __version__
 
 
+_PACKAGE_REFERENCES = {
+    'meta': 'Balduzzi, S., Rücker, G., & Schwarzer, G. (2019). How to perform a meta-analysis with R: a practical tutorial. Evidence-Based Mental Health, 22(4), 153–160. doi:10.1136/ebmental-2019-300117.'
+}
+
+
 def binary_correction_prose(method, adjust, label, double_zero):
     if method in ("binary.fixed.mh", "binary.fixed.peto"):
         estimator = "Mantel–Haenszel" if method.endswith("mh") else "Peto"
@@ -30,7 +35,7 @@ def binary_correction_prose(method, adjust, label, double_zero):
 def methods_prose(metric, model, parameters, confidence, workflow, details, fits):
     from rc_metastudio.analysis_method_labels import parameter_value_display_label
     plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
-              "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, metric.capitalize() + " estimates")
+              "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, (metric[:1].upper() + metric[1:]) + " estimates")
     sentence = f"{plural} were pooled using a {model} model"
     estimator = parameters.get('rm.method', parameters.get('estimator'))
     if estimator and model == 'random-effects':
@@ -42,7 +47,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
         for label, method, fit_parameters in fits:
             if 'reitsma' in method.lower():
                 continue
-            text = f'{label.capitalize()} estimates were pooled using the {method} method'
+            text = f'{label[:1].upper() + label[1:]} estimates were pooled using the {method} method'
             estimator = fit_parameters.get('rm.method')
             if estimator and 'random' in method.lower():
                 name = _estimator_prose(estimator)
@@ -169,21 +174,20 @@ def _study_results(result, template, level):
 def _references(result):
     references = []
     for section in result.sections:
-        if section.source_key == 'References':
+        if section.source_key in {'References', 'small-study.references'}:
             references.extend(re.sub(r'^\d+[.)]\s*', '', line.strip()) for line in section.value.splitlines() if line.strip())
     references = list(dict.fromkeys(line for line in references if CITATION_DOI not in line and 'RC MetaStudio: open-source desktop software' not in line))
+    if re.search(r'(^|,\s*)meta ', result.software) and not any('10.1136/ebmental-2019-300117' in line for line in references):
+        references.append('Implementation reference: ' + _PACKAGE_REFERENCES['meta'])
     packages = [line for line in references if line.startswith(('Implementation reference:', 'Statistical implementation:'))]
     methods = [line for line in references if line not in packages]
     return [(citation_text(), 'software')] + [(re.sub(r'^[A-Z][^:]{2,60}:\s+', '', line), 'package') for line in packages] + [(re.sub(r'^[A-Z][^:]{2,60}:\s+', '', line), 'method') for line in methods]
 
 
-def _held_section_content(section, references):
+def _held_section_content(section):
     tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
     paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs)
-    if section.source_key == 'References':
-        tables = ()
-        paragraphs = tuple(f'{number}. {line}' for number, (line, _) in enumerate(references, 1))
-    elif not tables and section.value:
+    if not tables and section.value:
         tables = (ResultTable(section.title, ('',),
                               tuple((line,) for line in section.value.splitlines())),)
     return tables, paragraphs
@@ -192,13 +196,13 @@ def _held_section_content(section, references):
 def _held_sections(result):
     sections = []
     for section in result.sections:
-        if section.kind != 'text':
+        if section.kind != 'text' or section.source_key in {'References', 'small-study.references'}:
             continue
-        tables, paragraphs = _held_section_content(section, _references(result))
+        tables, paragraphs = _held_section_content(section)
         sections.append(replace(section, title='Supplementary details', value='',
-                                paragraphs=paragraphs if section.source_key == 'References' else tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
-    if not any(section.source_key == 'References' for section in sections):
-        sections.append(ResultSection('report.references', 'text', len(sections), 'Supplementary details', '', 'References', paragraphs=('1. ' + citation_text(),)))
+                                paragraphs=tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
+    references = tuple(f'{number}. {line}' for number, (line, _) in enumerate(_references(result), 1))
+    sections.append(ResultSection('report.references', 'text', len(sections), 'Supplementary details', '', 'References', paragraphs=references))
     return sections
 
 
@@ -452,7 +456,7 @@ def _report_methods(result, pooled_methods):
         if len(package) != 2:
             continue
         numbers = [str(number) for number, (line, kind) in enumerate(references, 1)
-                   if kind == 'package' and re.search(r'\b' + re.escape(package[0]) + r'(?:\s+package\b|:)', line, re.IGNORECASE)]
+                   if kind == 'package' and (line == _PACKAGE_REFERENCES.get(package[0]) or re.search(r'\b' + re.escape(package[0]) + r'(?:\s+package\b|:)', line, re.IGNORECASE))]
         marker = ' [' + ', '.join(numbers) + ']' if numbers else ''
         names.append(f'{package[0]} (version {package[1]}){marker}')
     if names:
@@ -516,12 +520,12 @@ class ManuscriptReport:
             parts.extend(('Model configuration', self.configuration))
         return '\n\n'.join(parts)
 
-    def html(self, supplementary=False):
-        parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>']
-        for heading, text in (('Methods', self.methods), ('Results', self.results)):
+    def html(self, supplementary=False, *, heading=True):
+        parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>'] if heading else []
+        for name, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if heading == 'Methods' else escape(text)
-                parts.append(f'<a name="{heading.lower()}"></a><h2>{heading}</h2><p>{formatted}</p>')
+                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(text)
+                parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
         configuration = ''
@@ -765,7 +769,7 @@ def _pooled_effect_label(values, table, vertical, effect_metric, coefficient, me
     context = next((values[h] for h in table.headers if h.startswith(('Study added', 'Study omitted'))), table.title if vertical else effect_metric)
     effect = values.get('Term', values.get('Covariate', values.get('Subgroups', values.get('Level', context))))
     if not coefficient and ',' in metric and effect.casefold() != effect_metric.casefold():
-        effect = effect_metric.capitalize() + ': ' + effect
+        effect = (effect_metric[:1].upper() + effect_metric[1:]) + ': ' + effect
     return effect
 
 

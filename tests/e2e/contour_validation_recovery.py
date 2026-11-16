@@ -19,7 +19,6 @@ def run(app, window, work, record):
             dialog.contour_levels_edit.setText(invalid)
             click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
             assert dialog.isVisible() and dialog.failure_label.isVisible()
-            assert not dialog.progress_bar.isVisible()
             assert 'Contour' in dialog.failure_label.text()
             assert dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
             record('contour-inline-validation', dialog, input=invalid,

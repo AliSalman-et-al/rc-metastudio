@@ -9,7 +9,7 @@ from dataclasses import replace
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
-from rc_metastudio import adaptive_window, app_error_handler
+from rc_metastudio import adaptive_window, app_error_handler, progress_dialog
 from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.analysis_catalog import ONE_ARM_METRICS
 from rc_metastudio.qt_object_guard import required
@@ -191,6 +191,7 @@ class SmallStudyEffectsDialog(
     def _configure_initial_values(self):
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setModal(True)
+        required(self.button_box.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
         self.correction_policy_combo.addItems(
             [policy.value for policy in CorrectionPolicy]
         )
@@ -462,28 +463,34 @@ class SmallStudyEffectsDialog(
         except ValueError as error:
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
-            self.progress_bar.setVisible(False)
             self.contour_levels_edit.setFocus()
             return
         run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
             run_button.setEnabled(False)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setRange(0, 0)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
+        from rc_metastudio.analysis_identity import metric_label
+        metric = "Diagnostic odds ratio" if request.data_type == "diagnostic" else metric_label(self.model)
+        progress = progress_dialog.AnalysisProgressDialog(
+            self, operation="Running small-study effects analysis…",
+            context=f"{self.model.current_outcome_name} · {metric}"
+        )
+        progress.show()
+        progress.repaint()
         try:
-            result = self.analysis_service.execute(self.model, request)
-            result = self._with_report_identity(result)
+            try:
+                result = self.analysis_service.execute(self.model, request)
+                result = self._with_report_identity(result)
+            finally:
+                progress_dialog.dispose(progress)
             owner = self.parentWidget()
             callback = getattr(owner, "analysis", None)
             if not callable(callback):
                 raise TypeError("small-study effects dialog has no results owner")
             callback(result)
-            self.progress_bar.setVisible(False)
             self.accept()
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
-            self.progress_bar.setVisible(False)
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
             app_error_handler.handle_exception(
@@ -493,18 +500,22 @@ class SmallStudyEffectsDialog(
                 run_button.setEnabled(True)
 
     def _with_report_identity(self, result):
-        from rc_metastudio.analysis_identity import dataset_identity
+        from rc_metastudio.analysis_identity import dataset_identity, metric_label
+        metric = "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else metric_label(self.model)
+        context = dataset_identity(self.model, metric)
         facts = [f"k = {len(self.model.get_studies())}"]
         report = self._eligibility_report
         if report is not None:
             facts.extend(_eligibility_identity(report))
         facts.append(f"{self.model.get_confidence_level():g}% CI")
-        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None) + '\n' + ' · '.join(facts))
+        result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]
         procedures.extend(section.title for section in result.sections if section.kind == "image")
-        result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
+        outcome = self.model.current_sheet.name
+        result = replace(result, manuscript_title=f"{outcome[:1].upper() + outcome[1:]}: small-study effects ({metric.lower()})",
+                         manuscript_comparison=context.partition('\n')[2], manuscript_methods=(
             "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
         return result
 

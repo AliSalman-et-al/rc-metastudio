@@ -213,7 +213,7 @@ def _write_bundle(root: Path) -> None:
                     "size_bytes": len(payload),
                     "varied_pixels": True,
                 },
-                "close_semantics": {"close_blocked": True, "escape_blocked": True, "owner_completed": True} if surface_id == "import-progress" else True,
+                "close_semantics": {"close_blocked": True, "escape_blocked": True, "owner_completed": True} if surface_id in {"import-progress", "shared-progress"} else True,
                 "device_pixel_ratio": scale,
                 "first_use_behavior": contract["first_use_behavior"],
                 "focus": focus,

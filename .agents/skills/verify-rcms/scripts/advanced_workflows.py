@@ -404,7 +404,9 @@ def zero_cells(app, window, record):
     assert note in view.manuscript.methods
     record("pft-correction-report", view, correction_note=note, texts=dict(view.texts))
     report = view.manuscript_text.toPlainText()
-    manuscript = view.manuscript_text.toPlainText()
+    manuscript = view.manuscript.plain_text()
+    assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
+    assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
     assert "1097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript

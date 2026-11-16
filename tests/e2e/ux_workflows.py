@@ -346,7 +346,7 @@ def _run(app, window, work, root, record, analyze):
     view.manuscript_text.selectAll()
     key_click(view.manuscript_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     copied_report = app.clipboard().text()
-    assert copied_report.startswith(view.manuscript.title + "\n")
+    assert copied_report.startswith("Methods\n"), copied_report
     from tests.e2e.report_retention import assert_report
     assert_report(view)
     report_path = work / "analysis.pdf"

@@ -943,8 +943,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
-        bar = progress_dialog.AnalysisProgressDialog(self)
+        bar = progress_dialog.AnalysisProgressDialog(self, context=self.windowTitle())
         bar.show()
+        bar.repaint()
         result = None
         succeeded = False
         try:
@@ -965,7 +966,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_error_label.show()
             self._reset_working_dir_safely()
         finally:
-            _dispose_progress(bar)
+            progress_dialog.dispose(bar)
         if not succeeded:
             self._resize_on_reflow = True
             self._schedule_local_reflow()
@@ -1031,7 +1032,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
         context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
-        metric = self._result_metric_label().lower()
+        metric = self._result_metric_label()
+        if self.model.current_effect not in {"PFT", "YUQ", "YUY"}:
+            metric = metric[:1].lower() + metric[1:]
         model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label
         outcome = self.model.current_sheet.name
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
@@ -1960,12 +1963,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
         self.method_lbl.setText("Analysis method")
         self.method_lbl.setWordWrap(False)
-
-
-def _dispose_progress(progress):
-    progress_dialog.hide_once(progress)
-    progress.close()
-    progress.deleteLater()
 
 
 def _coerce_integer_default(name: str, value: object) -> int:

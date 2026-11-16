@@ -451,6 +451,9 @@ def test_csv_import_progress_dialog_closes_when_model_write_raises(monkeypatch):
         def hide(self):
             progress_events.append("hide")
 
+        def deleteLater(self):
+            progress_events.append("delete")
+
         def minimum(self):
             return self.min_
 
@@ -479,7 +482,7 @@ def test_csv_import_progress_dialog_closes_when_model_write_raises(monkeypatch):
         with pytest.raises(RuntimeError, match="simulated CSV model write failure"):
             command._import_data_into_new_dataset()
 
-        assert progress_events == ["show", "hide"]
+        assert progress_events == ["show", "hide", "delete"]
     finally:
         _close_without_prompt(app, window)
 

@@ -16,6 +16,7 @@ class _Model:
     def __init__(self, data_type, metric, confidence_level=95.0):
         self._data_type = data_type
         self.current_effect = metric
+        self.current_outcome_name = "Clinical outcome"
         self._confidence_level = confidence_level
         self.studies = [SimpleNamespace(include=True), SimpleNamespace(include=False)]
 
@@ -320,27 +321,39 @@ def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
 
 
 def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
+    from PyQt6.QtWidgets import QDialogButtonBox
+    from rc_metastudio.progress_dialog import AnalysisProgressDialog
+
     report = _report("continuous", "MD", [_method("classical-egger", True)])
     monkeypatch.setattr(
         r_bridge,
         "run_small_study_effects",
         lambda *args, **kwargs: report,
     )
-    monkeypatch.setattr(
-        small_study_effects,
-        "execute_small_study_effects",
-        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("run failed")),
-    )
+    def fail(*args, **kwargs):
+        progress = dialog.findChild(AnalysisProgressDialog)
+        assert progress is not None and progress.isVisible()
+        assert required(qapp.overrideCursor()).shape() == Qt.CursorShape.WaitCursor
+        assert not required(dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)).isEnabled()
+        raise RuntimeError("run failed")
+
+    monkeypatch.setattr(small_study_effects, "execute_small_study_effects", fail)
+
+    def observe_error(*args, **kwargs):
+        assert not any(widget.isVisible() for widget in dialog.findChildren(AnalysisProgressDialog))
     monkeypatch.setattr(
         small_study_effects_dialog.app_error_handler,
         "handle_exception",
-        lambda *args, **kwargs: None,
+        observe_error,
     )
     dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
+    cursor_before = qapp.overrideCursor()
     try:
         dialog.run()
         assert dialog.failure_label.text() == "run failed"
         assert not dialog.failure_label.isHidden()
+        assert required(dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)).isEnabled()
+        assert qapp.overrideCursor() == cursor_before
     finally:
         dialog.close()
 

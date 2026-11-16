@@ -446,28 +446,69 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         parent = self.parent()
         self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
         self.setWindowTitle(identity.splitlines()[0])
-        first, *rest = identity.partition(" — ")[2].splitlines() if " — " in identity else identity.splitlines()
+        workflow, _, context = identity.partition(" — ")
+        first, *rest = context.splitlines() if context else identity.splitlines()
         name, separator, description = first.partition(" · ")
-        details = [description] if separator else []
-        details.extend(line.removeprefix("Comparison: ").removeprefix("Group: ").removeprefix("Arm: ")
-                       for line in rest if line)
+        source_name = getattr(self._source_sheet, 'name', None)
+        if source_name and (first == source_name or first.startswith(source_name + ' · ')):
+            name = source_name
+            separator = ' · ' if first != source_name else ''
+            description = first[len(source_name):].removeprefix(' · ')
+        details = [workflow] if context and workflow != 'Meta-analysis' else []
         study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
-        if study_count:
-            details.append('k = ' + study_count)
         models, confidence = self._identity_model_details(self.results.details)
+        for line in rest:
+            for fact in line.split(' · '):
+                if fact.startswith('k = '):
+                    study_count = fact.removeprefix('k = ')
+                elif fact.endswith('% CI'):
+                    confidence.append(fact)
+                elif fact.startswith('Comparison: '):
+                    comparison = fact.removeprefix('Comparison: ')
+                    details.append(comparison.replace(' / ', ' vs ', 1) if comparison.count(' / ') == 1 else fact)
+                elif fact:
+                    if fact.startswith('Primary test: '):
+                        method = fact.removeprefix('Primary test: ')
+                        fact = re.sub(r'^Deeks(?=\s|$)', 'Deeks test', method)
+                    details.append(fact)
+        if separator:
+            details.append(description if description.startswith('Entered effect estimate') else description.rpartition(' · ')[2])
         details.extend(model + (f' ({estimator})' if estimator else '')
                        for model, estimator in dict.fromkeys(models))
         details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
         details.extend(dict.fromkeys(confidence))
-        self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
-                                     + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
+        if study_count:
+            details = [detail for detail in details if detail != study_count + ' eligible']
+            details.append(study_count + (' study' if study_count == '1' else ' studies'))
+        details = list(dict.fromkeys(details))
+        title_font = QFont(self.font())
+        title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
+        title_font.setWeight(QFont.Weight.DemiBold)
+        self.result_identity.setFont(title_font)
+        self.result_identity.setText(name[:1].upper() + name[1:])
+        items = [f'<span style="white-space:nowrap">{escape(detail)}</span>'
+                 if len(detail) <= 48 and not detail.startswith('Moderators: ') else escape(detail)
+                 for detail in details]
+        self.result_facts.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+        self._refresh_header_palette()
+        self.result_facts.setText('&nbsp;&nbsp;·&nbsp; '.join(items))
+        self.result_facts.setAccessibleDescription(' · '.join(details))
         self.result_identity.setToolTip(identity + '\n' + self.results.details)
-        self.result_identity.setContentsMargins(12, round(self.fontMetrics().height() * .5), 12, round(self.fontMetrics().height() * .5))
+        self.result_facts.setToolTip(self.result_identity.toolTip())
+        self.result_identity.setContentsMargins(12, round(self.fontMetrics().height() * .25), 0, 0)
+        self.result_facts.setContentsMargins(12, 0, 0, round(self.fontMetrics().height() * .5))
         self.results_body_layout.setSpacing(round(self.fontMetrics().height() * .5))
         margin = round(self.fontMetrics().height() * .75)
         self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
         self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _refresh_header_palette(self):
+        palette = QPalette(self.palette())
+        secondary = palette.color(QPalette.ColorRole.WindowText)
+        secondary.setAlpha(160)
+        palette.setColor(QPalette.ColorRole.PlaceholderText, secondary)
+        self.result_facts.setPalette(palette)
 
     @staticmethod
     def _identity_model_details(details):
@@ -509,11 +550,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         scrollbar = required(self.manuscript_text.verticalScrollBar(), "manuscript scrollbar")
         position = scrollbar.value()
         color = self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()
-        self.manuscript_text.setHtml((self.manuscript.html() + self.manuscript.html(supplementary=True))
+        self.manuscript_text.setHtml((self.manuscript.html(heading=False) + self.manuscript.html(supplementary=True))
                                      .replace('solid black', 'solid ' + color).replace(' to ', '\u00a0to\u00a0'))
         scrollbar.setValue(position)
 
     def _refresh_theme(self):
+        self._refresh_header_palette()
         self._refresh_navigation_palette()
         for item in self._wrapped_text_items:
             item.setDefaultTextColor(self.palette().color(self.foregroundRole()))

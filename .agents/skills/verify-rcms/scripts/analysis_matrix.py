@@ -208,7 +208,7 @@ def run(
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
             primary_heading = "Diagnostic summary" if view.results.analysis_method == "diagnostic.reitsma" else "Pooled effect"
-            assert report.startswith(view.manuscript.title + "\n"), report
+            assert report.startswith("Methods\n"), report
             assert primary_heading in report, report
             assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
         assert view.content_stack.currentWidget() is (view.manuscript_page if clinical else view.figure_page)
@@ -252,6 +252,9 @@ def run(
         view.manuscript_text.selectAll()
         view.manuscript_text.copy()
         report = app.clipboard().text()
+        cursor = view.manuscript_text.textCursor()
+        cursor.clearSelection()
+        view.manuscript_text.setTextCursor(cursor)
         from tests.e2e.report_retention import assert_report
         assert_report(view)
         if (scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion",
@@ -259,7 +262,7 @@ def run(
                 and group_names is None and prepare is None
                 and metric_override is None and workflow == "standard"):
             text = view.manuscript_text.toPlainText()
-            manuscript = view.manuscript_text.toPlainText()
+            manuscript = view.manuscript.plain_text()
             participant_arm = window.model.arm_names[0]
             record("onearm-participant-scope", view, report=text, manuscript=manuscript)
             assert "Other group" not in manuscript, manuscript
@@ -619,6 +622,25 @@ def run(
         if sample == "amino":
             from tests.e2e.trimfill_geometry import check_trimfill
             check_trimfill(view, record)
+        from tests.e2e.report_retention import assert_report
+        from rc_metastudio import r_bridge
+        for package in ('metafor', 'meta'):
+            assert package + ' (version ' + r_bridge.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
+        assert window.model.current_sheet.name.casefold() in view.manuscript.title.casefold()
+        assert view.manuscript.comparison == view.results.identity.splitlines()[1]
+        assert_report(view)
+        references = [section for section in view.manuscript.sections if section.source_key == 'References']
+        assert len(references) == 1 and not references[0].tables
+        meta_number = next(i for i, line in enumerate(references[0].paragraphs, 1) if '10.1136/ebmental-2019-300117' in line)
+        assert re.search(r'\bmeta \(version [^)]+\) \[' + str(meta_number) + r'\]', view.manuscript.methods)
+        assert not any(table.title == 'References' for table in view._report_tables)
+        if not view.report_action.isChecked():
+            view.report_action.trigger()
+        cursor = view.manuscript_text.textCursor()
+        cursor.clearSelection()
+        view.manuscript_text.setTextCursor(cursor)
+        view.manuscript_text.scrollToAnchor('references')
+        record('combined-references', view, references=references[0].paragraphs)
         if keep_results:
             return view
         view.close()
@@ -852,7 +874,7 @@ def run(
         assert view.results.details.count("Estimator: DerSimonian–Laird") == 2, view.results.details
         assert view.results.details.count("Estimator: Restricted maximum likelihood (REML)") == 3, view.results.details
         report = view.manuscript_text.toPlainText()
-        assert report.startswith(view.manuscript.title + "\n"), report
+        assert report.startswith("Methods\n"), report
         sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity summary")
         heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
         from tests.e2e.report_retention import assert_report

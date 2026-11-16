@@ -143,18 +143,11 @@ def _connect_action(action, callback):
 
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
-        super().__init__(parent, operation="Importing study data…")
+        super().__init__(parent, operation="Importing study data…", blocking=False)
 
         self.setWindowTitle("Import CSV")
         self.progress_bar.setRange(min_, max_)
-
-    def reject(self):
-        # Import has no cancellation/rollback gesture while the write loop runs.
-        pass
-
-    def closeEvent(self, a0):
-        if a0 is not None:
-            a0.ignore()
+        self.progress_bar.show()
 
     def setValue(self, value):
         if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
@@ -1834,4 +1827,4 @@ class ImportCsvCommand:
                     )
 
         finally:
-            progress_dialog.hide_once(import_progress)
+            progress_dialog.dispose(import_progress)

@@ -152,8 +152,8 @@ def run(app, window, work, root, record, analyze):
     app.styleHints().setColorScheme(original_scheme)
     combined.reject()
     view = analyze(app, window, 'diagnostic.reitsma')
-    strip = view.result_identity.text()
-    if strip.count('Reitsma bivariate model') != 1 or not strip.endswith('95% CI'):
+    strip = view.result_facts.accessibleDescription()
+    if strip.count('Reitsma bivariate model') != 1 or '95% CI' not in strip:
         failures.append('Diagnostic identity repeats a shared fit or omits the CI label')
     assert view.result_identity.toolTip().count('Reitsma bivariate model') >= 2
     title = view.results.manuscript_title

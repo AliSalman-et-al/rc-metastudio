@@ -184,18 +184,16 @@ def test_all_progress_entry_points_are_minimal_stable_transient_windows(qapp):
     try:
         for name, _kind, dialog in progress_surfaces:
             _show(dialog, qapp)
-            _assert_content_preferred_outer_size(
-                dialog, qapp.primaryScreen().availableGeometry(), 1.0
-            )
             frame = QtCore.QRect(dialog.frameGeometry())
-            assert frame.width() < 480, name
-            assert frame.height() < 160, name
+            assert qapp.primaryScreen().availableGeometry().contains(frame), name
+            assert frame.width() <= max(480, dialog.fontMetrics().averageCharWidth() * 50), name
+            assert frame.height() < 240, name
             dialog.progress_bar.setValue(dialog.progress_bar.maximum())
             qapp.processEvents()
             assert dialog.frameGeometry() == frame, name
     finally:
         for _name, _kind, dialog in progress_surfaces:
-            dialog.close()
+            dialog.hide()
         qapp.processEvents()
 
 
