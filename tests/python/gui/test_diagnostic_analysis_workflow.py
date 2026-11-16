@@ -81,7 +81,7 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
         form.ok()
 
         assert shown, "diagnostic next > swallowed the backend error silently"
-        assert shown[0][1] == "Could Not Prepare Analysis"
+        assert shown[0][1] == "Could not prepare analysis"
         assert "simulated preparation failure" in shown[0][2]
         assert "backend is not available" not in shown[0][2]
     finally:
@@ -122,7 +122,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             backend,
             "get_available_methods",
             lambda **kwargs: {
-                "Diagnostic Random-Effects": "diagnostic.random",
+                "Random-effects": "diagnostic.random",
             },
         )
         _set_backend(
@@ -158,7 +158,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         form.run_ma()
 
         assert not shown
-        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
         assert form.analysis_error_details.isHidden()
         assert "simulated diagnostic failure" in form.analysis_error_details.toPlainText()
         form.analysis_error_toggle.click()
@@ -205,7 +205,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             "get_available_methods",
             lambda **kwargs: {
                 "Reitsma bivariate model": "diagnostic.reitsma",
-                "Diagnostic Random-Effects": "diagnostic.random",
+                "Random-effects": "diagnostic.random",
             },
         )
         _set_backend(
@@ -462,7 +462,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             backend,
             "get_available_methods",
             lambda **kwargs: {
-                "Diagnostic Random-Effects": "diagnostic.random",
+                "Random-effects": "diagnostic.random",
             },
         )
         _set_backend(
@@ -630,8 +630,8 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
             "get_available_methods",
             lambda **kwargs: {
                 "Reitsma bivariate model": "diagnostic.reitsma",
-                "Diagnostic Random-Effects": "diagnostic.random",
-                "Diagnostic Fixed-Effect Inverse Variance": "diagnostic.fixed.inv.var",
+                "Random-effects": "diagnostic.random",
+                "Fixed-effect inverse-variance": "diagnostic.fixed.inv.var",
             },
         )
         _set_backend(
@@ -656,8 +656,8 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
 
         assert "Reitsma bivariate model" not in method_names
         assert method_names == [
-            "Diagnostic Random-Effects",
-            "Diagnostic Fixed-Effect Inverse Variance",
+            "Random-effects",
+            "Fixed-effect inverse-variance",
         ]
     finally:
         for name, value in saved.items():
@@ -698,8 +698,8 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
             backend,
             "get_available_methods",
             lambda **kwargs: {
-                "Diagnostic Random-Effects": "diagnostic.random",
-                "Diagnostic Fixed-Effect Inverse Variance": "diagnostic.fixed.inv.var",
+                "Random-effects": "diagnostic.random",
+                "Fixed-effect inverse-variance": "diagnostic.fixed.inv.var",
             },
         )
         _set_backend(
@@ -719,7 +719,7 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         form.show()
         app.processEvents()
 
-        label = "Diagnostic Fixed-Effect Inverse Variance"
+        label = "Fixed-effect inverse-variance"
         label_index = form.method_cbo_box.findText(label)
         assert label_index >= 0
         controller = adaptive_controls.configure_choice_control(

@@ -4,7 +4,7 @@
  <widget class="QDialog" name="CovariateTypeDialog">
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
   <property name="windowTitle">
-   <string>Change Covariate Type</string>
+   <string>Change covariate type</string>
   </property>
   <property name="windowIcon">
    <iconset>

@@ -286,7 +286,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
-        expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel-Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
+        expected = "A continuity correction of 0.5 was applied to individual study estimates only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         for suffix in ('pdf', 'docx'):
@@ -310,7 +310,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             figure_item = view.nav_tree.currentItem()
             figure_zoom = view.zoom_control.value()
             figure_transform = view.graphics_view.transform()
-            manuscript_item = view.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+            manuscript_item = view.nav_tree.findItems("Text report", QtCore.Qt.MatchFlag.MatchExactly)[0]
             view.nav_tree.setCurrentItem(manuscript_item)
             app.processEvents()
             cursor = required(view.manuscript_text.document()).find(view.manuscript.methods[:40])
@@ -428,19 +428,19 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 model_fit = next(section for section in view.manuscript.sections if section.title == "Model fit")
                 assert prediction_note in model_fit.paragraphs
                 assert view.manuscript.plain_text().count(prediction_note) == 1
-                assert 'The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267).' in view.manuscript.results
-                assert view.manuscript.results == 'In total, 19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI [0.485, 1.222], z = -1.111, P = 0.267). Heterogeneity: Q = 33.360, df = 18, P = 0.015. I² = 46.0%. Between-study variance was τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
-                assert view.manuscript.methods == f"Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with any zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I². Analyses were performed in RC MetaStudio {__version__}. R packages loaded for this analysis: metafor 5.2.1, meta 8.5-0."
+                assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = -1.111; P = 0.267).' in view.manuscript.results
+                assert view.manuscript.results == 'In total, 19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = -1.111; P = 0.267). Heterogeneity: Q = 33.360 (df = 18; P = 0.015); I² = 46.0%; τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert view.manuscript.methods == f"Statistical analyses were performed using RC MetaStudio (version {__version__}; Research Consultancy) [1] with the R packages metafor (version 5.2.1) [2] and meta (version 8.5-0). Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance [3, 4]. 95% confidence intervals used the normal approximation. A continuity correction of 0.5 was applied to studies with at least one zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran’s Q and I²."
                 assert '-0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
-                assert 'The pooled standardized mean difference was 0.358 (95% CI [0.152, 0.565], z = 3.400, P < 0.001).' in view.manuscript.results
+                assert 'The pooled standardized mean difference was 0.358 (95% CI 0.152 to 0.565; z = 3.400; P < 0.001).' in view.manuscript.results
                 assert 'The confidence interval excludes' not in view.manuscript.results
-                assert 'I² = 58.0%.' in view.manuscript.results
+                assert 'I² = 58.0%;' in view.manuscript.results
 
             record('manuscript-export-' + sample + '-' + suffix, view, exported=str(path))
         (work / (sample + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
-        item = view.nav_tree.findItems('Manuscript', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
+        item = view.nav_tree.findItems('Text report', __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         record('manuscript-panel-' + sample, view)
         result = view.results
@@ -486,7 +486,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random')
     assert_manuscript_tables(view)
-    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI [-0.565, -0.152], z = -3.400, P < 0.001).'
+    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI -0.565 to -0.152; z = -3.400; P < 0.001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
     assert 'The confidence interval excludes' not in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
@@ -516,14 +516,14 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         prose = view.manuscript.results
         if workflow == 'subgroup':
             assert 'In Subgroup A, the pooled odds ratio was' in prose and 'In Subgroup B, the pooled odds ratio was' in prose
-            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI [0.271, 1.434]).' in prose
-            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI [0.476, 1.438]).' in prose
-            assert 'Test for subgroup differences: Q = 0.307, df = 1, P = 0.579.' in prose
+            assert 'In Subgroup B, the pooled odds ratio was 0.623 (95% CI 0.271 to 1.434).' in prose
+            assert 'In Subgroup A, the pooled odds ratio was 0.827 (95% CI 0.476 to 1.438).' in prose
+            assert 'Test for subgroup differences: Q = 0.307 (df = 1; P = 0.579).' in prose
             assert prose.index('Test for subgroup differences') < prose.index('In Subgroup')
         else:
-            assert 'coefficient' in prose and '95% CI' in prose and ', P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
+            assert 'coefficient' in prose and '95% CI' in prose and '; P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose
-            assert 'For Dose, the coefficient was 0.063 (95% CI [-0.026, 0.151], z = 1.384, P = 0.166).' in prose
+            assert 'For Dose, the coefficient was 0.063 (95% CI -0.026 to 0.151; z = 1.384; P = 0.166).' in prose
             assert 'Residual heterogeneity: Q = ' in prose
             assert 'The confidence interval includes 0' not in prose
             assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)

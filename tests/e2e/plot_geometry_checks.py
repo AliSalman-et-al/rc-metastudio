@@ -40,7 +40,7 @@ def check_interval_caps(path):
 
 
 def check_annotation_spacing(view, *, style="default"):
-    assert "Overall-effect null:" not in view.report_text.toPlainText(), view.report_text.toPlainText()
+    assert "Overall-effect null:" not in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
     for path in view.results.display_images.values():
         if style != "bmj":
             check_interval_caps(path)

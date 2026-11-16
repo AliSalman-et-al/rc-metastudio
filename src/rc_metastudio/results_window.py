@@ -25,7 +25,6 @@ from PyQt6.QtCore import (
     QTimer,
     QSignalBlocker,
     Qt,
-    QSize,
     QSettings,
 )
 from PyQt6.QtGui import (
@@ -69,11 +68,9 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QToolBar,
     QAbstractItemView,
 )
 import os
-import sys
 from rc_metastudio import (
     adaptive_window,
     app_error_handler,
@@ -90,8 +87,6 @@ from rc_metastudio.plot_service import PlotService
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import (
-    load_plot_export_format,
-    save_plot_export_format,
     restore_results_window_state,
     RESULTS_WORKSPACE_GROUP,
     save_results_window_state,
@@ -119,12 +114,6 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
     "png": (".png",),
     "tiff": (".tif", ".tiff"),
     "svg": (".svg", ".svgz"),
-}
-PLOT_EXPORT_GUIDANCE = {
-    "pdf": "Recommended vector format for journal submission and print workflows.",
-    "svg": "Scalable vector format; ideal for editing and lossless resizing.",
-    "tiff": "Publication-grade 600 dpi raster export with lossless compression.",
-    "png": "Publication-grade 600 dpi raster export for compatible submission systems.",
 }
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
@@ -377,28 +366,41 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _setup_report_controls(self):
         self._setup_identity()
         self._setup_manuscript_page()
-        self._setup_report_document()
         self._setup_result_tables()
         self._setup_results_actions()
         self._report_nav_anchors = {}
-        entries = [("Manuscript", "manuscript"), ("Text report", ""), ("Tables", None)]
-        if self.results.details:
-            entries.append(("Settings", "model-configuration"))
+        entries = [("Text report", ""), ("Tables", None)]
         for title, anchor in entries:
             item = QTreeWidgetItem([title])
             self.nav_tree.addTopLevelItem(item)
-            item.setToolTip(0, {"Manuscript": "Read the manuscript report", "Text report": "Read the full text report", "Tables": "Copy or export numerical tables", "Settings": "Inspect the executed model and settings"}[title])
+            item.setToolTip(0, {"Text report": "Read the formatted analysis report", "Tables": "Copy or export numerical tables"}[title])
             item.setDisabled(title == "Tables" and not self._report_tables)
             self._report_nav_anchors[id(item)] = anchor
+        report_item = self.nav_tree.findItems("Text report", Qt.MatchFlag.MatchExactly)[0]
+        sections = []
+        if self.manuscript.methods:
+            sections.append(('Methods', 'methods'))
+        if self.manuscript.results:
+            sections.append(('Results', 'results'))
+        if self._report_tables:
+            sections.append(('Numerical tables', 'report-tables'))
+        if any(section.source_key == 'References' for section in self.manuscript.sections):
+            sections.append(('References', 'references'))
+        if self.results.details:
+            sections.append(('Model configuration', 'model-configuration'))
+        for title, anchor in sections:
+            child = QTreeWidgetItem(report_item, [title])
+            self._report_nav_anchors[id(child)] = anchor
+        report_item.setExpanded(True)
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
         self.nav_tree.setMinimumWidth(min(self.nav_tree.sizeHintForColumn(0) + 12, self.fontMetrics().height() * 12))
         required(self.nav_tree.header(), "Results navigation header").setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.nav_tree.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.nav_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.nav_tree.setRootIsDecorated(False)
+        self.nav_tree.setRootIsDecorated(True)
         self._refresh_navigation_palette()
         navigation = []
-        pages = {'Manuscript': self.manuscript_action, 'Text report': self.report_action, 'Tables': self.tables_action}
+        pages = {'Text report': self.report_action, 'Tables': self.tables_action}
         for index in range(self.nav_tree.topLevelItemCount()):
             item = required(self.nav_tree.topLevelItem(index), 'result navigation item')
             action = pages.get(item.text(0))
@@ -410,8 +412,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             action.setEnabled(not item.isDisabled())
             self.addAction(action)
             navigation.append(action)
-        self.results_menu.insertActions(self.copy_report_action, navigation)
-        self.results_menu.insertSeparator(self.copy_report_action)
+        self.view_menu.addActions(navigation)
+        self.view_menu.addSeparator()
+        self.view_menu.addActions((self.fit_page_action, self.fit_width_action, *self.zoom_actions))
         self._show_initial_result()
 
     def _refresh_navigation_palette(self):
@@ -459,8 +462,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_identity.setText('<b>' + escape(name[:1].upper() + name[1:]) + '</b>'
                                      + ('  ·  ' + escape('  ·  '.join(details)) if details else ''))
         self.result_identity.setToolTip(identity + '\n' + self.results.details)
-        page_margin = round(self.fontMetrics().height() * 1.5)
-        self.result_identity.setContentsMargins(page_margin, 0, page_margin, 0)
+        self.result_identity.setContentsMargins(12, round(self.fontMetrics().height() * .5), 12, round(self.fontMetrics().height() * .5))
         self.results_body_layout.setSpacing(round(self.fontMetrics().height() * .5))
         margin = round(self.fontMetrics().height() * .75)
         self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
@@ -491,9 +493,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._manuscript_base_font = QFont(self.font())
         self._manuscript_base_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
         self._manuscript_zoom_percent = 100
+        self._figure_zoom_percent = 100
         self.manuscript_text.setFont(self._manuscript_base_font)
         self.manuscript_text.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.manuscript_text.setAccessibleName("Manuscript")
+        self.manuscript_text.setAccessibleName("Text report")
         manuscript_document = required(self.manuscript_text.document(), "manuscript document")
         option = manuscript_document.defaultTextOption()
         option.setWrapMode(QTextOption.WrapMode.WordWrap)
@@ -531,46 +534,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._refresh_navigation_palette()
             QTimer.singleShot(0, self._refresh_theme)
 
-    def _setup_report_document(self):
-        self.report_text = QTextBrowser(self.content_stack)
-        self.report_text.setAccessibleName("Analysis report")
-        self.report_text.setOpenLinks(False)
-        required(self.report_text.document(), "report document").setDocumentMargin(20)
-        body = []
-        for anchor, heading, paragraphs, tables in self._report_blocks():
-            body.append(f'<a name="{escape(anchor)}"></a>')
-            if heading:
-                body.append(f'<h2>{escape(_report_heading(heading))}</h2>')
-            if anchor == "text:references":
-                body.append(_reference_html("\n".join(paragraphs)))
-                continue
-            for paragraph in paragraphs:
-                if paragraph.startswith("Pooled "):
-                    body.append("<p>" + escape(paragraph) + "</p>")
-            for index, table in enumerate(tables):
-                body.append(_report_table_html(table, heading, suppress_title=index == 0 and table.title.endswith("Model Results")))
-            body.extend("<p>" + escape(paragraph).replace("\n", "<br>") + "</p>" for paragraph in paragraphs if not paragraph.startswith("Pooled "))
-        self._report_html = "".join(body)
-        report_font = QFont(self.font())
-        report_font.setPointSizeF(max(11.0, self.font().pointSizeF()))
-        self._apply_report_typography(report_font)
-        self._report_base_font = QFont(report_font)
-        self._report_zoom_percent = 100
-        self._figure_zoom_percent = 100
-        self.content_stack.addWidget(self.report_text)
-
-    def _apply_report_typography(self, font):
-        self.report_text.setFont(font)
-        option = required(self.report_text.document(), "report document").defaultTextOption()
-        option.setWrapMode(QTextOption.WrapMode.WordWrap)
-        required(self.report_text.document(), "report document").setDefaultTextOption(option)
-        size = font.pointSizeF()
-        required(self.report_text.document(), "report document").setDefaultStyleSheet(
-            f"h2 {{ font-size: {size * 1.18:g}pt; margin-top: 14px; margin-bottom: 6px; }} "
-            f"h3 {{ font-size: {size:g}pt; margin-top: 12px; margin-bottom: 6px; }} "
-            "p { margin-top: 6px; margin-bottom: 8px; } th { font-weight: bold; }")
-        self.report_text.setHtml(self._report_html)
-
     def _setup_result_tables(self):
         self._report_tables = [table for section in self.manuscript.sections for table in section.tables]
         self.tables_page = QWidget(self.content_stack)
@@ -602,7 +565,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._sizing_result_table = False
         for widget in (self.result_table, self.result_table.viewport(), header):
             required(widget, "table sizing surface").installEventFilter(self)
-        self.result_table.setFont(self._report_base_font)
+        self.result_table.setFont(self._manuscript_base_font)
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
@@ -634,7 +597,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         table = self._report_tables[index]
         self.export_values_action.setEnabled(bool(table.quantities))
-        self.export_values_action.setStatusTip('Export exact producer values, scales and interval levels' if table.quantities else 'This table holds formatted output only')
+        self.export_values_action.setStatusTip('Export unrounded values with their scales and confidence levels' if table.quantities else 'Only formatted values are available for this table.')
         self.export_values_action.setToolTip(self.export_values_action.statusTip())
         self.result_table.clear()
         self.result_table.setColumnCount(len(table.headers))
@@ -784,41 +747,25 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.report_action = QAction("Text report", self)
         self.report_action.setCheckable(True)
-        self.report_action.setShortcut("Ctrl+T")
+        self.report_action.setShortcuts([QKeySequence("Ctrl+T"), QKeySequence("Ctrl+M")])
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        self.manuscript_action = QAction('Manuscript', self)
-        self.manuscript_action.setShortcut('Ctrl+M')
-        self.manuscript_action.triggered.connect(lambda: self.nav_tree.setCurrentItem(self.nav_tree.findItems('Manuscript', Qt.MatchFlag.MatchExactly)[0]))
         self.tables_action = QAction("Tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
-        self.copy_report_action = QAction("Copy report", self)
-        self.copy_report_action.setIcon(QIcon(':/icons/actions/copy.svg'))
-        self.copy_report_action.setShortcut("Ctrl+Shift+C")
-        self.copy_report_action.triggered.connect(self._copy_report)
-        self.copy_menu = QMenu(self)
-        self.copy_menu.addAction(self.copy_report_action)
+        self.edit_menu = required(self.menubar.addMenu("&Edit"), "Edit menu")
         for name, text in (("Methods", self.manuscript.methods), ("Results", self.manuscript.results)):
-            action = self.copy_menu.addAction('Copy ' + name.lower() + ' section')
-            required(action, 'copy manuscript action').triggered.connect(
-                lambda checked=False, name=name, text=text: self._copy_section(name, text))
-            required(action, 'copy manuscript action').setEnabled(bool(text))
-        self.copy_menu.addSeparator()
-        self.copy_menu.addAction(self.copy_table_action)
-        self.copy_menu.aboutToShow.connect(lambda: self.copy_table_action.setVisible(
-            self.content_stack.currentWidget() is self.tables_page))
-        self.copy_button = QToolButton(toolbar)
-        self.copy_button.setDefaultAction(self.copy_report_action)
-        self.copy_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.copy_button.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
-        self.copy_button.setMenu(self.copy_menu)
-        toolbar.addWidget(self.copy_button)
+            action = required(self.edit_menu.addAction("Copy " + name.lower() + " section"), "copy section action")
+            action.triggered.connect(lambda checked=False, name=name, text=text: self._copy_section(name, text))
+            action.setEnabled(bool(text))
+        self.edit_menu.addAction(self.copy_table_action)
+        self.content_stack.currentChanged.connect(lambda: self.copy_table_action.setEnabled(self.content_stack.currentWidget() is self.tables_page))
+        self.copy_table_action.setEnabled(False)
         self.export_report_action = QAction("Export report…", self)
         self.export_report_action.setIcon(QIcon(':/icons/actions/export.svg'))
         self.export_report_action.setShortcut("Ctrl+Shift+S")
-        self.export_report_action.setToolTip('Export the manuscript, tables and figures to a Word document (DOCX)')
+        self.export_report_action.setToolTip('Export the text report, tables and figures to PDF or Word (DOCX)')
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
@@ -828,16 +775,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_plot_action.setEnabled(False)
         self.export_plot_action.triggered.connect(app_error_handler.safe_slot(self._export_selected_plot, parent=self))
         toolbar.addAction(self.export_plot_action)
-        self.export_format_control = QComboBox(self)
-        self.export_format_control.setAccessibleName("Plot export format")
-        self.export_format_control.setToolTip("Export format; remembered for your next plot and analysis.")
-        self.export_format_control.currentIndexChanged.connect(lambda _index: save_plot_export_format(self.export_format_control.currentData()) if self.export_format_control.currentData() else None)
-        export_format_widget = QWidget(toolbar)
-        format_layout = QHBoxLayout(export_format_widget)
-        format_layout.setContentsMargins(0, 0, 0, 0)
-        format_layout.addWidget(QLabel('as', export_format_widget))
-        format_layout.addWidget(self.export_format_control)
-        toolbar.addWidget(export_format_widget)
         toolbar.addSeparator()
         self.edit_plot_action = QAction("Edit plot…", self)
         self.edit_plot_action.setIcon(QIcon(':/icons/actions/edit-plot.svg'))
@@ -850,11 +787,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.change_settings_action.setIcon(QIcon(':/icons/actions/settings.svg'))
         self.change_settings_action.setShortcut('Ctrl+Shift+R')
         self.change_settings_action.setEnabled(self._change_settings is not None)
-        self.change_settings_action.setToolTip("Re-run this analysis with its original dataset and changed settings (Ctrl+Shift+R)." if self._change_settings else "This analysis cannot be re-run from here.")
+        self.change_settings_action.setToolTip("Rerun this analysis with its original dataset and changed settings (Ctrl+Shift+R)." if self._change_settings else "This analysis cannot be rerun from here.")
         if self._change_settings is not None:
             self.change_settings_action.triggered.connect(app_error_handler.safe_slot(self._change_analysis_settings, parent=self))
-        for action in (self.export_plot_action, self.edit_plot_action, self.change_settings_action):
-            action.setStatusTip(action.toolTip())
         toolbar.addAction(self.change_settings_action)
         toolbar.addSeparator()
         zoom_widget = QWidget(toolbar)
@@ -890,7 +825,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.addAction(action)
             self.zoom_actions.append(action)
         qt_layout.configure_main_toolbar(toolbar)
-        self.copy_button.setIconSize(QSize(qt_layout.TOOLBAR_ICON_EXTENT, qt_layout.TOOLBAR_ICON_EXTENT))
         for action in (self.fit_page_action, self.fit_width_action):
             button = toolbar.widgetForAction(action)
             if isinstance(button, QToolButton):
@@ -907,13 +841,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.setTabOrder(self.nav_tree, self.graphics_view)
         self.setTabOrder(self.table_selector, self.result_table)
         self.setTabOrder(self.result_table, self.nav_tree)
-        self.results_menu = required(self.menubar.addMenu("&Results"), 'Results menu')
-        for group in ((self.copy_report_action, self.export_report_action, self.export_plot_action),
-                      (self.edit_plot_action, self.change_settings_action),
-                      (self.fit_page_action, self.fit_width_action, *self.zoom_actions)):
-            if self.results_menu.actions():
-                self.results_menu.addSeparator()
-            self.results_menu.addActions(group)
+        file_menu = required(self.menubar.addMenu("&File"), "File menu")
+        self.menubar.insertMenu(self.edit_menu.menuAction(), file_menu)
+        file_menu.addActions((self.export_report_action, self.export_plot_action))
+        file_menu.addSeparator()
+        close_action = required(file_menu.addAction("Close"), "Close action")
+        close_action.setShortcut("Ctrl+W")
+        close_action.triggered.connect(self.close)
+        self.view_menu = required(self.menubar.addMenu("&View"), "View menu")
+        analysis_menu = required(self.menubar.addMenu("&Analysis"), "Analysis menu")
+        analysis_menu.addActions((self.edit_plot_action, self.change_settings_action))
 
     def _fit_page(self):
         if self.content_stack.currentWidget() is not self.figure_page:
@@ -950,24 +887,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _set_zoom(self, percent):
         page = self.content_stack.currentWidget()
-        if page is self.manuscript_page or page is self.report_text:
-            if page is self.manuscript_page:
-                self._manuscript_zoom_percent = percent
-                browser = self.manuscript_text
-                base_font = self._manuscript_base_font
-            else:
-                self._report_zoom_percent = percent
-                browser = self.report_text
-                base_font = self._report_base_font
-            font = QFont(base_font)
-            font.setPointSizeF(base_font.pointSizeF() * percent / 100)
-            scrollbar = required(browser.verticalScrollBar(), "report scrollbar")
-            fraction = scrollbar.value() / max(1, scrollbar.maximum())
-            if browser is self.report_text:
-                self._apply_report_typography(font)
-            else:
-                browser.setFont(font)
-            scrollbar.setValue(round(fraction * scrollbar.maximum()))
+        if page is self.manuscript_page:
+            self._manuscript_zoom_percent = percent
+            font = QFont(self._manuscript_base_font)
+            font.setPointSizeF(font.pointSizeF() * percent / 100)
+            self.manuscript_text.setFont(font)
         elif page is self.figure_page:
             self._fit_width_active = False
             self.graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -980,49 +904,32 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             required(self.graphics_view.horizontalScrollBar(), "horizontal scrollbar").setValue(0)
 
     def _show_report(self, checked):
-        self.content_stack.setCurrentWidget(self.report_text if checked else self.figure_page)
+        if checked:
+            self.export_plot_action.setEnabled(False)
+            self.edit_plot_action.setEnabled(False)
+        item = self.nav_tree.currentItem()
+        if checked and id(item) not in getattr(self, '_report_nav_anchors', {}):
+            report_item = self.nav_tree.findItems('Text report', Qt.MatchFlag.MatchExactly)
+            if report_item:
+                with QSignalBlocker(self.nav_tree):
+                    self.nav_tree.setCurrentItem(report_item[0])
+        self.content_stack.setCurrentWidget(self.manuscript_page if checked else self.figure_page)
         self.zoom_control.setEnabled(True)
         self.fit_width_action.setEnabled(not checked)
-        self._update_zoom_control(self._report_zoom_percent if checked else self._figure_zoom_percent)
+        self._update_zoom_control(self._manuscript_zoom_percent if checked else self._figure_zoom_percent)
 
     def _update_zoom_control(self, percent):
         self.zoom_control.blockSignals(True)
         self.zoom_control.setValue(percent)
         self.zoom_control.blockSignals(False)
 
-    def _report_blocks(self):
-        supplementary_started = False
-        for index, section in enumerate(self.manuscript.sections):
-            if not section.paragraphs and not section.tables:
-                continue
-            heading = section.title
-            if section.source_key == "References":
-                yield "text:references", "References", (section.value or "\n".join(section.paragraphs),), ()
-                continue
-            elif heading == "Supplementary details":
-                heading = "" if supplementary_started else heading
-                supplementary_started = True
-            yield f"manuscript:{index}", heading, section.paragraphs, section.tables
-        if self.results.details:
-            yield "model-configuration", "Model configuration", (self.results.details,), ()
-
     def _copy_section(self, name, text):
         required(QApplication.clipboard(), "clipboard").setText(text)
         self.statusbar.showMessage(name + " copied", 4000)
 
-    def _copy_report(self):
-        from PyQt6.QtCore import QMimeData
-        from rc_metastudio.manuscript_report import ManuscriptReport
-        report = ManuscriptReport.from_result(self.results)
-        mime = QMimeData()
-        mime.setHtml(report.html() + report.html(supplementary=True))
-        mime.setText(report.plain_text())
-        required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Report copied", 4000)
-
     def _export_report(self):
         from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
-        path, selected = QFileDialog.getSaveFileName(self, "Export manuscript report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
+        path, selected = QFileDialog.getSaveFileName(self, "Export report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
             extension = "docx" if "docx" in selected else "pdf"
             destination = str(Path(path).with_suffix("." + extension))
@@ -1063,7 +970,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         selected = self._selected_plot()
         if selected is not None:
             artifact, _item = selected
-            self.save_image_as(artifact, None if artifact.params_path else QPixmap(artifact.image_path), format=self.export_format_control.currentData())
+            self.save_image_as(artifact, None if artifact.params_path else QPixmap(artifact.image_path), format=None)
 
     def _change_analysis_settings(self):
         if self._change_settings is None:
@@ -1242,21 +1149,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def item_clicked(self, item, column):
         if id(item) in getattr(self, "_report_nav_anchors", {}):
             anchor = self._report_nav_anchors[id(item)]
-            if anchor == "manuscript":
-                with QSignalBlocker(self.report_action):
-                    self.report_action.setChecked(False)
-                self.content_stack.setCurrentWidget(self.manuscript_page)
-                self.zoom_control.setEnabled(True)
-                self.fit_width_action.setEnabled(False)
-                self._update_zoom_control(self._manuscript_zoom_percent)
-            elif anchor is None:
+            if anchor is None:
                 self._show_tables()
             else:
                 self.report_action.setChecked(True)
                 self._show_report(True)
-                self.report_text.scrollToAnchor(anchor)
+                self.manuscript_text.scrollToAnchor(anchor)
                 if not anchor:
-                    required(self.report_text.verticalScrollBar(), "report scrollbar").setValue(0)
+                    required(self.manuscript_text.verticalScrollBar(), "report scrollbar").setValue(0)
             self.export_plot_action.setEnabled(False)
             self.edit_plot_action.setEnabled(False)
             return
@@ -1274,22 +1174,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._show_report(selected is None)
             self.export_plot_action.setEnabled(selected is not None)
             self.edit_plot_action.setEnabled(selected is not None and selected[0].capability.editable)
-            self._update_export_formats(selected, item)
-
-    def _update_export_formats(self, selected, item):
-        self.export_format_control.blockSignals(True)
-        self.export_format_control.clear()
-        if selected is not None:
-            for export_format in selected[0].export_formats():
-                self.export_format_control.addItem(export_format.extension.upper(), export_format.extension)
-            preferred = self.export_format_control.findData(load_plot_export_format())
-            if preferred >= 0:
-                self.export_format_control.setCurrentIndex(preferred)
-        else:
-            for section in self.results.sections:
-                if section.title == item.text(0):
-                    self.report_text.scrollToAnchor(section.semantic_id)
-        self.export_format_control.blockSignals(False)
 
     def _text_wrap_width(self):
         viewport_width = self._layout_viewport_width()
@@ -1507,7 +1391,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.source_path = image_path
         item.setPixmap(pixmap)
         item.setToolTip(
-            'To save the image:\nright-click on the image and choose "save image as".'
+            'To save the image:\nright-click on the image and choose "Export plot…".'
         )
 
         self.y_coord += item.boundingRect().size().height() + SECTION_SPACING
@@ -1569,7 +1453,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.setSharedRenderer(renderer)
 
         item.setToolTip(
-            'To save the image:\nright-click on the image and choose "save image as".'
+            'To save the image:\nright-click on the image and choose "Export plot…".'
         )
         item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
@@ -1596,44 +1480,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _make_context_menu(self, artifact, plot_item):
         def _graphics_item_context_menu(event):
-            def add_save_as_menu_action(menu, export_format):
-                action = QAction("Export %s…" % export_format.label, self)
-                guidance = (
-                    PLOT_EXPORT_GUIDANCE[export_format.extension]
-                    if artifact.params_path
-                    else "Save the original raster image at its native resolution."
-                )
-                action.setStatusTip(guidance)
-                action.setToolTip(guidance)
-
-                def save_action(_checked=False, selected_format=export_format):
-                    self.save_image_as(
-                        artifact,
-                        unscaled_image=(
-                            QImage(artifact.image_path)
-                            if selected_format.qt_format is not None
-                            and not artifact.params_path
-                            else None
-                        ),
-                        format=selected_format.extension,
-                    )
-
-                action.triggered.connect(
-                    app_error_handler.safe_slot(save_action, parent=self)
-                )
-                menu.addAction(action)
-
             context_menu = QMenu(self)
             if artifact.capability.editable:
                 if plot_capabilities.option_groups(artifact.plot_kind):
                     action = QAction("Edit plot…", self)
                     action.setStatusTip(
-                        "Edit plot appearance and regenerate the result before closing."
+                        "Edit this plot’s appearance."
                     )
                     action.setToolTip(
-                        "Edit plot appearance and regenerate the result before closing."
+                        "Edit this plot’s appearance."
                     )
-                    action.setWhatsThis("Edit plot appearance and regenerate the result before closing.")
+                    action.setWhatsThis("Edit this plot’s appearance.")
                     action.triggered.connect(
                         app_error_handler.safe_slot(
                             lambda _checked=False: self.edit_plot(artifact, plot_item),
@@ -1641,8 +1498,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                         )
                     )
                     context_menu.addAction(action)
-            for export_format in artifact.export_formats():
-                add_save_as_menu_action(context_menu, export_format)
+            export_action = required(context_menu.addAction("Export plot…"), "plot export action")
+            export_action.triggered.connect(app_error_handler.safe_slot(lambda: self.save_image_as(artifact), parent=self))
 
             app_error_handler.popup_context_menu(
                 context_menu, event.screenPos(), parent=self, event=event
@@ -1829,6 +1686,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not isinstance(artifact, PlotArtifact):
             artifact = self.create_plot_artifact("", artifact, params_path=None)
 
+        dimensions = None
+        if format is None:
+            from rc_metastudio.plot_export_dialog import PlotExportDialog
+            from rc_metastudio.manuscript_report import figure_source
+            source, ratio = figure_source(artifact.display_path())
+            from PyQt6.QtSvg import QSvgRenderer
+            if isinstance(source, QSvgRenderer):
+                width = source.defaultSize().width() / 96
+            else:
+                width = source.width() / max(1, source.dotsPerMeterX() * .0254)
+            dialog = PlotExportDialog(artifact.export_formats(), width, width / ratio, self, resizable=bool(artifact.params_path), native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96)
+            if not dialog.exec():
+                return
+            format = dialog.format_control.currentData()
+            dimensions = dialog.dimensions()
+            if not artifact.params_path:
+                unscaled_image = QImage(artifact.image_path)
+
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
             raise Exception("Invalid format, needs to be one of: %s!" % valid_formats)
@@ -1853,7 +1728,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         file_path, _selected_filter = QFileDialog.getSaveFileName(
             self,
-            "Save Plot As",
+            "Export plot",
             default_path,
             name_filter,
         )
@@ -1867,6 +1742,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if unscaled_image:
             if not unscaled_image.save(destination, export_format.qt_format):
                 raise OSError(f"Could not save plot: {destination}")
+        elif dimensions is not None:
+            width, height, dpi = dimensions
+            self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,
+                                           output_path=destination, width=width, height=height, dpi=dpi)
         else:
             self.plot_service.export(
                 regenerator=regenerator,
@@ -1878,38 +1757,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def position(self):
         return QPointF(float(self.x_coord), float(self.y_coord))
 
-    def _viewport_width(self) -> int:
-        viewport = self.graphics_view.viewport()
-        if viewport is None:
-            raise RuntimeError("Results graphics view has no viewport")
-        return viewport.width()
-
-
-def _reference_html(text: str) -> str:
-    entries = re.split(r"(?:^|\n)\s*\d+\.\s+", text.strip())
-    return "<ol>" + "".join("<li><p>" + escape(entry.strip()).replace("\n", " ") + "</p></li>"
-                             for entry in entries if entry.strip()) + "</ol>"
-
 
 def _report_heading(title):
     title = re.sub(r"\s*-\s*Model Results", " — model results", title)
     title = re.sub(r"\s+-\s*", " — ", title)
     return title.replace("Model Results", "Model results")
-
-
-def _report_table_html(table, section_heading: str, suppress_title=False) -> str:
-    headers, rows = list(table.headers), [list(row) for row in table.rows]
-    _report_heterogeneity_columns(headers, rows)
-    _report_interval_columns(headers, rows)
-    numeric = [all(not row[index] or _numeric_cell(row[index]) or row[index].startswith("[") for row in rows)
-               for index in range(len(headers))]
-    align = ["right" if value else "left" for value in numeric]
-    body = [] if suppress_title or table.title == section_heading else [f"<h3>{escape(_report_heading(table.title))}</h3>"]
-    body.append("<table cellpadding='7' cellspacing='0'>")
-    body.append("<tr>" + "".join(f"<th align='{align[index]}'>{escape(header)}</th>" for index, header in enumerate(headers)) + "</tr>")
-    body.extend("<tr>" + "".join(f"<td align='{align[index]}' style='white-space:pre-wrap;'>" + escape(cell).replace(' to ', '\u00a0to\u00a0').replace('\n', '<br>') + "</td>" for index, cell in enumerate(row)) + "</tr>" for row in rows)
-    body.append("</table>")
-    return "".join(body)
 
 
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
@@ -1953,91 +1805,9 @@ def _normalize_results(results: AnalysisResult) -> AnalysisResult:
                 "id": "result.none",
                 "kind": "text",
                 "order": 0,
-                "title": "No Results",
+                "title": "No results",
                 "source_key": "No Results",
             }
         )
 
     return parse_analysis_result(normalized)
-
-
-def _report_heterogeneity_columns(headers, rows):
-    for index in range(len(headers) - 1, -1, -1):
-        header = headers[index]
-        if header.startswith("Q(df="):
-            df = header.removeprefix("Q(df=").removesuffix(")")
-            headers[index:index + 1] = ["Q", "df"]
-            for row in rows:
-                row[index:index + 1] = [row[index], df]
-        elif header in {"p-value", "Het. p-value"}:
-            headers[index] = "P"
-
-
-def _report_interval_columns(headers, rows):
-    for index, header in enumerate(headers):
-        if header.startswith("Lower bound (") and index + 1 < len(headers) and headers[index + 1].startswith("Upper bound ("):
-            level = header.removeprefix("Lower bound (").removesuffix(")")
-            start = index - 1 if index > 0 and headers[index - 1] == "Estimate" else index
-            headers[start:index + 2] = [f"Estimate [{level}]" if start < index else level]
-            for row in rows:
-                interval = f"[{row[index]},\u00a0{row[index + 1]}]"
-                row[start:index + 2] = [f"{row[start]} {interval}" if start < index else interval]
-            break
-
-
-if __name__ == "__main__":
-    # make test results based on results from when meta-analysis run from amino sample project
-    from rc_metastudio import settings
-    from rc_metastudio.analysis_results import empty_analysis_result
-
-    test_results: dict[str, object] = {
-        "version": 1,
-        "images": {},
-        "texts": {},
-        "display_images": {},
-        "image_var_names": {},
-        "image_params_paths": {},
-        "image_order": None,
-        "plot_capabilities": {},
-        "sections": [],
-    }
-    test_results["images"] = {
-        "Forest plot": settings.analysis_output_path("forest.png")
-    }
-    test_results["texts"] = {
-        "Weights": "Study names        Weights\nGonzalez       1993  7.3%\nPrins          1993  6.2%\nGiamarellou    1991  2.1%\nMaller         1993 10.7%\nSturm          1989  2.0%\nMarik          1991 12.2%\nMuijsken       1988  7.5%\nVigano         1992  1.8%\nHansen         1988  5.3%\nDe Vries       1990  6.1%\nMauracher      1989  2.2%\nNordstrom      1990  5.3%\nRozdzinski     1993 10.3%\nTer Braak      1990  8.7%\nTulkens        1988  1.2%\nVan der Auwera 1991  2.0%\nKlastersky     1977  6.0%\nVanhaeverbeek  1993  1.2%\nHollender      1989  1.8%\n",
-        "Summary": "Binary Random-Effects Model\n\nMetric: Odds Ratio\n\nModel Results\n Estimate  Lower bound  Upper bound  p-value\n 0.770           0.485        1.222    0.267\n\nHeterogeneity\n    τ²  Q(df=18)  Het. p-value       I²\n 0.378    33.360         0.015  46.000%\n\nCalculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236\n",
-    }
-    test_results["sections"] = [
-        {
-            "id": "result.weights",
-            "kind": "text",
-            "order": 0,
-            "title": "Weights",
-            "source_key": "Weights",
-        },
-        {
-            "id": "result.summary",
-            "kind": "text",
-            "order": 1,
-            "title": "Summary",
-            "source_key": "Summary",
-        },
-        {
-            "id": "plot.forest",
-            "kind": "image",
-            "order": 2,
-            "title": "Forest plot",
-            "source_key": "Forest plot",
-        },
-    ]
-    test_results["image_var_names"] = {"forest plot": "forest_plot"}
-    test_results["image_params_paths"] = {
-        "Forest plot": settings.analysis_output_path("1369769105.72079")
-    }  # change this number as necessary
-    test_results["image_order"] = None
-
-    app = app_error_handler.get_or_create_application(sys.argv)
-    resultswindow = ResultsWindow(parse_analysis_result(test_results))
-    resultswindow.show()
-    sys.exit(app.exec())

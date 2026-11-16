@@ -131,6 +131,31 @@ class PlotService:
         raise PlotServiceError("Plot is not editable: %s" % regenerator)
 
     @serialized_r_call
+    def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
+                     output_path: str, width: float, height: float, dpi: int) -> None:
+        """Scale vector artwork without reflowing labels or changing analysis state."""
+        from xml.etree import ElementTree as ET
+        from rc_metastudio import r_bridge
+        with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
+            source = Path(directory) / 'plot.svg'
+            self.export(regenerator=regenerator, params_path=params_path, output_path=str(source))
+            ET.register_namespace('', 'http://www.w3.org/2000/svg')
+            ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
+            tree = ET.parse(source)
+            root = tree.getroot()
+            root.set('width', f'{width}in')
+            root.set('height', f'{height}in')
+            tree.write(source, encoding='utf-8', xml_declaration=True)
+            if Path(output_path).suffix.lower() == '.svgz':
+                import gzip
+                with source.open('rb') as input_file, gzip.open(output_path, 'wb') as output_file:
+                    shutil.copyfileobj(input_file, output_file)
+            elif Path(output_path).suffix.lower() == '.svg':
+                shutil.copyfile(source, output_path)
+            else:
+                r_bridge.export_svg_artwork(str(source), output_path, width, height, dpi)
+
+    @serialized_r_call
     def export(
         self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
     ) -> None:

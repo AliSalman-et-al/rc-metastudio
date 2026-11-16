@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Edit the presentation and output path of a generated plot."""
+"""Edit the presentation of a generated plot."""
 
 import math
 from typing import TYPE_CHECKING
@@ -15,7 +15,6 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
-    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -40,7 +39,6 @@ else:
     from rc_metastudio.forms.ui_edit_plot_dialog import Ui_EditPlotDialog
 
 
-PLOT_EDITOR_SAVE_FILTER = "Plot images (*.pdf *.png *.tif *.tiff *.svg);;All files (*)"
 FOREST_STYLE_LABELS = {
     "default": "Default",
     "revman": "RevMan",
@@ -64,13 +62,12 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._allow_close = True
         self._commit_outcome = None
         self._configure_accessibility()
-        self._hide_internal_plot_path_controls()
         configure_plot_text_inputs(self)
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
         if plot_type == "subgroup_forest":
-            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self._is_reitsma_coefficient = bool(
@@ -129,9 +126,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
         )
-        self.save_btn.clicked.connect(
-            app_error_handler.safe_slot(self._browse_image_path, parent=self)
-        )
         self.style_cbo.currentTextChanged.connect(
             app_error_handler.safe_slot(self._style_changed, parent=self)
         )
@@ -182,9 +176,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.setObjectName("plot_commit_error")
         self._commit_error.setWordWrap(True)
         style_inline_error(self._commit_error)
-        self._commit_error.setAccessibleName("Plot edit error")
+        self._commit_error.setAccessibleName("Could not update plot")
         self._commit_error.setAccessibleDescription(
-            "A plot edit could not be rendered. The last successful plot remains active."
+            "The change could not be drawn. The previous plot is still shown."
         )
         self._commit_error.hide()
         self.verticalLayout.insertWidget(
@@ -307,10 +301,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             return
         super().accept()
 
-    def _hide_internal_plot_path_controls(self):
-        """Keep the generated artifact path as implementation state only."""
-        for widget in (self.label_3, self.image_path, self.save_btn):
-            widget.hide()
 
     def _configure_option_groups(self):
         self.study_order.setVisible("forest" in self._option_groups)
@@ -349,7 +339,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_show_confidence = QCheckBox("Show confidence region", self._sroc_group)
         self.sroc_show_prediction = QCheckBox("Show joint prediction region", self._sroc_group)
         self.sroc_show_summary = QCheckBox("Show summary point", self._sroc_group)
-        self.sroc_show_auc = QCheckBox("Show normalized pAUC annotation", self._sroc_group)
+        self.sroc_show_auc = QCheckBox("Show normalized partial AUC annotation", self._sroc_group)
         self.sroc_show_curve_legend = QCheckBox(
             "Show curve legend", self._sroc_group
         )
@@ -380,7 +370,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             (self.sroc_show_confidence, "Show SROC confidence region", "Show or hide the confidence region."),
             (self.sroc_show_prediction, "Show SROC prediction region", "Show or hide the joint prediction region."),
             (self.sroc_show_summary, "Show SROC summary point", "Show or hide the summary point."),
-            (self.sroc_show_auc, "Show normalized pAUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
+            (self.sroc_show_auc, "Show normalized partial AUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
             (self.sroc_show_curve_legend, "Show SROC curve legend", "Show or hide the curve legend."),
             (self.sroc_show_marker_legend, "Show SROC marker-size legend", "Show or hide the marker-size legend."),
         ):
@@ -482,10 +472,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.show_summary_line.setChecked(
                 self._bool_param("fp_show_summary_line", True)
             )
-            self._set_text(
-                self.image_path,
-                image_path or self._params.get(self._param_name("outpath"), ""),
-            )
+            self._image_path = qt_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
             color = (
                 self._params.get(self._param_name("accent_color"))
                 or FOREST_STYLE_DEFAULT_COLORS[style]
@@ -571,20 +558,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     def _choose_color(self):
         current = QColor(self.accent_color.text())
-        color = QColorDialog.getColor(current, self, "Plot Accent Color")
+        color = QColorDialog.getColor(current, self, "Plot accent color")
         if color.isValid():
             self._set_accent_color(color.name())
 
-    def _browse_image_path(self):
-        plot_label = "SROC" if self.plot_type == "sroc" else self.plot_type.title()
-        selected_path, _selected_filter = QFileDialog.getSaveFileName(
-            self,
-            "Save %s Plot Image" % plot_label,
-            qt_text.to_native_text(self.image_path.text()),
-            PLOT_EDITOR_SAVE_FILTER,
-        )
-        if selected_path:
-            self.image_path.setText(selected_path)
 
     def _set_accent_color(self, color):
         text = str(color or FOREST_STYLE_DEFAULT_COLORS["default"])
@@ -674,7 +651,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_plot_ub": self._automatic_value(self.plot_ub_le),
             "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
-            "fp_outpath": qt_text.to_native_text(self.image_path.text()),
+            "fp_outpath": self._image_path,
         }
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:
@@ -692,7 +669,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 "bp_show_confidence_band": self.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": self.show_prediction_interval.isChecked(),
                 "bp_show_legend": self.show_legend.isChecked(),
-                "bp_outpath": qt_text.to_native_text(self.image_path.text()),
+                "bp_outpath": self._image_path,
             }
             regression_display_path = self._scalar(
                 self._params.get("bp_display_path", "")

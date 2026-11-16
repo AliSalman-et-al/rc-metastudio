@@ -468,7 +468,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
         app.processEvents()
 
         assert warnings == [
-            "Expected a whole number (count), but a decimal value was entered."
+            "Counts must be whole numbers."
         ]
         assert dialog.inconsistencyLabel.isVisible()
         assert dialog.inconsistencyLabel.wordWrap()
@@ -501,7 +501,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
     ("field_name", "invalid_value", "guidance", "restored"),
     [
         ("effect_text_box", "not numeric", "must be numeric", "0.75"),
-        ("lower_text_box", "0.95", "lower CI must be less", "0.6"),
+        ("lower_text_box", "0.95", "lower limit must be below", "0.6"),
     ],
     ids=["effect", "interval"],
 )

@@ -191,7 +191,7 @@ def run(
         app.processEvents()
         app.processEvents()
         if scenario.startswith("analysis-category-"):
-            report = view.report_text.toPlainText()
+            report = view.manuscript_text.toPlainText()
             table = next(t for section in view.results.sections for t in section.tables if t.title == "Regression coefficients")
             terms = [row[0] for row in table.rows if "vs" in row[0]]
             assert len(terms) == 3 and all("treatment group" in term and "reference" in term for term in terms), terms
@@ -204,13 +204,14 @@ def run(
         if clinical:
             assert any(section.semantic_id.startswith("diagnostic.reitsma.summary")
                        for section in view.results.sections), [section.semantic_id for section in view.results.sections]
-            report = view.report_text.toPlainText()
+            report = view.manuscript_text.toPlainText()
             first_section = min(view.results.sections, key=lambda section: section.order)
             assert first_section.source_key == "Clinical interpretation", first_section
             primary_heading = "Diagnostic summary" if view.results.analysis_method == "diagnostic.reitsma" else "Pooled effect"
-            assert report.startswith(primary_heading + "\n"), report
+            assert report.startswith(view.manuscript.title + "\n"), report
+            assert primary_heading in report, report
             assert report.index(first_section.value.splitlines()[0]) < report.index("Model configuration"), report
-        assert view.content_stack.currentWidget() is (view.report_text if clinical else view.figure_page)
+        assert view.content_stack.currentWidget() is (view.manuscript_page if clinical else view.figure_page)
         if clinical:
             assert view.nav_tree.currentItem().text(0) == "Text report"
             view.nav_tree.setCurrentItem(view._last_plot_item)
@@ -248,7 +249,8 @@ def run(
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
-        view.copy_report_action.trigger()
+        view.manuscript_text.selectAll()
+        view.manuscript_text.copy()
         report = app.clipboard().text()
         from tests.e2e.report_retention import assert_report
         assert_report(view)
@@ -256,7 +258,7 @@ def run(
                          "analysis-data-reg-coef", "analysis-data-generic-effect"}
                 and group_names is None and prepare is None
                 and metric_override is None and workflow == "standard"):
-            text = view.report_text.toPlainText()
+            text = view.manuscript_text.toPlainText()
             manuscript = view.manuscript_text.toPlainText()
             participant_arm = window.model.arm_names[0]
             record("onearm-participant-scope", view, report=text, manuscript=manuscript)
@@ -268,8 +270,8 @@ def run(
                 assert 'Participants' not in text, text
         if scenario.startswith("analysis-diagnostic-regression"):
             assert "Image Order" not in view.texts
-            assert "diagnostic.reitsma.sensitivity.coefficients" not in view.report_text.toPlainText()
-            assert "diagnostic.reitsma.specificity.coefficients" not in view.report_text.toPlainText()
+            assert "diagnostic.reitsma.sensitivity.coefficients" not in view.manuscript_text.toPlainText()
+            assert "diagnostic.reitsma.specificity.coefficients" not in view.manuscript_text.toPlainText()
             if scenario == "analysis-diagnostic-regression-multiple":
                 from tests.e2e.report_retention import assert_retained_table
                 held = [(section, table) for section in view.results.sections for table in section.tables if table.title == "Overall ML likelihood-ratio test"]
@@ -290,7 +292,7 @@ def run(
             observed_test = any(table.title == "Test of subgroup differences"
                                 for section in view.results.sections for table in section.tables)
             assert observed_test == expected_test, (method, dict(view.texts))
-            assert ("Test of subgroup differences" in view.report_text.toPlainText()) == expected_test
+            assert ("Test for subgroup differences:" in view.manuscript.results) == expected_test
         for path in (view.results.display_images or view.results.images).values():
             assert (
                 QSvgRenderer(str(path)).isValid()
@@ -308,8 +310,8 @@ def run(
         if clinical:
             assert view.report_action.isChecked()
             assert view.nav_tree.currentItem().text(0) == "Text report"
-            assert view.report_text.horizontalScrollBar().maximum() == 0
-            record("clinical-report", view, report=view.report_text.toPlainText())
+            assert view.manuscript_text.horizontalScrollBar().maximum() == 0
+            record("clinical-report", view, report=view.manuscript_text.toPlainText())
             view.report_action.trigger()
             app.processEvents()
         return view
@@ -844,17 +846,17 @@ def run(
     properties.reject()
     app.processEvents()
     if scenario == "analysis-diagnostic-regression-multiple":
-        assert "Group = A vs B" in view.report_text.toPlainText(), view.report_text.toPlainText()
+        assert "Group = A vs B" in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
     if scenario == "analysis-diagnostic-combined":
-        assert "Diagnostic odds ratio" in view.report_text.toPlainText(), view.report_text.toPlainText()
-        assert view.results.details.count("Estimator: DerSimonian-Laird") == 2, view.results.details
-        assert view.results.details.count("Estimator: Restricted Maximum Likelihood") == 3, view.results.details
-        report = view.report_text.toPlainText()
-        assert report.startswith("Pooled effect\n"), report
+        assert "Diagnostic odds ratio" in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
+        assert view.results.details.count("Estimator: DerSimonian–Laird") == 2, view.results.details
+        assert view.results.details.count("Estimator: Restricted maximum likelihood (REML)") == 3, view.results.details
+        report = view.manuscript_text.toPlainText()
+        assert report.startswith(view.manuscript.title + "\n"), report
         sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity summary")
         heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
-        from tests.e2e.report_retention import assert_retained_table
-        assert_retained_table(view, sensitivity, heterogeneity)
+        from tests.e2e.report_retention import assert_report
+        assert_report(view)
         assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]

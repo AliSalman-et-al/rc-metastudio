@@ -1383,7 +1383,7 @@ def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, mon
         dialog._executed_studies = (kept,)
         assert dict(dialog._manuscript_model_info()) == {"Studies (k)": "1", "Participants in A": "20", "Participants in B": "30"}
         context = dialog._result_context({"adjust": .5, "to": "only0"})
-        assert "1 studies were included (1 studies were excluded)" in context
+        assert "1 study was included (20 participants in A, 30 in B); 1 study was excluded" in context
         assert "100" not in context and "correction" not in context
     finally:
         dialog.close()

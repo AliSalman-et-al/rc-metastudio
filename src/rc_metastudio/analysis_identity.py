@@ -33,7 +33,7 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         else:
             details.append("Each row omits the named study; compare with the all-studies estimate.")
     elif workflow == "subgroup":
-        details.append(f"Subgroups by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
+        details.append(f"Subgroups defined by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
         details.append("Moderators: " + ", ".join(moderators))
         if model.get_current_data_type() != "diagnostic":
@@ -69,7 +69,7 @@ def dataset_label(model):
         "proportion": "Single-arm proportion", "proportions": "Two-arm binary",
         "mean": "Single-arm mean", "means": "Two-arm continuous",
         "smd": "Two-arm continuous", "reg_coef": "Regression coefficient",
-        "generic_effect": "Generic entered effect", "hazard_ratio": "Time-to-event",
+        "generic_effect": "Entered effect estimate", "hazard_ratio": "Time-to-event",
         "incidence_rate_ratio": "Event rates",
     }.get(model.get_current_data_subtype(), str(model.get_current_data_type() or "Dataset").title())
 

@@ -75,7 +75,7 @@ def analysis_setup(driver, capture, missing):
         assert model.setData(model.index(row, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked.value, QtCore.Qt.ItemDataRole.CheckStateRole)
     form.run_ma()
     driver.app.processEvents()
-    assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+    assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
     assert form.analysis_error_label.focusPolicy() == QtCore.Qt.FocusPolicy.NoFocus
     assert "Sorry" not in form.analysis_error_details.toPlainText()
     assert form.analysis_error_panel.isVisible()
@@ -108,7 +108,7 @@ def results(driver, capture, missing):
     assert view.nav_tree.isVisible() and view.graphics_view.isVisible()
     view.showMaximized()
     driver.app.processEvents()
-    for detail in ("Manuscript", "Text report", "Tables", "Settings"):
+    for detail in ("Text report", "Tables"):
         item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         capture("F-amino-" + detail.lower().replace(" ", "-"), view)
@@ -293,8 +293,6 @@ def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
     form = kind(view.plot_service.load_params(artifact.params_path), artifact.image_path,
                           parent=view, plot_type=artifact.plot_kind)
     form.show()
-    if isinstance(form, FunnelPlotEditorDialog):
-        assert all(not control.isVisible() for control in (form.path_label, form.path_edit, form.browse_button))
     capture(f"{prefix}-{detail}-top", form)
     for area in form.findChildren(QtWidgets.QScrollArea):
         scrollbar = required(area.verticalScrollBar(), "plot editor scrollbar")
@@ -599,7 +597,7 @@ def dark(driver, capture, missing):
             view = driver.analyze(driver.app, driver.window, "binary.random")
         finally:
             driver.record_step = original_record
-        item = view.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
+        item = view.nav_tree.findItems("Text report", QtCore.Qt.MatchFlag.MatchExactly)[0]
         view.nav_tree.setCurrentItem(item)
         capture("J-manuscript", view)
         title, image = next(iter(view.results.images.items()))

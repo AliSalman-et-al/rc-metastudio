@@ -200,3 +200,8 @@ _Avoid_: Adjusted I², meta-regression I²
 **Moderator coefficient plot**:
 An editable forest plot of moderator coefficients for one modeled side of a Reitsma bivariate meta-regression. Sensitivity and specificity use separate plots.
 _Avoid_: Meta-regression bubble plot, two-panel coefficient plot
+
+**Text report**:
+The formatted written account of an analysis, including Methods, Results,
+numerical tables, references and model configuration.
+_Avoid_: Manuscript as a separate results page, Settings as a duplicate report

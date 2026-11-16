@@ -271,7 +271,7 @@ rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
 rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
     if (is.null(i2)) return(NULL)
     values <- c(
-        "Zhou-Dendukuri"=if (is.data.frame(i2)) i2[["Zhou"]] else i2[["Zhou"]],
+        "Zhou\u2013Dendukuri"=if (is.data.frame(i2)) i2[["Zhou"]] else i2[["Zhou"]],
         "Holling (unadjusted), method 1"=if (is.data.frame(i2)) i2[["HollingUnadjusted1"]] else NA_real_,
         "Holling (unadjusted), method 2"=if (is.data.frame(i2)) i2[["HollingUnadjusted2"]] else NA_real_,
         "Holling (unadjusted), method 3"=if (is.data.frame(i2)) i2[["HollingUnadjusted3"]] else NA_real_,
@@ -293,7 +293,7 @@ rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {
     values <- if (is.data.frame(i2)) unlist(i2[1L, c("Zhou", "HollingUnadjusted1", "HollingUnadjusted2", "HollingUnadjusted3", "HollingAdjusted1", "HollingAdjusted2", "HollingAdjusted3")], use.names=FALSE) else numeric()
     if (length(values) != 7L || any(!is.finite(values))) return(NULL)
     list(
-        `Zhou-Dendukuri`=rcmetar.reitsma.display.percent(values[[1L]], digits),
+        "Zhou\u2013Dendukuri"=rcmetar.reitsma.display.percent(values[[1L]], digits),
         `Holling unadjusted range`=paste(rcmetar.reitsma.display.percent(min(values[2:4]), digits), "to", rcmetar.reitsma.display.percent(max(values[2:4]), digits)),
         `Holling adjusted range`=paste(rcmetar.reitsma.display.percent(min(values[5:7]), digits), "to", rcmetar.reitsma.display.percent(max(values[5:7]), digits))
     )
@@ -832,7 +832,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         "Diagnostic I-squared"=list(
             `I-squared summary`=rcmetar.reitsma.display.i2.summary(extracted$i2, digits),
             `I-squared estimates`=rcmetar.reitsma.display.i2(extracted$i2, digits),
-            Interpretation="I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators."
+            Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; Zhou\u2013Dendukuri and Holling are distinct estimators."
         ),
         "Model information"=model.info
     )
@@ -840,8 +840,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         AUC=extracted$auc[["AUC"]] %||% NULL,
         normalized.partial.AUC=extracted$auc[["pAUC"]] %||% NULL,
         full.FPR.bounds=c(0.01, 0.99), partial.FPR.bounds=extracted$partial.auc.bounds,
-        note="The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.",
-        `AUC confidence interval`="Not provided by mada::AUC(); no invented AUC CI."
+        `AUC confidence interval`="No confidence interval is available for the AUC."
     )
     if (!is.null(extracted$auc)) {
         desired.order <- c("Clinical interpretation", "Summary operating point",
@@ -1172,7 +1171,7 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
                       "Sensitivity coefficients"=sens.coefficients, "Specificity coefficients"=spec.coefficients,
                       "Residual diagnostic I-squared"=list(
                           `I-squared estimates`=rcmetar.reitsma.display.i2(sm$i2, digits),
-                          Interpretation="I-squared is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
+                          Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
                       ), "Moderator coding"=public.coding,
                       "Model information"=model.info),
          References=rcmetar.unique.references(rcmetar.method.references("reitsma"))))

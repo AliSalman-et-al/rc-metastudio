@@ -100,8 +100,8 @@ def test_small_study_effect_options_explain_jargon_and_have_label_buddies(
         assert dialog.point_size_label.buddy() is dialog.point_size_spin
         assert dialog.label_policy_label.buddy() is dialog.label_policy_combo
 
-        assert "tau-squared" in dialog.include_tau2_check.toolTip()
-        assert "established" in dialog.trim_fill_estimator_combo.toolTip()
+        assert "τ²" in dialog.include_tau2_check.toolTip()
+        assert "potentially missing studies" in dialog.trim_fill_estimator_combo.toolTip()
         assert "left or right" in dialog.trim_fill_side_combo.toolTip()
         assert "common-effect" in dialog.trim_fill_model_combo.toolTip()
         assert "large-study limit" in dialog.extrapolation_check.toolTip()
@@ -234,9 +234,9 @@ def test_correction_policy_refreshes_authoritative_or_routing(qapp, monkeypatch)
     )
     dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("binary", "OR"))
     try:
-        assert dialog.automatic_test_label.text().startswith("Primary test Harbord")
+        assert dialog.automatic_test_label.text().startswith("Primary test: Harbord")
         dialog.correction_policy_combo.setCurrentText("All studies")
-        assert dialog.automatic_test_label.text().startswith("Primary test Rücker AS+RE")
+        assert dialog.automatic_test_label.text().startswith("Primary test: Rücker AS+RE")
         assert "All studies" in policies
     finally:
         dialog.close()
@@ -275,7 +275,7 @@ def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
     )
     dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
     try:
-        assert dialog.automatic_test_label.text().startswith("Primary test Classical Egger")
+        assert dialog.automatic_test_label.text().startswith("Primary test: Classical Egger")
     finally:
         dialog.close()
 

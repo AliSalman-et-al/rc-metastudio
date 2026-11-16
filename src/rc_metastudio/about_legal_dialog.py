@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import QApplication
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QUrl, QEvent, QTimer
-from PyQt6.QtGui import QPalette
 from PyQt6.QtGui import QPixmap, QRegion, QTextDocument
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 
@@ -28,7 +27,7 @@ ABOUT_TEXT = """<table align="center" cellpadding="12" cellspacing="0">
 <tr><td bgcolor="#ffffff"><img src="rcms:about-logo" width="260" alt="RC MetaStudio"></td></tr>
 </table>
 
-<p>RC MetaStudio is open-source desktop software for advanced meta-analysis.</p>
+<p>RC MetaStudio is open-source software for advanced <span style="white-space:nowrap">meta-analysis</span>.</p>
 <p>Developed and maintained by Research Consultancy (RC).</p>
 <p>Ali Salman, Kaneez Fatima, Muhammad Shahzeb Khan, Tariq Jamal Siddiqi, Muhammad Shariq Usman, and contributors.</p>
 <p>Licensed under GPL-3.0-or-later.</p>
@@ -46,7 +45,10 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         self.setupUi(self)
         self.setWindowTitle('About RCMS')
         self.debug_info = f'RC MetaStudio {application_metadata.VERSION}\nPython {platform.python_version()} · Qt {QT_VERSION_STR} · PyQt {PYQT_VERSION_STR}\n{r_version or 'R runtime not loaded'}\n{platform.platform()}'
+        short_r = r_version.removeprefix('R version ').split()[0] if r_version else None
+        self.runtime_text = (f'R {short_r}' if short_r else 'R not loaded') + f' · Qt {QT_VERSION_STR} · Python {platform.python_version()}'
         debug_button = required(self.buttonBox.addButton('Copy debug info', QDialogButtonBox.ButtonRole.ActionRole), 'debug button')
+        debug_button.setMinimumWidth(debug_button.sizeHint().width())
         copied_timer = QTimer(debug_button)
         copied_timer.setSingleShot(True)
         copied_timer.timeout.connect(lambda: debug_button.setText('Copy debug info'))
@@ -114,5 +116,5 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         required(browser.document(), "About document").addResource(
             QTextDocument.ResourceType.ImageResource, QUrl("rcms:about-logo"), logo)
         color = qt_layout.readable_link_color(browser.palette()).name()
-        browser.setHtml(ABOUT_TEXT.format(version=application_metadata.VERSION, runtime=escape(self.debug_info.split('\n', 1)[1]).replace('\n', '<br>')).replace('<a href=', '<a style="color:' + color + '" href='))
+        browser.setHtml(ABOUT_TEXT.format(version=application_metadata.VERSION, runtime=escape(self.runtime_text)).replace('<a href=', '<a style="color:' + color + '" href='))
         scrollbar.setValue(position)

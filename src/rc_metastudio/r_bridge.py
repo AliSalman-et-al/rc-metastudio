@@ -66,9 +66,11 @@ def initialize_r():
     try:
         _initialize_rpy2()
     except Exception as error:
+        cause = error
+        while cause.__cause__ is not None:
+            cause = cause.__cause__
         raise r_runtime.AnalysisBackendUnavailableError(
-            "Unable to start the embedded R runtime. Install the pinned R/RCMetaR "
-            "runtime or repair the packaged integration kit, then restart RC MetaStudio."
+            f"Embedded R failed to initialize: {cause.__class__.__name__}: {cause}"
         ) from error
 
 
@@ -253,8 +255,7 @@ class RLibraryLoader:
             return (True, msg)
         except Exception as exc:
             raise RuntimeError(
-                "The %s R package is not installed.\nPlease \
-install this package and then restart RC MetaStudio."
+                "The %s R package is not installed.\nInstall this R package, then restart RC MetaStudio."
                 % name
             ) from exc
 
@@ -1750,8 +1751,8 @@ def _section_display_fields(title, supplied, child_index):
         # ``Summary``) that renders into several text values.  Keep its
         # semantic title, but point at the first rendered child value so the
         # validated result still has exactly one section per value.
-        return supplied["title"], title
-    return title, title
+        return supplied["title"].replace('I-squared', 'I²'), title
+    return title.replace('I-squared', 'I²'), title
 
 
 def _image_section_metadata(
@@ -2480,7 +2481,7 @@ def _console_payload(line, stripped):
 def _replace_result_labels(text):
     text = text.replace("cbind(tsens, tfpr)", "Sensitivity and false-positive rate")
     for raw_label, display_label in (
-        ("Zhou.Dendukuri", "Zhou-Dendukuri"),
+        ("Zhou.Dendukuri", "Zhou–Dendukuri"),
         ("Holling.Unadjusted", "Holling (unadjusted)"),
         ("Holling.Adjusted", "Holling (adjusted)"),
         ("posLR", "Positive Likelihood Ratio"),
@@ -2850,3 +2851,23 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
         quantities = [[_automatic_quantity(values[row + col*nrow]) for col in range(ncol)]
                       for row in range(1 if first_row_headers else 0, nrow)]
     return rows, quantities
+
+
+@serialized_r_call
+def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
+    """Convert proportionally sized SVG artwork using the installed R renderer."""
+    _call_dynamic(_r_eval('RCMetaR:::rcmetar.export.svg_render'), source, destination,
+                  _r_param_value({'width': width, 'height': height, 'dpi': dpi}))
+    if destination.lower().endswith('.png'):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QImage, QPainter
+        source_image = QImage(destination)
+        image = QImage(source_image.size(), QImage.Format.Format_RGB32)
+        image.fill(Qt.GlobalColor.white)
+        painter = QPainter(image)
+        painter.drawImage(0, 0, source_image)
+        painter.end()
+        image.setDotsPerMeterX(round(dpi / .0254))
+        image.setDotsPerMeterY(round(dpi / .0254))
+        if not image.save(destination, 'PNG'):
+            raise OSError('Could not write PNG resolution metadata')

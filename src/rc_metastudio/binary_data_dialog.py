@@ -827,10 +827,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         try:
             value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
-            return "Raw data needs to be numeric."
+            return "Enter a number."
 
         if not value.is_integer():
-            return "Expected a whole number (count), but a decimal value was entered."
+            return "Counts must be whole numbers."
 
         if value < 0:
             return "Counts cannot be negative."

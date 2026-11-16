@@ -220,7 +220,7 @@ binary.fixed.inv.var.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                           )
@@ -338,7 +338,7 @@ binary.fixed.mh.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                           )
@@ -461,7 +461,7 @@ binary.fixed.peto.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                          )
@@ -574,7 +574,7 @@ binary.random.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any study has zero events", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
                                    is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
                                    is added to all two-by-two tables if at least one table contains a zero.")
                          )

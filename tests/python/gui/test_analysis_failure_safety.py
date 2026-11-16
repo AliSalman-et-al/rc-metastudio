@@ -198,7 +198,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
 
         assert not shown
         assert "simulated R failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
         assert "simulated R failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
@@ -293,7 +293,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
 
         assert not shown
         assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
         assert "simulated recompute failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
@@ -386,7 +386,7 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
         assert "simulated setup failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Tick Include for at least one study with complete data."
+        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
         assert "simulated setup failure" not in form.analysis_error_label.text()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
@@ -423,7 +423,7 @@ def test_method_parameters_build_failure_reports_preparation_error(monkeypatch):
 
         assert form is None
         assert shown
-        assert shown[0][1] == "Could Not Prepare Analysis"
+        assert shown[0][1] == "Could not prepare analysis"
         assert "study name is missing" in shown[0][2]
         assert "backend is not available" not in shown[0][2]
     finally:
@@ -449,8 +449,8 @@ def test_method_parameters_backend_unavailable_keeps_backend_error(monkeypatch):
 
         assert form is None
         assert shown
-        assert shown[0][1] == "Analysis Backend Unavailable"
-        assert "could not be reached" in shown[0][2]
+        assert shown[0][1] == "Analysis unavailable"
+        assert "R is not available" in shown[0][2]
         assert "not available in this maintained build" not in shown[0][2]
     finally:
         _close_without_prompt(app, window)
@@ -509,7 +509,7 @@ def test_results_window_build_failure_reports_display_error(monkeypatch):
         )
 
         assert shown
-        assert shown[0][1] == "Could Not Display Analysis Results"
+        assert shown[0][1] == "Could not display analysis results"
         assert "plot image could not be loaded" in shown[0][2]
         assert "analysis could not be completed" not in shown[0][2]
     finally:
@@ -537,7 +537,7 @@ def test_project_save_failure_reports_original_error(monkeypatch, tmp_path):
 
         assert window.save() is False
         assert shown
-        assert shown[0][1] == "Could Not Save Project"
+        assert shown[0][1] == "Could not save project"
         assert "disk is full" in shown[0][2]
         assert "whoops" not in shown[0][2].lower()
     finally:
@@ -562,13 +562,13 @@ def test_opening_non_project_payload_reports_invalid_project(monkeypatch, tmp_pa
         assert window.open(str(invalid_project)) is None
 
         assert shown
-        assert shown[0][1] == "Could Not Open Project"
-        assert "This file is not a valid RC MetaStudio project" in shown[0][2]
+        assert shown[0][1] == "Could not open project"
+        assert "This file is damaged or is not a valid RC MetaStudio project" in shown[0][2]
         assert "get_outcome_names" not in shown[0][2]
         assert window.out_path is None
 
         shown.clear()
-        with pytest.raises(RuntimeError, match="This file is not a valid RC MetaStudio project"):
+        with pytest.raises(RuntimeError, match="This file is damaged or is not a valid RC MetaStudio project"):
             window.open(str(invalid_project), raise_on_error=True)
         assert shown == []
     finally:

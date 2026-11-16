@@ -484,7 +484,7 @@ def test_continuous_sample_size_is_rejected_before_model_or_r(monkeypatch, inval
         assert dialog.simple_table.item(0, 0).text() == invalid_n
         assert not warnings
         assert not dialog.summary_error.isHidden()
-        assert "numeric" in dialog.summary_error.text().lower() or "whole number" in dialog.summary_error.text().lower()
+        assert dialog.summary_error.text() == ("Enter a number." if invalid_n in ("nan", "inf") else "N must be a positive whole number.")
         assert not dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
         dialog.simple_table.item(0, 0).setText("10")
         app.processEvents()

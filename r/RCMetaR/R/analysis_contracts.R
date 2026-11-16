@@ -133,7 +133,7 @@ rcmetar.method.references <- function(method) {
       "Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
     ),
     "rma.peto"=c(
-      "Peto one-step odds-ratio method: Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985). Beta blockade during and after myocardial infarction: An overview of the randomized trials. Progress in Cardiovascular Disease, 27(5), 335-371. doi:10.1016/S0033-0620(85)80003-7.",
+      "Peto one-step odds-ratio method: Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985). Beta blockade during and after myocardial infarction: An overview of the randomized trials. Progress in Cardiovascular Diseases, 27(5), 335-371. doi:10.1016/S0033-0620(85)80003-7.",
       "Sparse-data comparison: Bradburn, M. J., Deeks, J. J., Berlin, J. A., & Localio, A. R. (2007). Much ado about nothing: A comparison of the performance of meta-analytical methods with rare events. Statistics in Medicine, 26(1), 53-77. doi:10.1002/sim.2528.",
       "Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03."
     ),
@@ -160,11 +160,11 @@ rcmetar.method.references <- function(method) {
       "Standardized-mean-difference asymmetry test: Pustejovsky, J. E., & Rodgers, M. A. (2019). Testing for funnel plot asymmetry of standardized mean differences. Research Synthesis Methods, 10(1), 57-71. doi:10.1002/jrsm.1332."
     ),
     "publication.bias.rucker"=c(
-      "Arcsine asymmetry test: Rucker, G., Schwarzer, G., & Carpenter, J. R. (2008). Arcsine test for publication bias in meta-analyses with binary outcomes. Statistics in Medicine, 27(5), 746-763. doi:10.1002/sim.2971.",
+      "Arcsine asymmetry test: R\u00fccker, G., Schwarzer, G., & Carpenter, J. R. (2008). Arcsine test for publication bias in meta-analyses with binary outcomes. Statistics in Medicine, 27(5), 746-763. doi:10.1002/sim.2971.",
       "Additive random-effects regression: Thompson, S. G., & Sharp, S. J. (1999). Explaining heterogeneity in meta-analysis: A comparison of methods. Statistics in Medicine, 18(20), 2693-2708."
     ),
     "publication.bias.deeks"=c(
-      "Deeks test: Deeks, J. J., Macaskill, P., & Irwig, L. (2005). The performance of tests of publication bias and other sample size effects in systematic reviews of diagnostic test accuracy was assessed. Journal of Clinical Epidemiology, 58(9), 882-893. doi:10.1016/j.jclinepi.2004.06.012."
+      "Deeks test: Deeks, J. J., Macaskill, P., & Irwig, L. (2005). The performance of tests of publication bias and other sample size effects in systematic reviews of diagnostic test accuracy was assessed. Journal of Clinical Epidemiology, 58(9), 882-893. doi:10.1016/j.jclinepi.2005.01.016."
     ),
     "publication.bias.funnel"=c(
       "Funnel plot axis choice: Sterne, J. A. C., & Egger, M. (2001). Funnel plots for detecting bias in meta-analysis: Guidelines on choice of axis. Journal of Clinical Epidemiology, 54(10), 1046-1055. doi:10.1016/S0895-4356(01)00377-8."
@@ -185,7 +185,7 @@ rcmetar.method.references <- function(method) {
     ),
     "reitsma"=c(
       "Bivariate diagnostic meta-analysis: Reitsma, J. B., Glas, A. S., Rutjes, A. W., Scholten, R. J., Bossuyt, P. M., & Zwinderman, A. H. (2005). Bivariate analysis of sensitivity and specificity produces informative summary measures in diagnostic reviews. Journal of Clinical Epidemiology, 58(10), 982-990.",
-      "Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2006). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251.",
+      "Diagnostic accuracy model unification: Harbord, R. M., Deeks, J. J., Egger, M., Whiting, P., & Sterne, J. A. (2007). A unification of models for meta-analysis of diagnostic accuracy studies. Biostatistics, 8(2), 239-251. doi:10.1093/biostatistics/kxl004.",
       "Statistical implementation: Doebler, P. (2025). mada: Meta-Analysis of Diagnostic Accuracy, version 0.5.12."
     ),
     "rutter.gatsonis"=c(
@@ -268,7 +268,7 @@ rcmetar.inference.method.references <- function(params) {
   if (method == "adhoc") {
     references <- c(
       references,
-      "Modified Knapp-Hartung inference: Jackson, D., Law, M., Rucker, G., & Schwarzer, G. (2017). The Hartung-Knapp modification for random-effects meta-analysis: A useful refinement but are there any residual concerns? Statistics in Medicine, 36(25), 3923-3934. doi:10.1002/sim.7411."
+      "Modified Knapp-Hartung inference: Jackson, D., Law, M., R\u00fccker, G., & Schwarzer, G. (2017). The Hartung-Knapp modification for random-effects meta-analysis: A useful refinement but are there any residual concerns? Statistics in Medicine, 36(25), 3923-3934. doi:10.1002/sim.7411."
     )
   }
   references

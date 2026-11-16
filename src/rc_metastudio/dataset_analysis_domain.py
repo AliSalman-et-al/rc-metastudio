@@ -8,7 +8,7 @@ from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES
 from collections.abc import Buffer, Callable, Mapping, Sequence
 from typing import Protocol, SupportsFloat, SupportsIndex, TypeAlias, cast, runtime_checkable
 
-from rc_metastudio.analysis_dataset import Dataset, StudyRow
+from rc_metastudio.analysis_dataset import StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 from rc_metastudio.analysis_catalog import BINARY, BINARY_TWO_ARM_METRICS, CONTINUOUS, CONTINUOUS_TWO_ARM_METRICS, DIAGNOSTIC, DIAGNOSTIC_METRICS
 from rc_metastudio.analysis_validation import EMPTY_VALS

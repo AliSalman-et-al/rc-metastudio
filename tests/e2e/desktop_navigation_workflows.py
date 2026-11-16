@@ -277,10 +277,11 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
 
     view = analyze(app, window, 'binary.random')
-    view.export_format_control.setCurrentIndex(view.export_format_control.findData('svg'))
+    from rc_metastudio.settings import save_plot_export_format, load_plot_export_format
+    save_plot_export_format('svg')
     view.report_action.trigger()
     assert view.nav_tree.currentItem().text(0) == 'Text report'
-    report = view.report_text.toPlainText()
+    report = view.manuscript_text.toPlainText()
     from tests.e2e.report_retention import assert_report
     assert_report(view)
     assert report.index('Pooled effect') < report.index('Model fit') < report.index('Study results') < report.index('Model configuration')
@@ -289,13 +290,14 @@ def run(app, window, work, root, record, analyze):
     assert 'Test for overall effect (H' not in report
     assert 'Normal approximation' in report
     record('review1-report-top', view, text=report)
-    config = next(item for item in view.nav_tree.findItems('Settings', QtCore.Qt.MatchFlag.MatchExactly))
+    config = next(item for item in view.nav_tree.findItems('Model configuration', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
     view.nav_tree.setCurrentItem(config)
-    assert view.report_text.isVisible()
+    assert view.manuscript_text.isVisible()
     record('review1-report-configuration', view)
     text_entry = next(item for item in view.nav_tree.findItems('Text report', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(text_entry)
-    view.copy_report_action.trigger()
+    view.manuscript_text.selectAll()
+    view.manuscript_text.copy()
     copied = app.clipboard().text()
     assert copied.index('Methods') < copied.index('Results')
     assert view.manuscript.results in copied
@@ -312,7 +314,7 @@ def run(app, window, work, root, record, analyze):
     keyboard_traversal(app, view, [view.table_selector, view.result_table, view.nav_tree, view.zoom_control], record, "results")
     plot = next(item for item in view.nav_tree.findItems('Forest plot', QtCore.Qt.MatchFlag.MatchExactly))
     view.nav_tree.setCurrentItem(plot)
-    assert view.export_format_control.currentData() == 'svg'
+    assert load_plot_export_format() == 'svg'
     view.report_action.trigger()
     assert view.nav_tree.currentItem() is text_entry
     view.report_action.trigger()
@@ -320,6 +322,6 @@ def run(app, window, work, root, record, analyze):
     view.close()
     app.processEvents()
     rerun = analyze(app, window, 'binary.random')
-    assert rerun.export_format_control.currentData() == 'svg'
+    assert load_plot_export_format() == 'svg'
     record('review1-export-format-remembered', rerun, selected='svg')
     rerun.close()

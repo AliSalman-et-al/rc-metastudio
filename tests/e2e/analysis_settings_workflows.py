@@ -29,7 +29,7 @@ def run(app, window, root, record, analyze):
     view = analyze(app, window, "binary.random")
     assert view.result_identity.isVisible()
     assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
-    report = view.report_text.toPlainText()
+    report = view.manuscript_text.toPlainText()
     from tests.e2e.report_retention import assert_report
     assert_report(view)
     assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration\n")
@@ -60,7 +60,7 @@ def run(app, window, root, record, analyze):
                          0 if values[i] is None else -values[i] if key == 'weight' else values[i]))
         expected_orders[key] = indexes
     view.report_action.setChecked(True)
-    report = view.report_text.toPlainText()
+    report = view.manuscript_text.toPlainText()
     assert "Q(df=" not in report and "Het. p-value" not in report
     assert_report(view)
     assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results")
@@ -112,8 +112,8 @@ def run(app, window, root, record, analyze):
     label.buddy().setCurrentIndex(label.buddy().findData("REML"))
     assert dialog.current_param_vals["rm.method"] == "REML"
     changed = submit(dialog)
-    assert "REML" in changed.report_text.toPlainText() or "Restricted" in changed.report_text.toPlainText()
-    record("review-settings-rerun", changed, plots=dict(changed.results.display_images), text=changed.report_text.toPlainText())
+    assert "REML" in changed.manuscript_text.toPlainText() or "Restricted" in changed.manuscript_text.toPlainText()
+    record("review-settings-rerun", changed, plots=dict(changed.results.display_images), text=changed.manuscript_text.toPlainText())
     changed.close()
     view.close()
 
@@ -135,7 +135,7 @@ def run(app, window, root, record, analyze):
         assert dialog.current_param_vals["conf.level"] == confidence
         assert dialog.current_param_vals["inference.method"] == "knha"
         changed = submit(dialog)
-        assert f"Confidence intervals ({confidence}%)" in changed.manuscript.methods
+        assert f"{confidence:g}% confidence intervals" in changed.manuscript.methods
         path = next(iter(changed.params_paths.values()))
         r_bridge.load_vars_for_plot(path)
         df = int(r_bridge.ro.r("res$dfs")[0])

@@ -60,7 +60,7 @@ paint_observer = ShellPaintObserver()
 app.installEventFilter(paint_observer)
 def capture_error(widget):
     assert widget.isVisible()
-    assert widget.windowTitle() == "Analysis Backend Unavailable"
+    assert widget.windowTitle() == "Analysis unavailable"
     assert paint_observer.paint_count > 0, "Startup shell never painted before the error dialog"
     assert widget.text() == (
         "The analysis backend (R) could not start. "

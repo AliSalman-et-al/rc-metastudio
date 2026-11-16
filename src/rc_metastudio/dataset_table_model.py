@@ -70,14 +70,10 @@ def _raw_data_display_label(arm_name, suffix):
     return f"{arm_name} {field}"
 
 
-
-
 def _editable_data(value=None):
     if value is None:
         return ""
     return value
-
-
 
 
 def validate_new_covariate_name(dataset, name):
@@ -223,7 +219,6 @@ class DatasetTableModel(QAbstractTableModel):
 
         # Default binary effect until the active outcome selection provides one.
         self._set_default_effect_metric()
-
 
 
         self.NUM_DIGITS = NUM_DIGITS
@@ -799,9 +794,9 @@ class DatasetTableModel(QAbstractTableModel):
         position = self.RAW_DATA.index(section)
         if outcome_type == EVENT_RATES:
             return "Nonnegative integer events (recurrent events allowed)" if position % 2 == 0 else "Positive person-time, in the declared shared unit; not sample size"
-        suffix = "\nSort on this column by right-clicking the column header and selecting 'sort studies by <column>'"
+        suffix = "\nRight-click the header to sort studies by this column."
         if outcome_type == DIAGNOSTIC:
-            return ("# True Positives", "# False Negatives", "# False Positives", "# True Negatives")[position] + suffix
+            return ("True positives (TP)", "False negatives (FN)", "False positives (FP)", "True negatives (TN)")[position] + suffix
         arm_index = position // (2 if outcome_type == BINARY else 3)
         if arm_index >= len(self.arm_names):
             return ""
@@ -810,23 +805,21 @@ class DatasetTableModel(QAbstractTableModel):
             label = ("Events in {0} (numerator)", "Total participants in {0} (denominator)")[position % 2]
         else:
             label = ("Participants in {0}", "Mean for {0}", "Standard deviation for {0}")[position % 3]
-            if position % 3 == 2:
-                return label.format(group)
-        rename = "\nRename arm by right-clicking the column header and selecting 'Rename arm <name>'"
+        rename = "\nRight-click the header to rename this arm."
         return label.format(group) + rename + suffix
 
     def _outcome_header_tooltip(self, section, outcome_type, outcome_subtype):
         position = self.OUTCOMES.index(section)
         if outcome_type in RATIO_DATA_TYPES:
             return RATIO_HEADERS[position] + ". Source confidence describes the original interval; output confidence does not change this input."
-        confidence = self.confidence_level / 100.0
-        lower = f"Lower bound of {confidence:.1%} confidence interval"
-        upper = f"Upper bound of {confidence:.1%} confidence interval\n"
+        confidence = self.confidence_level
+        lower = f"Lower bound of {confidence:g}% confidence interval"
+        upper = f"Upper bound of {confidence:g}% confidence interval"
         if outcome_type == BINARY:
             return (BINARY_METRIC_NAMES[self.current_effect], lower, upper)[position]
         if outcome_type == CONTINUOUS:
             if outcome_subtype == "generic_effect":
-                return (analysis_identity.metric_label(self), "Standard Error")[position]
+                return (analysis_identity.metric_label(self), "Standard error")[position]
             return (analysis_identity.metric_label(self), lower, upper)[position]
         if position in (1, 4):
             return lower
@@ -836,7 +829,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _horizontal_header_tooltip(self, section):
         fixed = {
-            self.INCLUDE_STUDY: "Check if you want to include this study in the meta-analysis",
+            self.INCLUDE_STUDY: "Include this study in analyses",
             self.NAME: "Name to identify the study",
             self.YEAR: "Year of publication",
         }
@@ -1148,20 +1141,6 @@ class DatasetTableModel(QAbstractTableModel):
             cov = self.get_covariate_for_column(col)
             assert cov is not None
             self._sort_studies_by_field(cov['name'], reverse)
-        self.reset_model()
-
-    def order_studies(self, ids):
-        """Shuffles studies vector to the order specified by ids"""
-        ordered_studies = []
-        for an_id in ids:
-            for study in (self.current_sheet.rows if self.current_sheet else []):
-                if study.id == an_id:
-                    ordered_studies.append(study)
-                    break
-        self.current_sheet.rows = ordered_studies
-        self._display_studies = list(ordered_studies)
-        if self._blank_study is not None:
-            self._display_studies.append(self._blank_study)
         self.reset_model()
 
 

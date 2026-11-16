@@ -42,7 +42,7 @@ def run(app, window, ROOT, WORK, record_step):
         record_step('rm5-entered-only-probe', view, metric=metric, method=method,
                     stored_raw_counts=keep_raw, details=view.results.details,
                     manuscript_methods=view.manuscript.methods)
-        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript_text.toPlainText(), view.results.details
         assert 'A continuity correction' not in view.manuscript.methods
         assert abs(float(r_bridge.execute_r_string('result$res$b[1]')[0]) + .1) < 1e-12
         view.close()
@@ -92,7 +92,7 @@ def run(app, window, ROOT, WORK, record_step):
         assert '_' not in displayed
         assert 'IV_OUTCOME' not in displayed
         assert 'Time-to-event' in displayed
-        assert 'Time-to-event Fixed-Effect Inverse Variance' in displayed
+        assert 'Fixed-effect inverse-variance' in displayed
         assert 'O-E survival: O-E/variance inputs are not supported.' in text
         record_step('rm5-giv-review', dialog, summary=text)
         dialog.accept()
@@ -130,7 +130,7 @@ def run(app, window, ROOT, WORK, record_step):
         ref = refs[index]
         expected = [float(ref[k]) for k in ('estimate', 'lower', 'upper')] + [100 * float(ref['I2'])]
         record_step('rm5-giv-results', view, metric=sheet.settings['metric'], actual=actual, expected=expected)
-        assert 'A continuity correction' not in view.report_text.toPlainText(), view.results.details
+        assert 'A continuity correction' not in view.manuscript_text.toPlainText(), view.results.details
         assert 'A continuity correction' not in view.manuscript.methods
         assert all(abs(a-b) <= 1e-6 for a,b in zip(actual, expected)), (actual, expected)
         view.close()

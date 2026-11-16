@@ -206,7 +206,7 @@ def run(app, window, ROOT, WORK, record_step):
         assert [table.item(i, 2).text() for i in range(2)] == ['7', '5']
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
         assert 'Review text, references' in text
-        assert 'Differs from RevMan\nSMD: RCMS uses exact Hedges' in text
+        assert 'Differs from RevMan\nSMD: RC MetaStudio uses exact Hedges' in text
         assert 'Not imported' not in text
         assert 'settings are not applied' not in text
         record_step('rm5-review', dialog, summary=text)

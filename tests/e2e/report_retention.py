@@ -150,7 +150,10 @@ def capture(view, directory):
     key = hashlib.sha256(json.dumps([held, held_text, held_notes, presented, view.manuscript.title,
                                     view.manuscript.methods, view.manuscript.results], sort_keys=True).encode()).hexdigest()[:16]
     target = directory / (key + "-" + uuid4().hex[:8])
-    view._copy_report()
+    previous_cursor = view.manuscript_text.textCursor()
+    view.manuscript_text.selectAll()
+    view.manuscript_text.copy()
+    view.manuscript_text.setTextCursor(previous_cursor)
     target.mkdir(exist_ok=True)
     report = view.manuscript
     (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html(), encoding="utf-8")
@@ -285,9 +288,9 @@ def expected_fit_table(result, section, source):
             context = row.get('Subgroups', source.title if vertical else section.title.removesuffix(' summary') if ',' in result.manuscript_metric else '')
             rows.append((level.removesuffix(' PI') + ' prediction interval' + (' (' + context + ')' if context else ''), row[low] + ' to ' + row[high]))
     elif 'Estimate' in headers and low and high and section.title != 'Marginal prediction':
-        rows.extend(('Studies (k) (' + row['Subgroups'] + ')', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Estimate'])
+        rows.extend(('Studies in ' + row['Subgroups'] + ' (k)', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Subgroups'].casefold() != 'overall' and row['Estimate'])
     elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
-        labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+        labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
         scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
         if scale not in ('', 'display'):
             labels['τ²'] += ' (squared ' + scale + ' scale)'
@@ -298,13 +301,13 @@ def expected_fit_table(result, section, source):
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
     elif source.title == 'Test of subgroup differences' and data:
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
-            ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group p')))
+            ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group P')))
     elif source.title in ('Model overview', 'Residual model fit') and source.headers == ('Statistic', 'Value'):
         rows.extend(source.rows)
     elif source.title == 'Model tests':
         for row in data:
             rows.extend((label + ' (' + row['Test'] + ')', expected_p(row[key]) if key == 'p-value' else row[key]) for key, label in (
-                ('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
+                ('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test P')))
     return rows
 
 
@@ -323,10 +326,8 @@ def assert_exports(view, data):
     cursor = 0
     for number, table in enumerate(tables, 1):
         caption = f'Table {number}. {table.title}'
-        start = copied.splitlines().index(caption)
-        offset = sum(len(line) + 1 for line in copied.splitlines(keepends=False)[:start])
         block = '\n\n'.join([caption, *['\t'.join(row) for row in (table.headers, *table.rows)]])
-        assert copied[offset:offset + len(block)] == block, (caption, block)
+        assert re.sub(r'\s+', '', block) in re.sub(r'\s+', '', copied), (caption, block)
         caption_tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', caption))
         tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', ' '.join([caption, *[' '.join(row) for row in (table.headers, *table.rows)]])))
         starts = [i for i in range(cursor, len(pdf)) if pdf[i] == 'Table' and pdf[i:i + len(caption_tokens)] == caption_tokens]
@@ -370,7 +371,10 @@ def assert_report(view):
     if structured and expected_rows:
         assert pooled is not None
         level = next(header for header in pooled.headers if header.endswith('% CI'))
-        indexes = [i for i in range(7) if any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
+        expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_pooled(view.results))
+        scales = {row[4] for row in expected_rows if row[3] not in ('', '—', 'NA')}
+        compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
+        indexes = [i for i in range(7) if (i != 4 or not compact_scale) and any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
         statistic = 'z'
         for section in view.results.sections:
             for source in section.tables:
@@ -379,7 +383,7 @@ def assert_report(view):
                 statistic = 't'
                 if 'df' in source.headers:
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
-        full_headers = [('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p')]
+        full_headers = [('Effect', 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE', 'SE scale', statistic, 'P')]
         assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
@@ -407,9 +411,17 @@ def assert_report(view):
         assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
+            if source.title in ('Model Results', 'Study weights', 'Heterogeneity', 'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences'):
+                title = section.title + ' — ' + source.title
+                retained = any(table.title == title for s in view.manuscript.sections for table in s.tables)
+                if not retained:
+                    primary_quantities = {q for section in view.manuscript.sections if section.title != 'Supplementary details' for table in section.tables for row in table.quantities for cell in row for q in cell}
+                    source_quantities = {q for row in source.quantities for cell in row for q in cell}
+                    assert source_quantities and source_quantities <= primary_quantities, (source.title, source_quantities - primary_quantities)
+                    continue
             assert_retained_table(view, section, source)
         if section.tables and section.paragraphs:
-            assert any(s.paragraphs == tuple(note for note in section.paragraphs if 'prediction' not in note.casefold()) for s in view.manuscript.sections
+            assert any(s.paragraphs == tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), note) for note in section.paragraphs if 'prediction' not in note.casefold()) for s in view.manuscript.sections
                        if s.title == 'Supplementary details'), section.title
         if section.kind == 'text' and not section.tables and section.value:
             if section.source_key == 'References':
@@ -417,9 +429,11 @@ def assert_report(view):
                               and s.title == 'Supplementary details']
                 assert len(references) == 1
                 assert not references[0].tables
-                expected = tuple(f"{n}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
-                                 for n, line in enumerate(filter(None, section.value.splitlines()), 1))
-                assert references[0].paragraphs == expected
+                assert references[0].paragraphs[0].startswith('1. Salman, A.')
+                assert '10.5281/zenodo.23118556' in references[0].paragraphs[0]
+                observed = [re.sub(r'^\d+[.)]\s*', '', line) for line in references[0].paragraphs[1:]]
+                expected = [re.sub(r'^[A-Z][^:]{2,60}:\s+', '', re.sub(r'^\d+[.)]\s*', '', line)) for line in section.value.splitlines() if line.strip()]
+                assert sorted(observed) == sorted(expected), (observed, expected)
             else:
                 retained = next(t for s in view.manuscript.sections if s.title == 'Supplementary details'
                                 for t in s.tables if t.title == section.title)

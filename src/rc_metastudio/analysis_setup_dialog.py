@@ -3,7 +3,7 @@
 """Method-selection dialog and analysis specification builder."""
 
 from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
 from PyQt6.QtWidgets import (
@@ -182,10 +182,8 @@ class _DiagnosticMethodPanel(object):
         names = [
             name
             for name in self.methods
-            if self.methods[name] not in COUNT_BASED_DIAGNOSTIC_METHODS
+            if self.methods[name] not in COUNT_BASED_DIAGNOSTIC_METHODS and self.methods[name] != "diagnostic.fixed.peto"
         ]
-        if "Diagnostic Fixed-Effect Peto" in names:
-            names.remove("Diagnostic Fixed-Effect Peto")
         names.sort(reverse=True)
         blocked = self.combo.blockSignals(True)
         try:
@@ -719,7 +717,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.plot_tab.setToolTip(
             ""
             if bubble_available
-            else "Bubble plot options require exactly one Numeric covariate."
+            else "Bubble plot options require exactly one numeric covariate."
         )
 
     def _set_accepted_handler(self, handler):
@@ -734,9 +732,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         out_f = "."
         out_f, _selected_filter = QFileDialog.getSaveFileName(
             self,
-            "RCMetaStudio - Plot Path",
+            "Choose plot image location",
             out_f,
-            "png image files: (.png)",
+            "PNG images (*.png)",
         )
         if out_f == "" or out_f is None:
             return None
@@ -745,7 +743,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _setup_plot_controls(self):
         if self.analysis_type == "subgroup":
-            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self.study_order = QComboBox(self)
@@ -799,7 +797,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not selected_covariates:
             QMessageBox.warning(
                 self,
-                "No Covariates Selected",
+                "No covariates selected",
                 "Select at least one covariate before running meta-regression.",
             )
             return
@@ -833,7 +831,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             excluded_text = f"\nThe following studies will be excluded: {excluded}"
         choice = QMessageBox.warning(
             self,
-            "Missing Covariate Values",
+            "Missing covariate values",
             "Some studies do not have values for the selected covariates. "
             f"{excluded_text}\nRun the regression without those studies?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -928,7 +926,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _choose_plot_color(self):
         current = QColor(self.accent_color.text())
-        color = QtWidgets.QColorDialog.getColor(current, self, "Plot Accent Color")
+        color = QtWidgets.QColorDialog.getColor(current, self, "Plot accent color")
         if color.isValid():
             self._set_plot_accent_color(color.name())
 
@@ -957,7 +955,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.analysis_error_label.setText(
-                "No studies are included. Tick Include for at least one study with complete data."
+                "No studies are included. Select Include for at least one study with complete data."
                 if not self.model.get_studies()
                 else re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
                 + "\nChange the method or study values identified above."
@@ -1110,14 +1108,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _result_context(self, applied_parameters):
         included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"In total, {included} studies were included"
-        if excluded:
-            context += f" ({excluded} studies were excluded)"
+        context = f"In total, {included} " + ("study was included" if included == 1 else "studies were included")
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
             context += f" ({total:g} participants in {name}"
             context += "".join(f", {total:g} in {name}" for name, total in others) + ")"
+        if excluded:
+            context += f"; {excluded} " + ("study was excluded" if excluded == 1 else "studies were excluded")
         context += "."
         return context + self._correction_context(applied_parameters)
 
@@ -1142,8 +1140,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
             return ""
-        label = {"only0": "studies with any zero cell", "all": "all studies",
-                 "if0all": "all studies if any zero exists"}.get(policy, policy[:1].lower() + policy[1:])
+        label = {"only0": "studies with at least one zero cell", "all": "all studies",
+                 "if0all": "all studies because at least one study had a zero cell"}.get(policy, policy[:1].lower() + policy[1:])
         if self.data_type == "binary":
             from rc_metastudio.manuscript_report import binary_correction_prose
             double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
@@ -1309,7 +1307,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     ):
         if self._hide_reitsma(metric) and reitsma_name in method_names:
             method_names.remove(reitsma_name)
-        peto_method = "Diagnostic Fixed-Effect Peto"
+        peto_method = next((label for label, key in self.available_method_d.items() if key == "diagnostic.fixed.peto"), None)
         has_required_metrics = all(
             name in self.diagnostic_metrics for name in ("lr", "dor")
         )
@@ -1499,10 +1497,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
         label.setWordWrap(True)
         description = parameter_description(spec.name, spec.metadata)
-        if spec.name == "rm.method":
-            description = "Between-study variance (heterogeneity) estimator"
-        if spec.name == "estimator" and description == "No description provided.":
-            description = "REML: restricted maximum likelihood; ML: maximum likelihood."
         label.setToolTip(description)
         return label
 

@@ -1,6 +1,6 @@
 # RC MetaStudio Notice
 
-RC MetaStudio is open-source desktop software for advanced meta-analysis, developed and maintained by Research Consultancy (RC).
+RC MetaStudio is open-source software for advanced meta-analysis, developed and maintained by Research Consultancy (RC).
 
 RC MetaStudio is an independently maintained rewrite of the original OpenMeta[Analyst] project.
 

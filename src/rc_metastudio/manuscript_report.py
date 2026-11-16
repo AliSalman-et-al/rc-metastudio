@@ -2,7 +2,8 @@
 from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
 import re
-from rc_metastudio.analysis_results import ResultTable
+from rc_metastudio.analysis_results import ResultTable, ResultSection
+from rc_metastudio.application_metadata import CITATION_DOI, citation_text
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.result_formatting import numeric_cell, numeric_columns, table_html
 from html import escape
@@ -18,11 +19,11 @@ from rc_metastudio import __version__
 
 def binary_correction_prose(method, adjust, label, double_zero):
     if method in ("binary.fixed.mh", "binary.fixed.peto"):
-        estimator = "Mantel-Haenszel" if method.endswith("mh") else "Peto"
+        estimator = "Mantel–Haenszel" if method.endswith("mh") else "Peto"
         return f"A continuity correction of {adjust} was applied to individual study estimates only; the pooled {estimator} estimate uses the original counts."
     text = f"A continuity correction of {adjust} was applied to {label}."
     if method in ("binary.random", "binary.fixed.inv.var") and double_zero:
-        text += f" The {double_zero} studies with no events in either arm were retained with this correction."
+        text += f" The {double_zero} " + ("study with no events in either arm was retained" if double_zero == 1 else "studies with no events in either arm were retained") + " with this correction."
     return text
 
 
@@ -33,7 +34,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
     sentence = f"{plural} were pooled using a {model} model"
     estimator = parameters.get('rm.method', parameters.get('estimator'))
     if estimator and model == 'random-effects':
-        label = parameter_value_display_label('rm.method', estimator).replace('DerSimonian-Laird', 'DerSimonian–Laird')
+        label = _estimator_prose(estimator)
         sentence += f" with the {label} estimator of between-study variance"
     parts = [sentence + '.']
     if any('reitsma' in method.lower() for _, method, _ in fits):
@@ -44,14 +45,15 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
             text = f'{label.capitalize()} estimates were pooled using the {method} method'
             estimator = fit_parameters.get('rm.method')
             if estimator and 'random' in method.lower():
-                name = parameter_value_display_label('rm.method', estimator).replace('DerSimonian-Laird', 'DerSimonian–Laird')
+                name = _estimator_prose(estimator)
                 text += f' with the {name} estimator of between-study variance'
             parts.append(text + '.')
     inference = parameters.get('inference.method')
     if inference in ('z', 'normal'):
-        parts.append(f"Confidence intervals ({float(confidence):g}%) used the normal approximation.")
+        parts.append(f"{float(confidence):g}% confidence intervals used the normal approximation.")
     elif inference:
-        parts.append(f"Confidence intervals ({float(confidence):g}%) used {parameter_value_display_label('inference.method', inference)}.")
+        description = {'t': 'the t distribution', 'knha': 'the Knapp–Hartung adjustment', 'adhoc': 'the modified Knapp–Hartung adjustment'}.get(inference, parameter_value_display_label('inference.method', inference))
+        parts.append(f"{float(confidence):g}% confidence intervals used {description}.")
     parts.extend(_workflow_prose(workflow, parameters, details))
     if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
         parts.append('Regression coefficients and their confidence intervals are on the log scale.')
@@ -68,6 +70,12 @@ def p_value(value, quantities=()):
         return value.strip()
     p = next((q.value for q in quantities if q.role == 'p'), None)
     return "< 0.001" if p is not None and p < .001 else value
+
+
+def _estimator_prose(estimator):
+    from rc_metastudio.analysis_method_labels import parameter_value_display_label
+    label = parameter_value_display_label('rm.method', estimator)
+    return label[:1].lower() + label[1:] if estimator in ('ML', 'REML', 'EB', 'PMM') else label
 
 def _p_clause(value):
     return "P " + (value if value.startswith(("<", ">")) else "= " + value)
@@ -107,20 +115,22 @@ def _interval_fields(table):
         return None, None, ''
     return lower[0], upper[0], f'{lower[1].level:g}% {kind.upper()}'
 
-def _heterogeneity_sentence(values, quantities, prefix=""):
+def _heterogeneity_sentence(values, quantities, heading="Heterogeneity"):
     parts = []
     if "Q" in values:
         test = f"Q = {values['Q']}"
         if "df" in values:
-            test += f", df = {values['df']}"
+            test += f" (df = {values['df']}"
         if "p-value" in values:
-            test += ", " + _p_clause(p_value(values['p-value'], quantities.get('p-value', ())))
-        parts.append(prefix + "Heterogeneity: " + test + ".")
+            test += ("; " if "df" in values else " (") + _p_clause(p_value(values['p-value'], quantities.get('p-value', ())))
+        if "df" in values or "p-value" in values:
+            test += ")"
+        parts.append(test)
     if values.get('I²') and values['I²'] not in ("NA", "NaN"):
-        parts.append(prefix + f"I² = {values['I²']}.")
+        parts.append(f"I² = {values['I²']}")
     if 'τ²' in values:
-        parts.append(prefix + f"Between-study variance was τ² = {values['τ²']}.")
-    return parts
+        parts.append(f"τ² = {values['τ²']}")
+    return [heading + ": " + "; ".join(parts) + "."] if parts else []
 
 def _study_inputs(result):
     for section in result.sections:
@@ -151,18 +161,28 @@ def _study_results(result, template, level):
     if len({row[0] for row in rows}) == 1:
         headers = headers[1:]
         rows = [row[1:] for row in rows]
-    paragraphs = () if rows else ('No study-level estimates or weights are available for this workflow.',)
+    paragraphs = () if rows else ('No study-level estimates or weights are available for this analysis. See Supplementary details for the full output.',)
     return replace(template, title='Study results', paragraphs=paragraphs,
                    tables=(_table('Study results', headers, rows),) if rows else ())
 
 
-def _held_section_content(section):
+def _references(result):
+    references = []
+    for section in result.sections:
+        if section.source_key == 'References':
+            references.extend(re.sub(r'^\d+[.)]\s*', '', line.strip()) for line in section.value.splitlines() if line.strip())
+    references = list(dict.fromkeys(line for line in references if CITATION_DOI not in line and 'RC MetaStudio: open-source desktop software' not in line))
+    packages = [line for line in references if line.startswith(('Implementation reference:', 'Statistical implementation:'))]
+    methods = [line for line in references if line not in packages]
+    return [(citation_text(), 'software')] + [(re.sub(r'^[A-Z][^:]{2,60}:\s+', '', line), 'package') for line in packages] + [(re.sub(r'^[A-Z][^:]{2,60}:\s+', '', line), 'method') for line in methods]
+
+
+def _held_section_content(section, references):
     tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
-    paragraphs = section.paragraphs
+    paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs)
     if section.source_key == 'References':
         tables = ()
-        paragraphs = tuple(f"{number}. {line}" if not re.match(r"^\d+[.)]\s", line) else line
-                           for number, line in enumerate(filter(None, section.value.splitlines()), 1))
+        paragraphs = tuple(f'{number}. {line}' for number, (line, _) in enumerate(references, 1))
     elif not tables and section.value:
         tables = (ResultTable(section.title, ('',),
                               tuple((line,) for line in section.value.splitlines())),)
@@ -174,9 +194,11 @@ def _held_sections(result):
     for section in result.sections:
         if section.kind != 'text':
             continue
-        tables, paragraphs = _held_section_content(section)
+        tables, paragraphs = _held_section_content(section, _references(result))
         sections.append(replace(section, title='Supplementary details', value='',
-                                paragraphs=tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
+                                paragraphs=paragraphs if section.source_key == 'References' else tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
+    if not any(section.source_key == 'References' for section in sections):
+        sections.append(ResultSection('report.references', 'text', len(sections), 'Supplementary details', '', 'References', paragraphs=('1. ' + citation_text(),)))
     return sections
 
 
@@ -187,7 +209,8 @@ def _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary, anal
         interval = values[lower] + ' to ' + values[upper]
         fit.append(((ci_level.replace(' PI', '') + ' prediction interval' + (' (' + context + ')' if context else ''), ()),
                     (interval, quantities[lower]+quantities[upper])))
-        summary.append((context + ': ' if context else '') + f"The {ci_level.replace(' PI', '')} prediction interval was {interval}.")
+        lead = 'Overall, the' if context.casefold() == 'overall' else f'In {context}, the' if context else 'The'
+        summary.append(f"{lead} {ci_level.replace(' PI', '')} prediction interval was {interval}.")
 
 def _pooled_statistics(values, quantities, overall, calculation):
     overall_values, overall_qs = overall
@@ -218,8 +241,8 @@ def _pooled_prose(result, values, effect, effect_metric, coefficient, statistic,
         if effect.lower() == "overall":
             lead = f"Overall, the pooled {effect_metric}"
     within_subgroup = 'Subgroups' in values and values['Subgroups'].casefold() != 'overall'
-    inference = '' if within_subgroup else (f", {statistic} = {test}" if test != '—' else '') + (', ' + _p_clause(p) if p != '—' else '')
-    summary.append(f"{lead} was {values['Estimate']} ({level} [{values[lower]}, {values[upper]}]{inference}).")
+    inference = '' if within_subgroup else (f"; {statistic} = {test}" if test != '—' else '') + ('; ' + _p_clause(p) if p != '—' else '')
+    summary.append(f"{lead} was {values['Estimate']} ({level} {values[lower]} to {values[upper]}{inference}).")
 
 
 def _effect_metric(metric, section, table, vertical, coefficient):
@@ -240,8 +263,8 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
         values, quantities = _row(table, index)
         if not values.get('Estimate'):
             continue
-        if 'k' in values and 'Subgroups' in values:
-            fit.append((('Studies (k) (' + values['Subgroups'] + ')', ()), (values['k'], quantities.get('k', ()))))
+        if 'k' in values and 'Subgroups' in values and values['Subgroups'].casefold() != 'overall':
+            fit.append((('Studies in ' + values['Subgroups'] + ' (k)', ()), (values['k'], quantities.get('k', ()))))
         effect_metric = _effect_metric(metric, section, table, vertical, coefficient)
         effect = _pooled_effect_label(values, table, vertical, effect_metric, coefficient, metric)
         statistic, se, se_scale, test, p, method = _pooled_statistics(values, quantities, overall, calculation)
@@ -255,12 +278,12 @@ def _pooled_rows(result, section, table, lower, upper, ci_level, vertical, overa
 def _heterogeneity_rows(table, fit, summary, residual=None):
     for index in range(len(table.rows)):
         values, quantities = _row(table, index)
-        prefix = values.get('Subgroups', '')
-        prefix = prefix + ': ' if prefix else 'Residual ' if table.title == 'Residual heterogeneity' else ''
         if table.title == 'Residual heterogeneity':
             summary.append(_residual_heterogeneity_sentence(values, quantities, residual))
         else:
-            summary.extend(_heterogeneity_sentence(values, quantities, prefix))
+            subgroup = values.get('Subgroups', '')
+            heading = 'Overall heterogeneity' if subgroup.casefold() == 'overall' else 'Heterogeneity in ' + subgroup if subgroup else 'Heterogeneity'
+            summary.extend(_heterogeneity_sentence(values, quantities, heading=heading))
         _heterogeneity_fit_rows(values, quantities, fit)
 
 
@@ -268,9 +291,9 @@ def _fit_table(table, fit, summary):
     if table.title == 'Test of subgroup differences' and table.rows:
         values, numbers = _row(table, 0)
         test = 'F' if '(F)' in values['Test'] else 'Q'
-        summary.append(f"Test for subgroup differences: {test} = {values['Statistic']}, df = {values['df']}, {_p_clause(p_value(values['p-value'], numbers.get('p-value', ())))}.")
+        summary.append(f"Test for subgroup differences: {test} = {values['Statistic']} (df = {values['df']}; {_p_clause(p_value(values['p-value'], numbers.get('p-value', ())))}).")
         fit.extend(((label, ()), (p_value(values[key], numbers.get(key, ())) if key == 'p-value' else values[key], numbers.get(key, ())))
-                   for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group p")))
+                   for key, label in (("Test", "Between-group test"), ("Statistic", "Between-group statistic"), ("df", "Between-group degrees of freedom"), ("p-value", "Between-group P")))
         return True
     return _model_fit_table(table, fit, summary)
 
@@ -283,7 +306,7 @@ def _model_fit_table(table, fit, summary):
             values, numbers = _row(table, index)
             name = values['Test']
             fit.extend(((label + ' (' + name + ')', ()), (p_value(values[key], numbers.get(key, ())) if key == 'p-value' else values[key], numbers.get(key, ())))
-                       for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test p')))
+                       for key, label in (('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test P')))
         return True
     if table.title == 'Model specification':
         return True
@@ -352,7 +375,24 @@ def _report_sections(result, summary, methods):
             if table.title == 'Test of subgroup differences':
                 continue
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
-    return _primary_sections(result, text_sections, pooled, fit, level, statistic), _held_sections(result)
+    primary = _primary_sections(result, text_sections, pooled, fit, level, statistic)
+    represented = {q for section in primary for table in section.tables
+                   for row in table.quantities for cell in row for q in cell}
+    supplementary = []
+    for section in _held_sections(result):
+        tables = []
+        for table in section.tables:
+            quantities = {q for row in table.quantities for cell in row for q in cell}
+            # Only these tables supply the primary summaries. Equal numbers in
+            # another table can describe a different comparison or context.
+            transferred = table.title.rsplit(' — ', 1)[-1] in {
+                'Model Results', 'Study weights', 'Heterogeneity',
+                'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences',
+            }
+            if not (transferred and quantities and quantities <= represented):
+                tables.append(table)
+        supplementary.append(replace(section, tables=tuple(tables)))
+    return primary, supplementary
 
 
 def _primary_sections(result, text_sections, pooled, fit, level, statistic):
@@ -360,22 +400,32 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     primary_title = 'Diagnostic summary' if result.analysis_method == 'diagnostic.reitsma' else 'Pooled effect'
     notes = _prediction_notes(text_sections)
     sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
-                         ('No structured pooled estimates are available for this workflow; the complete output is in Supplementary details.',)),
-                        tables=(_table(primary_title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'p'), pooled),)),
+                         ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
+                        tables=(_pooled_table(primary_title, pooled, level, statistic),)),
                 replace(template, title='Model fit', paragraphs=notes,
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit),)),
                 _study_results(result, template, level)]
     if not any(section.tables for section in text_sections):
         comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
-        sections[0] = replace(template, title='Pooled effect', paragraphs=('Model comparisons and sensitivity analyses.',),
+        sections[0] = replace(template, title='Pooled effect', paragraphs=(),
                               tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
         sections[1] = replace(template, title='Model fit', paragraphs=sections[1].paragraphs,
                               tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, s.value) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 
 
+def _pooled_table(title, rows, level, statistic):
+    scales = {row[4][0] for row in rows if row[3][0] not in ('', '—', 'NA')}
+    if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'}:
+        scale = next(iter(scales))
+        return _table(title, ('Effect', 'Estimate', level, f'SE ({scale} scale)', statistic, 'P'),
+                      [(*row[:4], *row[5:]) for row in rows])
+    return _table(title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'P'), rows)
+
+
 def _available_columns(table):
-    indexes = [i for i in range(len(table.headers)) if any(row[i] not in ('', '—', 'NA') for row in table.rows)]
+    has_se = 'SE' in table.headers and any(row[table.headers.index('SE')] not in ('', '—', 'NA') for row in table.rows)
+    indexes = [i for i, header in enumerate(table.headers) if (header == 'SE scale' and has_se) or any(row[i] not in ('', '—', 'NA') for row in table.rows)]
     return replace(table, headers=tuple(table.headers[i] for i in indexes),
                    rows=tuple(tuple(row[i] for i in indexes) for row in table.rows),
                    quantities=tuple(tuple(row[i] for i in indexes) for row in table.quantities))
@@ -383,13 +433,42 @@ def _available_columns(table):
 
 def _report_methods(result, pooled_methods):
     methods = " ".join(filter(None, (result.manuscript_methods, *dict.fromkeys(pooled_methods))))
+    subgroup_test = next((row[table.headers.index('Test')] for section in result.sections for table in section.tables
+                          if table.title == 'Test of subgroup differences' and 'Test' in table.headers for row in table.rows), None)
+    if subgroup_test:
+        wording = 'Subgroup differences were tested with an F test.' if '(F)' in subgroup_test else 'Subgroup differences were tested with Cochran’s Q across subgroup estimates (inverse-variance weighted).'
+        methods += ' ' + wording
     if any(q.role == 'q' for s in result.sections for t in s.tables for row in t.quantities for cell in row for q in cell):
-        methods += " Heterogeneity" + (" for the separate univariate fits" if 'Reitsma' in methods else '') + " was assessed with Cochran's Q and I²."
-    methods += f' Analyses were performed in RC MetaStudio {__version__}.'
-    packages = ', '.join(p.strip() for p in result.software.split(',') if not p.strip().startswith('RCMetaR'))
-    if packages:
-        methods += ' R packages loaded for this analysis: ' + packages + '.'
-    return methods
+        methods += " Heterogeneity" + (" for the separate univariate fits" if 'Reitsma' in methods else '') + " was assessed with Cochran’s Q and I²."
+    references = _references(result)
+    method_numbers = [str(number) for number, (_, kind) in enumerate(references, 1) if kind == 'method']
+    if method_numbers:
+        methods = re.sub(r'\.(?=\s|$)', ' [' + ', '.join(method_numbers) + '].', methods, count=1)
+    software = f'Statistical analyses were performed using RC MetaStudio (version {__version__}; Research Consultancy) [1]'
+    packages = [package.strip().rsplit(' ', 1) for package in result.software.split(',')
+                if package.strip() and not package.strip().startswith('RCMetaR')]
+    names = []
+    for package in packages:
+        if len(package) != 2:
+            continue
+        numbers = [str(number) for number, (line, kind) in enumerate(references, 1)
+                   if kind == 'package' and re.search(r'\b' + re.escape(package[0]) + r'(?:\s+package\b|:)', line, re.IGNORECASE)]
+        marker = ' [' + ', '.join(numbers) + ']' if numbers else ''
+        names.append(f'{package[0]} (version {package[1]}){marker}')
+    if names:
+        joined = names[0] if len(names) == 1 else ' and '.join(names) if len(names) == 2 else ', '.join(names[:-1]) + ', and ' + names[-1]
+        software += ' with the R package' + ('s ' if len(names) > 1 else ' ') + joined
+    return software + '. ' + methods.strip()
+
+
+def _methods_fragments(text):
+    """Keep package emphasis identical in HTML and Word without marking up plain text."""
+    start = 0
+    for match in re.finditer(r'\b[A-Za-z][\w.]*\b(?= \(version [^);]+\))', text):
+        yield text[start:match.start()], False
+        yield match.group(), True
+        start = match.end()
+    yield text[start:], False
 
 
 def _table_html(table, table_number):
@@ -404,6 +483,7 @@ class ManuscriptReport:
     figures: tuple
     summary: tuple[str, ...]
     comparison: str = ''
+    configuration: str = ''
 
     @property
     def results(self):
@@ -411,19 +491,12 @@ class ManuscriptReport:
 
     @classmethod
     def from_result(cls, result):
-        from dataclasses import replace
-        from rc_metastudio.analysis_results import ResultTable
         summary = [result.manuscript_context] if result.manuscript_context else []
         pooled_methods = []
         sections, supplementary = _report_sections(result, summary, pooled_methods)
         methods = _report_methods(result, pooled_methods)
-        details = tuple(line for line in result.details.splitlines()
-                        if line.startswith(('Order:', 'Each row', 'Subgroups by', 'Moderators:', 'Omission-only fits:')))
-        if details:
-            supplementary.append(replace(next(s for s in result.sections if s.kind == 'text'),
-                                         title='Supplementary details', paragraphs=details, tables=(), value=''))
         figures = tuple((s.title, result.display_images.get(s.source_key, s.value)) for s in result.sections if s.kind == 'image')
-        return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison)
+        return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison, result.details)
 
     def plain_text(self):
         parts = [self.title, self.comparison]
@@ -439,19 +512,25 @@ class ManuscriptReport:
                 parts.append(f'Table {number}. {table.title}')
                 parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
             parts.extend(section.paragraphs)
+        if self.configuration:
+            parts.extend(('Model configuration', self.configuration))
         return '\n\n'.join(parts)
 
     def html(self, supplementary=False):
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>']
         for heading, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                parts.append(f'<h2>{heading}</h2><p>{escape(text)}</p>')
+                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if heading == 'Methods' else escape(text)
+                parts.append(f'<a name="{heading.lower()}"></a><h2>{heading}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
-        return ''.join(parts) + self.tables_html(supplementary)
+        configuration = ''
+        if supplementary and self.configuration:
+            configuration = '<a name="model-configuration"></a><h2>Model configuration</h2><p>' + escape(self.configuration).replace('\n', '<br>') + '</p>'
+        return ''.join(parts) + self.tables_html(supplementary) + configuration
 
     def tables_html(self, supplementary=False):
-        parts = []
+        parts = ['<a name="report-tables"></a>'] if not supplementary else []
         table_number = sum(len(section.tables) for section in self.sections
                            if section.title != "Supplementary details") if supplementary else 0
         for number, section in enumerate(self.sections, 1):
@@ -460,7 +539,7 @@ class ManuscriptReport:
             if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
                 parts.append('<h2>Supplementary details</h2>')
             if section.source_key == 'References':
-                parts.append('<h2>References</h2>')
+                parts.append('<a name="references"></a><h2>References</h2>')
             for table in section.tables:
                 table_number += 1
                 parts.append(_table_html(table, table_number))
@@ -490,13 +569,12 @@ def _workflow_prose(workflow, parameters, details):
     parts = []
     if workflow == 'subgroup':
         parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
-        parts.append("Subgroup differences were tested using heterogeneity Q among the subgroup estimates, weighted by their inverse variances.")
     elif workflow == 'meta-regression':
         moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
         if moderators:
             parts.append(f"Meta-regression was performed with {moderators} as moderators.")
     elif workflow == 'cumulative':
-        parts.append('Cumulative meta-analysis was performed in current study order.')
+        parts.append('Cumulative meta-analysis added one study at a time in study table order.')
     elif workflow == 'leave-one-out':
         parts.append('Leave-one-out analyses were performed by omitting each study in turn.')
     return parts
@@ -567,7 +645,9 @@ def write_docx(report, path):
     for heading, text in (('Methods', report.methods), ('Results', report.results)):
         if text.strip():
             document.add_heading(heading, 1)
-            document.add_paragraph(text)
+            paragraph = document.add_paragraph()
+            for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((text, False),)):
+                paragraph.add_run(part).italic = italic
     table_number = 0
     table_number = _docx_sections(document, report, False, table_number)
     from PyQt6.QtCore import QBuffer, QIODevice
@@ -591,6 +671,10 @@ def write_docx(report, path):
             document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
             document.add_paragraph(f'Figure {number}. {title}' + (' (continued)' if top else ''))
     _docx_sections(document, report, True, table_number)
+    if report.configuration:
+        document.add_heading('Model configuration', 1)
+        for line in report.configuration.splitlines():
+            document.add_paragraph(line)
     document.save(path)
 
 
@@ -657,7 +741,7 @@ def write_pdf(report, path):
             painter.translate(0, caption_y)
             caption.drawContents(painter)
             painter.restore()
-    if any(section.title == 'Supplementary details' for section in report.sections):
+    if report.configuration or any(section.title == 'Supplementary details' for section in report.sections):
         document.setHtml(report.html(supplementary=True))
         _print_pdf_pages(document, writer, painter, width, height, scale, first_page=True)
     painter.end()
@@ -674,7 +758,7 @@ def _pooled_standard_error(combined, combined_qs):
     if se_header and se_scale == '—':
         scale = next(q.scale for q in combined_qs[se_header] if q.role == 'se')
         se_scale = f'({scale if scale != "display" else "outcome"} scale)' if scale else '—'
-    return se, se_scale
+    return se, se_scale.removeprefix('(').removesuffix(')').removesuffix(' scale')
 
 
 def _pooled_effect_label(values, table, vertical, effect_metric, coefficient, metric):
@@ -697,7 +781,7 @@ def _prediction_notes(text_sections):
 
 
 def _heterogeneity_fit_rows(values, quantities, fit):
-    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity p', 'I²': 'I²', 'τ²': 'Between-study variance (τ²)'}
+    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
     for h, label in labels.items():
         if h not in values:
             continue
@@ -710,9 +794,7 @@ def _heterogeneity_fit_rows(values, quantities, fit):
 
 def _residual_heterogeneity_sentence(values, quantities, residual):
     combined = {**values, **(residual or {})}
-    return "Residual heterogeneity: " + ", ".join(
-        _p_clause(p_value(combined[h], quantities.get(h, ()))) if h == 'p-value' else f"{h} = {combined[h]}"
-        for h in ('Q', 'df', 'p-value', 'τ²', 'I²') if h in combined) + "."
+    return ' '.join(_heterogeneity_sentence(combined, quantities, heading='Residual heterogeneity'))
 
 
 def _docx_column_widths(table, available):

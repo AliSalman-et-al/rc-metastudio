@@ -3,7 +3,7 @@
  <class>BinaryDataDialog</class>
  <widget class="QDialog" name="BinaryDataDialog">
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Binary Data</string></property>
+  <property name="windowTitle"><string>Binary data</string></property>
   <property name="windowIcon"><iconset resource="../images/icons.qrc"><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <layout class="QVBoxLayout" name="dialog_layout">
        <item><layout class="QFormLayout" name="input_mode_layout">
@@ -64,8 +64,8 @@
           <item row="0" column="0"><widget class="QLabel" name="effect_metric_label"><property name="text"><string>Effect measure</string></property><property name="buddy"><cstring>effect_combo_box</cstring></property></widget></item>
           <item row="0" column="1"><widget class="QComboBox" name="effect_combo_box"><property name="accessibleName"><string>Effect measure</string></property><property name="accessibleDescription"><string>Select the binary effect measure.</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property></widget></item>
           <item row="1" column="0"><widget class="QLabel" name="est_lbl"><property name="text"><string>Estimate</string></property><property name="buddy"><cstring>effect_text_box</cstring></property></widget></item>
-          <item row="1" column="1"><widget class="QLineEdit" name="effect_text_box"><property name="accessibleName"><string>Effect estimate</string></property><property name="accessibleDescription"><string>Enter the effect estimate on the selected metric scale.</string></property></widget></item>
-          <item row="2" column="0"><widget class="QLabel" name="ci_label"><property name="toolTip"><string>Confidence interval for the selected effect metric</string></property><property name="text"><string>Confidence interval</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+          <item row="1" column="1"><widget class="QLineEdit" name="effect_text_box"><property name="accessibleName"><string>Effect estimate</string></property><property name="accessibleDescription"><string>Enter the effect estimate on the selected effect measure scale.</string></property></widget></item>
+          <item row="2" column="0"><widget class="QLabel" name="ci_label"><property name="toolTip"><string>Confidence interval for the selected effect measure</string></property><property name="text"><string>Confidence interval</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
           <item row="2" column="1">
            <layout class="QHBoxLayout" name="confidence_layout">
             

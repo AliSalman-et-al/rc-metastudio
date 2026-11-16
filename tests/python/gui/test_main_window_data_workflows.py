@@ -85,7 +85,7 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
         _create_binary_dataset(window)
         model = window.model
         table = window.tableView
-        table.set_data_in_model(model.index(0, model.NAME), _variant("Alpha"))
+        table.paste_contents(model.index(0, model.NAME), [[_variant("Alpha")]])
 
         monkeypatch.setattr(
             window.model.editing_service.bridge,
@@ -113,7 +113,7 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert all(_cell_text(model, 0, col) == "" for col in model.OUTCOMES)
 
-        table.set_data_in_model(model.index(0, model.RAW_DATA[0]), _variant("41"))
+        table.paste_contents(model.index(0, model.RAW_DATA[0]), [[_variant("41")]])
         assert _cell_text(model, 0, model.RAW_DATA[0]) == "41.0"
 
         table.setCurrentIndex(model.index(0, model.RAW_DATA[0]))
@@ -159,9 +159,7 @@ def test_data_table_editing_preserves_maximized_main_window_state():
         app.processEvents()
 
         model = window.model
-        window.tableView.set_data_in_model(
-            model.index(0, model.NAME), _variant("Alpha")
-        )
+        window.tableView.paste_contents(model.index(0, model.NAME), [[_variant("Alpha")]])
         app.processEvents()
 
         assert window.isMaximized()
@@ -219,7 +217,7 @@ def test_clipboard_skips_nonnumeric_cells_and_commits_valid_cells_once(preserve_
         _create_binary_dataset(window)
         model = window.model
         table = window.tableView
-        table.set_data_in_model(model.index(0, model.NAME), "Alpha")
+        table.paste_contents(model.index(0, model.NAME), [["Alpha"]])
         window.workspace.mark_saved()
         required(QApplication.clipboard(), "clipboard").setText("1\tnot numeric")
 
@@ -315,7 +313,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         _create_diagnostic_dataset(window)
         model = window.model
         table = window.tableView
-        table.set_data_in_model(model.index(0, model.NAME), _variant("Kinderman"))
+        table.paste_contents(model.index(0, model.NAME), [[_variant("Kinderman")]])
 
         monkeypatch.setattr(
             window.model.editing_service.bridge,
@@ -371,8 +369,8 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         _create_diagnostic_dataset(window)
         model = window.model
         table = window.tableView
-        table.set_data_in_model(model.index(0, model.NAME), _variant("Lehman"))
-        table.set_data_in_model(model.index(1, model.NAME), _variant("Lagasse"))
+        table.paste_contents(model.index(0, model.NAME), [[_variant("Lehman")]])
+        table.paste_contents(model.index(1, model.NAME), [[_variant("Lagasse")]])
         analysis_unit = model.get_current_analysis_unit_for_study(1)
         arm_key = model.get_current_arm_key()
         analysis_unit.arms[model.get_arm_names()[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
@@ -553,7 +551,7 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
             lambda *args, **kwargs: shown.append(args),
         )
 
-        table.set_data_in_model(model.index(0, model.NAME), _variant("Alpha"))
+        table.paste_contents(model.index(0, model.NAME), [[_variant("Alpha")]])
         model.blockSignals(True)
         table.paste_contents(model.index(0, model.RAW_DATA[0]), [["1"] * model.columnCount()])
 
@@ -688,7 +686,7 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
     try:
         _create_binary_dataset(window)
         table = window.tableView
-        table.set_data_in_model(window.model.index(0, window.model.NAME), "Alpha")
+        table.paste_contents(window.model.index(0, window.model.NAME), [["Alpha"]])
         popup_menus = []
         delete_calls = []
 

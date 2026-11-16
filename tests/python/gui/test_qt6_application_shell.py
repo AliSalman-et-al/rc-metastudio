@@ -561,8 +561,8 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
         )
 
         for rejected, expected_message in (
-            (malformed, "This file is not a valid RC MetaStudio project"),
-            (pickle_file, "This file is not a valid RC MetaStudio project"),
+            (malformed, "This file is damaged or is not a valid RC MetaStudio project"),
+            (pickle_file, "This file is damaged or is not a valid RC MetaStudio project"),
             (unknown_version, "unsupported project format version"),
             (schema_invalid, "confidence_level"),
         ):
@@ -726,8 +726,8 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
             project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save-as installed"
-        assert warnings[-1][0] == "Project Saved; Durability Uncertain"
-        assert "installed the saved project" in warnings[-1][1]
+        assert warnings[-1][0] == "Project saved, but not confirmed"
+        assert "saved the project to" in warnings[-1][1]
 
         wizard_calls = []
 
@@ -758,7 +758,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
             project_format.load_project(destination).project
         )
         assert saved_dataset["notes"] == "save installed"
-        assert warnings[-1][0] == "Project Saved; Durability Uncertain"
+        assert warnings[-1][0] == "Project saved, but not confirmed"
 
         assert window.open(str(ROOT / "sample_projects" / "BCG.rcms")) is True
         assert window.model.dataset.title == "BCG"

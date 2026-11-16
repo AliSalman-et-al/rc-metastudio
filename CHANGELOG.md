@@ -2,6 +2,22 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.5.6 - Unreleased
+
+### Added
+
+- Added persistent System, Light and Dark appearance choices.
+- Added a shared plot-export dialog with format, proportional dimensions, units and raster resolution controls.
+- Added a native citation dialog with copying and BibTeX, RIS and EndNote exports.
+
+### Changed
+
+- Consolidated the Results text pages into one formatted Text report with section navigation and model configuration.
+- Improved About with a legible logo, runtime versions, website link and copyable debug information.
+- Standardized application copy, report intervals, statistical headings and numbered citations; made the RC MetaStudio Zenodo citation the first reference.
+- Removed redundant report tables, obsolete controls, unreachable dialogs and unused Python and R helpers.
+- Corrected theme-switch contrast, SVG namespaces and original-resolution handling for raster-only plots.
+
 ## 0.5.5 - Unreleased
 
 ### Added

@@ -47,7 +47,7 @@ def run(app, window, work, record):
             if family.startswith("twoarm") and style != "revman":
                 view = analyze_existing(app, window, "standard", DATA_TYPES[family][1]+".random", record, {"fp_style":style})
             check_report(app, view, work, record)
-            text = view.report_text.toPlainText()
+            text = view.manuscript_text.toPlainText()
             assert "[default]" not in text, text
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity

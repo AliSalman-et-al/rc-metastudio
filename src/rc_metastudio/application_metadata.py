@@ -31,4 +31,9 @@ CITATION_URL = 'https://doi.org/' + CITATION_DOI
 
 
 def citation_text() -> str:
-    return f"{'; '.join(CITATION_AUTHORS)} ({CITATION_YEAR}). {CITATION_TITLE} (Version {VERSION}). Zenodo. {CITATION_URL}"
+    authors = []
+    for name in CITATION_AUTHORS:
+        family, given = name.split(', ', 1)
+        authors.append(family + ', ' + ' '.join(part[0] + '.' for part in given.split()))
+    names = ', '.join(authors[:-1]) + ', & ' + authors[-1]
+    return f"{names} ({CITATION_YEAR}). {CITATION_TITLE} (Version {VERSION}). Zenodo. {CITATION_URL}"

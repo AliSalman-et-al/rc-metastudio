@@ -118,8 +118,8 @@
         "Unavailable: fewer than 3 usable included studies.",
         "Disabled by default below 10 usable studies.",
         "Unavailable: Harbord score predictor variance is zero or non-finite.",
-        "Unavailable: REML log-OR tau^2 is unavailable; no primary fallback is selected.",
-        "Unavailable: REML log-OR tau^2 is above 0.1; use R\u00fccker AS+RE."))
+        "Unavailable: \u03c4\u00b2 (REML, log odds ratio) could not be estimated; no primary fallback is selected.",
+        "Unavailable: \u03c4\u00b2 (REML, log odds ratio) is above 0.1; use R\u00fccker AS+RE."))
     rucker.conditions <- list(isTRUE(prepared$raw), asd.count >= 3L, asd.count >= 10L,
                               asd.predictor, models$tau.available)
     rucker <- all(vapply(rucker.conditions, isTRUE, logical(1)))
@@ -128,7 +128,7 @@
         "Unavailable: fewer than 3 usable included studies.",
         "Disabled by default below 10 usable studies.",
         "Unavailable: ASD standard-error predictor variance is zero or non-finite.",
-        "Unavailable: REML log-OR tau^2 is unavailable; no primary fallback is selected."))
+        "Unavailable: \u03c4\u00b2 (REML, log odds ratio) could not be estimated; no primary fallback is selected."))
     peters.conditions <- list(isTRUE(prepared$raw), count >= 3L, count >= 10L, peters.predictor)
     peters <- all(vapply(peters.conditions, isTRUE, logical(1)))
     peters.reason <- .small.study.first.reason(peters.conditions, list(
@@ -138,7 +138,7 @@
         "Unavailable: Peters sample-size predictor variance is zero or non-finite."))
     methods <- list(
         .small.study.method("harbord", harbord, harbord.reason,
-                            c("two-arm counts", "REML log-OR tau^2"), common$warnings,
+                            c("two-arm counts", "\u03c4\u00b2 (REML, log odds ratio)"), common$warnings,
                             if (harbord) "primary" else "none", count),
         .small.study.method("rucker-as-re", rucker, rucker.reason,
                             c("two-arm counts", "AS+RE model"), common$warnings,
@@ -217,11 +217,11 @@
                          .small.study.exact.number(min(predictor)), ", ",
                          .small.study.exact.number(max(predictor)), "]."))
     if (metric %in% c("PR", "PLN", "PLO", "PAS", "PFT")) warnings <- c(
-        warnings, "One-arm proportion results are descriptive effect-SE artifacts; no formal automatic primary asymmetry test is configured.")
+        warnings, "For one-arm proportions, the funnel plot is descriptive because the effect and its standard error are mathematically related.")
     if (metric %in% c("RR", "RD")) warnings <- c(
         warnings, "No automatic primary asymmetry test is configured for this effect measure; ordinary and contour plots remain descriptive.")
     if (metric == "SMD") warnings <- c(
-        warnings, "Ordinary SMD Egger is a separate effect-SE artifact and is never an automatic primary method.")
+        warnings, "The ordinary Egger test is not selected for standardized mean differences because the effect and its standard error are mathematically related.")
     warnings
 }
 
@@ -623,7 +623,7 @@
     )
     if (metric == "OR") summary <- c(
         summary,
-        paste0("Heterogeneity (REML tau-squared): ", .small.study.number(prepared$pooled$tau2 %||% NA_real_)),
+        paste0("Heterogeneity (\u03c4\u00b2, REML): ", .small.study.number(prepared$pooled$tau2 %||% NA_real_)),
         paste0("Continuity correction: ", as.character(params$correction.policy %||% "Studies with any zero cell"))
     )
     if (metric == "DOR") summary <- c(

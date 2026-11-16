@@ -4,7 +4,7 @@
 
 <img src="src/rc_metastudio/images/RC_MetaStudio_Logo_4K_Preview.png" alt="RC MetaStudio logo" width="720">
 
-RC MetaStudio is an open-source desktop application for performing and reviewing meta-analyses without writing code.
+RC MetaStudio is open-source software for advanced meta-analysis. You can run and review meta-analyses without writing code.
 
 It supports standard, cumulative, leave-one-out, subgroup, meta-regression, and diagnostic analyses. You can inspect results, create forest and bubble plots, export plots as PDF, PNG, SVG, or TIFF, and save your work in an `.rcms` project.
 

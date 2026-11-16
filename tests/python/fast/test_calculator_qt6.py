@@ -428,7 +428,7 @@ def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
     from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
     for text in ("1,234.5", "1.234,5", "1,2,3", "nan", "inf"):
-        with pytest.raises(ValueError, match="unambiguous finite number"):
+        with pytest.raises(ValueError, match="finite number using a decimal point or decimal comma"):
             calculator_controls.numeric_value(text)
 
 

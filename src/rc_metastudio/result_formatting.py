@@ -112,7 +112,7 @@ def normalize_identifier_label(value: object) -> str:
         "pos.lr": "Positive Likelihood Ratio",
         "neg.lr": "Negative Likelihood Ratio",
         "inv.neg.lr": "Inverse Negative Likelihood Ratio",
-        "Zhou.Dendukuri": "Zhou-Dendukuri",
+        "Zhou.Dendukuri": "Zhou–Dendukuri",
         "Holling.Unadjusted": "Holling (unadjusted)",
         "Holling.Adjusted": "Holling (adjusted)",
         "I.squared": "I²",

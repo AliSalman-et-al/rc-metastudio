@@ -57,7 +57,7 @@ def run(app, window, work, root, record, analyze):
             assert {'Sensitivity', 'Specificity', 'False-positive rate'} <= {t.title for t in source}
             assert primary.title == 'Diagnostic summary'
             assert 'The summary sensitivity was' in view.manuscript.results
-            assert 'Diagnostic odds ratio estimates were pooled using the Diagnostic Random-Effects method' in view.manuscript.methods
+            assert 'Diagnostic odds ratio estimates were pooled using the Random-effects method' in view.manuscript.methods
         if label == 'subgroup-t':
             assert 't' in primary.headers and not any('df =' in h for h in primary.headers), primary.headers
             assert 'The overall effect was tested using t with' not in view.manuscript.methods

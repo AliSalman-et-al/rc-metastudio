@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.'
-subgroup_ma_ref = "Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method."
-loo_ma_ref = "Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method."
 
 cum.ma.binary <- function(fname, binary.data, params){
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
@@ -471,7 +469,7 @@ loo.ma.binary <- function(fname, binary.data, params){
     plot.params.paths <- c("Leave-one-out forest plot"=forest.plot.params.path)
     images <- c("Leave-one-out forest plot"=forest.path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
-	references <- c(res$References, loo_ma_ref)
+	references <- res$References
     results <- list("images"=images,
 			        "Leave-one-out Summary"=loo.disp,
                     "plot_names"=plot.names,
@@ -759,7 +757,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
     plot.params.paths <- c("Leave-one-out forest plot"=forest.plot.params.path)
     images <- c("Leave-one-out forest plot"=forest.path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
-	references <- c(res$References, loo_ma_ref)
+	references <- res$References
     results <- list("images"=images,
 			        "Leave-one-out Summary"=loo.disp,
                     "plot_names"=plot.names,
@@ -834,7 +832,7 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     plot.params.paths <- c("Subgroup forest plot"=forest.plot.params.path)
     images <- c("Subgroup forest plot"=forest.path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
-	references <- c(res$References, subgroup_ma_ref)
+	references <- res$References
     results <- list("images"=images,
 			        "Subgroup Summary"=subgroup.disp,
                     "plot_names"=plot.names,
@@ -926,7 +924,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     images <- c("Subgroup forest plot"=forest.path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 
-	references <- c(res$References, subgroup_ma_ref)
+	references <- res$References
 
     results <- list("images"=images,
 			        "Subgroup Summary"=subgroup.disp,
@@ -1149,7 +1147,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
         results <- list(res=loo.results, res.overall=res.overall, Summary=loo.disp)
     }
 
-	references <- c(res$References, loo_ma_ref)
+	references <- res$References
 	results[["References"]] <- rcmetar.unique.references(references)
     results
 }
@@ -1263,7 +1261,7 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
         results <- list(subgroup.data=subgroup.data, Summary=subgroup.disp, "cov.list"=subgroup.list)
     }
 
-	references <- c(res$References, subgroup_ma_ref)
+	references <- res$References
 	results[["References"]] <- rcmetar.unique.references(references)
 
     results

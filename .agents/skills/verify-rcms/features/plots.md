@@ -141,7 +141,7 @@ Drive the changed producer family with real R, then click its navigation-tree en
 
 For each affected editable family: preserve input/params/rendered bytes; change one shared and one family-specific option; Apply; require changed valid rendering and persisted parameters; reopen the editor; Cancel a later draft; verify last-good artifacts. Exercise meaningful failed regeneration/rollback with retained transaction tests or an actual recoverable error, then retry. A fabricated R result is not live proof.
 
-Drive each offered **Save PDF/PNG/TIFF/SVG Image As** context action after an export change. Decode images and inspect dimensions/white background; validate SVG with QSvgRenderer and PDF pages. Cancel save must create nothing. Parameterized artifacts offer four formats; parameterless plots offer PNG only. Funnel regeneration rejects `.svgz`; inspect per-family capability before testing aliases.
+Drive **Export plot…** from the plot context menu and toolbar, then select each PDF/PNG/TIFF/SVG format in the shared dialog after an export change. Decode images and inspect dimensions/white background; validate SVG with QSvgRenderer and PDF pages. Cancel save must create nothing. Parameterized artifacts offer four formats; parameterless plots offer PNG only. Funnel regeneration rejects `.svgz`; inspect per-family capability before testing aliases.
 
 Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/editor tests, R renderer tests, and the native Results lane. Fixture-based native layout cannot substitute for real R regeneration.
 
@@ -151,7 +151,7 @@ Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/ed
 
 Require every selected family-specific parameter and point size to persist and reappear in the editor. Capture display and parameter/data/result bytes immediately after Apply, then require both Cancel paths to preserve that snapshot. A label-only change cannot prove another control worked.
 
-Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
+The shared Export as dialog exports each offered PDF/PNG/TIFF/SVG format to a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
 `ui-fine-tuning` requires all five funnel variants to be vector Results items and
 renders them through both Results and manuscript loaders at 1× and 2×. It checks
@@ -391,3 +391,15 @@ its null; preflight reserves extra device space for long labels. HR/IRR drives
 retain the existing footer bounds, gap and overlap assertions. Native continuous
 SMD (dark) and amino OR (light, large font) captures are in
 `artifacts/batch7/`; the 9 pt body floor and forest fit settling remain unchanged.
+
+## November desktop refresh
+
+Text report is the single manuscript-formatted report page. Its section links
+include Methods, Results, tables, References and Model configuration. The former
+Manuscript and Settings pages and Copy report action were removed. Copy proof
+uses selection in QTextBrowser and compares ordered content, independent of
+whitespace introduced between table cells. `ux-improvements` also drives the
+persistent appearance menu, Zenodo citation copy and three exports, and About
+with debug copy. `export_formats` drives the shared dialog before decoding all
+four file formats. Its `export-options` evidence records physical dimensions
+and resolution. Native OS picker presentation remains a separate manual check.

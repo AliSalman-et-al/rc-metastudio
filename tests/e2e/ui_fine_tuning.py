@@ -179,7 +179,7 @@ def run(app, window, work, root, record, analyze):
                    for item in view._wrapped_text_items)
         view.content_stack.setCurrentWidget(view.figure_page)
         record('polish-figure-' + name, view)
-        view.nav_tree.setCurrentItem(view.nav_tree.findItems('Manuscript', QtCore.Qt.MatchFlag.MatchExactly)[0])
+        view.nav_tree.setCurrentItem(view.nav_tree.findItems('Text report', QtCore.Qt.MatchFlag.MatchExactly)[0])
         record('polish-manuscript-' + name, view)
         model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
         assert model_fit.paragraphs
@@ -224,8 +224,9 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         assert_report(view)
         if scenario == 'small-study-binary-extended':
-            view.nav_tree.setCurrentItem(view.nav_tree.findItems('Manuscript', QtCore.Qt.MatchFlag.MatchExactly)[0])
+            view.nav_tree.setCurrentItem(view.nav_tree.findItems('Text report', QtCore.Qt.MatchFlag.MatchExactly)[0])
             unstructured = next(t for s in view.manuscript.sections if s.title == 'Supplementary details' for t in s.tables if t.headers == ('',))
+            view.manuscript_text.moveCursor(QtGui.QTextCursor.MoveOperation.Start)
             assert view.manuscript_text.find(unstructured.title)
             bar = view.manuscript_text.verticalScrollBar()
             assert bar is not None

@@ -11,7 +11,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
-from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio import adaptive_window, qt_text
 from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -62,7 +62,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._params = dict(plot_params or {})
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setAccessibleName("Figure caption")
-        self.figure_caption.setToolTip("Sheet and arm comparison. Edit or clear to remove from standalone figures.")
+        self.figure_caption.setToolTip("Shown under the figure when exported alone. Clear it to omit the caption.")
         self.figure_caption.setMaxLength(1000)
         self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
         caption_label = QLabel("Figure caption", self)
@@ -84,8 +84,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
         self._load_params(image_path)
-        for control in (self.path_label, self.path_edit, self.browse_button):
-            control.hide()
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.x_label_edit)
@@ -142,10 +140,10 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             self.regression_visible_check: ("Show regression line", "Show or hide the regression line when available."),
             self.pooled_overlay_check: ("Show pooled estimate", "Show or hide the pooled estimate overlay."),
             self.sampling_confidence_spin: ("Sampling confidence level", "Choose the confidence level for the pseudo-confidence region."),
-            self.include_tau2_check: ("Include between-study variance", "Include tau-squared, the estimated between-study variance, in the pseudo-confidence region."),
+            self.include_tau2_check: ("Include between-study variance", "Include τ², the estimated between-study variance, in the pseudo-confidence region."),
             self.sampling_region_check: ("Show pseudo-confidence region", "Show or hide the sampling-error pseudo-confidence region."),
-            self.contour_levels_edit: ("Null contour levels", "Enter confidence percentages strictly between 0 and 100, for example 90,95,99."),
-            self.x_label_edit: ("Funnel plot X-axis label", "Set the X-axis label or leave the default marker."),
+            self.contour_levels_edit: ("Null contour levels", "Enter contour confidence levels (%) separated by commas, for example 90, 95, 99."),
+            self.x_label_edit: ("Funnel plot X-axis label", "Leave empty to use the automatic label."),
             self.y_label_edit: ("Funnel plot Y-axis label", "Set the Y-axis label."),
             self.x_lower_edit: ("X-axis lower bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
             self.x_upper_edit: ("X-axis upper bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
@@ -171,7 +169,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             (self.x_lower_label, self.x_lower_edit),
             (self.x_upper_label, self.x_upper_edit),
             (self.x_ticks_label, self.x_ticks_edit),
-            (self.path_label, self.path_edit),
         ):
             label.setBuddy(control)
 
@@ -198,7 +195,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             self.x_lower_edit,
             self.x_upper_edit,
             self.x_ticks_edit,
-            self.path_edit,
         ):
             signal = getattr(control, "currentTextChanged", None)
             if signal is None:
@@ -338,7 +334,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.contour_levels_edit.setText(str(levels))
         self._load_axis_params()
         persisted_outpath = self._value("funnel.outpath", "")
-        self.path_edit.setText(str(persisted_outpath or image_path or ""))
+        self._funnel_outpath = str(persisted_outpath or image_path or "")
 
     def _load_axis_params(self):
         default_x_label = (
@@ -513,7 +509,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             "funnel.xlim.lower": qt_text.to_native_text(self.x_lower_edit.text()),
             "funnel.xlim.upper": qt_text.to_native_text(self.x_upper_edit.text()),
             "funnel.xticks": qt_text.to_native_text(self.x_ticks_edit.text()),
-            "funnel.outpath": qt_text.to_native_text(self.path_edit.text()),
+            "funnel.outpath": self._funnel_outpath,
         }
         for name, value in edits.items():
             previous = self._params.get(name)

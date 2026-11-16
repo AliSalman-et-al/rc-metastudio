@@ -59,16 +59,16 @@ def _available_method_text(methods) -> str:
     for item in methods:
         label = _TEST_LABELS.get(item.method, item.method)
         if item.role == "primary":
-            facts = ([f"{item.usable_studies} eligible studies"] if item.usable_studies is not None else [])
+            facts = ([f"{item.usable_studies} eligible " + ("study" if item.usable_studies == 1 else "studies")] if item.usable_studies is not None else [])
             facts.extend(item.required_inputs)
             primary.append(label + (" (" + "; ".join(facts) + ")" if facts else ""))
         else:
             additional.append(label)
     clauses = []
     if primary:
-        clauses.append(("Primary test " if len(primary) == 1 else "Primary tests ") + ", ".join(primary))
+        clauses.append(("Primary test: " if len(primary) == 1 else "Primary tests: ") + ", ".join(primary))
     if additional:
-        clauses.append(("Exploratory test " if len(additional) == 1 else "Exploratory tests ") + ", ".join(additional))
+        clauses.append(("Exploratory test: " if len(additional) == 1 else "Exploratory tests: ") + ", ".join(additional))
     return " · ".join(clauses)
 
 
@@ -107,7 +107,7 @@ class SmallStudyEffectsDialog(
             ),
             self.contour_funnel_check: (
                 "Contour-enhanced funnel plot",
-                "Show significance contours that help distinguish publication bias from other asymmetry.",
+                "Add significance contours to show where studies fall relative to conventional significance thresholds.",
             ),
             self.deeks_funnel_check: (
                 "Deeks funnel plot",
@@ -119,11 +119,11 @@ class SmallStudyEffectsDialog(
             ),
             self.include_tau2_check: (
                 "Include between-study variance in pseudo-confidence region",
-                "Include tau-squared, the estimated between-study variance, when drawing the region.",
+                "Include τ², the estimated between-study variance, when drawing the region.",
             ),
             self.contour_levels_edit: (
                 "Null contour levels",
-                "Enter comma-separated significance levels, such as 90, 95, 99.",
+                "Enter contour confidence levels (%) separated by commas, for example 90, 95, 99.",
             ),
             self.correction_policy_combo: (
                 "Continuity correction policy",
@@ -131,11 +131,11 @@ class SmallStudyEffectsDialog(
             ),
             self.trim_fill_check: (
                 "Trim-and-fill sensitivity analysis",
-                "Estimate potentially missing studies and show how the pooled result changes.",
+                "Impute studies under an assumed asymmetry scenario and show the augmented estimate. This is not a corrected effect.",
             ),
             self.trim_fill_estimator_combo: (
                 "Trim-and-fill estimator",
-                "Choose the estimator for the number of potentially missing studies. L0 and R0 are established trim-and-fill estimators.",
+                "Choose the estimator for the number of potentially missing studies.",
             ),
             self.trim_fill_side_combo: (
                 "Trim-and-fill side",
@@ -200,8 +200,10 @@ class SmallStudyEffectsDialog(
         self.trim_fill_estimator_combo.addItems(
             [item.value for item in TrimAndFillEstimator]
         )
-        self.trim_fill_side_combo.addItems([item.value for item in TrimAndFillSide])
-        self.trim_fill_model_combo.addItems([item.value for item in TrimAndFillModel])
+        for item in TrimAndFillSide:
+            self.trim_fill_side_combo.addItem({'auto': 'Automatic', 'left': 'Left', 'right': 'Right'}[item.value], item.value)
+        for item in TrimAndFillModel:
+            self.trim_fill_model_combo.addItem({'random': 'Random effects', 'common': 'Common effect'}[item.value], item.value)
         confidence_level = getattr(self.model, "get_confidence_level", lambda: 95.0)()
         confidence_text = str(int(round(float(confidence_level))))
         self.sampling_confidence_combo.setCurrentText(
@@ -300,7 +302,7 @@ class SmallStudyEffectsDialog(
         available = [item for item in report.methods if item.available]
         if not available:
             self.automatic_test_label.setText(
-                f"No formal asymmetry test is available ({report.usable_studies} usable studies).\n" + "\n".join(dict.fromkeys(
+                f"No formal asymmetry test is available ({report.usable_studies} usable " + ("study" if report.usable_studies == 1 else "studies") + ").\n" + "\n".join(dict.fromkeys(
                     unavailable_reason(item) for item in report.methods if not item.available))
             )
             return
@@ -322,7 +324,7 @@ class SmallStudyEffectsDialog(
                 for row in self.model.get_current_raw_data()
             )
             if double_zero and included - report.usable_studies == double_zero:
-                explanation = f"\n{double_zero} studies with no events in either arm are ineligible for odds-ratio asymmetry tests."
+                explanation = f"\n{double_zero} " + ("study with no events in either arm is ineligible" if double_zero == 1 else "studies with no events in either arm are ineligible") + " for odds-ratio asymmetry tests."
         return (
             f"{outcome_label}  ·  {metric_label}  ·  "
             f"{included} included  ·  {eligible} eligible{explanation}"
@@ -386,7 +388,7 @@ class SmallStudyEffectsDialog(
         if self._eligibility_report is None:
             self._refresh_eligibility()
         if self._eligibility_report is None:
-            raise ValueError("Test availability could not be checked. Try running again when preview is available.")
+            raise ValueError("Test availability could not be checked. Availability will be checked again when the analysis runs.")
         funnels = [
             kind.value
             for kind, control in (
@@ -438,8 +440,8 @@ class SmallStudyEffectsDialog(
             }[self.style_combo.currentText()],
             trim_and_fill=self.trim_fill_check.isChecked(),
             trim_and_fill_estimator=self.trim_fill_estimator_combo.currentText(),
-            trim_and_fill_side=self.trim_fill_side_combo.currentText(),
-            trim_and_fill_model=self.trim_fill_model_combo.currentText(),
+            trim_and_fill_side=self.trim_fill_side_combo.currentData(),
+            trim_and_fill_model=self.trim_fill_model_combo.currentData(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
 
@@ -517,5 +519,5 @@ def _eligibility_identity(report):
                 version = dict(report.package_versions).get('meta')
                 if version:
                     label += f' (meta {version})'
-            facts.append('Primary test ' + label)
+            facts.append('Primary test: ' + label)
     return facts

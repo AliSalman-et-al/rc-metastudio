@@ -141,7 +141,7 @@ def record_step(action, *widgets, **observations):
             report_path = EVIDENCE / f"{STEP:02d}-{index}-{action}-report.png"
             assert widget.screen().grabWindow(int(widget.winId())).save(str(report_path), "PNG")
             captures.append(report_path.name)
-            (EVIDENCE / f"{STEP:02d}-report.txt").write_text(widget.report_text.toPlainText(), encoding="utf-8")
+            (EVIDENCE / f"{STEP:02d}-report.txt").write_text(widget.manuscript_text.toPlainText(), encoding="utf-8")
             if widget.tables_action.isEnabled():
                 widget.tables_action.trigger()
                 app.processEvents()
@@ -371,7 +371,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=Fals
         assert abs(effective_zoom - original_zoom) < 1, (effective_zoom, original_zoom)
         view._fit_width_active = True
         view._apply_fit_width()
-    report_text = view.report_text.toPlainText().splitlines()
+    report_text = view.manuscript_text.toPlainText().splitlines()
     assert report_text.count("Supplementary details") <= 1
     assert report_text.count("References") <= 1
     assert view.scene.items(), "results scene is empty"
@@ -566,7 +566,7 @@ def sample_analysis(app, window, sample):
         small_view = analyze(app, window, method, digits=2)
         small_view.report_action.setChecked(True)
         app.processEvents()
-        small_text = small_view.report_text.toPlainText()
+        small_text = small_view.manuscript_text.toPlainText()
         assert "0.0040 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
@@ -597,8 +597,8 @@ def sample_analysis(app, window, sample):
     assert summary_section.tables, "summary has no structured table"
     view.report_action.setChecked(True)
     app.processEvents()
-    assert view.report_text.isVisible()
-    rendered_text = view.report_text.toPlainText()
+    assert view.manuscript_text.isVisible()
+    rendered_text = view.manuscript_text.toPlainText()
     if sample == "amino":
         import re
         study_values = rendered_text[rendered_text.index("Giamarellou"):].splitlines()[:8]
@@ -1260,7 +1260,7 @@ def editing(app, window):
     ) as error:
         assert not window.open(str(broken))
     assert error.called
-    assert error.call_args.args[2] == "This file is not a valid RC MetaStudio project. Open another .rcms file or restore a backup."
+    assert error.call_args.args[2] == "This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.\n\nDetails: project is not a valid ZIP container"
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"
@@ -2452,7 +2452,7 @@ try:
         app.processEvents()
         view = visible_result(results_window.ResultsWindow)
         assert view._svg_plot_items
-        assert view.report_text.toPlainText()
+        assert view.manuscript_text.toPlainText()
         record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
         artifact = next(iter(view._nav_plot_artifacts.values()))
         preview = QtGui.QImage(artifact.image_path)
@@ -2486,7 +2486,7 @@ try:
         with patch.object(results_window.ResultsWindow, "create_plot_item", side_effect=OSError("forced plot-load failure")):
             window.analysis(results)
         failed = visible_result(results_window.ResultsWindow)
-        assert failed.report_text.toPlainText()
+        assert failed.manuscript_text.toPlainText()
         assert any("Could not load plot" in item.toPlainText()
                    for item in failed.scene.items() if hasattr(item, "toPlainText"))
         record_step("meantime-subgroup-load-failure", failed)
@@ -2520,6 +2520,9 @@ try:
         from tests.e2e.analysis_settings_workflows import run
 
         run(app, window, ROOT, record_step, analyze)
+    elif scenario == 'ui-refresh':
+        from tests.e2e.ui_refresh import run
+        run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario in ("ux-improvements", "results-window"):
         from tests.e2e.ux_workflows import run
 

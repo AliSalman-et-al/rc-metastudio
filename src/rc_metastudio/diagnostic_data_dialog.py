@@ -387,10 +387,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     int_val = int(calculator_controls.numeric_value(text))
                 return int_val
         except (ArithmeticError, TypeError, ValueError) as exc:
-            msg = "Could not convert %s to integer" % self.two_by_two_table.item(i, j)
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Invalid count", "Enter a whole number for each count.")
             raise ValueError(
-                "Could not convert %s to int" % self.two_by_two_table.item(i, j)
+                "Invalid diagnostic count: %r" % text
             ) from exc
 
     def cell_data_invalid(self, celldata_string):
@@ -401,10 +400,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         try:
             value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
-            return "Raw data needs to be numeric."
+            return "Enter a number."
 
         if not value.is_integer():
-            return "Expected a whole number (count), but a decimal value was entered."
+            return "Counts must be whole numbers."
 
         if value < 0:
             return "Counts cannot be negative."

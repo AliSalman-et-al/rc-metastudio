@@ -23,7 +23,14 @@ def check_table_surface(app, view, work, record, title, label):
     held = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]
     assert len(held) == 1, (title, [(s.title, t.title) for s, t in held])
     section, original = held[0]
-    retained = assert_retained_table(view, section, original)
+    title_in_report = original.title if section.title == original.title else section.title + ' — ' + original.title
+    if any(table.title == title_in_report for table in view._report_tables):
+        retained = assert_retained_table(view, section, original)
+    else:
+        quantities = {q for row in original.quantities for cell in row for q in cell}
+        assert quantities, original.title
+        retained = next(table for table in view._report_tables if table.title == 'Model fit'
+                        and quantities <= {q for row in table.quantities for cell in row for q in cell})
     view.tables_action.trigger()
     index = next(i for i,table in enumerate(view._report_tables) if table is retained)
     view.table_selector.setCurrentIndex(index)

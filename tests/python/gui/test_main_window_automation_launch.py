@@ -562,7 +562,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     monkeypatch.setattr(
         r_bridge,
         "get_available_methods",
-        lambda **kwargs: {"Binary Random-Effects": "binary.random"},
+        lambda **kwargs: {"Random-effects": "binary.random"},
         raising=False,
     )
     monkeypatch.setattr(
@@ -596,9 +596,9 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
             str(label.text())
             for label in specs[0].findChildren(QtWidgets.QLabel)
         }
-        assert "Confidence Level" in labels
+        assert "Confidence level" in labels
         assert "Continuity correction" in labels
-        assert "Decimal Places" in labels
+        assert "Decimal places" in labels
     finally:
         window.close()
         app.processEvents()
@@ -708,17 +708,17 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
         stable_height = specs.height()
 
         long_method_index = specs.method_cbo_box.findText(
-            "Binary Fixed-Effect Mantel-Haenszel"
+            "Fixed-effect Mantel–Haenszel"
         )
         assert long_method_index >= 0
         specs.method_cbo_box.setCurrentIndex(long_method_index)
         app.processEvents()
-        assert specs.method_cbo_box.currentText() == "Binary Fixed-Effect Mantel-Haenszel"
+        assert specs.method_cbo_box.currentText() == "Fixed-effect Mantel–Haenszel"
         assert specs.parameter_grp_box.title() != "binary.fixed.mh"
-        short_method_index = specs.method_cbo_box.findText("Binary Random-Effects")
+        short_method_index = specs.method_cbo_box.findText("Random-effects")
         specs.method_cbo_box.setCurrentIndex(short_method_index)
         app.processEvents()
-        assert specs.method_cbo_box.currentText() == "Binary Random-Effects"
+        assert specs.method_cbo_box.currentText() == "Random-effects"
         assert specs.parameter_grp_box.title() != "binary.random"
 
         assert specs.width() == stable_width
@@ -847,8 +847,8 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         assert calls == []
         assert warnings
         assert warnings[0][1:3] == (
-            "No Covariate Selected",
-            "Select a Category covariate before running subgroup analysis.",
+            "No covariate selected",
+            "Select a categorical covariate before running subgroup analysis.",
         )
     finally:
         _mark_workspace_saved(window)
@@ -1822,7 +1822,7 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert not form.plot_tab.isEnabled()
-    assert "exactly one Numeric covariate" in form.plot_tab.toolTip()
+    assert "exactly one numeric covariate" in form.plot_tab.toolTip()
 
 
 @pytest.mark.parametrize(
@@ -2092,7 +2092,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Manuscript", "Text report", "Tables"]
+        assert nav_titles == ["Text report", "Tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -2554,8 +2554,8 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         )
         assert "github.com/AliSalman-et-al/rc-metastudio" in link_text
         assert welcome.how_to_citeLabel.isEnabled()
-        assert welcome.how_to_citeLabel.openExternalLinks()
-        assert "github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff" in welcome.how_to_citeLabel.text()
+        assert not welcome.how_to_citeLabel.openExternalLinks()
+        assert 'href="rcms:cite"' in welcome.how_to_citeLabel.text()
     finally:
         if "wizard" in locals():
             wizard.close()

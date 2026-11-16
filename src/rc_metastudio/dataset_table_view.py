@@ -68,16 +68,11 @@ class MainWindowProtocol(Protocol):
     def redo(self) -> None: ...
 
 
-
-
-
 def _connect_action(action, callback):
     parent = getattr(callback, "__self__", None)
     action.triggered.connect(
         app_error_handler.safe_slot(lambda checked=False: callback(), parent=parent)
     )
-
-
 
 
 class DatasetTableView(QtWidgets.QTableView):
@@ -101,7 +96,7 @@ class DatasetTableView(QtWidgets.QTableView):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Gold marks the effect size and confidence interval columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -258,7 +253,7 @@ class DatasetTableView(QtWidgets.QTableView):
             def delete_study():
                 answer = QMessageBox.question(
                     self,
-                    "Delete Study",
+                    "Delete study",
                     "Delete study %s?" % study.label,
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No,
@@ -789,17 +784,6 @@ class DatasetTableView(QtWidgets.QTableView):
         return [column for column in range(origin, self.model().columnCount())
                 if not self.isColumnHidden(column)]
 
-    def set_data_in_model(self, index, val):
-        if not self.model().setData(index, val):
-            self._report_model_data_error(self._model_data_error_message())
-        self.model().reset_model()
-        self.setCurrentIndex(index)
-
-    def _model_data_error_message(self):
-        return (
-            getattr(self.model(), "last_data_error", None)
-            or "The entered value could not be used."
-        )
 
     def _report_model_data_error(self, msg):
         if self.main_gui is not None and hasattr(self.main_gui, "data_error"):

@@ -39,7 +39,7 @@ def _configure_analysis(sheet, outcome, metric, differences):
     else:
         differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
     if metric == 'SMD':
-        differences.append("SMD: RCMS uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
+        differences.append("SMD: RC MetaStudio uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
 
 
 def _raw_arm(record, i, fields, family, name):
@@ -228,7 +228,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
         if list(root.iter(tag)):
             not_imported.append(f'{tag}: data are not imported.')
     if root.find('ANALYSES_AND_DATA/TESTS') is not None:
-        differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RCMS defaults.')
+        differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RC MetaStudio defaults.')
     if not dataset.sheets:
         raise ValueError('This review has no outcomes RC MetaStudio can import\nNot imported\n' + '\n'.join(not_imported))
     from rc_metastudio.project_adapter import dataset_to_project

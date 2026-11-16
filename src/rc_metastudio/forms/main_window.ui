@@ -79,47 +79,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QFrame" name="frame">
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <property name="margin">
-             <number>0</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="control_button_layout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              </layout>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>396</width>
-                <height>18</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="confidence_interval_layout" />
-            </item>
-           </layout>
-          </widget>
-         </item>
         </layout>
        </item>
       </layout>
@@ -214,7 +173,7 @@
   <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
-    <string>Tool Bar</string>
+    <string>Toolbar</string>
    </property>
    <property name="iconSize">
     <size>

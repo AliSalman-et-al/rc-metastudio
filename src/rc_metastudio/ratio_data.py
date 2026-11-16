@@ -26,7 +26,7 @@ class RatioInput:
             raise ValueError("Input scale must be ratio or log; source must be raw or reported.")
         self._validate_reported_values()
         if not isinstance(self.unit, str) or not self.unit.strip():
-            raise ValueError("Declare a shared person-time unit for both groups.")
+            raise ValueError("Use the same person-time unit for both arms.")
 
     def _validate_reported_values(self) -> None:
         for field in ("estimate", "lower", "upper", "se"):
@@ -37,7 +37,7 @@ class RatioInput:
                 raise ValueError("Ratios, ratio bounds, and standard errors must be positive.")
         values = [value for value in (self.lower, self.estimate, self.upper) if value is not None]
         if any(a >= b for a, b in zip(values, values[1:])):
-            raise ValueError("The interval must satisfy lower < estimate < upper.")
+            raise ValueError("The lower limit must be below the estimate, and the estimate below the upper limit.")
 
     def selected_source(self, raw: list[object], *, metric: str) -> str:
         if metric == "HR":

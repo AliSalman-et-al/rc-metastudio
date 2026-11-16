@@ -32,8 +32,8 @@ def run(app, window, work, root, record, analyze):
                 longest = max(longest, run_length)
         observations['about-' + name] = dict(white_run=longest, width=image.width())
         record('fable-about-' + name, about, **observations['about-' + name])
-        if name == 'dark' and longest > image.width() * .5:
-            failures.append('About wordmark has a white panel in dark mode')
+        if longest <= image.width() * .5:
+            failures.append('About wordmark is missing its white background in ' + name + ' mode')
     about.close()
     app.styleHints().setColorScheme(original_scheme)
 

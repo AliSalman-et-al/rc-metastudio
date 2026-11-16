@@ -513,7 +513,7 @@ test_that("binary OR routes Harbord at low tau and Rucker AS+RE above the rule o
   expect_equal(params$`prepared.effects`, expected.effects)
   expect_equal(params$`prepared.standard.errors`, expected.se)
   expect_equal(low.result$eligibility$`reml.tau2`, routing$tau2)
-  expect_match(low.result$`Data and eligibility`, "Heterogeneity (REML tau-squared)", fixed=TRUE)
+  expect_match(low.result$`Data and eligibility`, "Heterogeneity (\u03c4\u00b2, REML)", fixed=TRUE)
   expect_match(low.result$Extrapolation, "Peters test")
 
   high <- make_data(

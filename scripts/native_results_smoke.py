@@ -11,7 +11,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 import subprocess
 import sys
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Callable, cast
 
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 
@@ -260,7 +260,6 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
         _require_close(device_pixel_ratio, expected_dpr, "top-level device pixel ratio")
         if record.get("navigation") != [
             "Forest plot",
-            "Manuscript",
             "Text report",
             "Tables",
         ]:
@@ -515,10 +514,15 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
         persisted = json.loads(Path(str(base) + ".params").read_text(encoding="utf-8"))
         if observed != [True] or persisted.get("plot_caption") != "Native fixture edited caption" or before == _sha256(svg):
             raise RuntimeError("native Results edit action did not commit parameters and image")
-        results.export_format_control.setCurrentIndex(results.export_format_control.findData("svg"))
+        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        def accept_export():
+            dialog = next(widget for widget in app.topLevelWidgets() if isinstance(widget, PlotExportDialog))
+            dialog.format_control.setCurrentIndex(dialog.format_control.findData('svg'))
+            dialog.accept()
+        QtCore.QTimer.singleShot(0, accept_export)
         with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
             results.export_plot_action.trigger()
-        if not destination.exists() or destination.read_bytes() != svg.read_bytes():
+        if not destination.exists() or not destination.read_text(encoding='utf-8').startswith('<?xml'):
             raise RuntimeError("native Results export action did not write edited plot")
     return {"edit_committed": True, "export_path": destination.name, "export_sha256": _sha256(destination)}
 
@@ -649,6 +653,8 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
                 raise RuntimeError("native Results navigation contains a missing item")
             navigation.append(item.text(0))
         actions = _exercise_plot_actions(app, results, svg, evidence_root, slug)
+        from PyQt6.QtTest import QTest
+        cast(Callable[[int], None], QTest.qWait)(250)
         results_capture = _capture_window(app, results, results_image)
         record = {
             "captures": {"results": results_capture},

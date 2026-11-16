@@ -23,7 +23,6 @@ else:
 from rc_metastudio.qt_layout import DisclosureButton, clear_inline_error, style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QStandardPaths
 from PyQt6.QtGui import (
-    QColor,
     QAction,
     QCloseEvent,
     QHideEvent,
@@ -115,6 +114,9 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
     def __init__(self, parent=None, recent_datasets=None):
         super(WelcomePage, self).__init__(parent)
         self.setupUi(self)
+        from rc_metastudio.citation_dialog import CitationDialog
+        self.how_to_citeLabel.setOpenExternalLinks(False)
+        self.how_to_citeLabel.linkActivated.connect(lambda _url: CitationDialog(self).exec())
 
         for label in self.findChildren(QLabel):
             if "<a " in label.text():
@@ -206,9 +208,9 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
 
         self.selected_dataset = QFileDialog.getOpenFileName(
             parent=self,
-            caption="RCMetaStudio - Open Project",
+            caption="Open project",
             directory=get_default_open_directory(self.recent_datasets),
-            filter="RC MetaStudio Project (*.rcms)",
+            filter="RC MetaStudio projects (*.rcms)",
         )
         if isinstance(self.selected_dataset, tuple):
             self.selected_dataset = self.selected_dataset[0]
@@ -572,7 +574,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         )
         self.groupBox.setTitle("")
         self.verticalLayout_2.insertWidget(0, self.select_file_btn)
-        self.file_path_lbl.hide()
         self.csv_options_btn = DisclosureButton("CSV options", self)
         self.csv_options_btn.toggled.connect(self.groupBox.setVisible)
         self.verticalLayout_2.insertWidget(2, self.csv_options_btn)
@@ -668,7 +669,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def _select_file(self):
         selected_file = QFileDialog.getOpenFileName(
             parent=self,
-            caption="RCMetaStudio - Import data",
+            caption="Import data",
             directory=str(Path(self.file_path).parent) if self.file_path else QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation),
             filter=IMPORT_FILE_FILTER,
         )
@@ -1012,7 +1013,7 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
                 "continuous": "Two-arm continuous" if self._comparative else "Single-arm continuous",
                 "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[required(info["data_type"], "data type")]
         if info["sub_type"] in {"reg_coef", "generic_effect"}:
-            kind = {"reg_coef": "Regression coefficient", "generic_effect": "Generic effect size"}[required(info["sub_type"], "data subtype")]
+            kind = {"reg_coef": "Regression coefficient", "generic_effect": "Entered effect estimate"}[required(info["sub_type"], "data subtype")]
             metric = ""
         example = {"binary": "mortality at 30 days", "continuous": "pain score at 6 weeks",
                    "diagnostic": "disease detection", "time_to_event": "overall survival",
@@ -1340,12 +1341,3 @@ class MainWizard(QWizard):
         information["csv_data"] = self.get_csv_data()
 
         return information
-
-
-if __name__ == "__main__":
-    import sys
-
-    app = app_error_handler.get_or_create_application(sys.argv)
-    wizard = MainWizard()
-    wizard.show()
-    sys.exit(app.exec())
