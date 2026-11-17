@@ -5,8 +5,7 @@ import subprocess
 import locale
 import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
-from rc_metastudio.qt_object_guard import required
-from scripts.r_verification_support import resolve_rscript
+from scripts.verification_evidence import desktop_tool_executable
 from rc_metastudio import r_bridge
 from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
 from rc_metastudio.results_window import ResultsWindow
@@ -71,7 +70,7 @@ def run(app, window, ROOT, WORK, record_step):
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'
-    subprocess.run([str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference")), str(ROOT / 'tests/e2e/rm5_reference.R'), str(reference_source), str(reference), str(pooled)], check=True)
+    subprocess.run([desktop_tool_executable("Rscript"), str(ROOT / 'tests/e2e/rm5_reference.R'), str(reference_source), str(reference), str(pooled)], check=True)
     previous_locale = locale.setlocale(locale.LC_CTYPE)
     try:
         locale.setlocale(locale.LC_CTYPE, 'C')
@@ -111,6 +110,7 @@ def run(app, window, ROOT, WORK, record_step):
                 te = math.log(te)
             if index == 0:
                 value = row.analysis_unit.ratio_input([a.name for a in sheet.arms])
+                assert value.estimate is not None and value.se is not None, row.label
                 actual_te = math.log(value.estimate) if value.scale == 'ratio' else value.estimate
                 se = value.se
             else:

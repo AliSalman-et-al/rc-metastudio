@@ -66,13 +66,6 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
             event.ignore()
 
 
-def hide_once(progress_dialog):
-    if getattr(progress_dialog, "_rcms_hidden", False):
-        return
-    progress_dialog.hide()
-    progress_dialog._rcms_hidden = True
-
-
 def dispose(progress):
-    hide_once(progress)
+    progress.hide()
     progress.deleteLater()

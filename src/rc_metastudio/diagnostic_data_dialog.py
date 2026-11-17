@@ -27,7 +27,10 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import row_padding
 from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRICS, DIAG_FIELDS_TO_RAW_INDICES
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_float_convertible, is_empty
+from rc_metastudio.analysis_validation import (
+    EMPTY_VALS, is_nan, is_float_convertible, is_empty,
+    normal_confidence_multiplier, validate_confidence_interval_order,
+)
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 from rc_metastudio.qt_object_guard import required
 
@@ -65,7 +68,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             raise ValueError("Confidence level must be specified")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
         self.current_item_data: int | None = None
@@ -512,13 +515,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table, old_prevalence),
             new_state=(new_analysis_unit, new_table, new_prevalence),
         )
+        self.update_back_calculation_button()
 
     def restore_analysis_unit(self, old_analysis_unit):
         self.analysis_unit = old_analysis_unit.copy_for_edit()
@@ -626,7 +628,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def update_2x2_table(self, imputed_dict):
         """Fill in entries in 2x2 table and add data to analysis_unit"""
-        # reset relevant column and sums column if we have new data
         if imputed_dict["TP"] and imputed_dict["FN"]:
             self.clear_column(0)
             self.clear_column(2)
@@ -818,13 +819,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table, old_prevalence),
             new_state=(new_analysis_unit, new_table, new_prevalence),
         )
+        self.update_back_calculation_button()
 
         self.current_prevalence = new_prevalence
         self._mark_table_consistent()
@@ -849,7 +849,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             "lower": self.lower_text_box.text(),
             "upper": self.upper_text_box.text(),
         }
-        good, message = calculator_controls.validate_confidence_interval_order(
+        good, message = validate_confidence_interval_order(
             est=values["est"], low=values["lower"], high=values["upper"]
         )
         if not good and message:
@@ -941,7 +941,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def clear_form(self):
         self._validation_failed = False
-        # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
             analysis_unit=self.analysis_unit,
@@ -977,23 +976,14 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table, old_prevalence),
             new_state=(new_analysis_unit, new_table, new_prevalence),
         )
+        self.update_back_calculation_button()
 
     def update_back_calculation_button(self, engage=False):
-        # For undo/redo
-        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
-            table=self.two_by_two_table,
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
-        old_prevalence = self._get_prevalence_str()
-
         def build_dict():
             d = {}
 
@@ -1075,11 +1065,16 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
         if not engage:
             return None
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.two_by_two_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        old_prevalence = self._get_prevalence_str()
         self.update_2x2_table(imputed)
         self._update_data_table()
         self._update_analysis_unit()
 
-        # For undo/redo
         new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
             analysis_unit=self.analysis_unit,
@@ -1087,13 +1082,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         new_prevalence = self._get_prevalence_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table, old_prevalence),
             new_state=(new_analysis_unit, new_table, new_prevalence),
         )
+        self.update_back_calculation_button()
 
     def undo(self):
         self._field_history.undo()

@@ -12,65 +12,11 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
 from typing import cast
 
-from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click, wait
+from tests.python.gui.qt_test_support import key_click, key_clicks, metric_action, mouse_click, wait
 
-PLOT_PRODUCERS = {
-    "forest": "analysis-binary.fixed.inv.var",
-    "cumulative": "analysis-amino-binary-cumulative",
-    "leave-one-out": "analysis-amino-binary-leave-one-out",
-    "subgroup": "analysis-amino-binary-subgroup",
-    "regression": "analysis-amino-binary-meta-regression",
-    "sroc": "analysis-diagnostic-joint",
-    "coefficient": "analysis-diagnostic-regression-continuous",
-    "funnel": "small-study-binary-extended",
-    "contour": "small-study-binary-extended",
-    "trimfill": "small-study-binary-extended",
-    "deeks": "small-study-diagnostic",
-}
+from tests.e2e.desktop_scenarios import PLOT_PRODUCERS
+from tests.e2e.plot_observations import load_saved_analysis
 
-SCENARIOS = (
-    *(
-        "analysis-sequential-" + family + "-" + workflow
-        for family in ("fixed", "diagnostic")
-        for workflow in ("cumulative", "leave-one-out", "subgroup")
-    ),
-    *("options-" + family for family in ("binary", "continuous", "diagnostic")),
-    "options-confidence-inclusion",
-    "options-zero-cells",
-    "plot-workflow-mh-rd",
-    "project-structure",
-    "project-table-covariates",
-    "project-shell",
-    "project-display-labels",
-    "project-round6-polish",
-    "project-release-coefficients",
-    "project-reviewer-predictions",
-    "project-reviewer-groups",
-    "project-reviewer-colours",
-    "project-axis-proportions",
-    "project-axis-others",
-    "project-axis-sequential",
-    "calculator-grid-precision",
-    "calculator-ratio-precision",
-    *("plot-workflow-" + family for family in PLOT_PRODUCERS),
-    *(
-        "calculator-mode-" + mode
-        for mode in (
-            "binary-metrics",
-            "continuous-metrics",
-            "diagnostic-metrics",
-            "onearm-proportion",
-            "onearm-mean",
-            "entered-binary",
-            "entered-continuous",
-            "entered-diagnostic",
-            "pre-post",
-            "back-binary",
-            "back-continuous",
-            "back-diagnostic",
-        )
-    ),
-)
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -281,8 +227,7 @@ def confidence_inclusion(app, window, record):
     app.processEvents()
     assert not model.get_studies(False)[0].include
     assert sum(s.include for s in model.get_studies(False)) == 18
-    window.out_path = str(Path(sys.argv[2]) / "confidence-subset.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=Path(sys.argv[2]) / "confidence-subset.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert window.model.get_confidence_level() == 90
     assert not window.model.get_studies(False)[0].include
     window.action_go.trigger()
@@ -324,7 +269,7 @@ def mh_rd(app, window, record):
         model = target.model
         for column in (model.RAW_DATA[0], model.RAW_DATA[2]):
             assert model.setData(model.index(0, column), "0")
-        target.tableView.set_metric_in_ui("RD")
+        metric_action(target.menuMetric, "RD").trigger()
     view = matrix(app, window, "analysis-binary.fixed.mh", record, keep_results=True,
                   prepare=prepare_rd, parameters={"digits": 6, "fp_style": "revman"})
     artifact = next(iter(view._nav_plot_artifacts.values()))
@@ -416,7 +361,7 @@ def zero_cells(app, window, record):
 
     # One participant per group leaves no residual degrees of freedom for SMD.
     assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)
-    window.tableView.set_metric_in_ui("SMD")
+    metric_action(window.menuMetric, "SMD").trigger()
     model = window.model
     for column in (model.RAW_DATA[0], model.RAW_DATA[3]):
         assert model.setData(model.index(0, column), "1"), model.last_data_error
@@ -426,13 +371,12 @@ def zero_cells(app, window, record):
     assert "complete raw data" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
     record("smd-not-estimable", window, raw=raw_rows(window)[0])
     # The same means still define an ordinary mean difference.
-    window.tableView.set_metric_in_ui("MD")
+    metric_action(window.menuMetric, "MD").trigger()
     assert math.isfinite(float(model.data(model.index(0, model.OUTCOMES[0]))))
     record("md-estimable-with-supplied-sd", window)
-    window.tableView.set_metric_in_ui("SMD")
+    metric_action(window.menuMetric, "SMD").trigger()
     path = Path(sys.argv[2]) / "not-estimable.rcms"
-    window.out_path = str(path)
-    assert window.save() and window.open(str(path), raise_on_error=True)
+    assert window.save(destination=path) and window.open(str(path), raise_on_error=True)
     model = window.model
     assert model.data(model.index(0, model.OUTCOMES[0])) == "Not estimable"
     assert model.setData(model.index(0, model.RAW_DATA[0]), "20")
@@ -447,7 +391,7 @@ def plots(app, window, family, record, *, view=None):
     if view is None:
         view = matrix(app, window, producer, record, keep_results=True)
     kind = {
-        "coefficient": "forest",
+        "coefficient": "reitsma_coefficient",
         "contour": "contour_funnel",
         "trimfill": "trimfill_funnel",
         "deeks": "deeks_funnel",
@@ -455,35 +399,20 @@ def plots(app, window, family, record, *, view=None):
         "leave-one-out": "leave_one_out_forest",
         "subgroup": "subgroup_forest",
     }.get(family, family)
-    artifacts = [
-        view.create_plot_artifact(
-            title, path, params_path=view.results.image_params_paths.get(title)
-        )
-        for title, path in view.results.images.items()
-    ]
-    artifact = next(
-        a
-        for a in artifacts
-        if a.plot_kind == kind
-        and a.params_path
-        and (
-            family != "coefficient"
-            or view.plot_service.load_params(a.params_path).get(
-                "reitsma.coefficient.scale"
-            )
-        )
+    section = next(
+        section for section in view.results.sections
+        if section.kind == "image" and section.plot_kind == kind and section.plot_data
     )
-    item = None
-    # Results attaches its artifact to the context callback closure.
-    for candidate in (*view._svg_plot_items, *view._raster_plot_items):
-        callback = candidate.contextMenuEvent
-        cells = [
-            c.cell_contents for c in (getattr(callback, "__closure__", None) or ())
-        ]
-        if any(getattr(c, "title", None) == artifact.title for c in cells):
-            item = candidate
-            break
-    assert item is not None, artifact.title
+    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+    assert len(navigation) == 1, (family, section.title)
+    view.nav_tree.setCurrentItem(navigation[0])
+    view.report_action.setChecked(False)
+    view._show_report(False)
+    app.processEvents()
+    selected = view._selected_plot()
+    assert selected is not None, (family, section.title)
+    artifact, item = selected
+    assert artifact.title == section.source_key and item is not None, section.title
     texts = dict(view.texts)
     path = Path(artifact.display_path())
     before = path.read_bytes()
@@ -503,14 +432,6 @@ def plots(app, window, family, record, *, view=None):
         assert "Standard error of log " + metric_label(window.model).casefold() in labels, labels
         assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
 
-    section = next(section for section in view.results.sections if section.source_key == artifact.title)
-    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
-    assert len(navigation) == 1, (family, section.title)
-    view.nav_tree.setCurrentItem(navigation[0])
-    view.report_action.setChecked(False)
-    view._show_report(False)
-    app.processEvents()
-    assert view._selected_plot()[0].title == artifact.title
     record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)}, exports={"svg": str(initial_svg)})
     from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
@@ -974,12 +895,12 @@ def plots(app, window, family, record, *, view=None):
         from rc_metastudio.plot_service import PlotServiceError
         import shutil
         incomplete = Path(sys.argv[2]) / (family + "-incomplete")
-        r.load_vars_for_plot(artifact.params_path)
+        load_saved_analysis(artifact.params_path)
         names = list(r.execute_r_string("om.data@study.names"))
         r.execute_r_string('om.data@study.names <- paste0("Other analysis ", seq_along(om.data@study.names))')
         r.execute_r_function("save", list="om.data", file=str(incomplete) + ".data")
         shutil.copyfile(str(artifact.params_path) + ".params", str(incomplete) + ".params")
-        r.load_vars_for_plot(artifact.params_path)
+        load_saved_analysis(artifact.params_path)
         missing_export = Path(sys.argv[2]) / (family + "-must-not-exist.svg")
         try:
             view.plot_service.export(regenerator="funnel", params_path=str(incomplete), output_path=str(missing_export))
@@ -1758,8 +1679,7 @@ def calculators(app, window, mode, record):
         )
         == observed["accepted_raw"]
     )
-    window.out_path = str(Path(sys.argv[2]) / "calculator-mode.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=Path(sys.argv[2]) / "calculator-mode.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert window.model.get_studies(False)[0].include
     unit = window.model.get_current_analysis_unit_for_study(0)
     assert list(unit.get_raw_data_for_arms(window.model.arm_names)) == [
@@ -1990,8 +1910,7 @@ def table_covariates(app, window, record):
         s.id: (s.label, dict(s.covariate_values), s.include)
         for s in window.model.current_sheet.rows
     } == identities
-    window.out_path = str(Path(sys.argv[2]) / "covariates.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=Path(sys.argv[2]) / "covariates.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert {
         s.id: (s.label, dict(s.covariate_values), s.include)
         for s in window.model.current_sheet.rows
@@ -2122,8 +2041,7 @@ def table_covariates(app, window, record):
     assert converted["id"] in [c["id"] for c in window.model.current_sheet.covariates]
     assert ([(r.id, dict(r.covariate_values)) for r in window.model.dataset.sheets[1].rows], list(window.model.dataset.sheets[1].covariates)) == other_before
     assert window.model.current_sheet_id == sheet_id
-    window.out_path = str(Path(sys.argv[2]) / "covariate-types.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=Path(sys.argv[2]) / "covariate-types.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert window.model.current_sheet.covariates[-1]["name"] == "Dose category"
     record("sheet-covariate-type-edit-delete-undo-reopened", window, covariates=window.model.current_sheet.covariates)
 
@@ -2264,7 +2182,7 @@ def shell(app, window, record):
     record(
         "shell-reopened",
         window,
-        project=window.out_path,
+        project=str(window.workspace.path),
         name=window.model.get_studies(False)[0].label,
     )
 

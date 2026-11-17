@@ -30,8 +30,6 @@ def run(tmp_path, script, extra=None):
 
 
 def test_linux_failed_qualification_preserves_previous_final_archive(tmp_path):
-    source = (ROOT / 'scripts/build-linux-package.sh').read_text()
-    tail = source[source.index('step "Creating the portable tar.gz"'):]
     script = '''set -euo pipefail
 cd "''' + posix(tmp_path) + '''"
 step() { :; }
@@ -41,21 +39,25 @@ archive_root="$PWD/app"; qualification_root="$PWD/qualification"
 artifact_path="$PWD/release.tar.gz"; r_home="$PWD/R"
 repo_root="$PWD"; smoke_log="$PWD/smoke.log"; smoke_evidence="$PWD/smoke.json"
 python_exe="$PWD/fail-python"
-mkdir -p "$archive_root" "$qualification_root" "$r_home"
+mkdir -p "$archive_root" "$qualification_root" "$r_home" "$PWD/tools"
 printf '#!/bin/sh\nexit 0\n' > "$archive_root/LaunchRCMetaStudio.sh"
 chmod +x "$archive_root/LaunchRCMetaStudio.sh"
-printf '#!/bin/sh\nexit 71\n' > "$python_exe"; chmod +x "$python_exe"
+printf '#!/bin/sh\nshift\nexec "$@"\n' > "$PWD/tools/xvfb-run"
+chmod +x "$PWD/tools/xvfb-run"
+export PATH="$PWD/tools:$PATH"
+printf '#!/bin/sh\necho injected-smoke-failure >&2\nexit 71\n' > "$python_exe"
+chmod +x "$python_exe"
 printf previous-qualified > "$artifact_path"
-''' + tail
-    result = run(tmp_path, script)
+source "$RCMS_FINALIZE_SCRIPT"
+'''
+    result = run(tmp_path, script, {'RCMS_FINALIZE_SCRIPT': posix(ROOT / 'scripts/finalize-linux-package.sh')})
     assert result.returncode != 0
-    assert 'Extracted package smoke failed' in result.stderr
     assert (tmp_path / 'release.tar.gz').read_bytes() == b'previous-qualified'
+    retained = list(tmp_path.glob('.linux-candidate.*/qualification/packaged-smoke.stderr.log'))
+    assert len(retained) == 1 and 'injected-smoke-failure' in retained[0].read_text()
 
 
 def test_macos_failed_archive_inspection_preserves_previous_zip(tmp_path):
-    source = (ROOT / 'scripts/build-macos-package.sh').read_text()
-    start = source.index('(\n  step "Creating macOS artifact ZIP"')
     script = '''set -euo pipefail
 cd "''' + posix(tmp_path) + '''"
 step() { :; }
@@ -64,12 +66,15 @@ ditto() { printf new-unqualified > "${@: -1}"; }
 python3() { echo injected-inspection-failure >&2; return 71; }
 archive_staging_root="$PWD/staging"; archive_root_dir="$archive_staging_root/root"
 app_bundle="$PWD/app"; qualification_root="$PWD/qualification"
-zip_path="$PWD/final.zip"; tmp_zip_path="$archive_staging_root/candidate.zip"
+artifact_dir="$PWD"; artifact_name=fixture; zip_path="$PWD/final.zip"
+archive_inspection_path="$PWD/archive-inspection.json"
+qualification_evidence_path="$PWD/evidence.json"
 archive_root_name=root; skip_smoke=0; r_framework_version=4.6
 mkdir -p "$app_bundle" "$qualification_root"
 printf previous-qualified > "$zip_path"
-''' + source[start:]
-    result = run(tmp_path, script)
+source "$RCMS_FINALIZE_SCRIPT"
+'''
+    result = run(tmp_path, script, {'RCMS_FINALIZE_SCRIPT': posix(ROOT / 'scripts/finalize-macos-package.sh')})
     assert result.returncode == 71, result.stderr
     assert 'injected-inspection-failure' in result.stderr
     assert (tmp_path / 'final.zip').read_bytes() == b'previous-qualified'

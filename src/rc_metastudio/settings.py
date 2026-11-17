@@ -8,13 +8,11 @@ import json
 import math
 import ntpath
 import posixpath
-from collections.abc import Mapping
 from dataclasses import dataclass
 from PyQt6 import QtCore, QtGui
 from rc_metastudio import qt_text
 from rc_metastudio.workspace_column_identity import WorkspaceColumnWidthState
 
-QColor = QtGui.QColor
 QDir = QtCore.QDir
 QSettings = QtCore.QSettings
 ANALYSIS_SCRATCH_ENV_VAR = "RCMS_ANALYSIS_SCRATCH_DIR"
@@ -32,183 +30,24 @@ MAIN_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/main"
 RESULTS_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/results"
 EDIT_DATASET_WORKSPACE_GROUP = WORKSPACE_LAYOUT_GROUP + "/edit_dataset"
 DEFAULT_RESULTS_SPLITTER_PROPORTIONS = (0.18, 0.82)
-DEFAULT_SETTINGS = {
-    "splash": True,
-    "digits": 2,
-    "recent_files": [],
-}
+_RESULTS_SPLITTER_KEY = RESULTS_WORKSPACE_GROUP + "/splitter_proportions"
+_RECENT_FILES_KEY = "recent_files"
 
 
 @dataclass(frozen=True)
-class SettingSpec:
-    """Portable QSettings field contract."""
-
-    value_type: type
-    default: object
-
-
-SETTING_SPECS = {
-    "splash": SettingSpec(bool, True),
-    "digits": SettingSpec(int, 2),
-    "recent_files": SettingSpec(list, []),
-}
-
-
-@dataclass(frozen=True, eq=False)
-class WorkspacePlacement(Mapping):
+class WorkspacePlacement:
     """Typed screen-safe placement shared by every Workspace role."""
 
     frame_geometry: QtCore.QRect | None
     maximized: bool
     full_screen: bool
 
-    _FIELDS = ("frame_geometry", "maximized", "full_screen")
-
-    def __getitem__(self, key):
-        if key not in self._FIELDS:
-            raise KeyError(key)
-        return getattr(self, key)
-
-    def __iter__(self):
-        return iter(self._FIELDS)
-
-    def __len__(self):
-        return len(self._FIELDS)
-
-    def __eq__(self, other):
-        if isinstance(other, Mapping):
-            return dict(self.items()) == dict(other.items())
-        return NotImplemented
-
-
-@dataclass(frozen=True, eq=False)
-class WorkspacePaneState(Mapping):
-    """Mapping-compatible placement and proportions shared by pane workspaces."""
-
-    placement: WorkspacePlacement
-
-    _FIELDS = (
-        "frame_geometry",
-        "maximized",
-        "full_screen",
-        "splitter_proportions",
-    )
-
-    @property
-    def frame_geometry(self):
-        return self.placement.frame_geometry
-
-    @property
-    def maximized(self):
-        return self.placement.maximized
-
-    @property
-    def full_screen(self):
-        return self.placement.full_screen
-
-    def __getitem__(self, key):
-        if key not in self._FIELDS:
-            raise KeyError(key)
-        return getattr(self, key)
-
-    def __iter__(self):
-        return iter(self._FIELDS)
-
-    def __len__(self):
-        return len(self._FIELDS)
-
-    def __eq__(self, other):
-        if isinstance(other, Mapping):
-            return dict(self.items()) == dict(other.items())
-        return NotImplemented
-
-
-@dataclass(frozen=True, eq=False)
-class ResultsWorkspaceState(WorkspacePaneState):
+@dataclass(frozen=True)
+class ResultsWorkspaceState:
     """Results placement plus its independently owned pane proportions."""
 
-    splitter_proportions: tuple
-
-
-def update_setting(field, value):
-    """Write one validated field using portable primitive storage."""
-    spec = SETTING_SPECS[field]
-    settings = QSettings()
-    if spec.value_type is list:
-        if (
-            not isinstance(value, list)
-            or any(not isinstance(item, str) for item in value)
-            or len(value) > MAX_RECENT_FILES
-        ):
-            raise TypeError("%s must be a list of strings" % field)
-        encoded = json.dumps(value, ensure_ascii=False)
-    elif spec.value_type is bool:
-        if type(value) is not bool:
-            raise TypeError("%s must be a boolean" % field)
-        encoded = value
-    elif spec.value_type is int:
-        if type(value) is not int:
-            raise TypeError("%s must be an integer" % field)
-        if field == "digits" and not 0 <= value <= 15:
-            raise ValueError("digits must be between 0 and 15")
-        encoded = value
-    elif spec.value_type is str:
-        if not isinstance(value, str):
-            raise TypeError("%s must be a string" % field)
-        encoded = value
-    else:
-        raise TypeError("Unsupported settings codec for %s" % field)
-    settings.remove(field)
-    settings.setValue(field, encoded)
-
-
-def get_setting(field):
-    try:
-        return _get_setting_helper(field)
-    except (TypeError, ValueError, json.JSONDecodeError):
-        update_setting(field, SETTING_SPECS[field].default)
-        return _get_setting_helper(field)
-
-
-def _get_setting_helper(field):
-    settings = QSettings()
-    spec = SETTING_SPECS[field]
-    if spec.value_type is list:
-        raw = settings.value(field)
-        if raw is None and field in settings.childGroups():
-            settings.beginGroup(field)
-            indexes = sorted(settings.childKeys(), key=lambda key: int(key))
-            legacy = [qt_text.to_native_text(settings.value(key)) for key in indexes]
-            settings.endGroup()
-            update_setting(field, legacy)
-            return legacy
-        if not isinstance(raw, str):
-            raise TypeError("%s must use the JSON string codec" % field)
-        decoded = json.loads(raw)
-        if (
-            not isinstance(decoded, list)
-            or any(not isinstance(item, str) for item in decoded)
-            or len(decoded) > MAX_RECENT_FILES
-        ):
-            raise ValueError("%s must contain a list of strings" % field)
-        return decoded
-    if spec.value_type is bool:
-        value = settings.value(field, spec.default)
-        if type(value) is not bool:
-            raise TypeError("%s must contain a boolean" % field)
-        return value
-    if spec.value_type is int:
-        value = settings.value(field, spec.default)
-        if type(value) is not int:
-            raise TypeError("%s must contain an integer" % field)
-        if field == "digits" and not 0 <= value <= 15:
-            raise ValueError("digits must be between 0 and 15")
-        return value
-    if spec.value_type is str:
-        return qt_text.to_native_text(settings.value(field, spec.default))
-    raise TypeError("Unsupported settings codec for %s" % field)
-
-
+    placement: WorkspacePlacement
+    splitter_proportions: tuple[float, ...] | None
 
 
 def migrate_workspace_layout_settings():
@@ -373,7 +212,7 @@ def _read_frame_geometry(settings, key):
 def _read_splitter_proportions(settings, key, default):
     raw = settings.value(key)
     if raw is None:
-        return tuple(default)
+        return None
     decoded = _decode_float_list(raw, default)
     if decoded is None or not math.isclose(sum(decoded), 1.0, abs_tol=1e-9):
         settings.setValue(key, _encode_float_list(default))
@@ -458,7 +297,7 @@ def load_results_window_state(available_geometries=None):
     settings = QSettings()
     proportions = _read_splitter_proportions(
         settings,
-        RESULTS_WORKSPACE_GROUP + "/splitter_proportions",
+        _RESULTS_SPLITTER_KEY,
         DEFAULT_RESULTS_SPLITTER_PROPORTIONS,
     )
     return ResultsWorkspaceState(
@@ -553,13 +392,13 @@ def save_plot_export_format(extension):
     settings.sync()
 
 
-def save_results_window_state(window):
+def save_results_window_state(window, splitter_sizes: list[int] | None):
     """Persist Results geometry and meaningful splitter proportions."""
     settings = save_workspace_placement(RESULTS_WORKSPACE_GROUP, window)
-    if window._splitter_user_sized:
+    if splitter_sizes is not None:
         settings.setValue(
-            RESULTS_WORKSPACE_GROUP + "/splitter_proportions",
-            _encode_float_list(_splitter_proportions(window.results_nav_splitter.sizes())),
+            _RESULTS_SPLITTER_KEY,
+            _encode_float_list(_splitter_proportions(splitter_sizes)),
         )
     settings.sync()
 
@@ -605,34 +444,29 @@ def load_main_column_widths():
     return WorkspaceColumnWidthState.from_json(raw)
 
 
-def load_settings():
-    """Loads settings from QSettings object, setting suitable defaults if
-    there are missing fields
-    """
-    migrate_application_settings()
-    settings = QSettings()
-
-    def field_is_toplevel_child_group_keys(field_name):
-        childgroups = list(settings.childGroups())
-        toplevel_group_keys = [str(x) for x in childgroups]
-        return field_name in toplevel_group_keys
-
-    for field, value in list(DEFAULT_SETTINGS.items()):
-        setting_present = settings.contains(
-            field
-        ) or field_is_toplevel_child_group_keys(field)
-        if not setting_present:
-            update_setting(field, value)
-
-    return settings
+def _store_recent_files(settings: QSettings, paths: list[str]) -> None:
+    settings.remove(_RECENT_FILES_KEY)
+    settings.setValue(_RECENT_FILES_KEY, json.dumps(paths, ensure_ascii=False))
 
 
-def reset_settings():
-    settings = QSettings()
-    settings.clear()
-
-    for field, value in list(DEFAULT_SETTINGS.items()):
-        update_setting(field, value)
+def _decode_recent_files(settings: QSettings) -> list[str]:
+    value = settings.value(_RECENT_FILES_KEY)
+    if value is None:
+        settings.beginGroup(_RECENT_FILES_KEY)
+        try:
+            indexes = sorted(settings.childKeys(), key=int)
+            value = [qt_text.to_native_text(settings.value(key)) for key in indexes]
+        finally:
+            settings.endGroup()
+    elif isinstance(value, str):
+        value = json.loads(value)
+    else:
+        raise ValueError("Recent-project list must use the JSON string format")
+    if not isinstance(value, list) or len(value) > MAX_RECENT_FILES or any(
+        not isinstance(path, str) for path in value
+    ):
+        raise ValueError("Invalid recent-project list")
+    return value
 
 
 def add_file_to_recent_files(fpath):
@@ -640,7 +474,7 @@ def add_file_to_recent_files(fpath):
         return False
 
     recent_file = _canonical_recent_file(fpath)
-    recent_files = normalize_recent_files(get_setting("recent_files"))
+    recent_files = get_recent_files()
     recent_key = _recent_file_key(recent_file)
     recent_files = [
         path for path in recent_files if _recent_file_key(path) != recent_key
@@ -649,7 +483,11 @@ def add_file_to_recent_files(fpath):
 
     recent_files = recent_files[-MAX_RECENT_FILES:]
 
-    update_setting("recent_files", recent_files)
+    _store_recent_files(QSettings(), recent_files)
+
+
+def remove_recent_file(path: str) -> None:
+    _store_recent_files(QSettings(), [entry for entry in get_recent_files() if entry != path])
 
 
 def _canonical_recent_file(fpath):
@@ -684,10 +522,15 @@ def normalize_recent_files(recent_files, *, remove_missing=False):
 
 def get_recent_files():
     """Return unique recent paths, retaining unavailable projects for display."""
-    stored = get_setting("recent_files")
+    settings = QSettings()
+    try:
+        stored = _decode_recent_files(settings)
+    except ValueError:
+        _store_recent_files(settings, [])
+        return []
     recent_files = normalize_recent_files(stored)
-    if recent_files != stored:
-        update_setting("recent_files", recent_files)
+    if recent_files != stored or _RECENT_FILES_KEY in settings.childGroups():
+        _store_recent_files(settings, recent_files)
     return recent_files
 
 

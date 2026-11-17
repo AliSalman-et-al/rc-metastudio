@@ -773,7 +773,7 @@ rcmetar.draw.bmj.sequential.forest <- function(bundle, outpath) {
 rcmetar.draw.bmj.default_like.forest <- function(bundle, outpath) {
     default.bundle <- within(bundle, fp_style <- "default")
     default.bundle$params$fp_accent_color <- rcmetar.forest.accent.color(bundle$params)
-    rcmetar.draw.default.metafor.forest(default.bundle, outpath)
+    rcmetar.draw.default.forest(default.bundle, outpath)
 }
 
 rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {

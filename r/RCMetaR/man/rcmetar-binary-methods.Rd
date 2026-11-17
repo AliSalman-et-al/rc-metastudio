@@ -3,7 +3,6 @@
 \name{RCMetaR-binary-methods}
 \alias{RCMetaR-binary-methods}
 \alias{binary.fixed.inv.var}
-\alias{binary.fixed.inv.var.is.feasible.for.funnel}
 \alias{binary.fixed.inv.var.overall}
 \alias{binary.fixed.inv.var.parameters}
 \alias{binary.fixed.inv.var.pretty.names}
@@ -11,20 +10,17 @@
 \alias{binary.fixed.meta.regression}
 \alias{binary.fixed.mh}
 \alias{binary.fixed.mh.is.feasible}
-\alias{binary.fixed.mh.is.feasible.for.funnel}
 \alias{binary.fixed.mh.overall}
 \alias{binary.fixed.mh.parameters}
 \alias{binary.fixed.mh.pretty.names}
 \alias{binary.fixed.mh.value.info}
 \alias{binary.fixed.peto}
 \alias{binary.fixed.peto.is.feasible}
-\alias{binary.fixed.peto.is.feasible.for.funnel}
 \alias{binary.fixed.peto.overall}
 \alias{binary.fixed.peto.parameters}
 \alias{binary.fixed.peto.pretty.names}
 \alias{binary.fixed.peto.value.info}
 \alias{binary.random}
-\alias{binary.random.is.feasible.for.funnel}
 \alias{binary.random.meta.regression.parameters}
 \alias{binary.random.overall}
 \alias{binary.random.parameters}
@@ -86,4 +82,3 @@ See \code{rcmetar.method.references("rma.uni.fixed")},
 \code{rcmetar.method.references("rma.peto")} for the statistical method
 citations used in result payloads.
 }
-

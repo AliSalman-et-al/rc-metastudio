@@ -6,6 +6,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
 from tests.e2e.plot_workflow_support import close
+from tests.e2e.plot_observations import load_saved_analysis
 
 
 def check_colours(path, colour='#2F5597', require_caps=True):
@@ -78,7 +79,7 @@ def run_colours(app, window, work, record):
             if baseline:
                 continue
             observed = check_colours(artifact.display_path())
-            r_bridge.load_vars_for_plot(artifact.params_path,return_params_dict=True)
+            load_saved_analysis(artifact.params_path,include_plot_data=True)
             r_bridge.execute_r_string('reviewer.numeric.before <- lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric)')
             def editor(dialog):
                 assert dialog.style_cbo.currentText() == 'Default'
@@ -124,7 +125,7 @@ def run_colours(app, window, work, record):
                 colour_samples[extension] = matches
                 image.close()
 
-            r_bridge.load_vars_for_plot(artifact.params_path,return_params_dict=True)
+            load_saved_analysis(artifact.params_path,include_plot_data=True)
             assert bool(r_bridge.execute_r_string('identical(reviewer.numeric.before,lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric),num.eq=FALSE)')[0])
             record('reviewer-colour-exports',view,scenario=scenario,title=artifact.title,observed=observed,colour_samples=colour_samples,exports=files,
                    plots={artifact.title:artifact.display_path()})

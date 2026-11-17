@@ -7,7 +7,10 @@ from pathlib import Path
 import pytest
 
 from scripts.desktop_worker_capacity import desktop_resources
-from scripts.verification_evidence import verification_context
+from scripts.verification_evidence import desktop_environment, verification_context, verification_launch_inputs
+
+
+_DESKTOP_ENV = pytest.StashKey[dict[str, str]]()
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -17,13 +20,30 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    if not hasattr(config, "workerinput") and not config.option.collectonly:
-        from scripts.verify import DEFAULT_BUILD_ROOT, run_typing
-        run_typing(Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve())
-    if not hasattr(config, "workerinput") and not config.option.collectonly and os.environ.get("RCMS_R_HOME"):
-        os.environ["RCMS_E2E_CONTEXT"] = json.dumps(verification_context())
-        fresh = config.getoption("--fresh") or os.environ.get("RCMS_E2E_FRESH") == "1"
-        os.environ["RCMS_E2E_REUSE_PASSED"] = "0" if fresh else "1"
+    if config.option.collectonly:
+        return
+    if hasattr(config, "workerinput"):
+        config.stash[_DESKTOP_ENV] = dict(os.environ)
+        return
+    from scripts.verify import ensure_typing
+
+    env = desktop_environment()
+    receipt = ensure_typing(Path(env["RCMS_QT6_BUILD_ROOT"]), env)
+    context = verification_context(env) if env.get("RCMS_R_HOME") else None
+    os.environ["RCMS_E2E_CONTEXT"] = json.dumps({
+        "typing": str(receipt),
+        "verification": context,
+        "launch_inputs": verification_launch_inputs(env),
+    })
+    fresh = config.getoption("--fresh") or os.environ.get("RCMS_E2E_FRESH") == "1"
+    os.environ["RCMS_E2E_REUSE_PASSED"] = "0" if fresh else "1"
+    config.stash[_DESKTOP_ENV] = dict(os.environ)
+
+
+@pytest.fixture(scope="session")
+def desktop_launch_environment(pytestconfig: pytest.Config) -> dict[str, str]:
+    # Collection can import Qt, whose Windows bootstrap prepends to PATH.
+    return pytestconfig.stash[_DESKTOP_ENV]
 
 
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
@@ -32,7 +52,8 @@ def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
 
 def pytest_report_header(config: pytest.Config) -> str:
     context = json.loads(os.environ.get("RCMS_E2E_CONTEXT", "{}"))
-    return f"Desktop resource budget: {desktop_resources()} (override with -n 1); input signature: {context.get('sha256')}"
+    signature = (context.get("verification") or {}).get("sha256")
+    return f"Desktop resource budget: {desktop_resources()} (override with -n 1); input signature: {signature}"
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:

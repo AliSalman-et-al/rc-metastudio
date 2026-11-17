@@ -261,10 +261,6 @@ def _triplet(value: object, operation: str) -> tuple[Numeric | None, Numeric | N
 class CalculatorService:
     """Concrete calculation operations shared by transactional editors."""
 
-    def get_confidence_multiplier(self, confidence_level: float) -> float:
-        result = r_bridge.get_confidence_multiplier_from_r(confidence_level)
-        return _numeric(result, "get_confidence_multiplier")
-
     def binary_convert_scale(self, x: ScaleValue, metric_name: str, convert_to: str = "display.scale", n1: Numeric | None = None) -> ScaleValue:
         result = r_bridge.binary_convert_scale(x, metric_name, convert_to=convert_to, n1=n1)
         return _scale_value(result, "binary_convert_scale")

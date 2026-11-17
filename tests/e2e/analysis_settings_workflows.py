@@ -1,12 +1,14 @@
 """Drive result properties and presentation-only ordering with real Qt and R."""
 
+import hashlib
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
 from collections.abc import Iterable
 from typing import cast
 from xml.etree import ElementTree as ET
-from tests.python.gui.qt_test_support import mouse_click, required
+from tests.python.gui.qt_test_support import key_clicks, mouse_click, required
+from tests.e2e.plot_observations import load_saved_analysis, load_serialized_object
 
 
 def run(app, window, root, record, analyze):
@@ -25,8 +27,35 @@ def run(app, window, root, record, analyze):
         return next(w for w in app.topLevelWidgets()
                     if isinstance(w, results_window.ResultsWindow) and w.isVisible() and id(w) not in before)
 
+    def plot_hashes(result_view):
+        paths = [*result_view.results.images.values(), *result_view.results.display_images.values()]
+        assert len(paths) == 2, paths
+        return {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
+
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
+    first_plot = plot_hashes(view)
+    first_numbers = parsed_numeric_sections(view.results)
+    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+    window.action_go.trigger()
+    app.processEvents()
+    fresh_dialog = setup()
+    fresh_dialog.specs_tab.setCurrentWidget(fresh_dialog.plot_tab)
+    fresh_dialog.x_lbl_le.selectAll()
+    key_clicks(fresh_dialog.x_lbl_le, "Second analysis axis")
+    fresh_view = submit(fresh_dialog)
+    fresh_plot = plot_hashes(fresh_view)
+    record("review-fresh-fit-plots", fresh_view, original=first_plot, fresh=fresh_plot,
+           original_after=plot_hashes(view))
+    assert not first_plot.keys() & fresh_plot.keys(), (first_plot, fresh_plot)
+    assert plot_hashes(view) == first_plot
+    assert parsed_numeric_sections(view.results) == first_numbers
+    fresh_svg = next(iter(fresh_view.results.display_images.values()))
+    assert "Second analysis axis" in {
+        "".join(node.itertext()) for node in ET.parse(fresh_svg).iter("{http://www.w3.org/2000/svg}text")
+    }
+    fresh_view.close()
+    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     assert view.result_identity.isVisible()
     assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
     report = view.manuscript_text.toPlainText()
@@ -43,12 +72,28 @@ def run(app, window, root, record, analyze):
     assert dialog.style_cbo.currentText() == "Default"
     assert dialog.study_order.currentData() == "table"
     record("review-properties-prefilled", dialog, parameters=dialog.current_param_vals)
+    dialog.specs_tab.setCurrentWidget(dialog.plot_tab)
+    dialog.x_lbl_le.selectAll()
+    key_clicks(dialog.x_lbl_le, "[default]")
+    literal_view = submit(dialog)
+    assert not first_plot.keys() & plot_hashes(literal_view).keys()
+    assert plot_hashes(view) == first_plot
+    literal_svg = next(iter(literal_view.results.display_images.values()))
+    captions = {"".join(node.itertext()): node for node in ET.parse(literal_svg).iter("{http://www.w3.org/2000/svg}text")}
+    assert "[default]" in captions, captions.keys()
+    literal_view.change_settings_action.trigger()
+    app.processEvents()
+    dialog = setup()
+    assert dialog.x_lbl_le.text() == "[default]", "Change Settings lost the literal axis label"
+    record("review-literal-axis-label", dialog, caption=dialog.x_lbl_le.text(),
+           svg_caption=ET.tostring(captions["[default]"], encoding="unicode"))
     dialog.reject()
+    literal_view.close()
     app.processEvents()
     baseline = parsed_numeric_sections(view.results)
     params_path = next(iter(view.params_paths.values()))
-    r_bridge.load_vars_for_plot(params_path)
-    r_bridge.load_in_r(str(params_path) + ".plotdata")
+    load_saved_analysis(params_path)
+    load_serialized_object(str(params_path) + ".plotdata")
     original_labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
     import json
     inputs = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(year=plot.data$years, effect=as.numeric(plot.data$res$yi), weight=as.numeric(plot.data$weights)), na="null", digits=16)')[0]))
@@ -86,8 +131,8 @@ def run(app, window, root, record, analyze):
             dialog.study_order.hidePopup()
         changed = submit(dialog)
         assert parsed_numeric_sections(changed.results) == baseline
-        r_bridge.load_vars_for_plot(next(iter(changed.params_paths.values())))
-        r_bridge.load_in_r(str(next(iter(changed.params_paths.values()))) + ".plotdata")
+        load_saved_analysis(next(iter(changed.params_paths.values())))
+        load_serialized_object(str(next(iter(changed.params_paths.values()))) + ".plotdata")
         labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
         display_order = [int(index) - 1 for index in r_bridge.ro.r("plot.data$display_order")]
         assert display_order == expected_orders[order], ('study order', order, display_order, expected_orders[order])
@@ -137,7 +182,7 @@ def run(app, window, root, record, analyze):
         changed = submit(dialog)
         assert f"Confidence intervals ({confidence:g}%)" in changed.manuscript.methods
         path = next(iter(changed.params_paths.values()))
-        r_bridge.load_vars_for_plot(path)
+        load_saved_analysis(path)
         df = int(r_bridge.ro.r("res$dfs")[0])
         assert df == len(window.model.get_studies()) - 1
         assert f"{df} degrees of freedom" in changed.manuscript.methods
@@ -250,7 +295,7 @@ def run(app, window, root, record, analyze):
     record('review-leave-one-out-summary', view, text=view.manuscript.results, plots=dict(view.results.display_images))
     path = next(iter(view.params_paths.values()))
     def saved_plot():
-        r_bridge.load_in_r(str(path) + '.plotdata')
+        load_serialized_object(str(path) + '.plotdata')
         return json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(order=plot.data$display_order, i2=vapply(plot.data$res,function(f)f$I2,numeric(1)), effect=plot.data$effect$yi, headers=plot.data$ilab$headers),digits=16)')[0]))
     before = saved_plot()
     assert before['order'] == [1, *[i + 2 for i in sorted(range(len(before['i2']) - 1), key=lambda i: (before['i2'][i + 1], i))]]

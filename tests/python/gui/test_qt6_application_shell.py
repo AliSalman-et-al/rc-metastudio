@@ -98,7 +98,8 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(app_error_handler, "show_unexpected_error",
                         lambda error, parent=None, **kwargs: unexpected.append(str(error)))
     app, window = automation.start_automation()
-    window.workspace.mark_dirty()
+    window.model.dataset.notes = "Unsaved project notes"
+    window.data_dirtied()
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
@@ -152,7 +153,7 @@ def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp
     store.setValue("1", "second.rcms")
     store.endGroup()
 
-    settings.load_settings()
+    settings.migrate_application_settings()
 
     assert not store.contains("main_window/geometry")
     assert not store.contains("main_window/window_state")
@@ -166,7 +167,7 @@ def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp
     assert store.value("analysis/default_method") == "REML"
     assert store.value("domain/confidence_level", type=int) == 95
     assert store.value(settings.APPLICATION_SETTINGS_SCHEMA_KEY, type=int) == 1
-    assert settings.get_setting("recent_files") == ["first.rcms", "second.rcms"]
+    assert settings.get_recent_files() == ["first.rcms", "second.rcms"]
 
 
 def test_workspace_settings_store_only_portable_typed_values(qapp):
@@ -191,25 +192,19 @@ def test_workspace_settings_store_only_portable_typed_values(qapp):
     ).frame_geometry == QtCore.QRect(20, 30, 900, 600)
 
 
-def test_invalid_portable_setting_resets_only_its_own_field(qapp):
+@pytest.mark.parametrize("stored", ["invalid json", "[1]", json.dumps(["study.rcms"] * 11)])
+def test_invalid_recent_projects_do_not_reset_other_settings(qapp, stored):
     from rc_metastudio import settings
 
     _configure_qsettings_identity(qapp)
     store = QtCore.QSettings()
     store.clear()
     store.setValue("domain/confidence_level", 90)
-    store.setValue("digits", 100)
+    store.setValue("recent_files", stored)
 
-    assert settings.get_setting("digits") == 2
+    assert settings.get_recent_files() == []
+    assert json.loads(store.value("recent_files")) == []
     assert store.value("domain/confidence_level", type=int) == 90
-
-    with pytest.raises(TypeError):
-        settings.update_setting("digits", "5")
-    assert settings.get_setting("digits") == 2
-    with pytest.raises(TypeError):
-        settings.update_setting(
-            "recent_files", ["project-%d.rcms" % index for index in range(11)]
-        )
 
 
 def test_schema_versions_use_strict_raw_integer_validation(qapp):
@@ -283,8 +278,8 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         store.setValue("workspace_layout/results/splitter_proportions", invalid)
         store.setValue("workspace_layout/results/portable_note", "keep")
         state = settings.load_results_window_state([QtCore.QRect(0, 0, 1920, 1080)])
-        assert state.maximized is True
-        assert state.full_screen is False
+        assert state.placement.maximized is True
+        assert state.placement.full_screen is False
         assert state.splitter_proportions == (0.18, 0.82)
         assert not store.contains("workspace_layout/results/maximized")
         assert not store.contains("workspace_layout/results/full_screen")
@@ -341,6 +336,143 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         _close_shell(app, window)
 
 
+@pytest.mark.parametrize("change", ["metric", "sheet"])
+def test_failed_effect_projection_keeps_workspace_selection_and_history(
+    qapp, tmp_path, monkeypatch, inject_python_boundary, change
+):
+    from rc_metastudio import app_error_handler, project_format, r_bridge
+
+    source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
+    project = _json_map(copy.deepcopy(source.project))
+    first, second = _json_maps(project["sheets"])
+    for sheet in (first, second):
+        for row in _json_maps(sheet["rows"]):
+            row["raw_data"] = {}
+    _json_map(second["settings"]).update(metric="RR", confidence_level=90.0)
+    path = tmp_path / "entered-effects.rcms"
+    project_format.save_project(
+        path, cast(project_format.JsonObject, project), source.state,
+    )
+
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "show_unexpected_error",
+        lambda error, **_kwargs: errors.append(str(error)),
+    )
+    app, window = automation.start_automation()
+    try:
+        assert window.open(str(path), raise_on_error=True)
+        initial_id = window.model.current_sheet_id
+        initial_tab = window.sheet_tabs.currentIndex()
+        initial_ci = window.confidence_button.text()
+
+        def select_requested():
+            if change == "metric":
+                next(action for action in window._metric_actions.actions()
+                     if action.data() == "RR").trigger()
+            else:
+                window.sheet_tabs.setCurrentIndex(1)
+
+        scale = r_bridge.binary_convert_scale
+
+        def fail_rr(value, metric, **kwargs):
+            if metric == "RR" and value is not None:
+                raise RuntimeError("RR display conversion failed")
+            return scale(value, metric, **kwargs)
+
+        with monkeypatch.context() as failure:
+            failure.setattr(r_bridge, "binary_convert_scale", fail_rr)
+            select_requested()
+
+        assert errors == ["RR display conversion failed"]
+        assert window.model.current_sheet_id == initial_id
+        assert window.sheet_tabs.currentIndex() == initial_tab
+        assert window.workspace.runtime.current_sheet_id == initial_id
+        assert window.model.current_effect == "OR"
+        assert window._metric_actions.checkedAction().data() == "OR"
+        assert window.confidence_button.text() == initial_ci
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+
+        select_requested()
+        assert window.model.current_effect == "RR"
+        assert window.workspace.runtime.current_sheet_id == window.model.current_sheet_id
+        if change == "sheet":
+            assert window.sheet_tabs.currentIndex() == 1
+            assert window.confidence_button.text() == "90% CI…"
+            assert not window.workspace.is_dirty
+            assert not window.workspace.can_undo
+        else:
+            assert window.workspace.is_dirty
+            assert window.workspace.can_undo
+    finally:
+        _close_shell(app, window)
+
+
+def test_failed_calculator_projection_keeps_study_and_history(
+    qapp, monkeypatch, inject_python_boundary,
+):
+    from rc_metastudio import app_error_handler, binary_data_dialog, r_bridge
+
+    replacement = 12.345
+
+    class AcceptCalculatorEdit:
+        def __init__(self, analysis_unit, _arm_names, arm_key, metric, **_kwargs):
+            self.analysis_unit = analysis_unit
+            analysis_unit.set_effect(metric, arm_key, replacement)
+            analysis_unit.set_calculator_source(metric, arm_key, "entered")
+
+        def setWindowTitle(self, _title):
+            pass
+
+        def exec(self):
+            return True
+
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "show_unexpected_error",
+        lambda error, **_kwargs: errors.append(str(error)),
+    )
+    monkeypatch.setattr(binary_data_dialog, "BinaryDataDialog", AcceptCalculatorEdit)
+    app, window = automation.start_automation()
+    try:
+        assert window.open(str(ROOT / "sample_projects" / "amino.rcms"), raise_on_error=True)
+        metric = window.model.current_effect
+        arm_key = window.model.get_current_arm_key()
+
+        def entered_estimate():
+            unit = window.model.get_current_analysis_unit_for_study(0)
+            return unit.get_effect_for_source("entered", metric, arm_key).estimate
+
+        initial_estimate = entered_estimate()
+        scale = r_bridge.binary_convert_scale
+
+        def fail_on_replacement(value, metric_name, **kwargs):
+            if value == replacement:
+                raise RuntimeError("calculator display conversion failed")
+            return scale(value, metric_name, **kwargs)
+
+        with monkeypatch.context() as failure:
+            failure.setattr(r_bridge, "binary_convert_scale", fail_on_replacement)
+            window.tableView.vert_header.sectionClicked.emit(0)
+
+        assert errors == ["calculator display conversion failed"]
+        assert entered_estimate() == initial_estimate
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+
+        window.tableView.vert_header.sectionClicked.emit(0)
+        assert entered_estimate() == replacement
+        assert window.workspace.is_dirty
+        assert window.workspace.can_undo
+        window.undo()
+        assert entered_estimate() == initial_estimate
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+    finally:
+        _close_shell(app, window)
+
+
 def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
     qapp, tmp_path, monkeypatch
 ):
@@ -354,7 +486,6 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
             lambda **_kwargs: (str(previous_project), ""),
         )
         assert window.save_as() is True
-        assert window.out_path == str(previous_project)
         assert window.workspace.path == previous_project
         assert not window.workspace.is_dirty
 
@@ -369,11 +500,9 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
                     "metric_choices": ["Mean"],
                     "name": "QA generic",
                 },
-                "selected_dataset": None,
             }
         )
 
-        assert window.out_path is None
         assert window.workspace.path is None
         assert window.workspace.is_dirty
         assert not window.workspace.can_undo
@@ -404,11 +533,6 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
     target = str(ROOT / "sample_projects" / "amino.rcms")
     for source_path in ("new_dataset", "csv_import"):
         app, window = automation.start_automation()
-        monkeypatch.setattr(
-            type(window.model),
-            "update_effect_previews_if_possible",
-            lambda _model, _row: None,
-        )
         import_errors = []
         monkeypatch.setattr(
             QtWidgets.QMessageBox,
@@ -428,7 +552,6 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                     "metric_choices": ["OR", "RR"],
                     "name": "Unsaved outcome",
                 },
-                "selected_dataset": None,
             }
             if source_path == "csv_import":
                 result["csv_data"] = {
@@ -441,7 +564,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
             window._handle_wizard_results(result)
             assert import_errors == []
             original_model = window.model
-            original_path = window.out_path
+            original_path = window.workspace.path
             original_title = window.model.dataset.title
             assert window.workspace.is_dirty is True
 
@@ -478,7 +601,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 assert save_as_calls == [True]
                 assert window.model is original_model
                 assert window.tableView.model() is original_model
-                assert window.out_path == original_path
+                assert window.workspace.path == original_path
                 assert window.model.dataset.title == original_title
                 assert window.workspace.is_dirty is True
         finally:
@@ -503,9 +626,9 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
     try:
         good = ROOT / "sample_projects" / "amino.rcms"
         assert window.open(str(good)) is True
-        prior_path = window.out_path
+        prior_path = window.workspace.path
         prior_title = window.model.dataset.title
-        prior_recents = list(settings.get_setting("recent_files"))
+        prior_recents = list(settings.get_recent_files())
 
         malformed = tmp_path / "malformed.rcms"
         malformed.write_bytes(b"not a project")
@@ -567,9 +690,9 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
             (schema_invalid, "confidence_level"),
         ):
             assert window.open(str(rejected)) is None
-            assert window.out_path == prior_path
+            assert window.workspace.path == prior_path
             assert window.model.dataset.title == prior_title
-            assert settings.get_setting("recent_files") == prior_recents
+            assert settings.get_recent_files() == prior_recents
             assert expected_message in critical_messages[-1][1]
 
         window.model.dataset.notes = "unsaved"
@@ -593,10 +716,10 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
                     ),
                 )
                 assert window.save_as() is False
-            assert window.out_path == prior_path
+            assert window.workspace.path == prior_path
             assert window.model.dataset.notes == "unsaved"
             assert window.workspace.is_dirty is True
-            assert settings.get_setting("recent_files") == prior_recents
+            assert settings.get_recent_files() == prior_recents
             assert boundary in critical_messages[-1][1]
     finally:
         _close_shell(app, window)
@@ -647,9 +770,8 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                     )
                 assert window.save_as() is True
             assert destination.is_file()
-            assert window.out_path == str(destination)
+            assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
-            assert window.model.analysis_source_path == str(destination)
             assert "saved successfully" in warnings[-1][1]
 
             with monkeypatch.context() as context:
@@ -670,7 +792,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                         ),
                     )
                 assert window.open(str(destination)) is True
-            assert window.out_path == str(destination)
+            assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
             assert window.model.dataset.notes == f"durable-{fault}"
             assert "opened successfully" in warnings[-1][1]
@@ -719,8 +841,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         with monkeypatch.context() as context:
             context.setattr(project_format, "_fsync_parent_directory", uncertain)
             assert window.save_as() is True
-        assert window.out_path == str(destination)
-        assert window.model.analysis_source_path == str(destination)
+        assert window.workspace.path == destination
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
             project_format.load_project(destination).project
@@ -784,7 +905,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         assert window.open(source) is True
         old_model = window.model
         old_table_model = window.tableView.model()
-        old_path = window.out_path
+        old_path = window.workspace.path
         old_dirty = window.workspace.is_dirty
         old_connection_count = len(window._model_signal_connections)
         selected = old_model.index(0, old_model.NAME)
@@ -810,13 +931,14 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
             context.setattr(window.tableView, "setModel", fail_after_rebind)
 
         def ui_failure(context):
-            context.setattr(
-                window,
-                "model_updated",
-                lambda *_args, **_kwargs: (_ for _ in ()).throw(
-                    RuntimeError("UI initialization failed")
-                ),
-            )
+            refresh_controls = window._refresh_projected_sheet_controls
+
+            def fail_candidate_refresh():
+                if window.model is not old_model:
+                    raise RuntimeError("UI initialization failed")
+                refresh_controls()
+
+            context.setattr(window, "_refresh_projected_sheet_controls", fail_candidate_refresh)
 
         sync_failures = []
 
@@ -839,7 +961,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
             assert message in errors[-1][1]
             assert window.model is old_model
             assert window.tableView.model() is old_table_model
-            assert window.out_path == old_path
+            assert window.workspace.path == old_path
             assert window.workspace.is_dirty is old_dirty
             assert len(window._model_signal_connections) == old_connection_count
             assert window.tableView.currentIndex().row() == 0
@@ -858,12 +980,19 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         _close_shell(app, window)
 
 
-def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directions(
-    qapp, monkeypatch
+def test_late_cross_family_open_failure_restores_projected_controls_both_directions(
+    qapp, tmp_path, monkeypatch
 ):
+    from rc_metastudio import project_format
 
-    def metric_menu_signature(window):
+    def projected_controls(window):
         return (
+            window.confidence_button.text(),
+            window.sheet_tabs.currentIndex(),
+            tuple(
+                (window.sheet_tabs.tabText(index), window.sheet_tabs.tabData(index))
+                for index in range(window.sheet_tabs.count())
+            ),
             window.menuMetric.isEnabled(),
             tuple(
                 (
@@ -890,45 +1019,42 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         lambda _parent, title, message: errors.append((title, message)),
     )
     binary = str(ROOT / "sample_projects" / "amino.rcms")
-    continuous = str(ROOT / "sample_projects" / "continuous.rcms")
+    original = project_format.load_project(ROOT / "sample_projects" / "continuous.rcms")
+    project = _json_map(copy.deepcopy(original.project))
+    active_sheet = next(
+        sheet for sheet in _json_maps(project["sheets"])
+        if sheet["id"] == original.state["current_sheet_id"]
+    )
+    _json_map(active_sheet["settings"])["confidence_level"] = 90.0
+    continuous = tmp_path / "continuous-90.rcms"
+    project_format.save_project(
+        continuous, cast(project_format.JsonObject, project), original.state,
+    )
     try:
-        assert window.open(binary) is True
-        binary_model = window.model
-        binary_menu = metric_menu_signature(window)
-        binary_marker = window.metric_menu_is_set_for
-        with monkeypatch.context() as context:
-            context.setattr(
-                window,
-                "_update_confidence_level_label",
-                lambda: (_ for _ in ()).throw(
-                    RuntimeError("late continuous installation failure")
-                ),
-            )
-            assert window.open(continuous) is None
-        assert "late continuous installation failure" in errors[-1][1]
-        assert window.model is binary_model
-        assert window.tableView.model() is binary_model
-        assert window.metric_menu_is_set_for == binary_marker
-        assert metric_menu_signature(window) == binary_menu
+        for source, candidate in ((binary, continuous), (continuous, binary)):
+            assert window.open(source) is True
+            previous_model = window.model
+            previous_controls = projected_controls(window)
+            enable_analysis = window.tableView._enable_analysis_menus_if_appropriate
 
-        assert window.open(continuous) is True
-        continuous_model = window.model
-        continuous_menu = metric_menu_signature(window)
-        continuous_marker = window.metric_menu_is_set_for
-        with monkeypatch.context() as context:
-            context.setattr(
-                window,
-                "_update_confidence_level_label",
-                lambda: (_ for _ in ()).throw(
-                    RuntimeError("late binary installation failure")
-                ),
-            )
-            assert window.open(binary) is None
-        assert "late binary installation failure" in errors[-1][1]
-        assert window.model is continuous_model
-        assert window.tableView.model() is continuous_model
-        assert window.metric_menu_is_set_for == continuous_marker
-        assert metric_menu_signature(window) == continuous_menu
+            def fail_after_projecting_candidate():
+                if window.model is not previous_model:
+                    controls = projected_controls(window)
+                    assert controls[0] != previous_controls[0]
+                    assert controls[2] != previous_controls[2]
+                    raise RuntimeError("late candidate installation failure")
+                enable_analysis()
+
+            with monkeypatch.context() as context:
+                context.setattr(
+                    window.tableView, "_enable_analysis_menus_if_appropriate",
+                    fail_after_projecting_candidate,
+                )
+                assert window.open(candidate) is None
+            assert "late candidate installation failure" in errors[-1][1]
+            assert window.model is previous_model
+            assert window.tableView.model() is previous_model
+            assert projected_controls(window) == previous_controls
     finally:
         _close_shell(app, window)
 

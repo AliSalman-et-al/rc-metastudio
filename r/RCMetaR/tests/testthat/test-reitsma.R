@@ -246,6 +246,12 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
     vapply(plots$sections, function(section) section$title, character(1)),
     c("Sensitivity Moderator Coefficients", "Specificity Moderator Coefficients")
   )
+  advertised <- rcmetar.analysis.plot.capabilities(
+    "diagnostic", "diagnostic.reitsma", "meta-regression"
+  )[[1]]
+  testthat::expect_identical(advertised$plot_kind, "reitsma_coefficient")
+  testthat::expect_identical(advertised$regenerator, "forest")
+  testthat::expect_identical(unname(plots$plot_capabilities), rep(list(advertised), 2L))
   testthat::expect_true(all(c("Odds Ratio", "Odds Ratio lower", "Odds Ratio upper") %in% colnames(result$Summary[["Specificity coefficients"]])))
   testthat::expect_false(any(grepl("Intercept", rownames(result$Summary[["Sensitivity coefficients"]]), fixed=TRUE)))
   reference <- result$Summary[["Sensitivity coefficients"]][grep("reference", rownames(result$Summary[["Sensitivity coefficients"]]), fixed=TRUE), "Odds Ratio"]

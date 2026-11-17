@@ -162,9 +162,8 @@ def test_document_to_runtime_project_reconstructs_state_and_selection():
     runtime = project_adapter.document_to_runtime_project(ProjectDocument(3, project, state))
     assert isinstance(runtime, project_adapter.RuntimeProject)
     assert [s.name for s in runtime.dataset.sheets] == ["Outcome"]
-    assert runtime.model_state == {"current_sheet_id": "sheet"}
+    assert runtime.current_sheet_id == "sheet"
     assert runtime.dataset.sheets[0].settings == project["sheets"][0]["settings"]
-    assert runtime.restored_active_sheet is True
 
 
 

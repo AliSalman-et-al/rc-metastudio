@@ -35,7 +35,7 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
 )
 from rc_metastudio.analysis_catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
@@ -117,7 +117,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             raise ValueError("Confidence level is missing.")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
 
@@ -612,7 +612,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         field = fields.get(val_str)
         if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
             return
-        # Backup form state
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
             analysis_unit=self.analysis_unit,
@@ -675,7 +674,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 self.current_effect, self.arm_key, calculation_scale_value
             )
         elif val_str == "correlation_pre_post":
-            # Recompute the estimates
             try:
                 succeeded = self.impute_pre_post_data(
                     self.g1_pre_post_table, 0
@@ -700,18 +698,16 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_tables,
             old_state=(old_analysis_unit, old_tables_data, old_correlation),
             new_state=(new_analysis_unit, new_tables_data, new_correlation),
         )
+        self.update_back_calculation_button()
 
         self.current_correlation = new_correlation
 
     def setup_clear_button_palettes(self):
-        # Color for clear_button_pallette
         self.orig_palette = self.clear_button.palette()
         self.pushme_palette = QPalette()
         self.pushme_palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.red)
@@ -763,7 +759,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.impute_data()
 
     def _cell_data_not_valid(self, celldata_string, cell_header=None):
-        # ignore blank entries
         if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
@@ -870,13 +865,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_tables,
             old_state=(old_analysis_unit, old_tables_data, old_correlation),
             new_state=(new_analysis_unit, new_tables_data, new_correlation),
         )
+        self.update_back_calculation_button()
 
     def _set_val(self, row_index, var_index, val, table=None, *, supplied=None):
         if table is None:
@@ -1099,7 +1093,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             self.set_current_effect()
 
-        # also update the pre/post tables
         pre_vals = results_from_r["pre"]
         post_vals = results_from_r["post"]
         for var_index, var_name in enumerate(var_names):
@@ -1143,13 +1136,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
             new_correlation = self._get_correlation_str()
 
-            calculator_edit_history.push_field_edit(
-                self._field_history,
-                owner=self,
+            self._field_history.record(
                 restore_state=self.restore_analysis_unit_and_tables,
                 old_state=(old_analysis_unit, old_tables_data, old_correlation),
                 new_state=(new_analysis_unit, new_tables_data, new_correlation),
             )
+            self.update_back_calculation_button()
         return True
 
     def float_to_str(self, float_val):
@@ -1318,13 +1310,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             raise
 
     def _update_back_calculation_button(self, engage=False, transaction_state=None):
-        # For undo/redo
-        old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
-            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
-        # Choose metric parameter if not already chosen
         if (
             engage
             and self.metric_parameter is None
@@ -1464,7 +1449,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             group1_data, group2_data, effect_data, self.confidence_level
         )
 
-        # Leave if there was a failure
         if "FAIL" in imputed:
             self.back_calculate_button.setEnabled(False)
             return None
@@ -1505,7 +1489,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 else:  # pressed cancel
                     raise _BackCalculationCancelled()
 
-        # Write the data to the table
         var_names = self.get_column_header_strs()
         group1_data = {
             "n": cast(float | int | None, imputed["n1"]),
@@ -1535,19 +1518,14 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.back_calculate_button.setEnabled(False)
         new_state = self._capture_dialog_state()
 
-        command = calculator_edit_history.make_field_edit_command(
-            owner=self,
+        self._field_history.record(
             restore_state=self._restore_dialog_state,
             old_state=(transaction_state,),
             new_state=(new_state,),
-            description="Apply continuous back-calculation",
-            refresh_on_initial_redo=False,
         )
-        self._field_history.push(command)
 
     def clear_form(self):
         self._validation_failed = False
-        # For undo/redo
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
             analysis_unit=self.analysis_unit,
@@ -1560,7 +1538,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         with ExitStack() as signal_blockers:
             for widget in self.entry_widgets:
                 signal_blockers.enter_context(QSignalBlocker(widget))
-            # reset tables
             for table in self.tables:
                 for row_index in range(len(self.arm_names)):
                     for var_index in range(table.columnCount()):
@@ -1579,14 +1556,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 self.analysis_unit.set_effect_for_source(
                     "entered", metric, self.arm_key, None, None, None
                 )
-        # clear line edits
         self.set_current_effect()
         with ExitStack() as signal_blockers:
             for widget in self.entry_widgets:
                 signal_blockers.enter_context(QSignalBlocker(widget))
             self.correlation_pre_post.setText("0.0")
 
-        # For undo/redo
         self.update_back_calculation_button()
         self._validate_summary_tables()
         new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
@@ -1596,13 +1571,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         new_correlation = self._get_correlation_str()
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_tables,
             old_state=(old_analysis_unit, old_tables_data, old_correlation),
             new_state=(new_analysis_unit, new_tables_data, new_correlation),
         )
+        self.update_back_calculation_button()
 
     def get_effect_names(self):
         effects = self.analysis_unit.get_effect_names()

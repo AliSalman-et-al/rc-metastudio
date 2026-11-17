@@ -17,8 +17,10 @@ from uuid import uuid4
 
 if __package__:
     from scripts import r_verification_support as r_support
+    from scripts.verification_evidence import source_digest, typing_command, verified_typing
 else:
     import r_verification_support as r_support
+    from verification_evidence import source_digest, typing_command, verified_typing
 
 
 class VerificationError(RuntimeError):
@@ -43,6 +45,7 @@ REPO_ROOT = discover_repo_root(SCRIPT_DIR)
 DEFAULT_BUILD_ROOT = REPO_ROOT / "build" / "qt6-verification"
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
+TYPING_RECEIPT_ENV = "RCMS_TYPING_RECEIPT"
 STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 SMOKE_TESTS = (
     "tests/analysis_regression/golden/test_analysis_regression_compare.py::"
@@ -98,6 +101,10 @@ def prepare_qt_environment(build_root: Path) -> dict[str, str]:
     return env
 
 
+def configured_build_root(env: dict[str, str]) -> Path:
+    return Path(env.get("RCMS_QT6_BUILD_ROOT", DEFAULT_BUILD_ROOT)).resolve()
+
+
 def preflight(env: dict[str, str]) -> None:
     write_step("Collecting pytest nodes with strict marker validation")
     run(
@@ -140,8 +147,6 @@ def selected_rscript(args: argparse.Namespace) -> str:
         for candidate in candidates:
             if candidate.exists():
                 return str(candidate.resolve())
-        if requested and requested != "Rscript":
-            raise VerificationError(f"Rscript was not found at '{requested}'.")
         raise VerificationError(
             f"Rscript was not found in selected R runtime at '{args.r_runtime_root}'."
         )
@@ -180,21 +185,23 @@ def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
     build_root = (REPO_ROOT / args.build_root).resolve()
     env = prepare_qt_environment(build_root)
     run_typing(build_root)
+    run_source_tests(env, smoke=smoke, fast_workers=0 if smoke else args.fast_workers)
+    if not args.skip_r_evidence:
+        run_default_r_evidence(args)
+
+
+def run_source_tests(env: dict[str, str], *, smoke: bool, fast_workers: int) -> None:
     preflight(env)
     if smoke:
         write_step("Running smoke pytest nodes")
         run_pytest(list(SMOKE_TESTS), env=env)
-        if not args.skip_r_evidence:
-            run_default_r_evidence(args)
     else:
         write_step("Running fast and golden pytest lanes")
         run_pytest(
             ["tests/python/fast", "tests/analysis_regression/golden"],
             env=env,
-            workers=args.fast_workers,
+            workers=fast_workers,
         )
-        if not args.skip_r_evidence:
-            run_default_r_evidence(args)
 
 
 def run_full_r_stack(args: argparse.Namespace) -> None:
@@ -203,7 +210,7 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
     else:
         write_step("Skipping dependency sync for warm local R verification")
     build_root = (REPO_ROOT / args.build_root).resolve()
-    env = prepare_qt_environment(build_root)
+    env = os.environ | {"RCMS_QT6_BUILD_ROOT": str(build_root)}
     command = [
         sys.executable,
         "scripts/verify_rcmetar_r_stack.py",
@@ -220,41 +227,40 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
     run(command, env=env)
 
 
-def run_typing(build_root: Path) -> None:
-    command = [
-        sys.executable,
-        "-m",
-        "ty",
-        "check",
-        "--python",
-        sys.executable,
-        "--python-platform",
-        "win32",
-    ]
-    for path in (
-        str(build_root / "generated/rc_metastudio"),
-        str(build_root / "generated/rc_metastudio/forms"),
-        ".",
-        "src/rc_metastudio",
-        "src",
-        "scripts",
-        "tests/python/gui",
-    ):
-        command += ["--extra-search-path", path]
-    command += ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa",
-                ".agents/skills/verify-rcms/scripts"]
+def run_typing(build_root: Path) -> Path:
+    source_before = source_digest(build_root)
+    command = typing_command(build_root)
     evidence = REPO_ROOT / "artifacts/verification/typing" / (datetime.now().strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8])
     evidence.mkdir(parents=True)
     write_step("$ " + " ".join(command))
     result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
     (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
     (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
-    (evidence / "command.json").write_text(json.dumps({"command": command, "python_platform": "win32", "exit_code": result.returncode}, indent=2), encoding="utf-8")
+    receipt = evidence / "command.json"
+    source_after = source_digest(build_root)
+    receipt.write_text(json.dumps({
+        "command": command,
+        "python_platform": "win32",
+        "exit_code": result.returncode,
+        "build_root": str(build_root.resolve()),
+        "source_sha256": source_before,
+        "source_unchanged": source_before == source_after,
+    }, indent=2), encoding="utf-8")
     print(result.stdout, end="")
     print(result.stderr, end="", file=sys.stderr)
     print(f"Typing evidence: {evidence}", flush=True)
     if result.returncode:
         raise VerificationError(f"strict typing failed; inspect {evidence}")
+    if source_before != source_after:
+        raise VerificationError(f"verification inputs changed during strict typing; inspect {evidence}")
+    return receipt
+
+
+def ensure_typing(build_root: Path, env: dict[str, str]) -> Path:
+    inherited = env.get(TYPING_RECEIPT_ENV)
+    if inherited and verified_typing(inherited, build_root, source_digest(build_root)):
+        return Path(inherited)
+    return run_typing(build_root)
 
 
 def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
@@ -292,23 +298,21 @@ def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
     )
 
 
-def run_packaging_contracts() -> None:
-    run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"])
+def run_packaging_contracts(env: dict[str, str]) -> None:
+    run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
 
 
 def run_pre_push() -> None:
-    build = Path(
-        os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))
-    ).resolve()
-    os.environ["RCMS_QT6_BUILD_ROOT"] = str(build)
+    build = configured_build_root(dict(os.environ))
+    env: dict[str, str] = {}
     fast = parser().parse_args(
         ["fast", "--skip-r-evidence", "--build-root", str(build)]
     )
     steps = [
-        ("prepare", lambda: prepare_qt_environment(build)),
+        ("prepare", lambda: env.update(prepare_qt_environment(build))),
         ("typing (win32)", lambda: run_typing(build)),
         ("code health", run_code_health),
-        ("Python fast and golden", lambda: run_source_lane(fast, smoke=False)),
+        ("Python fast and golden", lambda: run_source_tests(env, smoke=False, fast_workers=fast.fast_workers)),
         (
             "GUI",
             lambda: run(
@@ -320,10 +324,11 @@ def run_pre_push() -> None:
                     "error",
                     "--strict-markers",
                     "tests/python/gui",
-                ]
+                ],
+                env=env,
             ),
         ),
-        ("packaging contracts", run_packaging_contracts),
+        ("packaging contracts", lambda: run_packaging_contracts(env)),
     ]
     rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name, _ in steps]
     # shortcut: native platform qualification stays in CI, upgrade when local native setup is owned here.

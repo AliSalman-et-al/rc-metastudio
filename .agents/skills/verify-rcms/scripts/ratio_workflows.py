@@ -8,9 +8,6 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-SCENARIOS = ("ratios-hr", "ratios-irr", "ratios-samples")
-
-
 def run(app, window, scenario, record):
     if scenario == "ratios-samples":
         for hazard in (True, False):
@@ -151,8 +148,7 @@ def run(app, window, scenario, record):
     assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == before
 
     project_path = work / f"{metric}.rcms"
-    window.out_path = str(project_path)
-    assert window.save()
+    assert window.save(destination=project_path)
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
     reopened = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
@@ -177,8 +173,8 @@ def run(app, window, scenario, record):
         assert isinstance(menu, QtWidgets.QMenu)
         delete = next(action for action in menu.actions() if action.text().startswith("Delete study"))
         assert delete.text() == "Delete study “Study 13”…"
-        from rc_metastudio import project_adapter
-        deletion_before = project_adapter.runtime_project_to_document(window.workspace.snapshot())
+        deletion_before = window.workspace.document
+        assert deletion_before is not None
         (work / "delete-before.json").write_text(json.dumps(dict(project=deletion_before.project, state=deletion_before.state), indent=2))
         record("ratio-delete-study-menu", window, target_id=added_id, target_row=row, sorted_rows=sorted_rows)
         def confirm_delete(dialog):
@@ -194,7 +190,8 @@ def run(app, window, scenario, record):
         model = window.model
         assert added_id in [study.id for study in model.current_sheet.rows]
         assert "Study 13" in [model.data(model.index(i, model.NAME)) for i in range(model.rowCount())]
-        deletion_undone = project_adapter.runtime_project_to_document(window.workspace.snapshot())
+        deletion_undone = window.workspace.document
+        assert deletion_undone is not None
         (work / "delete-undone.json").write_text(json.dumps(dict(project=deletion_undone.project, state=deletion_undone.state), indent=2))
         record("ratio-delete-undone", window, can_redo=window.workspace.can_redo)
         assert window.workspace.can_redo
@@ -274,8 +271,7 @@ def run(app, window, scenario, record):
         assert record_input.unit == "person-years" and model.current_sheet.rows[i].include
     record("ratio-simple-csv-imported", window, csv=str(simple_csv), required_columns=len(basic_columns), defaults="ratio, 95% source CI, person-years")
     simple_project = work / f"{metric}-simple.rcms"
-    window.out_path = str(simple_project)
-    assert window.save()
+    assert window.save(destination=simple_project)
     assert window.open(str(simple_project), raise_on_error=True)
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
@@ -511,8 +507,7 @@ def run(app, window, scenario, record):
         # Restore mixed sources before saving the durable inspection fixture.
         for i in range(8,12):
             assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
-    window.out_path = str(project_path)
-    assert window.save()
+    assert window.save(destination=project_path)
     record("ratio-proof-complete", window, repeat_command=f"uv run python scripts/verify_rcms.py {scenario}", project=str(project_path))
 
 
@@ -640,8 +635,7 @@ def verify_bundled_sample(app, window, hazard, record):
         record("bundled-irr-descriptive-funnels", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
         view.close(); app.processEvents()
     copy_path = Path(sys.argv[2]) / filename
-    window.out_path = str(copy_path)
-    assert window.save() and window.open(str(copy_path), raise_on_error=True)
+    assert window.save(destination=copy_path) and window.open(str(copy_path), raise_on_error=True)
     check_inputs()
     assert load_project(copy_path).project == original.project
     record("bundled-ratio-sample-reopened", window, sample=filename, copy=str(copy_path))

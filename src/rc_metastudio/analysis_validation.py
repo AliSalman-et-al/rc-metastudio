@@ -4,7 +4,10 @@
 
 import math
 from collections.abc import Buffer
+from statistics import NormalDist
 from typing import SupportsFloat, SupportsIndex, SupportsInt, cast
+
+from rc_metastudio.qt_text import parse_decimal
 
 
 EMPTY_VALS = ("", None)  # these indicate an empty row/cell
@@ -67,6 +70,26 @@ def validate_confidence_level(confidence_level):
         raise ValueError(INVALID_CONFIDENCE_LEVEL_MESSAGE)
 
     return value
+
+
+def normal_confidence_multiplier(confidence_level: object) -> float:
+    level = validate_confidence_level(confidence_level)
+    return abs(NormalDist().inv_cdf((1.0 - level / 100.0) / 2.0))
+
+
+def validate_confidence_interval_order(
+    est: object = None, low: object = None, high: object = None,
+) -> tuple[bool, str | None]:
+    estimate, has_estimate = parse_decimal(est)
+    lower, has_lower = parse_decimal(low)
+    upper, has_upper = parse_decimal(high)
+    if has_lower and has_estimate and lower >= estimate:
+        return False, "The lower limit must be below the estimate."
+    if has_estimate and has_upper and estimate >= upper:
+        return False, "The upper limit must be above the estimate."
+    if has_lower and has_upper and lower >= upper:
+        return False, "The lower limit must be below the upper limit."
+    return True, None
 
 
 def validate_analysis_digits(digits):

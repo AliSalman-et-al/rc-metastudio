@@ -17,8 +17,6 @@ prepare_generated_ui_imports()
 from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_runtime, settings
 
 APPLICATION_ICON_PATH = ":/misc/meta.png"
-
-
 def screen_bounded_splash_pixmap(source, available_logical_size):
     """Bound a splash in Logical Layout Space while preserving source DPR."""
     pixmap = QPixmap(source)
@@ -164,7 +162,7 @@ def _startup_project_path(argv):
     return None
 
 
-def _argument_value(argv, option):
+def startup_argument_value(argv, option):
     args = list(argv or [])
     if option not in args:
         return None
@@ -174,7 +172,7 @@ def _argument_value(argv, option):
     return args[index + 1]
 
 
-def _resolve_startup_argv(argv=None, native_argv=None, frozen=None):
+def resolve_startup_argv(argv=None, native_argv=None, frozen=None):
     resolved = list(sys.argv if argv is None else argv)
     is_frozen = getattr(sys, "frozen", False) if frozen is None else frozen
     if not is_frozen:
@@ -198,50 +196,17 @@ def _emit_automation_phase(phase_callback, phase):
 
 
 def load_R_libraries(app, splash=None, phase_callback=None):
-    """Loads the R libraries while updating the splash screen"""
+    """Load R packages while updating the splash screen."""
     from rc_metastudio import r_bridge
-    r_bridge.initialize_r()
 
-    def _status(message):
-        if splash is not None:
-            splash.showMessage(message)
-        app.processEvents()
+    def observe_package(name: str, phase: str) -> None:
+        if phase == "start":
+            if splash is not None:
+                splash.showMessage(f"Loading {name}…")
+            app.processEvents()
+        _emit_automation_phase(phase_callback, f"r-library:{name}:{phase}")
 
-    _emit_automation_phase(phase_callback, "r-library-paths:start")
-    r_bridge.get_r_library_paths()
-    _emit_automation_phase(phase_callback, "r-library-paths:complete")
-    rloader = r_bridge.RLibraryLoader()
-
-    _status("Loading metafor…")
-    _emit_automation_phase(phase_callback, "r-library:metafor:start")
-    rloader.load_metafor()
-    _emit_automation_phase(phase_callback, "r-library:metafor:complete")
-
-    _status("Loading RCMetaR…")
-    _emit_automation_phase(phase_callback, "r-library:RCMetaR:start")
-    rloader.load_rcmetar()
-    _emit_automation_phase(phase_callback, "r-library:RCMetaR:complete")
-
-    _status("Loading grid…")
-    _emit_automation_phase(phase_callback, "r-library:grid:start")
-    rloader.load_grid()
-    _emit_automation_phase(phase_callback, "r-library:grid:complete")
-
-
-def _write_automation_pid(startup_argv):
-    pid_path = _argument_value(startup_argv, "--automation-pid-file") or os.environ.get(
-        "RCMS_AUTOMATION_PID_FILE"
-    )
-    if pid_path:
-        Path(pid_path).write_text(str(os.getpid()) + "\n", encoding="utf-8")
-
-
-def _is_automation_command(startup_argv):
-    return (
-        len(startup_argv) > 1
-        and startup_argv[1].startswith("--automation-")
-        and startup_argv[1] != "--automation-startup-project-smoke"
-    )
+    r_bridge.load_required_packages(observe_package)
 
 
 def _open_startup_project(app, meta, project_path, startup_argv):
@@ -258,7 +223,7 @@ def _open_startup_project(app, meta, project_path, startup_argv):
         meta,
         project_path,
         opened,
-        completion_marker=_argument_value(
+        completion_marker=startup_argument_value(
             startup_argv, "--automation-startup-completion-marker"
         ),
     )
@@ -297,15 +262,7 @@ def _mark_startup_workspace_saved(window):
         workspace.mark_saved()
 
 
-def start():
-    qt6_resources.ensure_application_resources()
-    app_error_handler.install_global_exception_handler()
-    startup_argv = _resolve_startup_argv()
-    _write_automation_pid(startup_argv)
-    if _is_automation_command(startup_argv):
-        from rc_metastudio import automation
-
-        return automation.dispatch(startup_argv)
+def start(startup_argv: list[str]):
     startup_project_path = _startup_project_path(startup_argv)
     if startup_project_path:
         startup_project_path = os.path.abspath(startup_project_path)
@@ -393,6 +350,7 @@ def _load_composition_runtime(
 ):
     if not interactive and r_loader is None and os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") != "1":
         return None
+    r_runtime.mark_unavailable()
     splash = create_startup_splash() if interactive else None
     try:
         if splash is not None:
@@ -476,7 +434,3 @@ def _import_main_window():
     from rc_metastudio import main_window
 
     return main_window
-
-
-if __name__ == "__main__":
-    start()

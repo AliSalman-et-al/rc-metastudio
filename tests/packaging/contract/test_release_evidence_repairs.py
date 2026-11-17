@@ -163,40 +163,6 @@ def test_kit_probe_digest_must_match_manifest(monkeypatch):
     assert not module._valid_r_kit_identity(manifest, derivation, 'macos-arm64', 'arm64', {'kit_sha256': 'b'*64}, {})
 
 
-def test_retained_symlink_escape(tmp_path):
-    module = load('macos_feasibility_evidence')
-    root = tmp_path / 'evidence'
-    root.mkdir()
-    outside = tmp_path / 'outside'
-    outside.mkdir()
-    try:
-        (root / 'link').symlink_to(outside, target_is_directory=True)
-    except OSError as exc:
-        if getattr(exc, 'winerror', None) == 1314:
-            pytest.skip('Windows symlink privilege unavailable; requires capable lane')
-        raise
-    with pytest.raises(module.EvidenceError, match='within'):
-        module._retained_path({'retained_path': 'link/record'}, 'probe', root)
-
-
-@pytest.mark.parametrize('diagnostic', ['packaged_phases', 'packaged_smoke', 'packaged_r_graph', 'r_profile_quarantine'])
-def test_standalone_diagnostics_reject_unrelated_contents(tmp_path, diagnostic):
-    from tests.python.fast.test_qt6_macos_feasibility import _valid_evidence, _materialize_retained_evidence
-    module = load('macos_feasibility_evidence')
-    evidence = _valid_evidence()
-    _materialize_retained_evidence(evidence, tmp_path)
-    module.validate_evidence(evidence, 'macos-arm64', evidence_dir=tmp_path,
-                             architecture_reader=lambda path: ['arm64'])
-    import hashlib
-    record = evidence['diagnostics'][diagnostic]
-    path = tmp_path / record['path']
-    path.write_text('{}')
-    record['sha256'] = hashlib.sha256(path.read_bytes()).hexdigest()
-    with pytest.raises(module.EvidenceError, match='diagnostic'):
-        module.validate_evidence(evidence, 'macos-arm64', evidence_dir=tmp_path,
-                                 architecture_reader=lambda path: ['arm64'])
-
-
 def test_sample_records_cover_deployment_inventory():
     module = load('inspect_macos_deployment')
     deployment = {'inventory': {'files': [

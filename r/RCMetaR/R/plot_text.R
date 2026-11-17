@@ -35,11 +35,17 @@ rcmetar.truncate.plot.display.text <- function(value, limit=72L) {
     value
 }
 
+rcmetar.plot.axis.label <- function(params, prefix) {
+    key <- paste0(prefix, "_xlabel")
+    text <- params[[key]]
+    if (!isTRUE(params[[paste0(key, "_literal")]]) && rcmetar.is.plot.default.text(text))
+        return(NULL)
+    rcmetar.plot.scalar_path(text)
+}
+
 rcmetar.normalize.plot.text.params <- function(params) {
-    for (name in c("fp_xlabel", "bp_xlabel")) {
-        if (name %in% names(params) && rcmetar.is.plot.default.text(params[[name]])) {
-            params[[name]] <- NULL
-        }
+    for (prefix in c("fp", "bp")) {
+        params[[paste0(prefix, "_xlabel")]] <- rcmetar.plot.axis.label(params, prefix)
     }
     params
 }

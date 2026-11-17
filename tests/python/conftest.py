@@ -51,26 +51,12 @@ class _TestObjects:
     def r(_expression: object) -> list[float]:
         return [95.0]
 
-
-class _TestLoader:
-
-    def load_metafor(self) -> None:
-        pass
-
-    def load_rcmetar(self) -> None:
-        pass
-
-    def load_grid(self) -> None:
-        pass
-
-
 @pytest.fixture
 def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject a local, explicit test capability at the R boundary."""
     monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
     functions = {
         "get_confidence_multiplier_from_r": _confidence,
-        "set_confidence_level": lambda level: float(level),
         "get_r_library_paths": lambda: [],
         "get_r_version_string": lambda: None,
         "get_r_package_version": lambda _name: None,
@@ -105,8 +91,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "get_available_methods": _unavailable,
         "get_params": _unavailable,
         "run_small_study_effects": _unavailable,
-        "regenerate_small_study_effects_funnel": _unavailable,
-        "generate_small_study_effects_funnel": _unavailable,
         "run_model_analysis": lambda _model, _request, **_kwargs: {
             "version": 1,
             "texts": {},
@@ -123,7 +107,7 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     for name, function in functions.items():
         monkeypatch.setattr(r_bridge, name, function, raising=False)
     monkeypatch.setattr(r_bridge, "ro", _TestObjects, raising=False)
-    monkeypatch.setattr(r_bridge, "RLibraryLoader", _TestLoader, raising=False)
+    monkeypatch.setattr(r_bridge, "load_required_packages", lambda _on_phase=None: None)
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import ArmId, RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 import os
 import sys
 import json
@@ -70,8 +70,6 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
                     "metric_choices": [],
                     "name": "Outcome",
                 },
-                "csv_data": None,
-                "selected_dataset": None,
             }
         )
         window.show()
@@ -111,8 +109,7 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
     model = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
     initial = project_adapter.RuntimeProject(
         dataset=model.dataset,
-        model_state=model.get_state(),
-        restored_active_sheet=True,
+        current_sheet_id=model.current_sheet_id,
     )
 
     class BoundaryOwner:
@@ -122,7 +119,7 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
                 project_adapter.runtime_project_to_document(initial)
             )
 
-        def _notify_user_that_data_is_unsaved(self):
+        def _update_project_identity(self):
             pass
 
     owner = BoundaryOwner()
@@ -138,6 +135,32 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
         "Alpha",
     ]
     assert owner.workspace.undo() is False
+
+
+def test_navigating_to_a_sheet_with_default_confidence_keeps_project_clean(qapp, tmp_path):
+    from rc_metastudio.main_window import MainWindow
+    from rc_metastudio.project_adapter import RuntimeProject, runtime_project_to_document
+    from rc_metastudio.project_format import save_project
+    from rc_metastudio.analysis_dataset import Dataset, Sheet
+    from rc_metastudio.analysis_catalog import BINARY
+
+    first = Sheet(SheetId("first"), "First", BINARY, settings={"confidence_level": 90.0})
+    second = Sheet(SheetId("second"), "Second", BINARY)
+    document = runtime_project_to_document(RuntimeProject(Dataset(sheets=[first, second]), first.id))
+    source = tmp_path / "default-confidence.rcms"
+    save_project(source, document.project, document.state)
+    window = MainWindow()
+    try:
+        assert window.open(source, raise_on_error=True)
+        window.sheet_tabs.setCurrentIndex(1)
+        assert window.model.current_outcome_name == "Second"
+        assert window.confidence_button.text() == "95% CI…"
+        assert not window.workspace.is_dirty and not window.workspace.can_undo
+        assert not window.windowTitle().endswith("* — RC MetaStudio")
+    finally:
+        window.workspace.mark_saved()
+        window.close()
+        qapp.processEvents()
 
 
 def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
@@ -405,4 +428,4 @@ def _create_sheet(window):
         "path": "new_dataset", "outcome_info": {
             "arms": "two", "data_type": "binary", "sub_type": "proportions",
             "effect": "OR", "metric_choices": [], "name": "Outcome"},
-        "csv_data": None, "selected_dataset": None})
+        })

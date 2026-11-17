@@ -77,26 +77,22 @@ def _load_source_provenance():
     return module
 
 
-def test_package_metadata_version_only_needs_no_ambient_rscript(tmp_path):
+@pytest.mark.parametrize("options", [[], ["--version-only"]])
+def test_package_metadata_needs_no_ambient_rscript(tmp_path, options):
     output = tmp_path / "github-output.txt"
     env = {**os.environ, "GITHUB_OUTPUT": str(output), "PATH": ""}
     script = ROOT / "scripts" / "resolve_package_ci_metadata.py"
-    version_only = subprocess.run(
-        [sys.executable, str(script), "--version-only"],
+    result = subprocess.run(
+        [sys.executable, str(script), *options],
         env=env,
         text=True,
         capture_output=True,
     )
-    assert version_only.returncode == 0, version_only.stderr
+    assert result.returncode == 0, result.stderr
     project_version = tomllib.loads(
         (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     )["project"]["version"]
     assert output.read_text(encoding="utf-8") == f"version={project_version}\n"
-    default = subprocess.run(
-        [sys.executable, str(script)], env=env, text=True, capture_output=True
-    )
-    assert default.returncode != 0
-    assert "Rscript is not available on PATH." in default.stderr
 
 
 def _load_windows_deployment_inspector():

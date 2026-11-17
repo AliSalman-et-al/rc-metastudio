@@ -2,6 +2,7 @@
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
 from PyQt6 import QtCore, QtGui, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
+from scripts.verification_evidence import desktop_tool_executable
 
 
 def analysis_setup(driver, capture, missing):
@@ -132,11 +133,11 @@ def exports(driver, capture, missing, view):
     write_pdf(report, str(pdf))
     write_docx(report, str(docx))
     def render(path, detail, last=False):
-        info = subprocess.run(["pdfinfo", str(path)], check=True, capture_output=True, text=True).stdout
+        info = subprocess.run([desktop_tool_executable("pdfinfo"), str(path)], check=True, capture_output=True, text=True).stdout
         pages = int(next(line.split(":")[1] for line in info.splitlines() if line.startswith("Pages:")))
         page = pages if last else 1
         output = driver.WORK / detail
-        subprocess.run(["pdftoppm", "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
+        subprocess.run([desktop_tool_executable("pdftoppm"), "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
         image = QtGui.QImage(str(output) + ".png")
         assert not image.isNull(), detail
         capture("I-" + detail, image)
@@ -165,7 +166,7 @@ def exports(driver, capture, missing, view):
     except (OSError, subprocess.SubprocessError) as error:
         missing.append(f"I DOCX page 1: {error}; {getattr(error, 'stderr', b'')!r}")
     title, image = next(iter(view.results.images.items()))
-    artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
+    artifact = view.plot_artifact(title)
     path = driver.WORK / "plot.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(path), "PDF (*.pdf)")):
         view.save_image_as(artifact, format="pdf")
@@ -208,7 +209,7 @@ def plots(driver, capture, missing):
                     view.fit_width_action.trigger()
                     capture(f"G-binary-forest-{style.lower()}-fit", view)
             if family == "binary":
-                artifact = next(view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title)) for title, path in view.results.images.items())
+                artifact = next(view.plot_artifact(title) for title, path in view.results.images.items())
                 plot_editor(driver, capture, artifact, view, "forest")
                 editors.add("forest")
             view.close()
@@ -229,18 +230,17 @@ def plots(driver, capture, missing):
         ("analysis-amino-binary-meta-regression", (("regression", "regression"),)),
         ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"), ("trim-and-fill-right", "trimfill_funnel"))),
         ("analysis-diagnostic-joint", (("sroc", "sroc"),)),
-        ("analysis-diagnostic-regression-continuous", (("coefficient", "forest"),)),
+        ("analysis-diagnostic-regression-continuous", (("coefficient", "reitsma_coefficient"),)),
         ("small-study-diagnostic", (("deeks", "deeks_funnel"),)),
     )
     for producer, kinds in producers:
         driver.window.workspace.mark_saved()
         view = matrix(driver.app, driver.window, producer, lambda *args, **kwargs: None, keep_results=True)
         for detail, kind in kinds:
-            artifacts = [view.create_plot_artifact(title, path, params_path=view.results.image_params_paths.get(title))
+            artifacts = [view.plot_artifact(title)
                          for title, path in view.results.images.items()]
             selected = [artifact for artifact in artifacts if artifact.plot_kind == kind
-                        and (detail != "trim-and-fill-right" or "right" in artifact.title.lower())
-                        and (detail != "coefficient" or (artifact.params_path and view.plot_service.load_params(artifact.params_path).get("reitsma.coefficient.scale")))]
+                        and (detail != "trim-and-fill-right" or "right" in artifact.title.lower())]
             if not selected:
                 missing.append(f"G {detail}: producer {producer} did not expose {kind}")
                 continue
@@ -609,7 +609,7 @@ def dark(driver, capture, missing):
         view.fit_width_action.trigger()
         capture("J-forest", view)
         title, image = next(iter(view.results.images.items()))
-        artifact = view.create_plot_artifact(title, image, params_path=view.results.image_params_paths.get(title))
+        artifact = view.plot_artifact(title)
         plot_editor(driver, capture, artifact, view, "plot-editor", prefix="J")
         view.close()
     finally:

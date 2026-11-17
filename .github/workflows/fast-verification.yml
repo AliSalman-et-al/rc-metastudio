@@ -60,33 +60,7 @@ jobs:
           fi
 
           changed_files="$(gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)')"
-          run_windows=false
-          run_linux=false
-          reason="no Qt6 integration verification inputs changed"
-          while IFS= read -r file; do
-            case "$file" in
-              .github/workflows/*|.python-version|pyproject.toml|uv.lock|config/*|delivery/*|packaging/*|r/*|scripts/*|src/*|tests/*)
-                run_windows=true
-                run_linux=true
-                reason="matched $file"
-                break
-                ;;
-            esac
-          done <<< "$changed_files"
-
-          package_required="$(printf '%s\n' "$changed_files" | python3 scripts/package_input_policy.py)"
-          if [ "$package_required" = "true" ] && [ "$run_windows" != "true" ]; then
-            reason="matched a release-package qualification input"
-          fi
-          if [ "$package_required" = "true" ]; then
-            run_linux=true
-          fi
-
-          echo "run-windows=$run_windows" >> "$GITHUB_OUTPUT"
-          echo "run-linux=$run_linux" >> "$GITHUB_OUTPUT"
-          echo "run-windows-package=$package_required" >> "$GITHUB_OUTPUT"
-          echo "reason=$reason" >> "$GITHUB_OUTPUT"
-          echo "$reason"
+          printf '%s\n' "$changed_files" | python3 scripts/package_input_policy.py | tee -a "$GITHUB_OUTPUT"
 
   qt6-verification:
     name: Native Qt6 Vertical Slice
@@ -285,7 +259,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          uv run python scripts/qt6_macos_feasibility.py resolve-rcc \
+          uv run python scripts/macos_rcc.py \
             --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" \
             --github-env "$GITHUB_ENV" \
             --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"

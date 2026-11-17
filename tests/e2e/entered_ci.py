@@ -33,7 +33,7 @@ def check(app, window, kind, launch, text, family, record):
 
     modal(app, kind, enter, launch)
     confidence(95)
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save() and window.open(window.workspace.path, raise_on_error=True)
     unit = window.model.get_current_analysis_unit_for_study(0)
     assert all(v in (None, "") for v in unit.get_raw_data_for_arms(window.model.arm_names))
     view = analyze_existing(app, window, "standard", family + ".random", record,

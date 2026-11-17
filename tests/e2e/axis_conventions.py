@@ -6,6 +6,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets, sip
+from tests.e2e.plot_observations import load_saved_analysis
 
 
 GEOMETRY_R = """jsonlite::toJSON(local({
@@ -117,7 +118,7 @@ def run(app, window, work, record, family):
                 app.processEvents()
                 artifact, item = view._selected_plot()
                 path = Path(artifact.display_path())
-                r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+                load_saved_analysis(artifact.params_path, include_plot_data=True)
                 r_bridge.execute_r_string('axis.numeric.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric); axis.weights.before <- as.numeric(weights(plot.data$res))')
                 measure = str(r_bridge.execute_r_string('as.character(params$measure)')[0])
                 ratio = measure in ('OR','RR','HR','IRR','DOR','PLR','NLR')
@@ -140,7 +141,7 @@ def run(app, window, work, record, family):
                         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
                     modal(app, EditPlotDialog, edit, view.edit_plot_action.trigger)
                     assert dict(view.texts) == texts
-                    r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+                    load_saved_analysis(artifact.params_path, include_plot_data=True)
                     assert str(r_bridge.execute_r_string('as.character(params$fp_axis_scale)')[0]) == other
                     exact = r_bridge.execute_r_string('identical(axis.numeric.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric), num.eq=FALSE) && identical(axis.weights.before, as.numeric(weights(plot.data$res)), num.eq=FALSE)')
                     assert bool(exact[0]), 'numeric fitted fields or weights changed'
@@ -208,7 +209,7 @@ def run_sequential(app, window, work, record):
                       metric_override='PFT', workflow_override=workflow, prepare=groups,
                       parameters={'fp_style':'default'})
         artifact = next(artifact for artifact in view._nav_plot_artifacts.values() if artifact.capability.regenerator == 'forest')
-        r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+        load_saved_analysis(artifact.params_path, include_plot_data=True)
         reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
             counts <- metafor::escalc(measure="PFT", xi=4:9, ni=20:25)
             subsets <- if (plot.data$forest_variant == "cumulative") lapply(1:6, seq_len) else

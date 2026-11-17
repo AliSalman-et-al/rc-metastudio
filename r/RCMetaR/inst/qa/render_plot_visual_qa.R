@@ -19,7 +19,8 @@ qa_visual_coverage_inventory <- function() {
       "leave_one_out_forest",
       "subgroup_forest",
       "regression",
-      rep("other", 2),
+      "reitsma_coefficient",
+      "other",
       "roc",
       "sroc"
     ),

@@ -4,6 +4,7 @@ import json
 import math
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
+from tests.e2e.plot_observations import load_serialized_object
 
 
 def check_report(app, view, work, record):
@@ -62,7 +63,7 @@ def check_standard_heterogeneity(view, record):
     from rc_metastudio import r_bridge
     tables = [t for s in view.results.sections for t in s.tables if t.title.endswith("Heterogeneity")]
     for table, (title, path) in zip(tables, view.results.display_images.items(), strict=True):
-        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        load_serialized_object(str(view.params_paths[title]) + ".plotdata")
         expected = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fit <- plot.data$res
           direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
@@ -115,7 +116,7 @@ def check_subgroup(view, record):
             view.graphics_view.verticalScrollBar().setValue(round(bottom - view.graphics_view.viewport().height() + 30))
             record('review1-subgroup-footer-order', view, title=title, plots={title:path})
             view.report_action.setChecked(previous)
-        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        load_serialized_object(str(view.params_paths[title]) + ".plotdata")
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
           fits <- plot.data$regeneration_state$subgroup_data$results
           lapply(fits, function(fit) {

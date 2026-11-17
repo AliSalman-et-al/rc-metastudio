@@ -13,7 +13,6 @@ import math
 import os
 from pathlib import Path
 from pathlib import PurePosixPath
-import shutil
 import stat
 import subprocess
 import sys
@@ -24,6 +23,7 @@ from uuid import uuid4
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
+from scripts.r_verification_support import resolve_rscript  # noqa: E402
 from tests.analysis_regression.golden.support import golden_analysis  # noqa: E402
 from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
     compare_golden_baseline,
@@ -1061,9 +1061,8 @@ def _validate_comparison(value: object) -> ComparisonReport:
 
 
 def _verify_installed_source(root: Path, output_root: Path) -> None:
-    r_home = os.environ.get("RCMS_R_HOME") or os.environ.get("R_HOME")
-    rscript = str(Path(r_home) / "bin" / ("Rscript.exe" if os.name == "nt" else "Rscript")) if r_home else shutil.which("Rscript")
-    if not rscript:
+    rscript = resolve_rscript("Rscript")
+    if rscript is None:
         raise ValueError("Rscript is required to verify installed source identity")
     script = r"""
 ns <- asNamespace("RCMetaR")
@@ -1163,16 +1162,24 @@ def main(argv: list[str] | None = None) -> int:
     if root != REPOSITORY_ROOT:
         print("--root must select the script checkout", file=sys.stderr)
         return 1
-    from scripts.verify import run_typing
-    run_typing(root / "build/qt6-verification")
+    from scripts.verify import configured_build_root, ensure_typing
+    env = dict(os.environ)
+    build_root = configured_build_root(env)
+    typing_evidence = ensure_typing(build_root, env)
+    env["RCMS_QT6_BUILD_ROOT"] = str(build_root)
     evidence = _prepare_output_root(root, args.output_root)
     worker = "import sys; from pathlib import Path; from scripts.verify_golden_compatibility import _capture_main; raise SystemExit(_capture_main(Path(sys.argv[1]), Path(sys.argv[2])))"
     command = [sys.executable, str(root / "scripts/run_with_timeout.py"),
                "--timeout-seconds", "600", "--label", "golden compatibility", "--",
                sys.executable, "-c", worker, str(root), str(evidence / "capture")]
     with (evidence / "stdout.log").open("w", encoding="utf-8") as stdout, (evidence / "stderr.log").open("w", encoding="utf-8") as stderr:
-        result = subprocess.run(command, cwd=root, stdout=stdout, stderr=stderr)
-    (evidence / "command.json").write_text(json.dumps({"command": command, "exit_code": result.returncode}, indent=2), encoding="utf-8")
+        result = subprocess.run(command, cwd=root, env=env, stdout=stdout, stderr=stderr)
+    (evidence / "command.json").write_text(json.dumps({
+        "command": command,
+        "build_root": str(build_root),
+        "typing_evidence": str(typing_evidence),
+        "exit_code": result.returncode,
+    }, indent=2), encoding="utf-8")
     print(f"Golden evidence: {evidence}")
     return result.returncode
 

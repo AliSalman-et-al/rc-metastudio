@@ -4,45 +4,19 @@
 
 from __future__ import annotations
 
-from rc_metastudio.result_formatting import sentence_case_title
-
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from types import MappingProxyType
 from typing import Literal, TypedDict, get_args, cast
 import math
 
+from rc_metastudio import plot_capabilities
+from rc_metastudio.plot_capabilities import PlotCapability, PlotKind
+from rc_metastudio.result_formatting import sentence_case_title
+
 
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 
-
-PlotKind = Literal[
-    "forest",
-    "cumulative_forest",
-    "leave_one_out_forest",
-    "subgroup_forest",
-    "regression",
-    "roc",
-    "sroc",
-    "funnel",
-    "contour_funnel",
-    "deeks_funnel",
-    "trimfill_funnel",
-    "other",
-]
-PlotComposition = Literal["single"]
-PlotRegenerator = Literal["forest", "regression", "funnel", "sroc", "none"]
-
-
-@dataclass(frozen=True, slots=True)
-class PlotCapability:
-    """Immutable capability data attached to one semantic plot artifact."""
-
-    plot_kind: PlotKind
-    editable: bool
-    styleable: bool
-    composition: PlotComposition
-    regenerator: PlotRegenerator
 
 class RawAnalysisResult(TypedDict, total=False):
     """Untrusted result shape accepted at the application boundary."""
@@ -137,11 +111,16 @@ class ResultSection:
     title: str
     value: str
     source_key: str
-    plot_kind: PlotKind | None = None
     plot_data: str | None = None
     capability: PlotCapability | None = None
+    display_image: str | None = None
     paragraphs: tuple[str, ...] = ()
     tables: tuple[ResultTable, ...] = ()
+    prediction_notes: tuple[str, ...] = ()
+
+    @property
+    def plot_kind(self) -> PlotKind | None:
+        return None if self.capability is None else self.capability.plot_kind
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,13 +128,8 @@ class AnalysisResult:
     """Validated immutable result contract consumed by application adapters."""
 
     version: int
-    texts: Mapping[str, str]
-    images: Mapping[str, str]
-    display_images: Mapping[str, str]
     image_var_names: Mapping[str, str]
-    image_params_paths: Mapping[str, str]
     image_order: tuple[str, ...] | None
-    plot_capabilities: Mapping[str, PlotCapability]
     sections: tuple[ResultSection, ...]
     identity: str = ""
     details: str = ""
@@ -172,6 +146,40 @@ class AnalysisResult:
     manuscript_model_info: tuple[tuple[str, str], ...] = ()
     inference_methods: tuple[str, ...] = ()
 
+    def __post_init__(self) -> None:
+        if len({section.semantic_id for section in self.sections}) != len(self.sections) or len(
+            {section.order for section in self.sections}
+        ) != len(self.sections):
+            raise ValueError("analysis result section identity and order must be unique")
+        if len({(section.kind, section.source_key) for section in self.sections}) != len(self.sections):
+            raise ValueError("analysis result values must have exactly one section")
+
+    @property
+    def texts(self) -> Mapping[str, str]:
+        return MappingProxyType({s.source_key: s.value for s in self.sections if s.kind == "text"})
+
+    @property
+    def images(self) -> Mapping[str, str]:
+        return MappingProxyType({s.source_key: s.value for s in self.sections if s.kind == "image"})
+
+    @property
+    def display_images(self) -> Mapping[str, str]:
+        return MappingProxyType({
+            s.source_key: s.display_image for s in self.sections if s.display_image is not None
+        })
+
+    @property
+    def image_params_paths(self) -> Mapping[str, str]:
+        return MappingProxyType({
+            s.source_key: s.plot_data for s in self.sections if s.plot_data is not None
+        })
+
+    @property
+    def plot_capabilities(self) -> Mapping[str, PlotCapability]:
+        return MappingProxyType({
+            s.source_key: s.capability for s in self.sections if s.capability is not None
+        })
+
 
 def normalize_analysis_result(result: AnalysisResult) -> AnalysisResult:
     """Fold display metadata into configuration before preparing any report."""
@@ -181,64 +189,38 @@ def normalize_analysis_result(result: AnalysisResult) -> AnalysisResult:
         lines = [line for line in details.splitlines() if not line.startswith("Inference:")]
         lines.append("Inference: " + inference)
         details = "\n".join(lines)
-    texts = {key: value for key, value in result.texts.items() if key != "Inference Method"}
-    sections = tuple(section for section in result.sections if section.source_key != "Inference Method")
-    if not texts and not result.images:
-        texts["No Results"] = NO_RESULTS_MESSAGE
+    sections = tuple(
+        section for section in result.sections
+        if section.kind != "text" or section.source_key != "Inference Method"
+    )
+    if not sections:
         sections += (ResultSection("result.none", "text", 0, "No results", NO_RESULTS_MESSAGE, "No Results"),)
-    return replace(result, details=details, texts=MappingProxyType(texts), sections=sections)
+    return replace(result, details=details, sections=sections)
 
 
-def _sections(
-    texts: Mapping[str, str],
-    images: Mapping[str, str],
-    image_params_paths: Mapping[str, str],
-    capabilities: Mapping[str, PlotCapability],
-    metadata: Iterable[Mapping[str, object]],
-) -> tuple[ResultSection, ...]:
-    result: list[ResultSection] = []
-    seen_ids: set[str] = set()
-    seen_orders: set[int] = set()
-    seen_values: set[tuple[str, str]] = set()
-    for item in metadata:
-        section = _result_section(item, texts, images, image_params_paths, capabilities)
-        semantic_id = section.semantic_id
-        order = section.order
-        value_key = (section.kind, section.source_key)
-        if semantic_id in seen_ids or order in seen_orders:
-            raise ValueError(
-                "analysis result section identity and order must be unique"
-            )
-        if value_key in seen_values:
-            raise ValueError("analysis result values must have exactly one section")
-        seen_ids.add(semantic_id)
-        seen_orders.add(order)
-        seen_values.add(value_key)
-        result.append(section)
-    expected_values = {("text", key) for key in texts} | {
-        ("image", key) for key in images
-    }
+def _sections(raw: RawAnalysisResult, capabilities: Mapping[str, PlotCapability]) -> tuple[ResultSection, ...]:
+    sections = tuple(_result_section(item, raw, capabilities) for item in raw["sections"])
+    seen_values = {(section.kind, section.source_key) for section in sections}
+    expected_values = {("text", key) for key in raw["texts"]} | {("image", key) for key in raw["images"]}
     if seen_values != expected_values:
         raise ValueError("analysis result sections must cover every text and image")
-    return tuple(result)
+    return sections
 
 
 def _result_section(
     item: Mapping[str, object],
-    texts: Mapping[str, str],
-    images: Mapping[str, str],
-    image_params_paths: Mapping[str, str],
+    raw: RawAnalysisResult,
     capabilities: Mapping[str, PlotCapability],
 ) -> ResultSection:
     semantic_id, kind, order, title, source_key = _section_fields(item)
-    values = texts if kind == "text" else images
+    values = raw["texts"] if kind == "text" else raw["images"]
     value = values.get(source_key)
     if value is None:
         raise ValueError("analysis result section references missing value")
     if kind == "text":
-        paragraphs, tables = _report_content(item.get("report"))
+        paragraphs, tables, prediction_notes = _report_content(item.get("report"))
         return ResultSection(semantic_id, kind, order, title, value, source_key,
-                             paragraphs=paragraphs, tables=tables)
+                             paragraphs=paragraphs, tables=tables, prediction_notes=prediction_notes)
     capability = capabilities.get(source_key)
     if capability is None:
         raise ValueError("analysis result image has no plot capability")
@@ -249,15 +231,15 @@ def _result_section(
         title,
         value,
         source_key,
-        capability.plot_kind,
-        image_params_paths.get(source_key),
-        capability,
+        plot_data=raw["image_params_paths"].get(source_key),
+        capability=capability,
+        display_image=raw["display_images"].get(source_key),
     )
 
 
-def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, ...]]:
+def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, ...], tuple[str, ...]]:
     if value is None:
-        return (), ()
+        return (), (), ()
     if not isinstance(value, Mapping):
         raise ValueError("report content must be a mapping")
     fields: dict[str, object] = {}
@@ -265,10 +247,15 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
         if isinstance(key, str):
             fields[key] = field
     paragraphs = _optional_string_list(fields.get("paragraphs"), "report paragraphs")
+    prediction_notes = _optional_string_list(fields.get("prediction_notes"), "prediction notes")
     entries = fields.get("tables")
     if not isinstance(entries, (list, tuple)):
         raise ValueError("report tables must be a list")
-    return tuple(paragraphs or ()), tuple(_report_table_entry(entry) for entry in entries)
+    return (
+        tuple(paragraphs or ()),
+        tuple(_report_table_entry(entry) for entry in entries),
+        tuple(prediction_notes or ()),
+    )
 
 
 def _report_rows(rows, width):
@@ -349,33 +336,8 @@ def _required_section_text(item: Mapping[str, object], field: str) -> str:
     raise ValueError(f"analysis result section {label} must be non-empty text")
 
 
-def _freeze_result(
-    texts: Mapping[str, str],
-    images: Mapping[str, str],
-    display_images: Mapping[str, str],
-    image_var_names: Mapping[str, str],
-    image_params_paths: Mapping[str, str],
-    image_order: Iterable[str] | None,
-    plot_capabilities: Mapping[str, PlotCapability],
-    metadata: Iterable[Mapping[str, object]] = (),
-) -> AnalysisResult:
-    return AnalysisResult(
-        version=1,
-        texts=MappingProxyType(dict(texts)),
-        images=MappingProxyType(dict(images)),
-        display_images=MappingProxyType(dict(display_images)),
-        image_var_names=MappingProxyType(dict(image_var_names)),
-        image_params_paths=MappingProxyType(dict(image_params_paths)),
-        image_order=None if image_order is None else tuple(image_order),
-        plot_capabilities=MappingProxyType(dict(plot_capabilities)),
-        sections=_sections(
-            texts, images, image_params_paths, plot_capabilities, metadata
-        ),
-    )
-
-
 def empty_analysis_result() -> AnalysisResult:
-    return _freeze_result({}, {}, {}, {}, {}, None, {})
+    return AnalysisResult(1, MappingProxyType({}), None, ())
 
 
 def parse_analysis_result(value: object) -> AnalysisResult:
@@ -407,10 +369,6 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         "sections": _section_metadata(source.get("sections")),
     }
 
-    # Local import avoids a module cycle: plot_capabilities owns descriptor
-    # policy and imports the shared result types defined above.
-    from rc_metastudio import plot_capabilities
-
     capabilities = plot_capabilities.validate_result(raw)
     extra_display_images = sorted(set(raw["display_images"]) - set(raw["images"]))
     if extra_display_images:
@@ -418,21 +376,19 @@ def parse_analysis_result(value: object) -> AnalysisResult:
             "Display artifacts have no matching plot artifact: %s"
             % ", ".join(extra_display_images)
         )
-    result = _freeze_result(
-        raw["texts"],
-        raw["images"],
-        raw["display_images"],
-        raw["image_var_names"],
-        raw["image_params_paths"],
-        raw["image_order"],
-        capabilities,
-        raw["sections"],
-    )
     software = source.get('software', '')
     inference = _optional_string_list(source.get('inference_methods', []), 'executed inference methods') or []
     if not isinstance(software, str) or any(code not in ('z', 't', 'knha', 'adhoc') for code in inference):
         raise ValueError('invalid executed analysis metadata')
-    return replace(result, software=software, inference_methods=tuple(inference))
+    image_order = raw["image_order"]
+    return AnalysisResult(
+        version=raw["version"],
+        image_var_names=MappingProxyType(raw["image_var_names"]),
+        image_order=None if image_order is None else tuple(image_order),
+        sections=_sections(raw, capabilities),
+        software=software,
+        inference_methods=tuple(inference),
+    )
 
 
 def _result_version(value: object) -> int:

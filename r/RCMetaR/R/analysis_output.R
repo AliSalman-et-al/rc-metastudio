@@ -1,10 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-results.short.list <- function(res) {
-  res.short <- list("b"=res$b[1], "ci.lb"=res$ci.lb, "ci.ub"=res$ci.ub)
-}
-
 calc.ci.bounds <- function(om.data, params, ...) {
   y <- om.data@y
   se <- om.data@SE
@@ -216,7 +212,57 @@ loo.rma.mh.value.info <- function () {
   )
 }
 
-capture.output.and.collapse <- function (x) {
-  output <- paste(capture.output(print(x)), collapse="\n")
-  output
+rcmetar.metafor.weights <- function(res) {
+    if (inherits(res, "rma")) {
+        return(as.numeric(weights(res)))
+    }
+    if (!is.null(res$study.weights)) {
+        return(as.numeric(res$study.weights))
+    }
+    NULL
+}
+
+rcmetar.pft.sample.sizes <- function(om.data, params) {
+    if (as.character(params$measure) == "PFT" &&
+            length(om.data@g1O1) > 0 && length(om.data@g1O2) > 0) {
+        return(as.numeric(om.data@g1O1) + as.numeric(om.data@g1O2))
+    }
+    NULL
+}
+
+rcmetar.fitted.study.effects <- function(om.data, params, res) {
+    display.data <- om.data
+    n <- length(om.data@y)
+    if (length(res$yi.f) == n && length(res$vi.f) == n) {
+        finite <- is.finite(res$yi.f) & is.finite(res$vi.f)
+        old.options <- options(na.action="na.pass")
+        on.exit(options(old.options), add=TRUE)
+        weights <- rcmetar.metafor.weights(res)
+        contributes <- is.finite(weights) & weights > 0
+        # Pooling and individual-effect eligibility can differ. Use the fitted
+        # effect where available, otherwise the prepared display effect only
+        # for studies that contribute to the fit.
+        display.data@y[finite] <- res$yi.f[finite]
+        display.data@SE[finite] <- sqrt(res$vi.f[finite])
+        omitted <- !finite & !contributes
+        display.data@y[omitted] <- NA_real_
+        display.data@SE[omitted] <- NA_real_
+    }
+    bounds <- calc.ci.bounds(display.data, params,
+                            ni=rcmetar.pft.sample.sizes(om.data, params))
+    list(yi=as.numeric(display.data@y), vi=as.numeric(display.data@SE)^2,
+         sei=as.numeric(display.data@SE), ci.lb=bounds$lb, ci.ub=bounds$ub)
+}
+
+rcmetar.study.display.effects <- function(transform, y, lb, ub, sample.sizes=NULL) {
+    display <- function(values) {
+        if (!is.null(sample.sizes) && length(values) == length(sample.sizes) + 1L) {
+            return(c(
+                transform$display.scale(head(values, -1L), ni=sample.sizes),
+                transform$display.scale(tail(values, 1L), ni=sample.sizes)
+            ))
+        }
+        transform$display.scale(values, ni=sample.sizes)
+    }
+    list(y.disp=display(y), lb.disp=display(lb), ub.disp=display(ub))
 }

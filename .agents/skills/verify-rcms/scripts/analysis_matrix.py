@@ -6,91 +6,10 @@ Frozen contracts prove numerics; other cases prove execution and rendered output
 
 from pathlib import Path
 
-from tests.python.gui.qt_test_support import mouse_click, wait
+from tests.python.gui.qt_test_support import metric_action, mouse_click, wait
 
-GOLDEN = (
-    "amino-binary-cumulative",
-    "amino-binary-leave-one-out",
-    "continuous-cumulative",
-    "continuous-leave-one-out",
-    "amino-binary-meta-regression",
-    "continuous-meta-regression",
-    "amino-binary-subgroup",
-    "continuous-subgroup",
-)
-FIXED = (
-    "binary.fixed.inv.var",
-    "binary.fixed.mh",
-    "binary.fixed.peto",
-    "continuous.fixed",
-    "diagnostic.fixed.inv.var",
-    "diagnostic.fixed.mh",
-    "diagnostic.fixed.peto",
-)
-DATA_TYPES = {
-    "onearm-proportion": (
-        "onearm_proportion_Button",
-        "binary",
-        "proportion",
-        "PR",
-        [4, 20],
-    ),
-    "onearm-mean": ("onearm_mean_Button", "continuous", "mean", "Mean", [20, 4, 2]),
-    "reg-coef": (
-        "onearm_single_reg_coef_Button",
-        "continuous",
-        "reg_coef",
-        "Mean",
-        None,
-    ),
-    "generic-effect": (
-        "onearm_generic_effect_size_Button",
-        "continuous",
-        "generic_effect",
-        "Mean",
-        None,
-    ),
-    "twoarm-proportion": (
-        "twoarm_proportions_Button",
-        "binary",
-        "proportions",
-        "OR",
-        [4, 20, 6, 22],
-    ),
-    "twoarm-mean": (
-        "twoarm_means_Button",
-        "continuous",
-        "means",
-        "MD",
-        [20, 4, 2, 22, 3, 2.5],
-    ),
-    "twoarm-smd": (
-        "twoarm_smds_Button",
-        "continuous",
-        "smd",
-        "SMD",
-        [20, 4, 2, 22, 3, 2.5],
-    ),
-    "diagnostic": ("diagnostic_Button", "diagnostic", None, None, [19, 10, 1, 81]),
-}
-SCENARIOS = (
-    *("analysis-" + case for case in GOLDEN),
-    *("analysis-" + method for method in FIXED),
-    "analysis-category-factor",
-    "analysis-category-multiple",
-    "analysis-diagnostic-joint",
-    "analysis-diagnostic-combined",
-    "analysis-diagnostic-cumulative",
-    "analysis-diagnostic-leave-one-out",
-    "analysis-diagnostic-subgroup",
-    "analysis-diagnostic-regression-continuous",
-    "analysis-diagnostic-regression-factor",
-    "analysis-diagnostic-regression-multiple",
-    *("analysis-data-" + name for name in DATA_TYPES),
-    "small-study-binary-extended",
-    "small-study-continuous-extended",
-    "small-study-diagnostic",
-)
+from tests.e2e.desktop_scenarios import DATA_TYPES as DATA_TYPES, FIXED, GOLDEN
+from tests.e2e.plot_observations import load_serialized_object
 
 
 def set_parameter(app, dialog, key, value):
@@ -99,7 +18,7 @@ def set_parameter(app, dialog, key, value):
     from rc_metastudio.analysis_method_labels import parameter_display_label
 
     if key == "fp_style":
-        from rc_metastudio.analysis_setup_dialog import PLOT_STYLE_LABELS
+        from rc_metastudio.plot_defaults import PLOT_STYLE_LABELS
         dialog.style_cbo.setCurrentText(PLOT_STYLE_LABELS[value])
         app.processEvents()
         return
@@ -287,7 +206,7 @@ def run(
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
             from rc_metastudio import r_bridge
-            r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
+            load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
             style = dialog.current_param_vals["fp_style"]
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
@@ -491,17 +410,16 @@ def run(
             metric=metric,
             included=sum(s.include for s in model.current_sheet.rows),
         )
-        window.out_path = str(work / "typed.rcms")
         columns = [model.NAME, *model.RAW_DATA, *model.OUTCOMES]
         before = [
             [str(model.data(model.index(row, column))) for column in columns]
             for row in range(6)
         ]
-        assert window.save()
+        assert window.save(destination=work / "typed.rcms")
         if name == "generic-effect":
             from tests.e2e.mean_metric_migration import reopen_legacy_mean_project
             reopen_legacy_mean_project(app, window, record)
-        assert window.open(window.out_path, raise_on_error=True)
+        assert window.open(window.workspace.path, raise_on_error=True)
         assert window.model.current_effect == metric
         assert window.model.current_outcome_name == "Verification outcome Δ"
         assert window.model.get_current_data_type() == family
@@ -540,7 +458,7 @@ def run(
                                                QtCore.QPoint(header.viewport().width() // 2,
                                                             header.sectionViewportPosition(0) + header.sectionSize(0) // 2)))
             assert window.model.setData(window.model.index(0, window.model.OUTCOMES[1]), ".1")
-            assert window.save() and window.open(window.out_path, raise_on_error=True)
+            assert window.save() and window.open(window.workspace.path, raise_on_error=True)
             restored = [[str(window.model.data(window.model.index(row, column))) for column in columns] for row in range(6)]
             assert restored == before, (restored, before)
             for se, readout, shown, contained in observations:
@@ -571,7 +489,7 @@ def run(
                 duplicate.id = __import__("uuid").uuid4().hex
                 duplicate.label += " replicate"
                 window.model.current_sheet.rows.append(duplicate)
-            window.model.set_state(window.model.get_state())
+            window.model.set_current_sheet(window.model.current_sheet_id)
         if sample == "amino":
             from tests.e2e.dta_audit import check_small_study_threshold
             check_small_study_threshold(app, window, record)
@@ -733,7 +651,7 @@ def run(
         metrics = metrics_override
     if metric_override is not None:
         if window.model.current_effect != metric_override:
-            window.tableView.set_metric_in_ui(metric_override)
+            metric_action(window.menuMetric, metric_override).trigger()
             expected = None
         assert window.model.current_effect == metric_override, (window.model.current_effect, metric_override)
     if prepare:
@@ -851,7 +769,7 @@ def run(
         if dialog.current_param_vals["fp_style"] == "default":
             assert not plotted_weights, plotted_weights
             from rc_metastudio import r_bridge
-            r_bridge.load_in_r(str(next(iter(view.params_paths.values()))) + ".plotdata")
+            load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
             plotted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
             assert len(plotted_weights) == len(rows), (plotted_weights, rows)
             assert all(abs(actual - float(row[-1].removesuffix("%"))) <= 0.051

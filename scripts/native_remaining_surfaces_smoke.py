@@ -1257,7 +1257,6 @@ def _observe_capture_close(
     app.processEvents()
     if surface_id not in {"import-progress", "shared-progress"}:
         return not window.isVisible()
-    from rc_metastudio import progress_dialog
     # The operation owns completion; gestures must not release its modality.
     close_blocked = window.isVisible() and app.activeModalWidget() is window
     for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
@@ -1266,7 +1265,7 @@ def _observe_capture_close(
         ))
     app.processEvents()
     escape_blocked = window.isVisible() and app.activeModalWidget() is window
-    progress_dialog.hide_once(window)
+    window.hide()
     app.processEvents()
     return {
         "close_blocked": close_blocked,

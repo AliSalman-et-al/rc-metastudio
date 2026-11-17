@@ -13,7 +13,7 @@ from collections.abc import Callable
 from typing import TypeVar, cast
 
 from PyQt6 import QtCore, QtGui, QtTest
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtWidgets import QApplication, QMenu, QWidget
 
 T = TypeVar("T")
 
@@ -23,6 +23,16 @@ def required(value: T | None, name: str = "value") -> T:
 
     assert value is not None, f"Expected {name} to exist"
     return value
+
+
+def metric_action(menu: QMenu, metric: str) -> QtGui.QAction:
+    for item in menu.actions():
+        submenu = item.menu()
+        if submenu is not None:
+            for action in submenu.actions():
+                if action.data() == metric:
+                    return action
+    raise AssertionError(f"Metric action not found: {metric}")
 
 
 def key_click(

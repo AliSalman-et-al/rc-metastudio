@@ -5,6 +5,7 @@ import math
 import re
 from xml.etree import ElementTree as ET
 from tests.python.gui.qt_test_support import required
+from tests.e2e.plot_observations import load_serialized_object
 
 
 def check_caption(path, identity):
@@ -144,7 +145,7 @@ def check_sequential(view, workflow, record):
     tables = [t for s in view.results.sections for t in s.tables if t.title in {"Cumulative results", "Leave-one-out results"}]
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
-        r_bridge.load_in_r(str(params) + ".plotdata")
+        load_serialized_object(str(params) + ".plotdata")
         data = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
         svg = ET.parse(path)
         nodes = [("".join(node.itertext()), float(node.attrib.get("y", 0)))
@@ -213,7 +214,7 @@ def check_excluding_null(app, view, record):
 
     modal(app, EditPlotDialog, exclude_null, view.edit_plot_action.trigger)
     for title, path in view.results.display_images.items():
-        r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+        load_serialized_object(str(view.params_paths[title]) + ".plotdata")
         observed = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
         assert observed == {"range": [.5, 2], "null": None}, observed
         lines = [node.attrib for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line")]

@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import SheetId
+from rc_metastudio.domain_ids import SheetId
 import hashlib
 import importlib.util
 import json
@@ -432,34 +432,37 @@ def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
             calculator_controls.numeric_value(text)
 
 
-def test_field_edit_command_replays_captured_states_once(qapp):
-    from rc_metastudio import calculator_controls, calculator_controls, calculator_edit_history, calculator_effect_readout
+def test_calculator_history_replays_edits_and_discards_divergent_redo():
+    from rc_metastudio.calculator_edit_history import TransientEditHistory
 
     restored = []
-    refreshes = []
-
-    class Owner:
-        def update_back_calculation_button(self, engage=False):
-            refreshes.append(engage)
 
     def restore_state(*state):
         restored.append(state)
 
-    history = calculator_edit_history.TransientEditHistory()
-    calculator_edit_history.push_field_edit(
-        history,
-        owner=Owner(),
+    history = TransientEditHistory()
+    history.record(
         restore_state=restore_state,
         old_state=("old", 1),
         new_state=("new", 2),
     )
 
     assert restored == []
-    assert refreshes == [False]
     history.undo()
     assert restored == [("old", 1)]
     history.redo()
     assert restored == [("old", 1), ("new", 2)]
+    history.undo()
+    history.record(
+        restore_state=restore_state,
+        old_state=("old", 1),
+        new_state=("replacement", 3),
+    )
+    history.redo()
+    assert restored[-1] == ("old", 1)
+    history.undo()
+    history.redo()
+    assert restored[-1] == ("replacement", 3)
 
 
 def test_continuous_imputation_accepts_r_input_pattern_metadata(monkeypatch):
@@ -553,38 +556,6 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def __init__(self, *args, **kwargs):
             raise CalculatorOpenError("boom")
 
-    class FakeModel(QtCore.QAbstractTableModel):
-        dataset = [object()]
-        arm_names = ["Group 1", "Group 2"]
-        current_effect = "MD"
-
-        def get_studies(self, only_if_included=True):
-            return self.dataset
-
-        def get_current_data_subtype(self):
-            return None
-
-        def rowCount(self, parent=QtCore.QModelIndex()):
-            return 1
-
-        def columnCount(self, parent=QtCore.QModelIndex()):
-            return 1
-
-        def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
-            return None
-
-        def get_current_analysis_unit_for_study(self, study_index):
-            return FakeAnalysisUnit()
-
-        def get_current_arm_key(self):
-            return "Group 1-Group 2"
-
-        def get_current_data_type(self):
-            return "continuous"
-
-        def get_confidence_level(self):
-            return 95.0
-
     monkeypatch.setattr(
         dataset_table_view.continuous_data_dialog,
         "ContinuousDataDialog",
@@ -592,7 +563,9 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
     )
 
     view = dataset_table_view.DatasetTableView()
-    view.setModel(FakeModel())
+    from tests.analysis_regression.golden.support.headless_analysis import load_dataset_model
+
+    view.setModel(load_dataset_model(ROOT / "sample_projects/continuous.rcms"))
 
     with pytest.raises(CalculatorOpenError):
         view.row_header_clicked(0)
@@ -670,11 +643,6 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _confidence_level: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "continuous_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
@@ -738,11 +706,6 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatch):
     from rc_metastudio import analysis_dataset, continuous_data_dialog, analysis_catalog, calculator_controls
 
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _confidence_level: 1.96,
-    )
     monkeypatch.setattr(
         calculator_service.r_bridge,
         "continuous_convert_scale",
@@ -929,11 +892,6 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -972,11 +930,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -987,11 +940,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "continuous_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -999,11 +947,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
         calculator_service.r_bridge,
         "impute_continuous_data",
         lambda data, alpha: {"succeeded": False, "comment": "stub"},
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -1103,11 +1046,6 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
 def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypatch):
     from rc_metastudio import binary_data_dialog
 
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
     monkeypatch.setattr(
         calculator_service.r_bridge,
         "binary_convert_scale",
@@ -1265,11 +1203,6 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "diagnostic_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -1403,7 +1336,6 @@ def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
 
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
     from rc_metastudio import analysis_dataset, diagnostic_data_dialog
-    monkeypatch.setattr(calculator_service.r_bridge, 'get_confidence_multiplier_from_r', lambda conf: 1.96)
     monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
     monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])

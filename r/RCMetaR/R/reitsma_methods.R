@@ -390,7 +390,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
             } else marker.scaled
         },
         marker.area=as.character(params$fp_marker_area %||% "uniform"),
-        xlabel=if (rcmetar.is.plot.default.text(params$fp_xlabel)) "False Positive Rate" else as.character(params$fp_xlabel),
+        xlabel=rcmetar.plot.axis.label(params, "fp") %||% "False Positive Rate",
         ylabel=as.character(params$fp_ylabel %||% "Sensitivity"),
         plot.lb=as.character(params$fp_plot_lb %||% "[default]"),
         plot.ub=as.character(params$fp_plot_ub %||% "[default]"),
@@ -538,7 +538,7 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
         point.size.multiplier="fp_point_size_multiplier", show.confidence="fp_show_confidence",
         show.prediction="fp_show_prediction", show.summary="fp_show_summary", show.auc="fp_show_auc",
         point.area.by.sample.size="fp_point_area_by_sample_size", show.legend="fp_show_legend",
-        show.marker.legend="fp_show_marker_legend", marker.area="fp_marker_area", xlabel="fp_xlabel",
+        show.marker.legend="fp_show_marker_legend", marker.area="fp_marker_area",
         ylabel="fp_ylabel", plot.lb="fp_plot_lb", plot.ub="fp_plot_ub", xticks="fp_xticks",
         y.plot.lb="fp_sroc_plot_lb", y.plot.ub="fp_sroc_plot_ub", yticks="fp_sroc_yticks",
         curve.lty="fp_curve_lty", confidence.lty="fp_confidence_lty", prediction.lty="fp_prediction_lty",
@@ -548,6 +548,7 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
         value <- params[[fields[[field]]]]
         if (!is.null(value) && length(value)) style[[field]] <- value
     }
+    style$xlabel <- rcmetar.plot.axis.label(params, "fp") %||% "False Positive Rate"
     plot.data$style <- style
     plot.data$display.path <- rcmetar.plot.scalar_path(params$fp_display_path %||% plot.data$display.path)
     plot.data$legend <- NULL
@@ -598,10 +599,7 @@ rcmetar.draw.reitsma.coefficient <- function(plot.data, outpath) {
         if (logarithmic) xlim <- exp(rcmetar.forest.round.ratio.range(log(xlim)))
         xlim <- sort(c(bound(style$fp_plot_lb, xlim[[1L]]), bound(style$fp_plot_ub, xlim[[2L]])))
         if (diff(xlim) <= 0) xlim <- xlim + c(-.5, .5)
-        xlab <- style$fp_xlabel
-        if (is.null(xlab) || !length(xlab) || is.na(xlab[[1L]]) || identical(as.character(xlab[[1L]]), "[default]")) {
-            xlab <- "Odds ratio"
-        }
+        xlab <- rcmetar.plot.axis.label(style, "fp") %||% "Odds ratio"
         show.annotation <- rcmetar.param.is.true(style, "fp_show_annotation", TRUE)
         plot(coordinate(plot.data$estimate), y, xlim=coordinate(xlim), yaxt="n", xaxt="n", ylab="",
              xlab=if (show.annotation) as.character(xlab[[1L]]) else "",
@@ -1093,7 +1091,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
         vapply(plots, `[[`, character(1), "params.path"), keys)
     plot.names <- stats::setNames(rep("forest", length(keys)), keys)
     capabilities <- stats::setNames(lapply(keys, function(key)
-        .rcmetar.plot.descriptor.for.kind("forest", has.params=TRUE)), keys)
+        .rcmetar.plot.descriptor.for.kind("reitsma_coefficient", has.params=TRUE)), keys)
     sections <- lapply(seq_along(keys), function(index) list(
         id=keys[[index]], kind="image", order=index,
         title=titles[[index]], source_key=keys[[index]]

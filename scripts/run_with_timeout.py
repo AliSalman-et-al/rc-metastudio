@@ -5,9 +5,13 @@ from __future__ import annotations
 import argparse
 import os
 import shlex
-import signal
 import subprocess
 import sys
+
+if __name__ == "__main__":
+    import process_groups
+else:
+    from scripts import process_groups
 
 
 TIMEOUT_EXIT_CODE = 124
@@ -46,28 +50,7 @@ def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
             ) from error
         return
 
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        pass
-
-    try:
-        os.killpg(process.pid, 0)
-    except ProcessLookupError:
-        group_remains = False
-    else:
-        group_remains = True
-    if group_remains:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-    if process.poll() is None:
-        process.wait(timeout=5)
+    process_groups.terminate_process_group(process, grace_seconds=5)
 
 
 def run(command: list[str], *, timeout_seconds: float, label: str) -> int:

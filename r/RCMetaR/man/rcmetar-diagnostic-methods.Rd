@@ -6,8 +6,6 @@
 \alias{append.image.order}
 \alias{compute.diag.point.estimates}
 \alias{compute.diagnostic.terms}
-\alias{compute.npv}
-\alias{compute.ppv}
 \alias{diagnostic.fixed.inv.var}
 \alias{diagnostic.fixed.inv.var.is.feasible}
 \alias{diagnostic.fixed.inv.var.overall}
@@ -35,12 +33,11 @@
 \alias{diagnostic.reitsma.pretty.names}
 \alias{diagnostic.transform.f}
 \alias{multiple.diagnostic}
-\alias{plot.ppv.npv.by.prev}
 \title{Diagnostic test accuracy analysis functions}
 \description{
 Functions for diagnostic test accuracy meta-analysis. RCMetaR supports
-univariate fixed-effect and random-effects analyses, the mada-backed Reitsma
-bivariate model, SROC plotting, and predictive-value calculations.
+univariate fixed-effect and random-effects analyses, Reitsma bivariate
+models, SROC plotting, and predictive-value calculations.
 }
 \section{Analysis entry points}{
 
@@ -67,11 +64,9 @@ diagnostic metrics.
 \code{append.image.order()} preserves plot ordering in result payloads.
 }
 
-\section{Plot and predictive-value helpers}{
+\section{Plot drawing}{
 
-\code{rcmetar.draw.sroc.plot()},
-\code{compute.ppv()}, \code{compute.npv()}, and
-\code{plot.ppv.npv.by.prev()} build diagnostic displays.
+\code{rcmetar.draw.sroc.plot()} renders the Reitsma SROC curve.
 }
 
 \section{References}{

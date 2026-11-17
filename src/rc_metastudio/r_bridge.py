@@ -226,40 +226,23 @@ def execute_r_function(function_name, *args, **kwargs):
     return _r_function(function_name)(*args, **kwargs)
 
 
-class RLibraryLoader:
-    def __init__(self):
-        initialize_r()
-
-
-    def load_metafor(self):
-        return self._load_r_lib("metafor")
-
-    def load_rcmetar(self):
-        result = self._load_r_lib("RCMetaR")
-        from rc_metastudio import r_runtime
-        r_runtime.mark_ready()
-        return result
-
-    def load_grid(self):
-        return self._load_r_lib("grid")
-
-    def _load_r_lib(self, name, expected_version=None):
+def load_required_packages(
+    on_phase: Callable[[str, str], None] | None = None,
+) -> None:
+    """Initialize embedded R and attach the packages used by analyses."""
+    initialize_r()
+    for name in ("metafor", "RCMetaR", "grid"):
+        if on_phase is not None:
+            on_phase(name, "start")
         try:
             execute_r_function("library", name)
-            if expected_version is not None:
-                version = get_r_package_version(name)
-                if version != expected_version:
-                    raise RuntimeError(
-                        "%s package version %s is required; found %s"
-                        % (name, expected_version, version)
-                    )
-            msg = "%s package successfully loaded" % name
-            return (True, msg)
         except Exception as exc:
             raise RuntimeError(
-                "The %s R package is not installed.\nInstall this R package, then restart RC MetaStudio."
-                % name
+                f"The {name} R package could not be loaded.\n"
+                "Install or repair this R package, then restart RC MetaStudio."
             ) from exc
+        if on_phase is not None:
+            on_phase(name, "complete")
 
 
 @serialized_r_call
@@ -286,7 +269,6 @@ def get_r_package_version(package_name):
 @serialized_r_call
 def reset_r_working_directory():
     """Reset R's working directory to the application data directory."""
-    # Fix paths issue in windows
     from rc_metastudio import settings
 
     base_path = settings.get_base_path()
@@ -488,15 +470,6 @@ def get_confidence_multiplier_from_r(confidence_level):
     return multiplier
 
 
-@serialized_r_call
-def set_confidence_level(confidence_level):
-    confidence_level = validate_confidence_level(confidence_level)
-    new_level = execute_r_function(
-        "rcmetar.set.global.conf.level", float(confidence_level)
-    )
-    return float(new_level[0])
-
-
 def _r_null_if_none(value):
     _require_initialized_r()
     return rpy2.rinterface.NULL if value is None else value
@@ -598,7 +571,6 @@ def dataset_to_simple_continuous_r_object(
     if studies is None:
         # grab all studies. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies()
-    # the study_ids preserve the ordering
     study_ids = [study.id for study in studies]
 
     estimates, standard_errors = table_model.get_current_estimates_and_standard_errors(
@@ -669,7 +641,6 @@ def dataset_to_simple_binary_r_object(
         standard_errors=standard_errors,
     )
 
-    # first try and construct an object with raw data
     raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
     has_raw_data = len(raw_data) == len(studies) and all(
         all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
@@ -679,7 +650,6 @@ def dataset_to_simple_binary_r_object(
         for study in studies
     )
     if include_raw_data and has_raw_data:
-        # now figure out the raw data
         raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
 
         g1_events = _get_col(raw_data, 0)
@@ -690,8 +660,6 @@ def dataset_to_simple_binary_r_object(
             total - events for total, events in zip(g1_totals, g1_events)
         ]
 
-        # now, for group 2; we only set up the string
-        # for group two if we have a two-arm metric
         group2_events, group2_nonevents = [0], [0]
         if table_model.current_effect in TWO_ARM_METRICS:
             g2_events = _get_col(raw_data, 2)
@@ -759,7 +727,6 @@ def dataset_to_simple_diagnostic_r_object(
         standard_errors=standard_errors,
     )
 
-    # first try and construct an object with raw data
     raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
     has_raw_data = len(raw_data) == len(studies) and all(
         not any(value in EMPTY_VALS for value in row) for row in raw_data
@@ -938,36 +905,6 @@ def run_small_study_effects(
     return parse_out_results(result)
 
 
-@serialized_r_call
-def regenerate_small_study_effects_funnel(params_path, output_path=None):
-    """Regenerate a funnel from persisted per-run data and presentation params."""
-    if not load_vars_for_plot(params_path):
-        raise ValueError(
-            "small-study effects plot data is incomplete: %s" % params_path
-        )
-    result = execute_r_function(
-        "rcmetar.regenerate.small.study.funnel",
-        _r_object_from_symbol("om.data"),
-        _r_object_from_symbol("res"),
-        _r_object_from_symbol("params"),
-        _r_null_if_none(output_path),
-    )
-    return str(result[0]) if output_path is None and len(result) else output_path
-
-
-@serialized_r_call
-def generate_small_study_effects_funnel(file_path, params_name="params"):
-    """Write a funnel artifact using the loaded per-run funnel parameters."""
-    execute_r_function(
-        "rcmetar.regenerate.small.study.funnel",
-        _r_object_from_symbol("om.data"),
-        _r_object_from_symbol("res"),
-        _r_object_from_symbol(params_name),
-        str(file_path),
-        dpi=600,
-    )
-
-
 def _r_param_value(param):
     _require_initialized_r()
     if isinstance(param, ro.ListVector):
@@ -1017,11 +954,6 @@ def _r_symbol(name):
     if not name.replace(".", "_").isidentifier():
         raise ValueError("Unsafe R symbol name: %s" % name)
     return name
-
-
-def _r_object_from_symbol(name):
-    _require_initialized_r()
-    return ro.globalenv[_r_symbol(name)]
 
 
 def _normalize_rcmetar_workflow(workflow):
@@ -1124,7 +1056,7 @@ def _execute_versioned_request(
         _to_r_params(normalized),
     )
     ro.globalenv[_r_symbol(res_name)] = result
-    return parse_out_results(result, study_digits=params.get("digits"), confidence_level=params.get('conf.level'))
+    return parse_out_results(result)
 
 
 @serialized_r_call
@@ -1186,143 +1118,39 @@ def _execute_versioned_requests(
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
     ro.globalenv[_r_symbol(res_name)] = result
-    params = _request_params(requests[0])
-    return parse_out_results(result, study_digits=params.get("digits"), confidence_level=params.get('conf.level'))
+    return parse_out_results(result)
 
 
 @serialized_r_call
-def load_vars_for_plot(params_path, return_params_dict=False):
-    """Loads the three necessary (for plot generation) variables
-    into R. we assume a naming convention in which params_path
-    is the base, data is stored in *.data, params in *.params
-    and result in *.res.
-    """
-    paths = ["%s.%s" % (params_path, var) for var in ("data", "params", "res")]
-    if not all(os.path.isfile(path) for path in paths):
-        return False
-    for path in paths:
-        load_in_r(path)
-
-    if return_params_dict:
-        r_object = execute_r_string("params")
-        params_dict = r_object_to_python(r_object)
-        plot_path = params_path + ".plotdata"
-        if os.path.exists(plot_path):
-            load_in_r(plot_path)
-            defaults = r_object_to_python(execute_r_string("""local({
-                if (RCMetaR:::rcmetar.is.reitsma.coefficient.bundle(plot.data)) return(NULL)
-                if (is.null(plot.data$fp_style)) return(NULL)
-                plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)
-                list(xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
-                     ticks=RCMetaR:::rcmetar.revman.axis.labels(plot.data, plan$x$at),
-                     effect=RCMetaR:::rcmetar.metafor.effect.header(plot.data))
-            })"""))
-            if defaults:
-                params_dict["resolved.defaults"] = defaults
-        return params_dict
-    return True
+def load_plot_parameters(prefix: str) -> object:
+    return r_object_to_python(execute_r_function("rcmetar.plot.bundle.params", prefix))
 
 
 @serialized_r_call
-def write_out_plot_data(params_out_path, plot_data_name="plot.data"):
-    execute_r_function(
-        "rcmetar.save.plot.data",
-        _r_object_from_symbol(plot_data_name),
-        str(params_out_path),
-    )
+def prepare_plot_edit(
+    prefix: str,
+    regenerator: str,
+    changed: Mapping[str, object],
+    output: str,
+    staging_directory: str,
+) -> object:
+    return r_object_to_python(execute_r_function(
+        "rcmetar.prepare.plot.bundle.edit",
+        prefix, regenerator, _to_r_params(changed), output, staging_directory,
+    ))
 
 
 @serialized_r_call
-def load_in_r(fpath):
-    """Loads what is presumed to be .Rdata into the R environment"""
-    execute_r_function("load", str(fpath))
-
-
-@serialized_r_call
-def update_plot_params(
-    plot_params, plot_params_name="params", write_them_out=False, outpath=None
-):
-    # Plot parameters include both study-length vectors and one value per
-    # plotted funnel.  A data frame recycles or rejects those heterogeneous
-    # lengths; a named list preserves the serialized parameter contract.
-    ro.globalenv["tmp.params"] = _to_r_params(plot_params)
-    plot_params_symbol = _r_symbol(plot_params_name)
-
-    for param_name in plot_params:
-        param_name = _r_symbol(param_name)
-        execute_r_string(
-            "%s$%s <- tmp.params$%s" % (plot_params_symbol, param_name, param_name)
-        )
-
-    if write_them_out:
-        execute_r_function("save", **{"list": plot_params_symbol, "file": str(outpath)})
-
-
-@serialized_r_call
-def regenerate_plot_data(
-    om_data_name="om.data",
-    res_name="res",
-    plot_params_name="params",
-    plot_data_name="plot.data",
-):
-
-    plot_data = execute_r_function(
-        "rcmetar.regenerate.plot.data",
-        _r_object_from_symbol(om_data_name),
-        _r_object_from_symbol(res_name),
-        _r_object_from_symbol(plot_params_name),
-    )
-    ro.globalenv[_r_symbol(plot_data_name)] = plot_data
-
-
-@serialized_r_call
-def regenerate_regression_plot_data(
-    om_data_name="om.data",
-    res_name="res",
-    plot_params_name="params",
-    plot_data_name="plot.data",
-):
-    plot_data = execute_r_function(
-        "rcmetar.regenerate.regression.plot.data",
-        _r_object_from_symbol(om_data_name),
-        _r_object_from_symbol(res_name),
-        _r_object_from_symbol(plot_params_name),
-    )
-    ro.globalenv[_r_symbol(plot_data_name)] = plot_data
-
-
-@serialized_r_call
-def generate_reg_plot(file_path, params_name="plot.data"):
-    execute_r_function(
-        "rcmetar.draw.regression.plot",
-        _r_object_from_symbol(params_name),
-        str(file_path),
-    )
-
-
-@serialized_r_call
-def generate_sroc_plot(file_path, params_name="plot.data"):
-    execute_r_function(
-        "rcmetar.draw.sroc.plot",
-        _r_object_from_symbol(params_name),
-        str(file_path),
-    )
-
-
-@serialized_r_call
-def generate_forest_plot(file_path, params_name="plot.data"):
-    execute_r_function(
-        "rcmetar.draw.forest.plot",
-        _r_object_from_symbol(params_name),
-        str(file_path),
-    )
+def render_plot_bundle(prefix: str, regenerator: str, output: str) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output)
+    return not _r_is_null(result)
 
 
 _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
 
 
 @serialized_r_call
-def parse_out_results(result, *, study_digits=None, confidence_level=None):
+def parse_out_results(result):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
     execution_value = ro.r['attr'](result, 'rcms.execution')
@@ -1338,7 +1166,7 @@ def parse_out_results(result, *, study_digits=None, confidence_level=None):
         digits = digits[0] if digits else None
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
-        parsed = _parse_display_results(result, study_digits=study_digits, confidence_level=confidence_level)
+        parsed = _parse_display_results(result)
         workflow = request.get('workflow', '')
         packages = execution.get('packages')
         software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
@@ -1385,95 +1213,52 @@ def _regression_residual_table(fields, scale):
                 _raw_number(list(fields[key])[0]), scale if key == 'tau2' else ''),) for key, _ in residual]]}
 
 
-def _insert_held_effects(fields, display, rows, quantities, level, *, digits=None):
-    groups = fields.get("study_groups", ())
-    display_indices = _study_display_indexes(groups, len(rows))
-    if digits is None:
-        digits = _RESULT_DISPLAY_DIGITS.get()
-    digits = int(digits) if digits is not None else 4
-    for index, row, numbers in zip(display_indices, rows, quantities):
-        values = [list(display[key])[index] for key in ("y.disp", "lb.disp", "ub.disp")]
-        effects = _display_effect_values(values, digits)
-        row[1:1] = ["Not estimable", "—", "—"] if effects[0] == "NA" else effects
-        numbers[1:1] = [(Quantity(role, _raw_number(value), 'display', level if role != 'estimate' else None),)
-                       for role, value in zip(('estimate', 'ci_lower', 'ci_upper'), values)] if level is not None else [(), (), ()]
-
-
-def _held_weight_rows(fields, weights):
-    names = list(fields.get("slab", ()))
-    if weights is None:
-        held_weights = fields.get("weights") or ()
-        if len(held_weights) != len(names):
-            return None
-        rows = [[str(name), _format_weight(weight)] for name, weight in zip(names, held_weights)]
-    else:
-        rows = weights["tables"][0]["rows"]
-    if len(names) != len(rows) or not all(str(name) == row[0] or str(name).startswith(row[0] + ", ") or str(name).startswith(row[0] + " ") for name, row in zip(names, rows)):
-        return None
-    return rows
-
-
-def _held_study_report(metadata, reports, *, digits=None, level=None):
-    """Read already-rendered forest values; do not refit or reconstruct intervals."""
-    weights = reports.get("Weights")
-    if not reports:
-        return
-    for prefix in metadata["image_params_paths"].values():
-        data = _held_plot_data(prefix)
-        if data is None:
-            continue
-        fields, display = data
-        # Sequential rows are pooled subset fits, not individual study effects.
-        if fields.get('forest_variant') in ('cumulative', 'leave-one-out'):
-            continue
-        rows = _held_weight_rows(fields, weights)
-        if rows is None:
-            continue
-        quantities = _held_study_quantities(fields, weights, rows, level)
-        _insert_held_effects(fields, display, rows, quantities, level, digits=digits)
-        if level is None:
-            quantities = []
-        headers = ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"]
-        if weights is None:
-            target = reports.get("Summary", next(iter(reports.values())))
-            target["tables"].append({"title": "Study weights", "role": "study_results", "label_column": 0, "headers": headers, "rows": rows, 'quantities': quantities})
-        else:
-            weights["tables"][0]["headers"] = headers
-            weights["tables"][0]['quantities'] = quantities
-        break
-
-
-def _parse_display_results(result, *, study_digits=None, confidence_level=None):
+def _display_result_sections(result):
     study_names = _study_names_from_result(result)
-    metadata = _result_metadata(result)
     text_d = {}
     text_sources = {}
     reports = {}
 
-    for text_n, text in list(result.items()):
+    for text_n, text in result.items():
         if text_n in _RESULT_METADATA_KEYS or _r_is_null(text):
             continue
         _add_result_text(text_d, text_n, text, result, study_names)
         if text_n in {"weights", "Weights"}:
-            raw_weights = _weight_values(text)
-            names = _weight_study_names(result, text, len(raw_weights))
-            reports["Weights"] = {"paragraphs": [], "tables": [{"title": "Study weights",
-                "role": "study_results", "label_column": 0,
-                "headers": ["Study", "Weight (%)"],
-                "rows": [[str(name), _format_weight(weight)] for name, weight in zip(names, raw_weights, strict=True)],
-                'quantities': [[(), (Quantity('weight', _raw_number(weight), 'percent'),)] for weight in raw_weights]}]}
+            reports["Weights"] = _weight_report(result, text)
         else:
             reports.update(_structured_result_reports(_display_section_name(text_n), text, study_names))
         for index, key in enumerate(key for key in text_d if key not in text_sources):
             text_sources[key] = (text_n, index)
 
     _add_regression_reports(result, reports)
-    params = _r_mapping_or_empty(result.get('input_params'))
-    level = params.get('conf.level', confidence_level)
-    if isinstance(level, (list, tuple)):
-        level = level[0] if level else None
-    _held_study_report(metadata, reports, digits=study_digits, level=float(level) if level is not None else None)
+    _place_study_table_with_weights(reports)
+    return text_d, text_sources, reports
 
+
+def _weight_report(result, value):
+    weights = _weight_values(value)
+    names = _weight_study_names(result, value, len(weights))
+    return {"paragraphs": [], "tables": [{
+        "title": "Study weights", "role": "study_results", "label_column": 0,
+        "headers": ["Study", "Weight (%)"],
+        "rows": [[str(name), _format_weight(weight)] for name, weight in zip(names, weights, strict=True)],
+        "quantities": [[(), (Quantity("weight", _raw_number(weight), "percent"),)] for weight in weights],
+    }]}
+
+
+def _place_study_table_with_weights(reports):
+    if "Weights" not in reports or "Summary" not in reports:
+        return
+    summary_tables = reports["Summary"]["tables"]
+    study_table = next((table for table in summary_tables if table["role"] == "study_results"), None)
+    if study_table is not None:
+        summary_tables.remove(study_table)
+        reports["Weights"]["tables"] = [study_table]
+
+
+def _parse_display_results(result):
+    metadata = _result_metadata(result)
+    text_d, text_sources, reports = _display_result_sections(result)
     text_d, text_sources = _apply_text_value_keys(
         text_d, text_sources, metadata["sections"]
     )
@@ -2731,7 +2516,7 @@ def generic_convert_scale(
         return None
     islist = isinstance(x, list) or isinstance(
         x, tuple
-    )  # being loose with what qualifies as a 'list' here.
+    )
     if islist:
         x_arg = _r_numeric_vector(x)
         n1_arg = (
@@ -2749,30 +2534,74 @@ def generic_convert_scale(
     )
     transformed_ls = [x_i for x_i in transformed]
     if not islist:
-        # scalar
         return transformed_ls[0]
     return transformed_ls
 
 
-def _structured_summary_display(value, study_names):
-    fields = dict(zip(list(value.names), list(value)))
-    model_title = fields["model.title"]
-    sentence = fields.get("summary.sentence")
-    paragraphs = ([str(part) for part in sentence] if sentence is not None and not _r_is_null(sentence)
-                  else [] if _r_is_null(model_title) else [str(part) for part in model_title])
-    notes = fields.get("notes")
-    if notes is not None and not _r_is_null(notes):
-        paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
-    tables = []
-    for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
-        if not _r_is_null(matrix):
-            tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
+def _r_text_values(value) -> list[str]:
+    return [] if value is None or _r_is_null(value) else [str(part) for part in value]
+
+
+def _summary_display_tables(fields, study_names):
+    tables = [
+        _structured_matrix(str(caption), matrix, study_names, first_row_headers=True)
+        for caption, matrix in zip(fields["table.titles"], fields["arrays"])
+        if not _r_is_null(matrix)
+    ]
     calculation = fields.get("calculation.table")
     if calculation is not None and not _r_is_null(calculation):
-        scale = str(list(fields["calculation.scale"])[0])
-        tables.append(_structured_matrix("Calculation scale (" + scale + ")", calculation,
-                                         study_names, first_row_headers=True))
-    return {"paragraphs": paragraphs, "tables": tables}
+        scale = str(fields["calculation.scale"][0])
+        tables.append(_structured_matrix(
+            f"Calculation scale ({scale})", calculation, study_names, first_row_headers=True,
+        ))
+    study_results = fields.get("study.results")
+    if study_results is not None and not _r_is_null(study_results):
+        tables.append(_structured_study_table(study_results))
+    return tables
+
+
+def _structured_summary_display(value, study_names):
+    fields = dict(zip(value.names, value))
+    sentence = _r_text_values(fields.get("summary.sentence"))
+    paragraphs = sentence or _r_text_values(fields["model.title"])
+    paragraphs.extend(
+        note for note in _r_text_values(fields.get("notes"))
+        if not note.startswith("Calculation scale:")
+    )
+    return {
+        "paragraphs": paragraphs,
+        "tables": _summary_display_tables(fields, study_names),
+        "prediction_notes": _r_text_values(fields.get("prediction.notes")),
+    }
+
+
+def _structured_study_table(value):
+    data = dict(zip(list(value.names), list(value), strict=True))
+    digits = int(data["digits"][0])
+    level = float(data["level"][0])
+    rows = []
+    quantities = []
+    for study, estimate, lower, upper, weight in zip(
+        data["study"], data["estimate"], data["lower"], data["upper"], data["weight"],
+        strict=True,
+    ):
+        effects = _display_effect_values((estimate, lower, upper), digits)
+        if effects[0] == "NA":
+            effects = ["Not estimable", "—", "—"]
+        rows.append([str(study), *effects, _format_weight(weight)])
+        quantities.append([
+            (),
+            (Quantity("estimate", _raw_number(estimate), "display"),),
+            (Quantity("ci_lower", _raw_number(lower), "display", level),),
+            (Quantity("ci_upper", _raw_number(upper), "display", level),),
+            (Quantity("weight", _raw_number(weight), "percent"),),
+        ])
+    return {
+        "title": "Study weights", "role": "study_results", "label_column": 0,
+        "metric": str(data["metric"][0]), "metric_label": str(data["metric_label"][0]),
+        "headers": ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"],
+        "rows": rows, "quantities": quantities,
+    }
 
 
 def _label_diagnostic_coefficients(headers, dimnames, confidence_level):
@@ -2824,49 +2653,12 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
     return tables[0]
 
 
-def _study_display_indexes(groups, count):
-    display_indices = []
-    offset = 0
-    for index in range(count):
-        if groups and index and groups[index] != groups[index - 1]:
-            offset += 1
-        display_indices.append(index + offset)
-    return display_indices
-
-
 def _display_effect_values(values, digits):
     effects = [result_formatting.format_effect_number(value, digits)
                if isinstance(value, (float, int)) and math.isfinite(value)
                else _format_r_table_cell(value)
                for value in values]
     return effects
-
-
-def _held_plot_data(prefix):
-    path = Path(str(prefix) + ".plotdata")
-    if not path.is_file():
-        return None
-    environment = ro.r["new.env"]()
-    ro.r["load"](str(path), envir=environment)
-    if "plot.data" not in environment:
-        return None
-    fields = _r_mapping_or_empty(environment["plot.data"])
-    display = fields.get("effect_display", {})
-    if not isinstance(display, Mapping):
-        return None
-    if not all(key in display for key in ("y.disp", "lb.disp", "ub.disp")):
-        return None
-    return fields, display
-
-
-def _held_study_quantities(fields, weights, rows, level):
-    if weights is not None:
-        quantities = weights['tables'][0].get('quantities', [[(), ()] for row in rows])
-    else:
-        quantities = [[(), (Quantity('weight', _raw_number(weight), 'percent'),)] for weight in fields.get('weights', ())]
-    if level is None:
-        quantities = [[(), ()] for row in rows]
-    return quantities
 
 
 def _append_named_scalar(name, child, label, fields, index, paragraphs, rows, quantities):
@@ -2902,8 +2694,7 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
 @serialized_r_call
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
-    _call_dynamic(_r_eval('RCMetaR:::rcmetar.export.svg_render'), source, destination,
-                  _r_param_value({'width': width, 'height': height, 'dpi': dpi}))
+    execute_r_function("rcmetar.export.svg.artwork", source, destination, width, height, dpi)
     if destination.lower().endswith('.png'):
         from PyQt6.QtCore import Qt
         from PyQt6.QtGui import QImage, QPainter

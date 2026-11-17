@@ -25,7 +25,7 @@ class WorkspaceColumnWidthController(QObject):
             else WorkspaceColumnWidthState(saved_widths)
         )
         # Widths loaded from settings represent an explicit user choice.
-        self._user_widths = set(self._widths._widths) if saved_widths else set()
+        self._user_widths = set(self._widths)
         self._applying = False
         table.horizontalHeader().sectionResized.connect(self._section_resized)
 
@@ -35,7 +35,7 @@ class WorkspaceColumnWidthController(QObject):
             if isinstance(widths, WorkspaceColumnWidthState)
             else WorkspaceColumnWidthState(widths)
         )
-        self._user_widths = set(self._widths._widths) if widths else set()
+        self._user_widths = set(self._widths)
         self.synchronize_schema()
 
     def begin_schema_change(self):
@@ -49,9 +49,9 @@ class WorkspaceColumnWidthController(QObject):
         self._capture_visible_widths()
         return WorkspaceColumnWidthState(
             {
-                key: self._widths[key]
+                key: width
                 for key in self._user_widths
-                if key in self._widths._widths
+                if (width := self._widths.get(key)) is not None
             }
         )
 

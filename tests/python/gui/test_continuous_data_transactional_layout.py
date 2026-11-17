@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import SheetId
+from rc_metastudio.domain_ids import SheetId
 import os
 import copy
 from pathlib import Path
@@ -147,11 +147,6 @@ def _open_continuous_dialog(
             "exec",
             reject_metric_choice,
         )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _conf: 1.96,
-    )
     monkeypatch.setattr(
         calculator_service.r_bridge,
         "continuous_convert_scale",

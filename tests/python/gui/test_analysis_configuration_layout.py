@@ -1,5 +1,5 @@
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.project_domain import RowId, SheetId
+from rc_metastudio.domain_ids import RowId, SheetId
 import json
 import os
 from pathlib import Path
@@ -145,23 +145,7 @@ def test_method_parameters_declares_scroll_body_with_actions_outside(qapp):
         dialog.close()
 
 
-def test_analysis_setup_keeps_scratch_plot_path_internal(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
-
-    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
-    dialog = analysis_setup_dialog.AnalysisSetupDialog(
-        _AnalysisModel("binary"), confidence_level=95.0
-    )
-    try:
-        assert dialog.image_path.text().endswith("forest.png")
-        assert dialog.label_3.isHidden()
-        assert dialog.image_path.isHidden()
-        assert dialog.save_btn.isHidden()
-    finally:
-        dialog.close()
-
-
-def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
+def test_analysis_setup_plot_accent_control_exposes_accessibility_metadata(qapp):
     dialog = QtWidgets.QDialog()
     ui = Ui_AnalysisSetupDialog()
     ui.setupUi(dialog)
@@ -170,12 +154,7 @@ def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
         assert ui.color_btn.accessibleName() == "Choose plot accent color"
         assert ui.color_btn.accessibleDescription()
         assert ui.color_btn.toolTip()
-        assert ui.save_btn.text() == "Browse..."
-        assert ui.save_btn.accessibleName() == "Browse plot image save path"
-        assert ui.save_btn.accessibleDescription()
-        assert ui.save_btn.toolTip()
         assert ui.accent_label.buddy() is ui.accent_color
-        assert ui.label_3.buddy() is ui.image_path
     finally:
         dialog.close()
 
@@ -416,12 +395,15 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         if analysis_type is None:
             return
 
+        from rc_metastudio.analysis_results import empty_analysis_result
+
         requests = []
         monkeypatch.setattr(
             analysis_adapter,
             "execute_meta_regression_request",
-            lambda *args, **_kwargs: requests.append(args) or {},
+            lambda *args, **_kwargs: requests.append(args) or empty_analysis_result(),
         )
+        monkeypatch.setattr(dialog, "_with_result_identity", lambda result: result)
         monkeypatch.setattr(
             dialog,
             "_run_analysis",
@@ -1268,7 +1250,7 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
 
     calls = []
     model = _AnalysisModel("continuous")
-    parameters = {"conf.level": 90.5, "measure": "SMD", "bp_xlabel": "Year"}
+    parameters = {"conf.level": 90.5, "bp_xlabel": "Year"}
     request = analysis_adapter.make_analysis_request(
         data_type="continuous",
         workflow="meta-regression",
@@ -1277,11 +1259,6 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
         parameters=parameters,
     )
     parameters["conf.level"] = 1.0
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "dataset_to_simple_continuous_r_object",
-        lambda model, **kwargs: calls.append(("data", kwargs)),
-    )
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
         "run_model_analysis",
@@ -1298,10 +1275,10 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
         95.0,
     )
 
-    rendered = repr(calls)
-    assert "90.5" in rendered
-    assert "1.0" not in rendered
-    assert "SMD" in rendered
+    wire_request = calls[0][1][1]
+    assert wire_request["params"] == {
+        "conf.level": 90.5, "bp_xlabel": "Year", "measure": "SMD", "rm.method": "FE",
+    }
     assert isinstance(calls[0][2]["studies"][0], analysis_dataset.StudyRow)
     assert calls[0][2]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
 

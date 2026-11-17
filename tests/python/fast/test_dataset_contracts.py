@@ -1,5 +1,5 @@
 """Isolation and stable-arm contracts for sheet-owned rows."""
-from rc_metastudio.project_domain import RowId, SheetId
+from rc_metastudio.domain_ids import RowId, SheetId
 import copy
 
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow

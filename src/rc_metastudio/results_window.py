@@ -23,7 +23,6 @@ from PyQt6.QtCore import (
     QTimer,
     QSignalBlocker,
     Qt,
-    QSettings,
 )
 from PyQt6.QtGui import (
     QAction,
@@ -76,17 +75,18 @@ from rc_metastudio import (
     )
 from rc_metastudio.analysis_results import (
     AnalysisResult,
-    PlotCapability,
+    ResultSection,
     normalize_analysis_result,
 )
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+from rc_metastudio.plot_capabilities import PlotCapability
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
 from rc_metastudio.plot_service import PlotService
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import (
+    DEFAULT_RESULTS_SPLITTER_PROPORTIONS,
     restore_results_window_state,
-    RESULTS_WORKSPACE_GROUP,
     save_results_window_state,
 )
 
@@ -174,8 +174,18 @@ class PlotArtifact(object):
         self.image_path = str(image_path)
         self.params_path = params_path
         self.capability = capability
-        self.plot_kind = capability.plot_kind
         self.display_image_path = str(display_path or self.image_path)
+
+    @property
+    def plot_kind(self):
+        return self.capability.plot_kind
+
+    @classmethod
+    def from_section(cls, section: ResultSection):
+        if section.capability is None:
+            raise ValueError("Result section has no plot capability")
+        return cls(section.source_key, section.value, section.capability,
+                   params_path=section.plot_data, display_path=section.display_image)
 
     def display_path(self):
         if os.path.exists(self.display_image_path):
@@ -271,6 +281,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._viewport_refit_timer.timeout.connect(self._run_scheduled_viewport_refit)
         self._viewport_width_override = None
         self._first_show_refit_pending = True
+        self._restored_splitter_proportions: tuple[float, ...] | None = None
+        self._splitter_user_sized = False
         self._layout_items = []
         self._nav_items_to_sections = {}
         self._nav_plot_artifacts = {}
@@ -292,6 +304,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self, adaptive_window.WindowRole.RESULTS
         )
         restored_state = restore_results_window_state(self)
+        self._restored_splitter_proportions = restored_state.splitter_proportions
         self.add_offset = 5
         self.borders = []
         self.plot_service = plot_service or PlotService()
@@ -301,7 +314,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
         )
-        self._splitter_user_sized = False
         self.results_nav_splitter.splitterMoved.connect(
             app_error_handler.safe_slot(
                 self._splitter_moved, parent=self
@@ -334,8 +346,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.x_coord = 5.0
         self.y_coord = 5.0
 
-        self._restored_splitter_proportions = restored_state["splitter_proportions"]
-        self._has_saved_splitter = QSettings().contains(RESULTS_WORKSPACE_GROUP + "/splitter_proportions")
         self._splitter_restore_pending = True
 
         self.scene = QGraphicsScene(self)
@@ -355,7 +365,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_result_sections()
         self._relayout_sections()
 
-        # reset the scene
         self.graphics_view.setScene(self.scene)
         self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
         # Establish a starting width; the first visible refit applies saved
@@ -1024,18 +1033,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.edit_plot(*selected)
 
     def add_result_sections(self):
-        # Ordering and plot capabilities come from the immutable result
-        # contract.  The title is used only when painting display text.
         for section in sorted(self.results.sections, key=lambda item: item.order):
             if section.kind == "image":
-                self.add_image_section(section.source_key, section.title, section.value)
+                self.add_image_section(PlotArtifact.from_section(section), section.title)
 
-    def add_image_section(self, title, display_title, image):
-        params_path = None
-        if self.params_paths is not None and title in self.params_paths:
-            params_path = self.params_paths[title]
-
-        artifact = self.create_plot_artifact(title, image, params_path=params_path)
+    def add_image_section(self, artifact, display_title):
         qt_item = self.add_title(display_title)
         try:
             _, pos, plot_item = self.create_plot_item(artifact, self.position())
@@ -1048,17 +1050,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._nav_items_to_sections[id(qt_item)] = plot_item
         self._nav_plot_artifacts[id(qt_item)] = artifact
 
-    def create_plot_artifact(self, title, image_path, params_path=None):
-        return PlotArtifact(
-            title,
-            image_path,
-            self.plot_capabilities[title],
-            params_path=params_path,
-            display_path=self.display_images.get(title),
+    def plot_artifact(self, source_key):
+        section = next(
+            section for section in self.results.sections
+            if section.kind == "image" and section.source_key == source_key
         )
+        return PlotArtifact.from_section(section)
 
     def generate_pixmap(self, image):
-        # now the image
         pixmap = QPixmap(image)
         if pixmap.isNull():
             return pixmap
@@ -1388,11 +1387,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _set_restored_splitter_sizes(self):
         splitter_extent = max(2, self.results_nav_splitter.width())
-        if self._has_saved_splitter:
-            sizes = [max(1, int(splitter_extent * value)) for value in self._restored_splitter_proportions]
+        proportions = self._restored_splitter_proportions
+        if proportions is not None:
+            sizes = [max(1, int(splitter_extent * value)) for value in proportions]
         else:
             em = self.fontMetrics().height()
-            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), int(splitter_extent * .18))
+            max_navigation = int(splitter_extent * DEFAULT_RESULTS_SPLITTER_PROPORTIONS[0])
+            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), max_navigation)
             sizes = [navigation, splitter_extent - navigation]
         self.results_nav_splitter.setSizes(sizes)
 
@@ -1400,14 +1401,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self, event: QResizeEvent | None
     ) -> None:
         super(ResultsWindow, self).resizeEvent(event)
-        if getattr(self, "_has_saved_splitter", False) and not self._splitter_user_sized:
+        if self._restored_splitter_proportions is not None and not self._splitter_user_sized:
             self._first_show_refit_pending = True
         self._schedule_viewport_refit()
 
     def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
-        save_results_window_state(self)
+        sizes = self.results_nav_splitter.sizes() if self._splitter_user_sized else None
+        save_results_window_state(self, sizes)
         super(ResultsWindow, self).closeEvent(event)
         if event is not None and not event.isAccepted():
             return
@@ -1420,13 +1422,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.graphics_view.setScene(None)
         self.deleteLater()
 
-    def create_pixmap_item(
-        self, pixmap, position, title, image_path, params_path=None, matrix=QTransform()
-    ):
-        artifact = self.create_plot_artifact(title, image_path, params_path=params_path)
-        item = ResponsivePixmapItem(QPixmap(image_path))
+    def create_pixmap_item(self, pixmap, position, artifact):
+        item = ResponsivePixmapItem(QPixmap(artifact.image_path))
         item.setData(0, artifact.plot_kind)
-        item.source_path = image_path
+        item.source_path = artifact.image_path
         item.setPixmap(pixmap)
         item.setToolTip(
             'To save the image:\nright-click on the image and choose "Export plot…".'
@@ -1474,13 +1473,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         pixmap = self.generate_pixmap(artifact.image_path)
         if pixmap.isNull():
             raise ValueError("Plot image could not be decoded")
-        return self.create_pixmap_item(
-            pixmap,
-            position,
-            artifact.title,
-            artifact.image_path,
-            params_path=artifact.params_path,
-        )
+        return self.create_pixmap_item(pixmap, position, artifact)
 
     def create_svg_item(self, artifact, position):
         renderer = _opaque_svg_renderer(artifact.display_path(), self)
@@ -1547,150 +1540,62 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def edit_plot(self, artifact, plot_item):
         regenerator = artifact.capability.regenerator
+        if regenerator == "none":
+            return
+        plot_params = self.plot_service.load_params(artifact.params_path)
+        if plot_params is None:
+            return
+
+        if regenerator == "funnel":
+            dialog = FunnelPlotEditorDialog(
+                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
+            )
+        else:
+            dialog = EditPlotDialog(
+                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
+            )
+            if regenerator == "forest":
+                reopen = self._change_settings
+                dialog.sequence_rerun.setEnabled(reopen is not None)
+                if reopen is not None:
+                    dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params()))
+
+        dialog.applied.connect(
+            app_error_handler.safe_slot(
+                lambda: self._apply_plot_edits(dialog, artifact, plot_item), parent=self
+            )
+        )
+        dialog.exec()
+
+    def _apply_plot_edits(self, dialog, artifact, plot_item):
+        regenerator = artifact.capability.regenerator
+        updated_params = dialog.plot_params()
+        output_parameter = {
+            "forest": "fp_outpath", "regression": "bp_outpath",
+            "sroc": "fp_outpath", "funnel": "funnel.outpath",
+        }[regenerator]
+        outpath = updated_params.get(output_parameter) or artifact.image_path
+        try:
+            self.plot_service.apply_edits(
+                regenerator=regenerator, params_path=artifact.params_path,
+                updated_params=updated_params, output_path=outpath,
+            )
+        except Exception as error:
+            if regenerator == "funnel":
+                dialog.mark_commit_failed()
+            else:
+                dialog.mark_commit_failed(error)
+            raise
+
         if regenerator == "forest":
-            self._edit_forest_plot(artifact, plot_item)
-        elif regenerator == "regression":
-            self.edit_regression_plot(artifact, plot_item)
-        elif regenerator == "funnel":
-            self._edit_funnel_plot(artifact, plot_item)
-        elif regenerator == "sroc":
-            self._edit_sroc_plot(artifact, plot_item)
-
-    def _edit_sroc_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
-        dialog = EditPlotDialog(
-            plot_params, artifact.image_path, parent=self, plot_type="sroc"
-        )
-        dialog.applied.connect(
-            app_error_handler.safe_slot(
-                lambda: self._apply_sroc_plot_edits(dialog, artifact, plot_item),
-                parent=self,
-            )
-        )
-        dialog.exec()
-
-    def _apply_sroc_plot_edits(self, dialog, artifact, plot_item):
-        updated_params = dialog.plot_params()
-        outpath = updated_params.get("fp_outpath") or artifact.image_path
-        try:
-            self.plot_service.apply_edits(
-                regenerator="sroc",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
-        dialog.mark_commit_succeeded()
-
-    def _edit_funnel_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
-        dialog = FunnelPlotEditorDialog(
-            plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
-        )
-        dialog.applied.connect(
-            app_error_handler.safe_slot(
-                lambda: self._apply_funnel_plot_edits(dialog, artifact, plot_item),
-                parent=self,
-            )
-        )
-        dialog.exec()
-
-    def _apply_funnel_plot_edits(self, dialog, artifact, plot_item):
-        updated_params = dialog.plot_params()
-        outpath = updated_params.get("funnel.outpath") or artifact.image_path
-        if str(outpath).lower().endswith(".svgz"):
-            raise ValueError(
-                "SVGZ output is not supported when editing funnel plots; use SVG instead."
-            )
-        try:
-            self.plot_service.apply_edits(
-                regenerator="funnel",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception:
-            dialog.mark_commit_failed()
-            raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
-        dialog.mark_commit_succeeded()
-
-    def _edit_forest_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
-
-        dialog = EditPlotDialog(plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind)
-        dialog.sequence_rerun.setEnabled(self._change_settings is not None)
-        reopen = self._change_settings
-        if reopen is not None:
-            dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params()))
-        dialog.applied.connect(
-            app_error_handler.safe_slot(
-                lambda: self._apply_forest_plot_edits(dialog, artifact, plot_item),
-                parent=self,
-            )
-        )
-        dialog.exec()
-
-    def edit_regression_plot(self, artifact, plot_item):
-        plot_params = self.plot_service.load_params(artifact.params_path)
-        if plot_params is None:
-            return
-
-        dialog = EditPlotDialog(
-            plot_params, artifact.image_path, parent=self, plot_type="regression"
-        )
-        dialog.applied.connect(
-            app_error_handler.safe_slot(
-                lambda: self._apply_regression_plot_edits(dialog, artifact, plot_item),
-                parent=self,
-            )
-        )
-        dialog.exec()
-
-    def _apply_regression_plot_edits(self, dialog, artifact, plot_item):
-        updated_params = dialog.plot_params()
-        outpath = updated_params["bp_outpath"] or artifact.image_path
-        try:
-            self.plot_service.apply_edits(
-                regenerator="regression",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-        self._refresh_plot_item(plot_item, artifact, outpath)
-        dialog.mark_commit_succeeded()
-
-    def _apply_forest_plot_edits(self, dialog, artifact, plot_item):
-        updated_params = dialog.plot_params()
-        outpath = updated_params["fp_outpath"] or artifact.image_path
-        try:
-            self.plot_service.apply_edits(
-                regenerator="forest",
-                params_path=artifact.params_path,
-                updated_params=updated_params,
-                output_path=outpath,
-            )
-        except Exception as error:
-            dialog.mark_commit_failed(error)
-            raise
-
-        parent = self.parent()
-        model = getattr(parent, "model", None)
-        if self._source_sheet is not None and model is not None and self._source_sheet in model.dataset.sheets:
-            self._source_sheet.settings["favours_labels"] = [updated_params.get("fp_favours_left", ""), updated_params.get("fp_favours_right", "")]
-            getattr(parent, "data_dirtied")()
+            parent = self.parent()
+            model = getattr(parent, "model", None)
+            if self._source_sheet is not None and model is not None and self._source_sheet in model.dataset.sheets:
+                self._source_sheet.settings["favours_labels"] = [
+                    updated_params.get("fp_favours_left", ""),
+                    updated_params.get("fp_favours_right", ""),
+                ]
+                getattr(parent, "data_dirtied")()
         self._refresh_plot_item(plot_item, artifact, outpath)
         dialog.mark_commit_succeeded()
 
@@ -1744,9 +1649,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         return format, dimensions, unscaled_image
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
-        if not isinstance(artifact, PlotArtifact):
-            artifact = self.create_plot_artifact("", artifact, params_path=None)
-
         dimensions = None
         if format is None:
             options = self._plot_export_options(artifact, unscaled_image)

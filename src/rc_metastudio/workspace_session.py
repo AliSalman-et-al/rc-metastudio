@@ -7,13 +7,13 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 from rc_metastudio import project_format
 from rc_metastudio import project_adapter
-from rc_metastudio.project_domain import JsonObject, JsonValue
+from rc_metastudio.domain_ids import SheetId
 from rc_metastudio.project_format import (
     ProjectDocument,
     ProjectDurabilityError,
@@ -29,12 +29,7 @@ MAX_UNDO_CHANGES = 100
 @dataclass(slots=True)
 class WorkspaceTransaction:
     before: RuntimeProject
-    forced_dirty: bool
     depth: int = 1
-
-
-def _copy_runtime(runtime: RuntimeProject) -> RuntimeProject:
-    return copy.deepcopy(runtime)
 
 
 def _document_digest(document: ProjectDocument) -> str:
@@ -49,22 +44,17 @@ def _document_digest(document: ProjectDocument) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _validated_runtime(document: ProjectDocument) -> RuntimeProject:
-    return project_adapter.document_to_runtime_project(document)
-
-
 class WorkspaceSession:
     """Own project replacement, persistence, and undo/redo independently of Qt."""
 
     def __init__(
         self, document: ProjectDocument | None = None, path: str | Path | None = None
     ) -> None:
-        self._runtime = _validated_runtime(document) if document is not None else None
-        self._checkpoint = _copy_runtime(self._runtime) if self._runtime else None
+        self._runtime = project_adapter.document_to_runtime_project(document) if document is not None else None
+        self._checkpoint = copy.deepcopy(self._runtime)
         self._path = Path(path) if path is not None else None
         self._history: list[RuntimeProject] = []
         self._redo: list[RuntimeProject] = []
-        self._forced_dirty = False
         self._transaction: WorkspaceTransaction | None = None
         document = self.document
         self._saved_digest = _document_digest(document) if document else None
@@ -73,37 +63,18 @@ class WorkspaceSession:
     def document(self) -> ProjectDocument | None:
         if self._runtime is None:
             return None
-        try:
-            return project_adapter.runtime_project_to_document(self._runtime)
-        except project_adapter.ProjectAdapterError:
-            return None
-
-    @property
-    def project(self) -> JsonObject | None:
-        document = self.document
-        return copy.deepcopy(document.project) if document else None
-
-    @property
-    def state(self) -> JsonObject | None:
-        document = self.document
-        return copy.deepcopy(document.state) if document else None
+        return project_adapter.runtime_project_to_document(self._runtime)
 
     @property
     def runtime(self) -> RuntimeProject | None:
         """Return the canonical live runtime graph owned by this session."""
         return self._runtime
 
-    def snapshot(self) -> RuntimeProject:
-        """Return an isolated runtime checkpoint for a dialog or command."""
-        if self._runtime is None:
-            raise ValueError("cannot snapshot an empty workspace")
-        return _copy_runtime(self._runtime)
-
     def update_live_state(self, runtime: RuntimeProject) -> None:
         """Update the canonical live graph without creating history."""
         if self._runtime is None:
             self._runtime = runtime
-            self._checkpoint = _copy_runtime(runtime)
+            self._checkpoint = copy.deepcopy(runtime)
             self._saved_digest = None
             return
         if self._runtime is not runtime:
@@ -111,25 +82,18 @@ class WorkspaceSession:
 
     def checkpoint(self, expected_digest: str | None = None) -> None:
         """Record one live mutation after its adapter boundary has completed."""
-        if self._runtime is None:
+        if self._runtime is None or self._transaction is not None:
             return
-        try:
-            current_digest = self._runtime_digest()
-        except project_adapter.ProjectAdapterError:
-            self._forced_dirty = True
-            return
+        current_digest = self._runtime_digest()
         if expected_digest is not None and expected_digest == self._saved_digest:
             self._saved_digest = current_digest
-        if self._transaction is not None:
-            return
         assert self._checkpoint is not None
         if current_digest == self._checkpoint_digest():
             return
         self._record_before(RuntimeProject(
-            self._checkpoint.dataset, dict(self._runtime.model_state),
-            self._runtime.restored_active_sheet,
+            self._checkpoint.dataset, self._runtime.current_sheet_id,
         ))
-        self._checkpoint = _copy_runtime(self._runtime)
+        self._checkpoint = copy.deepcopy(self._runtime)
 
     def _record_before(self, before: RuntimeProject) -> None:
         self._history.append(before)
@@ -140,19 +104,17 @@ class WorkspaceSession:
         if self._transaction is not None:
             raise RuntimeError("cannot replace, save or navigate history during a transaction")
 
-    def select_sheet(self, sheet_id) -> None:
+    def select_sheet(self, sheet_id: SheetId | None) -> None:
         """Selection is navigation, not a separate undoable edit."""
         if self._runtime is not None:
-            self._runtime.model_state["current_sheet_id"] = sheet_id
+            self._runtime.current_sheet_id = sheet_id
 
     def begin_change(self) -> None:
         """Start one atomic UI operation."""
         if self._runtime is None:
             raise ValueError("cannot edit an empty workspace")
         if self._transaction is None:
-            self._transaction = WorkspaceTransaction(
-                _copy_runtime(self._runtime), self._forced_dirty
-            )
+            self._transaction = WorkspaceTransaction(copy.deepcopy(self._runtime))
         else:
             self._transaction.depth += 1
 
@@ -163,8 +125,7 @@ class WorkspaceSession:
             return None
         self._transaction = None
         self._runtime = transaction.before
-        self._checkpoint = _copy_runtime(self._runtime)
-        self._forced_dirty = transaction.forced_dirty
+        self._checkpoint = copy.deepcopy(self._runtime)
         return self._runtime
 
     def end_change(self) -> None:
@@ -181,7 +142,7 @@ class WorkspaceSession:
             project_adapter.runtime_project_to_document(checkpoint)
         )
         assert self._runtime is not None
-        self._checkpoint = _copy_runtime(self._runtime)
+        self._checkpoint = copy.deepcopy(self._runtime)
         if checkpoint_digest != current_digest:
             self._record_before(checkpoint)
         self._transaction = None
@@ -208,14 +169,7 @@ class WorkspaceSession:
 
     @property
     def is_dirty(self) -> bool:
-        if self._runtime is None:
-            return self._forced_dirty
-        if self._forced_dirty:
-            return True
-        try:
-            return self._runtime_digest() != self._saved_digest
-        except project_adapter.ProjectAdapterError:
-            return True
+        return self._runtime is not None and self._runtime_digest() != self._saved_digest
 
     @property
     def can_undo(self) -> bool:
@@ -225,33 +179,9 @@ class WorkspaceSession:
     def can_redo(self) -> bool:
         return bool(self._redo)
 
-    def replace(
-        self,
-        document: ProjectDocument,
-        *,
-        path: str | Path | None = None,
-        record_history: bool = True,
-    ) -> None:
-        """Validate all replacement data before changing the live workspace."""
-        candidate = _validated_runtime(document)
-        if self._runtime is not None and record_history and self._transaction is None:
-            self._record_before(_copy_runtime(self._runtime))
-        self._runtime = candidate
-        self._checkpoint = _copy_runtime(candidate)
-        if path is not None:
-            self._path = Path(path)
-
-    def commit(
-        self,
-        project: Mapping[str, JsonValue],
-        state: Mapping[str, JsonValue],
-    ) -> None:
-        """Publish one validated project/state pair as one undoable change."""
-        self.replace(ProjectDocument(project_format.CURRENT_FORMAT_VERSION, dict(project), dict(state)))
-
     def open(
         self, path: str | Path, *, install: InstallRuntime | None = None
-    ) -> ProjectDocument:
+    ) -> None:
         """Decode and validate before replacing the current project.
 
         ``install`` is a narrow adapter seam: callers may install the validated
@@ -259,50 +189,18 @@ class WorkspaceSession:
         If installation fails, this session remains untouched.
         """
         self._require_idle()
-        candidate = _validated_runtime(project_format.load_project(path))
+        destination = Path(path)
+        candidate = project_adapter.runtime_from_loaded_project(project_format.load_project(destination))
+        checkpoint = copy.deepcopy(candidate)
+        saved_digest = _document_digest(project_adapter.runtime_project_to_document(candidate))
         if install is not None:
-            previous_runtime = self._runtime
-            previous_checkpoint = self._checkpoint
-            previous_path = self._path
-            previous_history = list(self._history)
-            previous_redo = list(self._redo)
-            previous_saved_digest = self._saved_digest
-            previous_forced_dirty = self._forced_dirty
-            try:
-                install(candidate)
-            except Exception:
-                self._runtime = previous_runtime
-                self._checkpoint = previous_checkpoint
-                self._path = previous_path
-                self._history = previous_history
-                self._redo = previous_redo
-                self._saved_digest = previous_saved_digest
-                self._forced_dirty = previous_forced_dirty
-                raise
+            install(candidate)
         self._runtime = candidate
-        self._checkpoint = _copy_runtime(candidate)
-        self._path = Path(path)
+        self._checkpoint = checkpoint
+        self._path = destination
         self._history.clear()
         self._redo.clear()
-        self._saved_digest = self._runtime_digest()
-        self._forced_dirty = False
-        loaded = self.document
-        if loaded is None:
-            raise RuntimeError(
-                "workspace replacement unexpectedly produced no document"
-            )
-        return loaded
-
-    def new(self, document: ProjectDocument, path: str | Path | None = None) -> None:
-        self._require_idle()
-        candidate = _validated_runtime(document)
-        self._runtime = candidate
-        self._checkpoint = _copy_runtime(candidate)
-        self._path = Path(path) if path is not None else None
-        self._history.clear()
-        self._redo.clear()
-        self._saved_digest = self._runtime_digest()
-        self._forced_dirty = False
+        self._saved_digest = saved_digest
 
     def start_new_document(self, *, keep_last_change: bool = False) -> None:
         """Start an unnamed document while preserving the live runtime identity."""
@@ -313,9 +211,8 @@ class WorkspaceSession:
         self._path = None
         self._history[:] = self._history[-1:] if keep_last_change else []
         self._redo.clear()
-        self._checkpoint = _copy_runtime(self._runtime)
+        self._checkpoint = copy.deepcopy(self._runtime)
         self._saved_digest = None
-        self._forced_dirty = False
 
     def save(
         self,
@@ -337,12 +234,10 @@ class WorkspaceSession:
         except ProjectDurabilityError:
             self._path = destination
             self._saved_digest = self._runtime_digest()
-            self._checkpoint = _copy_runtime(current)
-            self._forced_dirty = False
+            self._checkpoint = copy.deepcopy(current)
             raise
         self._path = destination
         self._saved_digest = self._runtime_digest()
-        self._forced_dirty = False
         return destination
 
     def mark_saved(self) -> None:
@@ -350,12 +245,7 @@ class WorkspaceSession:
         if self._runtime is None:
             raise ValueError("cannot mark an empty workspace as saved")
         self._saved_digest = self._runtime_digest()
-        self._checkpoint = _copy_runtime(self._runtime)
-        self._forced_dirty = False
-
-    def mark_dirty(self) -> None:
-        """Mark the current document dirty when an adapter changes its view state."""
-        self._forced_dirty = True
+        self._checkpoint = copy.deepcopy(self._runtime)
 
     def undo(self) -> bool:
         self._require_idle()
@@ -364,8 +254,7 @@ class WorkspaceSession:
         assert self._checkpoint is not None
         self._redo.append(self._checkpoint)
         self._checkpoint = self._history.pop()
-        self._runtime = _copy_runtime(self._checkpoint)
-        self._forced_dirty = False
+        self._runtime = copy.deepcopy(self._checkpoint)
         return True
 
     def redo(self) -> bool:
@@ -375,6 +264,5 @@ class WorkspaceSession:
         assert self._checkpoint is not None
         self._history.append(self._checkpoint)
         self._checkpoint = self._redo.pop()
-        self._runtime = _copy_runtime(self._checkpoint)
-        self._forced_dirty = False
+        self._runtime = copy.deepcopy(self._checkpoint)
         return True

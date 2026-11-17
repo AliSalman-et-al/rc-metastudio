@@ -33,7 +33,7 @@ _DRIVER = textwrap.dedent(
         from rc_metastudio import r_bridge
         from rc_metastudio.analysis_catalog import FACTOR
         try:
-            r_bridge.RLibraryLoader().load_rcmetar()
+            r_bridge.load_required_packages()
         except Exception:
             source_package = os.path.join(__REPO_ROOT__, "r", "RCMetaR")
             r_bridge.ro.r("devtools::load_all")(source_package, quiet=True)
@@ -651,7 +651,7 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
     r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
-        r_bridge.RLibraryLoader().load_rcmetar()
+        r_bridge.load_required_packages()
     except Exception as exc:
         sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
         sys.exit(42)

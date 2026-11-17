@@ -15,7 +15,9 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import Literal, TypeAlias, TypeVar
+from typing import Literal, TypeVar, cast
+
+from rc_metastudio.analysis_catalog import AnalysisFamily, FAMILY_METRICS
 
 from rc_metastudio.analysis_results import AnalysisResult
 
@@ -213,7 +215,6 @@ class PooledDisplaySpec:
             raise ValueError("pooled display tau estimator must be REML")
 
 
-AnalysisFamily: TypeAlias = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 _MappingKey = TypeVar("_MappingKey")
 
 
@@ -224,16 +225,8 @@ def _text(value: object, field_name: str) -> str:
 
 
 def _analysis_family(value: str) -> AnalysisFamily:
-    if value == "binary":
-        return "binary"
-    if value == "continuous":
-        return "continuous"
-    if value == "diagnostic":
-        return "diagnostic"
-    if value == "time_to_event":
-        return "time_to_event"
-    if value == "event_rates":
-        return "event_rates"
+    if value in FAMILY_METRICS:
+        return cast(AnalysisFamily, value)
     raise ValueError(f"unsupported small-study effects data family: {value!r}")
 
 
@@ -707,15 +700,6 @@ class SmallStudyEffectsService:
         return execute_small_study_effects(model, request)
 
 
-def regenerate_small_study_effects_funnel(
-    params_path: str, output_path: str | None = None
-) -> str | None:
-    """Regenerate only a persisted funnel presentation/geometry artifact."""
-    from rc_metastudio import r_bridge
-
-    return r_bridge.regenerate_small_study_effects_funnel(params_path, output_path)
-
-
 def unavailable_reason(method: EligibilityMethod | Mapping[str, object]) -> str:
     """Return the exact RCMetaR reason shown by the dialog."""
     item = (
@@ -753,7 +737,6 @@ __all__ = [
     "TrimAndFillSide",
     "execute_small_study_effects",
     "parse_eligibility_report",
-    "regenerate_small_study_effects_funnel",
     "unavailable_reason",
 ]
 

@@ -8,16 +8,9 @@
 \alias{create.effect.size.label}
 \alias{create.plot.data.binary}
 \alias{create.plot.data.continuous}
-\alias{create.plot.data.cum}
 \alias{create.plot.data.diagnostic}
 \alias{create.plot.data.generic}
-\alias{create.plot.data.loo}
-\alias{create.plot.data.overall}
 \alias{create.plot.data.reg}
-\alias{create.subgroup.plot.data.binary}
-\alias{create.subgroup.plot.data.cont}
-\alias{create.subgroup.plot.data.diagnostic}
-\alias{create.subgroup.plot.data.generic}
 \alias{format.data.cols}
 \alias{format.effect.sizes}
 \alias{format.raw.data.col}
@@ -26,7 +19,6 @@
 \alias{create.summary.disp}
 \alias{pretty.metric.name}
 \alias{set.plot.options}
-\alias{sroc.plot}
 \alias{update.changed.plot.params}
 \title{Forest render bundle and display data builders}
 \description{
@@ -37,18 +29,13 @@ metafor Forest Render Bundles, formatted labels, and result tables.
 
 \code{create.plot.data.generic()}, \code{create.plot.data.binary()},
 \code{create.plot.data.continuous()}, \code{create.plot.data.diagnostic()},
-\code{create.plot.data.overall()}, \code{create.plot.data.cum()},
-\code{create.plot.data.loo()}, \code{create.plot.data.reg()},
-\code{create.subgroup.plot.data.generic()},
-\code{create.subgroup.plot.data.binary()},
-\code{create.subgroup.plot.data.cont()}, and
-\code{create.subgroup.plot.data.diagnostic()} build data structures consumed
+\code{create.plot.data.reg()} build data structures consumed
 by plotting functions and the metafor forest renderer.
 }
 
 \section{Forest plot drawing}{
 
-\code{rcmetar.draw.forest.plot()} and \code{sroc.plot()} draw analysis figures.
+\code{rcmetar.draw.forest.plot()} and \code{rcmetar.draw.sroc.plot()} draw analysis figures.
 }
 
 \section{Layout and labels}{
@@ -59,4 +46,3 @@ by plotting functions and the metafor forest renderer.
 \code{set.plot.options()}, and
 \code{update.changed.plot.params()} control display formatting.
 }
-

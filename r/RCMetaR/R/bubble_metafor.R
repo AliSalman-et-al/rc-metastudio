@@ -25,9 +25,7 @@ rcmetar.create.metafor.bubble.bundle <- function(
         cov.name=NULL,
         cov.values=NULL,
         fitted.line=NULL) {
-    if (!rcmetar.is.plot.default.text(params$bp_xlabel)) {
-        params$bp_xlabel <- rcmetar.limit.plot.input.text(params$bp_xlabel)
-    }
+    params$bp_xlabel <- rcmetar.limit.plot.input.text(rcmetar.plot.axis.label(params, "bp"))
     if (is.null(cov.name)) {
         cov.name <- if (is(reg.data, "OMData")) reg.data@covariates[[1]]@cov.name else names(reg.data)[[1]]
     }
@@ -38,11 +36,7 @@ rcmetar.create.metafor.bubble.bundle <- function(
     yi <- if (is(reg.data, "OMData")) reg.data@y else reg.data$yi
     sei <- if (is(reg.data, "OMData")) reg.data@SE else sqrt(reg.data$vi)
     scale.str <- if (!is.null(params$measure)) get.scale(params) else g.get.scale(params$measure)
-    xlabel <- as.character(cov.name)
-    if (!rcmetar.is.plot.default.text(params$bp_xlabel) &&
-            nzchar(as.character(params$bp_xlabel[1]))) {
-        xlabel <- as.character(params$bp_xlabel[1])
-    }
+    xlabel <- params$bp_xlabel %||% as.character(cov.name)
     xlabel <- rcmetar.truncate.plot.display.text(xlabel, rcmetar.plot.text.input.limit)
     list(
         render_engine="metafor",
@@ -78,12 +72,7 @@ rcmetar.bubble.accent.color <- function(bundle) {
     if (!is.null(color) && length(color) > 0 && !is.na(color[1]) && nzchar(as.character(color[1]))) {
         return(as.character(color[1]))
     }
-    switch(
-        bundle$bp_style,
-        revman="#111111",
-        bmj="#6b58a6",
-        "#2f5597"
-    )
+    rcmetar.default.plot.accent(bundle$bp_style, "bubble")
 }
 
 rcmetar.bubble.param.is.true <- function(bundle, name, default=TRUE) {

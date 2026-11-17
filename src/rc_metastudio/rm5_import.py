@@ -1,6 +1,6 @@
 """Read RevMan XML at the import boundary, without changing the live project."""
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.project_domain import ArmId, RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 from dataclasses import dataclass
 import math
 from pathlib import Path

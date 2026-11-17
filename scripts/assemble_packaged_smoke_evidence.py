@@ -20,6 +20,11 @@ from pathlib import Path
 
 from rc_metastudio.result_text_identity import normalize_packaged_summary_identity
 
+if __name__ == "__main__":
+    import packaged_smoke_contract as smoke_contract
+else:
+    from scripts import packaged_smoke_contract as smoke_contract
+
 PACKAGED_EDIT_VALUE = "Packaged Smoke – München"
 PACKAGED_ANALYSIS_METHOD = "binary.random"
 # The frozen summary identity predates the application's REML default.
@@ -82,7 +87,7 @@ def capture_atomic_observations(
     surface_directory.mkdir(parents=True, exist_ok=True)
     records = []
     baseline = str(json.loads(runtime_probe.read_text(encoding="utf-8"))["qt"]["baseline_device_pixel_ratio"])
-    for scale in ("1.25", "1.50", "1.75"):
+    for scale in smoke_contract.SURFACE_SCALES:
         record = surface_directory / f"surface-{scale}.json"
         record.unlink(missing_ok=True)
         environment = os.environ.copy()
@@ -340,14 +345,7 @@ def _append_log(log_path: Path | None) -> None:
         return
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a", encoding="utf-8") as stream:
-        stream.write("packaged-runtime-probe:passed\n")
-        for scale in ("1.25", "1.50", "1.75"):
-            stream.write(f"packaged-surface:scale-{scale}-passed\n")
-        stream.write("packaged-workflow:project-exercise:complete\n")
-        stream.write("packaged-workflow:evidence-written\n")
-        stream.write("packaged-workflow:post-close\n")
-        stream.write("startup-project:normal-entry-point-passed\n")
-        stream.write("packaged-workflow:process-exit:0\n")
+        stream.write("\n".join(smoke_contract.ASSEMBLED_COMPLETION_MARKERS) + "\n")
 
 
 def _identity(observation: dict) -> dict:

@@ -28,7 +28,7 @@ from rc_metastudio.cocoa_accessibility import (
     find_accessibility_element,
 )
 from rc_metastudio.launch import (
-    _argument_value,
+    startup_argument_value,
     _dispose_new_top_levels,
     _import_main_window,
     _set_application_icon,
@@ -131,7 +131,7 @@ def _run_automation_smoke(callback):
 
 def dispatch(startup_argv: list[str]) -> int:
     """Dispatch one supported automation command after startup arguments resolve."""
-    smoke_log = _argument_value(startup_argv, "--automation-smoke-log")
+    smoke_log = startup_argument_value(startup_argv, "--automation-smoke-log")
     if smoke_log:
         os.environ[AUTOMATION_SMOKE_LOG_ENV] = smoke_log
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-smoke":
@@ -1345,8 +1345,7 @@ def _exercise_packaged_project_workflow(app, meta, sample_path):
         _write_automation_smoke_log(
             "packaged-workflow:analysis-%s-complete" % locale_name
         )
-        meta.out_path = str(destination)
-        if meta.save() is not True or not destination.is_file():
+        if meta.save(destination=destination) is not True or not destination.is_file():
             raise SystemExit(
                 "Packaged smoke could not save the %s project." % locale_name
             )

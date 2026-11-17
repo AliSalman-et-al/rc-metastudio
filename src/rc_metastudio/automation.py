@@ -113,8 +113,7 @@ def start_package_edit_save(
             index = model.index(0, _model_column(model, column))
             edited = bool(model.setData(index, value))
             destination.parent.mkdir(parents=True, exist_ok=True)
-            window.out_path = str(destination)
-            saved = bool(edited and window.save() is True)
+            saved = bool(edited and window.save(destination=destination) is True)
             display_value = str(model.data(index))
         _write_json(output_path, {
             "project": os.path.abspath(project_path), "destination": str(destination),
@@ -143,11 +142,7 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
                 "display_images": {},
             })
             return 0
-        from rc_metastudio import main_window
-
-        result = _run_analysis(window, main_window, analysis_method, estimator=estimator)
-        if result is None:
-            raise RuntimeError("analysis produced no result")
+        result = _run_analysis(window, analysis_method, estimator=estimator)
         _write_json(output_path, {
             "project": os.path.abspath(project_path), "analysis_method": analysis_method,
             "requested_estimator": estimator,
@@ -164,7 +159,7 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
     destination = Path(output_path).with_suffix(".docx")
     _reject_output_aliases([output_path, destination], [project_path, xlsx_path, rm5_path])
     _reject_output_aliases([output_path], [destination])
-    from rc_metastudio import csv_import, rm5_import, main_window
+    from rc_metastudio import csv_import, rm5_import
     from rc_metastudio.manuscript_report import ManuscriptReport, write_docx
     from docx import Document
 
@@ -174,7 +169,7 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
     try:
         if not window.open(os.path.abspath(project_path), raise_on_error=True):
             raise RuntimeError("project did not open")
-        result = _run_analysis(window, main_window, "binary.random")
+        result = _run_analysis(window, "binary.random")
         report = ManuscriptReport.from_result(result)
         write_docx(report, destination)
         paragraphs = [p.text for p in Document(str(destination)).paragraphs]
@@ -200,10 +195,10 @@ def _configure_package_locale() -> None:
         QtCore.QLocale.setDefault(QtCore.QLocale(configured_locale))
 
 
-def _run_analysis(window, main_window, analysis_method: str, *, estimator: str | None = None):
-    captured = {}
-    dialog = main_window.analysis_setup_dialog.AnalysisSetupDialog(window.model, parent=window, confidence_level=window.model.get_confidence_level())
-    original = window.analysis
+def _run_analysis(window, analysis_method: str, *, estimator: str | None = None):
+    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+
+    dialog = AnalysisSetupDialog(window.model, parent=window, confidence_level=window.model.get_confidence_level())
     try:
         dialog.current_method = analysis_method
         dialog.current_param_vals = {}
@@ -213,12 +208,9 @@ def _run_analysis(window, main_window, analysis_method: str, *, estimator: str |
             if "rm.method" not in dialog.current_defaults:
                 raise ValueError(f"{analysis_method} has no random-effects estimator parameter")
             dialog.current_param_vals["rm.method"] = estimator
-        window.analysis = lambda result, *, change_settings=None: captured.setdefault("result", result)
-        dialog.run_ma()
+        return dialog.execute_configured_analysis()
     finally:
-        window.analysis = original
         dialog.close()
-    return captured.get("result")
 
 
 def _write_json(path: str, value: dict) -> None:

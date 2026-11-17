@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Custom QTableView with copy, paste, undo, and redo support."""
 
-import copy
 import csv
 import io
 from typing import TYPE_CHECKING, Protocol, cast
@@ -13,7 +12,6 @@ from PyQt6.QtCore import (
     QObject,
     QSignalBlocker,
     Qt,
-    pyqtSignal,
 )
 from PyQt6.QtGui import QAction, QKeyEvent
 
@@ -34,9 +32,11 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import row_padding
-from rc_metastudio.analysis_catalog import CONTINUOUS, TWO_ARM_METRICS
+from rc_metastudio.analysis_catalog import CONTINUOUS
+from rc_metastudio.domain_ids import SheetId
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+from rc_metastudio.workspace_column_identity import WorkspaceColumnIdentity
 
 if TYPE_CHECKING:
     from rc_metastudio.dataset_table_model import DatasetTableModel
@@ -48,8 +48,6 @@ class MainWindowProtocol(Protocol):
     workspace: "WorkspaceSession"
 
     def statusBar(self) -> QtWidgets.QStatusBar: ...
-    oneArmMetricMenu: QMenu
-    twoArmMetricMenu: QMenu
 
     def data_dirtied(self) -> None: ...
     def _commit_model_operation(self, operation) -> None: ...
@@ -60,10 +58,8 @@ class MainWindowProtocol(Protocol):
     def delete_covariate(self, covariate) -> None: ...
     def change_covariate_type(self, covariate) -> None: ...
     def keyPressEvent(self, event: QKeyEvent | None) -> None: ...
-    def metric_selected(self, metric: str, menu: QMenu) -> None: ...
     def enable_menu_options_that_require_dataset(self) -> None: ...
     def disable_menu_options_that_require_dataset(self) -> None: ...
-    def set_model(self, dataset, state_dict=None) -> None: ...
     def undo(self) -> None: ...
     def redo(self) -> None: ...
 
@@ -76,7 +72,6 @@ def _connect_action(action, callback):
 
 
 class DatasetTableView(QtWidgets.QTableView):
-    dataDirtied = pyqtSignal()
 
     def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
         super().paintEvent(event)
@@ -108,9 +103,6 @@ class DatasetTableView(QtWidgets.QTableView):
         header_font = header.font()
         header_font.setBold(True)
         header.setFont(header_font)
-        header.sectionClicked.connect(
-            app_error_handler.safe_slot(self.header_clicked, parent=self)
-        )
 
         self.vert_header = required(self.verticalHeader(), "workspace row header")
 
@@ -118,8 +110,7 @@ class DatasetTableView(QtWidgets.QTableView):
             app_error_handler.safe_slot(self.row_header_clicked, parent=self)
         )
 
-        # Additional covariate sort columns are registered as they become visible.
-        self.reverse_column_sorts = {0: False, 1: False}
+        self.reverse_column_sorts: dict[tuple[SheetId, WorkspaceColumnIdentity], bool] = {}
         self.setAlternatingRowColors(True)
         palette = self.palette()
         for group in (QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorGroup.Inactive):
@@ -136,7 +127,7 @@ class DatasetTableView(QtWidgets.QTableView):
         )
         qt_layout.configure_spreadsheet_table_view(self)
         self._column_widths = WorkspaceColumnWidthController(self)
-        self._column_model = None
+        self._column_connections: list[QtCore.QMetaObject.Connection] = []
 
     def model(self) -> "DatasetTableModel":
         """Return the concrete model required by the maintained workspace view."""
@@ -157,7 +148,6 @@ class DatasetTableView(QtWidgets.QTableView):
             super(DatasetTableView, self).setModel(model)
         finally:
             self._column_widths.end_schema_change()
-        self._column_model = model
         self._connect_column_model(model)
         self.synchronize_column_widths()
 
@@ -165,68 +155,45 @@ class DatasetTableView(QtWidgets.QTableView):
         """Restore a previously bound model without repeating failed layout work."""
         self._disconnect_column_model()
         QTableView.setModel(self, model)
-        self._column_model = model
         self._connect_column_model(model)
 
     def _connect_column_model(self, model):
         if model is None:
             return
-        model.modelAboutToBeReset.connect(self._begin_column_schema_change)
-        model.modelReset.connect(self._end_column_schema_change)
-        model.columnsAboutToBeInserted.connect(self._begin_column_schema_change)
-        model.columnsInserted.connect(self._end_column_schema_change)
-        model.columnsAboutToBeRemoved.connect(self._begin_column_schema_change)
-        model.columnsRemoved.connect(self._end_column_schema_change)
-        model.headerDataChanged.connect(self.synchronize_column_widths)
+        self._column_connections.extend((
+            model.modelAboutToBeReset.connect(self._begin_column_schema_change),
+            model.modelReset.connect(self._end_column_schema_change),
+            model.columnsAboutToBeInserted.connect(self._begin_column_schema_change),
+            model.columnsInserted.connect(self._end_column_schema_change),
+            model.columnsAboutToBeRemoved.connect(self._begin_column_schema_change),
+            model.columnsRemoved.connect(self._end_column_schema_change),
+            model.headerDataChanged.connect(self.synchronize_column_widths),
+        ))
 
     def _disconnect_column_model(self):
-        if self._column_model is None:
-            return
-        connections = (
-            (self._column_model.modelAboutToBeReset, self._begin_column_schema_change),
-            (self._column_model.modelReset, self._end_column_schema_change),
-            (
-                self._column_model.columnsAboutToBeInserted,
-                self._begin_column_schema_change,
-            ),
-            (self._column_model.columnsInserted, self._end_column_schema_change),
-            (
-                self._column_model.columnsAboutToBeRemoved,
-                self._begin_column_schema_change,
-            ),
-            (self._column_model.columnsRemoved, self._end_column_schema_change),
-            (self._column_model.headerDataChanged, self.synchronize_column_widths),
-        )
-        for signal, callback in connections:
+        for connection in self._column_connections:
             try:
-                signal.disconnect(callback)
+                QObject.disconnect(connection)
             except (TypeError, RuntimeError):
                 pass
-        self._column_model = None
+        self._column_connections.clear()
 
     def _begin_column_schema_change(self, *_args):
         self._column_widths.begin_schema_change()
 
     def _end_column_schema_change(self, *_args):
-        self._hide_ratio_input_details()
+        self._apply_column_visibility()
         self._column_widths.end_schema_change()
 
     def synchronize_column_widths(self, *_args):
-        self._hide_ratio_input_details()
+        self._apply_column_visibility()
         self._column_widths.synchronize_schema()
 
-    def _hide_ratio_input_details(self):
+    def _apply_column_visibility(self):
         model = self.model()
-        details = model.OUTCOMES[3:] if model.get_current_data_type() in ("time_to_event", "event_rates") else []
-        subtype = model.get_current_data_subtype()
-        if subtype == "proportion":
-            details += model.RAW_DATA[2:]
-        elif subtype == "mean":
-            details += model.RAW_DATA[3:]
-        elif subtype == "reg_coef":
-            details += model.RAW_DATA
+        hidden = model.columns.hidden_sections()
         for column in range(model.columnCount()):
-            self.setColumnHidden(column, column in details)
+            self.setColumnHidden(column, column in hidden)
 
     def auto_fit_columns(self):
         self._column_widths.auto_fit_all()
@@ -242,7 +209,6 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu = QMenu(self)
             study_index = self.rowAt(event.y())
 
-            # sense to provide a context-menu
             if not 0 <= study_index < len(self.model().current_sheet.rows):
                 return None
 
@@ -286,25 +252,21 @@ class DatasetTableView(QtWidgets.QTableView):
         right-clicks are built.
         """
         column_clicked = self.columnAt(pos.x())
-        covariate_columns = self.get_covariate_columns()
-        raw_data_columns = self.model().RAW_DATA
-        outcomes_columns = self.model().OUTCOMES
-
-        data_type = self.model().get_current_data_type()
+        model = self.model()
+        raw = model.columns.raw_column(column_clicked)
+        cov = model.get_covariate_for_column(column_clicked)
 
         context_menu = QMenu(self)
 
-        # add a covariate anywhere
-        if column_clicked == 0:
-            # option to (de-)select / include all studies
+        if column_clicked == model.INCLUDE_STUDY:
             action = QAction("Include all", self)
-            _connect_action(action, self.include_all_studies)
+            _connect_action(action, lambda: self.model().set_all_studies_included(True))
             if self.model().all_studies_are_included():
                 action.setEnabled(False)
             context_menu.addAction(action)
 
             action = QAction("Exclude all", self)
-            _connect_action(action, self.exclude_all_studies)
+            _connect_action(action, lambda: self.model().set_all_studies_included(False))
             if self.model().all_studies_are_excluded():
                 action.setEnabled(False)
             context_menu.addAction(action)
@@ -312,52 +274,28 @@ class DatasetTableView(QtWidgets.QTableView):
             app_error_handler.popup_context_menu(
                 context_menu, self.mapToGlobal(pos), parent=self
             )
-        elif column_clicked in (1, 2):
-            col_name = {1: "study name", 2: "year"}[column_clicked]
+        elif column_clicked in (model.NAME, model.YEAR):
+            col_name = model.columns.label(column_clicked, (), None).lower()
             action_sort = QAction("Sort studies by %s" % col_name, self)
 
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
 
-        elif column_clicked in raw_data_columns and not data_type == "diagnostic":
-            columns_per_arm = 3 if data_type == "continuous" else 2
-            arm_index = raw_data_columns.index(column_clicked) // columns_per_arm
-            arm_name = self.model().arm_names[arm_index]
-
-            # renaming
-            action_rename = QAction("Rename arm %s…" % arm_name, self)
-            _connect_action(
-                action_rename,
-                lambda: self._main_gui().edit_arm_name(arm_name),
-            )
-            context_menu.addAction(action_rename)
-            # sorting
+        elif raw is not None or column_clicked in model.columns.effect_sections:
+            arm_name = raw.arm_name(model.arm_names) if raw is not None else None
+            if arm_name is not None:
+                action_rename = QAction("Rename arm %s…" % arm_name, self)
+                _connect_action(
+                    action_rename, lambda: self._main_gui().edit_arm_name(arm_name),
+                )
+                context_menu.addAction(action_rename)
             col_name = qt_text.to_native_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
+                model.headerData(column_clicked, Qt.Orientation.Horizontal)
             )
             action_sort = QAction("Sort studies by %s" % col_name, self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
-        elif column_clicked in raw_data_columns and data_type == "diagnostic":
-            # sorting
-            col_name = qt_text.to_native_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
-            )
-            action_sort = QAction("Sort studies by %s" % col_name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-        elif column_clicked in outcomes_columns:
-            # sorting
-            col_name = qt_text.to_native_text(
-                self.model().headerData(column_clicked, Qt.Orientation.Horizontal)
-            )
-            action_sort = QAction("Sort studies by %s" % col_name, self)
-            _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
-            context_menu.addAction(action_sort)
-        elif column_clicked in covariate_columns:
-            cov = self.model().get_covariate_for_column(column_clicked)
-            assert cov is not None
-
+        elif cov is not None:
             action_sort = QAction("Sort studies by %s" % cov["name"], self)
             _connect_action(action_sort, lambda: self.sort_by_col(column_clicked))
             context_menu.addAction(action_sort)
@@ -366,7 +304,6 @@ class DatasetTableView(QtWidgets.QTableView):
             _connect_action(action_ren, lambda: self._main_gui().rename_covariate(cov))
             context_menu.addAction(action_ren)
 
-            # allow deletion of covariate
             action_del = QAction("Delete covariate %s…" % cov["name"], self)
             _connect_action(action_del, lambda: self._main_gui().delete_covariate(cov))
             context_menu.addAction(action_del)
@@ -387,14 +324,6 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu, self.mapToGlobal(pos), parent=self
         )
 
-    def include_all_studies(self):
-        self.model().include_all_studies()
-        self.model().reset_model()
-
-    def exclude_all_studies(self):
-        self.model().exclude_all_studies()
-        self.model().reset_model()
-
     def keyPressEvent(
         self, event: QKeyEvent | None
     ) -> None:
@@ -411,17 +340,13 @@ class DatasetTableView(QtWidgets.QTableView):
             elif event.key() == QtCore.Qt.Key.Key_D:
                 self.fill_down()
             elif event.key() == QtCore.Qt.Key.Key_C:
-                # ctrl + c = copy
                 self.copy()
             elif event.key() == QtCore.Qt.Key.Key_V:
-                # ctrl + v = paste
                 self.paste()
             elif event.key() == QtCore.Qt.Key.Key_A:
                 self.selectAll()
                 event.accept()
             else:
-                # if the command hasn't anything to do with the table view
-                # in particular, we pass the event up to the main UI
                 self._main_gui().keyPressEvent(event)
         elif self._is_return_key(event):
             self._move_current_index_vertically(
@@ -546,7 +471,6 @@ class DatasetTableView(QtWidgets.QTableView):
         signal_blocker = QSignalBlocker(self.vert_header)
 
         try:
-            # dispatch on the data type
             form = None
             study_index = row
             analysis_unit = self.model().get_current_analysis_unit_for_study(study_index).copy_for_edit()
@@ -587,46 +511,31 @@ class DatasetTableView(QtWidgets.QTableView):
             study_name = qt_text.to_native_text(self.model().data(self.model().index(row, self.model().NAME)))
             form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
-                self.model().set_current_analysis_unit_for_study(
-                    study_index, form.analysis_unit
-                )
-                self.model().update_all_effect_previews()
-                self.model().reset_model()
-                self._enable_analysis_menus_if_appropriate()
-                self.synchronize_column_widths()
-                self.dataDirtied.emit()
+                model = self.model()
+
+                def apply_calculator_result():
+                    model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
+                    model.update_all_effect_previews()
+                    model.reset_model()
+                    self._enable_analysis_menus_if_appropriate()
+                    self.synchronize_column_widths()
+
+                self._main_gui()._commit_model_operation(apply_calculator_result)
         finally:
             del signal_blocker
 
-    def cell_content_changed(self, _edit):
-        # Only make a cell edit if the old values and new values are different
-        # DatasetTableModel has already applied the edit.  The owning window's
-        # data-dirtied boundary snapshots it into WorkspaceSession, which is
-        # the only durable history.
-        self._enable_analysis_menus_if_appropriate()
-
-
     def get_covariate_columns(self):
-        return list(range(self.model().OUTCOMES[-1] + 1, self.model().columnCount()))
+        model = self.model()
+        return list(range(model.columns.first_covariate, model.columnCount()))
 
-    def header_clicked(self, column):
-        can_sort_by = [self.model().NAME, self.model().YEAR]
-        # Covariates occupy columns after the outcome columns.
-        covariate_columns = self.get_covariate_columns()
-        can_sort_by.extend(covariate_columns)
-
-    def sort_by_col(self, column):
-        # if a covariate column was clicked, it may not yet have an entry in the
-        # reverse_column_sorts dictionary; thus we insert one here
-        #
-        # This uses the visible column number because sort state is owned by the
-        # current table view; rebuild it when covariate columns move or vanish.
-        if column not in self.reverse_column_sorts:
-            self.reverse_column_sorts[column] = False
-        self.model().sort_studies(column, self.reverse_column_sorts[column])
-        self.model().reset_model()
-        self.reverse_column_sorts[column] = not self.reverse_column_sorts[column]
-        self.dataDirtied.emit()
+    def sort_by_col(self, column: int) -> None:
+        model = self.model()
+        sheet_id = model.current_sheet_id
+        if sheet_id is not None:
+            key = (sheet_id, model.workspace_column_identity(column))
+            reverse = self.reverse_column_sorts.get(key, False)
+            model.sort_studies(column, reverse)
+            self.reverse_column_sorts[key] = not reverse
 
     def _normalize_newlines(self, text: str) -> str:
         return text.replace("\r\n", "\n").replace("\r", "\n")
@@ -676,7 +585,6 @@ class DatasetTableView(QtWidgets.QTableView):
         """
         text_matrix = []
 
-        # +1s are because range() is right interval exclusive
         for row in range(upper_left_index.row(), lower_right_index.row() + 1):
             current_row = []
             for col in range(upper_left_index.column(), lower_right_index.column() + 1):
@@ -703,7 +611,6 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def paste_contents(self, upper_left_index, source_content):
         """Validate and publish one clipboard edit through the workspace."""
-        origin_row, origin_col = upper_left_index.row(), upper_left_index.column()
         source_content = self._normalize_matrix_rows(source_content)
         if not source_content:
             return True
@@ -712,42 +619,15 @@ class DatasetTableView(QtWidgets.QTableView):
         if not valid:
             self._report_model_data_error(failure)
             return False
-        model = self.model()
-        candidate = type(model)(
-            dataset=copy.deepcopy(model.dataset), add_blank_study=False
-        )
-        candidate.set_state(copy.deepcopy(model.get_state()))
-        # Clipboard coordinates refer to visible studies, not canonical storage order.
-        by_id = {study.id: study for study in candidate.current_sheet.rows}
-        candidate._display_studies = [by_id[study_id] for study_id in model.get_ordered_study_ids()]
-        skipped = 0
+        origin_row, origin_col = upper_left_index.row(), upper_left_index.column()
         try:
-            columns = self._paste_columns(origin_col)
-            for src_row, row in enumerate(source_content):
-                for src_col, value in enumerate(row):
-                    index = candidate.createIndex(
-                        origin_row + src_row, columns[src_col]
-                    )
-                    if candidate.get_current_data_type() in ("time_to_event", "event_rates") and columns[src_col] in candidate.OUTCOMES[:3] and not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
-                        raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
-                    if not candidate.setData(index, value):
-                        error = getattr(candidate, "last_data_error", None) or "Clipboard value cannot be used"
-                        if any(word in error.lower() for word in ("numeric", "number", "integer")):
-                            skipped += 1
-                            continue
-                        raise ValueError(error)
+            skipped = self.model().paste_cells(origin_row, self._paste_columns(origin_col), source_content)
         except (IndexError, TypeError, ValueError) as exc:
             self._report_model_data_error(str(exc))
             return False
         if skipped:
             noun = "cell" if skipped == 1 else "cells"
             self._main_gui().statusBar().showMessage(f"{skipped} {noun} skipped: not a number", 8000)
-        model.dataset = candidate.dataset
-        model.set_state(candidate.get_state())
-        model._display_studies = candidate._display_studies
-        model._blank_study = candidate._blank_study
-        model.reset_model()
-        self.dataDirtied.emit()
         return True
 
     def _paste_columns(self, origin):
@@ -760,25 +640,6 @@ class DatasetTableView(QtWidgets.QTableView):
             self._main_gui().data_error(msg)
         else:
             QMessageBox.warning(self, "Warning", msg)
-
-    def column_widths(self):
-        """Returns the current column widths"""
-        return [
-            self.columnWidth(col_index)
-            for col_index in range(self.model().columnCount())
-        ]
-
-    def set_metric_in_ui(self, metric):
-        """Calls the method on the UI to change
-        the current metric -- this is the same
-        method binded to the menu items, so call
-        this to programmatically change the metric.
-        """
-        owner = self._main_gui()
-        menu = owner.oneArmMetricMenu
-        if metric in TWO_ARM_METRICS:
-            menu = owner.twoArmMetricMenu
-        owner.metric_selected(metric, menu)
 
     def _enable_analysis_menus_if_appropriate(self):
 
@@ -917,6 +778,5 @@ class StudyDelegate(QItemDelegate):
         return None
 
     def setEditorData(self, editor, index):
-        # used to be Qt.DisplayRole
         text = index.model().data(index, Qt.ItemDataRole.EditRole)
         editor.setText(qt_text.to_native_text(text))

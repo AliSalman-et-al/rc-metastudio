@@ -3,6 +3,7 @@ import csv
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
+from scripts.verification_evidence import desktop_tool_executable
 from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
@@ -53,7 +54,7 @@ def run(app, window, work, record):
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
                 assert " vs ".join(expected) in view.result_facts.accessibleDescription(), view.result_facts.accessibleDescription()
-                exported = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'round3-report.pdf'), '-'], text=True, encoding='utf-8')
+                exported = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', str(work / 'round3-report.pdf'), '-'], text=True, encoding='utf-8')
                 assert comparison in ' '.join(exported.split()), exported
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
@@ -133,8 +134,7 @@ def run(app, window, work, record):
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names
-    window.out_path=str(work / "legacy-arm-names.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=work / "legacy-arm-names.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"]
     assert legacy.read_bytes() == original
     record("round5-arm-legacy-reopened", window, groups=window.model.arm_names)

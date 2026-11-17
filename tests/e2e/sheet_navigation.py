@@ -14,8 +14,7 @@ def check(app, window, root, work, record):
     assert tabs.count() >= 2
     tabs.setCurrentIndex(1)
     path = work / 'sheet-navigation.rcms'
-    window.out_path = str(path)
-    assert window.save() and window.open(str(path), raise_on_error=True)
+    assert window.save(destination=path) and window.open(str(path), raise_on_error=True)
     expected = copy.deepcopy(dataset_to_project(window.model.dataset))
     for index in (0, 1, 0):
         tabs.setCurrentIndex(index)

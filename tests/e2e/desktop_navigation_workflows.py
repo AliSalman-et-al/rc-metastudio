@@ -1,9 +1,10 @@
 """Start-page, menu, palette and report-navigation workflows."""
 
+import traceback
 from unittest.mock import patch
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtTest import QTest
-from tests.python.gui.qt_test_support import mouse_click, mouse_release, key_click, wait
+from tests.python.gui.qt_test_support import mouse_click, mouse_release, key_click, required, wait
 from tests.e2e.keyboard_navigation import keyboard_dialog_pages, keyboard_traversal
 
 
@@ -111,7 +112,7 @@ def run(app, window, work, root, record, analyze):
     mouse_click(present_button, QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
     assert window.tableView.isVisible() and not window.start_page.isVisible()
-    assert window.out_path == str(present)
+    assert window.workspace.path == present
     assert window.confidence_button.text() == '95% CI…'
     assert window.confidence_button.isVisible()
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
@@ -237,11 +238,16 @@ def run(app, window, work, root, record, analyze):
     record("round5-grid-keyboard-exit", window)
 
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    button = window.analysis_button
+    menu = required(button.menu(), "analysis button menu")
     menu_errors = []
+    menu_observed = False
+
     def choose_analysis():
-        menu = window.analysis_button.menu()
+        nonlocal menu_observed
         try:
-            assert menu.isVisible()
+            assert menu.isVisible(), "Analysis menu closed before it could be inspected"
+            menu_observed = True
             assert all(action in menu.actions() for action in (window.action_go, window.action_cum_ma, window.action_loo_ma,
                        window.action_subgroup_ma, window.action_meta_regression, window.action_publication_bias))
             assert all(action.toolTip() for action in menu.actions() if not action.isSeparator())
@@ -258,18 +264,35 @@ def run(app, window, work, root, record, analyze):
                 QtWidgets.QToolTip.hideText()
             record('round5-analysis-menu', menu, actions=[dict(text=action.text(), enabled=action.isEnabled(), tooltip=action.toolTip()) for action in menu.actions()])
             mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, pos=menu.actionGeometry(window.action_go).center())
-        except Exception as error:
-            menu_errors.append(str(error))
+        except Exception:
+            menu_errors.append(traceback.format_exc())
             menu.close()
-    QtCore.QTimer.singleShot(100, choose_analysis)
-    mouse_click(window.analysis_button, QtCore.Qt.MouseButton.LeftButton)
+
+    def inspect_popup():
+        QtCore.QTimer.singleShot(0, choose_analysis)
+
+    option = QtWidgets.QStyleOptionToolButton()
+    button.initStyleOption(option)
+    arrow = required(button.style(), "analysis button style").subControlRect(
+        QtWidgets.QStyle.ComplexControl.CC_ToolButton,
+        option,
+        QtWidgets.QStyle.SubControl.SC_ToolButtonMenu,
+        button,
+    )
+    assert arrow.isValid(), "Analysis split button has no menu control"
+    menu.aboutToShow.connect(inspect_popup)
+    try:
+        mouse_click(button, QtCore.Qt.MouseButton.LeftButton, pos=arrow.center())
+    finally:
+        menu.aboutToShow.disconnect(inspect_popup)
     deadline = QtCore.QDeadlineTimer(5000)
     while not menu_errors and not deadline.hasExpired():
         if any(isinstance(widget, AnalysisSetupDialog) and widget.isVisible()
                for widget in app.topLevelWidgets()):
             break
         wait(10)
-    assert not menu_errors, menu_errors
+    assert not menu_errors, '\n'.join(menu_errors)
+    assert menu_observed, 'Clicking the split-button arrow did not open the analysis menu'
     app.processEvents()
     setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
     keyboard_dialog_pages(app, setup, record)

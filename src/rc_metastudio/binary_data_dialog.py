@@ -28,7 +28,7 @@ from rc_metastudio.calculator_service import (
     Numeric,
 )
 from rc_metastudio.analysis_catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_ARM_NAMES
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
 from rc_metastudio import app_error_handler
@@ -74,7 +74,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             raise ValueError("Confidence level must be specified")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
         self.current_item_data: int | None = None
@@ -276,13 +276,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             txt_box.setText("")
 
     def update_back_calculation_button(self, engage=False):
-        # For undo/redo
-        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
-            table=self.raw_data_table,
-            analysis_unit=self.analysis_unit,
-            use_old_value=False,
-        )
-
         def build_back_calc_args_dict():
 
             d = {}
@@ -401,6 +394,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         if not engage:
             return None
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
         try:
             if len(list(imputed.keys())) > 1:
                 dialog = BinaryBackCalculationDialog(imputed, self.arm_names, parent=self)
@@ -427,25 +425,21 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 self._set_val(1, 1, group_2_total - group_2_events)
 
             self._update_data_table()
-            self._update_analysis_unit()  # save in analysis_unit
+            self._update_analysis_unit()
         except BaseException:
             self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
             raise
 
-        # for undo/redo
         new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
             analysis_unit=self.analysis_unit,
             use_old_value=False,
         )
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
-            refresh_on_initial_redo=False,
         )
 
     def setup_back_calculation_feedback(self):
@@ -748,7 +742,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     self.upper_text_box.setFocus()
             return
 
-        # If we got to this point it means everything is ok so far
         try:
             if display_scale_val not in EMPTY_VALS:
                 display_scale_val = float(display_scale_val)
@@ -785,13 +778,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
         )
+        self.update_back_calculation_button()
 
     def _update_raw_data(self):
         """Sets events and non-events from stored events and arm totals."""
@@ -942,13 +934,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
         )
+        self.update_back_calculation_button()
 
     def _validate_raw_count_cells(self, col, row):
         for check_row in range(self.raw_data_table.rowCount()):
@@ -1098,7 +1089,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def clear_form(self):
         self._validation_failed = False
-        # For undo/redo
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
             analysis_unit=self.analysis_unit,
@@ -1145,13 +1135,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             use_old_value=False,
         )
 
-        calculator_edit_history.push_field_edit(
-            self._field_history,
-            owner=self,
+        self._field_history.record(
             restore_state=self.restore_analysis_unit_and_table,
             old_state=(old_analysis_unit, old_table),
             new_state=(new_analysis_unit, new_table),
         )
+        self.update_back_calculation_button()
 
     def get_current_arm_key(self):
         names = self.arm_names[:1] if self.current_effect in BINARY_ONE_ARM_METRICS else self.arm_names

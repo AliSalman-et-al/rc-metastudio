@@ -47,16 +47,17 @@ jobs:
           test "$(jq -r .channel "$manifest")" = rc
           test "$(jq -r .trust_profile "$manifest")" = macos-trusted
           test "$(jq -c .release_targets "$manifest")" = '["windows-x64","macos-arm64","linux-x64"]'
-          mapfile -t assets < <(find promotion -maxdepth 1 -type f -printf '%f\n' | sort)
-          expected=(RCMetaStudio-linux-x64.tar.gz RCMetaStudio-macos-arm64.dmg RCMetaStudio-windows-x64.zip SHA256SUMS linux-x64.cdx.json macos-arm64.cdx.json release-set-rc.json windows-x64.cdx.json)
-          test "${assets[*]}" = "${expected[*]}"
-          (cd promotion && sha256sum --check SHA256SUMS)
+          inventory="$(python scripts/delivery.py publication-assets --manifest "$manifest")"
+          expected="$(jq -er '.files[]' <<< "$inventory" | sort)"
+          test "$(find promotion -maxdepth 1 -type f -print | sort)" = "$expected"
           source_sha="$(jq -r .source.commit "$manifest")"
           [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
-          for artifact in promotion/RCMetaStudio-windows-x64.zip promotion/RCMetaStudio-macos-arm64.dmg promotion/RCMetaStudio-linux-x64.tar.gz; do gh attestation verify "$artifact" --repo "$REPOSITORY" --signer-workflow "$REPOSITORY/.github/workflows/macos-trusted-release-candidate.yml" --source-digest "$source_sha"; done
+          names="$(jq -er '.archives[]' <<< "$inventory")"
+          mapfile -t archives <<< "$names"
+          for artifact in "${archives[@]}"; do gh attestation verify "$artifact" --repo "$REPOSITORY" --signer-workflow "$REPOSITORY/.github/workflows/macos-trusted-release-candidate.yml" --source-digest "$source_sha"; done
           git fetch origin "refs/tags/$RC_TAG:refs/tags/$RC_TAG"
           test "$(git rev-list -n 1 "$RC_TAG")" = "$source_sha"
-          python scripts/delivery.py verify --manifest "$manifest" --artifact-root promotion --repository "$REPOSITORY"
+          python scripts/delivery.py verify --manifest "$manifest" --repository "$REPOSITORY"
           python scripts/delivery.py promote --manifest "$manifest" --from-channel rc --channel stable --version "$STABLE_VERSION" --output promotion/release-set-stable.json
       - name: Publish stable release without rebuilding
         env:
@@ -82,6 +83,9 @@ jobs:
           else
             tag_args=(--target "$source_sha")
           fi
-          gh release create "$STABLE_TAG" promotion/RCMetaStudio-windows-x64.zip promotion/RCMetaStudio-macos-arm64.dmg promotion/RCMetaStudio-linux-x64.tar.gz promotion/*.cdx.json promotion/SHA256SUMS promotion/release-set-stable.json "${tag_args[@]}" --title "$title" --notes "$notes"
+          inventory="$(python scripts/delivery.py publication-assets --manifest promotion/release-set-stable.json)"
+          names="$(jq -er '.files[]' <<< "$inventory")"
+          mapfile -t files <<< "$names"
+          gh release create "$STABLE_TAG" "${files[@]}" "${tag_args[@]}" --title "$title" --notes "$notes"
       - name: Prove promotion preserved artifact bytes
         run: (cd promotion && sha256sum --check SHA256SUMS)

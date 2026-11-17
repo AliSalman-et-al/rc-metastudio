@@ -201,13 +201,11 @@ def tabulate(
     if len(column_alignments) != len(lists):
         column_alignments = ["L"] * len(lists)
 
-    # covert lists in args to string lists
     string_lists = []
     for arg in lists:
         str_arg = [str(x) for x in arg]
         string_lists.append(str_arg)
 
-    # get max length of each element in each column
     max_lengths = []
     for arg in string_lists:
         max_len = max([len(x) for x in arg])

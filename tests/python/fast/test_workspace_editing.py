@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import RowId, SheetId
+from rc_metastudio.domain_ids import RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
@@ -10,12 +10,6 @@ from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 class FakeBridge:
-    def get_confidence_multiplier_from_r(self, confidence_level):
-        return 1.96
-
-    def set_confidence_level(self, confidence_level):
-        return None
-
     def effect_for_study(self, *args, **kwargs):
         return {"calc_scale": 0.5}
 
@@ -70,19 +64,19 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     service = WorkspaceEditingService(FakeBridge())
 
     normalized = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1, "Alpha"), context, "  Renamed  "
+        dataset, WorkspaceEditTarget(0, 1), context, "  Renamed  "
     )
     duplicate = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1, "Renamed"), context, " Beta "
+        dataset, WorkspaceEditTarget(0, 1), context, " Beta "
     )
     blank = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1, "Renamed"), context, " \t "
+        dataset, WorkspaceEditTarget(0, 1), context, " \t "
     )
 
-    assert normalized.applied is True
+    assert normalized is None
     assert dataset.sheets[0].rows[0].label == "Renamed"
-    assert duplicate.error == "Study name ‘Beta’ already exists. Use a unique name before pasting."
-    assert blank.error == "Study names cannot be empty."
+    assert duplicate is not None and duplicate.message == "Study name ‘Beta’ already exists. Use a unique name before pasting."
+    assert blank is not None and blank.message == "Study names cannot be empty."
 
 
 def test_new_study_rejects_whitespace_name_without_mutating_dataset():
@@ -104,8 +98,8 @@ def test_new_study_rejects_whitespace_name_without_mutating_dataset():
     )
 
     result = WorkspaceEditingService(FakeBridge()).apply_edit(
-        dataset, WorkspaceEditTarget(0, 1, ""), context, "   "
+        dataset, WorkspaceEditTarget(0, 1), context, "   "
     )
 
-    assert result.error == "Study names cannot be empty."
+    assert result is not None and result.message == "Study names cannot be empty."
     assert len(dataset.sheets[0].rows) == 0

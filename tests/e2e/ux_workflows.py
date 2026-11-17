@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, QtTest
 
-from tests.python.gui.qt_test_support import mouse_click, key_click, required, wait
+from tests.python.gui.qt_test_support import mouse_click, key_click, metric_action, required, wait
 
 
 def table_editing_case(app, window, work, root, record, case):
@@ -134,12 +134,12 @@ def export_destination_case(view, work, record, kind):
         elif kind == "regenerated":
             view.save_image_as(view._selected_plot()[0], format="png")
         else:
-            from rc_metastudio.analysis_results import PlotCapability
+            from rc_metastudio.plot_capabilities import PlotCapability
             from rc_metastudio.results_window import PlotArtifact
 
             image = QtGui.QPixmap(24, 24)
             image.fill(QtGui.QColor("#336699"))
-            artifact = PlotArtifact("Raster", "fixture.png", PlotCapability("forest", False, False, "single", "forest"))
+            artifact = PlotArtifact("Raster", "fixture.png", PlotCapability("forest", False, False, "forest"))
             view.save_image_as(artifact, image, format="png")
 
     for answer in (QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.Yes):
@@ -582,9 +582,8 @@ def _run(app, window, work, root, record, analyze):
     assert window.model.get_current_raw_data_for_study(0) == [1, 10, 2, 12]
     from rc_metastudio.project_adapter import dataset_to_project
     mapped_project = dataset_to_project(window.model.dataset)
-    window.out_path = str(work / "mapped.rcms")
-    assert window.save()
-    assert window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=work / "mapped.rcms")
+    assert window.open(window.workspace.path, raise_on_error=True)
     assert dataset_to_project(window.model.dataset) == mapped_project, "mapped project changed after reopening"
     analyze(app, window, "binary.random").close()
     for column, value in ((window.model.RAW_DATA[1], 10000), (window.model.RAW_DATA[3], 10000), (window.model.RAW_DATA[0], 1), (window.model.RAW_DATA[2], 5000)):
@@ -613,7 +612,7 @@ def _run(app, window, work, root, record, analyze):
     form.covariate_name_le.setText("Region")
     mouse_click(button, QtCore.Qt.MouseButton.LeftButton)
     assert form.result() == QtWidgets.QDialog.DialogCode.Accepted.value
-    record("ux-mapped-reopened", window, project=window.out_path)
+    record("ux-mapped-reopened", window, project=str(window.workspace.path))
 
     # Exercise the layouts whose geometry cannot be proved by the binary default.
     import sys
@@ -760,7 +759,7 @@ def workspace_safety_case(app, window, work, root, record, case):
             assert persistent.data() == model.current_sheet.rows[0].label
     elif case == 'metric':
         old = model.current_effect
-        window.metric_selected('RR', window.twoArmMetricMenu)
+        metric_action(window.menuMetric, "RR").trigger()
         assert window.model.current_effect == 'RR'
         assert window.workspace.can_undo and window.workspace.is_dirty
         assert '*' in window.windowTitle()
@@ -769,20 +768,21 @@ def workspace_safety_case(app, window, work, root, record, case):
         window.redo()
         assert window.model.current_effect == 'RR'
         destination = work / 'metric.rcms'
-        window.out_path = str(destination)
-        assert window.save() is True
+        assert window.save(destination=destination) is True
         assert window.open(str(destination), raise_on_error=True)
         assert window.model.current_effect == 'RR'
     elif case in ('csv', 'csv-failure'):
         payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': {'data': [['Imported study', '2020', '1', '10', '2', '20']], 'covariate_names': [], 'covariate_types': []}}
         if case == 'csv-failure':
+            from rc_metastudio.workspace_editing import WorkspaceEditingService
             before = window.workspace.runtime_digest
-            write = DatasetTableModel.setData
-            def fail(self, index, *args, **kwargs):
-                if index.column() == self.RAW_DATA[0]:
+            write = WorkspaceEditingService.apply_edit
+            def fail(self, dataset, target, context, value, **kwargs):
+                if target.column == context.raw_columns[0]:
+                    assert isinstance(app.activeModalWidget(), main_window.ImportProgressDialog)
                     raise OSError('controlled write failure after name/year')
-                return write(self, index, *args, **kwargs)
-            with patch.object(DatasetTableModel, 'setData', fail):
+                return write(self, dataset, target, context, value, **kwargs)
+            with patch.object(WorkspaceEditingService, 'apply_edit', fail):
                 try:
                     window._handle_wizard_results(payload)
                 except OSError:
@@ -790,14 +790,16 @@ def workspace_safety_case(app, window, work, root, record, case):
                 else:
                     raise AssertionError('write failure did not propagate')
             assert window.workspace.runtime_digest == before
-            assert window.out_path == str(source)
+            assert window.workspace.path == source
             assert not window.workspace.is_dirty and not window.workspace.can_undo
+            assert app.activeModalWidget() is None
+            assert window.model is model
         else:
             window._handle_wizard_results(payload)
-            assert window.out_path is None and window.workspace.path is None
+            assert window.workspace.path is None
             window.undo()
             assert [r.label for r in window.model.current_sheet.rows] == [r.label for r in model.current_sheet.rows]
-            assert window.out_path is None and window.workspace.path is None
+            assert window.workspace.path is None
             window.redo()
             assert window.model.current_sheet.rows[0].label == 'Imported study'
             with patch.object(main_window.QFileDialog, 'getSaveFileName', return_value=('', '')):
@@ -825,10 +827,16 @@ def workspace_safety_case(app, window, work, root, record, case):
         def attempt_dismissal():
             active = app.activeModalWidget()
             assert isinstance(active, main_window.ImportProgressDialog)
+            assert window.model is model
             key_click(active, QtCore.Qt.Key.Key_Escape)
             during_writes.append((active.close(), active.isVisible(), active.isModal()))
         QtCore.QTimer.singleShot(0, attempt_dismissal)
-        main_window.ImportCsvCommand(main_form=window, imported_data=[['Progress study', '2022', '2', '10', '3', '20']]).redo()
+        window._handle_wizard_results({
+            "path": "csv_import",
+            "outcome_info": {"data_type": "binary", "sub_type": "proportions", "effect": "OR", "name": "Imported"},
+            "csv_data": {"data": [["Progress study", "2022", "2", "10", "3", "20"]],
+                         "covariate_names": [], "covariate_types": []},
+        })
         assert during_writes == [(False, True, True)]
         assert window.model.current_sheet.rows[0].label == 'Progress study'
         assert window.model.current_sheet.rows[0].year == 2022

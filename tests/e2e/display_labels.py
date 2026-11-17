@@ -31,6 +31,7 @@ def plot_label_inventory(paths, user_names=()):
 
 
 def file_column_controls(widget):
+    from rc_metastudio.csv_import import read_rows
     from rc_metastudio.main_wizard import CsvImportPage
 
     pages = [widget] if isinstance(widget, CsvImportPage) else widget.findChildren(CsvImportPage)
@@ -38,7 +39,15 @@ def file_column_controls(widget):
     for page in pages:
         if not page.mapping_controls:
             continue
-        headers, _rows = page._read_rows()
+        assert page.file_path is not None
+        headers, _rows = read_rows(
+            page.file_path,
+            has_headers=page.has_headers_chkbx.isChecked(),
+            from_excel=page.from_excel_chkbx.isChecked(),
+            delimiter=page.delimter_le.text(),
+            quotechar=page.quotechar_le.text(),
+            worksheet=page.worksheet_combo.currentText(),
+        )
         expected = ["Select column…", *(f"{index + 1}: {header}" for index, header in enumerate(headers))]
         for control in page.mapping_controls:
             actual = [control.itemText(index) for index in range(control.count())]
@@ -123,7 +132,8 @@ def run(app, window, record):
             view.close()
         menus(window.menuBar())
         if family in {'onearm-mean', 'reg-coef', 'generic-effect', 'twoarm-mean', 'twoarm-smd'}:
-            menu = window.oneArmMetricMenu
+            menu = next(action.menu() for action in window.menuMetric.actions()
+                        if action.text() == "One-arm metrics")
             menu.popup(window.mapToGlobal(QtCore.QPoint(100, 100)))
             app.processEvents()
             record('display-metric-popup', menu, family=family,

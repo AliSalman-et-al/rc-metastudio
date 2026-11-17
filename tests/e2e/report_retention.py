@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
 from rc_metastudio.manuscript_report import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
+from scripts.verification_evidence import desktop_tool_executable
 
 
 def numeric_tokens(text):
@@ -128,9 +129,9 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
 
 
 def visible_pdf_text(path, table_headers=()):
-    raw = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
+    raw = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
-    bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
+    bbox = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
     return _ordered_pdf_text(bbox, table_headers)
 
@@ -219,8 +220,11 @@ def expected_effect_rows(result, section, overall, calculation):
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
         if table.role == 'coefficients':
             scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
-            if scale:
-                effects = [(*row[:4], '(' + ('outcome' if scale == 'display' else scale) + ' scale)', *row[5:]) for row in effects]
+            label = {'SMD': 'standardized', 'PFT': 'Freeman-Tukey'}.get(
+                table.metric, 'outcome' if scale == 'display' else scale,
+            )
+            if label:
+                effects = [(*row[:4], f'({label} scale)', *row[5:]) for row in effects]
         if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1 and table.role != 'coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)

@@ -308,7 +308,9 @@ function Invoke-PackagedAppSmokeTest {
         $runtimeProbePath = Join-Path $Root "qualification\runtime-probe.json"
         $env:RCMS_PACKAGE_BASELINE_DPR = (& $PythonExe -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8'))['qt']['baseline_device_pixel_ratio'])" $runtimeProbePath).Trim()
         if ($LASTEXITCODE -ne 0 -or -not $env:RCMS_PACKAGE_BASELINE_DPR) { throw "Could not read packaged baseline DPR." }
-        foreach ($scale in @("1.25", "1.50", "1.75")) {
+        $surfaceScales = & $PythonExe (Join-Path $repoRoot "scripts\packaged_smoke_contract.py")
+        if ($LASTEXITCODE -ne 0 -or -not $surfaceScales) { throw "Could not read packaged display scales." }
+        foreach ($scale in $surfaceScales) {
             $env:QT_SCALE_FACTOR = $scale
             $surfacePath = Join-Path $surfaceDirectory ("surface-{0}.json" -f $scale)
             New-Item -ItemType Directory -Force -Path $surfaceDirectory | Out-Null

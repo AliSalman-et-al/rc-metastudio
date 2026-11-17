@@ -40,8 +40,6 @@ def _create_diagnostic_dataset(window):
                 "metric_choices": [],
                 "name": "Accuracy",
             },
-            "csv_data": None,
-            "selected_dataset": None,
         }
     )
 
@@ -313,12 +311,12 @@ def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
     from rc_metastudio import analysis_adapter
     from rc_metastudio.analysis_errors import DiagnosticExecutionError
 
-    def run_backend(_module_loader, _methods, parameter_values, _data):
-        if len(_methods) > 1:
+    def run_backend(requests, _data):
+        if len(requests) > 1:
             raise DiagnosticExecutionError(
                 "combined execution is intentionally unavailable"
             )
-        metric = parameter_values[0]["measure"]
+        metric = requests[0]["metric"]
         title = "%s Forest Plot" % metric
         summary = "%s Summary" % metric
         return {
@@ -356,7 +354,7 @@ def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
             ],
         }
 
-    monkeypatch.setattr(analysis_adapter, "_run_diagnostic_backend", run_backend)
+    monkeypatch.setattr(analysis_adapter.r_bridge, "run_versioned_analysis_requests", run_backend)
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
         "dataset_to_simple_diagnostic_r_object",
@@ -368,7 +366,7 @@ def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
             workflow="standard",
             method="diagnostic.random",
             metric=metric,
-            parameters={"measure": metric},
+            parameters={},
         )
         for metric in ("Sens", "Spec")
     )
@@ -393,11 +391,11 @@ def test_unexpected_combined_diagnostic_error_is_not_retried(monkeypatch):
 
     calls = []
 
-    def run_backend(_module_loader, _methods, _parameter_values, _data):
+    def run_backend(_requests, _data):
         calls.append("combined")
         raise ValueError("programming error")
 
-    monkeypatch.setattr(analysis_adapter, "_run_diagnostic_backend", run_backend)
+    monkeypatch.setattr(analysis_adapter.r_bridge, "run_versioned_analysis_requests", run_backend)
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
         "dataset_to_simple_diagnostic_r_object",

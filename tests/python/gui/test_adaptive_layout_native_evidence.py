@@ -456,13 +456,14 @@ def test_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, mo
         monkeypatch.setattr(dialog_type, "reject", lambda self: self.hide())
     elif defect == "close":
         monkeypatch.setattr(dialog_type, "closeEvent", lambda self, event: event.accept())
-    elif defect == "completion":
-        monkeypatch.setattr(progress_dialog, "hide_once", lambda _window: None)
     window = dialog_type()
     try:
         window.show()
         qapp.processEvents()
-        observation = smoke._observe_capture_close(qapp, window, surface)
+        with monkeypatch.context() as completion:
+            if defect == "completion":
+                completion.setattr(window, "hide", lambda: None)
+            observation = smoke._observe_capture_close(qapp, window, surface)
         assert callback_errors == []
         expected = {"close_blocked": True, "escape_blocked": True, "owner_completed": True}
         if defect is None:

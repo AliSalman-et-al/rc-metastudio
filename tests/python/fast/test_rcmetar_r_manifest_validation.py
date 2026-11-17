@@ -49,16 +49,12 @@ def test_shared_r_verification_support_resolves_home_and_normalizes_windows_loca
     assert support.verification_base_env(source, platform_name="posix") == source
 
 
-def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
+def test_full_r_stack_wrapper_passes_build_root_to_gate_owner(
     monkeypatch, tmp_path
 ):
     verifier = source_verifier
 
     captured = {}
-
-    def prepare_qt_environment(build_root):
-        captured["build_root"] = build_root
-        return {"RCMS_QT6_BUILD_ROOT": str(build_root), "PYTHONPATH": "generated"}
 
     def selected_rscript(_args):
         return "Rscript"
@@ -67,7 +63,10 @@ def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
         captured["command"] = command
         captured["env"] = env
 
-    monkeypatch.setattr(verifier, "prepare_qt_environment", prepare_qt_environment)
+    monkeypatch.setattr(
+        verifier, "prepare_qt_environment",
+        lambda _root: pytest.fail("Only the R-stack child prepares generated UI"),
+    )
     monkeypatch.setattr(verifier, "selected_rscript", selected_rscript)
     monkeypatch.setattr(verifier, "run", run)
 
@@ -82,10 +81,46 @@ def test_full_r_stack_orchestration_prepares_and_propagates_qt_environment(
     )
     verifier.run_full_r_stack(args)
 
-    assert captured["build_root"] == tmp_path.resolve()
     assert captured["env"]["RCMS_QT6_BUILD_ROOT"] == str(tmp_path.resolve())
-    assert captured["env"]["PYTHONPATH"] == "generated"
     assert captured["command"][-1] == str(verifier.FULL_R_LIBRARY_CACHE)
+
+
+def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_path):
+    build_root = tmp_path / "qt6-verification"
+    receipt = tmp_path / "typing.json"
+    r_home = tmp_path / "selected-R"
+    monkeypatch.delenv("RCMS_QT6_BUILD_ROOT", raising=False)
+    monkeypatch.setattr(source_verifier, "DEFAULT_BUILD_ROOT", build_root)
+    monkeypatch.setattr(
+        source_verifier, "prepare_qt_environment",
+        lambda root: {"RCMS_QT6_BUILD_ROOT": str(root), "RCMS_R_HOME": str(tmp_path / "ambient-R")},
+    )
+    checked_roots = []
+    monkeypatch.setattr(source_verifier, "run_typing", lambda root: checked_roots.append(root) or receipt)
+    monkeypatch.setattr(stack_verifier, "resolve_rscript", lambda name: r_home / "bin" / name)
+    monkeypatch.setattr(stack_verifier, "resolve_r_home", lambda *_args: r_home)
+    monkeypatch.setattr(stack_verifier, "resolve_r_exe", lambda *_args: r_home / "bin/R")
+    monkeypatch.setattr(stack_verifier, "verify_rpy2_identities", lambda _python: {})
+    monkeypatch.setattr(stack_verifier, "binary_dependency_policy", lambda _root: {"repository": "fixed"})
+    monkeypatch.setattr(stack_verifier, "ensure_dependency_library", lambda *_args: tmp_path / "library")
+    monkeypatch.setattr(stack_verifier, "built_RCMetaR_tarball", lambda _work: tmp_path / "archive.tar.gz")
+    monkeypatch.delenv("RCMS_CRAN_REPO", raising=False)
+
+    class CheckedDesktop(Exception):
+        pass
+
+    def check_child(command, *, cwd, env):
+        assert checked_roots == [build_root]
+        assert env["RCMS_QT6_BUILD_ROOT"] == str(build_root)
+        if "tests/e2e" in command:
+            assert env[source_verifier.TYPING_RECEIPT_ENV] == str(receipt)
+            assert env["RCMS_RSCRIPT"] == str(r_home / "bin/Rscript")
+            assert env["R_HOME"] == env["RCMS_R_HOME"] == str(r_home)
+            raise CheckedDesktop
+
+    monkeypatch.setattr(stack_verifier, "run", check_child)
+    with pytest.raises(CheckedDesktop):
+        stack_verifier.verify(stack_verifier.parse_args(["--desktop-shard", "1"]))
 
 
 def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
@@ -144,18 +179,6 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
 
         assert captured["command"][0] == expected_python
         assert captured["env"]["RCMS_POLICY_PYTHON"] == expected_python
-
-
-@pytest.mark.parametrize("runner", ["pytest", "uv"])
-def test_full_r_stack_runner_uses_supplied_python_not_ambient_uv(runner):
-    python = str(REPO_ROOT / ".venv" / "Scripts" / "python.exe")
-
-    assert stack_verifier.bridge_test_command(python, runner) == [
-        python,
-        "-m",
-        "pytest",
-        str(Path("tests") / "r_stack"),
-    ]
 
 
 def test_reitsma_visual_release_gate_forces_installed_package_mode(monkeypatch, tmp_path):
@@ -420,10 +443,9 @@ def test_default_r_RCMetaR_install_preserves_dependency_libraries(
     reason="The native archive installer covers Windows and macOS; Linux has a separate PPM binary installer.",
 )
 def test_native_r_binary_policy_fails_closed_without_source_fallback(tmp_path):
-    rscript = shutil.which("Rscript")
-    if rscript is None and sys.platform == "win32":
-        candidate = Path("C:/Program Files/R/R-4.6.2/bin/Rscript.exe")
-        rscript = str(candidate) if candidate.is_file() else None
+    from scripts.r_verification_support import resolve_rscript, verification_base_env
+
+    rscript = resolve_rscript("Rscript")
     assert rscript is not None, (
         "Rscript 4.6.2 is required by the Fast verification environment"
     )
@@ -577,7 +599,7 @@ if (file.exists(evidence) && file.info(evidence)$size > 0) {{
 }}
 Sys.unsetenv("RCMS_R_BINARY_EVIDENCE")
 """
-    env = dict(os.environ)
+    env = verification_base_env(dict(os.environ))
     env["RCMS_POLICY_PYTHON"] = sys.executable
     env["RCMS_CRAN_REPO"] = "https://packagemanager.posit.co/cran/2026-11-13"
     policy_test = tmp_path / "native-binary-policy-test.R"

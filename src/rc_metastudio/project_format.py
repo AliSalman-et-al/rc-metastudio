@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import stat
 import tempfile
-from typing import BinaryIO, TypeAlias, cast
+from typing import BinaryIO, cast
 import zipfile
 import zlib
 
@@ -22,14 +22,12 @@ from jsonschema.exceptions import SchemaError, ValidationError
 
 from rc_metastudio import __version__
 from rc_metastudio.project_domain import (
+    JsonObject as JsonObject,
+    JsonValue as JsonValue,
     ProjectSemanticError,
     validate_project_semantics,
 )
 
-
-JsonScalar: TypeAlias = str | int | float | bool | None
-JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
-JsonObject: TypeAlias = dict[str, JsonValue]
 
 CURRENT_FORMAT_VERSION = 3
 MAX_JSON_NESTING = 32
@@ -188,16 +186,9 @@ def is_empty_entry_row(row):
     return (not row['label'] and not row['manually_excluded']
             and row['year'] is None and row['sample_size'] is None and not row['notes']
             and all(v in ('', None) for v in row['covariates'].values())
-            and not row['entered_effects'] and not row['ratio_inputs']
+            and all(value is None for entry in row['entered_effects'] for value in entry['values'].values())
+            and not row['ratio_inputs']
             and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
-
-
-def convert_v1_to_sheet_project(project, state):
-    return _convert_pairs(project, state)
-
-
-def convert_v2_to_sheet_project(project, state):
-    return _convert_pairs(project, state)
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, JsonValue]]) -> JsonObject:
@@ -455,10 +446,9 @@ def migrate_to_latest(
         from rc_metastudio.project_metric_migration import normalize_project_metric_names
         normalize_project_metric_names(migrated_project, migrated_state)
         if version in (1, 2):
-            converter = convert_v1_to_sheet_project if version == 1 else convert_v2_to_sheet_project
-            migrated_project, migrated_state = converter(migrated_project, migrated_state)
-            _validate(3, "project.json", migrated_project)
-            _validate(3, "state.json", migrated_state)
+            migrated_project, migrated_state = _convert_pairs(migrated_project, migrated_state)
+            _validate(CURRENT_FORMAT_VERSION, "project.json", migrated_project)
+            _validate(CURRENT_FORMAT_VERSION, "state.json", migrated_state)
         validate_project_semantics(migrated_project, migrated_state)
     except (ProjectSemanticError, RecursionError) as exc:
         raise ProjectFormatError(f"project semantics: {exc}") from exc
@@ -500,10 +490,6 @@ def load_project(
     project, state = migrate_to_latest(
         version, decoded["project.json"], decoded["state.json"]
     )
-    try:
-        validate_project_semantics(project, state)
-    except (ProjectSemanticError, RecursionError) as exc:
-        raise ProjectFormatError(f"project semantics: {exc}") from exc
     return ProjectDocument(CURRENT_FORMAT_VERSION, project, state)
 
 
