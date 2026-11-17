@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
 from rc_metastudio.manuscript_report import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
+from scripts.verification_evidence import desktop_tool_executable
 
 
 def numeric_tokens(text):
@@ -128,9 +129,9 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
 
 
 def visible_pdf_text(path, table_headers=()):
-    raw = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
+    raw = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
-    bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
+    bbox = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
     path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
     return _ordered_pdf_text(bbox, table_headers)
 

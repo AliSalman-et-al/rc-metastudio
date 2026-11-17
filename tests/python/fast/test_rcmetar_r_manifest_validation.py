@@ -181,18 +181,6 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
         assert captured["env"]["RCMS_POLICY_PYTHON"] == expected_python
 
 
-@pytest.mark.parametrize("runner", ["pytest", "uv"])
-def test_full_r_stack_runner_uses_supplied_python_not_ambient_uv(runner):
-    python = str(REPO_ROOT / ".venv" / "Scripts" / "python.exe")
-
-    assert stack_verifier.bridge_test_command(python, runner) == [
-        python,
-        "-m",
-        "pytest",
-        str(Path("tests") / "r_stack"),
-    ]
-
-
 def test_reitsma_visual_release_gate_forces_installed_package_mode(monkeypatch, tmp_path):
     captured = []
 

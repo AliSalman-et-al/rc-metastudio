@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "artifacts/verification/rcms/cache"
 R_PATH_VARIABLES = ("R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH")
 PDF_TOOLS = ("pdfimages", "pdfinfo", "pdftohtml", "pdftoppm", "pdftotext")
+DESKTOP_TOOL_PATHS_ENV = "RCMS_E2E_TOOL_PATHS"
 EVIDENCE_ENVIRONMENT = (
     "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "QT_QPA_PLATFORM",
     "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "FONTCONFIG_FILE", "FONTCONFIG_PATH",
@@ -155,17 +156,31 @@ print(json.dumps({name: os.environ.get(name) for name in names}))
     ))
 
 
+def _resolve_external_tool(name: str, env: dict[str, str]) -> Path | None:
+    if name == "Rscript":
+        return resolve_rscript(name, env)
+    command = shutil.which(name, path=env.get("PATH"))
+    return Path(command).resolve() if command else None
+
+
+def desktop_tool_executable(name: str) -> str:
+    bindings = os.environ.get(DESKTOP_TOOL_PATHS_ENV)
+    if bindings is not None:
+        path = json.loads(bindings).get(name)
+    else:
+        path = _resolve_external_tool(name, dict(os.environ))
+    if path is None:
+        raise FileNotFoundError(f"{name} is required for this desktop workflow")
+    return str(path)
+
+
 def external_tools(env: dict[str, str], runtime: dict[str, str | None] | None = None) -> dict[str, dict[str, str] | None]:
     if runtime is None:
         runtime = _runtime_environment(env)
     effective_env = env | {name: value for name, value in runtime.items() if value is not None}
-    commands: dict[str, str | Path | None] = {
-        name: shutil.which(name, path=effective_env.get("PATH")) for name in PDF_TOOLS
-    }
-    commands["Rscript"] = resolve_rscript("Rscript", effective_env)
     identities: dict[str, dict[str, str] | None] = {}
-    for name, command in commands.items():
-        path = Path(command).resolve() if command else None
+    for name in (*PDF_TOOLS, "Rscript"):
+        path = _resolve_external_tool(name, effective_env)
         identities[name] = {"path": str(path), "sha256": file_digest(path)} if path and path.is_file() else None
     return identities
 

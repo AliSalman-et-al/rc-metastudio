@@ -5,6 +5,7 @@ import shutil
 import sys
 import math
 import subprocess
+from scripts.verification_evidence import desktop_tool_executable
 from pathlib import Path
 from tests.e2e.results_presentation import check_values_export
 
@@ -139,10 +140,8 @@ def run(app, window, work, root, record, analyze):
         inspect(analyze_existing(app, window, underlying, 'binary.random', record,
                                  parameters={'digits': 3, 'conf.level': 90, **({'inference.method': 'knha'} if workflow == 'subgroup-t' else {})},
                                  covariates=('Group',) if workflow == 'adjusted-means' else ('Dose',)), workflow)
-    from scripts.r_verification_support import resolve_rscript
-    rscript = resolve_rscript('Rscript')
-    assert rscript is not None
-    command = [str(rscript), str(root / 'tests/e2e/results_values_reference.R'), str(work)]
+    rscript = desktop_tool_executable('Rscript')
+    command = [rscript, str(root / 'tests/e2e/results_values_reference.R'), str(work)]
     (work / 'public-reference-command.json').write_text(json.dumps(command), encoding='utf-8')
     process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8')
     (work / 'public-reference.log').write_text(process.stdout, encoding='utf-8')

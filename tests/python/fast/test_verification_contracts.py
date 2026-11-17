@@ -130,6 +130,47 @@ def test_comparison_disables_reuse(monkeypatch, tmp_path):
     assert verify_rcms._reuse_evidence({}, args)
 
 
+def test_desktop_passes_recorded_executables_to_its_private_working_directory(monkeypatch, tmp_path):
+    from scripts import verification_evidence as evidence_store
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(verify_rcms, "ROOT", tmp_path)
+    monkeypatch.setattr(verify_rcms, "run_metadata", lambda *_args: {})
+    monkeypatch.setattr(verify_rcms, "git_output", lambda *_args: "")
+    monkeypatch.setattr(verify_rcms, "source_digest", lambda _root: "source")
+    monkeypatch.setattr(verify, "run_typing", lambda _root: tmp_path / "typing.json")
+    monkeypatch.setattr(evidence_store, "_runtime_environment", lambda env: {"PATH": env["PATH"]})
+    monkeypatch.delenv("RCMS_E2E_CONTEXT", raising=False)
+    monkeypatch.setattr(sys, "argv", ["verify_rcms", "doctor"])
+    tool_dir = tmp_path / "oracles"
+    tool_dir.mkdir()
+    extension = ".exe" if sys.platform == "win32" else ""
+    paths = {name: tool_dir / (name + extension) for name in ("pdftotext", "Rscript")}
+    for path in paths.values():
+        path.write_bytes(path.name.encode())
+        path.chmod(0o755)
+    monkeypatch.setenv("PATH", "oracles")
+    monkeypatch.setenv("RCMS_RSCRIPT", str(paths["Rscript"].relative_to(tmp_path)))
+
+    def run_child(command, *, cwd, env, stdout, **_kwargs):
+        assert cwd != tmp_path
+        with monkeypatch.context() as child:
+            child.chdir(cwd)
+            child.setenv("RCMS_E2E_TOOL_PATHS", env["RCMS_E2E_TOOL_PATHS"])
+            child.setenv("PATH", "")
+            for name, path in paths.items():
+                assert Path(evidence_store.desktop_tool_executable(name)) == path
+        stdout.write(b"WORKFLOW PASSED\n")
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(verify_rcms.subprocess, "run", run_child)
+    assert verify_rcms.main() == 0
+    receipt = next((tmp_path / "artifacts").rglob("manifest.json"))
+    recorded = json.loads(receipt.read_text())["external_tools"]
+    for name, path in paths.items():
+        assert recorded[name] == {"path": str(path), "sha256": evidence_store.file_digest(path)}
+
+
 def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypatch, tmp_path, capsys):
     from scripts import verification_evidence as evidence_store
 

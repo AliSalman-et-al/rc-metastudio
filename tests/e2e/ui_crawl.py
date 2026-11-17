@@ -2,6 +2,7 @@
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
 from PyQt6 import QtCore, QtGui, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
+from scripts.verification_evidence import desktop_tool_executable
 
 
 def analysis_setup(driver, capture, missing):
@@ -132,11 +133,11 @@ def exports(driver, capture, missing, view):
     write_pdf(report, str(pdf))
     write_docx(report, str(docx))
     def render(path, detail, last=False):
-        info = subprocess.run(["pdfinfo", str(path)], check=True, capture_output=True, text=True).stdout
+        info = subprocess.run([desktop_tool_executable("pdfinfo"), str(path)], check=True, capture_output=True, text=True).stdout
         pages = int(next(line.split(":")[1] for line in info.splitlines() if line.startswith("Pages:")))
         page = pages if last else 1
         output = driver.WORK / detail
-        subprocess.run(["pdftoppm", "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
+        subprocess.run([desktop_tool_executable("pdftoppm"), "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
         image = QtGui.QImage(str(output) + ".png")
         assert not image.isNull(), detail
         capture("I-" + detail, image)

@@ -8,13 +8,12 @@ from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import mouse_click
 
 from rc_metastudio.project_adapter import dataset_to_project
-from rc_metastudio.qt_object_guard import required
-from scripts.r_verification_support import resolve_rscript
+from scripts.verification_evidence import desktop_tool_executable
 
 
 def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.rm5_import import read_rm5
-    rscript = str(required(resolve_rscript("Rscript"), "Rscript for independent RM5 reference"))
+    rscript = desktop_tool_executable("Rscript")
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
     # Synthetic counts in the structure observed in Bristol's real DTA review.

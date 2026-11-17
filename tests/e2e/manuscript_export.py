@@ -7,6 +7,7 @@ import re
 from unittest.mock import patch
 import subprocess
 import unicodedata
+from scripts.verification_evidence import desktop_tool_executable
 from rc_metastudio import __version__
 from docx import Document
 from PyQt6 import QtWidgets, QtCore, QtTest, sip
@@ -67,7 +68,7 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
                     finally:
                         app.setFont(large_font)
                     if extension == 'pdf':
-                        layouts = [subprocess.check_output(['pdftotext', '-bbox', str(export), '-'])
+                        layouts = [subprocess.check_output([desktop_tool_executable('pdftotext'), '-bbox', str(export), '-'])
                                    for export in (path, baseline)]
                         for export, layout in zip((path, baseline), layouts):
                             pathlib.Path(export).with_suffix('.layout.html').write_bytes(layout)
@@ -293,7 +294,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             path = work / (method + '.' + suffix)
             export_report(view, path, suffix)
             if suffix == 'pdf':
-                text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(path), '-'], text=True, encoding='utf-8')
+                text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', str(path), '-'], text=True, encoding='utf-8')
             else:
                 doc = Document(path)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -374,9 +375,9 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
-                text = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
+                text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
                 from xml.etree import ElementTree as ET
-                pdf_xml = subprocess.check_output(['pdftohtml', '-xml', '-stdout', str(path)])
+                pdf_xml = subprocess.check_output([desktop_tool_executable('pdftohtml'), '-xml', '-stdout', str(path)])
                 (work / (sample + '-colours.xml')).write_bytes(pdf_xml)
                 pdf_pages = ET.fromstring(pdf_xml).findall('page')
                 colours = {font.attrib['id']: font.attrib['color'] for page in pdf_pages for font in page.findall('fontspec')}
@@ -391,7 +392,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 numbers = re.findall(r'Table (\d+)\.', text)
                 assert numbers and len(numbers) == len(set(numbers)), numbers
                 from xml.etree import ElementTree as ET
-                bbox = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', '-bbox', str(path), '-'])
+                bbox = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-bbox', str(path), '-'])
                 (work / (sample + '-bbox.html')).write_bytes(bbox)
                 pages = ET.fromstring(bbox).findall('.//{*}page')
                 tables = [word for page in pages for word in page.findall('.//{*}word') if word.text == 'Table']

@@ -21,7 +21,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.verification_evidence import (
-    desktop_environment, external_tools, passed_evidence, remember_evidence, source_digest,
+    DESKTOP_TOOL_PATHS_ENV, desktop_environment, external_tools, passed_evidence, remember_evidence, source_digest,
     verification_launch_inputs, verified_typing,
 )
 from tests.e2e.desktop_scenarios import SCENARIOS
@@ -185,6 +185,7 @@ def main() -> int:
     typing_evidence, context = _desktop_typing(build_root, source, env, native=args.native)
     if _reuse_evidence(context, args):
         return 0
+    tools = context["external_tools"] if context is not None else external_tools(env)
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
     evidence = ROOT / "artifacts/verification/rcms" / (run_id + "-" + args.scenario)
     evidence.mkdir(parents=True, exist_ok=False)
@@ -192,6 +193,7 @@ def main() -> int:
     scratch_root.mkdir(parents=True, exist_ok=True)
     record = run_metadata(args.scenario, args.native)
     record["typing_evidence"] = typing_evidence
+    record["external_tools"] = tools
     if context is not None:
         record["verification_context"] = context
     try:
@@ -200,6 +202,9 @@ def main() -> int:
         ) as temporary:
             work = Path(temporary)
             child_environment = _desktop_environment(work, evidence, env)
+            child_environment[DESKTOP_TOOL_PATHS_ENV] = json.dumps({
+                name: tool["path"] if tool else None for name, tool in tools.items()
+            })
             command = _desktop_command(args.scenario, work)
             record["command"] = command
             print(f"Evidence: {evidence}", flush=True)
@@ -225,7 +230,7 @@ def main() -> int:
             finally:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
                 shutil.copytree(work, evidence / "workflow")
-        if context is not None and passed and context.get("external_tools") != external_tools(env):
+        if passed and tools != external_tools(env):
             raise RuntimeError("Verification tools changed during desktop driving; restart the run")
         record["passed"] = passed
         if not passed:

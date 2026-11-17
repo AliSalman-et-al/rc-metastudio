@@ -438,14 +438,6 @@ def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) 
          f"in {time.monotonic() - started:.2f}s")
 
 
-def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
-    # Always invoke the exact interpreter selected by --python.  In
-    # particular, `uv run` can resolve a different project interpreter and
-    # invalidate the rpy2 identity and installed-R-library checks above.
-    del pytest_runner
-    return [python, "-m", "pytest", *map(str, BRIDGE_TESTS)]
-
-
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     if __package__:
@@ -533,8 +525,7 @@ def verify(args: argparse.Namespace) -> None:
             verify_manifest_versions(root, python, rscript, env)
             verify_reitsma_visual_evidence(root, rscript, env, work_dir)
 
-            pytest_command = bridge_test_command(python, args.pytest_runner)
-            run(pytest_command, cwd=root, env=env)
+            run([python, "-m", "pytest", *BRIDGE_TESTS], cwd=root, env=env)
         # Fresh offscreen children can overlap within the measured memory budget.
         # The E2E hook reserves host capacity; native drives remain separate/serial.
         desktop_command = [
@@ -573,7 +564,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--rscript", default="Rscript")
-    parser.add_argument("--pytest-runner", default="uv", choices=("uv", "pytest"))
     parser.add_argument("--desktop-workers", default="auto")
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--skip-desktop", action="store_true")
