@@ -21,7 +21,7 @@ RevMan's stored Aspirin OR is 0.8968655609130709 [0.8405144008917793,
 [-0.61, -0.08], 0%. Its metafor exact Hedges correction/variance gives pooled
 -0.344045819413, a -0.000600065955 difference from metacr's RevMan convention;
 this is disclosed, not adjusted away. Full comparison and remaining work:
-../../../docs/ux-hill-climb/SLICE5.md.
+../../../docs/rm5-import.md.
 
 The E2E workflow derives pending, year, duplicate-name and method-combination
 XML files in memory and retains those inputs in workflow evidence; it never
@@ -90,6 +90,6 @@ SHA-256 (`generic-derived.rm5`):
 Synthetic two-test fixture derived from the actual XML structure in Bristol's
 RevMan 5.3.5 workshop review, with invented labels and counts; not RevMan output
 or a published schema. Original source URL and both original hashes are recorded
-in docs/ux-hill-climb/SLICE5.md. The original has no explicit redistribution
+in docs/rm5-import.md. The original has no explicit redistribution
 licence and is not committed. Fixture SHA-256:
 `b873d338c765ba537ab4430405bc4f454837ec14a420aec859873769665ff355`.

@@ -96,7 +96,7 @@ tab and Add outcome button in both themes, tests mouse/Space inclusion
 and Undo, changes
 confidence through the clickable status control and undoes it, checks fresh plot
 style Default, and captures collapsed/expanded Advanced in both themes. See
-[the UI review](../../../../docs/ui-polish-review.md) for evidence and the accepted tab design.
+[current verification guidance](../../../../docs/testing.md) for evidence and the accepted tab design.
 
 `review1-design --native` exercises startup without a welcome modal, present and
 missing recent paths (including wrapping full paths), Create/CSV wizard Cancel,

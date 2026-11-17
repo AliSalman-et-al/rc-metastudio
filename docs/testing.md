@@ -86,7 +86,7 @@ parsing helpers, and echoed headless/export success checks. Real frozen headless
 comparisons and desktop cumulative/forest/SROC workflows retain the execution and
 decoded-export proof. Retained checks cover explicit/restored metric precedence as an observed
 backend request, missing-metric rejection, and SROC file-picker default names.
-Frozen release oracles and historical audit evidence remain unchanged.
+Frozen numerical release oracles remain unchanged by test consolidation.
 Sequential plot alignment compares SVG row positions with the observed report
 cells, without asking the renderer's own label formatter for an expected answer.
 Numerical correctness remains covered by frozen/public-package comparisons.
@@ -298,3 +298,6 @@ Native calculator bundle validation requires exactly the three successful Window
 transactions, their model outcomes and intact captures. The analysis smoke checks
 the exact selected backend request and typed owner delivery; its explicit backend
 fixture does not establish live R numerical correctness.
+
+The [end-to-end oracle reference](testing/e2e-oracles.md) describes retained
+scenario inputs, independent comparisons and expected evidence.

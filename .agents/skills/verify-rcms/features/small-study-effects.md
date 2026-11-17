@@ -23,7 +23,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 - **Vector clipping.** Ordinary, contour, both trim-and-fill scenarios and Deeks
   must use SVG Results artifacts. `ui-fine-tuning` checks their rendered clipping
   through both production Qt loaders at two scales. The dedicated
-  [SVG evidence](../../../../docs/funnel-svg-rendering-2026-11-15.md) also covers
+  [SVG evidence](../../../../docs/plot-rendering.md) also covers
   narrow axes, nonwhite backgrounds and vector-only high-resolution PDF painting.
 - **Extended procedures.** Run `small-study-binary-extended`, `small-study-continuous-extended`, and `small-study-diagnostic`. The continuous fixture duplicates the six sample studies into a controlled 12-study dataset to reach the >=10-study asymmetry threshold; it is not a clinical dataset. These drives require contour/trim-and-fill/extrapolation result sections or Deeks output and hidden or disabled inapplicable diagnostic controls. Supplement with the R numerical/eligibility lane; these UI assertions are not full independent asymmetry numerical proof.
 

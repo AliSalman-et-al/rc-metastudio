@@ -34,7 +34,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Mantel–Haenszel and Peto reports and forest plots now show the package's heterogeneity degrees of freedom when some study effects are not estimable.
 - New random-effects analyses default to REML. Diagnostic Mantel–Haenszel pooling now uses original counts, and inverse-variance IRR analyses retain double-zero studies with the configured correction. These changes can alter results; rerun affected analyses and re-export reports. Saved explicit estimator choices remain in effect.
 
-## 0.5.5 - Unreleased
+## 0.5.5 - 2026-11-16
 
 ### Added
 
@@ -46,7 +46,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Improved Results wording, preserved producer precision and clarified diagnostic summaries, subgroup comparisons and analysis scales.
 - Kept funnel plots as SVG with corrected Qt clipping and improved PDF and DOCX report layout.
 
-## 0.5.4 - Unreleased
+## 0.5.4 - 2026-11-14
 
 ### Corrected
 

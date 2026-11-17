@@ -1,2 +1,0 @@
-# Preserve captured transcript bytes and their SHA-256 values across checkouts.
-*.log -text -whitespace

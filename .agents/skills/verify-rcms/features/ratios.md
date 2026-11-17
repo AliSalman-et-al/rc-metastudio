@@ -1,6 +1,6 @@
 # Hazard ratios and incidence rate ratios
 
-Read [the input/method guide](../../../../docs/hr-irr.md), ADR-0014 through ADR-0016, and the metafor review before changing this contract.
+Read [the input/method guide](../../../../docs/hr-irr.md), ADR-0010, and the metafor review before changing this contract.
 
 Run `uv run python scripts/verify_rcms.py ratios-hr` and `ratios-irr` against current-source RCMetaR in the pinned test-owned runtime. The shared data-type change also requires `verify_all.py --full`.
 

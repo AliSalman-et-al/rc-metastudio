@@ -116,7 +116,7 @@ and effects/SEs around `1e-10`/`1e-11`, then checks public pooled values and act
 bubble tick coverage. MD cumulative also edits limits to exclude zero and checks
 both persisted limits and the absence of a rendered null line. Run the family
 with `--native` for display evidence; the full profile includes all families.
-Retained proof and limitations: `docs/ux-audit/2026-10-14-round3/`.
+Current replay and scope: `docs/testing.md`; dated captures remain in Git history.
 
 ## Required targeted cases after analysis changes
 
@@ -190,9 +190,9 @@ exports, comparing the coefficient arrays exactly; beta/logit plots remain
 linear. `calculator-ratio-precision` additionally analyzes its saved/reopened
 extreme inputs in both journal styles, checking annotation spacing/scientific
 notation alongside its existing exact-input/public-conversion proof. The full
-profile includes these strengthened paths. Native BMJ unnamed/custom single-arm
-standard/subgroup, About and HR/IRR secondary-table proofs are retained in
-`docs/ux-audit/2026-10-16-round6-release-fixes/` with a replay script. Linux source
+profile includes these strengthened paths. Historical native BMJ unnamed/custom single-arm standard/subgroup, About and
+HR/IRR secondary-table proofs remain in Git history; current replay instructions
+are in `docs/testing.md`. Linux source
 and the particular input cases are the scope; arbitrary names/values, OS DPI,
 assistive technology and packaged targets are separate qualifications.
 
@@ -202,9 +202,7 @@ assistive technology and packaged targets are separate qualifications.
 persisted state, collapsed summary, effect-measure row, tiny-ratio display and
 content-width grid. `results-window` drives the existing results/CSV workflow plus
 fit-width startup, absence of the identity block, navigation label widths and SVG
-favours labels after default and plot-editor-customised arm swaps. The full
-132-scenario offscreen matrix passed for slice 2c; see
-`docs/ux-hill-climb/SLICE2C.md` for commands and evidence.
+favours labels after default and plot-editor-customised arm swaps. For current replay commands and evidence requirements, see `docs/testing.md`.
 
 Zero-cell binary MH pooling uses original counts and metafor defaults. The
 inline OR/RR authority fixture compares pooled estimates and intervals with
