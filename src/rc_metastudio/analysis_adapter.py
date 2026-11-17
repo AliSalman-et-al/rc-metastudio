@@ -135,33 +135,15 @@ class StudySelectionResult:
 class AnalysisService:
     """Own the process-global R boundary used by analysis configuration UI."""
 
-    def prepare_method_dataset(
-        self, model: object, data_type: str, *, var_name: str = "tmp_obj"
-    ) -> None:
+    def prepare_method_dataset(self, model: object, data_type: str):
         if data_type == "binary":
-            _require_backend(
-                lambda: r_bridge.dataset_to_simple_binary_r_object(
-                    model, var_name=var_name
-                )
-            )
-            return
+            return _require_backend(lambda: r_bridge.dataset_to_simple_binary_r_object(model))
         if data_type == "continuous":
-            _require_backend(
-                lambda: r_bridge.dataset_to_simple_continuous_r_object(
-                    model, var_name=var_name
-                )
-            )
-            return
+            return _require_backend(lambda: r_bridge.dataset_to_simple_continuous_r_object(model))
         if data_type == "diagnostic":
-            _require_backend(
-                lambda: r_bridge.dataset_to_simple_diagnostic_r_object(
-                    model, var_name=var_name
-                )
-            )
-            return
+            return _require_backend(lambda: r_bridge.dataset_to_simple_diagnostic_r_object(model))
         if data_type in ("time_to_event", "event_rates"):
-            _require_backend(lambda: r_bridge.dataset_to_simple_ratio_r_object(model, var_name=var_name))
-            return
+            return _require_backend(lambda: r_bridge.dataset_to_simple_ratio_r_object(model))
         raise ValueError(f"unsupported analysis data family: {data_type!r}")
 
     def available_methods(self, **query: object) -> Mapping[str, str]:
@@ -364,44 +346,13 @@ def execute_analysis_requests(
     if len(data_types) != 1:
         raise ValueError("One execution cannot mix analysis data families.")
     data_type = requests[0].data_type
-    if data_type == "binary":
-        return _execute_binary_request(model, requests, selected_covariates)
-    if data_type == "continuous":
-        return _execute_continuous_request(model, requests, selected_covariates)
     if data_type == "diagnostic":
         return _execute_diagnostic_request(model, requests)
-    if data_type in ("time_to_event", "event_rates"):
-        r_bridge.dataset_to_simple_ratio_r_object(model, **_conversion_kwargs(selected_covariates))
-        return _typed_result(r_bridge.run_versioned_analysis_request(requests[0].to_mapping()))
-    raise ValueError("Unsupported analysis data family: %s" % data_type)
-
-
-def _execute_binary_request(
-    model: object,
-    requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[dict],
-) -> AnalysisResult:
     if len(requests) != 1:
-        raise ValueError("Binary execution requires exactly one request.")
-    r_bridge.dataset_to_simple_binary_r_object(
-        model, **_conversion_kwargs(selected_covariates)
-    )
-    return _typed_result(r_bridge.run_versioned_analysis_request(requests[0].to_mapping()))
-
-
-def _execute_continuous_request(
-    model: object,
-    requests: Sequence[AnalysisRequest],
-    selected_covariates: Sequence[dict],
-) -> AnalysisResult:
-    if len(requests) != 1:
-        raise ValueError("Continuous execution requires exactly one request.")
-    r_bridge.dataset_to_simple_continuous_r_object(
-        model, **_conversion_kwargs(selected_covariates)
-    )
-    return _typed_result(
-        r_bridge.run_versioned_analysis_request(requests[0].to_mapping())
-    )
+        raise ValueError("Standard execution requires exactly one request.")
+    return _typed_result(r_bridge.run_model_analysis(
+        model, requests[0].to_mapping(), **_conversion_kwargs(selected_covariates)
+    ))
 
 
 def _execute_diagnostic_request(
@@ -433,22 +384,6 @@ def execute_meta_regression_request(
         "covs_to_include": selected_covariates,
         "studies": studies,
     }
-    if request.data_type == "diagnostic":
-        r_bridge.dataset_to_simple_diagnostic_r_object(
-            model, metric=request.metric, **conversion_kwargs
-        )
-    elif request.data_type in ("time_to_event", "event_rates"):
-        r_bridge.dataset_to_simple_ratio_r_object(model, **conversion_kwargs)
-    elif request.data_type == "continuous":
-        r_bridge.dataset_to_simple_continuous_r_object(model, **conversion_kwargs)
-    elif request.data_type == "binary":
-        r_bridge.dataset_to_simple_binary_r_object(
-            model, **conversion_kwargs
-        )
-    else:
-        raise ValueError(
-            "Unsupported meta-regression data family: %s" % request.data_type
-        )
     parameters = request.parameter_values()
     if request.data_type == "binary":
         parameters.setdefault("to", "only0")
@@ -460,10 +395,10 @@ def execute_meta_regression_request(
     versioned = dict(request.to_mapping())
     versioned["workflow"] = "meta-regression"
     versioned["params"] = parameters
-    return _typed_result(r_bridge.run_versioned_analysis_request(versioned))
+    return _typed_result(r_bridge.run_model_analysis(model, versioned, **conversion_kwargs))
 
 
-def _run_diagnostic_backend(workflow, method_names, parameter_values):
+def _run_diagnostic_backend(workflow, method_names, parameter_values, data):
     requests: list[Mapping[str, object]] = [
         {
             "version": 1,
@@ -475,7 +410,7 @@ def _run_diagnostic_backend(workflow, method_names, parameter_values):
         }
         for method, params in zip(method_names, parameter_values, strict=True)
     ]
-    return r_bridge.run_versioned_analysis_requests(requests)
+    return r_bridge.run_versioned_analysis_requests(requests, data)
 
 
 def _diagnostic_direct_effects_need_metric_specific_data(model, requests):
@@ -511,32 +446,32 @@ def _run_diagnostic_analysis_isolating_metric_failures(model, requests):
     if _diagnostic_direct_effects_need_metric_specific_data(model, requests):
         return _run_diagnostic_with_metric_specific_data(model, requests)
 
-    r_bridge.dataset_to_simple_diagnostic_r_object(model)
+    data = r_bridge.dataset_to_simple_diagnostic_r_object(model)
     try:
         method_names = [request.method for request in requests]
         parameter_values = [request.parameter_values() for request in requests]
         workflow = requests[0].workflow
         return _typed_result(
-            _run_diagnostic_backend(workflow, method_names, parameter_values)
+            _run_diagnostic_backend(workflow, method_names, parameter_values, data)
         )
     except DiagnosticExecutionError:
-        return _run_diagnostic_with_shared_data_per_metric(requests)
+        return _run_diagnostic_with_shared_data_per_metric(requests, data)
 
 
-def _run_diagnostic_with_shared_data_per_metric(requests):
+def _run_diagnostic_with_shared_data_per_metric(requests, data):
     return _run_diagnostic_methods_per_metric(
         requests,
         lambda request: _run_diagnostic_backend(
-            request.workflow, [request.method], [request.parameter_values()]
+            request.workflow, [request.method], [request.parameter_values()], data
         ),
     )
 
 
 def _run_diagnostic_with_metric_specific_data(model, requests):
     def run_metric(request):
-        r_bridge.dataset_to_simple_diagnostic_r_object(model, metric=request.metric)
+        data = r_bridge.dataset_to_simple_diagnostic_r_object(model, metric=request.metric)
         return _run_diagnostic_backend(
-            request.workflow, [request.method], [request.parameter_values()]
+            request.workflow, [request.method], [request.parameter_values()], data
         )
 
     return _run_diagnostic_methods_per_metric(requests, run_metric)
@@ -590,6 +525,11 @@ def _empty_diagnostic_result() -> dict[str, object]:
 def _merge_diagnostic_result(
     merged_result: dict[str, object], metric_result: AnalysisResult
 ) -> None:
+    software = str(merged_result.get('software', ''))
+    packages = list(dict.fromkeys(filter(None, [*software.split(', '), *metric_result.software.split(', ')])))
+    merged_result['software'] = ', '.join(packages)
+    inference = merged_result.get('inference_methods', [])
+    merged_result['inference_methods'] = list(dict.fromkeys([*cast(list[str], inference), *metric_result.inference_methods]))
     _merge_diagnostic_texts(merged_result, metric_result)
     _merge_diagnostic_artifacts(merged_result, metric_result)
     _merge_diagnostic_image_order(merged_result, metric_result)

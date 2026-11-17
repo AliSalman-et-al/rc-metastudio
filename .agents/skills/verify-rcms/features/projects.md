@@ -2,6 +2,21 @@
 
 Users open an `.rcms` project, edit studies, undo or redo changes, save/reopen the project, and import study data from CSV.
 
+## Generated persistence check
+
+After changing saved project fields, schemas or adapters, run the strict typing
+gate and `uv run python -m pytest tests/python/fast/test_project_round_trip_property.py -q -s`.
+The seeded check saves and reloads valid generated projects through the real
+archive and adapters, comparing saved fields and selected-sheet state. Empty grid
+entry rows are intentionally dropped by the adapter.
+
+The default samples 20 candidates. `RCMS_ROUND_TRIP_SEED` and
+`RCMS_ROUND_TRIP_CASES` select a repeatable larger run. Retain the command, seed,
+candidate/rejection counts, transcript and any counterexample. Fix a generator
+that rejects more than 20% of its candidates rather than relaxing validation.
+This supplements the desktop save/reopen workflows; it does not prove UI behavior,
+legacy migrations, crash durability or exhaustive persistence coverage.
+
 ## Advanced transaction proof
 
 - `project-structure` uses the same sheet-tab transaction drive as `sheets`: add, rename, delete, undo/redo, arm swap and persistence. The obsolete structure editor is removed.

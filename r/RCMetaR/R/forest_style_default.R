@@ -345,37 +345,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
     accent.color <- rcmetar.forest.accent.color(bundle$params)
     forest.color <- if (rcmetar.forest.style(bundle$params) == "default" || manual.sequential.labels) accent.color else "black"
-    forest.args <- list(
-        slab = rep("", length(bundle$slab)),
-        ilab = if (!manual.sequential.labels && ncol(bundle$ilab$matrix) > 0) rcmetar.forest.display.ilab(bundle$ilab$matrix) else NULL,
-        ilab.lab = NULL,
-        ilab.xpos = if (!manual.sequential.labels && ncol(bundle$ilab$matrix) > 0) layout$ilab.xpos else NULL,
-        textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),
-        xlim = plan$x$xlim,
-        alim = plan$x$alim,
-        at = plan$x$at,
-        atransf = rcmetar.metafor.atransf(bundle),
-        refline = NA,
-        xlab = plan$x$xlab,
-        cex = plan$typography$cex,
-        cex.lab = plan$typography$cex.lab,
-        cex.axis = plan$typography$cex.axis,
-        header = FALSE,
-        rows = rows,
-        ylim = ylim,
-        annotate = FALSE,
-        xaxt = "n",
-        col = forest.color,
-        colshade = "#eeeeee",
-        shade = "zebra",
-        lty = c("solid", "blank", "blank"),
-        pch = 15,
-        psize = rcmetar.metafor.psize(bundle),
-        lwd = 1.35,
-        efac = 0,
-        digits = as.integer(bundle$params$digits)
-    )
-    forest.args <- forest.args[!vapply(forest.args, is.null, logical(1))]
+    forest.args <- rcmetar.default.forest.args(bundle, plan, ylim, forest.color)
 
     rcmetar.draw.default.study.marks(bundle, plan, forest.args, raw.effect, accent.color)
 
@@ -484,5 +454,43 @@ rcmetar.draw.default.annotations <- function(bundle, plan) {
         if (length(labels) == length(rows) + 1L) fonts[[length(fonts)]] <- 2
         graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, pos=2, font=fonts, cex=size$cex)
     }
+
+}
+
+rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
+    layout <- plan$layout
+    rows <- plan$rows$study_rows
+    show.ilab <- !plan$rows$manual_sequential_labels && ncol(bundle$ilab$matrix) > 0
+    forest.args <- list(
+        slab = rep("", length(bundle$slab)),
+        ilab = if (show.ilab) rcmetar.forest.display.ilab(bundle$ilab$matrix) else NULL,
+        ilab.lab = NULL,
+        ilab.xpos = if (show.ilab) layout$ilab.xpos else NULL,
+        textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),
+        xlim = plan$x$xlim,
+        alim = plan$x$alim,
+        at = plan$x$at,
+        atransf = rcmetar.metafor.atransf(bundle),
+        refline = NA,
+        xlab = plan$x$xlab,
+        cex = plan$typography$cex,
+        cex.lab = plan$typography$cex.lab,
+        cex.axis = plan$typography$cex.axis,
+        header = FALSE,
+        rows = rows,
+        ylim = ylim,
+        annotate = FALSE,
+        xaxt = "n",
+        col = forest.color,
+        colshade = "#eeeeee",
+        shade = "zebra",
+        lty = c("solid", "blank", "blank"),
+        pch = 15,
+        psize = rcmetar.metafor.psize(bundle),
+        lwd = 1.35,
+        efac = 0,
+        digits = as.integer(bundle$params$digits)
+    )
+    forest.args[!vapply(forest.args, is.null, logical(1))]
 
 }

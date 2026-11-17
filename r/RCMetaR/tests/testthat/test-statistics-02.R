@@ -18,7 +18,7 @@ test_that("MH subgroup differences follow meta and incomplete estimates remain u
  expect_false(any(grepl("difference", x$`Subgroup Summary`$table.titles,ignore.case=TRUE)))
  d@x1 <- c(1,2,3,4)
  positive <- rcmetar.run.analysis(d,method="event_rates.mh",params=p,workflow="subgroup")
- index <- match("Test of subgroup differences", positive$`Subgroup Summary`$table.titles)
+ index <- which(vapply(positive$`Subgroup Summary`$arrays, function(table) identical(attr(table, "rcms.table")$role, "subgroup_test"), logical(1)))
  expect_false(is.na(index))
  reference <- meta::metainc(event.e=d@x1,time.e=d@t1,event.c=d@x2,time.c=d@t2,
    method="MH",sm="IRR",subgroup=d@covariates[[1]]@cov.vals)

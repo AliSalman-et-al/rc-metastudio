@@ -59,6 +59,7 @@ def create() -> SimpleNamespace:
     backend.run_small_study_effects = _unavailable
     backend.regenerate_small_study_effects_funnel = _unavailable
     backend.generate_small_study_effects_funnel = _unavailable
+    backend.run_model_analysis = _unavailable
     backend.run_versioned_analysis_request = _unavailable
     backend.run_versioned_analysis_requests = _unavailable
     backend.ro = SimpleNamespace(r=lambda _expression: [95.0])

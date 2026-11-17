@@ -193,12 +193,10 @@ def expected_p(value):
 def expected_pooled(result):
     rows = []
     for section in result.sections:
-        if section.title == 'Marginal prediction':
-            continue
         overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
-                        if len(t.rows) == 1 and ('Z' in t.headers or 't' in t.headers)), {})
+                        if t.role == 'overall_test' and t.rows), {})
         calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
-                            if t.title.startswith('Calculation scale') and t.rows), {})
+                            if t.role == 'calculation' and t.rows), {})
         rows.extend(expected_effect_rows(result, section, overall, calculation))
     return tuple(rows)
 
@@ -206,24 +204,24 @@ def expected_pooled(result):
 def expected_effect_rows(result, section, overall, calculation):
     rows = []
     for table in section.tables:
-        if table.title in ('Cumulative results', 'Leave-one-out results'):
+        if table.role not in ('pooled', 'coefficients'):
             continue
-        vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in dict(table.rows)
+        vertical = table.vertical
         headers = tuple(dict(table.rows)) if vertical else table.headers
         values = [dict(table.rows)] if vertical else [dict(zip(headers, row)) for row in table.rows]
         low = next((h for h in headers if h.startswith('Lower bound')), None)
         high = next((h for h in headers if h.startswith('Upper bound')), None)
-        if not low or not high or low.partition('(')[2].removesuffix(')').strip().endswith(' PI') or table.title.startswith('Calculation scale'):
+        if not low or not high or low.partition('(')[2].removesuffix(')').strip().endswith(' PI') or table.role == 'calculation':
             continue
-        metric = table.title.lower() if vertical else section.title.removesuffix(' summary').lower() if ',' in result.manuscript_metric else result.manuscript_metric or 'effect'
-        if table.title != 'Regression coefficients' and metric.endswith('transformed proportion'):
+        metric = table.metric_label.lower() or result.manuscript_metric or 'effect'
+        if table.role != 'coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
-        if table.title == 'Regression coefficients':
+        if table.role == 'coefficients':
             scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
             if scale:
                 effects = [(*row[:4], '(' + ('outcome' if scale == 'display' else scale) + ' scale)', *row[5:]) for row in effects]
-        if ',' in result.manuscript_metric and table.title != 'Regression coefficients':
+        if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1 and table.role != 'coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)
     return rows
@@ -235,7 +233,7 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
         if not row.get('Estimate'):
             continue
         context = next((row[h] for h in headers if h.startswith(('Study added', 'Study omitted'))), title if vertical else metric)
-        label = row.get('Term', row.get('Subgroups', context))
+        label = row.get('Term', row.get('Subgroups', row.get('Level', context)))
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
@@ -245,12 +243,12 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
 
 
 def expected_studies(result):
-    if any(t.title in {'Cumulative results', 'Leave-one-out results'} for s in result.sections for t in s.tables):
+    if any(t.role in {'cumulative', 'leave_one_out'} for s in result.sections for t in s.tables):
         return ()
     rows = []
     for section in result.sections:
         for table in section.tables:
-            if table.title != 'Study weights':
+            if table.role != 'study_results':
                 continue
             label = result.manuscript_metric or section.title if section.source_key == 'Weights' else section.title.removesuffix(' summary')
             for row in table.rows:
@@ -267,48 +265,48 @@ def expected_fit(result):
     rows = list(result.manuscript_model_info)
     for section in result.sections:
         for table in section.tables:
-            if table.title == 'Test of subgroup differences':
+            if table.role == 'subgroup_test':
                 rows.extend(expected_fit_table(result, section, table))
     for section in result.sections:
         for table in section.tables:
-            if table.title == 'Test of subgroup differences':
+            if table.role == 'subgroup_test':
                 continue
             rows.extend(expected_fit_table(result, section, table))
     return tuple(rows)
 
 
 def expected_fit_table(result, section, source):
-    vertical = source.headers == ('Statistic', 'Value') and 'Estimate' in dict(source.rows)
+    vertical = source.vertical
     headers = tuple(dict(source.rows)) if vertical else source.headers
     data = [dict(source.rows)] if vertical else [dict(zip(headers, row)) for row in source.rows]
     low = next((h for h in headers if h.startswith('Lower bound')), None)
     high = next((h for h in headers if h.startswith('Upper bound')), None)
     rows = []
-    if source.title.startswith('Calculation scale') or source.title == 'Study weights':
+    if source.role == 'calculation' or source.role == 'study_results':
         return rows
     if low and high and low.partition('(')[2].removesuffix(')').strip().endswith(' PI'):
         level = low.partition('(')[2].removesuffix(')').strip()
         for row in data:
-            context = row.get('Subgroups', source.title if vertical else section.title.removesuffix(' summary') if ',' in result.manuscript_metric else '')
+            context = row.get('Subgroups', source.title if vertical else section.title.removesuffix(' summary') if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1 else '')
             rows.append((level.removesuffix(' PI') + ' prediction interval' + (' (' + context + ')' if context else ''), row[low] + ' to ' + row[high]))
-    elif 'Estimate' in headers and low and high and section.title != 'Marginal prediction':
+    elif 'Estimate' in headers and low and high and source.role in ('pooled', 'coefficients'):
         rows.extend(('Studies in ' + row['Subgroups'] + ' (k)', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Subgroups'].casefold() != 'overall' and row['Estimate'])
-    elif source.title.endswith('Heterogeneity') or source.title == 'Residual heterogeneity':
+    elif source.role in ('heterogeneity', 'residual_heterogeneity'):
         labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
         scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
         if scale not in ('', 'display'):
             labels['τ²'] += ' (squared ' + scale + ' scale)'
         for row in data:
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
-            if ',' in result.manuscript_metric:
+            if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1:
                 context += ' (' + section.title.removesuffix(' summary') + ')'
             rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
-    elif source.title == 'Test of subgroup differences' and data:
+    elif source.role == 'subgroup_test' and data:
         rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
             ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group P')))
-    elif source.title in ('Model overview', 'Residual model fit') and source.headers == ('Statistic', 'Value'):
+    elif source.role == 'model_fit':
         rows.extend(source.rows)
-    elif source.title == 'Model tests':
+    elif source.role == 'model_tests':
         for row in data:
             rows.extend((label + ' (' + row['Test'] + ')', expected_p(row[key]) if key == 'p-value' else row[key]) for key, label in (
                 ('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test P')))
@@ -413,7 +411,7 @@ def assert_report(view):
         assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
-            if source.title in ('Model Results', 'Study weights', 'Heterogeneity', 'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences', 'Cumulative results', 'Leave-one-out results'):
+            if source.role in ('pooled', 'study_results', 'heterogeneity', 'residual_heterogeneity', 'overall_test', 'prediction', 'subgroup_test', 'cumulative', 'leave_one_out'):
                 title = section.title + ' — ' + source.title
                 retained = any(table.title == title for s in view.manuscript.sections for table in s.tables)
                 if not retained:

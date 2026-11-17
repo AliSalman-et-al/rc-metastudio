@@ -385,17 +385,7 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
-    sequence.labels <- c(table="current table order", year="publication year (earliest first)",
-                         effect="study effect size (smallest first)")
-    row.labels <- c(year="year (earliest first)", effect="pooled effect after omission (smallest first)",
-                    i2="I\u00b2 after omission (lowest first)")
-    caption <- params$plot_caption
-    if (!is.null(caption) && nzchar(caption)) {
-        caption <- sub(" \u00b7 Order: dataset row order$", "", caption)
-        suffix <- if (variant == "cumulative") paste0("Sequence: ", sequence.labels[[params$cum_sequence %||% "table"]]) else
-            if ((params$fp_study_order %||% "table") %in% names(row.labels)) paste0("Rows: ", row.labels[[params$fp_study_order]]) else ""
-        params$plot_caption <- paste0(caption, if (nzchar(suffix)) paste0(" \u00b7 ", suffix))
-    }
+    params <- rcmetar.sequential.caption.params(params, variant)
     legacy.labels <- identical(params$fp_col1_str, "Study added (k)")
     if (params$fp_col1_str %in% c("Study or Subgroup", "Study added", "Study added (k)")) {
         params$fp_col1_str <- if (variant == "cumulative") "Study added" else "Study omitted"
@@ -1100,4 +1090,19 @@ rcmetar.forest.regeneration.overrides <- function(variant, param.overrides) {
         ), call.=FALSE)
     }
     param.overrides
+}
+
+rcmetar.sequential.caption.params <- function(params, variant) {
+    sequence.labels <- c(table="current table order", year="publication year (earliest first)",
+                         effect="study effect size (smallest first)")
+    row.labels <- c(year="year (earliest first)", effect="pooled effect after omission (smallest first)",
+                    i2="I\u00b2 after omission (lowest first)")
+    caption <- params$plot_caption
+    if (!is.null(caption) && nzchar(caption)) {
+        caption <- sub(" \u00b7 Order: dataset row order$", "", caption)
+        suffix <- if (variant == "cumulative") paste0("Sequence: ", sequence.labels[[params$cum_sequence %||% "table"]]) else
+            if ((params$fp_study_order %||% "table") %in% names(row.labels)) paste0("Rows: ", row.labels[[params$fp_study_order]]) else ""
+        params$plot_caption <- paste0(caption, if (nzchar(suffix)) paste0(" \u00b7 ", suffix))
+    }
+    params
 }

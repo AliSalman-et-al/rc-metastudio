@@ -24,7 +24,8 @@ from rc_metastudio.analysis_method_labels import (
 )
 from rc_metastudio import result_formatting
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
-from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, parse_analysis_result
+from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, TableRole, parse_analysis_result
+from typing import get_args
 from rc_metastudio.study_effect_shapes import (
     effect_triplet as effect_triplet,
     normalize_diagnostic_effects,
@@ -526,19 +527,18 @@ def get_params(method_name):
 
 @serialized_r_call
 def get_available_methods(
-    for_data_type=None, data_obj_name=None, metric=None, workflow="standard"
+    for_data_type=None, data=None, metric=None, workflow="standard"
 ):
     """Returns a list of methods available in RCMetaR for the particular data_type
     (if one is given).
     """
-    data_arg = None if data_obj_name is None else ro.globalenv[str(data_obj_name)]
     methods = execute_r_function(
         "rcmetar.available.methods",
         **{
             "data.type": _r_null_if_none(
                 None if for_data_type is None else str(for_data_type)
             ),
-            "om.data": _r_null_if_none(data_arg),
+            "om.data": _r_null_if_none(data),
             "metric": _r_null_if_none(None if metric is None else str(metric)),
             "workflow": str(workflow),
         },
@@ -561,7 +561,7 @@ def get_analysis_plot_capabilities(data_type, method_name, workflow="standard"):
 
 @serialized_r_call
 def dataset_to_simple_ratio_r_object(
-    table_model, var_name="tmp_obj", covs_to_include=None, studies=None
+    table_model, covs_to_include=None, studies=None
 ):
     if studies is None:
         studies = table_model.get_studies(only_if_included=True)
@@ -588,13 +588,12 @@ def dataset_to_simple_ratio_r_object(
     for i, name in enumerate(("x1", "t1", "x2", "t2")):
         kwargs[name] = _r_numeric_vector([raw[i] for raw in raws])
     obj = execute_r_function("rcmetar.create.ratio.data", **kwargs)
-    ro.globalenv[var_name] = obj
     return obj
 
 
 @serialized_r_call
 def dataset_to_simple_continuous_r_object(
-    table_model, var_name="tmp_obj", covs_to_include=None, studies=None
+    table_model, covs_to_include=None, studies=None
 ):
     if studies is None:
         # grab all studies. note: the list is pulled out in reverse order from the
@@ -640,14 +639,12 @@ def dataset_to_simple_continuous_r_object(
         )
 
     r_obj = execute_r_function("rcmetar.create.continuous.data", **data_kwargs)
-    ro.globalenv[var_name] = r_obj
     return r_obj
 
 
 @serialized_r_call
 def dataset_to_simple_binary_r_object(
     table_model,
-    var_name="tmp_obj",
     include_raw_data=True,
     covs_to_include=None,
     studies=None,
@@ -715,7 +712,6 @@ def dataset_to_simple_binary_r_object(
         )
 
     r_obj = execute_r_function("rcmetar.create.binary.data", **data_kwargs)
-    ro.globalenv[var_name] = r_obj
     return r_obj
 
 
@@ -735,7 +731,6 @@ def _data_blank_or_none(*args):
 @serialized_r_call
 def dataset_to_simple_diagnostic_r_object(
     table_model,
-    var_name="tmp_obj",
     metric="Sens",
     covs_to_include=None,
     studies=None,
@@ -797,7 +792,6 @@ def dataset_to_simple_diagnostic_r_object(
         r_obj = execute_r_function("rcmetar.create.diagnostic.data", **data_kwargs)
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
-    ro.globalenv[var_name] = r_obj
     return r_obj
 
 
@@ -884,7 +878,6 @@ def run_small_study_effects(
     table_model,
     request,
     res_name="small_study_effects_result",
-    data_name="tmp_obj",
     preview: Literal[False] = False,
 ) -> AnalysisResult: ...
 
@@ -894,7 +887,6 @@ def run_small_study_effects(
     table_model,
     request,
     res_name="small_study_effects_result",
-    data_name="tmp_obj",
     preview: Literal[True] = True,
 ) -> Mapping[str, object]: ...
 
@@ -904,7 +896,6 @@ def run_small_study_effects(
     table_model,
     request,
     res_name="small_study_effects_result",
-    data_name="tmp_obj",
     preview=False,
 ) -> AnalysisResult | Mapping[str, object]:
     """Run the complete guided small-study effects workflow in one R call.
@@ -920,14 +911,14 @@ def run_small_study_effects(
         raise ValueError("unsupported small-study effects request version")
     family = request.get("data.type")
     if family == "binary":
-        dataset_to_simple_binary_r_object(table_model, var_name=data_name)
+        data = dataset_to_simple_binary_r_object(table_model)
     elif family in ("time_to_event", "event_rates"):
-        dataset_to_simple_ratio_r_object(table_model, var_name=data_name)
+        data = dataset_to_simple_ratio_r_object(table_model)
     elif family == "continuous":
-        dataset_to_simple_continuous_r_object(table_model, var_name=data_name)
+        data = dataset_to_simple_continuous_r_object(table_model)
     elif family == "diagnostic":
-        dataset_to_simple_diagnostic_r_object(
-            table_model, var_name=data_name, metric=request.get("metric", "DOR")
+        data = dataset_to_simple_diagnostic_r_object(
+            table_model, metric=request.get("metric", "DOR")
         )
     else:
         raise ValueError("unsupported small-study effects data family: %r" % family)
@@ -938,14 +929,13 @@ def run_small_study_effects(
         r_request["plot_caption"] = dataset_identity(table_model)
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
-        _r_object_from_symbol(data_name),
+        data,
         _to_r_params(r_request),
     )
     if preview:
         return r_object_to_python(result.rx2("eligibility"))
     ro.globalenv[_r_symbol(res_name)] = result
-    software = ', '.join(f'{name} {get_r_package_version(name)}' for name in ('metafor', 'meta'))
-    return replace(parse_out_results(result), software=software)
+    return parse_out_results(result)
 
 
 @serialized_r_call
@@ -1054,14 +1044,32 @@ def _normalize_rcmetar_workflow(workflow):
 @serialized_r_call
 def run_versioned_analysis_request(
     request: Mapping[str, object],
+    data,
     res_name: str = "result",
-    data_name: str = "tmp_obj",
 ):
     """Execute one complete immutable request through the public RCMetaR API."""
     data_type, method, metric, workflow, params = _validated_versioned_request(request)
     return _execute_versioned_request(
-        data_type, method, metric, workflow, params, res_name, data_name
+        data_type, method, metric, workflow, params, res_name, data
     )
+
+
+@serialized_r_call
+def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
+    """Convert this frozen model and execute it within one R transaction."""
+    family, _, metric, _, _ = _validated_versioned_request(request)
+    kwargs = dict(covs_to_include=covs_to_include, studies=studies)
+    if family == "binary":
+        data = dataset_to_simple_binary_r_object(table_model, **kwargs)
+    elif family == "continuous":
+        data = dataset_to_simple_continuous_r_object(table_model, **kwargs)
+    elif family in ("time_to_event", "event_rates"):
+        data = dataset_to_simple_ratio_r_object(table_model, **kwargs)
+    elif family == "diagnostic":
+        data = dataset_to_simple_diagnostic_r_object(table_model, metric=metric, **kwargs)
+    else:
+        raise ValueError("unsupported analysis data family: %s" % family)
+    return run_versioned_analysis_request(request, data)
 
 
 def _validated_versioned_request(
@@ -1099,7 +1107,7 @@ def _execute_versioned_request(
     workflow: object,
     params: Mapping[str, object],
     res_name: str,
-    data_name: str,
+    data,
 ) -> object:
     _require_initialized_r()
     normalized = {
@@ -1112,7 +1120,7 @@ def _execute_versioned_request(
     }
     result = execute_r_function(
         "rcmetar.run.analysis",
-        _r_object_from_symbol(data_name),
+        data,
         _to_r_params(normalized),
     )
     ro.globalenv[_r_symbol(res_name)] = result
@@ -1122,13 +1130,13 @@ def _execute_versioned_request(
 @serialized_r_call
 def run_versioned_analysis_requests(
     requests: list[Mapping[str, object]],
+    data,
     res_name: str = "result",
-    diagnostic_data_name: str = "tmp_obj",
 ):
     """Execute a validated diagnostic request set through one R operation."""
     validated_requests = _validated_versioned_requests(requests)
     return _execute_versioned_requests(
-        validated_requests, res_name, diagnostic_data_name
+        validated_requests, res_name, data
     )
 
 
@@ -1162,7 +1170,7 @@ def _validated_versioned_requests(
 def _execute_versioned_requests(
     requests: list[dict[str, object]],
     res_name: str,
-    diagnostic_data_name: str,
+    data,
 ) -> object:
     _require_initialized_r()
     request_list = execute_r_function(
@@ -1171,7 +1179,7 @@ def _execute_versioned_requests(
     try:
         result = execute_r_function(
             "rcmetar.run.diagnostic.analyses",
-            _r_object_from_symbol(diagnostic_data_name),
+            data,
             **{"request.list": request_list},
             **{"request.version": 1},
         )
@@ -1317,6 +1325,12 @@ _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digi
 def parse_out_results(result, *, study_digits=None, confidence_level=None):
     if _r_inherits(result, "try-error"):
         raise RuntimeError(_r_error_message(result))
+    execution_value = ro.r['attr'](result, 'rcms.execution')
+    execution = {} if _r_is_null(execution_value) else dict(zip(list(execution_value.names), list(execution_value)))
+    request_value = ro.r['attr'](result, 'rcmetar.request')
+    if not _r_is_null(request_value) and not _has_r_names(request_value) and len(request_value):
+        request_value = request_value[0]
+    request = _r_mapping_or_empty(request_value)
     result = dict(_result_items_for_display(result))
     params = _r_mapping_or_empty(result.get("input_params"))
     digits = params.get("digits")
@@ -1324,7 +1338,13 @@ def parse_out_results(result, *, study_digits=None, confidence_level=None):
         digits = digits[0] if digits else None
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
-        return _parse_display_results(result, study_digits=study_digits, confidence_level=confidence_level)
+        parsed = _parse_display_results(result, study_digits=study_digits, confidence_level=confidence_level)
+        workflow = request.get('workflow', '')
+        packages = execution.get('packages')
+        software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
+        inference = execution.get('inference', ())
+        return replace(parsed, software=software, inference_methods=tuple(str(code) for code in inference),
+                       sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
 
@@ -1333,7 +1353,7 @@ def _add_regression_reports(result, reports):
     if "res" not in result:
         return
     fit = result["res"]
-    if _has_r_names(fit) and all(key in list(fit.names) for key in ("b", "ci.lb", "ci.ub", "pval")) and len(fit.rx2("b")) > 1:
+    if any(table['role'] == 'coefficients' for table in reports.get('Summary', {}).get('tables', [])):
         scale = str(list(result.get('analysis.scale', ['']))[0])
         reports["Summary"] = _regression_summary(fit, reports, scale)
 
@@ -1343,18 +1363,26 @@ def _regression_summary(fit, reports, scale):
     level = 100 * (1 - float(list(fields["level"])[0]))
     statistic_label = "t" if str(list(fields.get("test", ["z"]))[0]) in ("t", "knha", "adhoc") else "z"
     tables = [_regression_coefficient_table(fields, scale, level, statistic_label)]
-    residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
-    if residual:
-        tables.append({"title": "Residual heterogeneity", "headers": [label for _, label in residual],
-                       "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]],
-                       "quantities": [[(Quantity({'QE': 'q', 'QEp': 'p', 'tau2': 'tau2'}[key],
-                           _raw_number(list(fields[key])[0]), scale if key == 'tau2' else ''),) for key, _ in residual]]})
-    for table in reports.get("Summary", {}).get("tables", []):
-        if table["title"] in ("Model overview", "Model specification", "Model tests", "Residual heterogeneity"):
-            if table["title"] == "Residual heterogeneity":
-                table = dict(table, title="Residual model fit")
-            tables.append({key: value for key, value in table.items()})
+    residual = _regression_residual_table(fields, scale)
+    if residual is not None:
+        tables.append(residual)
+    source_tables = reports['Summary']['tables']
+    tables.extend(dict(table) for table in source_tables if table['role'] in ('model_fit', 'model_specification', 'model_tests'))
+    source = next(table for table in source_tables if table['role'] == 'coefficients')
+    context = {key: source[key] for key in ('metric', 'metric_label', 'workflow') if key in source}
+    for table in tables:
+        table.update(context)
     return {"paragraphs": [], "tables": tables}
+
+
+def _regression_residual_table(fields, scale):
+    residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
+    if not residual:
+        return None
+    return {"title": "Residual heterogeneity", "role": "residual_heterogeneity", "inference": str(list(fields.get('test', ['z']))[0]), "headers": [label for _, label in residual],
+            "rows": [[_format_r_table_cell(list(fields[key])[0], field_name=label) for key, label in residual]],
+            "quantities": [[(Quantity({'QE': 'q', 'QEp': 'p', 'tau2': 'tau2'}[key],
+                _raw_number(list(fields[key])[0]), scale if key == 'tau2' else ''),) for key, _ in residual]]}
 
 
 def _insert_held_effects(fields, display, rows, quantities, level, *, digits=None):
@@ -1408,7 +1436,7 @@ def _held_study_report(metadata, reports, *, digits=None, level=None):
         headers = ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"]
         if weights is None:
             target = reports.get("Summary", next(iter(reports.values())))
-            target["tables"].append({"title": "Study weights", "headers": headers, "rows": rows, 'quantities': quantities})
+            target["tables"].append({"title": "Study weights", "role": "study_results", "label_column": 0, "headers": headers, "rows": rows, 'quantities': quantities})
         else:
             weights["tables"][0]["headers"] = headers
             weights["tables"][0]['quantities'] = quantities
@@ -1430,6 +1458,7 @@ def _parse_display_results(result, *, study_digits=None, confidence_level=None):
             raw_weights = _weight_values(text)
             names = _weight_study_names(result, text, len(raw_weights))
             reports["Weights"] = {"paragraphs": [], "tables": [{"title": "Study weights",
+                "role": "study_results", "label_column": 0,
                 "headers": ["Study", "Weight (%)"],
                 "rows": [[str(name), _format_weight(weight)] for name, weight in zip(names, raw_weights, strict=True)],
                 'quantities': [[(), (Quantity('weight', _raw_number(weight), 'percent'),)] for weight in raw_weights]}]}
@@ -1722,7 +1751,7 @@ def _structured_named_content(title, value, study_names):
             _append_named_scalar(name, child, label, fields, index, paragraphs, rows, quantities)
 
     if rows:
-        tables.insert(0, {"title": title, "headers": ["Statistic", "Value"], "rows": rows, 'quantities': quantities if any(any(row) for row in quantities) else []})
+        tables.insert(0, {"title": title, **_table_context(value), "headers": ["Statistic", "Value"], "rows": rows, 'quantities': quantities if any(any(row) for row in quantities) else []})
     return {"paragraphs": paragraphs, "tables": tables}
 
 
@@ -1731,14 +1760,26 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
     values = _matrix_cell_values(list(matrix), nrow, ncol)
     dimnames = _r_dimnames(matrix)
     headers, row_names = _structured_matrix_headers(values, dimnames, nrow, ncol, study_names, first_row_headers)
-    if title in {"Sensitivity coefficients", "Specificity coefficients"}:
-        _label_diagnostic_coefficients(headers, dimnames)
+    context = _table_context(matrix)
+    if context.pop('coefficient_display', False):
+        _label_diagnostic_coefficients(headers, dimnames, context.pop('coefficient_level'))
     rows, quantities = _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_headers)
     if row_names is not None:
         headers = ["Term"] + headers
         rows = [[name] + row for name, row in zip(row_names, rows)]
         quantities = [[()] + row for row in quantities]
-    return {"title": title, "headers": headers, "rows": rows, 'quantities': quantities if any(any(row) for row in quantities) else []}
+    return {"title": context.pop('report_title', title), **context, "headers": headers, "rows": rows, 'quantities': quantities if any(any(row) for row in quantities) else []}
+
+
+def _table_context(value):
+    metadata = ro.r['attr'](value, 'rcms.table')
+    if _r_is_null(metadata):
+        raise ValueError('missing result table role')
+    context = dict(_r_mapping_or_empty(metadata))
+    if context.get('role') not in get_args(TableRole):
+        raise ValueError('unknown result table role')
+    context['label_column'] = int(context['label_column']) if context.get('label_column') is not None else None
+    return context
 
 
 def _section_semantic_id(kind, source_key, supplied, child_index):
@@ -2724,7 +2765,7 @@ def _structured_summary_display(value, study_names):
         paragraphs.extend(str(note) for note in notes if not str(note).startswith("Calculation scale:"))
     tables = []
     for caption, matrix in zip(list(fields["table.titles"]), list(fields["arrays"])):
-        if str(caption) != "NA":
+        if not _r_is_null(matrix):
             tables.append(_structured_matrix(str(caption), matrix, study_names, first_row_headers=True))
     calculation = fields.get("calculation.table")
     if calculation is not None and not _r_is_null(calculation):
@@ -2734,9 +2775,9 @@ def _structured_summary_display(value, study_names):
     return {"paragraphs": paragraphs, "tables": tables}
 
 
-def _label_diagnostic_coefficients(headers, dimnames):
+def _label_diagnostic_coefficients(headers, dimnames, confidence_level):
     raw_headers = list(dimnames[1])
-    level = next(match[1] for name in raw_headers if (match := re.match(r"([\d.]+)%ci", name)))
+    level = f'{float(confidence_level):g}'
     names = {"Estimate": "Estimate (logit)", "Odds Ratio": "Odds ratio",
              "Odds Ratio lower": f"{level}% CI lower (OR)",
              "Odds Ratio upper": f"{level}% CI upper (OR)"}
@@ -2775,7 +2816,7 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
     rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
              for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
             for i, name in enumerate(names)]
-    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
+    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "role": "coefficients", "label_column": 0, "inference": str(list(fields.get('test', ['z']))[0]), "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
     tables[0]['quantities'] = [[(), *[(Quantity(role, _raw_number(list(fields[key])[i]), qscale, qlevel),)
         for key, role, qscale, qlevel in (('b', 'estimate', scale, None), ('ci.lb', 'ci_lower', scale, level),
             ('ci.ub', 'ci_upper', scale, level), ('se', 'se', scale, None), ('zval', 'statistic', '', None), ('pval', 'p', '', None))]]

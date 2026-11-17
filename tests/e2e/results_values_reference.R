@@ -22,7 +22,7 @@ refit <- function(data, original) {
   if (!is.null(moderators)) args$mods <- moderators
   do.call(metafor::rma.uni, args)
 }
-for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t')) {
+for (label in c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t')) {
   directory <- file.path(root, label)
   env <- new.env()
   load(file.path(directory, '0.data'), env)
@@ -32,8 +32,8 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
   table.title <- switch(label, cumulative='Cumulative results',
     `leave-one-out`='Leave-one-out results', `meta-regression`='Regression coefficients', 'Model Results')
   table <- Filter(function(t) t$title == table.title, tables)[[1]]
-  transform <- if (label == 'continuous' || label == 'meta-regression') identity else exp
-  if (label %in% c('binary', 'continuous', 'HR', 'IRR', 'meta-regression')) {
+  transform <- if (label %in% c('continuous', 'SMD', 'meta-regression')) identity else exp
+  if (label %in% c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression')) {
     reference <- refit(env$om.data, env$res)
     for (i in seq_along(table$quantities)) check(table$quantities[[i]], reference, transform, i)
     if (label != 'meta-regression') {

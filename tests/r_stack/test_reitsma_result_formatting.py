@@ -26,7 +26,8 @@ _DRIVER = textwrap.dedent(
 
     with r_transaction():
         result = r_bridge.ro.r(
-            r'''list(
+            r'''local({
+              result <- RCMetaR:::rcmetar.supporting.tables(list(
                 plot_names=character(0),
                 plot_params_paths=character(0),
                 plot_capabilities=list(),
@@ -57,16 +58,20 @@ _DRIVER = textwrap.dedent(
                     `Moderator block tests`=list(
                         quality=list(moderator="quality", statistic=4.2, df=1, p.value=.04)
                     ),
-                    `Sensitivity coefficients`=data.frame(
+                    `Sensitivity coefficients`=RCMetaR:::rcmetar.table(data.frame(
                         Estimate=.1234567, `Pr(>|z|)`=.3, `95%ci.lb`=-.2, `95%ci.ub`=.4,
                         check.names=FALSE, row.names="tsens.quality2"
-                    ),
+                    ), "supporting"),
                     `Model information`=list(
                         estimator="REML", warnings="example warning"
                     )
                 ),
                 References="reference"
-            )'''
+              ))
+              attr(result$Summary[["Sensitivity coefficients"]], "rcms.table")$coefficient_display <- TRUE
+              attr(result$Summary[["Sensitivity coefficients"]], "rcms.table")$coefficient_level <- 95
+              result
+            })'''
         )
         parsed = r_bridge.parse_out_results(result)
         texts = parsed.texts
@@ -99,8 +104,8 @@ _DRIVER = textwrap.dedent(
         assert parsed.plot_capabilities == {}
 
         auc_only = r_bridge.ro.r(
-            'list(`SROC AUC`=list(AUC=.88, `normalized.partial.AUC`=.42, '
-            'confidence.interval="Not provided by mada::AUC(); no invented AUC CI."))'
+            'RCMetaR:::rcmetar.supporting.tables(list(`SROC AUC`=list(AUC=.88, `normalized.partial.AUC`=.42, '
+            'confidence.interval="Not provided by mada::AUC(); no invented AUC CI.")))'
         )
         parsed_auc = r_bridge.parse_out_results(auc_only)
         assert "[1]" not in parsed_auc.texts["SROC AUC"]
@@ -110,9 +115,10 @@ _DRIVER = textwrap.dedent(
             result_expr = (
                 "list(Summary=list(b=.8, ci.lb=.7, ci.ub=.9, se=.05))"
                 if not wrapped
-                else "list(Summary=list(MAResults=list(b=.8, ci.lb=.7, ci.ub=.9, se=.05)))"
+                else "list(Summary=list(MAResults=RCMetaR:::rcmetar.supporting.tables(list(b=.8, ci.lb=.7, ci.ub=.9, se=.05))))"
             )
-            one_study = r_bridge.parse_out_results(r_bridge.ro.r(result_expr))
+            one_study = r_bridge.parse_out_results(r_bridge.ro.r(
+                "RCMetaR:::rcmetar.supporting.tables(" + result_expr + ")"))
             one_text = one_study.texts["Summary"]
             assert "Estimate: 0.8" in one_text, one_text
             assert "Lower bound: 0.7" in one_text, one_text

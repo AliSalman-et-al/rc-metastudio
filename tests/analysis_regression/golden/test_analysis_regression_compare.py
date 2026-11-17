@@ -1039,11 +1039,14 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
         def __init__(self):
             self.conversions = []
             self.runs = []
+            self.data = object()
 
         def convert(self, model, **kwargs):
             self.conversions.append((model, kwargs))
+            return self.data
 
-        def run(self, requests):
+        def run(self, requests, data):
+            assert data is self.data
             method_names = [request["method"] for request in requests]
             parameter_values = [request["params"] for request in requests]
             self.runs.append((method_names, parameter_values))
@@ -1147,17 +1150,16 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
 
     model = Model()
     monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
+    def run_model(selected_model, request, **kwargs):
+        assert selected_model is model
+        calls.append(("data", kwargs))
+        backend_requests.append(request)
+        return _text_result("Summary", request["metric"])
+
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
-        "dataset_to_simple_binary_r_object",
-        lambda model, **kwargs: calls.append(("data", kwargs)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "run_versioned_analysis_request",
-        lambda request: backend_requests.append(request)
-        or _text_result("Summary", request["metric"]),
+        "run_model_analysis",
+        run_model,
         raising=False,
     )
 

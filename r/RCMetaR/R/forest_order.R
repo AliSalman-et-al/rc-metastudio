@@ -19,14 +19,7 @@ rcmetar.forest.display.order <- function(bundle) {
     if (is.null(key) || identical(key, "table") || identical(bundle$forest_variant, "cumulative")) return(bundle)
     # Subset fitting also builds ordinary bundles, which have no omission I².
     if (identical(key, "i2") && !identical(bundle$forest_variant, "leave-one-out")) return(bundle)
-    values <- switch(key,
-        year=bundle$years,
-        effect=if (is.null(bundle$effect)) {
-            as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
-        } else bundle$effect$yi,
-        weight=-bundle$weights,
-        i2=rcmetar.result.vector(bundle$res, "I2"),
-        stop("Unknown forest study order.", call.=FALSE))
+    values <- rcmetar.forest.order.values(bundle, key, n)
     if (length(values) != n) return(bundle)
     values[!is.finite(values)] <- NA_real_
     if (identical(key, "year")) values[values == 0] <- NA_real_
@@ -43,4 +36,15 @@ rcmetar.forest.display.order <- function(bundle) {
         bundle$display_order <- order(values, seq_len(n), na.last=TRUE)
     }
     bundle
+}
+
+rcmetar.forest.order.values <- function(bundle, key, n) {
+    switch(key,
+        year=bundle$years,
+        effect=if (is.null(bundle$effect)) {
+            as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
+        } else bundle$effect$yi,
+        weight=-bundle$weights,
+        i2=rcmetar.result.vector(bundle$res, "I2"),
+        stop("Unknown forest study order.", call.=FALSE))
 }

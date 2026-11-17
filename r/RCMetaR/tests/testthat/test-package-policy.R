@@ -119,7 +119,7 @@ test_that("MH and Peto display the package heterogeneity degrees of freedom", {
       reference <- suppressWarnings(if (estimator == "peto") metafor::rma.peto(ai=c(0,8,3,9),bi=c(20,12,17,11),ci=c(0,6,4,5),di=c(15,14,16,15)) else
         metafor::rma.mh(ai=c(0,8,3,9),bi=c(20,12,17,11),ci=c(0,6,4,5),di=c(15,14,16,15)))
       summary <- result$Summary
-      table <- summary$arrays[[which(grepl("Heterogeneity$",summary$table.titles))]]
+      table <- summary$arrays[[which(vapply(summary$arrays, function(table) identical(attr(table, "rcms.table")$role, "heterogeneity"), logical(1)))]]
       expect_equal(as.numeric(table[2,2]), reference$k.yi-1)
       actual <- if (family == "binary") result$res else summary$MAResults
       expect_match(RCMetaR:::rcmetar.forest.heterogeneity.label(actual,params),paste0("df = ",reference$k.yi-1),fixed=TRUE)

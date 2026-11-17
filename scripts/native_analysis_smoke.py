@@ -83,6 +83,16 @@ def _install_backend_test_double(
     setattr(backend, name, implementation)
 
 
+def _capture_configuration(dialog: QtWidgets.QWidget, image: Path) -> None:
+    image.parent.mkdir(parents=True, exist_ok=True)
+    screen = dialog.screen()
+    if screen is None:
+        raise RuntimeError("analysis configuration is not attached to a screen")
+    pixmap = screen.grabWindow(dialog.winId())
+    if pixmap.isNull() or not pixmap.save(str(image), "PNG"):
+        raise RuntimeError("failed to capture native analysis configuration")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -151,8 +161,9 @@ def main() -> int:
     class Owner(QtWidgets.QWidget):
         results = []
 
-        def analysis(self, _result: object, *, change_settings: Callable[..., object] | None = None) -> None:
+        def analysis(self, _result: object, *, change_settings: Callable[..., object] | None = None, manuscript=None) -> None:
             assert callable(change_settings)
+            assert manuscript is not None
             self.results.append(_result)
 
     app = app_error_handler.get_or_create_application([])
@@ -161,7 +172,9 @@ def main() -> int:
     calls = []
     returned_results = []
 
-    def run_backend(request: dict[str, object]) -> dict[str, object]:
+    def run_backend(model: object, request: dict[str, object], **kwargs: object) -> dict[str, object]:
+        assert model is configuration.model
+        assert not kwargs
         calls.append(dict(request))
         result = {
             "version": 1,
@@ -186,7 +199,7 @@ def main() -> int:
         returned_results.append(result)
         return result
 
-    _install_backend_test_double(backend, "run_versioned_analysis_request", run_backend)
+    _install_backend_test_double(backend, "run_model_analysis", run_backend)
     _install_backend_test_double(backend, "reset_r_working_directory", lambda: None)
 
     def deferred_delete() -> None:
@@ -224,14 +237,8 @@ def main() -> int:
     evidence_root = repo_root / "build/qt6-verification" / (
         "offscreen-analysis" if args.offscreen else "native-analysis"
     )
-    evidence_root.mkdir(parents=True, exist_ok=True)
     image = evidence_root / "analysis-configuration.png"
-    screen = configuration.screen()
-    if screen is None:
-        raise RuntimeError("analysis configuration is not attached to a screen")
-    pixmap = screen.grabWindow(configuration.winId())
-    if pixmap.isNull() or not pixmap.save(str(image), "PNG"):
-        raise RuntimeError("failed to capture native analysis configuration")
+    _capture_configuration(configuration, image)
 
     _phase("success-run-entry")
     original_critical = analysis_setup_dialog.QMessageBox.critical
@@ -285,7 +292,7 @@ def main() -> int:
     failure_confidence.setValue(90.5)
     request_before = failing.analysis_requests()[0].to_mapping()
     progress_count = len(created_progress_dialogs)
-    backend.run_versioned_analysis_request = lambda *_args, **_kwargs: (
+    backend.run_model_analysis = lambda *_args, **_kwargs: (
         _ for _ in ()
     ).throw(RuntimeError("native backend failure"))
     original_critical = analysis_setup_dialog.QMessageBox.critical

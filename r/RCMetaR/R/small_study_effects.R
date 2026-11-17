@@ -712,7 +712,13 @@
     output$References <- .small.study.references(names(tests), names(plots$images))
     output$sections <- .small.study.sections(output, plots)
     plots$failures <- NULL
-    c(output, plots)
+    result <- c(output, plots)
+    # Reconstruction always evaluates the metafor pooled model and the meta
+    # native model used to determine eligible procedures, even if none runs.
+    versions <- prepared$eligibility$package.versions
+    packages <- list(metafor=as.character(numeric_version(versions[["metafor"]])), meta=versions[["meta"]])
+    attr(result, "rcms.execution") <- list(packages=packages, inference=character())
+    result
 }
 
 .small.study.fit.report <- function(om.data, params, prepared) {

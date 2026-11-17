@@ -78,49 +78,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "reitsma_coefficient" if self._is_reitsma_coefficient else plot_type
         )
         self._option_groups = plot_capabilities.option_groups(option_kind)
-        self.study_order = QComboBox(self)
-        self.study_order.setAccessibleName("Forest study order")
-        cumulative = plot_type == "cumulative_forest"
-        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if plot_type == "leave_one_out_forest" else analysis_identity.FOREST_STUDY_ORDERS
-        for label, key in options:
-            self.study_order.addItem(label, key)
-        order = self._params.get("cum_sequence" if cumulative else "fp_study_order", "table")
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._scalar(order))))
-        self.study_order.setEnabled(not cumulative)
-        self.study_order.setToolTip("Changing the addition sequence requires rerunning the analysis." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
-        self.study_order_label = QLabel("Studies added in" if cumulative else "Row order" if plot_type == "leave_one_out_forest" else "Study order", self)
-        self.study_order_label.setBuddy(self.study_order)
-        self.study_order.setAccessibleName(self.study_order_label.text())
-        row = self.style_layout.rowCount()
-        self.style_layout.addWidget(self.study_order_label, row, 0)
-        self.style_layout.addWidget(self.study_order, row, 1)
-        self.sequence_rerun = QPushButton("Change sequence and rerun…", self)
-        self.sequence_rerun.setVisible(cumulative)
-        self.sequence_rerun.setEnabled(False)
-        self.sequence_rerun.clicked.connect(self._request_sequence_rerun)
-        if cumulative:
-            note = QLabel("Changing the addition sequence requires rerunning the analysis.", self)
-            note.setWordWrap(True)
-            self.style_layout.addWidget(note, row + 1, 0, 1, 2)
-            self.style_layout.addWidget(self.sequence_rerun, row + 2, 1)
-        self.show_i2 = QCheckBox("Show I² column", self)
-        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
-        self.show_i2.setVisible(plot_type in {"cumulative_forest", "leave_one_out_forest"})
-        self.show_i2.setToolTip("Tables and reports always retain I² from each fitted subset.")
-        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
+        self._setup_study_order()
         self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
-        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
-        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
-        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
-            field.setAccessibleName(label)
-            field.setPlaceholderText("Optional: Favours …")
-            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
-            field.setMaxLength(120)
-            caption = QLabel(label, self)
-            caption.setBuddy(field)
-            self.default_layout.addWidget(caption, row, 0)
-            self.default_layout.addWidget(field, row, 1)
+        self._setup_direction_labels()
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
@@ -171,6 +132,51 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _setup_study_order(self):
+        self.study_order = QComboBox(self)
+        self.study_order.setAccessibleName("Forest study order")
+        cumulative = self.plot_type == "cumulative_forest"
+        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if self.plot_type == "leave_one_out_forest" else analysis_identity.FOREST_STUDY_ORDERS
+        for label, key in options:
+            self.study_order.addItem(label, key)
+        order = self._params.get("cum_sequence" if cumulative else "fp_study_order", "table")
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._scalar(order))))
+        self.study_order.setEnabled(not cumulative)
+        self.study_order.setToolTip("Changing the addition sequence requires rerunning the analysis." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
+        self.study_order_label = QLabel("Studies added in" if cumulative else "Row order" if self.plot_type == "leave_one_out_forest" else "Study order", self)
+        self.study_order_label.setBuddy(self.study_order)
+        self.study_order.setAccessibleName(self.study_order_label.text())
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(self.study_order_label, row, 0)
+        self.style_layout.addWidget(self.study_order, row, 1)
+        self.sequence_rerun = QPushButton("Change sequence and rerun…", self)
+        self.sequence_rerun.setVisible(cumulative)
+        self.sequence_rerun.setEnabled(False)
+        self.sequence_rerun.clicked.connect(self._request_sequence_rerun)
+        if cumulative:
+            note = QLabel("Changing the addition sequence requires rerunning the analysis.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, row + 1, 0, 1, 2)
+            self.style_layout.addWidget(self.sequence_rerun, row + 2, 1)
+        self.show_i2 = QCheckBox("Show I² column", self)
+        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
+        self.show_i2.setVisible(self.plot_type in {"cumulative_forest", "leave_one_out_forest"})
+        self.show_i2.setToolTip("Tables and reports always retain I² from each fitted subset.")
+        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
+
+    def _setup_direction_labels(self):
+        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
+        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
+        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
+            field.setAccessibleName(label)
+            field.setPlaceholderText("Optional: Favours …")
+            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
+            field.setMaxLength(120)
+            caption = QLabel(label, self)
+            caption.setBuddy(field)
+            self.default_layout.addWidget(caption, row, 0)
+            self.default_layout.addWidget(field, row, 1)
 
     def _request_sequence_rerun(self):
         # Draft appearance goes into the new setup; Cancel leaves this result intact.
@@ -294,26 +300,33 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             ticks = field.text().strip()
             if not ticks or ticks == "[default]":
                 continue
-            try:
-                values = [float(token.strip()) for token in ticks.split(",")]
-                valid = all(math.isfinite(value) for value in values)
-            except ValueError:
-                valid = False
-            message = ""
-            if not valid:
-                message = f"{axis}-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
-            elif self.plot_type == "sroc" and any(value < 0 or value > 1 for value in values):
-                message = f"{axis}-axis SROC ticks must lie between 0 and 1."
-            else:
-                measure = str(self._scalar(self._params.get("measure", "")))
-                if self.plot_type not in {"regression", "sroc"} and measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
-                    message = "X-axis ticks must be positive for a logarithmic effect axis."
+            message = self._tick_error(ticks, axis)
             if message:
                 self.mark_commit_failed(message)
                 if focus:
                     field.setFocus()
                 return False
         return True
+
+    def _tick_error(self, ticks, axis):
+        try:
+            values = [float(token.strip()) for token in ticks.split(",")]
+            valid = all(math.isfinite(value) for value in values)
+        except ValueError:
+            valid = False
+        if not valid:
+            return f"{axis}-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
+        if self.plot_type == "sroc":
+            if any(value < 0 or value > 1 for value in values):
+                return f"{axis}-axis SROC ticks must lie between 0 and 1."
+            return ""
+        measure = str(self._scalar(self._params.get("measure", "")))
+        logarithmic = (self.plot_type != "regression" and
+                       measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and
+                       self.axis_scale.currentData() != "natural")
+        if logarithmic and any(value <= 0 for value in values):
+            return "X-axis ticks must be positive for a logarithmic effect axis."
+        return ""
 
     def _button_clicked(self, button):
         button_type = self.buttonBox.standardButton(button)

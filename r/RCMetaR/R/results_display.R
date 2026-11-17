@@ -3,6 +3,44 @@
 
 # Keep exact package values beside the formatted arrays consumed by the GUI.
 # Multiple fields may share one display column (for example an F test's df).
+rcmetar.table <- function(value, role, params=list(), inference="", vertical=FALSE, label.column=NULL) {
+  attr(value, "rcms.table") <- list(role=role, metric=as.character(params$measure %||% ""),
+    metric_label=if (length(params$measure)) rcmetar.display.metric.name(params) else "",
+    inference=as.character(inference %||% ""), vertical=vertical, label_column=label.column)
+  value
+}
+
+# Only unquantified named display output can be converted to supporting here.
+# Quantified arrays must already have a deliberate role from their producer.
+rcmetar.supporting.tables <- function(value) {
+  if (is.null(value)) return(value)
+  if (inherits(value, c("rma", "reitsma"))) return(value)
+  if (is.list(value)) {
+    for (i in seq_along(value)) {
+      if (length(names(value)) && names(value)[[i]] == "MAResults") next
+      value[i] <- list(rcmetar.supporting.tables(value[[i]]))
+    }
+  }
+  rcmetar.supporting.table(value)
+}
+
+rcmetar.supporting.table <- function(value) {
+  metadata <- attr(value, "rcms.table")
+  roles <- c("pooled", "coefficients", "heterogeneity", "residual_heterogeneity",
+    "overall_test", "subgroup_test", "model_fit", "model_tests", "model_specification",
+    "calculation", "study_results", "cumulative", "leave_one_out", "prediction", "supporting")
+  if (!is.null(metadata)) {
+    if (length(metadata$role) != 1L || !(metadata$role %in% roles))
+      stop("Missing or unknown result table role.", call.=FALSE)
+    return(value)
+  }
+  if (!is.null(attr(value, "rcms.numeric")))
+    stop("Missing or unknown result table role.", call.=FALSE)
+  if (length(names(value)) || length(dim(value)))
+    value <- rcmetar.table(value, "supporting")
+  value
+}
+
 rcmetar.numeric.fields <- function(display, column, role, values, scale="", level=NA_real_, header.row=TRUE) {
   body <- if (is.null(dim(display))) 1L else nrow(display) - as.integer(header.row)
   stopifnot(length(values) == body * length(column), length(role) == length(column))
@@ -114,7 +152,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     if (use.t) overall <- cbind(overall, c("df", as.character(res$dfs)))
     overall <- rcmetar.numeric.fields(overall, seq_len(ncol(overall)),
       c("statistic", "p", if (use.t) "df"), c(res$zval, res$pval, if (use.t) res$dfs))
-    arrays <- c(arrays, list(overall))
+    arrays <- c(arrays, list(rcmetar.table(overall, "overall_test", params, res$test)))
     table.titles <- c(table.titles, rcmetar.overall.test.heading(res, params))
   }
   prediction <- rcmetar.summary.prediction(res, params, transform, n, result.digits)
@@ -135,6 +173,10 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "calculation.table" = calculation.table,
     "calculation.scale" = scale.str)
   class(summary.disp) <- "summary.display"
+  summary.disp$arrays[[1]] <- rcmetar.table(summary.disp$arrays[[1]], "pooled", params, res$test)
+  summary.disp$arrays[[2]] <- rcmetar.table(summary.disp$arrays[[2]], "heterogeneity", params, res$test)
+  if (!is.null(summary.disp$calculation.table)) summary.disp$calculation.table <-
+    rcmetar.table(summary.disp$calculation.table, "calculation", params, res$test)
   summary.disp
 }
 
@@ -149,7 +191,7 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
                    format.p.value.display(test$QMp, params$digits)))
   table <- rcmetar.numeric.fields(table, c(2L, 3L, 4L, if (use.f) 3L),
     c("statistic", "df", "p", if (use.f) "df2"), c(test$QM, test$df, test$QMp, if (use.f) test$df2))
-  summary$arrays <- c(summary$arrays, list(table))
+  summary$arrays <- c(summary$arrays, list(rcmetar.table(table, "subgroup_test", params, test$test)))
   summary$table.titles <- c(summary$table.titles, "Test of subgroup differences")
   summary$notes <- c(summary$notes, "Subgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups.")
   summary
@@ -398,7 +440,7 @@ create.regression.display <- function(res, params, display.data) {
                          " replicates.\n\n", params$extra.attempts,
                          " resampling attempts failed.\n\nMetric: ", metric.name, sep="")
     reg.disp <- list(model.title=model.title, table.titles="Coefficient estimates",
-                     arrays=list(reg.array), MAResults=res)
+                     arrays=list(rcmetar.table(reg.array, "supporting", params, label.column=0L)), MAResults=res)
     class(reg.disp) <- "summary.display"
     return(reg.disp)
   }
@@ -421,6 +463,7 @@ create.regression.display <- function(res, params, display.data) {
     c("Heterogeneity estimator", estimator),
     c("Inference Method", inference.label)
   ))
+  overview <- rcmetar.numeric.fields(overview, 2L, "df", c(NA, NA, residual.df, NA, NA))
 
   specification.rows <- list()
   continuous.names <- display.data$cont.cov.names
@@ -461,7 +504,9 @@ create.regression.display <- function(res, params, display.data) {
     "Coefficient estimates"
   }
 
-  arrays <- list(overview, specification, reg.array)
+  arrays <- list(rcmetar.table(overview, "model_fit", params),
+                 rcmetar.table(specification, "model_specification", params),
+                 rcmetar.table(reg.array, "coefficients", params, res$test, label.column=0L))
   titles <- c("Model overview", "Model specification", coefficient.title)
   if (params$measure %in% c("HR", "IRR")) {
     multipliers <- rcmetar.regression.summary.array(lapply(seq_along(res$b), function(i) c(
@@ -486,6 +531,16 @@ create.regression.display <- function(res, params, display.data) {
       c(res$tau2 %||% NA_real_, res$se.tau2 %||% NA_real_, sqrt(res$tau2 %||% NA_real_),
         res$I2 %||% NA_real_, res$H2 %||% NA_real_, res$R2 %||% NA_real_),
       c(rep(rcmetar.analysis.scale(params), 3), "percent", "", "percent"))
+    numbers <- attr(heterogeneity, "rcms.numeric")
+    numbers$column <- c(numbers$column, 2L)
+    numbers$role <- c(numbers$role, "i2")
+    numbers$scale <- c(numbers$scale, rep("percent", nrow(heterogeneity)-1L))
+    numbers$level <- c(numbers$level, NA_real_)
+    numbers$values <- cbind(numbers$values, c(NA, NA, NA, res$I2 %||% NA_real_, NA, NA))
+    attr(heterogeneity, "rcms.numeric") <- numbers
+    metadata <- list(role="model_fit", metric=as.character(params$measure), metric_label=metric.name,
+                     inference="", vertical=FALSE, label_column=NULL, report_title="Residual model fit")
+    attr(heterogeneity, "rcms.table") <- metadata
     arrays <- c(arrays, list(heterogeneity))
     titles <- c(titles, "Residual heterogeneity")
   }
@@ -511,7 +566,7 @@ create.regression.display <- function(res, params, display.data) {
   tests <- rcmetar.regression.summary.array(test.rows, c("Test", "Statistic", "df", "p-value"))
   raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, res$QEp)
   tests <- rcmetar.numeric.fields(tests, c(2L, 3L, 3L, 4L), c("statistic", "df", "df2", "p"), do.call(rbind, raw.tests))
-  arrays <- c(arrays, list(tests))
+  arrays <- c(arrays, list(rcmetar.table(tests, "model_tests", params, res$test, label.column=0L)))
   titles <- c(titles, "Model tests")
 
   notes <- if (!identical(as.character(res$method), "FE")) {
@@ -610,7 +665,7 @@ adjusted_means_display <- function(res, params, display.data) {
   adj.disp <- list(
     "model.title" = model.title,
     "table.titles" = c("Adjusted Means"),
-    "arrays" = list(arr1=adj.array),
+    "arrays" = list(arr1=rcmetar.table(adj.array, "pooled", params, label.column=0L)),
     "MAResults" = list(b=estimates, se=se, ci.lb=ci.lb, ci.ub=ci.ub)
   )
   class(adj.disp) <- "summary.display"
@@ -680,7 +735,8 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   }
   table.titles <- if (workflow == "cumulative") "Cumulative results" else "Leave-one-out results"
   overall.array <- rcmetar.numeric.fields(overall.array, columns, roles, raw, scales, levels)
-  arrays <- list(arr1=overall.array)
+  arrays <- list(arr1=rcmetar.table(overall.array, if (workflow == "cumulative") "cumulative" else "leave_one_out",
+                                  params, label.column=if (workflow == "cumulative") 1L else 0L))
   overall.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
              "MAResults" = res )
   class(overall.disp) <- "summary.display"
@@ -744,9 +800,10 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     raw.het, c("", "", "", "percent", if (any(random)) analysis.scale))
   prediction.array <- rcmetar.numeric.fields(prediction.array, 2:3, c("pi_lower", "pi_upper"), raw.prediction,
     rep(prediction.scales, 2), level)
-  arrays <- list(arr1=subgroup.array, arr2=het.array)
+  arrays <- list(arr1=rcmetar.table(subgroup.array, "pooled", params, overall.test, label.column=0L),
+                 arr2=rcmetar.table(het.array, "heterogeneity", params, overall.test, label.column=0L))
   if (any(nzchar(prediction.array[-1,2]))) {
-    arrays <- c(arrays, list(prediction.array))
+    arrays <- c(arrays, list(rcmetar.table(prediction.array, "prediction", params, overall.test, label.column=0L)))
     table.titles <- c(table.titles, "Prediction interval")
   }
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
@@ -771,7 +828,7 @@ rcmetar.summary.prediction <- function(res, params, transform, n, result.digits)
       note <- paste0(display.confidence.level(params),
         "% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.",
         if (!is.null(display$note)) paste0(" ", display$note) else "")
-      return(list(interval=interval, note=note))
+      return(list(interval=rcmetar.table(interval, "prediction", params, res$test), note=note))
     }
   }
   NULL

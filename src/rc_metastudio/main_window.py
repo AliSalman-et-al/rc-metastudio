@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
 import copy
 
 if TYPE_CHECKING:
+    from rc_metastudio.manuscript_report import ManuscriptReport
     import ui_main_window as _ui_main_window
 else:
     from rc_metastudio import ui_main_window as _ui_main_window
@@ -1115,9 +1116,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
-    def analysis(self, results: AnalysisResult, *, change_settings=None):
+    def analysis(self, results: AnalysisResult, *, change_settings=None, manuscript: ManuscriptReport | None = None):
         try:
-            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings)
+            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings, manuscript=manuscript)
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(

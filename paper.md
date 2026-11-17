@@ -8,7 +8,7 @@ tags:
   - Python
   - R
 # DRAFT, NOT FOR SUBMISSION. Author list and affiliations are copied from
-# CITATION.cff on 17 November 2026 with provisional approval from Ali Salman.
+# CITATION.cff on 17 November 2026 for author review; authorship is unconfirmed.
 # Each co-author's consent, contribution, current affiliation, ORCID, funding
 # and conflicts are unconfirmed. See artifacts/planning/joss/writing/claims.md
 # and artifacts/planning/joss/writing-revision/claims.md.

@@ -7,7 +7,7 @@ test_that("newly reported prediction bounds follow public metafor across inferen
     fit <- metafor::rma.uni(yi=data@y, sei=data@SE, method="REML", test=test, level=90)
     params <- list(measure="OR", digits=6, conf.level=90)
     report <- RCMetaR:::create.summary.disp(data, params, fit, "Random-effects model")
-    table <- report$arrays[[which(report$table.titles == "Prediction interval")]]
+    table <- report$arrays[[which(vapply(report$arrays, function(table) identical(attr(table, "rcms.table")$role, "prediction"), logical(1)))]]
     expect_equal(unname(table[1, ]), c("Lower bound (90% PI)", "Upper bound (90% PI)"))
     reference <- stats::predict(fit, level=90)
     expect_equal(as.numeric(table[2, 1:2]), exp(c(reference$pi.lb, reference$pi.ub)), tolerance=1e-6)
@@ -342,7 +342,7 @@ test_that("unavailable regression heterogeneity fields do not discard the analys
         studies.display.col=character(), factor.n.levels=numeric(), n.cont.covs=1,
         cont.cov.names="latitude", cont.cov.ranges=list(latitude=c(6,55)),
         factor.cov.names=character(), factor.ref.levels=character()))
-    table <- display$arrays[[which(display$table.titles == "Residual heterogeneity")]]
+    table <- display$arrays[[which(vapply(display$arrays, function(table) identical(attr(table, "rcms.table")$report_title, "Residual model fit"), logical(1)))]]
     expect_true(any(table[-1,2] == "Not estimable"))
     expect_equal(nrow(attr(table, "rcms.numeric")$values), nrow(table)-1L)
   }
@@ -460,6 +460,13 @@ test_that("multi-level factors receive a joint moderator test", {
 
   expect_match(rendered, "group (joint)", fixed = TRUE)
   expect_match(rendered, "Categorical; reference level: A", fixed = TRUE)
+})
+
+test_that("quantified report arrays require an explicit producer role before attachment", {
+  display <- RCMetaR:::rcmetar.numeric.fields(rbind("Estimate", "1"), 1L, "estimate", 1)
+  expect_error(RCMetaR:::.rcmetar.attach.request(list(Summary=list(values=display)), list(workflow="standard")), "table role")
+  display <- RCMetaR:::rcmetar.table(display, "unknown")
+  expect_error(RCMetaR:::.rcmetar.attach.request(list(Summary=list(values=display)), list(workflow="standard")), "table role")
 })
 
 test_that("forest plot p-value labels use small-p display convention", {

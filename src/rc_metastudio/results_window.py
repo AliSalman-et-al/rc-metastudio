@@ -13,8 +13,6 @@ from rc_metastudio.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
 from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
-from dataclasses import replace
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable
 from PyQt6.QtCore import (
     QByteArray,
@@ -79,7 +77,7 @@ from rc_metastudio import (
 from rc_metastudio.analysis_results import (
     AnalysisResult,
     PlotCapability,
-    parse_analysis_result,
+    normalize_analysis_result,
 )
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
@@ -93,6 +91,7 @@ from rc_metastudio.settings import (
 )
 
 if TYPE_CHECKING:
+    from rc_metastudio.manuscript_report import ManuscriptReport
     from ui_results_window import Ui_ResultsWindow
 else:
     from rc_metastudio.ui_results_window import Ui_ResultsWindow
@@ -115,7 +114,6 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
     "tiff": (".tif", ".tiff"),
     "svg": (".svg", ".svgz"),
 }
-NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
 SECTION_SPACING = ROW_HEIGHT
 MAX_VECTOR_PLOT_SCALE = 4.0
@@ -257,6 +255,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         parent=None,
         plot_service: PlotService | None = None,
         change_settings: Callable[[dict[str, object]], None] | None = None,
+        manuscript: "ManuscriptReport | None" = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
@@ -297,6 +296,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.borders = []
         self.plot_service = plot_service or PlotService()
         self._change_settings = change_settings
+        self._prepared_manuscript = manuscript
 
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
@@ -340,7 +340,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene = QGraphicsScene(self)
 
-        results = _normalize_results(results)
+        results = normalize_analysis_result(results)
         self.results = results
 
         self.images = results.images
@@ -441,6 +441,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not self.report_action.isChecked():
             self._apply_fit_width()
 
+    def _identity_facts(self, workflow, context, rest, description, separator):
+        details = [workflow] if context and workflow != 'Meta-analysis' else []
+        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
+        models, confidence = self._identity_model_details(self.results.details)
+        study_count = _identity_context_facts(rest, details, confidence, study_count)
+        if separator:
+            details.append(description if description.startswith('Entered effect estimate') else description.rpartition(' · ')[2])
+        details.extend(model + (f' ({estimator})' if estimator else '')
+                       for model, estimator in dict.fromkeys(models))
+        details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
+        details.extend(dict.fromkeys(confidence))
+        if study_count:
+            details = [detail for detail in details if detail != study_count + ' eligible']
+            suffix = ' included' if any(detail.endswith(' eligible') for detail in details) else (' study' if study_count == '1' else ' studies')
+            details.append(study_count + suffix)
+        details = list(dict.fromkeys(details))
+        return details
+
     def _setup_identity(self):
         identity = self.results.identity or "Analysis results"
         parent = self.parent()
@@ -454,34 +472,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             name = source_name
             separator = ' · ' if first != source_name else ''
             description = first[len(source_name):].removeprefix(' · ')
-        details = [workflow] if context and workflow != 'Meta-analysis' else []
-        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
-        models, confidence = self._identity_model_details(self.results.details)
-        for line in rest:
-            for fact in line.split(' · '):
-                if fact.startswith('k = '):
-                    study_count = fact.removeprefix('k = ')
-                elif fact.endswith('% CI'):
-                    confidence.append(fact)
-                elif fact.startswith('Comparison: '):
-                    comparison = fact.removeprefix('Comparison: ')
-                    details.append(comparison.replace(' / ', ' vs ', 1) if comparison.count(' / ') == 1 else fact)
-                elif fact:
-                    if fact.startswith('Primary test: '):
-                        method = fact.removeprefix('Primary test: ')
-                        fact = re.sub(r'^Deeks(?=\s|$)', 'Deeks test', method)
-                    details.append(fact)
-        if separator:
-            details.append(description if description.startswith('Entered effect estimate') else description.rpartition(' · ')[2])
-        details.extend(model + (f' ({estimator})' if estimator else '')
-                       for model, estimator in dict.fromkeys(models))
-        details.extend(line for line in self.results.details.splitlines() if line.startswith('Moderators: '))
-        details.extend(dict.fromkeys(confidence))
-        if study_count:
-            details = [detail for detail in details if detail != study_count + ' eligible']
-            suffix = ' included' if any(detail.endswith(' eligible') for detail in details) else (' study' if study_count == '1' else ' studies')
-            details.append(study_count + suffix)
-        details = list(dict.fromkeys(details))
+        details = self._identity_facts(workflow, context, rest, description, separator)
         title_font = QFont(self.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
         title_font.setWeight(QFont.Weight.DemiBold)
@@ -528,7 +519,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_manuscript_page(self):
         from rc_metastudio.manuscript_report import ManuscriptReport
-        self.manuscript = ManuscriptReport.from_result(self.results)
+        self.manuscript = self._prepared_manuscript if self._prepared_manuscript is not None else ManuscriptReport.from_result(self.results)
         self.manuscript_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.manuscript_page)
         self.manuscript_text = QTextBrowser(self.manuscript_page)
@@ -971,7 +962,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.statusbar.showMessage(name + " copied", 4000)
 
     def _export_report(self):
-        from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+        from rc_metastudio.manuscript_report import write_docx, write_pdf
         path, selected = QFileDialog.getSaveFileName(self, "Export report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
             extension = "docx" if "docx" in selected else "pdf"
@@ -979,7 +970,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             if not self._confirm_export_destination(path, destination):
                 return
             path = destination
-            report = ManuscriptReport.from_result(self.results)
+            report = self.manuscript
             (write_docx if extension == "docx" else write_pdf)(report, path)
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
@@ -1733,27 +1724,35 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 
+    def _plot_export_options(self, artifact, unscaled_image):
+        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        from rc_metastudio.manuscript_report import figure_source
+        source, ratio = figure_source(artifact.display_path())
+        from PyQt6.QtSvg import QSvgRenderer
+        if isinstance(source, QSvgRenderer):
+            width = source.defaultSize().width() / 96
+        else:
+            width = source.width() / max(1, source.dotsPerMeterX() * .0254)
+        dialog = PlotExportDialog(artifact.export_formats(), width, width / ratio, self, resizable=bool(artifact.params_path), native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96)
+        if not dialog.exec():
+            return
+        format = dialog.format_control.currentData()
+        dimensions = dialog.dimensions()
+        if not artifact.params_path:
+            unscaled_image = QImage(artifact.image_path)
+
+        return format, dimensions, unscaled_image
+
     def save_image_as(self, artifact, unscaled_image=None, format=None):
         if not isinstance(artifact, PlotArtifact):
             artifact = self.create_plot_artifact("", artifact, params_path=None)
 
         dimensions = None
         if format is None:
-            from rc_metastudio.plot_export_dialog import PlotExportDialog
-            from rc_metastudio.manuscript_report import figure_source
-            source, ratio = figure_source(artifact.display_path())
-            from PyQt6.QtSvg import QSvgRenderer
-            if isinstance(source, QSvgRenderer):
-                width = source.defaultSize().width() / 96
-            else:
-                width = source.width() / max(1, source.dotsPerMeterX() * .0254)
-            dialog = PlotExportDialog(artifact.export_formats(), width, width / ratio, self, resizable=bool(artifact.params_path), native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96)
-            if not dialog.exec():
+            options = self._plot_export_options(artifact, unscaled_image)
+            if options is None:
                 return
-            format = dialog.format_control.currentData()
-            dimensions = dialog.dimensions()
-            if not artifact.params_path:
-                unscaled_image = QImage(artifact.image_path)
+            format, dimensions, unscaled_image = options
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
@@ -1815,52 +1814,19 @@ def _report_heading(title):
     return title.replace("Model Results", "Model results")
 
 
-def _normalize_results(results: AnalysisResult) -> AnalysisResult:
-    metadata = {"Inference Method"}
-    details = results.details
-    inference = results.texts.get("Inference Method")
-    if inference:
-        lines = [line for line in details.splitlines() if not line.startswith("Inference:")]
-        lines.append("Inference: " + inference)
-        details = "\n".join(lines)
-    results = replace(results, details=details,
-                      texts=MappingProxyType({key: value for key, value in results.texts.items() if key not in metadata}),
-                      sections=tuple(section for section in results.sections if section.source_key not in metadata))
-    if results.texts or results.images:
-        return results
-    normalized: dict[str, object] = {
-        "version": results.version,
-        "texts": dict(results.texts),
-        "images": dict(results.images),
-        "display_images": dict(results.display_images),
-        "image_var_names": dict(results.image_var_names),
-        "image_params_paths": dict(results.image_params_paths),
-        "image_order": None
-        if results.image_order is None
-        else list(results.image_order),
-        "plot_capabilities": {},
-        "sections": [
-            {
-                "id": section.semantic_id,
-                "kind": section.kind,
-                "order": section.order,
-                "title": section.title,
-                "source_key": section.source_key,
-            }
-            for section in results.sections
-        ],
-    }
-
-    if not normalized["texts"] and not normalized["images"]:
-        normalized["texts"]["No Results"] = NO_RESULTS_MESSAGE
-        normalized["sections"].append(
-            {
-                "id": "result.none",
-                "kind": "text",
-                "order": 0,
-                "title": "No results",
-                "source_key": "No Results",
-            }
-        )
-
-    return parse_analysis_result(normalized)
+def _identity_context_facts(rest, details, confidence, study_count):
+    for line in rest:
+        for fact in line.split(' · '):
+            if fact.startswith('k = '):
+                study_count = fact.removeprefix('k = ')
+            elif fact.endswith('% CI'):
+                confidence.append(fact)
+            elif fact.startswith('Comparison: '):
+                comparison = fact.removeprefix('Comparison: ')
+                details.append(comparison.replace(' / ', ' vs ', 1) if comparison.count(' / ') == 1 else fact)
+            elif fact:
+                if fact.startswith('Primary test: '):
+                    method = fact.removeprefix('Primary test: ')
+                    fact = re.sub(r'^Deeks(?=\s|$)', 'Deeks test', method)
+                details.append(fact)
+    return study_count

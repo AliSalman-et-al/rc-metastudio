@@ -637,8 +637,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     result.request <- if (is.null(validated.requests)) artifact.request else validated.requests
     result <- .rcmetar.attach.plot.display.artifacts(result, artifact.request)
     result <- .rcmetar.attach.plot.capabilities(result, artifact.request)
-    attr(result, "rcmetar.request") <- result.request
-    result
+    .rcmetar.attach.request(result, result.request)
 }
 
 rcmetar.run.diagnostic.analyses <- function(diagnostic.data, methods=NULL, params.list=NULL, workflow="standard", selected.cov=NULL, request.version=1, request.list=NULL) {
@@ -1086,6 +1085,26 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 .rcmetar.attach.request <- function(result, request) {
     if (is.list(result)) {
         attr(result, "rcmetar.request") <- request
+        authorities <- character()
+        tests <- character()
+        collect <- function(value) {
+            authorities <<- c(authorities, attr(value, "rcms.authority"))
+            if (inherits(value, "rma")) {
+                authorities <<- c(authorities, "metafor")
+                tests <<- c(tests, value$test)
+            } else if (inherits(value, "reitsma")) {
+                authorities <<- c(authorities, "mada")
+            } else if (is.list(value)) for (child in value) collect(child)
+        }
+        collect(result)
+        packages <- sort(unique(authorities))
+        attr(result, "rcms.execution") <- list(
+            packages=setNames(lapply(packages, function(package) as.character(utils::packageVersion(package))), packages),
+            inference=unique(tests))
+        for (name in names(result)) {
+            if (name %in% c("Summary", "res.info") || inherits(result[[name]], "summary.display"))
+                result[[name]] <- rcmetar.supporting.tables(result[[name]])
+        }
     }
     result
 }

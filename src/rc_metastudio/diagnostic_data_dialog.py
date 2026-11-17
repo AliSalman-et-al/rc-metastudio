@@ -588,8 +588,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         sens_ready = tp is not None and fn is not None and tp + fn > 0
         spec_ready = fp is not None and tn is not None and fp + tn > 0
         metrics = [metric for metric in DIAGNOSTIC_METRICS
-                   if (sens_ready if metric == "Sens" else spec_ready if metric == "Spec"
-                       else sens_ready and spec_ready)]
+                   if _diagnostic_metric_ready(metric, sens_ready, spec_ready)]
         for metric in DIAGNOSTIC_METRICS:
             self.analysis_unit.set_derived_effect_preview(
                 metric, self.arm_key, None, None, None,
@@ -1101,3 +1100,11 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def redo(self):
         self._field_history.redo()
+
+
+def _diagnostic_metric_ready(metric, sensitivity_ready, specificity_ready):
+    if metric == "Sens":
+        return sensitivity_ready
+    if metric == "Spec":
+        return specificity_ready
+    return sensitivity_ready and specificity_ready

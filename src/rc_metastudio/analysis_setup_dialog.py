@@ -164,12 +164,10 @@ class _DiagnosticMethodPanel(object):
         return self.methods[str(self.combo.currentText())]
 
     def populate(self):
-        self.owner.analysis_service.prepare_method_dataset(
-            self.owner.model, "diagnostic", var_name="tmp_obj"
-        )
+        data = self.owner.analysis_service.prepare_method_dataset(self.owner.model, "diagnostic")
         metrics = [metric for group in self.owner.diagnostic_metrics if group in ('lr', 'dor')
                    for metric in DIAGNOSTIC_METRIC_GROUPS[group]]
-        self.methods = self.owner._methods_for_metrics(metrics)
+        self.methods = self.owner._methods_for_metrics(metrics, data)
         names = [
             name
             for name in self.methods
@@ -966,6 +964,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             result = operation()
             if string_result_is_failure and isinstance(result, str):
                 raise RuntimeError(result)
+            from rc_metastudio.analysis_results import AnalysisResult, normalize_analysis_result
+            if isinstance(result, AnalysisResult):
+                result = normalize_analysis_result(self._with_result_identity(result))
+                from rc_metastudio.manuscript_report import ManuscriptReport
+                manuscript = ManuscriptReport.from_result(result)
+            callback = getattr(self.parentWidget(), "analysis", None)
+            if not callable(callback):
+                raise RuntimeError("analysis configuration has no results owner")
+            change_settings = self._change_settings_callback() if isinstance(result, AnalysisResult) else None
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
@@ -987,8 +994,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.activateWindow()
             self.analysis_error_toggle.setFocus()
         if succeeded:
+            assert callable(callback)
             self.done(QDialog.DialogCode.Accepted.value)
-            self._deliver_result(result)
+            if change_settings is not None:
+                callback(result, change_settings=change_settings, manuscript=manuscript)
+            else:
+                callback(result)
 
     def _expand_error_details(self, expanded):
         self.analysis_error_details.setVisible(expanded)
@@ -1016,19 +1027,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except (TypeError, RuntimeError):
             pass
 
-    def _deliver_result(self, result):
-        parent = self.parentWidget()
-        callback = getattr(parent, "analysis", None)
-        if not callable(callback):
-            raise RuntimeError("analysis configuration has no results owner")
-        from rc_metastudio.analysis_results import AnalysisResult
-        if isinstance(result, AnalysisResult):
-            result = self._with_result_identity(result)
-        if isinstance(result, AnalysisResult):
-            callback(result, change_settings=self._change_settings_callback())
-        else:
-            callback(result)
-
     def _with_result_identity(self, result):
         model_label = self.method_cbo_box.currentText()
         if self.is_meta_regression and self.data_type != "diagnostic":
@@ -1041,24 +1039,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
             fits=fits,
         )
-        from rc_metastudio import r_bridge
-        methods_used = [self.current_method]
-        if self.data_type == "diagnostic" and not self.is_meta_regression:
-            methods_used = [configuration[0] for configuration in self.diagnostic_analysis_details.values()
-                            if configuration is not None]
-        packages = sorted({"mada" if method == "diagnostic.reitsma" else "metafor" for method in methods_used})
-        software = ", ".join(f"{name} {r_bridge.get_r_package_version(name)}" for name in packages)
         context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label()
         if self.model.current_effect not in {"PFT", "YUQ", "YUY"}:
             metric = metric[:1].lower() + metric[1:]
-        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label
+        model = self._manuscript_model_label(model_label)
         outcome = self.model.current_sheet.name
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits, result.texts.get("Inference Method", ""),
+                                self.analysis_type, details, fits, result.inference_methods,
                                 missing_years=any(not study.year for study in self._manuscript_studies()))
         correction = context.partition(". ")[2]
         if correction:
@@ -1066,16 +1057,34 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             details += "\n" + correction
         model_info = self._manuscript_model_info()
         arms = self._manuscript_arms()
-        return replace(result, identity=identity, details=details, software=software,
+        return replace(result, identity=identity, details=details,
                        analysis_method=self.current_method,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(arms),
-                       manuscript_favours=() if self.data_type == "diagnostic" else tuple(label.removeprefix("Favours ").strip() for label in
-                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
+                       manuscript_favours=self._manuscript_favours(arms),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison="" if self.data_type == "diagnostic" and arms == ["Index test"] else ("Index test: " if self.data_type == "diagnostic" else "Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+                       manuscript_comparison=self._manuscript_comparison(arms))
+
+    def _manuscript_model_label(self, model_label):
+        if "random" in model_label.lower():
+            return "random-effects"
+        if "fixed" in model_label.lower():
+            return "fixed-effect"
+        return model_label
+
+    def _manuscript_favours(self, arms):
+        if self.data_type == "diagnostic":
+            return ()
+        labels = self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])
+        return tuple(label.removeprefix("Favours ").strip() for label in labels[:len(arms)])
+
+    def _manuscript_comparison(self, arms):
+        if self.data_type == "diagnostic":
+            return "" if arms == ["Index test"] else "Index test: " + " / ".join(arms)
+        prefix = "Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: "
+        return prefix + " / ".join(arms)
 
     def _manuscript_arms(self) -> list[str]:
         names = self.model.arm_names
@@ -1118,6 +1127,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             isinstance(v, (int, float)) and math.isfinite(v) for v in row
         )]
         return [("Participants", f"{sum(sum(row) for row in complete):g}")] if complete and len(complete) == len(raw) else []
+
 
     def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
@@ -1270,13 +1280,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             cbo_box = self.method_cbo_box
             param_box = self.parameter_grp_box
 
-        tmp_obj_name = "tmp_obj"
-        self.analysis_service.prepare_method_dataset(
-            self.model, self.data_type, var_name=tmp_obj_name
-        )
+        data = self.analysis_service.prepare_method_dataset(self.model, self.data_type)
         metrics = self._method_query_metrics()
         metric = metrics[0]
-        self.available_method_d = self._methods_for_metrics(metrics)
+        self.available_method_d = self._methods_for_metrics(metrics, data)
         if self.data_type == "continuous" and metric == "Mean":
             family = analysis_identity.metric_label(self.model)
             self.available_method_d = {label.replace("Continuous", family, 1): key
@@ -1293,10 +1300,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             excluded = SHARED_DIAGNOSTIC_PARAMS if self._combined_diagnostic else ()
             self.ui_for_params(excluded_names=excluded)
 
-    def _methods_for_metrics(self, metrics):
+    def _methods_for_metrics(self, metrics, data):
         method_query = {
             "for_data_type": self.data_type,
-            "data_obj_name": "tmp_obj",
+            "data": data,
         }
         if self.analysis_type is not None:
             method_query["workflow"] = self.analysis_type
@@ -1738,9 +1745,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if hasattr(self, "_lr_dor_method_row"):
             panels.extend((self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box))
         grids = [(panel, grid) for panel in panels if isinstance(grid := panel.layout(), QGridLayout)]
-        labels = [field for _, grid in grids for index in range(grid.count())
-                  if (item := grid.itemAt(index)) is not None and grid.getItemPosition(index)[1] == 0 and grid.getItemPosition(index)[3] == 1
-                  and isinstance(field := item.widget(), QLabel)]
+        labels = _grid_field_labels(grids)
         label_cap = self.fontMetrics().height() * 18
         label_width = min(label_cap, max([field.sizeHint().width() for field in labels]
                                         + [label.minimumSizeHint().width() for _, _, label, _ in rows]))
@@ -2079,20 +2084,9 @@ def add_plot_params(specs_form):
     specs_form.current_param_vals["fp_outpath"] = forest_outpath
     specs_form.current_param_vals["fp_display_path"] = _display_svg_path(forest_outpath)
 
-    plot_lb = _text_value(specs_form.plot_lb_le)
-    specs_form.current_param_vals["fp_plot_lb"] = "[default]"
-    if plot_lb != "[default]" and parse_plot_bound(plot_lb) is not False:
-        specs_form.current_param_vals["fp_plot_lb"] = plot_lb
-
-    plot_ub = _text_value(specs_form.plot_ub_le)
-    specs_form.current_param_vals["fp_plot_ub"] = "[default]"
-    if plot_ub != "[default]" and parse_plot_bound(plot_ub) is not False:
-        specs_form.current_param_vals["fp_plot_ub"] = plot_ub
-
-    xticks = _text_value(specs_form.x_ticks_le)
-    specs_form.current_param_vals["fp_xticks"] = "[default]"
-    if xticks != "[default]" and is_valid_plot_tick_list(xticks):
-        specs_form.current_param_vals["fp_xticks"] = xticks
+    specs_form.current_param_vals["fp_plot_lb"] = _validated_plot_bound(specs_form.plot_lb_le)
+    specs_form.current_param_vals["fp_plot_ub"] = _validated_plot_bound(specs_form.plot_ub_le)
+    specs_form.current_param_vals["fp_xticks"] = _validated_plot_ticks(specs_form.x_ticks_le)
 
     specs_form.current_param_vals["fp_show_summary_line"] = (
         specs_form.show_summary_line.isChecked()
@@ -2237,3 +2231,17 @@ def _diagnostic_pending_requests(specs_form):
     return joint, pending
 
 
+
+
+def _grid_field_labels(grids):
+    labels = []
+    for _, grid in grids:
+        for index in range(grid.count()):
+            item = grid.itemAt(index)
+            _, column, _, span = grid.getItemPosition(index)
+            if item is None or column != 0 or span != 1:
+                continue
+            field = item.widget()
+            if isinstance(field, QLabel):
+                labels.append(field)
+    return labels

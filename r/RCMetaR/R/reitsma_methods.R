@@ -236,9 +236,10 @@ rcmetar.reitsma.display.interval <- function(interval, level, kind="CI", digits=
     )
     values <- c(interval[["estimate"]], interval[["lower"]], interval[["upper"]])
     display <- stats::setNames(vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits), labels)
-    rcmetar.numeric.fields(display, 1:3,
+    display <- rcmetar.numeric.fields(display, 1:3,
       c("estimate", if (kind == "PI") c("pi_lower", "pi_upper") else c("ci_lower", "ci_upper")),
       values, "proportion", c(NA, 100*level, 100*level))
+    rcmetar.table(display, if (kind == "PI") "prediction" else "pooled", vertical=TRUE)
 }
 
 rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
@@ -264,7 +265,8 @@ rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
     upper.label <- paste0("Upper bound (", rcmetar.reitsma.display.level(level), "% interval)")
     display[[lower.label]] <- vapply(ratios[rows, 3L], rcmetar.reitsma.display.number, character(1), digits=digits)
     display[[upper.label]] <- vapply(ratios[rows, 4L], rcmetar.reitsma.display.number, character(1), digits=digits)
-    rcmetar.numeric.fields(display, 1:4, rep("value", 4), ratios[rows, 1:4], header.row=FALSE)
+    display <- rcmetar.numeric.fields(display, 1:4, rep("value", 4), ratios[rows, 1:4], header.row=FALSE)
+    rcmetar.table(display, "supporting")
 }
 
 rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
@@ -284,7 +286,8 @@ rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
         check.names=FALSE,
         row.names=NULL
     )
-    rcmetar.numeric.fields(display, 2L, "value", values, "proportion", header.row=FALSE)
+    display <- rcmetar.numeric.fields(display, 2L, "value", values, "proportion", header.row=FALSE)
+    rcmetar.table(display, "supporting")
 }
 
 rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {
@@ -815,6 +818,16 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         `Summary specificity`=rcmetar.reitsma.display.interval(point$specificity, level, "CI", digits),
         `False-positive rate`=rcmetar.reitsma.display.interval(point$false.positive.rate, level, "CI", digits)
     )
+    if (!is.null(summary.point.display)) {
+        metrics <- c("Sens", "Spec", "FPR")
+        labels <- c("Sensitivity", "Specificity", "False-positive rate")
+        for (i in seq_along(summary.point.display)) {
+            metadata <- attr(summary.point.display[[i]], "rcms.table")
+            metadata$metric <- metrics[[i]]
+            metadata$metric_label <- labels[[i]]
+            attr(summary.point.display[[i]], "rcms.table") <- metadata
+        }
+    }
     prediction.display <- if (is.null(extracted$prediction)) NULL else list(
         description="Underlying new-study operating characteristics",
         intervals=lapply(extracted$prediction, rcmetar.reitsma.display.interval,
@@ -822,6 +835,14 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
     )
     if (!is.null(prediction.display))
         names(prediction.display$intervals) <- c("Sensitivity", "Specificity", "False-positive rate")
+    if (!is.null(prediction.display)) {
+        for (i in seq_along(prediction.display$intervals)) {
+            metadata <- attr(prediction.display$intervals[[i]], "rcms.table")
+            metadata$metric <- c("Sens", "Spec", "FPR")[[i]]
+            metadata$metric_label <- names(prediction.display$intervals)[[i]]
+            attr(prediction.display$intervals[[i]], "rcms.table") <- metadata
+        }
+    }
     summary <- list(
         "Clinical interpretation"=clinical.interpretation,
         "Summary operating point"=summary.point.display,
@@ -848,6 +869,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         summary <- summary[intersect(desired.order, names(summary))]
     }
     plot.names <- if (length(rendered$images)) setNames("sroc", names(rendered$images)) else character()
+    attr(summary, "rcms.authority") <- "mada"
     sections <- list(list(
         id="diagnostic.reitsma.summary", kind="text", order=0L,
         title="Clinical interpretation", source_key="Summary"
@@ -1119,6 +1141,12 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
     spec.coefficients <- rcmetar.reitsma.restore.coefficient.labels(spec.coefficients, coding)
     sens.coefficients <- rcmetar.reitsma.add.reference.rows(sens.coefficients, coding)
     spec.coefficients <- rcmetar.reitsma.add.reference.rows(spec.coefficients, coding)
+    sens.coefficients <- rcmetar.table(sens.coefficients, "supporting", params)
+    spec.coefficients <- rcmetar.table(spec.coefficients, "supporting", params)
+    attr(sens.coefficients, "rcms.table")$coefficient_display <- TRUE
+    attr(spec.coefficients, "rcms.table")$coefficient_display <- TRUE
+    attr(sens.coefficients, "rcms.table")$coefficient_level <- 100*level
+    attr(spec.coefficients, "rcms.table")$coefficient_level <- 100*level
     likelihood <- .rcmetar.reitsma.likelihood.tests(
         data, formula, terms, model.terms, adjust, control)
     block.tests <- likelihood$blocks

@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from dataclasses import replace
 from types import SimpleNamespace
 from collections.abc import Callable
 
@@ -16,7 +17,7 @@ REPO_ROOT = os.getcwd()
 ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.analysis_results import NO_RESULTS_MESSAGE, parse_analysis_result
 
 prepare_generated_ui_imports()
 from rc_metastudio import progress_dialog
@@ -61,7 +62,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
             return True
 
     class Owner(QtWidgets.QWidget):
-        def analysis(self, _result, *, change_settings=None):
+        def analysis(self, _result, *, change_settings=None, manuscript=None):
             raise RuntimeError("owner callback failed")
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -82,7 +83,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     )
     monkeypatch.setattr(
         backend,
-        "run_versioned_analysis_request",
+        "run_model_analysis",
         lambda *_args, **_kwargs: {
             "version": 1,
             "texts": {"Summary": "ok"},
@@ -133,6 +134,83 @@ def _create_binary_dataset(window):
     )
 
 
+@pytest.mark.parametrize('failure', ['identity', 'report'])
+@pytest.mark.parametrize('content', ['inference', 'empty'])
+def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkeypatch, failure, content):
+    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.manuscript_report import ManuscriptReport
+    from rc_metastudio.results_window import ResultsWindow
+
+    build_report = ManuscriptReport.from_result
+
+    app, window = automation.start_automation()
+    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    delivered = []
+    try:
+        _create_binary_dataset(window)
+        monkeypatch.setattr(backend, 'dataset_to_simple_binary_r_object', lambda *a, **k: None)
+        monkeypatch.setattr(backend, 'get_available_methods', lambda **k: {'Random': 'binary.random'})
+        monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
+        monkeypatch.setattr(backend, 'get_analysis_plot_capabilities', lambda *a, **k: [])
+        monkeypatch.setattr(backend, 'reset_r_working_directory', lambda: None)
+        monkeypatch.setattr(window, 'analysis', lambda *a, **k: delivered.append(a))
+        form = window._build_analysis_specs_dialog(confidence_level=95.0)
+        form.show()
+        def fail(*args, **kwargs):
+            raise RuntimeError(f'{failure} preparation failed')
+        if failure == 'identity':
+            monkeypatch.setattr(form, '_with_result_identity', fail)
+        else:
+            monkeypatch.setattr(form, '_with_result_identity', lambda result: result)
+            monkeypatch.setattr(ManuscriptReport, 'from_result', fail)
+        texts = {'Summary': 'Pooled result', 'Inference Method': 'Normal approximation'} if content == 'inference' else {}
+        sections = [dict(id=f'result.{index}', kind='text', order=index, title=key, source_key=key)
+                    for index, key in enumerate(texts)]
+        result = replace(parse_analysis_result({'version': 1, 'texts': texts, 'images': {}, 'sections': sections}),
+                         identity='Binary analysis', details='Confidence level: 95%\nInference: stale',
+                         software='metafor 5.2-1', manuscript_methods='Executed methods.', inference_methods=('z',))
+        form._run_analysis(lambda: result)
+        QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        qapp.processEvents()
+        assert not sip.isdeleted(form)
+        assert form.isVisible()
+        assert form.result() != QtWidgets.QDialog.DialogCode.Accepted.value
+        assert f'{failure} preparation failed' in form.analysis_error_details.toPlainText()
+        assert delivered == []
+        assert QtWidgets.QApplication.overrideCursor() is None
+        report_calls = []
+        def prepare(result):
+            report_calls.append(result)
+            return build_report(result)
+        def deliver(result, *, change_settings, manuscript):
+            view = ResultsWindow(result, parent=window, change_settings=change_settings, manuscript=manuscript)
+            assert view.manuscript is manuscript
+            assert manuscript == build_report(view.results)
+            assert 'Inference Method' not in manuscript.plain_text()
+            assert manuscript.configuration.count('Inference:') == 1
+            assert view.results.identity == result.identity == 'Binary analysis'
+            assert view.results.software == 'metafor 5.2-1'
+            assert view.results.manuscript_methods == 'Executed methods.'
+            assert view.results.inference_methods == ('z',)
+            if content == 'inference':
+                assert 'Inference: Normal approximation' in manuscript.configuration
+            else:
+                assert view.texts == {'No Results': 'No results could be computed for this analysis.'}
+            delivered.append(view)
+            view.close()
+        monkeypatch.setattr(form, '_with_result_identity', lambda result: result)
+        monkeypatch.setattr(ManuscriptReport, 'from_result', prepare)
+        monkeypatch.setattr(window, 'analysis', deliver)
+        form._run_analysis(lambda: result)
+        QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+        qapp.processEvents()
+        assert sip.isdeleted(form)
+        assert len(delivered) == 1
+        assert report_calls == [delivered[0].results]
+    finally:
+        _close_without_prompt(app, window)
+
+
 def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(monkeypatch):
     from rc_metastudio import analysis_setup_dialog
 
@@ -144,7 +222,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
             "get_available_methods",
             "get_params",
             "dataset_to_simple_binary_r_object",
-            "run_versioned_analysis_request",
+            "run_model_analysis",
             "reset_r_working_directory",
         )
     }
@@ -177,7 +255,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         _set_backend(
             monkeypatch,
             backend,
-            "run_versioned_analysis_request",
+            "run_model_analysis",
             lambda *args, **kwargs: (_ for _ in ()).throw(
                 RuntimeError("simulated R failure")
             ),
@@ -224,7 +302,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
             "get_available_methods",
             "get_params",
             "dataset_to_simple_continuous_r_object",
-            "run_versioned_analysis_request",
+            "run_model_analysis",
             "reset_r_working_directory",
         )
     }
@@ -271,7 +349,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         _set_backend(
             monkeypatch,
             backend,
-            "run_versioned_analysis_request",
+            "run_model_analysis",
             lambda *args, **kwargs: (_ for _ in ()).throw(
                 RuntimeError("simulated recompute failure")
             ),
@@ -466,7 +544,7 @@ def test_results_window_adds_no_results_message_to_valid_empty_payload():
         parse_analysis_result({"version": 1, "texts": {}, "sections": []})
     )
     try:
-        assert window.texts == {"No Results": results_window.NO_RESULTS_MESSAGE}
+        assert window.texts == {"No Results": NO_RESULTS_MESSAGE}
         assert window.images == {}
     finally:
         window.close()

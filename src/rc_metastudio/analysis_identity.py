@@ -53,18 +53,24 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         groups = " minus ".join(model.arm_names)
         details.append(f"{effect}: {groups}, in {units}; 0 indicates no difference.")
     if fits:
-        joint_seen = False
-        for fitted_metric, fitted_method, fitted_parameters in fits:
-            if "reitsma" in fitted_method.casefold():
-                if joint_seen:
-                    continue
-                joint_seen = True
-                fitted_metric = "Joint model"
-            details.append("\n" + fitted_metric)
-            details.extend(configuration_details(fitted_method, fitted_parameters))
+        details.extend(_fitted_configuration_details(fits))
     else:
         details = configuration_details(model_label, parameters) + details
     return header, "\n".join(details)
+
+
+def _fitted_configuration_details(fits):
+    details = []
+    joint_seen = False
+    for metric, method, parameters in fits:
+        if "reitsma" in method.casefold():
+            if joint_seen:
+                continue
+            joint_seen = True
+            metric = "Joint model"
+        details.append("\n" + metric)
+        details.extend(configuration_details(method, parameters))
+    return details
 
 
 def metric_label(model, metric=None):

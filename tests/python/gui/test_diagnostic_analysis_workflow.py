@@ -219,7 +219,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         )
         _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
-        def run_metric(requests):
+        def run_metric(requests, data):
             param_vals = [request["params"] for request in requests]
             if len(param_vals) > 1:
                 raise DiagnosticExecutionError("combined diagnostic failure")
@@ -313,7 +313,7 @@ def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
     from rc_metastudio import analysis_adapter
     from rc_metastudio.analysis_errors import DiagnosticExecutionError
 
-    def run_backend(_module_loader, _methods, parameter_values):
+    def run_backend(_module_loader, _methods, parameter_values, _data):
         if len(_methods) > 1:
             raise DiagnosticExecutionError(
                 "combined execution is intentionally unavailable"
@@ -393,7 +393,7 @@ def test_unexpected_combined_diagnostic_error_is_not_retried(monkeypatch):
 
     calls = []
 
-    def run_backend(_module_loader, _methods, _parameter_values):
+    def run_backend(_module_loader, _methods, _parameter_values, _data):
         calls.append("combined")
         raise ValueError("programming error")
 
@@ -478,7 +478,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         def build_metric(model, **kwargs):
             built_metrics.append(kwargs.get("metric", "Sens"))
 
-        def run_metric(requests):
+        def run_metric(requests, data):
             method_names = [request["method"] for request in requests]
             param_vals = [request["params"] for request in requests]
             multi_calls.append((list(method_names), [dict(p) for p in param_vals]))
