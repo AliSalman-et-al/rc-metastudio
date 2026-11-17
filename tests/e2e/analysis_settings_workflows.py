@@ -135,7 +135,7 @@ def run(app, window, root, record, analyze):
         assert dialog.current_param_vals["conf.level"] == confidence
         assert dialog.current_param_vals["inference.method"] == "knha"
         changed = submit(dialog)
-        assert f"{confidence:g}% confidence intervals" in changed.manuscript.methods
+        assert f"Confidence intervals ({confidence:g}%)" in changed.manuscript.methods
         path = next(iter(changed.params_paths.values()))
         r_bridge.load_vars_for_plot(path)
         df = int(r_bridge.ro.r("res$dfs")[0])

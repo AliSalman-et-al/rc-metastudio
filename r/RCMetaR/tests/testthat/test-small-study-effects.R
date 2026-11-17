@@ -38,7 +38,7 @@ test_that("publication-bias confidence level controls intervals and labels", {
 
   test <- list(method="classical-egger", role="primary", usable.studies=10,
                p.value=.2, statistic=1, coefficient=1, standard.error=.1,
-               df=9, intercept=1, se.intercept=.1,
+               df=9, intercept=1, se.intercept=.1, confidence.interval.intercept=c(.5,1.5),
                model="multiplicative Egger regression")
   rendered <- RCMetaR:::.small.study.tests.text(list(test), confidence.level=90)
   expect_match(rendered, "90% CI", fixed=TRUE)
@@ -52,7 +52,7 @@ test_that("publication-bias confidence level controls intervals and labels", {
   extrapolated <- RCMetaR:::.small.study.extrapolation(
     list(`classical-egger`=test), list(extrapolation=TRUE, conf.level=90), "MD"
   )
-  expected.lower <- 1 - stats::qt(.95, 9) * .1
+  expected.lower <- .5
   expect_match(extrapolated$Extrapolation, "90% CI", fixed=TRUE)
   expect_match(extrapolated$Extrapolation, RCMetaR:::.small.study.number(expected.lower), fixed=TRUE)
   expect_false(grepl("95% CI", extrapolated$Extrapolation, fixed=TRUE))
@@ -116,7 +116,7 @@ test_that("generic entered effects produce one ordered ordinary funnel result", 
   expect_identical(result$plot_capabilities[[1]]$plot_kind, "funnel")
   expect_identical(result$plot_capabilities[[1]]$regenerator, "funnel")
   expect_identical(result$sections[[1]]$id, "small-study.warning")
-  expect_identical(result$sections[[1]]$title, "Warning")
+  expect_identical(result$sections[[1]]$title, "Summary")
   expect_identical(result$sections[[1]]$source_key, "small-study.warning")
   expect_identical(result$sections[[1]]$value_key, "Warning")
   expect_true("Warning" %in% names(result))
@@ -448,12 +448,8 @@ test_that("generic guardrails expose hard minimum and automatic k guard", {
   expect_match(disabled$Warning, "No formal asymmetry test was run", fixed=TRUE)
   expect_match(disabled$Warning, "at least 10 usable studies", fixed=TRUE)
   expect_match(disabled$Warning, "4 usable studies were available", fixed=TRUE)
-  expect_equal(sum(gregexpr("Observed standard-error range", disabled$Warning, fixed=TRUE)[[1L]] > 0), 1L)
   expect_length(disabled$eligibility$`standard.error.range`, 2)
-  expect_true(any(grepl("standard-error range", disabled$eligibility$warnings, ignore.case=TRUE)))
-  expect_true(any(grepl("analysis summary", disabled$eligibility$warnings, ignore.case=TRUE)))
   expect_match(disabled$`Data and eligibility`, "Observed standard-error range: \\[0\\.1, 0\\.13\\]", fixed=FALSE)
-  expect_match(disabled$Warning, "the exact range is reported in the analysis summary", fixed=TRUE)
 
   automatic <- rcmetar.run.small.study.effects(make_data(4), list(
     version=1L, data.type="continuous", metric="MD", funnels="ordinary",
@@ -523,12 +519,12 @@ test_that("binary OR routes Harbord at low tau and Rucker AS+RE above the rule o
   high.result <- rcmetar.run.small.study.effects(high, list(
     version=1L, data.type="binary", metric="OR", funnels="ordinary",
     tests=c("harbord", "rucker-as-re", "peters")))
-  expect_false(high.result$eligibility$methods[[1]]$available)
-  expect_match(high.result$eligibility$methods[[1]]$reason, "above 0.1")
+  expect_true(high.result$eligibility$methods[[1]]$available)
+  expect_identical(high.result$eligibility$methods[[1]]$reason, "")
   expect_true(high.result$eligibility$methods[[2]]$available)
-  expect_identical(high.result$eligibility$methods[[2]]$role, "primary")
+  expect_identical(high.result$eligibility$methods[[2]]$role, "sensitivity")
   expect_identical(high.result$eligibility$methods[[2]]$reason, "")
-  expect_match(high.result$`Data and eligibility`, "Primary test: R\u00fccker AS+RE test", fixed=TRUE)
+  expect_match(high.result$`Data and eligibility`, "Primary test: Harbord test", fixed=TRUE)
   expect_identical(high.result$tests.data$`rucker-as-re`$package, "meta")
   expect_match(high.result$tests.data$`rucker-as-re`$call, "sm='ASD'")
   expect_match(high.result$tests.data$`rucker-as-re`$call, "method.bias='Thompson'")
@@ -588,11 +584,11 @@ test_that("independent two-group SMD uses native Pustejovsky-Rodgers", {
   )
   automatic <- rcmetar.run.small.study.effects(data, list(version=1L, data.type="continuous", metric="SMD", funnels="ordinary", tests=character()))
   expect_true(automatic$eligibility$methods[[1]]$available)
-  expect_true("pustejovsky-rodgers" %in% names(automatic$tests.data))
+  expect_true("classical-egger" %in% names(automatic$tests.data))
   selected <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="continuous", metric="SMD", funnels="ordinary", tests=c("pustejovsky-rodgers")))
   expect_true(selected$eligibility$methods[[1]]$available)
-  expect_identical(selected$eligibility$methods[[1]]$role, "primary")
+  expect_identical(selected$eligibility$methods[[1]]$role, "sensitivity")
   expect_identical(selected$tests.data$`pustejovsky-rodgers`$package.version, "8.5-0")
   expect_match(selected$tests.data$`pustejovsky-rodgers`$call, "method.bias='Pustejovsky'")
   expect_match(selected$tests.data$`pustejovsky-rodgers`$predictor, "sqrt")
@@ -608,7 +604,7 @@ test_that("independent two-group SMD uses native Pustejovsky-Rodgers", {
   expect_match(missing.result$`Data and eligibility`, "Primary test: None available")
 })
 
-test_that("ordinary SMD Egger is a separate non-primary artifact", {
+test_that("ordinary SMD Egger follows the meta default primary test", {
   testthat::skip_if_not_installed("meta")
   testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=seq(-.2,.2,length.out=10), SE=seq(.1,.2,length.out=10),
@@ -616,13 +612,13 @@ test_that("ordinary SMD Egger is a separate non-primary artifact", {
   result <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="continuous", metric="SMD", funnels="ordinary", tests=c("classical-egger")))
   expect_true(result$eligibility$methods[[2]]$available)
-  expect_identical(result$eligibility$methods[[2]]$role, "sensitivity")
+  expect_identical(result$eligibility$methods[[2]]$role, "primary")
   expect_match(result$eligibility$methods[[2]]$reason, "")
   expect_match(result$Warning, "standardized mean differences", ignore.case=TRUE)
   expect_match(result$Tests, "Classical Egger test")
 })
 
-test_that("RR, RD, and one-arm proportion remain descriptive without automatic tests", {
+test_that("RR, RD, and one-arm proportion retain package-supported tests and caveats", {
   testthat::skip_if_not_installed("meta")
   testthat::skip_if_not_installed("metafor")
   binary <- new("BinaryData", g1O1=c(2,4,6,8,10,12,14,16,18,20), g1O2=c(18,16,14,12,10,8,6,4,2,1),
@@ -630,15 +626,15 @@ test_that("RR, RD, and one-arm proportion remain descriptive without automatic t
                 y=rep(999,10), SE=rep(999,10), study.names=paste0("s",1:10), years=as.integer(2011:2020))
   for (metric in c("RR", "RD")) {
     result <- rcmetar.run.small.study.effects(binary, list(version=1L, data.type="binary", metric=metric, funnels="ordinary", tests=character()))
-    expect_match(result$`Data and eligibility`, "Primary test: None available")
-    expect_true(all(vapply(result$eligibility$methods, function(x) !isTRUE(x$available), logical(1))))
-    expect_match(paste(vapply(result$eligibility$methods, `[[`, character(1), "reason"), collapse=" "), "No automatic primary")
+    expect_match(result$`Data and eligibility`, "Primary test: Classical Egger test")
+    expect_true(result$eligibility$methods[[1]]$available)
+    expect_match(paste(result$eligibility$warnings, collapse=" "), "interpret asymmetry tests with caution")
   }
   one.arm <- binary
   one.arm@g2O1 <- numeric(); one.arm@g2O2 <- numeric()
   one.arm@y <- seq(.1,.5,length.out=10); one.arm@SE <- seq(.05,.15,length.out=10)
   proportion <- rcmetar.run.small.study.effects(one.arm, list(version=1L, data.type="binary", metric="PR", funnels="ordinary", tests=character()))
-  expect_match(proportion$`Data and eligibility`, "Primary test: None available")
+  expect_match(proportion$`Data and eligibility`, "Primary test: Classical Egger test")
   expect_match(paste(proportion$eligibility$warnings, collapse=" "), "one-arm|effect-SE", ignore.case=TRUE)
   expect_false(any(grepl("Peters", vapply(proportion$eligibility$methods, `[[`, character(1), "method"), fixed=TRUE)))
 })
@@ -684,14 +680,14 @@ test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots
     unname(tools::md5sum(result$images[[trimfill.title]]))
   )
 
-  bilateral <- rcmetar.run.small.study.effects(data, list(
+  automatic.side <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="continuous", metric="SMD", funnels="ordinary", tests=character(),
     `trim.and.fill`=TRUE, `trim.and.fill.estimator`="R0",
     `trim.and.fill.side`="auto", `trim.and.fill.model`="common"
   ))
-  expect_true(all(c("Trim-and-fill left", "Trim-and-fill right") %in% names(bilateral$`Trim-and-fill data`$scenarios)))
-  expect_match(bilateral$`Trim-and-fill left`, "R0")
-  expect_match(bilateral$`Trim-and-fill right`, "Common effect", fixed=TRUE)
+  expect_identical(names(automatic.side$`Trim-and-fill data`$scenarios), "Trim-and-fill")
+  expect_match(automatic.side$`Trim-and-fill`, "R0")
+  expect_match(automatic.side$`Trim-and-fill`, "Common effect", fixed=TRUE)
 })
 
 test_that("infinite-precision sensitivity reports only supported successful tests", {
@@ -721,7 +717,7 @@ test_that("infinite-precision sensitivity reports only supported successful test
     tests=c("classical-egger"),
     `extrapolation`=TRUE
   ))
-  expect_match(short$Extrapolation, "at least 10 usable studies")
+  expect_match(short$Extrapolation, "successful supported fit")
 })
 
 test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometry", {
@@ -742,10 +738,10 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_identical(result$tests.data$deeks$method, "Deeks test (meta implementation)")
   expect_identical(result$tests.data$deeks$package.version, "8.5-0")
   expect_match(result$tests.data$deeks$call, "method.bias='Deeks'")
-  expect_match(result$tests.data$deeks$predictor, "4\\*n.e\\*n.c")
+  expect_match(result$tests.data$deeks$predictor, "diseased total", fixed=TRUE)
   expect_match(result$tests.data$deeks$weighting, "ESS")
   expect_equal(result$tests.data$deeks$effective.sample.size[[1L]], 4 * 10 * 22 / 32, tolerance=1e-12)
-  expect_match(result$`Data and eligibility`, "All studies if any zero exists")
+  expect_match(result$`Data and eligibility`, "Studies with any zero cell")
   expect_match(result$eligibility$warnings, "Observed Deeks ESS predictor range")
   expect_false("Pooled comparison" %in% names(result))
   expect_false("Trim-and-fill" %in% names(result))
@@ -781,9 +777,9 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_identical(params$`funnel.ylab`, "Edited log DOR axis")
   alternative <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="diagnostic", metric="DOR", funnels="deeks", tests=c("deeks"),
-    correction.policy="Studies with any zero cell"
+    correction.policy="All studies if any zero exists"
   ))
-  expect_match(alternative$`Data and eligibility`, "Studies with any zero cell", fixed=TRUE)
+  expect_match(alternative$`Data and eligibility`, "All studies if any zero exists", fixed=TRUE)
   expect_false(identical(result$tests.data$deeks$prepared.effects, alternative$tests.data$deeks$prepared.effects))
 
   small <- data

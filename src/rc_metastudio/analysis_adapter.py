@@ -455,7 +455,7 @@ def execute_meta_regression_request(
         parameters.setdefault("adjust", 0.5)
     parameters.setdefault("conf.level", default_confidence_level)
     parameters["rm.method"] = (
-        "FE" if fixed_effects else parameters.get("rm.method", "DL")
+        "FE" if fixed_effects else parameters.get("rm.method", "REML")
     )
     versioned = dict(request.to_mapping())
     versioned["workflow"] = "meta-regression"

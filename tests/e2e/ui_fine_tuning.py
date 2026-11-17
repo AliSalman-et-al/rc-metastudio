@@ -225,9 +225,9 @@ def run(app, window, work, root, record, analyze):
         assert_report(view)
         if scenario == 'small-study-binary-extended':
             view.nav_tree.setCurrentItem(view.nav_tree.findItems('Text report', QtCore.Qt.MatchFlag.MatchExactly)[0])
-            unstructured = next(t for s in view.manuscript.sections if s.title == 'Supplementary details' for t in s.tables if t.headers == ('',))
+            unstructured = next(s for s in view.manuscript.sections if s.title == 'Supplementary details' and s.paragraphs and s.source_key != 'References')
             view.manuscript_text.moveCursor(QtGui.QTextCursor.MoveOperation.Start)
-            assert view.manuscript_text.find(unstructured.title)
+            assert view.manuscript_text.find(unstructured.paragraphs[0])
             bar = view.manuscript_text.verticalScrollBar()
             assert bar is not None
             bar.setValue(min(bar.maximum(), bar.value() + view.manuscript_text.viewport().height() // 2))

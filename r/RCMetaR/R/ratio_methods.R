@@ -40,7 +40,7 @@ ratio.transform.f <- function(metric) {
 
 ratio.prepare <- function(data, params) {
     if (data@prepared) return(data)
-    params$drop00 <- as.logical(params$drop00 %||% TRUE)
+    params$drop00 <- as.logical(params$drop00 %||% FALSE)
     n <- length(data@study.names)
     data@y <- data@SE <- rep(NA_real_, n)
     raw <- data@source == "raw"
@@ -61,7 +61,7 @@ ratio.prepare.raw <- function(data, params, raw) {
         any(c(data@t1[raw], data@t2[raw]) <= 0)) stop("Selected raw IRR needs integer events and positive person-time.")
     effects <- metafor::escalc(measure="IRR", x1i=data@x1[raw], x2i=data@x2[raw],
         t1i=data@t1[raw], t2i=data@t2[raw], add=params$adjust %||% 0.5,
-        to=params$to %||% "only0", drop00=params$drop00 %||% TRUE)
+        to=params$to %||% "only0", drop00=params$drop00 %||% FALSE)
     data@y[raw] <- effects$yi
     data@SE[raw] <- sqrt(effects$vi)
     data
@@ -114,8 +114,8 @@ ratio.fit <- function(data, params, method) {
     }
     if (!length(data@y)) stop("No finite effects with positive standard errors remain.")
     metafor::rma.uni(yi=data@y, sei=data@SE, slab=data@study.names,
-        method=if (endsWith(method, ".random")) params$rm.method %||% "DL" else "FE",
-        test=rcmetar.validate.inference.method(params, length(data@y)),
+        method=if (endsWith(method, ".random")) params$rm.method %||% "REML" else "FE",
+        test=rcmetar.inference.method(params),
         level=params$conf.level, digits=params$digits)
 }
 
@@ -127,7 +127,7 @@ ratio.analysis <- function(data, params, method) {
         .rcmetar.method.pretty.names(method)$pretty.name))
     result <- list(Summary=summary, res=res,
         res.info=rma.uni.value.info(), input_data=data, input_params=params,
-        References=rcmetar.fit.references(res, params))
+        References=rcmetar.fit.references(res))
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
     if (!is.null(res$reason)) result[["Non-estimable result"]] <- res$reason
     if (inherits(res, "rma")) result$Weights <- weights(res)
@@ -154,7 +154,7 @@ ratio.workflow <- function(data, request) {
     state <- if (request$workflow == "subgroup") ratio.subgroup(data, request, suppressed) else ratio.sequential(data, request, suppressed)
     result <- state$result
     fits <- state$fits
-    result$References <- rcmetar.fit.references(fits[[length(fits)]], params)
+    result$References <- rcmetar.fit.references(fits[[length(fits)]])
     labels <- state$labels
     title <- state$title
     plot.name <- state$plot.name
@@ -206,9 +206,6 @@ ratio.sequential <- function(data, request, suppressed) {
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
     subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
     fits <- lapply(subsets, function(subset) {
-        if (!endsWith(method, ".mh") && length(subset@y) == 1L &&
-                rcmetar.inference.method(params) != "z")
-            return(rcmetar.nonestimable.inference.row(1L, params))
         ratio.fit(subset, suppressed, method)
     })
     labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
@@ -227,7 +224,7 @@ ratio.parameters <- function(method) {
     values <- if (endsWith(method, ".random")) continuous.random.parameters() else continuous.fixed.parameters()
     if (startsWith(method, "event_rates")) {
         values$parameters <- c(values$parameters, list(adjust="float", to=c("only0", "all", "if0all", "none"), drop00=c("TRUE", "FALSE")))
-        values$defaults <- c(values$defaults, list(adjust=0.5, to="only0", drop00="TRUE"))
+        values$defaults <- c(values$defaults, list(adjust=0.5, to="only0", drop00=if (endsWith(method, ".mh")) "TRUE" else "FALSE"))
         values$var_order <- c(values$var_order, "adjust", "to", "drop00")
     }
     if (endsWith(method, ".mh")) {

@@ -259,7 +259,7 @@ def expected_studies(result):
 
 def expected_fit(result):
     if not any(s.tables for s in result.sections):
-        return tuple((s.title, s.value) for s in result.sections if s.title in ('Data and eligibility', 'Tests'))
+        return ()
     rows = list(result.manuscript_model_info)
     for section in result.sections:
         for table in section.tables:
@@ -363,9 +363,7 @@ def assert_report(view):
                 model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
                 assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
-    expected_rows = expected_pooled(view.results) if structured else tuple(
-        (s.title, s.value) for s in view.results.sections
-        if s.kind == 'text' and (s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')))
+    expected_rows = expected_pooled(view.results) if structured else ()
     assert (pooled is not None) == bool(expected_rows), (pooled, expected_rows)
     level = '95% CI'
     if structured and expected_rows:
@@ -442,14 +440,25 @@ def assert_report(view):
                 else:
                     assert not remaining, remaining
             else:
-                retained = next(t for s in view.manuscript.sections if s.title == 'Supplementary details'
-                                for t in s.tables if t.title == section.title)
-                assert retained.headers == ('',)
-                assert retained.rows == tuple((line,) for line in section.value.splitlines())
+                if section.source_key == 'small-study.warning':
+                    assert all(line in view.manuscript.results for line in section.value.splitlines() if line.strip())
+                    assert 'Warning:' not in view.manuscript.plain_text()
+                    continue
+                retained = next(s for s in view.manuscript.sections if s.semantic_id == section.semantic_id
+                                and s.title == 'Supplementary details')
+                assert not retained.tables
+                assert retained.paragraphs[:1] == (section.title + ':',)
+                assert retained.paragraphs[1:] == tuple(section.value.splitlines()) + section.paragraphs
     data = capture(view, Path(sys.argv[2]) / 'report-retention')
     assert_exports(view, data)
     document = QTextDocument()
     document.setHtml(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html())
+    copied_lines = document.toPlainText().splitlines()
+    for section in view.results.sections:
+        if section.source_key == 'small-study.warning':
+            for line in section.value.splitlines():
+                if line.strip():
+                    assert line in copied_lines, (line, copied_lines)
     observed_tables = [[[cell.replace("\u00a0", " ") for cell in row] for row in table] for table in document_tables(document)]
     assert observed_tables == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
     prose_surfaces = [

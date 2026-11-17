@@ -11,7 +11,7 @@ rcmetar.regenerate.small.study.funnel(om.data, res, params, output.path = NULL,
 }
 \arguments{
   \item{om.data}{An RCMetaR analysis data object.}
-  \item{params}{A required named request list with version = 1L, data.type (binary, continuous, diagnostic, time-to-event, or event-rate), and metric. Use preview = TRUE for eligibility only. For execution supply tests (method identifiers), funnels (ordinary, contour, or deeks), and optional conf.level (percentage, default 95), trim.and.fill (logical, default FALSE), and extrapolation (logical, default FALSE). Diagnostic requests require DOR. Omitted binary correction.policy uses Studies with any zero cell; omitted diagnostic policy uses All studies if any zero exists. Explicit correction selections are preserved.}
+  \item{params}{A required named request list with version = 1L, data.type (binary, continuous, diagnostic, time-to-event, or event-rate), and metric. Use preview = TRUE for eligibility only. For execution supply tests (method identifiers), funnels (ordinary, contour, or deeks), and optional conf.level (percentage, default 95), k.min (minimum studies for meta asymmetry tests, using the package default when omitted), trim.and.fill (logical, default FALSE), and extrapolation (logical, default FALSE). Diagnostic requests require DOR. Omitted binary correction.policy uses Studies with any zero cell; omitted diagnostic policy also uses Studies with any zero cell. Explicit correction selections are preserved.}
   \item{res}{The persisted pooled model for the run.}
   \item{output.path}{Optional output image path.}
   \item{dpi}{Raster resolution in dots per inch. Previews default to 120; publication exports use 600. Vector output retains its physical dimensions.}
@@ -20,7 +20,7 @@ rcmetar.regenerate.small.study.funnel(om.data, res, params, output.path = NULL,
 Tests are selected by identifier: classical-egger, mixed-effects-egger,
 begg-mazumdar, harbord, peters, rucker-as-re, pustejovsky-rodgers, or deeks.
 Eligibility is method-specific; inspect the preview before selecting procedures.
-An empty tests vector requests no formal test. An empty funnels vector requests
+An empty tests vector selects the eligible primary test. An empty funnels vector requests
 no plots; otherwise ordinary is the default. Diagnostic DOR uses the Deeks funnel.
 Binary data use metric OR, RR, RD, or a supported one-arm proportion measure;
 continuous data use MD, SMD, or a one-arm mean; ratio data use HR or IRR.

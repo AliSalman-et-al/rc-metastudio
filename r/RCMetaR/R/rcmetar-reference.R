@@ -47,7 +47,7 @@ NULL
 #'
 #' @section Study-level calculations:
 #' \code{compute.for.one.bin.study()}, \code{compute.bin.point.estimates()},
-#' and \code{get.res.for.one.binary.study()} prepare per-study estimates and variances.
+#' prepare per-study estimates and variances.
 #'
 #' @section Method metadata:
 #' Functions ending in \code{.parameters}, \code{.pretty.names},
@@ -67,7 +67,7 @@ NULL
 #' \code{rcmetar.method.references("rma.peto")} for the statistical method
 #' citations used in result payloads.
 #'
-#' @aliases binary.fixed.inv.var binary.fixed.inv.var.is.feasible.for.funnel binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.is.feasible.for.funnel binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.is.feasible.for.funnel binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.is.feasible.for.funnel binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study get.res.for.one.binary.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
+#' @aliases binary.fixed.inv.var binary.fixed.inv.var.is.feasible.for.funnel binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.is.feasible.for.funnel binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.is.feasible.for.funnel binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.is.feasible.for.funnel binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
 #' @name RCMetaR-binary-methods
 NULL
 
@@ -84,7 +84,7 @@ NULL
 #' }
 #'
 #' @section Study-level calculations:
-#' \code{compute.for.one.cont.study()} and \code{get.res.for.one.cont.study()}
+#' \code{compute.for.one.cont.study()}
 #' prepare per-study estimates and variances.
 #'
 #' @section Method metadata:
@@ -97,7 +97,7 @@ NULL
 #' \code{rcmetar.method.references("rma.uni.random")} for the statistical
 #' method citations used in result payloads.
 #'
-#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study get.res.for.one.cont.study
+#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study
 #' @name RCMetaR-continuous-methods
 NULL
 
@@ -118,7 +118,7 @@ NULL
 #'
 #' @section Study-level calculations:
 #' \code{adjust.raw.data()}, \code{compute.diag.point.estimates()},
-#' \code{compute.diagnostic.terms()}, \code{get.res.for.one.diag.study()},
+#' \code{compute.diagnostic.terms()},
 #' and \code{diagnostic.transform.f()} normalize count data and derive
 #' diagnostic metrics.
 #'
@@ -138,7 +138,7 @@ NULL
 #' \code{rcmetar.method.references("reitsma")} for the
 #' statistical method citations used in result payloads.
 #'
-#' @aliases adjust.raw.data append.image.order compute.diag.point.estimates compute.diagnostic.terms compute.npv compute.ppv diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f get.res.for.one.diag.study multiple.diagnostic plot.ppv.npv.by.prev
+#' @aliases adjust.raw.data append.image.order compute.diag.point.estimates compute.diagnostic.terms compute.npv compute.ppv diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f multiple.diagnostic plot.ppv.npv.by.prev
 #' @name RCMetaR-diagnostic-methods
 NULL
 

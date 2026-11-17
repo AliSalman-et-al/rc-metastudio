@@ -605,7 +605,7 @@ def test_diagnostic_metric_availability_preserves_workflow_and_explains_limits(
             dialog.chk_box_dor.setChecked(True)
             assert dialog.get_selected_metrics() == ["sens", "spec", "dor", "lr"]
         else:
-            assert "Likelihood ratio: Requires complete TP/FN/FP/TN counts" in (
+            assert "Positive and negative likelihood ratios: Requires complete TP/FN/FP/TN counts" in (
                 dialog.availability_label.text()
             )
             assert not dialog.chk_box_lr.isEnabled()

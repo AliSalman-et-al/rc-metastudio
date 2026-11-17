@@ -113,80 +113,49 @@ binary.transform.f <- function(metric.str){
     list(display.scale = display.scale, calc.scale = calc.scale)
 }
 
-get.res.for.one.binary.study <- function(binary.data, params) {
-    y<-NULL
-    se<-NULL
-    if (is.na(binary.data@y)){
-        res <- compute.for.one.bin.study(binary.data, params)
-        y <- res$yi[1]
-        se <- sqrt(res$vi[1])
-    }
-    else{
-        y <- binary.data@y[1]
-        se <- binary.data@SE[1]
-    }
-    mult <- get.mult.from.conf.level(params$conf.level)
-    ub <- y + mult*se
-    lb <- y - mult*se
-    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se,
-                "pval"=2*pnorm(-abs(y/se)))
-    res
-}
-
-
-
-
 binary.fixed.inv.var <- function(binary.data, params){
     if (!("BinaryData" %in% class(binary.data)))
         stop("Binary data expected.")
 
     results <- NULL
     input.params <- params
-    inference.method <- rcmetar.validate.inference.method(params, length(binary.data@y))
+    inference.method <- rcmetar.inference.method(params)
 
-    if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1){
-        res <- get.res.for.one.binary.study(binary.data, params)
-        results <- list("Summary"=res,
-                        "res"=res)
-    } else {
-        res<-rma.uni(yi=binary.data@y, sei=binary.data@SE, slab=binary.data@study.names,
-                                level=params$conf.level, digits=params$digits, method="FE", test=inference.method)
-        pure.res <- res
-        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep="")
-        summary.disp <- create.summary.disp(binary.data, params, res, model.title)
-        forest.path <- paste(params$fp_outpath, sep="")
-        plot.data <- create.plot.data.binary(binary.data, params, res)
-        changed.params <- plot.data$changed.params
+    res<-rma.uni(yi=binary.data@y, sei=binary.data@SE, slab=binary.data@study.names,
+                            level=params$conf.level, digits=params$digits, method="FE", test=inference.method)
+    pure.res <- res
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    model.title <- paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep="")
+    summary.disp <- create.summary.disp(binary.data, params, res, model.title)
+    forest.path <- paste(params$fp_outpath, sep="")
+    plot.data <- create.plot.data.binary(binary.data, params, res)
+    changed.params <- plot.data$changed.params
 
 
 		forest.plot.params.path <- ""
 		if (is.null(params$supress.output) || !params$supress.output) {
-            params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-            changed.params <- c(changed.params, params.changed.in.forest.plot)
-            params <- update.changed.plot.params(params, changed.params)
-            forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
+        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+        changed.params <- c(changed.params, params.changed.in.forest.plot)
+        params <- update.changed.plot.params(params, changed.params)
+        forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
 		}
 
 
-        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-        images <- c("Forest plot"=forest.path)
-        plot.names <- c("forest plot"="forest_plot")
-        pure.res$weights <- weights(res)
-        results <- list("input_data"=binary.data,
-                        "input_params"=input.params,
-                        "images"=images,
-                        "Summary"=summary.disp,
-                        "plot_names"=plot.names,
-                        "plot_params_paths"=plot.params.paths,
-                        "res"=pure.res,
-                        "res.info"=binary.fixed.inv.var.value.info(),
-                        "Weights"=weights(res))
-    }
+    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+    images <- c("Forest plot"=forest.path)
+    plot.names <- c("forest plot"="forest_plot")
+    pure.res$weights <- weights(res)
+    results <- list("input_data"=binary.data,
+                    "input_params"=input.params,
+                    "images"=images,
+                    "Summary"=summary.disp,
+                    "plot_names"=plot.names,
+                    "plot_params_paths"=plot.params.paths,
+                    "res"=pure.res,
+                    "res.info"=binary.fixed.inv.var.value.info(),
+                    "Weights"=weights(res))
 
-    results[["References"]] <- rcmetar.unique.references(c(
-        rcmetar.method.references("rma.uni.fixed"),
-        rcmetar.inference.method.references(params)))
+    results[["References"]] <- rcmetar.fit.references(res)
     results
 }
 
@@ -237,30 +206,25 @@ binary.fixed.mh <- function(binary.data, params){
     results <- NULL
     input.params <- params
 
-    if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1){
-        res <- get.res.for.one.binary.study(binary.data, params)
-        results <- list("Summary"=res,
-                        "res"=res)
-    } else {
-        res<-rma.mh(ai=binary.data@g1O1, bi=binary.data@g1O2,
-                    ci=binary.data@g2O1, di=binary.data@g2O2,
-                    slab=binary.data@study.names,
-                    level=params$conf.level,
-                    digits=params$digits,
-                    # Study correction follows the request; MH pooling remains uncorrected.
-                    add=c(params$adjust, 0),
-                    to=c(.rcmetar.binary.correction.target(params), "none"),
-                    measure=params$measure)
-        pure.res <- res
-        if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
-            binary.data <- compute.bin.point.estimates(binary.data, params)
-        }
-        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep="")
-        summary.disp <- create.summary.disp(binary.data, params, res, model.title)
-        forest.path <- paste(params$fp_outpath, sep="")
-        plot.data <- create.plot.data.binary(binary.data, params, res)
-        changed.params <- plot.data$changed.params
+    res<-rma.mh(ai=binary.data@g1O1, bi=binary.data@g1O2,
+                ci=binary.data@g2O1, di=binary.data@g2O2,
+                slab=binary.data@study.names,
+                level=params$conf.level,
+                digits=params$digits,
+                # Study correction follows the request; MH pooling remains uncorrected.
+                add=c(params$adjust, 0),
+                to=c(.rcmetar.binary.correction.target(params), "none"),
+                measure=params$measure)
+    pure.res <- res
+    if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
+        binary.data <- compute.bin.point.estimates(binary.data, params)
+    }
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    model.title <- paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep="")
+    summary.disp <- create.summary.disp(binary.data, params, res, model.title)
+    forest.path <- paste(params$fp_outpath, sep="")
+    plot.data <- create.plot.data.binary(binary.data, params, res)
+    changed.params <- plot.data$changed.params
 
 		forest.plot.params.path <- ""
 		if (is.null(params$supress.output) || !params$supress.output) {
@@ -273,22 +237,21 @@ binary.fixed.mh <- function(binary.data, params){
 
 
 
-        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-        images <- c("Forest plot"=forest.path)
-        plot.names <- c("forest plot"="forest_plot")
-        pure.res$weights <- weights(res)
-        results <- list("input_data"=binary.data,
-                        "input_params"=input.params,
-                        "images"=images,
-                        "Summary"=summary.disp,
-                        "plot_names"=plot.names,
-                        "plot_params_paths"=plot.params.paths,
-                        "res"=pure.res,
-                        "res.info"=binary.fixed.mh.value.info(),
-                        "Weights"=weights(res))
+    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+    images <- c("Forest plot"=forest.path)
+    plot.names <- c("forest plot"="forest_plot")
+    pure.res$weights <- weights(res)
+    results <- list("input_data"=binary.data,
+                    "input_params"=input.params,
+                    "images"=images,
+                    "Summary"=summary.disp,
+                    "plot_names"=plot.names,
+                    "plot_params_paths"=plot.params.paths,
+                    "res"=pure.res,
+                    "res.info"=binary.fixed.mh.value.info(),
+                    "Weights"=weights(res))
 
 
-    }
 
     results[["References"]] <- rcmetar.method.references("rma.mh")
 
@@ -366,11 +329,7 @@ binary.fixed.peto <- function(binary.data, params) {
 
     input.params <- params
 
-    if (length(binary.data@g1O1) == 0 && length(binary.data@y) == 1) {
-        res <- get.res.for.one.binary.study(binary.data, params)
-        return(list(Summary=res, res=res,
-                    References=rcmetar.method.references("rma.peto")))
-    }
+
 
            res <- rma.peto(ai=binary.data@g1O1, bi=binary.data@g1O2,
                         ci=binary.data@g2O1, di=binary.data@g2O2,
@@ -378,11 +337,10 @@ binary.fixed.peto <- function(binary.data, params) {
                         level=params$conf.level,
                         digits=params$digits,
                         add=c(params$adjust,0),
-                        to=c(as.character(params$to), "none"),
-                        drop00 = FALSE)
+                        to=c(as.character(params$to), "none"))
         pure.res <- res
-        binary.data@y <- res$yi
-        binary.data@SE <- sqrt(res$vi)
+        binary.data@y <- res$yi.f
+        binary.data@SE <- sqrt(res$vi.f)
 
         if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
             binary.data <- compute.bin.point.estimates(binary.data, params)
@@ -489,29 +447,24 @@ binary.random <- function(binary.data, params) {
 
     results <- NULL
     input.params <- params
-    inference.method <- rcmetar.validate.inference.method(params, length(binary.data@y))
+    inference.method <- rcmetar.inference.method(params)
 
-    if (length(binary.data@g1O1) == 1 || length(binary.data@y) == 1){
-        res <- get.res.for.one.binary.study(binary.data, params)
-        results <- list("Summary"=res,
-                        "res"=res)
-    } else {
-        res<-rma.uni(yi=binary.data@y, sei=binary.data@SE,
-                     slab=binary.data@study.names,
-                     method=params$rm.method, test=inference.method, level=params$conf.level,
-                     digits=params$digits)
-        pure.res <- res
-        if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
-            binary.data <- compute.bin.point.estimates(binary.data, params)
-        }
-        metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep="")
+    res<-rma.uni(yi=binary.data@y, sei=binary.data@SE,
+                 slab=binary.data@study.names,
+                 method=params$rm.method, test=inference.method, level=params$conf.level,
+                 digits=params$digits)
+    pure.res <- res
+    if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
+        binary.data <- compute.bin.point.estimates(binary.data, params)
+    }
+    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+    model.title <- paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep="")
 
-        summary.disp <- create.summary.disp(binary.data, params, res, model.title)
+    summary.disp <- create.summary.disp(binary.data, params, res, model.title)
 
-        forest.path <- paste(params$fp_outpath, sep="")
-        plot.data <- create.plot.data.binary(binary.data, params, res)
-        changed.params <- plot.data$changed.params
+    forest.path <- paste(params$fp_outpath, sep="")
+    plot.data <- create.plot.data.binary(binary.data, params, res)
+    changed.params <- plot.data$changed.params
 
 		forest.plot.params.path <- ""
 		if (is.null(params$supress.output) || !params$supress.output) {
@@ -522,24 +475,21 @@ binary.random <- function(binary.data, params) {
 		}
 
 
-        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-        images <- c("Forest plot"=forest.path)
-        plot.names <- c("forest plot"="forest_plot")
-        pure.res$weights <- weights(res)
-        results <- list("input_data"=binary.data,
-                        "input_params"=input.params,
-                        "images"=images,
-                        "Summary"=summary.disp,
-                        "plot_names"=plot.names,
-                        "plot_params_paths"=plot.params.paths,
-                        "res"=pure.res,
-                        "res.info"=binary.random.value.info(),
-                        "Weights"=weights(res))
-    }
+    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+    images <- c("Forest plot"=forest.path)
+    plot.names <- c("forest plot"="forest_plot")
+    pure.res$weights <- weights(res)
+    results <- list("input_data"=binary.data,
+                    "input_params"=input.params,
+                    "images"=images,
+                    "Summary"=summary.disp,
+                    "plot_names"=plot.names,
+                    "plot_params_paths"=plot.params.paths,
+                    "res"=pure.res,
+                    "res.info"=binary.random.value.info(),
+                    "Weights"=weights(res))
 
-    results[["References"]] <- rcmetar.unique.references(c(
-        rcmetar.method.references("rma.uni.random"),
-        rcmetar.inference.method.references(params)))
+    results[["References"]] <- rcmetar.fit.references(res)
     results
 }
 
@@ -558,7 +508,7 @@ binary.random.parameters <- function(){
     params <- list("rm.method"=rm_method_ls, "inference.method"=rcmetar.inference.methods(), "conf.level"="float", "digits"="int",
                    "adjust"="float", "to"=apply_adjustment_to)
 
-    defaults <- list("rm.method"="DL", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS, "adjust"=.5, "to"="only0")
+    defaults <- list("rm.method"="REML", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS, "adjust"=.5, "to"="only0")
 
     var_order <- c("rm.method", "inference.method", "conf.level", "digits", "adjust", "to")
     parameters <- list("parameters"=params, "defaults"=defaults, "var_order"=var_order)

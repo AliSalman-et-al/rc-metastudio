@@ -667,7 +667,7 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
         assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
-        assert " · Comparison:" in dialog.figure_caption.text() or " · Arm:" in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert any(label in dialog.figure_caption.text() for label in (" · Comparison:", " · Arm:", " · Index test:", " · Diagnostic")), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
@@ -681,6 +681,15 @@ def plots(app, window, family, record, *, view=None):
                 dialog.show_confidence_band.setChecked(False)
                 dialog.style_cbo.setCurrentText("BMJ")
             elif family == "sroc":
+                previous_ticks = dialog.sroc_y_ticks.text()
+                for invalid_ticks in ("0.2, abc", "0.2, 1.5"):
+                    dialog.sroc_y_ticks.setText(invalid_ticks)
+                    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    record("sroc-invalid-y-ticks", dialog, ticks=invalid_ticks,
+                           error=dialog._commit_error.text())
+                    assert dialog._commit_error.isVisible()
+                    assert "Y-axis" in dialog._commit_error.text()
+                dialog.sroc_y_ticks.setText(previous_ticks)
                 dialog.sroc_show_prediction.setChecked(False)
             else:
                 dialog.style_cbo.setCurrentText("RevMan")
@@ -1638,6 +1647,10 @@ def calculators(app, window, mode, record):
             header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
         )
         mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
+
+    if mode == "diagnostic-metrics":
+        from tests.e2e.dta_audit import check_partial_count_previews
+        modal(app, kind, lambda dialog: check_partial_count_previews(app, dialog, cell, record), launch)
 
     acceptance_notifications = []
 

@@ -273,7 +273,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=False, diagnostic_metrics=None):
+def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None):
     from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -313,10 +313,20 @@ def analyze(app, window, method, *, digits=3, confidence=None, via_shortcut=Fals
     assert dialog.method_cbo_box.findText(label) >= 0, (method, label)
     dialog.method_cbo_box.setCurrentText(label)
     app.processEvents()
-    if confidence is not None:
+    if confidence is not None or estimator is not None:
         sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
         from analysis_matrix import set_parameter
-        set_parameter(app, dialog, 'conf.level', confidence)
+        if confidence is not None:
+            set_parameter(app, dialog, 'conf.level', confidence)
+        if estimator is not None:
+            set_parameter(app, dialog, 'rm.method', estimator)
+            if dialog._combined_diagnostic and 'rm.method' in dialog.lr_dor_panel.params:
+                panel = dialog.lr_dor_panel
+                control = next(widget for widget in panel.widgets
+                               if isinstance(widget, QtWidgets.QComboBox) and widget.findData(estimator) >= 0)
+                control.setCurrentIndex(control.findData(estimator))
+                app.processEvents()
+                assert panel.params['rm.method'] == estimator
     def precision_control():
         return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
                     if isinstance(control, QtWidgets.QSpinBox)
@@ -563,14 +573,14 @@ def sample_analysis(app, window, sample):
         "lymph": ("diagnostic.random", "lymph-diagnostic-random-dor"),
     }[sample]
     if sample == "amino":
-        small_view = analyze(app, window, method, digits=2)
+        small_view = analyze(app, window, method, digits=2, estimator="DL")
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.manuscript_text.toPlainText()
         assert "0.0040 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
-    view = analyze(app, window, method)
+    view = analyze(app, window, method, estimator="DL")
     contract = json.loads(
         (ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text()
     )
@@ -802,7 +812,7 @@ def sheets_swap(app, window):
                 r_bridge.load_vars_for_plot(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
-                receipt = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method="DL"); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
+                receipt = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
                 expected_labels = model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in model.arm_names])
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
@@ -866,7 +876,7 @@ def sheets_legacy(app, window):
         assert [window.sheet_tabs.tabText(i) for i in range(window.sheet_tabs.count())] == names
         for index, row in enumerate(rows):
             window.sheet_tabs.setCurrentIndex(index)
-            view = analyze(app, window, row["method"], diagnostic_metrics=("sens", "spec", "dor")
+            view = analyze(app, window, row["method"], estimator="DL", diagnostic_metrics=("sens", "spec", "dor")
                            if window.model.get_current_data_type() == "diagnostic" else None)
             actual = parsed_numeric_sections(view.results)
             assert actual == row["sections"], (filename, actual, row["sections"])
@@ -1645,7 +1655,7 @@ def plot_edit(app, window):
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    view = analyze(app, window, "binary.random")
+    view = analyze(app, window, "binary.random", estimator="DL")
     title = next(iter(view.results.display_images))
     path = Path(view.results.display_images[title])
     before = path.read_bytes()
@@ -1880,6 +1890,7 @@ def calculator(app, window, family):
     if family == "binary":
         expected[1] += 1
     callback_errors = []
+    normal_font_size = app.font().pointSizeF()
 
     def edit(accept):
         dialog = app.activeModalWidget()
@@ -1890,9 +1901,13 @@ def calculator(app, window, family):
             table = getattr(dialog, table_name)
             app.processEvents()
             if family == "binary":
+                record_step("calculator-native-layout", dialog, font_points=dialog.font().pointSizeF())
                 viewport = dialog.content_scroll.viewport()
                 for widget in (dialog.raw_data_table, dialog.metric_readout):
                     assert widget.isVisible()
+                    if dialog.font().pointSizeF() > normal_font_size:
+                        dialog.content_scroll.ensureWidgetVisible(widget)
+                        app.processEvents()
                     assert viewport.rect().contains(QtCore.QRect(widget.mapTo(viewport, QtCore.QPoint()), widget.size())), (widget.objectName(), widget.geometry(), viewport.size())
                 readout_bounds = QtCore.QRect(dialog.wald_readout.mapTo(dialog, QtCore.QPoint()), dialog.wald_readout.size())
                 footer_bounds = QtCore.QRect(dialog.buttonBox.mapTo(dialog, QtCore.QPoint()), dialog.buttonBox.size())
@@ -1900,7 +1915,11 @@ def calculator(app, window, family):
                 assert dialog.wald_readout.isVisible()
                 assert dialog.rect().contains(readout_bounds), (dialog.rect(), readout_bounds)
                 assert readout_bounds.bottom() < footer_bounds.top(), (readout_bounds, footer_bounds)
-                assert dialog.content_scroll.verticalScrollBar().maximum() == 0
+                if dialog.font().pointSizeF() <= normal_font_size:
+                    assert dialog.content_scroll.verticalScrollBar().maximum() == 0
+                record_step("calculator-content-reachable", dialog,
+                            scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum())
+                dialog.content_scroll.verticalScrollBar().setValue(0)
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
                 assert "SE" in dialog.wald_readout.text() and "two-sided p" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]

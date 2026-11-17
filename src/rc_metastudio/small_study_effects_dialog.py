@@ -213,12 +213,10 @@ class SmallStudyEffectsDialog(
             else "95"
         )
         self._eligibility_report = None
-        if str(self.model.get_current_data_type()) == "diagnostic":
-            self.correction_policy_combo.setCurrentText(
-                CorrectionPolicy.ALL_STUDIES_IF_ANY_ZERO_EXISTS.value
-            )
 
     def _connect_controls(self):
+        self.use_package_minimum_check.toggled.connect(self._refresh_eligibility)
+        self.minimum_studies_spin.valueChanged.connect(self._refresh_eligibility)
         for control in (
             self.ordinary_funnel_check,
             self.contour_funnel_check,
@@ -284,6 +282,7 @@ class SmallStudyEffectsDialog(
                 else None
             ),
             confidence_level=float(self.model.get_confidence_level()),
+            k_min=None if self.use_package_minimum_check.isChecked() else self.minimum_studies_spin.value(),
             selected_tests=(),
         )
 
@@ -299,15 +298,24 @@ class SmallStudyEffectsDialog(
             )
             return
         self._eligibility_report = report
+        if self.use_package_minimum_check.isChecked() and report.k_min is not None:
+            blocked = self.minimum_studies_spin.blockSignals(True)
+            self.minimum_studies_spin.setValue(report.k_min)
+            self.minimum_studies_spin.blockSignals(blocked)
         self.context_label.setText(self._context_summary(report))
         available = [item for item in report.methods if item.available]
+        unavailable = {}
+        for item in report.methods:
+            if not item.available:
+                unavailable.setdefault(unavailable_reason(item), []).append(_TEST_LABELS.get(item.method, item.method))
+        reasons = '\n'.join(f'{", ".join(names)}: {reason}' for reason, names in unavailable.items())
         if not available:
             self.automatic_test_label.setText(
-                f"No formal asymmetry test is available ({report.usable_studies} usable " + ("study" if report.usable_studies == 1 else "studies") + ").\n" + "\n".join(dict.fromkeys(
-                    unavailable_reason(item) for item in report.methods if not item.available))
+                f"No formal asymmetry test is available ({report.usable_studies} usable " + ("study" if report.usable_studies == 1 else "studies") + ").\n" + reasons
             )
             return
-        self.automatic_test_label.setText(_available_method_text(available))
+        explanation = "\nDiagnostic accuracy data use Deeks analysis; ordinary and contour-enhanced funnels and their confidence-region settings do not apply." if request.data_type == "diagnostic" else ""
+        self.automatic_test_label.setText('\n'.join(filter(None, (_available_method_text(available), reasons, explanation.strip()))))
 
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_data_type())
@@ -332,6 +340,7 @@ class SmallStudyEffectsDialog(
         )
 
     def _refresh_eligibility(self):
+        self.minimum_studies_spin.setEnabled(not self.use_package_minimum_check.isChecked())
         self._populate_context()
         self._update_controls()
 
@@ -423,6 +432,7 @@ class SmallStudyEffectsDialog(
                 else None
             ),
             confidence_level=float(self.model.get_confidence_level()),
+            k_min=None if self.use_package_minimum_check.isChecked() else self.minimum_studies_spin.value(),
             selected_tests=selected_tests,
             selected_funnels=funnels,
             label_policy=labels[self.label_policy_combo.currentText()],

@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import QEvent, QObject
+from PyQt6.QtCore import QEvent, QObject, Qt
 from PyQt6.QtWidgets import QDialog, QMessageBox, QWidget
 
 from rc_metastudio import app_error_handler
 from rc_metastudio import analysis_setup_dialog
 from rc_metastudio import adaptive_window
-from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRIC_GROUPS
+from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRIC_GROUPS, ALL_METRIC_NAMES
 
 if TYPE_CHECKING:
     import ui_diagnostic_metrics_dialog as _ui_diagnostic_metrics_dialog
@@ -24,10 +24,7 @@ class DiagnosticMetricsDialog(
     def __init__(self, model, parent=None, analysis_type=None, external_params=None):
         super(DiagnosticMetricsDialog, self).__init__(parent)
         self.setupUi(self)
-        # The count-based joint workflow is the default diagnostic experience;
-        # likelihood-ratio and DOR analyses remain explicit optional requests.
-        self.chk_box_lr.setChecked(False)
-        self.chk_box_dor.setChecked(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self._configure_focus_revelation()
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
@@ -37,7 +34,7 @@ class DiagnosticMetricsDialog(
         self.external_params = external_params
         self.analysis_type = analysis_type
         self.btn_cancel.clicked.connect(self.reject)
-        self.btn_ok.pressed.connect(app_error_handler.safe_slot(self.ok, parent=self))
+        self.btn_ok.clicked.connect(app_error_handler.safe_slot(self.ok, parent=self))
         self._configure_metric_checkboxes()
         for metric in self.SELECTABLE_METRICS:
             self._metric_checkbox(metric).toggled.connect(
@@ -71,7 +68,7 @@ class DiagnosticMetricsDialog(
         if not selected_metrics:
             QMessageBox.warning(
                 self,
-                "No Diagnostic Metric Selected",
+                "No diagnostic metric selected",
                 "Select at least one available diagnostic metric before running analysis.",
             )
             return
@@ -99,7 +96,7 @@ class DiagnosticMetricsDialog(
         if form is None:
             return
         form.show()
-        self.hide()
+        self.accept()
 
     def get_selected_metrics(self):
         selected_metrics = []
@@ -128,6 +125,9 @@ class DiagnosticMetricsDialog(
                     "Requires complete TP/FN/FP/TN counts or complete entered "
                     "effect estimates and confidence intervals for this metric."
                 )
+                missing = [ALL_METRIC_NAMES[effect] for effect in DIAGNOSTIC_METRIC_GROUPS[metric]
+                           if not self.model.included_studies_have_point_estimates(effect=effect)]
+                reason += " Missing entered estimates: " + ", ".join(missing) + "."
                 checkbox.setToolTip(reason)
                 unavailable.append("{}: {}".format(checkbox.text(), reason))
         if unavailable:

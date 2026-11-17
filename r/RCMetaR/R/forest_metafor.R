@@ -547,8 +547,7 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
 }
 
 rcmetar.metafor.subgroup.difference.test <- function(results) {
-    if (length(results) < 2 || any(vapply(results, function(res)
-            inherits(res, "rma.mh") || identical(as.character(res$method), "MH"), logical(1)))) return(NULL)
+    if (length(results) < 2) return(NULL)
     yi <- vapply(results, function(res) as.numeric(res$b[[1]]), numeric(1))
     sei <- vapply(results, function(res) as.numeric(res$se[[1]]), numeric(1))
     # A difference test requires every requested group to be estimable.

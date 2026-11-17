@@ -1569,3 +1569,19 @@ def test_reviewed_scale_labels_preserve_all_scientific_values():
     for text in (approved.replace("0.77", "999"), approved + "\nNew scientific claim", ""):
         damaged = {"results": [{"id": "amino-binary-meta-regression", "texts": {"Summary": text}}]}
         assert not compare_golden_baseline(reference, damaged, exceptions)["passed"]
+
+
+@pytest.mark.parametrize("replacement", [0.604, 0.606, None, "0.605"])
+def test_reviewed_numeric_addition_accepts_only_exact_missing_field(replacement):
+    reference, current = _baseline(), _current()
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = 0.605
+    exception = {"id": "amino-binary-random",
+                 "accepted_details": ["Summary.singleton_p is an unexpected numeric metric."],
+                 "accepted_classifications": [UNEXPECTED_OUTPUT],
+                 "accepted_outputs": {"Summary": {"singleton_p": 0.605}}}
+    assert compare_golden_baseline(reference, current, [exception])["passed"]
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = replacement
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = 0.605
+    current["curated_golden_set"][0]["outputs"]["Summary"]["estimate"] = 999
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]

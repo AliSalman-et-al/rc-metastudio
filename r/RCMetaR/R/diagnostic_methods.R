@@ -128,21 +128,6 @@ diagnostic.transform.f <- function(metric.str){
     list(display.scale = display.scale, calc.scale = calc.scale)
 }
 
-get.res.for.one.diag.study <- function(diagnostic.data, params){
-    if (length(diagnostic.data@y) == 0 || length(diagnostic.data@SE) == 0) {
-        diagnostic.data <- compute.diag.point.estimates(diagnostic.data, params)
-    }
-
-    y <- diagnostic.data@y
-    se <- diagnostic.data@SE
-
-    mult <- get.mult.from.conf.level(params$conf.level)
-    ub <- y + mult*se
-    lb <- y - mult*se
-    res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se)
-    res
-}
-
 rcmetar.diagnostic.prepare <- function(diagnostic.data, params) {
     if (!is(diagnostic.data, "DiagnosticData")) stop("Diagnostic data expected.", call.=FALSE)
     compute.diag.point.estimates(diagnostic.data, params)
@@ -285,56 +270,48 @@ append.image.order <- function(image.order, results){
 diagnostic.fixed.inv.var <- function(diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
     results <- NULL
-    inference.method <- rcmetar.validate.inference.method(params, length(diagnostic.data@y))
-    if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-        res <- get.res.for.one.diag.study(diagnostic.data, params)
-        summary.disp <- list("MAResults" = res)
-        results <- list("Summary"=summary.disp)
-    } else {
-        res<-rma.uni(yi=diagnostic.data@y, sei=diagnostic.data@SE,
-                     slab=diagnostic.data@study.names,
-                     method="FE", test=inference.method, level=params$conf.level,
-                     digits=params$digits)
+    inference.method <- rcmetar.inference.method(params)
+    res<-rma.uni(yi=diagnostic.data@y, sei=diagnostic.data@SE,
+                 slab=diagnostic.data@study.names,
+                 method="FE", test=inference.method, level=params$conf.level,
+                 digits=params$digits)
 		res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
-        model.title <- paste("Diagnostic Fixed-Effect Model - Inverse Variance (k = ", res$k, ")", sep="")
-        summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
-        pretty.names <- diagnostic.fixed.inv.var.pretty.names()
-        pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
-        for (count in 1:length(summary.disp$table.titles)) {
-          summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
-        }
-        if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- rcmetar.scratch.path(paste0("diag_fixed_inv_var_", params$measure, "_results.csv"))
-            write.results.to.file(diagnostic.data, params, res, outpath=results.path)
-        }
-        if ((is.null(params$create.plot)) || params$create.plot == TRUE) {
-            forest.path <- paste(params$fp_outpath, sep="")
-            plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
-            changed.params <- plot.data$changed.params
-            params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-            changed.params <- c(changed.params, params.changed.in.forest.plot)
-            params <- update.changed.plot.params(params, changed.params)
-            forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
+    model.title <- paste("Diagnostic Fixed-Effect Model - Inverse Variance (k = ", res$k, ")", sep="")
+    summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
+    pretty.names <- diagnostic.fixed.inv.var.pretty.names()
+    pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
+    for (count in 1:length(summary.disp$table.titles)) {
+      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+    }
+    if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
+        results.path <- rcmetar.scratch.path(paste0("diag_fixed_inv_var_", params$measure, "_results.csv"))
+        write.results.to.file(diagnostic.data, params, res, outpath=results.path)
+    }
+    if ((is.null(params$create.plot)) || params$create.plot == TRUE) {
+        forest.path <- paste(params$fp_outpath, sep="")
+        plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
+        changed.params <- plot.data$changed.params
+        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+        changed.params <- c(changed.params, params.changed.in.forest.plot)
+        params <- update.changed.plot.params(params, changed.params)
+        forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-            images <- c("Forest plot"=forest.path)
-            plot.names <- c("forest plot"="forest_plot")
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
+        plot.names <- c("forest plot"="forest_plot")
 
 
-            results <- list("images"=images,
+        results <- list("images"=images,
 					        "Summary"=summary.disp,
-                            "plot_names"=plot.names,
-                            "plot_params_paths"=plot.params.paths)
-        } else {
-            results <- list("Summary"=summary.disp)
-        }
+                        "plot_names"=plot.names,
+                        "plot_params_paths"=plot.params.paths)
+    } else {
+        results <- list("Summary"=summary.disp)
     }
 
-	references <- rcmetar.unique.references(c(
-        rcmetar.method.references("rma.uni.fixed"),
-        rcmetar.inference.method.references(params)))
+	references <- rcmetar.fit.references(res)
 	results[["References"]] <- references
 
     results
@@ -379,67 +356,61 @@ diagnostic.fixed.inv.var.overall <- function(results) {
 diagnostic.fixed.mh <- function(diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
     results <- NULL
-    if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-        res <- get.res.for.one.diag.study(diagnostic.data, params)
-        summary.disp <- list("MAResults" = res)
-        results <- list("Summary"=summary.disp)
-    }
-    else {
-        counts <- rcmetar.corrected.diagnostic.counts(diagnostic.data, params)
-        res <- switch(params$measure,
+    counts <- list(TP=diagnostic.data@TP, FN=diagnostic.data@FN,
+                   FP=diagnostic.data@FP, TN=diagnostic.data@TN)
+    res <- switch(params$measure,
 
-            "DOR" = rma.mh(ai=counts$TP, bi=counts$FN,
-                                ci=counts$FP, di=counts$TN, slab=diagnostic.data@study.names,
-                                level=params$conf.level, digits=params$digits, measure="OR",
-                                add=c(0, 0), to=c("none", "none")),
+        "DOR" = rma.mh(ai=counts$TP, bi=counts$FN,
+                            ci=counts$FP, di=counts$TN, slab=diagnostic.data@study.names,
+                            level=params$conf.level, digits=params$digits, measure="OR",
+                            add=c(params$adjust, 0), to=c(as.character(params$to), "none")),
 
-            "PLR" = rma.mh(ai=counts$TP, bi=counts$FN,
-                                ci=counts$FP, di=counts$TN, slab=diagnostic.data@study.names,
-                                level=params$conf.level, digits=params$digits, measure="RR",
-                                add=c(0, 0), to=c("none", "none")),
+        "PLR" = rma.mh(ai=counts$TP, bi=counts$FN,
+                            ci=counts$FP, di=counts$TN, slab=diagnostic.data@study.names,
+                            level=params$conf.level, digits=params$digits, measure="RR",
+                            add=c(params$adjust, 0), to=c(as.character(params$to), "none")),
 
-            "NLR" = rma.mh(ai=counts$FN, bi=counts$TP,
-                                ci=counts$TN, di=counts$FP, slab=diagnostic.data@study.names,
-                                level=params$conf.level, digits=params$digits, measure="RR",
-                                add=c(0, 0), to=c("none", "none")))
+        "NLR" = rma.mh(ai=counts$FN, bi=counts$TP,
+                            ci=counts$TN, di=counts$FP, slab=diagnostic.data@study.names,
+                            level=params$conf.level, digits=params$digits, measure="RR",
+                            add=c(params$adjust, 0), to=c(as.character(params$to), "none")))
 
 		res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
-        model.title <- "Diagnostic Fixed-Effect Model - Mantel-Haenszel"
-        summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
-        pretty.names <- diagnostic.fixed.mh.pretty.names()
-        pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
-        for (count in 1:length(summary.disp$table.titles)) {
-          summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+    model.title <- "Diagnostic Fixed-Effect Model - Mantel-Haenszel"
+    summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
+    pretty.names <- diagnostic.fixed.mh.pretty.names()
+    pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
+    for (count in 1:length(summary.disp$table.titles)) {
+      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+    }
+    if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
+        results.path <- rcmetar.scratch.path(paste0("diag_fixed_mh_", params$measure, "_results.csv"))
+        write.results.to.file(diagnostic.data, params, res, outpath=results.path)
+    }
+    if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {
+        if (length(diagnostic.data@y) == 0 || length(diagnostic.data@SE) == 0) {
+            diagnostic.data <- compute.diag.point.estimates(diagnostic.data, params)
         }
-        if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- rcmetar.scratch.path(paste0("diag_fixed_mh_", params$measure, "_results.csv"))
-            write.results.to.file(diagnostic.data, params, res, outpath=results.path)
-        }
-        if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {
-            if (length(diagnostic.data@y) == 0 || length(diagnostic.data@SE) == 0) {
-                diagnostic.data <- compute.diag.point.estimates(diagnostic.data, params)
-            }
-            forest.path <- paste(params$fp_outpath, sep="")
-            plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
-            changed.params <- plot.data$changed.params
-            params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-            changed.params <- c(changed.params, params.changed.in.forest.plot)
-            params <- update.changed.plot.params(params, changed.params)
-            forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
+        forest.path <- paste(params$fp_outpath, sep="")
+        plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
+        changed.params <- plot.data$changed.params
+        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+        changed.params <- c(changed.params, params.changed.in.forest.plot)
+        params <- update.changed.plot.params(params, changed.params)
+        forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-            images <- c("Forest plot"=forest.path)
-            plot.names <- c("forest plot"="forest_plot")
-            results <- list("images"=images,
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
+        plot.names <- c("forest plot"="forest_plot")
+        results <- list("images"=images,
 					        "Summary"=summary.disp,
-                            "plot_names"=plot.names,
-                            "plot_params_paths"=plot.params.paths)
-        }
-        else {
-            results <- list("Summary"=summary.disp)
-        }
+                        "plot_names"=plot.names,
+                        "plot_params_paths"=plot.params.paths)
+    }
+    else {
+        results <- list("Summary"=summary.disp)
     }
 
 	references <- rcmetar.method.references("rma.mh")
@@ -503,12 +474,11 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
     results <- list("Summary"=summary.disp)
   }
   else{
-	res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 	res$study.names <- diagnostic.data@study.names
 	res$study.years <- diagnostic.data@years
 
-    diagnostic.data@y <- res$yi
-    diagnostic.data@SE <- sqrt(res$vi)
+    diagnostic.data@y <- res$yi.f
+    diagnostic.data@SE <- sqrt(res$vi.f)
 
     model.title <- "Diagnostic Fixed-Effect Model - Peto"
     summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
@@ -525,7 +495,6 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
         diagnostic.data <- compute.bin.point.estimates(diagnostic.data, params)
       }
       if (is.null(params$write.to.file) || params$write.to.file == TRUE) {
-        res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
         results.path <- rcmetar.scratch.path("diagnostic_fixed_peto_results.csv")
         write.results.to.file(diagnostic.data, params, res, outpath=results.path)
       }
@@ -598,60 +567,52 @@ diagnostic.random <- function(diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
     results <- NULL
-    inference.method <- rcmetar.validate.inference.method(params, length(diagnostic.data@y))
-    if (length(diagnostic.data@TP) == 1 || length(diagnostic.data@y) == 1){
-        res <- get.res.for.one.diag.study(diagnostic.data, params)
-        summary.disp <- list("MAResults" = res)
-        results <- list("Summary"=summary.disp)
-    } else {
-        res<-rma.uni(yi=diagnostic.data@y, sei=diagnostic.data@SE,
-                 slab=diagnostic.data@study.names,
-                 method=params$rm.method, test=inference.method, level=params$conf.level,
-                 digits=params$digits)
+    inference.method <- rcmetar.inference.method(params)
+    res<-rma.uni(yi=diagnostic.data@y, sei=diagnostic.data@SE,
+             slab=diagnostic.data@study.names,
+             method=params$rm.method, test=inference.method, level=params$conf.level,
+             digits=params$digits)
 
 		weights <- 1 / (res$vi + res$tau2)
-        res$study.weights <- weights / sum(weights)
+    res$study.weights <- weights / sum(weights)
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
 
-        model.title <- paste("Diagnostic Random-Effects Model (k = ", res$k, ")", sep="")
-        summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
-        pretty.names <- diagnostic.random.pretty.names()
-        pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
-        for (count in 1:length(summary.disp$table.titles)) {
-            summary.disp$table.titles[count] <- paste(pretty.metric, " -", summary.disp$table.titles[count], sep="")
-        }
-        if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
-            results.path <- rcmetar.scratch.path(paste0("diag_random_", params$measure, "_results.csv"))
-            write.results.to.file(diagnostic.data, params, res, outpath=results.path)
-        }
-        if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {
-            forest.path <- paste(params$fp_outpath, sep="")
-            plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
-            changed.params <- plot.data$changed.params
-            params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-            changed.params <- c(changed.params, params.changed.in.forest.plot)
-            params <- update.changed.plot.params(params, changed.params)
-            forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
+    model.title <- paste("Diagnostic Random-Effects Model (k = ", res$k, ")", sep="")
+    summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
+    pretty.names <- diagnostic.random.pretty.names()
+    pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
+    for (count in 1:length(summary.disp$table.titles)) {
+        summary.disp$table.titles[count] <- paste(pretty.metric, " -", summary.disp$table.titles[count], sep="")
+    }
+    if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
+        results.path <- rcmetar.scratch.path(paste0("diag_random_", params$measure, "_results.csv"))
+        write.results.to.file(diagnostic.data, params, res, outpath=results.path)
+    }
+    if ((is.null(params$create.plot)) || (params$create.plot == TRUE)) {
+        forest.path <- paste(params$fp_outpath, sep="")
+        plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
+        changed.params <- plot.data$changed.params
+        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+        changed.params <- c(changed.params, params.changed.in.forest.plot)
+        params <- update.changed.plot.params(params, changed.params)
+        forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
 
-            plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-            images <- c("Forest plot"=forest.path)
-            plot.names <- c("forest plot"="forest_plot")
+        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+        images <- c("Forest plot"=forest.path)
+        plot.names <- c("forest plot"="forest_plot")
 
 
-            results <- list("images"=images,
+        results <- list("images"=images,
 					        "Summary"=summary.disp,
-                            "plot_names"=plot.names,
-                            "plot_params_paths"=plot.params.paths)
-        }
-        else {
-            results <- list("Summary"=summary.disp)
-        }
+                        "plot_names"=plot.names,
+                        "plot_params_paths"=plot.params.paths)
+    }
+    else {
+        results <- list("Summary"=summary.disp)
     }
 
-	references <- rcmetar.unique.references(c(
-        rcmetar.method.references("rma.uni.random"),
-        rcmetar.inference.method.references(params)))
+	references <- rcmetar.fit.references(res)
 	results[["References"]] <- references
 
     results
@@ -663,7 +624,7 @@ diagnostic.random.parameters <- function(){
     params <- list("rm.method"=rm.method.ls, "inference.method"=rcmetar.inference.methods(), "conf.level"="float", "digits"="int",
                             "adjust"="float", "to"=apply.adjustment.to)
 
-    defaults <- list("rm.method"="DL", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS,
+    defaults <- list("rm.method"="REML", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS,
                             "adjust"=.5, "to"="only0")
 
     var.order <- c("rm.method", "inference.method", "conf.level", "digits", "adjust", "to")

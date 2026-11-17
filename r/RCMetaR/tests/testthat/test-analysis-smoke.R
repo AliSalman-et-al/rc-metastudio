@@ -86,9 +86,7 @@ diagnostic_fixture <- function(measure = "Sens") {
       new("CovariateValues", cov.name = "quality", cov.vals = c("A", "A", "B", "B", "A", "B"), cov.type = "factor", ref.var = "A")
     )
   )
-  effects <- get.res.for.one.diag.study(data, params)
-  data@y <- effects$b
-  data@SE <- effects$se
+  data <- compute.diag.point.estimates(data, params)
   list(data = data, params = params)
 }
 
@@ -198,19 +196,6 @@ test_that("inference method reaches metafor results and is reported", {
   expect_identical(result[["Inference Method"]], "Knapp-Hartung")
   expect_true(any(grepl("Knapp-Hartung inference", result$References, fixed = TRUE)))
 })
-
-test_that("non-normal inference requires positive residual degrees of freedom", {
-  expect_error(
-    RCMetaR:::rcmetar.validate.inference.method(
-      list(inference.method = "t"),
-      k = 2,
-      p = 2
-    ),
-    "requires positive residual degrees of freedom"
-  )
-})
-
-
 
 test_that("Reitsma feasibility requires count-based diagnostic data", {
   entered.effects <- new(

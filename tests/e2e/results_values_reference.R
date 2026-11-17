@@ -49,12 +49,6 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
       reference <- metafor::rma.uni(yi=env$om.data@y[indexes], sei=env$om.data@SE[indexes],
         method=if (is.null(fit$method)) env$params$rm.method else fit$method,
         test=if (is.null(fit$test)) 'z' else fit$test, level=90)
-      if (length(indexes) == 1L) {
-        # A cumulative first row is one observed study, not a pooled fit.
-        margin <- abs(stats::qnorm((1-90/100)/2)) * env$om.data@SE[indexes]
-        reference$ci.lb <- env$om.data@y[indexes] - margin
-        reference$ci.ub <- env$om.data@y[indexes] + margin
-      }
       check(table$quantities[[i]], reference, transform)
     }
   }

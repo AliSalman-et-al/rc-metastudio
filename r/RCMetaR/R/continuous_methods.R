@@ -39,85 +39,58 @@ continuous.transform.f <- function(metric.str) {
   list(display.scale = display.scale, calc.scale = calc.scale)
 }
 
-get.res.for.one.cont.study <- function(cont.data, params){
-  y<-NULL
-  se<-NULL
-  if (length(cont.data@y) == 0 || is.na(cont.data@y)) {
-    res <- compute.for.one.cont.study(cont.data, params)
-    y <- res$yi[1]
-    se <- sqrt(res$vi[1])
-  }
-  else {
-    y <- cont.data@y[1]
-    se <- cont.data@SE[1]
-  }
-  mult <- get.mult.from.conf.level(params$conf.level)
-  ub <- y + mult*se
-  lb <- y - mult*se
-  res <- list("b"=c(y), "ci.lb"=lb, "ci.ub"=ub, "se"=se)
-  res
-}
-
 continuous.fixed <- function(cont.data, params){
   params$measure <- .rcmetar.canonical.metric(params$measure)
   if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
   results <- NULL
   input.params <- params
-  inference.method <- rcmetar.validate.inference.method(params, length(cont.data@y))
+  inference.method <- rcmetar.inference.method(params)
 
-  if (length(cont.data@study.names) == 1){
-    res <- get.res.for.one.cont.study(cont.data, params)
-    results <- list("Summary"=res, "res"=res)
-  }
-  else {
-    res<-rma.uni(
-      yi=cont.data@y,
-      sei=cont.data@SE,
-      slab=cont.data@study.names,
-      method="FE",
-      test=inference.method,
-      level=params$conf.level,
-      digits=params$digits)
-    pure.res <- res
+  res<-rma.uni(
+    yi=cont.data@y,
+    sei=cont.data@SE,
+    slab=cont.data@study.names,
+    method="FE",
+    test=inference.method,
+    level=params$conf.level,
+    digits=params$digits)
+  pure.res <- res
 
 		res$weights <- weights(res)
 		results <- list("Summary"=res)
 
-    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste("Continuous Fixed-Effect Model\n\nMetric: ", metric.name, sep="")
-    summary.disp <- create.summary.disp(cont.data, params, res, model.title)
-    forest.path <- paste(params$fp_outpath, sep="")
-    plot.data <- create.plot.data.continuous(cont.data, params, res)
-    changed.params <- plot.data$changed.params
+  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+  model.title <- paste("Continuous Fixed-Effect Model\n\nMetric: ", metric.name, sep="")
+  summary.disp <- create.summary.disp(cont.data, params, res, model.title)
+  forest.path <- paste(params$fp_outpath, sep="")
+  plot.data <- create.plot.data.continuous(cont.data, params, res)
+  changed.params <- plot.data$changed.params
 
 		forest.plot.params.path <- ""
 		if (is.null(params$supress.output) || !params$supress.output) {
-      params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-      changed.params <- c(changed.params, params.changed.in.forest.plot)
-      params <- update.changed.plot.params(params, changed.params)
-      forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
+    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+    changed.params <- c(changed.params, params.changed.in.forest.plot)
+    params <- update.changed.plot.params(params, changed.params)
+    forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
 		}
 
-    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-    images <- c("Forest plot"=forest.path)
-    plot.names <- c("forest plot"="forest_plot")
+  plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+  images <- c("Forest plot"=forest.path)
+  plot.names <- c("forest plot"="forest_plot")
 		pure.res$weights <- weights(res)
-        results <- list(
-          "input_data"=cont.data,
-          "input_params"=input.params,
-          "images"=images,
-          "Summary"=summary.disp,
-          "plot_names"=plot.names,
-          "plot_params_paths"=plot.params.paths,
-          "res"=pure.res,
-          "res.info"=continuous.fixed.value.info(),
-          "Weights"=weights(res))
-  }
+      results <- list(
+        "input_data"=cont.data,
+        "input_params"=input.params,
+        "images"=images,
+        "Summary"=summary.disp,
+        "plot_names"=plot.names,
+        "plot_params_paths"=plot.params.paths,
+        "res"=pure.res,
+        "res.info"=continuous.fixed.value.info(),
+        "Weights"=weights(res))
 
-  results[["References"]] <- rcmetar.unique.references(c(
-    rcmetar.method.references("rma.uni.fixed"),
-    rcmetar.inference.method.references(params)))
+  results[["References"]] <- rcmetar.fit.references(res)
 
   results
 }
@@ -156,60 +129,52 @@ continuous.random <- function(cont.data, params) {
 
   results <- NULL
 	input.params <- params
-	inference.method <- rcmetar.validate.inference.method(params, length(cont.data@y))
+	inference.method <- rcmetar.inference.method(params)
 
-  if (length(cont.data@study.names) == 1) {
-      res <- get.res.for.one.cont.study(cont.data, params)
-      results <- list("Summary"=res, "res"=res)
-  }
-  else {
-    res<-rma.uni(
-      yi=cont.data@y, sei=cont.data@SE,
-      slab=cont.data@study.names,
-      method=params$rm.method,
-      test=inference.method,
-      level=params$conf.level,
-      digits=params$digits)
-    pure.res<-res
+  res<-rma.uni(
+    yi=cont.data@y, sei=cont.data@SE,
+    slab=cont.data@study.names,
+    method=params$rm.method,
+    test=inference.method,
+    level=params$conf.level,
+    digits=params$digits)
+  pure.res<-res
 
 		res$weights <- weights(res)
-    results <- list("Summary"=res)
+  results <- list("Summary"=res)
 
-    metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep="")
-    summary.disp <- create.summary.disp(cont.data, params, res, model.title)
+  metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
+  model.title <- paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep="")
+  summary.disp <- create.summary.disp(cont.data, params, res, model.title)
 
-    forest.path <- paste(params$fp_outpath, sep="")
-    plot.data <- create.plot.data.continuous(cont.data, params, res)
-    changed.params <- plot.data$changed.params
+  forest.path <- paste(params$fp_outpath, sep="")
+  plot.data <- create.plot.data.continuous(cont.data, params, res)
+  changed.params <- plot.data$changed.params
 
 		forest.plot.params.path <- ""
 		if (is.null(params$supress.output) || !params$supress.output) {
-      params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-      changed.params <- c(changed.params, params.changed.in.forest.plot)
-      params <- update.changed.plot.params(params, changed.params)
-      forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
+    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
+    changed.params <- c(changed.params, params.changed.in.forest.plot)
+    params <- update.changed.plot.params(params, changed.params)
+    forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
 		}
 
-    plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-    images <- c("Forest plot"=forest.path)
-    plot.names <- c("forest plot"="forest_plot")
-    pure.res$weights <- weights(res)
-    results <- list(
-      "input_data"=cont.data,
-      "input_params"=input.params,
-      "images"=images,
-      "Summary"=summary.disp,
-      "plot_names"=plot.names,
-      "plot_params_paths"=plot.params.paths,
-      "res"=pure.res,
-      "res.info"=continuous.random.value.info(),
-      "Weights"=weights(res))
-  }
+  plot.params.paths <- c("Forest plot"=forest.plot.params.path)
+  images <- c("Forest plot"=forest.path)
+  plot.names <- c("forest plot"="forest_plot")
+  pure.res$weights <- weights(res)
+  results <- list(
+    "input_data"=cont.data,
+    "input_params"=input.params,
+    "images"=images,
+    "Summary"=summary.disp,
+    "plot_names"=plot.names,
+    "plot_params_paths"=plot.params.paths,
+    "res"=pure.res,
+    "res.info"=continuous.random.value.info(),
+    "Weights"=weights(res))
 
-  results[["References"]] <- rcmetar.unique.references(c(
-    rcmetar.method.references("rma.uni.random"),
-    rcmetar.inference.method.references(params)))
+  results[["References"]] <- rcmetar.fit.references(res)
 
   results
 }
@@ -228,7 +193,7 @@ continuous.random.parameters <- function() {
 
   params <- list("rm.method"=rm_method_ls, "inference.method"=rcmetar.inference.methods(), "conf.level"="float", "digits"="int")
 
-  defaults <- list("rm.method"="DL", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS)
+  defaults <- list("rm.method"="REML", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS)
 
   var_order <- c("rm.method", "inference.method", "conf.level", "digits")
   parameters <- list("parameters"=params, "defaults"=defaults, "var_order"=var_order)

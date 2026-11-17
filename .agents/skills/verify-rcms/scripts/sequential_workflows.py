@@ -19,18 +19,8 @@ def references(window, method, workflow, metric):
         pooling = 'add=c(.5,0), to=c("only0","none"), ' if fitter == "rma.peto" else ""
         fit = (
             f"metafor::{fitter}(ai=d[i,1], n1i=d[i,2], ci=d[i,3], n2i=d[i,4], "
-            f"{pooling}drop00=FALSE, level=95)"
+            f"{pooling}level=95)"
         )
-        pooled_fit = fit
-        fit = (
-            "if (length(i) > 1) "
-            + fit
-            + ' else { e <- metafor::escalc("OR", ai=d[i,1], n1i=d[i,2], ci=d[i,3], n2i=d[i,4], '
-            'add=.5, to="only0"); list(b=e$yi, se=sqrt(e$vi), '
-            "ci.lb=e$yi-qnorm(.975)*sqrt(e$vi), ci.ub=e$yi+qnorm(.975)*sqrt(e$vi)) }"
-        )
-        if fitter == "rma.peto":
-            fit = pooled_fit
         transform = "exp"
     else:
         if method.startswith("continuous"):
@@ -52,11 +42,7 @@ def references(window, method, workflow, metric):
             if method.endswith("fixed.inv.var") or method == "continuous.fixed"
             else "DL"
         )
-        fit = (
-            f'if (length(i) > 1) metafor::rma.uni(e$yi[i], vi=e$vi[i], method="{estimator}", level=95) '
-            "else list(b=e$yi[i], se=sqrt(e$vi[i]), ci.lb=e$yi[i]-qnorm(.975)*sqrt(e$vi[i]), "
-            "ci.ub=e$yi[i]+qnorm(.975)*sqrt(e$vi[i]))"
-        )
+        fit = f'metafor::rma.uni(e$yi[i], vi=e$vi[i], method="{estimator}", level=95)'
         fit = f"{{ e <- {effects}; {fit} }}"
     n = len(studies)
     if workflow == "cumulative":
@@ -135,7 +121,7 @@ def run(app, window, scenario, record):
             keep_results=True,
             workflow_override=workflow,
             metrics_override=("sens", "spec") if diagnostic else None,
-            parameters={"digits": 6},
+            parameters={"digits": 6, **({"rm.method": "DL"} if method == "diagnostic.random" else {})},
             prepare=prepare,
         )
         sections = parsed_numeric_sections(view.results)

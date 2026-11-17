@@ -39,7 +39,10 @@ def calculator_effect_source(
     if not any(value not in EMPTY_VALS for value in raw_data):
         return "entered"
     required_value_count = _ONE_ARM_REQUIRED_VALUE_COUNTS.get(effect, len(raw_data))
-    if any(value in EMPTY_VALS for value in raw_data[:required_value_count]):
+    required = raw_data[:required_value_count]
+    if effect in {"Sens", "Spec"}:
+        required = raw_data[:2] if effect == "Sens" else raw_data[2:4]
+    if any(value in EMPTY_VALS for value in required):
         return "entered"
     preview = analysis_unit.get_effect_and_ci_for_source(
         "derived_preview", effect, arm_key, confidence_multiplier

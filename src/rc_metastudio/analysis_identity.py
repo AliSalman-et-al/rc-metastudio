@@ -48,7 +48,13 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         groups = " minus ".join(model.arm_names)
         details.append(f"{effect}: {groups}, in {units}; 0 indicates no difference.")
     if fits:
+        joint_seen = False
         for fitted_metric, fitted_method, fitted_parameters in fits:
+            if "reitsma" in fitted_method.casefold():
+                if joint_seen:
+                    continue
+                joint_seen = True
+                fitted_metric = "Joint model"
             details.append("\n" + fitted_metric)
             details.extend(configuration_details(fitted_method, fitted_parameters))
     else:
@@ -77,13 +83,14 @@ def dataset_label(model):
 def dataset_identity(model, metric=None):
     comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
-    group_label = "Comparison" if comparison else "Arm"
+    group_label = "Index test" if model.get_current_data_type() == "diagnostic" else "Comparison" if comparison else "Arm"
     labels = [model.current_sheet.name, dataset_label(model)]
     quantity = metric or metric_label(model)
     if quantity and model.current_effect != "Mean" and quantity.casefold() != labels[-1].casefold():
         labels.append(quantity)
     context = []
-    if comparison or groups != "Group":
+    default_name = "Index test" if model.get_current_data_type() == "diagnostic" else "Group"
+    if comparison or groups != default_name:
         context.append(f"{group_label}: {groups}")
     return " · ".join(labels) + "\n" + " · ".join(context)
 

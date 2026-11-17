@@ -25,14 +25,17 @@ _PACKAGE_REFERENCES = {
 def binary_correction_prose(method, adjust, label, double_zero):
     if method in ("binary.fixed.mh", "binary.fixed.peto"):
         estimator = "Mantel–Haenszel" if method.endswith("mh") else "Peto"
-        return f"A continuity correction of {adjust} was applied to individual study estimates only; the pooled {estimator} estimate uses the original counts."
+        text = f"A continuity correction of {adjust} was applied to estimable individual study effects only; the pooled {estimator} estimate uses the original counts."
+        if double_zero:
+            text += f" The {double_zero} " + ("study with no events in either arm had" if double_zero == 1 else "studies with no events in either arm had") + " no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
+        return text
     text = f"A continuity correction of {adjust} was applied to {label}."
     if method in ("binary.random", "binary.fixed.inv.var") and double_zero:
         text += f" The {double_zero} " + ("study with no events in either arm was retained" if double_zero == 1 else "studies with no events in either arm were retained") + " with this correction."
     return text
 
 
-def methods_prose(metric, model, parameters, confidence, workflow, details, fits):
+def methods_prose(metric, model, parameters, confidence, workflow, details, fits, applied_inference=""):
     from rc_metastudio.analysis_method_labels import parameter_value_display_label
     plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
               "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, (metric[:1].upper() + metric[1:]) + " estimates")
@@ -53,12 +56,24 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
                 name = _estimator_prose(estimator)
                 text += f' with the {name} estimator of between-study variance'
             parts.append(text + '.')
-    inference = parameters.get('inference.method')
-    if inference in ('z', 'normal'):
-        parts.append(f"{float(confidence):g}% confidence intervals used the normal approximation.")
-    elif inference:
-        description = {'t': 'the t distribution', 'knha': 'the Knapp–Hartung adjustment', 'adhoc': 'the modified Knapp–Hartung adjustment'}.get(inference, parameter_value_display_label('inference.method', inference))
-        parts.append(f"{float(confidence):g}% confidence intervals used {description}.")
+    if applied_inference:
+        descriptions = {
+            'Normal approximation': 'the normal approximation',
+            "Student's t-distribution": 'the t distribution',
+            'Knapp-Hartung': 'the Knapp–Hartung adjustment',
+            'Modified Knapp-Hartung': 'the modified Knapp–Hartung adjustment',
+        }
+        labels = applied_inference.split(', ')
+        description = ' and '.join(descriptions.get(label, label) for label in labels)
+        suffix = ' across the fitted models' if len(labels) > 1 else ''
+        parts.append(f"Confidence intervals ({float(confidence):g}%) used {description}{suffix}.")
+    else:
+        inference = parameters.get('inference.method')
+        if inference:
+            description = {'z': 'the normal approximation', 'normal': 'the normal approximation',
+                           't': 'the t distribution', 'knha': 'the Knapp–Hartung adjustment',
+                           'adhoc': 'the modified Knapp–Hartung adjustment'}.get(inference, parameter_value_display_label('inference.method', inference))
+            parts.append(f"Confidence intervals ({float(confidence):g}%) used {description}.")
     parts.extend(_workflow_prose(workflow, parameters, details))
     if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
         parts.append('Regression coefficients and their confidence intervals are on the log scale.')
@@ -186,21 +201,20 @@ def _references(result):
 
 def _held_section_content(section):
     tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
-    paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs)
+    paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs if 'prediction' not in paragraph.casefold())
     if not tables and section.value:
-        tables = (ResultTable(section.title, ('',),
-                              tuple((line,) for line in section.value.splitlines())),)
+        paragraphs = (section.title + ':', *section.value.splitlines(), *paragraphs)
     return tables, paragraphs
 
 
 def _held_sections(result):
     sections = []
     for section in result.sections:
-        if section.kind != 'text' or section.source_key in {'References', 'small-study.references'}:
+        if section.kind != 'text' or section.source_key in {'References', 'small-study.references', 'small-study.warning'}:
             continue
         tables, paragraphs = _held_section_content(section)
         sections.append(replace(section, title='Supplementary details', value='',
-                                paragraphs=tuple(note for note in paragraphs if 'prediction' not in note.casefold()), tables=tables))
+                                paragraphs=paragraphs, tables=tables))
     references = tuple(f'{number}. {line}' for number, (line, _) in enumerate(_references(result), 1))
     sections.append(ResultSection('report.references', 'text', len(sections), 'Supplementary details', '', 'References', paragraphs=references))
     return sections
@@ -363,6 +377,7 @@ def _section_statistics(section):
 
 def _report_sections(result, summary, methods):
     text_sections = [section for section in result.sections if section.kind == 'text']
+    summary.extend(section.value for section in text_sections if section.source_key == 'small-study.warning' and section.value.strip())
     if not text_sections:
         return [], []
     pooled, fit = [], [((label, ()), (value, ())) for label, value in result.manuscript_model_info]
@@ -410,11 +425,7 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit),)),
                 _study_results(result, template, level)]
     if not any(section.tables for section in text_sections):
-        comparisons = [s for s in text_sections if s.title in ('Pooled comparison', 'Extrapolation') or s.title.startswith('Trim-and-fill')]
-        sections[0] = replace(template, title='Pooled effect', paragraphs=(),
-                              tables=(ResultTable('Pooled effect', ('Analysis', 'Output'), tuple((s.title, s.value) for s in comparisons)),))
-        sections[1] = replace(template, title='Model fit', paragraphs=sections[1].paragraphs,
-                              tables=(ResultTable('Model fit', ('Statistic', 'Value'), tuple((s.title, s.value) for s in text_sections if s.title in ('Data and eligibility', 'Tests'))),))
+        return []
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 
 
@@ -524,7 +535,7 @@ class ManuscriptReport:
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>'] if heading else []
         for name, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(text)
+                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(text).replace('\n', '<br>')
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
@@ -576,7 +587,7 @@ def _workflow_prose(workflow, parameters, details):
     elif workflow == 'meta-regression':
         moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
         if moderators:
-            parts.append(f"Meta-regression was performed with {moderators} as moderators.")
+            parts.append(f"The meta-regression model included {moderators}.")
     elif workflow == 'cumulative':
         parts.append('Cumulative meta-analysis added one study at a time in study table order.')
     elif workflow == 'leave-one-out':

@@ -9,7 +9,7 @@ s2_data <- function() rcmetar.create.continuous.data(y=c(.2,.5,.1,.7,.3,.8),
  SE=c(.1,.2,.15,.12,.17,.2), study.names=letters[1:6],
  covariates=list(new("CovariateValues",cov.name="Region",cov.vals=rep(c("A","B"),3),cov.type="factor",ref.var="A")))
 
-test_that("MH and incomplete subgroup estimates do not manufacture difference tests", {
+test_that("MH subgroup differences follow meta and incomplete estimates remain unavailable", {
  d <- rcmetar.create.ratio.data("IRR", estimate=rep(NA_real_,4),lower=rep(NA_real_,4),upper=rep(NA_real_,4),se=rep(NA_real_,4),scale=rep("ratio",4),confidence=rep(95,4),unit=rep("years",4), x1=c(0,0,3,4),x2=c(2,4,5,6),
  t1=rep(20,4),t2=rep(25,4),source=rep("raw",4),study.names=letters[1:4],
  covariates=list(new("CovariateValues",cov.name="Region",cov.vals=c("A","A","B","B"),cov.type="factor",ref.var="A")))
@@ -18,7 +18,12 @@ test_that("MH and incomplete subgroup estimates do not manufacture difference te
  expect_false(any(grepl("difference", x$`Subgroup Summary`$table.titles,ignore.case=TRUE)))
  d@x1 <- c(1,2,3,4)
  positive <- rcmetar.run.analysis(d,method="event_rates.mh",params=p,workflow="subgroup")
- expect_false(any(grepl("difference",positive$`Subgroup Summary`$table.titles,ignore.case=TRUE)))
+ index <- match("Test of subgroup differences", positive$`Subgroup Summary`$table.titles)
+ expect_false(is.na(index))
+ reference <- meta::metainc(event.e=d@x1,time.e=d@t1,event.c=d@x2,time.c=d@t2,
+   method="MH",sm="IRR",subgroup=d@covariates[[1]]@cov.vals)
+ if(!is.na(index)) expect_equal(attr(positive$`Subgroup Summary`$arrays[[index]],"rcms.numeric")$values[1,c(1,3)],
+   c(reference$Q.b.common,reference$pval.Q.b.common),tolerance=1e-8)
  expect_null(rcmetar.metafor.subgroup.difference.test(list(list(b=NA_real_,se=NA_real_),list(b=.2,se=.1))))
  expect_null(rcmetar.metafor.subgroup.difference.test(list(list(b=NA_real_,se=NA_real_),list(b=NA_real_,se=NA_real_))))
 })
@@ -52,9 +57,9 @@ test_that("non-normal cumulative requests retain singleton row and later authori
  for (test in c("t","knha","adhoc")) {
  d <- s2_data(); p <- s2_params(inference.method=test)
  x <- rcmetar.run.analysis(d,method="continuous.fixed",params=p,workflow="cumulative")
- expect_true(is.na(x$res$summary.table$estimate[1]))
- for (i in 2:6) {
- a <- metafor::rma.uni(d@y[1:i],sei=d@SE[1:i],method="FE",test=test,level=90)
+ expect_true(is.finite(x$res$summary.table$estimate[1]))
+ for (i in 1:6) {
+ a <- suppressWarnings(metafor::rma.uni(d@y[1:i],sei=d@SE[1:i],method="FE",test=test,level=90))
  expect_equal(x$res$summary.table$estimate[i],as.numeric(a$b))
  expect_equal(x$res$summary.table$ci.lb[i],a$ci.lb)
  }
@@ -73,7 +78,11 @@ test_that("regression factor counts and adjusted means use fitted complete rows 
  expect_equal(as.numeric(x$`Adjusted Mean`$arrays[[1]][2:3,"Studies"]),c(3,2))
  }
  d@y[3:6] <- NA_real_
- for (test in c("t","knha","adhoc")) expect_error(suppressWarnings(rcmetar.run.analysis(d,method="meta.regression",params=s2_params(inference.method=test),workflow="meta-regression")),"positive residual degrees")
+ for (test in c("t","knha","adhoc")) {
+  actual <- suppressWarnings(rcmetar.run.analysis(d,method="meta.regression",params=s2_params(inference.method=test),workflow="meta-regression",stop.at.rma=TRUE))
+  reference <- suppressWarnings(metafor::rma.uni(d@y,sei=d@SE,mods=as.numeric(d@covariates[[1]]@cov.vals=="B"),method="FE",test=test,level=90))
+  for (field in c("b","se","pval","ci.lb","ci.ub","test")) expect_equal(unname(actual[[field]]),unname(reference[[field]]),info=paste(test,field))
+ }
 })
 
 test_that("conditional means fail deliberately at public boundary", {
@@ -91,9 +100,9 @@ test_that("HR and IRR cumulative non-normal inference keeps all study identities
  p <- s2_params(metric,inference.method=test)
  x <- rcmetar.run.analysis(d,method=if(metric=="HR") "time_to_event.fixed" else "event_rates.fixed",params=p,workflow="cumulative")
  expect_equal(nrow(x$res$summary.table),6L)
- expect_true(is.na(x$res$summary.table$estimate[1]))
- expect_match(x$`Non-estimable rows`,"a.*positive residual degrees")
- for(i in 2:6) {
+ expect_true(is.finite(x$res$summary.table$estimate[1]))
+ expect_null(x$`Non-estimable rows`)
+ for(i in 1:6) {
  a <- suppressWarnings(metafor::rma.uni(d@estimate[1:i],sei=d@reported.SE[1:i],method="FE",test=test,level=90))
  expect_equal(x$res$summary.table$ci.lb[i],a$ci.lb)
  }

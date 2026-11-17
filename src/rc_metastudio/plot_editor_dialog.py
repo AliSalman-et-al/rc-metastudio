@@ -119,6 +119,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             configure_plot_text_inputs(self)
 
         self.x_ticks_le.textChanged.connect(self._ticks_changed)
+        if self.plot_type == "sroc":
+            self.sroc_y_ticks.textChanged.connect(self._ticks_changed)
 
         self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
         self.color_btn.setText("Choose…")
@@ -261,26 +263,31 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._commit_error.hide()
 
     def _validate_ticks(self, *, focus=True):
-        ticks = self.x_ticks_le.text().strip()
-        if ticks and ticks != "[default]":
-            values = []
+        fields = [(self.x_ticks_le, "X")]
+        if self.plot_type == "sroc":
+            fields.append((self.sroc_y_ticks, "Y"))
+        for field, axis in fields:
+            ticks = field.text().strip()
+            if not ticks or ticks == "[default]":
+                continue
             try:
                 values = [float(token.strip()) for token in ticks.split(",")]
                 valid = all(math.isfinite(value) for value in values)
             except ValueError:
                 valid = False
+            message = ""
             if not valid:
-                self.mark_commit_failed(
-                    "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
-                )
+                message = f"{axis}-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
+            elif self.plot_type == "sroc" and any(value < 0 or value > 1 for value in values):
+                message = f"{axis}-axis SROC ticks must lie between 0 and 1."
+            else:
+                measure = str(self._scalar(self._params.get("measure", "")))
+                if self.plot_type not in {"regression", "sroc"} and measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
+                    message = "X-axis ticks must be positive for a logarithmic effect axis."
+            if message:
+                self.mark_commit_failed(message)
                 if focus:
-                    self.x_ticks_le.setFocus()
-                return False
-            measure = str(self._scalar(self._params.get("measure", "")))
-            if self.plot_type not in {"regression", "sroc"} and measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
-                self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
-                if focus:
-                    self.x_ticks_le.setFocus()
+                    field.setFocus()
                 return False
         return True
 

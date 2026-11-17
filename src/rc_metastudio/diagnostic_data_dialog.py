@@ -585,29 +585,27 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         counts = self.get_raw_diagnostic_data()
         tp, fn, fp, tn = counts["TP"], counts["FN"], counts["FP"], counts["TN"]
 
-        can_calculate_sens, can_calculate_spec = True, True
-        if None in [tp, fn]:
-            can_calculate_sens = False
-            tp, fn = 0, 0
-        if None in [tn, fp]:
-            can_calculate_spec = False
-            tn, fp = 0, 0
-
-        ests_and_cis = self.calculator.diagnostic_effects_for_study(
-            tp,
-            fn,
-            fp,
-            tn,
-            metrics=DIAGNOSTIC_METRICS,
-            confidence_level=self.confidence_level,
-        )
-
+        sens_ready = tp is not None and fn is not None and tp + fn > 0
+        spec_ready = fp is not None and tn is not None and fp + tn > 0
+        metrics = [metric for metric in DIAGNOSTIC_METRICS
+                   if (sens_ready if metric == "Sens" else spec_ready if metric == "Spec"
+                       else sens_ready and spec_ready)]
         for metric in DIAGNOSTIC_METRICS:
-            if metric.lower() == "sens" and not can_calculate_sens:
-                continue
-            elif metric.lower() == "spec" and not can_calculate_spec:
-                continue
-
+            self.analysis_unit.set_derived_effect_preview(
+                metric, self.arm_key, None, None, None,
+                confidence_multiplier=self.confidence_multiplier,
+            )
+        if not metrics:
+            return
+        # Missing counts are never used for a requested metric. The unused side
+        # uses neutral positive placeholders so it cannot trigger a continuity
+        # correction in the available component. Stored missing counts stay blank.
+        ests_and_cis = self.calculator.diagnostic_effects_for_study(
+            tp if tp is not None else 1, fn if fn is not None else 1,
+            fp if fp is not None else 1, tn if tn is not None else 1,
+            metrics=metrics, confidence_level=self.confidence_level,
+        )
+        for metric in metrics:
             est, lower, upper = self.calculator.effect_triplet(
                 ests_and_cis[metric],
                 "calc_scale",
@@ -962,6 +960,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self.analysis_unit.set_effect_for_source(
                 "entered", metric, self.arm_key, None, None, None
             )
+        self.impute_effects_in_analysis_unit()
 
         # clear line edits
         self.set_current_effect()

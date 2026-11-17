@@ -499,7 +499,7 @@ class DatasetTableModel(QAbstractTableModel):
         if source == "raw":
             raw = unit.get_raw_data_for_arms(self.arm_names)
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
-                return "Not estimable: zero events in both arms. The rate ratio is 0/0, so no individual IRR or confidence interval is shown. The default analysis omits this study's individual effect; analysis settings control zero-event handling. Click the study row number to edit."
+                return "Not estimable in this preview: zero events in both arms give a rate ratio of 0/0. Inverse-variance analyses apply the selected continuity correction; Mantel–Haenszel pooling uses the original counts. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
         return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
 
@@ -1212,20 +1212,6 @@ class DatasetTableModel(QAbstractTableModel):
             elif data_type == CONTINUOUS:
                 raw_data = raw_data[:3]
         return raw_data
-
-    def data_for_only_one_arm(self):
-        """Really this should read 'data for one *and only one* arm."""
-        data_type = self.get_current_data_type(get_str=False)
-        raw_values_per_arm = 2 if data_type == BINARY else 3
-        arms_have_data = [False, False]
-        for study_index in range(len(self.current_sheet.rows)):
-            current_raw_data = self._get_canonical_raw_data_for_study(study_index)
-            for arm, start in enumerate((0, raw_values_per_arm)):
-                arms_have_data[arm] |= any(
-                    value not in (None, "")
-                    for value in current_raw_data[start : start + raw_values_per_arm]
-                )
-        return arms_have_data[0] != arms_have_data[1]
 
     def update_all_effect_previews(self):
         for study_index in range(len(self.current_sheet.rows)):

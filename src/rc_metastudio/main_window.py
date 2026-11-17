@@ -540,14 +540,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         enable = enable and r_runtime.is_ready()
         self.action_go.setEnabled(enable)
         self.action_cum_ma.setEnabled(enable)
-        self.action_loo_ma.setEnabled(enable)
+        self.action_loo_ma.setEnabled(enable and len(self.model.get_studies()) >= 2)
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
-        blocked = "requires at least 2 included studies" if len(self.model.get_studies()) < 2 else "R is not ready"
+        blocked = "requires at least 1 included study" if not self.model.get_studies() else "R is not ready"
         for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
                               (self.action_loo_ma, "Leave-one-out meta-analysis")):
-            reason = label if enable else blocked
+            reason = label if action.isEnabled() else ("requires at least 2 included studies" if enable else blocked)
             if action is self.action_go:
                 reason += " (Ctrl+R)"
             action.setToolTip(reason)
@@ -1238,7 +1238,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._set_model_adapter(
                 runtime.dataset,
                 runtime.model_state,
-                check_for_appropriate_metric=not runtime.restored_active_sheet,
                 recalculate_effect_previews=True,
             )
         except Exception:
@@ -1327,13 +1326,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self,
         data_model,
         state_dict=None,
-        check_for_appropriate_metric=False,
         recalculate_effect_previews=True,
     ):
         self._set_model_adapter(
             data_model,
             state_dict=state_dict,
-            check_for_appropriate_metric=check_for_appropriate_metric,
             recalculate_effect_previews=recalculate_effect_previews,
         )
         self.data_dirtied()
@@ -1342,7 +1339,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self,
         data_model,
         state_dict=None,
-        check_for_appropriate_metric=False,
         recalculate_effect_previews=True,
     ):
         # An empty dataset starts with one editable blank row.
@@ -1360,9 +1356,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.tableView.model().update_column_indices()
         self.tableView.synchronize_column_widths()
-
-        if check_for_appropriate_metric:
-            self.tableView.change_metric_if_appropriate()
 
         self.model_updated(
             recalculate_effect_previews=recalculate_effect_previews,

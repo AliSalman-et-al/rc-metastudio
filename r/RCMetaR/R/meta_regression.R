@@ -632,16 +632,12 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 	cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
 
 	method <- as.character(params$rm.method)
-	inference.method <- rcmetar.validate.inference.method(
-		params,
-        sum(complete.cases(reg.data@y, reg.data@SE, cov.array)),
-        qr(cbind(1, cov.array)[complete.cases(reg.data@y, reg.data@SE, cov.array), , drop=FALSE])$rank)
+	inference.method <- rcmetar.inference.method(params)
 
 
 	res<-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
 					level=params$conf.level, digits=params$digits,
 					method=method, test=inference.method, mods=cov.array)
-    rcmetar.validate.inference.method(params, res$k, res$p)
     # Count exactly the study rows retained by the authority fit.
     cov.data <- extract.cov.data(reg.data, analysis.rows=res$not.na)
 	pure.res<-res
@@ -699,7 +695,7 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 
     results$analysis.scale <- rcmetar.analysis.scale(params)
     results$input_params <- params
-	references <- rcmetar.fit.references(res, params, regression=TRUE)
+	references <- rcmetar.fit.references(res, regression=TRUE)
 	results[["References"]] <- references
     results
 }
@@ -825,7 +821,7 @@ binary.fixed.meta.regression <- function(reg.data, params){
        cov.vals <- reg.data@covariates[[cov.name]]
        cov.data[,cov.name] <- cov.vals
     }
-    inference.method <- rcmetar.validate.inference.method(params, length(reg.data@y), ncol(cov.data) + 1)
+    inference.method <- rcmetar.inference.method(params)
     res<-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
                                 level=params$conf.level, digits=params$digits, method="FE", test=inference.method,
                                 mods=cov.data)
@@ -847,7 +843,7 @@ binary.fixed.meta.regression <- function(reg.data, params){
 
 random.meta.regression <- function(reg.data, params, cov.name){
     cov.vals <- reg.data@covariates[[cov.name]]
-    inference.method <- rcmetar.validate.inference.method(params, length(reg.data@y), 2)
+    inference.method <- rcmetar.inference.method(params)
     res<-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
                                 level=params$conf.level, digits=params$digits,
                                 method=params$rm.method, test=inference.method,
@@ -874,7 +870,7 @@ binary.random.meta.regression.parameters <- function(){
     rm_method_ls <- rcmetar.random.effects.methods()
     params <- list("rm.method"=rm_method_ls, "inference.method"=rcmetar.inference.methods(), "conf.level"="float", "digits"="int")
 
-    defaults <- list("rm.method"="DL", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS)
+    defaults <- list("rm.method"="REML", "inference.method"="z", "conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS)
 
     var_order <- c("rm.method", "inference.method", "conf.level", "digits")
     parameters <- list("parameters"=params, "defaults"=defaults, "var_order"=var_order)
@@ -896,7 +892,7 @@ categorical.meta.regression <- function(reg.data, params, cov.names) {
            cov.data <- design_matrix_block
        }
   }
-  inference.method <- rcmetar.validate.inference.method(params, length(reg.data@y), ncol(cov.data) + 1)
+  inference.method <- rcmetar.inference.method(params)
   res <-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
                                 level=params$conf.level, digits=params$digits, method="FE", test=inference.method,
                                 mods=cov.data)

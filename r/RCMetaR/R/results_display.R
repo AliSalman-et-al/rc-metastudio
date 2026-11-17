@@ -34,7 +34,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
   tau2 <- format.numeric.display(res$tau2, digits.str)
-  degf <- res$k - (res$p %||% 1)
+  degf <- (res$k.yi %||% res$k) - (res$p %||% 1)
   I2 <- format.percent.display(res$I2, "%.1f")
   n <- rcmetar.summary.sample.sizes(om.data, params)
   QE <- format.numeric.display(res$QE, digits.str)
@@ -742,7 +742,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
 }
 
 rcmetar.summary.prediction <- function(res, params, transform, n, result.digits) {
-  if (inherits(res, "rma.uni") && !identical(res$method, "FE") && res$k > 2) {
+  if (inherits(res, "rma.uni") && !identical(res$method, "FE")) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
     if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
@@ -781,7 +781,7 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
     if (!display.value.is.missing(fit$QE)) {
-      degf <- fit$k - fit$p
+      degf <- (fit$k.yi %||% fit$k) - fit$p
       QE <- sprintf(digits.str, fit$QE)
     } else {
       QE <- ""
@@ -802,7 +802,7 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
     prediction.notes <- character()
     prediction.raw <- c(NA_real_, NA_real_)
     prediction.scale <- "display"
-    if (is.random && fit$k > 2) {
+    if (is.random) {
       prediction <- stats::predict(fit, level=display.confidence.level(params))
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
       if (length(bounds) == 2 && all(is.finite(bounds))) {

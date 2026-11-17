@@ -20,6 +20,30 @@ def run(app, window, ROOT, WORK, record_step):
     # Synthetic counts in the structure observed in Bristol's real DTA review.
     dta_source = ROOT / 'tests/fixtures/rm5/dta-derived.rm5'
     dta_xml = ET.parse(dta_source).getroot()
+    for case in ('missing-count', 'zero-counts'):
+        root = copy.deepcopy(dta_xml)
+        entry = next(root.iter('TEST_DATA_ENTRY'))
+        if case == 'missing-count':
+            del entry.attrib['TP']
+        else:
+            for key in ('TP', 'FN', 'FP', 'TN'):
+                entry.set(key, '0')
+        path = WORK / f'dta-{case}.rm5'
+        ET.ElementTree(root).write(path)
+        if case == 'missing-count':
+            try:
+                read_rm5(path)
+            except ValueError as error:
+                assert 'TP' in str(error) and 'missing' in str(error), str(error)
+                record_step('rm5-dta-missing-count', window, error=str(error), input=str(path))
+            else:
+                raise AssertionError('A missing diagnostic count was accepted')
+        else:
+            imported = read_rm5(path)
+            row = imported.dataset.sheets[0].rows[0]
+            assert not row.include
+            assert row.analysis_unit.get_raw_data_for_arm(imported.dataset.sheets[0].arms[0].name) == [0, 0, 0, 0]
+            record_step('rm5-dta-zero-counts-pending', window, input=str(path))
     dta_names = {s.get('ID'): s.get('NAME') for s in dta_xml.iter('STUDY')}
     expected_dta = [(t.findtext('NAME'), [(dta_names[r.get('STUDY_ID')],
                     [int(r.attrib[k]) for k in ('TP', 'FN', 'FP', 'TN')])

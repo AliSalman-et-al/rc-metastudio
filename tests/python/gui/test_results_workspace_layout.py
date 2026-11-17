@@ -264,7 +264,7 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         fresh.showNormal()
         fresh.setGeometry(90, 70, 620, 410)
         qapp.processEvents()
-        fresh.results_nav_splitter.setSizes([180, 540])
+        fresh.results_nav_splitter.moveSplitter(180, 1)
     finally:
         _dispose(fresh, qapp)
 

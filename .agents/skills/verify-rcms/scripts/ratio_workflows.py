@@ -324,7 +324,7 @@ def run(app, window, scenario, record):
     prefix = "e <- data.frame(yi=c(" + ",".join(map(str, ys)) + "), vi=c(" + ",".join(str(se**2) for se in ses) + ")); "
     vector = lambda column: "c(" + ",".join(str(row[column]) for row in raws) + ")"
     if not hazard:
-        prefix += f'raw <- metafor::escalc("IRR", x1i={vector(0)}, t1i={vector(1)}, x2i={vector(2)}, t2i={vector(3)}, add=.5, to="only0", drop00=TRUE); e[1:8,] <- raw[1:8,c("yi","vi")]; '
+        prefix += f'raw <- metafor::escalc("IRR", x1i={vector(0)}, t1i={vector(1)}, x2i={vector(2)}, t2i={vector(3)}, add=.5, to="only0"); e[1:8,] <- raw[1:8,c("yi","vi")]; '
     prefix += "keep <- is.finite(e$yi) & is.finite(e$vi) & e$vi > 0; e <- e[keep,]; "
     for name, kind, values in (
         ("Region", "factor", {s.label: "A" if i % 2 else "B" for i, s in enumerate(model.current_sheet.rows)}),
@@ -418,7 +418,7 @@ def run(app, window, scenario, record):
             expression = prefix + f'fits <- lapply({indices}, function(ix) metafor::rma.uni(e$yi[ix],vi=e$vi[ix],method="REML")); '
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
             actual = _parse_result_table(view.texts["Subgroup Summary" if workflow == "subgroup" else "Sequential Summary"])
-            names = [f"Study {i+1}" for i in range(12) if hazard or i != 2]
+            names = [f"Study {i+1}" for i in range(12)]
             labels = (["B", "A", "Overall"] if workflow == "subgroup" else
                       [f"{name} (k = {i+1})" if workflow == "cumulative" else f"Study omitted: {name}"
                        for i, name in enumerate(names)])
@@ -444,7 +444,9 @@ def run(app, window, scenario, record):
     record("ratio-small-study-results", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
     expression = prefix + f'm <- meta::metagen(e$yi,sqrt(e$vi),sm="{metric}",method.tau="REML",level=.95); f <- meta::metabias(m,method.bias="Egger",k.min=10,level=.95); '
     expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(coefficient=as.numeric(f$estimate[1]),se=as.numeric(f$estimate[2]),p=f$p.value),auto_unbox=TRUE,digits=16)}')[0]))
-    match = re.search(r"Coefficient: ([-\d.]+) \(SE ([-\d.]+);", view.texts["small-study.tests"])
+    primary_test = view.texts["small-study.tests"].split("\n\n")[0]
+    assert primary_test.startswith("Classical Egger test (primary)"), primary_test
+    match = re.search(r"Coefficient: ([-\d.]+) \(SE ([-\d.]+)(?:;|\))", primary_test)
     assert match is not None
     actual = dict(coefficient=float(match[1]), se=float(match[2]))
     for key, value in actual.items():
@@ -598,9 +600,10 @@ def verify_bundled_sample(app, window, hazard, record):
         def descriptive_bias(dialog):
             report = dialog._eligibility_report
             assert report is not None and report.usable_studies == 9
-            assert report.methods and not any(item.available for item in report.methods)
+            assert {item.method for item in report.methods if item.available} == {"mixed-effects-egger"}
             assert "9 eligible" in dialog.context_label.text()
-            assert "No formal asymmetry test" in dialog.automatic_test_label.text()
+            assert "Mixed-effects Egger" in dialog.automatic_test_label.text()
+            assert "below 10 usable studies" in dialog.automatic_test_label.text()
             assert dialog.ordinary_funnel_check.isEnabled()
             dialog.ordinary_funnel_check.setChecked(True)
             dialog.contour_funnel_check.setChecked(True)
@@ -610,7 +613,8 @@ def verify_bundled_sample(app, window, hazard, record):
         modal(app, SmallStudyEffectsDialog, descriptive_bias, window.action_publication_bias.trigger)
         view = visible(results_window.ResultsWindow)
         assert any("contour" in key for key in view.results.images)
-        assert "requires at least 10 usable studies" in "\n".join(view.texts.values())
+        assert "Mixed-effects Egger" in view.texts["small-study.tests"]
+        assert "below 10 usable studies" in "\n".join(view.texts.values())
         record("bundled-irr-descriptive-funnels", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
         view.close(); app.processEvents()
     copy_path = Path(sys.argv[2]) / filename

@@ -34,7 +34,7 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import row_padding
-from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, TWO_ARM_METRICS
+from rc_metastudio.analysis_catalog import CONTINUOUS, TWO_ARM_METRICS
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
@@ -606,36 +606,6 @@ class DatasetTableView(QtWidgets.QTableView):
         self._enable_analysis_menus_if_appropriate()
 
 
-    def change_metric_if_appropriate(self):
-        """if:
-            1) there are at least 2 studies, and
-            2) none of them have data for two-arms, and,
-            3) the current metric is a two-arm metric
-        then:
-            we automatically change the metric to single-arm
-
-        returns a tuple, wherein the first element is a boolean
-        indicating whether or not the metric was indeed changed,
-        and the second is the original metric
-        """
-        original_metric = self.model().current_effect
-
-        if len(self.model().get_studies(False)) > 2:
-            data_type = self.model().get_current_data_type()
-            if data_type == "binary" or data_type == "continuous":
-                default_metric = {
-                    "binary": BINARY_ONE_ARM_METRICS[0],
-                    "continuous": CONTINUOUS_ONE_ARM_METRICS[0],
-                }[data_type]
-
-                if (
-                    default_metric != original_metric
-                    and self.model().data_for_only_one_arm()
-                ):
-                    self.set_metric_in_ui(default_metric)
-                    return (True, original_metric)
-        return (False, original_metric)
-
     def get_covariate_columns(self):
         return list(range(self.model().OUTCOMES[-1] + 1, self.model().columnCount()))
 
@@ -812,10 +782,7 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def _enable_analysis_menus_if_appropriate(self):
 
-        if (
-            len(self.model().get_studies(False)) >= 2
-            and self._get_number_of_included_studies() >= 2
-        ):
+        if self._get_number_of_included_studies() >= 1:
             self._main_gui().enable_menu_options_that_require_dataset()
         else:
             self._main_gui().disable_menu_options_that_require_dataset()

@@ -22,8 +22,8 @@
          <layout class="QVBoxLayout" name="metrics_layout">
           <item><widget class="QCheckBox" name="chk_box_sens"><property name="text"><string>Sensitivity</string></property><property name="checked"><bool>true</bool></property></widget></item>
           <item><widget class="QCheckBox" name="chk_box_spec"><property name="text"><string>Specificity</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item><widget class="QCheckBox" name="chk_box_lr"><property name="text"><string>Likelihood ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
-          <item><widget class="QCheckBox" name="chk_box_dor"><property name="text"><string>Diagnostic odds ratio</string></property><property name="checked"><bool>true</bool></property></widget></item>
+          <item><widget class="QCheckBox" name="chk_box_lr"><property name="text"><string>Positive and negative likelihood ratios</string></property><property name="checked"><bool>false</bool></property></widget></item>
+          <item><widget class="QCheckBox" name="chk_box_dor"><property name="text"><string>Diagnostic odds ratio</string></property><property name="checked"><bool>false</bool></property></widget></item>
          </layout>
         </widget>
        </item>

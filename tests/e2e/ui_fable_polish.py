@@ -155,7 +155,6 @@ def run(app, window, work, root, record, analyze):
     strip = view.result_facts.accessibleDescription()
     if strip.count('Reitsma bivariate model') != 1 or '95% CI' not in strip:
         failures.append('Diagnostic identity repeats a shared fit or omits the CI label')
-    assert view.result_identity.toolTip().count('Reitsma bivariate model') >= 2
     title = view.results.manuscript_title
     methods = view.results.manuscript_methods
     observations['diagnostic'] = dict(title=title, methods=methods)

@@ -433,6 +433,17 @@ def _apply_scoped_exceptions(rows, exceptions, reference_by_id, current_by_id):
             if classifications and row["classification"] not in classifications:
                 continue
             detail = row["detail"]
+            if row["classification"] == UNEXPECTED_OUTPUT:
+                for section, metrics in exception.get("accepted_outputs", {}).items():
+                    for metric, value in metrics.items():
+                        if (detail == f"{section}.{metric} is an unexpected numeric metric."
+                                and metric not in reference_by_id[row["id"]].get("outputs", {}).get(section, {})
+                                and _is_finite_real_number(value)
+                                and _is_finite_real_number(current_by_id[row["id"]].get("outputs", {}).get(section, {}).get(metric))
+                                and current_by_id[row["id"]]["outputs"][section][metric] == value):
+                            row["classification"] = ACCEPTED_EXCEPTION
+                            row["exception"] = exception.get("reason", "")
+                continue
             if detail.startswith("Text section ") and detail.endswith(" changed."):
                 section = detail[len("Text section "):-len(" changed.")]
             elif detail.startswith("Unexpected text section ") and detail.endswith(" was produced."):

@@ -108,12 +108,18 @@ print.summary.data <- function(x, ...) {
   invisible(x)
 }
 
-rcmetar.fit.references <- function(fit, params, regression=FALSE) {
+rcmetar.fit.references <- function(fit, regression=FALSE) {
   method <- if (fit$method == "MH") "rma.mh" else if (fit$method == "PETO") "rma.peto" else
     if (fit$method %in% c("FE", "EE", "CE")) "rma.uni.fixed" else
     if (regression) "meta.regression" else "rma.uni.random"
-  rcmetar.unique.references(c(rcmetar.method.references(method),
-    if (inherits(fit, "rma.uni")) rcmetar.inference.method.references(params)))
+  references <- rcmetar.method.references(method)
+  if (method == "rma.uni.random") {
+    estimator <- switch(fit$method, DL="DerSimonian", HE="Hedges", "")
+    references <- references[startsWith(references, "Implementation reference:") |
+      (nzchar(estimator) & grepl(estimator, references, fixed=TRUE))]
+  }
+  rcmetar.unique.references(c(references,
+    if (inherits(fit, "rma.uni")) rcmetar.inference.method.references(fit)))
 }
 
 rcmetar.method.references <- function(method) {
@@ -236,18 +242,6 @@ rcmetar.inference.method <- function(params) {
   match.arg(as.character(method[1]), rcmetar.inference.methods())
 }
 
-rcmetar.validate.inference.method <- function(params, k, p=1) {
-  method <- rcmetar.inference.method(params)
-  if (method != "z" && k - p <= 0) {
-    stop(sprintf(
-      "The selected Inference Method requires positive residual degrees of freedom (studies: %d, fitted coefficients: %d).",
-      k,
-      p
-    ), call.=FALSE)
-  }
-  method
-}
-
 rcmetar.inference.method.metadata <- function() {
   list(
     "pretty.name"="Inference method",
@@ -256,8 +250,8 @@ rcmetar.inference.method.metadata <- function() {
   )
 }
 
-rcmetar.inference.method.references <- function(params) {
-  method <- rcmetar.inference.method(params)
+rcmetar.inference.method.references <- function(fit) {
+  method <- as.character(fit$test)
   if (!(method %in% c("knha", "adhoc"))) {
     return(character())
   }
@@ -276,11 +270,4 @@ rcmetar.inference.method.references <- function(params) {
 
 rcmetar.unique.references <- function(references) {
   unique(as.character(references))
-}
-
-rcmetar.nonestimable.inference.row <- function(k, params) {
-  list(b=NA_real_, se=NA_real_, ci.lb=NA_real_, ci.ub=NA_real_,
-       pval=NA_real_, zval=NA_real_, k=k, tau2=NA_real_, QE=NA_real_,
-       QEp=NA_real_, I2=NA_real_, test=rcmetar.inference.method(params),
-       reason="Non-estimable: selected inference requires positive residual degrees of freedom.")
 }

@@ -585,7 +585,7 @@ def test_diagnostic_metric_dialog_does_not_run_without_selected_metrics(monkeypa
         assert captured == []
         assert warnings
         assert warnings[0][1:3] == (
-            "No Diagnostic Metric Selected",
+            "No diagnostic metric selected",
             "Select at least one available diagnostic metric before running analysis.",
         )
     finally:

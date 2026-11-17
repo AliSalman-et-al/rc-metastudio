@@ -301,9 +301,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
         )
+        self._splitter_user_sized = False
         self.results_nav_splitter.splitterMoved.connect(
             app_error_handler.safe_slot(
-                lambda _pos, _index: self._schedule_viewport_refit(), parent=self
+                self._splitter_moved, parent=self
             )
         )
 
@@ -328,7 +329,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
         )
         self.results_nav_splitter.setChildrenCollapsible(False)
-        self.results_nav_splitter.setStretchFactor(0, 1)
+        self.results_nav_splitter.setStretchFactor(0, 0)
         self.results_nav_splitter.setStretchFactor(1, 5)
         self.x_coord = 5.0
         self.y_coord = 5.0
@@ -357,9 +358,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # reset the scene
         self.graphics_view.setScene(self.scene)
         self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
-        # Establish the restored ratio before the first native show/layout pass.
-        # QSplitter then preserves that ratio as the window receives its final
-        # screen-safe geometry, and the queued refit sees a stable viewport.
+        # Establish a starting width; the first visible refit applies saved
+        # proportions again after the native window receives its final geometry.
         self._apply_restored_splitter_proportions()
         self._setup_report_controls()
 
@@ -479,7 +479,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         details.extend(dict.fromkeys(confidence))
         if study_count:
             details = [detail for detail in details if detail != study_count + ' eligible']
-            details.append(study_count + (' study' if study_count == '1' else ' studies'))
+            suffix = ' included' if any(detail.endswith(' eligible') for detail in details) else (' study' if study_count == '1' else ' studies')
+            details.append(study_count + suffix)
         details = list(dict.fromkeys(details))
         title_font = QFont(self.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
@@ -1285,6 +1286,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._viewport_refit_pending = True
         self._viewport_refit_timer.start(0)
 
+    def _splitter_moved(self, _position, _index):
+        self._splitter_user_sized = True
+        self._schedule_viewport_refit()
+
     def _run_scheduled_viewport_refit(self):
         self._viewport_refit_pending = False
         if not self._closing and self.isVisible():
@@ -1406,6 +1411,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self, event: QResizeEvent | None
     ) -> None:
         super(ResultsWindow, self).resizeEvent(event)
+        if getattr(self, "_has_saved_splitter", False) and not self._splitter_user_sized:
+            self._first_show_refit_pending = True
         self._schedule_viewport_refit()
 
     def closeEvent(
@@ -1807,14 +1814,16 @@ def _report_heading(title):
 
 
 def _normalize_results(results: AnalysisResult) -> AnalysisResult:
-    if "Inference Method" in results.texts:
-        inference = results.texts["Inference Method"]
-        details = results.details
-        if inference not in details:
-            details += ("\n" if details else "") + "Inference: " + inference
-        results = replace(results, details=details,
-                          texts=MappingProxyType({key: value for key, value in results.texts.items() if key != "Inference Method"}),
-                          sections=tuple(section for section in results.sections if section.source_key != "Inference Method"))
+    metadata = {"Inference Method"}
+    details = results.details
+    inference = results.texts.get("Inference Method")
+    if inference:
+        lines = [line for line in details.splitlines() if not line.startswith("Inference:")]
+        lines.append("Inference: " + inference)
+        details = "\n".join(lines)
+    results = replace(results, details=details,
+                      texts=MappingProxyType({key: value for key, value in results.texts.items() if key not in metadata}),
+                      sections=tuple(section for section in results.sections if section.source_key not in metadata))
     if results.texts or results.images:
         return results
     normalized: dict[str, object] = {

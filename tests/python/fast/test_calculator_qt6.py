@@ -887,7 +887,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
             [[1, 2, 3, 4]],
             "Sens",
             "test 1",
-            [1, 2, 3, ""],
+            [1, "", 3, 4],
         ),
     ],
     ids=["binary", "continuous", "diagnostic"],

@@ -522,12 +522,8 @@ cum.ma.continuous <- function(fname, cont.data, params){
                                 y=subset_effects, SE=subset_standard_errors,
                                 study.names=subset_study_names)
         }
-        if (i == 1L && rcmetar.inference.method(params) != "z") {
-            current_overall <- rcmetar.nonestimable.inference.row(i, params)
-        } else {
-            current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
-            current_overall <- .rcmetar.call.overall(fname, current_result)
-        }
+        current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
+        current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
     }
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "cumulative", FALSE)
@@ -1118,9 +1114,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     loo.results <- c(list(res.overall), loo.results)
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-	model.title <- switch(fname,
-			diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-			diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nMetric: ", metric.name)
     loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic", workflow="leave-one-out")
 
     if (!identical(params$create.plot, FALSE)) {
@@ -1229,9 +1223,7 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
     subgroup.names <- c(subgroup.names, "Overall")
 
     metric.name <- pretty.metric.name(suppressed_params$measure)
-    model.title <- switch(fname,
-                          diagnostic.fixed = paste("Diagnostic Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-                          diagnostic.random = paste("Diagnostic Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nMetric: ", metric.name)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="diagnostic")
     forest.path <- paste(params$fp_outpath, sep="")
     subgroup.data <- list("subgroup.list"=subgroup.list, "grouped.data"=grouped.data, "results"=subgroup.results,

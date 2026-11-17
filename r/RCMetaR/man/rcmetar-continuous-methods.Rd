@@ -16,7 +16,6 @@
 \alias{continuous.random.value.info}
 \alias{continuous.transform.f}
 \alias{compute.for.one.cont.study}
-\alias{get.res.for.one.cont.study}
 \title{Continuous outcome analysis functions}
 \description{
 Functions for continuous meta-analysis endpoints. RCMetaR supports
@@ -33,7 +32,7 @@ standardized mean differences, and one-arm treatment means.
 
 \section{Study-level calculations}{
 
-\code{compute.for.one.cont.study()} and \code{get.res.for.one.cont.study()}
+\code{compute.for.one.cont.study()}
 prepare per-study estimates and variances.
 }
 

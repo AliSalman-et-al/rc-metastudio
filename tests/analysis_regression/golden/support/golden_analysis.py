@@ -166,6 +166,7 @@ def curated_golden_bundles(root_dir=None):
     regression_path = _analysis_output_path("reg.png")
     regression_display_path = _analysis_output_path("reg.display.svg")
     binary_regression_params = {
+        "rm.method": "DL",
         "conf.level": 95.0,
         "bp_outpath": regression_path,
         "bp_display_path": regression_display_path,

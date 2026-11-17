@@ -55,7 +55,7 @@ rcmetar.reitsma.correction.control <- function(policy) {
                      policy, paste(rcmetar.reitsma.correction.policies(), collapse=", ")), call.=FALSE))
 }
 
-rcmetar.reitsma.validate.counts <- function(diagnostic.data, min.studies=5L) {
+rcmetar.reitsma.validate.counts <- function(diagnostic.data) {
     if (!is(diagnostic.data, "DiagnosticData")) stop("DiagnosticData object expected.", call.=FALSE)
     fields <- c("TP", "FN", "FP", "TN")
     vals <- lapply(fields, function(x) slot(diagnostic.data, x))
@@ -71,7 +71,6 @@ rcmetar.reitsma.validate.counts <- function(diagnostic.data, min.studies=5L) {
     if (any(vals$TP + vals$FN <= 0) || any(vals$FP + vals$TN <= 0)) {
         stop("Each Reitsma study must have positive diseased and non-diseased denominators.", call.=FALSE)
     }
-    if (n < min.studies) stop(sprintf("Reitsma requires at least %d eligible studies; %d supplied.", min.studies, n), call.=FALSE)
     invisible(vals)
 }
 
@@ -177,7 +176,7 @@ rcmetar.reitsma.estimator <- function(params) {
     candidate <- params$estimator %||% params$method %||% params$rm.method %||% "REML"
     method <- tolower(as.character(candidate[[1L]]))
     if (method %in% c("reml", "ml")) return(method)
-    # Generic meta-regression parameters commonly carry rm.method="DL".
+    # Generic meta-regression can carry a univariate rm.method.
     # Reitsma has its own estimator contract, so an absent Reitsma-specific
     # estimator means the documented REML default rather than a hard failure.
     if (!explicit) return("reml")
@@ -904,7 +903,7 @@ diagnostic.reitsma.pretty.names <- function() list(
     digits=list(pretty.name="Display digits", description="Decimal places used for presentation."))
 
 diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
-    is(diagnostic.data, "DiagnosticData") && length(diagnostic.data@TP) >= 5L &&
+    is(diagnostic.data, "DiagnosticData") && length(diagnostic.data@TP) > 0L &&
         length(diagnostic.data@TP) == length(diagnostic.data@FN) &&
         length(diagnostic.data@TP) == length(diagnostic.data@FP) &&
         length(diagnostic.data@TP) == length(diagnostic.data@TN)
@@ -944,7 +943,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     covariates <- reg.data@covariates
     if (length(covariates) < 1L)
         stop("Reitsma meta-regression requires at least one selected moderator.", call.=FALSE)
-    counts <- rcmetar.reitsma.validate.counts(reg.data, min.studies=1L)
+    counts <- rcmetar.reitsma.validate.counts(reg.data)
     data <- data.frame(TP=counts$TP, FN=counts$FN, FP=counts$FP, TN=counts$TN,
                        stringsAsFactors=FALSE)
     moderators <- lapply(covariates, .rcmetar.reitsma.moderator, nrow(data))
@@ -960,10 +959,6 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     columns <- ncol(design)
     if (qr(design)$rank < columns)
         stop("Reitsma moderator design matrix is rank deficient; remove redundant moderators or levels.", call.=FALSE)
-    minimum <- max(5L, columns + 2L)
-    if (nrow(data) < minimum) stop(sprintf(
-        "Reitsma meta-regression requires at least %d eligible studies for %d model-matrix columns; %d supplied.",
-        minimum, columns, nrow(data)), call.=FALSE)
     list(data=data, counts=counts, terms=terms, model.terms=model.terms,
          coding=coding, formula=formula)
 }
@@ -986,10 +981,9 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
 }
 
 .rcmetar.reitsma.likelihood.ratio <- function(full, reduced, label) {
-    degrees <- attr(full$logLik, "df") - attr(reduced$logLik, "df")
-    statistic <- max(0, 2 * (as.numeric(full$logLik) - as.numeric(reduced$logLik)))
-    list(moderator=label, statistic=statistic, df=degrees,
-         p.value=stats::pchisq(statistic, df=degrees, lower.tail=FALSE))
+    result <- stats::anova(full, reduced)$statistic
+    list(moderator=label, statistic=unname(result[[1]]), df=unname(result[[2]]),
+         p.value=unname(result[[3]]))
 }
 
 .rcmetar.reitsma.ml.fit <- function(data, formula, adjust, control, label, prefix) {

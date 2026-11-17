@@ -86,7 +86,6 @@ SHARED_DIAGNOSTIC_PARAMS = (
     "digits",
     "adjust",
     "correction.policy",
-    "estimator",
 )
 
 ParameterKind = Literal["enum", "float", "int", "string"]
@@ -128,9 +127,6 @@ def _shared_diagnostic_specs(confidence_level):
             "All studies if any zero exists",
             None,
         ),
-        "estimator": _normalize_parameter_definition(
-            "estimator", ["REML", "ML"], "REML", None
-        ),
     }
 
 
@@ -147,9 +143,8 @@ def _plot_parameter_values(values):
 class _DiagnosticMethodPanel(object):
     """A group-specific method editor used by the unified diagnostic dialog."""
 
-    def __init__(self, owner, label, metric, label_widget, combo, param_box):
+    def __init__(self, owner, label, label_widget, combo, param_box):
         self.owner = owner
-        self.metric = metric
         self.params = {}
         self.widgets = []
         self.label = label_widget
@@ -172,17 +167,13 @@ class _DiagnosticMethodPanel(object):
         self.owner.analysis_service.prepare_method_dataset(
             self.owner.model, "diagnostic", var_name="tmp_obj"
         )
-        self.methods = normalize_available_method_labels(
-            self.owner.analysis_service.available_methods(
-                for_data_type="diagnostic",
-                data_obj_name="tmp_obj",
-                metric=self.metric,
-            )
-        )
+        metrics = [metric for group in self.owner.diagnostic_metrics if group in ('lr', 'dor')
+                   for metric in DIAGNOSTIC_METRIC_GROUPS[group]]
+        self.methods = self.owner._methods_for_metrics(metrics)
         names = [
             name
             for name in self.methods
-            if self.methods[name] not in COUNT_BASED_DIAGNOSTIC_METHODS and self.methods[name] != "diagnostic.fixed.peto"
+            if self.methods[name] not in COUNT_BASED_DIAGNOSTIC_METHODS
         ]
         names.sort(reverse=True)
         blocked = self.combo.blockSignals(True)
@@ -204,6 +195,7 @@ class _DiagnosticMethodPanel(object):
         definitions, defaults, order, metadata = self.owner.analysis_service.parameters(
             method
         )
+        self.definitions = definitions
         if saved is not None:
             defaults.update(saved)
         self.param_box.setTitle("")
@@ -223,6 +215,8 @@ class _DiagnosticMethodPanel(object):
             self.owner._configure_parameter_accessibility(label, control)
             row = self.owner._place_parameter(self.param_box.layout(), row, spec, label, control, self.params, defaults.get(name))
             self.widgets.extend((label, control))
+        if self.owner.shared_diagnostic_params_box.layout() is not None:
+            self.owner._rebuild_shared_diagnostic_params()
         self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
 
@@ -1028,8 +1022,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             fits=fits,
         )
         from rc_metastudio import r_bridge
-        packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
-        software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
+        methods_used = [self.current_method]
+        if self.data_type == "diagnostic" and not self.is_meta_regression:
+            methods_used = [configuration[0] for configuration in self.diagnostic_analysis_details.values()
+                            if configuration is not None]
+        packages = sorted({"mada" if method == "diagnostic.reitsma" else "metafor" for method in methods_used})
+        software = ", ".join(f"{name} {r_bridge.get_r_package_version(name)}" for name in packages)
         context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
         metric = self._result_metric_label()
@@ -1040,7 +1038,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits)
+                                self.analysis_type, details, fits, result.texts.get("Inference Method", ""))
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
@@ -1053,10 +1051,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(arms),
-                       manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
+                       manuscript_favours=() if self.data_type == "diagnostic" else tuple(label.removeprefix("Favours ").strip() for label in
                            self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison=("Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+                       manuscript_comparison="" if self.data_type == "diagnostic" and arms == ["Index test"] else ("Index test: " if self.data_type == "diagnostic" else "Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
 
     def _manuscript_arms(self) -> list[str]:
         names = self.model.arm_names
@@ -1255,20 +1253,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_service.prepare_method_dataset(
             self.model, self.data_type, var_name=tmp_obj_name
         )
-        metric = self._method_query_metric()
-        method_query = {
-            "for_data_type": self.data_type,
-            "data_obj_name": tmp_obj_name,
-            "metric": metric,
-        }
-        if self.analysis_type is not None:
-            method_query["workflow"] = self.analysis_type
-        self.available_method_d = self.analysis_service.available_methods(
-            **method_query
-        )
-        self.available_method_d = normalize_available_method_labels(
-            self.available_method_d
-        )
+        metrics = self._method_query_metrics()
+        metric = metrics[0]
+        self.available_method_d = self._methods_for_metrics(metrics)
         if self.data_type == "continuous" and metric == "Mean":
             family = analysis_identity.metric_label(self.model)
             self.available_method_d = {label.replace("Continuous", family, 1): key
@@ -1285,12 +1272,24 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             excluded = SHARED_DIAGNOSTIC_PARAMS if self._combined_diagnostic else ()
             self.ui_for_params(excluded_names=excluded)
 
-    def _method_query_metric(self):
+    def _methods_for_metrics(self, metrics):
+        method_query = {
+            "for_data_type": self.data_type,
+            "data_obj_name": "tmp_obj",
+        }
+        if self.analysis_type is not None:
+            method_query["workflow"] = self.analysis_type
+        choices = [normalize_available_method_labels(self.analysis_service.available_methods(
+            **method_query, metric=metric)) for metric in metrics]
+        return {label: method for label, method in choices[0].items()
+                if all(method in choice.values() for choice in choices[1:])}
+
+    def _method_query_metrics(self):
         if self.data_type != "diagnostic":
-            return self.model.current_effect
-        if self.analysis_type is not None or self.sens_spec:
-            return "Sens"
-        return "DOR"
+            return (self.model.current_effect,)
+        groups = [group for group in self.diagnostic_metrics
+                  if not self._combined_diagnostic or group in ('sens', 'spec')]
+        return tuple(metric for group in groups for metric in DIAGNOSTIC_METRIC_GROUPS[group])
 
     def _available_method_names(self, metric):
         method_names = list(self.available_method_d.keys())
@@ -1310,12 +1309,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     ):
         if self._hide_reitsma(metric) and reitsma_name in method_names:
             method_names.remove(reitsma_name)
-        peto_method = next((label for label, key in self.available_method_d.items() if key == "diagnostic.fixed.peto"), None)
-        has_required_metrics = all(
-            name in self.diagnostic_metrics for name in ("lr", "dor")
-        )
-        if has_required_metrics and peto_method in method_names:
-            method_names.remove(peto_method)
 
     def _reitsma_is_available(self, method_names, reitsma_name):
         return (
@@ -1359,6 +1352,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
+        if self.data_type == "diagnostic" and self.sens_spec:
+            reason = ""
+            if self.analysis_type in {"cumulative", "leave-one-out", "subgroup"}:
+                reason = "The joint Reitsma model is unavailable for this workflow; sensitivity and specificity are fitted separately."
+            elif not {"sens", "spec"}.issubset(self.diagnostic_metrics):
+                reason = "The joint Reitsma model requires both sensitivity and specificity."
+            elif not self.model.included_studies_have_raw_data():
+                reason = "The joint Reitsma model requires complete TP/FN/FP/TN counts for every included study. Entered estimates use separate univariate fits."
+            if reason:
+                note = QLabel(reason)
+                note.setWordWrap(True)
+                note.setAccessibleName("Joint model availability")
+                parameter_layout.addWidget(note, parameter_layout.rowCount(), 0, 1, 2)
+                self.current_widgets.append(note)
         self._set_analysis_tab_order()
         self._schedule_local_reflow()
 
@@ -1468,7 +1475,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.advanced_panel.setVisible(expanded)
         effect_label = QLabel("Effect measure")
         layout.addWidget(effect_label, 0, 0)
-        metric_label = QLabel(self._result_metric_label().capitalize())
+        metric_label = QLabel(", ".join({"sens": "Sensitivity", "spec": "specificity"}[group]
+                                       for group in self.diagnostic_metrics if group in ("sens", "spec")).capitalize()
+                              if self._combined_diagnostic else self._result_metric_label().capitalize())
         metric_label.setWordWrap(True)
         metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(metric_label, 0, 1)
@@ -1707,7 +1716,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             panels.extend((self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box))
         grids = [(panel, grid) for panel in panels if isinstance(grid := panel.layout(), QGridLayout)]
         labels = [field for _, grid in grids for index in range(grid.count())
-                  if (item := grid.itemAt(index)) is not None and grid.getItemPosition(index)[1] == 0
+                  if (item := grid.itemAt(index)) is not None and grid.getItemPosition(index)[1] == 0 and grid.getItemPosition(index)[3] == 1
                   and isinstance(field := item.widget(), QLabel)]
         label_cap = self.fontMetrics().height() * 18
         label_width = min(label_cap, max([field.sizeHint().width() for field in labels]
@@ -1720,6 +1729,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             left = leading - panel.mapTo(self.methods_tab, QtCore.QPoint()).x() - panel.contentsMargins().left()
             grid.setContentsMargins(left, margins.top(), margins.right(), margins.bottom())
             grid.setColumnMinimumWidth(0, label_width)
+            grid.setColumnStretch(1, 1)
         for field in labels:
             field.setMaximumWidth(label_cap)
         self._fit_method_rows(rows, leading, label_width)
@@ -1839,7 +1849,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.shared_diagnostic_params_box.show()
         self.shared_diagnostic_params_box.setLayout(QGridLayout())
 
-        lr_label = diagnostic_metric_group_display_label("lr_dor")
+        lr_label = ("Likelihood ratios and DOR" if {"lr", "dor"}.issubset(self.diagnostic_metrics)
+                    else "Positive and negative likelihood ratios" if "lr" in self.diagnostic_metrics
+                    else "Diagnostic odds ratio")
         self.lr_dor_method_lbl.setWordWrap(True)
         self.lr_dor_method_lbl.show()
         self.lr_dor_method_cbo_box.show()
@@ -1847,7 +1859,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.lr_dor_panel = _DiagnosticMethodPanel(
             self,
             lr_label,
-            "DOR",
             self.lr_dor_method_lbl,
             self.lr_dor_method_cbo_box,
             self.lr_dor_parameter_grp_box,
@@ -1867,7 +1878,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             widget.deleteLater()
         self._shared_diagnostic_widgets = []
 
+        active = set(self.current_params)
+        if hasattr(self, "lr_dor_panel"):
+            active.update(getattr(self.lr_dor_panel, "definitions", {}))
         for row, name in enumerate(SHARED_DIAGNOSTIC_PARAMS):
+            if name not in active:
+                continue
             spec = self._shared_diagnostic_param_specs.get(name)
             if spec is None:
                 continue

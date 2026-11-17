@@ -1268,12 +1268,11 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
 
 test_that("single-study binary Default Forest Style uses normalized vectors", {
   fixture <- metafor_binary_fixture(studies = 1)
-  res <- get.res.for.one.binary.study(fixture$data, fixture$params)
+  res <- metafor::rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="FE", level=fixture$params$conf.level)
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
   expect_equal(bundle$render_engine, "metafor")
-  expect_true(bundle$single_study)
   expect_equal(unname(bundle$effect$yi), unname(as.numeric(fixture$data@y)))
   expect_equal(unname(bundle$effect$sei), unname(as.numeric(fixture$data@SE)))
   expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
@@ -1690,16 +1689,15 @@ test_that("single-study entered diagnostic Default Forest Style omits count ilab
     years = 0L
   )
   params <- metafor_diagnostic_params(tempfile(fileext = ".png"), "Sens")
-  res <- get.res.for.one.diag.study(data, params)
+  res <- metafor::rma.uni(yi=data@y, sei=data@SE, method="FE", level=params$conf.level)
 
   bundle <- rcmetar.regenerate.plot.data(data, res, params)
 
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
-  expect_true(bundle$single_study)
   expect_equal(ncol(bundle$ilab$matrix), 0)
-  expect_equal(unname(bundle$effect$yi), unname(as.numeric(data@y)))
-  expect_equal(unname(bundle$effect$sei), unname(as.numeric(data@SE)))
+  expect_equal(unname(as.numeric(bundle$res$yi)), unname(as.numeric(data@y)))
+  expect_equal(unname(sqrt(bundle$res$vi)), unname(as.numeric(data@SE)))
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)

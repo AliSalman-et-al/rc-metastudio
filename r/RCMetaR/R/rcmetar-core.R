@@ -409,10 +409,9 @@ rcmetar.diagnostic.study.effects <- function(tp, fn, fp, tn, metrics=c("Spec", "
     diagnostic.data <- new("DiagnosticData", TP=c(tp), FN=c(fn), TN=c(tn), FP=c(fp))
     effects <- list()
     for (metric in metrics) {
-        result <- get.res.for.one.diag.study(
-            diagnostic.data,
-            list(to="only0", measure=metric, conf.level=conf.level, adjust=0.5)
-        )
+        prepared <- compute.diag.point.estimates(diagnostic.data,
+            list(to="only0", measure=metric, conf.level=conf.level, adjust=0.5))
+        result <- metafor::rma.uni(yi=prepared@y, sei=prepared@SE, method="FE", level=conf.level)
         calc.scale <- c(result$b[[1]], result$ci.lb[[1]], result$ci.ub[[1]])
         effects[[metric]] <- list(
             calc_scale=calc.scale,
@@ -570,7 +569,8 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     }
 
     if (is(om.data, "RatioData") && request$workflow %in% c("meta-regression", "bootstrap")) om.data <- ratio.effect.data(om.data)
-    result <- switch(
+    package.warnings <- character()
+    result <- withCallingHandlers(switch(
         request$workflow,
         standard=.rcmetar.dispatch.standard(om.data, request),
         cumulative=.rcmetar.dispatch.meta.workflow(om.data, request),
@@ -580,10 +580,14 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         "meta-regression"=if (identical(request$data.type, "diagnostic") && identical(request$method, "diagnostic.reitsma")) {
             diagnostic.reitsma.meta.regression(om.data, request$params, request$stop.at.rma)
         } else meta.regression(om.data, request$params, request$cond.means.data, request$stop.at.rma)
-    )
+    ), warning=function(condition) {
+        package.warnings <<- unique(c(package.warnings, conditionMessage(condition)))
+    })
+    if (length(package.warnings) && !isTRUE(request$stop.at.rma))
+        result[["Analysis warnings"]] <- paste(package.warnings, collapse="\n")
 
     if (!isTRUE(request$stop.at.rma)) {
-        result <- .rcmetar.attach.inference.method(result, request$method, request$params)
+        result <- .rcmetar.attach.inference.method(result)
     }
     result <- .rcmetar.attach.plot.display.artifacts(result, request)
     result <- .rcmetar.attach.plot.capabilities(result, request)
@@ -622,13 +626,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
 
 .rcmetar.finish.diagnostic.analysis <- function(result, methods, params.list,
                                                 workflow, validated.requests) {
-    inference.labels <- unique(unlist(Map(function(method, params) {
-        if (!.rcmetar.method.supports.inference(method)) return(character())
-        rcmetar.inference.method.names()[[rcmetar.inference.method(params)]]
-    }, methods, params.list), use.names=FALSE))
-    if (is.list(result) && length(inference.labels) > 0) {
-        result[["Inference Method"]] <- paste(inference.labels, collapse=", ")
-    }
+    result <- .rcmetar.attach.inference.method(result)
     artifact.request <- list(
         version=1L,
         data_type="diagnostic",
@@ -687,20 +685,25 @@ rcmetar.run.diagnostic.analyses <- function(diagnostic.data, methods=NULL, param
         )
     }
 
-    result <- switch(
+    package.warnings <- character()
+    result <- withCallingHandlers(switch(
         workflow,
         standard=multiple.diagnostic(methods, params.list, diagnostic.data),
         cumulative=multiple.cum.ma.diagnostic(methods, params.list, diagnostic.data),
         "leave-one-out"=multiple.loo.diagnostic(methods, params.list, diagnostic.data),
         subgroup=multiple.subgroup.diagnostic(methods, params.list, diagnostic.data)
-    )
+    ), warning=function(condition) {
+        package.warnings <<- unique(c(package.warnings, conditionMessage(condition)))
+    })
+    if (length(package.warnings))
+        result[["Analysis warnings"]] <- paste(package.warnings, collapse="\n")
 
     .rcmetar.finish.diagnostic.analysis(
         result, methods, params.list, workflow, validated.requests
     )
 }
 
-rcmetar.run.permutation <- function(data, method="DL", mods=NULL, level=95, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS, iter=1000,
+rcmetar.run.permutation <- function(data, method="REML", mods=NULL, level=95, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS, iter=1000,
                                       exact=FALSE, retpermdist=FALSE, ...) {
     if (!is.data.frame(data)) {
         stop("Permutation data must be a data frame.", call.=FALSE)
@@ -1064,17 +1067,19 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     )
 }
 
-.rcmetar.method.supports.inference <- function(method) {
-    parameters <- rcmetar.method.parameters(method)$parameters
-    "inference.method" %in% names(parameters)
-}
-
-.rcmetar.attach.inference.method <- function(result, method, params) {
-    if (!is.list(result) || !.rcmetar.method.supports.inference(method)) {
-        return(result)
+.rcmetar.attach.inference.method <- function(result) {
+    if (!is.list(result)) return(result)
+    candidates <- c(list(result$res), lapply(result, function(value) {
+        if (is.list(value)) value$MAResults else NULL
+    }))
+    fits <- list()
+    for (candidate in candidates) {
+        if (inherits(candidate, "rma")) fits <- c(fits, list(candidate))
+        else if (is.list(candidate)) fits <- c(fits, Filter(function(fit) inherits(fit, "rma"), candidate))
     }
-    label <- rcmetar.inference.method.names()[[rcmetar.inference.method(params)]]
-    result[["Inference Method"]] <- as.character(label)
+    tests <- unique(unlist(lapply(fits, function(fit) fit$test), use.names=FALSE))
+    labels <- unname(unlist(rcmetar.inference.method.names()[tests], use.names=FALSE))
+    if (length(labels)) result[["Inference Method"]] <- paste(labels, collapse=", ")
     result
 }
 

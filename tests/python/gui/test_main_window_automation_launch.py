@@ -2705,18 +2705,25 @@ def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypat
     try:
         assert window.open(_sample_project_path("amino.rcms"))
         rows = window.model.current_sheet.rows
-        for index, row in enumerate(rows):
-            row.manually_excluded = index >= included
-        window.tableView.cell_content_changed(None)
+        for index in range(len(rows)):
+            assert window.model.setData(window.model.index(index, window.model.INCLUDE_STUDY),
+                                        QtCore.Qt.CheckState.Checked if index < included else QtCore.Qt.CheckState.Unchecked,
+                                        QtCore.Qt.ItemDataRole.CheckStateRole)
         app.processEvents()
         assert r_runtime.is_ready()
-        assert window.action_go.isEnabled() is (included >= 2)
-        for index, row in enumerate(rows):
-            row.manually_excluded = index >= 2
-        window.tableView.cell_content_changed(None)
+        assert window.action_go.isEnabled() is (included >= 1)
+        assert window.action_loo_ma.isEnabled() is (included >= 2)
+        for index in range(len(rows)):
+            assert window.model.setData(window.model.index(index, window.model.INCLUDE_STUDY),
+                                        QtCore.Qt.CheckState.Checked if index < 2 else QtCore.Qt.CheckState.Unchecked,
+                                        QtCore.Qt.ItemDataRole.CheckStateRole)
         assert window.action_go.isEnabled()
-        window.model.current_sheet.rows[1].manually_excluded = True
-        window.tableView.cell_content_changed(None)
+        assert window.model.setData(window.model.index(1, window.model.INCLUDE_STUDY),
+                                    QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
+        assert window.action_go.isEnabled() and window.action_cum_ma.isEnabled()
+        assert not window.action_loo_ma.isEnabled()
+        assert window.model.setData(window.model.index(0, window.model.INCLUDE_STUDY),
+                                    QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
         assert not window.action_go.isEnabled()
     finally:
         _mark_workspace_saved(window)
