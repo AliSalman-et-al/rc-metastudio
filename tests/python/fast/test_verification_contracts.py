@@ -58,6 +58,30 @@ def test_typing_before_direct_desktop(monkeypatch, unverified_context):
     assert calls == ['typing']
 
 
+@pytest.mark.parametrize("mismatch", [None, "source_sha256", "build_root", "command", "stderr.log", "missing"])
+def test_typing_receipt_is_reused_only_for_the_same_completed_check(monkeypatch, tmp_path, mismatch):
+    from scripts import verification_evidence as evidence_store
+
+    monkeypatch.setattr(evidence_store, "ROOT", tmp_path)
+    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(verify, "source_digest", lambda root: "source")
+    monkeypatch.setattr(verify.subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "", ""))
+    build = tmp_path / "generated-ui"
+    receipt = verify.run_typing(build)
+    record = json.loads(receipt.read_text(encoding="utf-8"))
+    if mismatch in record:
+        record[mismatch] = record["command"][:-1] if mismatch == "command" else "other"
+        receipt.write_text(json.dumps(record), encoding="utf-8")
+    elif mismatch == "missing":
+        receipt.unlink()
+    elif mismatch == "stderr.log":
+        receipt.with_name(mismatch).unlink()
+
+    reused = verify.ensure_typing(build, {verify.TYPING_RECEIPT_ENV: str(receipt)})
+    assert (reused == receipt) == (mismatch is None)
+    assert verify.ensure_typing(build, {}) != receipt
+
+
 def test_explicit_rscript_cannot_be_overridden(tmp_path):
     root = tmp_path / 'R'
     (root / 'bin').mkdir(parents=True)
@@ -66,6 +90,23 @@ def test_explicit_rscript_cannot_be_overridden(tmp_path):
     other.touch()
     with pytest.raises(verify.VerificationError, match='conflict'):
         verify.selected_rscript(argparse.Namespace(rscript=str(other), r_runtime_root=str(root)))
+
+
+def test_pre_push_uses_one_prepared_build_for_all_checks(monkeypatch, tmp_path):
+    build = tmp_path / "generated-ui"
+    monkeypatch.setenv("RCMS_QT6_BUILD_ROOT", str(build))
+    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
+    commands = []
+    monkeypatch.setattr(verify, "run", lambda command, **options: commands.append((command, options)))
+    monkeypatch.setattr(verify, "run_typing", lambda root: commands.append((["ty", str(root)], {})))
+
+    assert verify.main(["pre-push"]) == 0
+    steps = json.loads((tmp_path / "artifacts/verification/pre-push.json").read_text())
+    assert all(row["status"] == "pass" for row in steps[:6])
+    assert [command[0][0] for command in commands].count("ty") == 1
+    assert len([command for command, _ in commands if "scripts/build_qt6.py" in command]) == 1
+    gui = next(options for command, options in commands if "tests/python/gui" in command)
+    assert gui["env"]["RCMS_QT6_BUILD_ROOT"] == str(build)
 
 
 def test_r_version_is_part_of_manifest_check(monkeypatch):
@@ -102,9 +143,24 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
     monkeypatch.setattr(verify_rcms, 'source_digest', lambda root: 'same-source')
     monkeypatch.setattr(evidence_store, 'source_digest', lambda root: 'same-source')
     monkeypatch.setattr(evidence_store, '_runtime_roots', lambda env, runtime: [])
+    from scripts import r_verification_support
+
+    executable_suffix = ".exe" if sys.platform == "win32" else ""
+    tool_path = tmp_path / "oracles"
+    tool_path.mkdir()
+    pdf_text = tool_path / ("pdftotext" + executable_suffix)
+    rscript = tool_path / ("Rscript" + executable_suffix)
+    pdf_text.write_bytes(b"oracle build A")
+    rscript.write_bytes(b"reference build A")
+    pdf_text.chmod(0o755)
     monkeypatch.setattr(evidence_store.subprocess, 'check_output', lambda *args, **kwargs: json.dumps({
-        name: None for name in ('R_ENVIRON', 'R_ENVIRON_USER', 'R_PROFILE', 'R_PROFILE_USER')
+        'PATH': str(tool_path),
+        'R_ENVIRON': None, 'R_ENVIRON_USER': None, 'R_PROFILE': None, 'R_PROFILE_USER': None,
     }))
+    monkeypatch.setenv("PATH", str(tmp_path))
+    monkeypatch.setenv("RCMS_RSCRIPT", str(rscript))
+    monkeypatch.setattr(r_verification_support, "r_home_from_r_command", lambda env: None)
+    monkeypatch.setattr(r_verification_support, "windows_registry_r_homes", lambda: [])
     monkeypatch.delenv('RCMS_AXIS_BASELINE', raising=False)
     monkeypatch.setenv('RCMS_E2E_REUSE_PASSED', '1')
     monkeypatch.setattr(sys, 'argv', ['verify_rcms', 'doctor'])
@@ -113,7 +169,8 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
     receipt = tmp_path / 'artifacts/verification/typing/gate/command.json'
     receipt.parent.mkdir(parents=True)
     receipt.write_text(json.dumps({
-        'exit_code': 0, 'python_platform': 'win32', 'command': [sys.executable, '-m', 'ty', 'check'],
+        'exit_code': 0, 'python_platform': 'win32',
+        'command': evidence_store.typing_command(Path(env['RCMS_QT6_BUILD_ROOT'])),
         'build_root': env['RCMS_QT6_BUILD_ROOT'],
         'source_sha256': 'same-source', 'source_unchanged': True,
     }))
@@ -136,10 +193,27 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
     assert verify_rcms.main() == 0
     assert 'Reused passed evidence' in capsys.readouterr().out
 
+    for tool in (pdf_text, rscript):
+        original = tool.read_bytes()
+        tool.write_bytes(b"replacement bytes")
+        changed = evidence_store.verification_context(evidence_store.desktop_environment())
+        assert evidence_store.passed_evidence(changed, "doctor") is None
+        with pytest.raises(RuntimeError, match="Verification tools changed"):
+            verify_rcms.main()
+        tool.unlink()
+        missing = evidence_store.verification_context(evidence_store.desktop_environment())
+        assert evidence_store.passed_evidence(missing, "doctor") is None
+        tool.write_bytes(original)
+        tool.chmod(0o755)
+
     def fresh_drive(*args):
         raise RuntimeError('Fresh desktop command required')
 
     monkeypatch.setattr(verify_rcms, '_desktop_command', fresh_drive)
+    with monkeypatch.context() as changed:
+        changed.setenv("RCMS_RSCRIPT", str(tmp_path / "other-Rscript"))
+        with pytest.raises(RuntimeError, match="Fresh desktop command required"):
+            verify_rcms.main()
     monkeypatch.setenv('RCMS_AXIS_BASELINE', '1')
     diagnostic = evidence_store.verification_context(evidence_store.desktop_environment())
     assert diagnostic['sha256'] != context['sha256']

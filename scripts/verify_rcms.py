@@ -21,7 +21,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.verification_evidence import (
-    desktop_environment, passed_evidence, remember_evidence, source_digest,
+    desktop_environment, external_tools, passed_evidence, remember_evidence, source_digest,
     verification_launch_inputs, verified_typing,
 )
 from tests.e2e.desktop_scenarios import SCENARIOS
@@ -162,6 +162,8 @@ def _desktop_typing(build_root: Path, source: str, env: dict[str, str], *, nativ
             raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
         if controller.get("launch_inputs") != verification_launch_inputs(env):
             context = None
+        if context is not None and context.get("external_tools") != external_tools(env):
+            raise RuntimeError("Verification tools changed after desktop collection; restart the run")
         return typing_evidence, context
     from scripts.verify import run_typing
     return str(run_typing(build_root)), None
@@ -220,10 +222,12 @@ def main() -> int:
                     evidence / "stdout.log"
                 ).read_text(encoding="utf-8", errors="replace")
                 passed = _compare_hillclimb(passed, args, evidence)
-                record["passed"] = passed
             finally:
                 # Copy before TemporaryDirectory removes settings and R scratch files.
                 shutil.copytree(work, evidence / "workflow")
+        if context is not None and passed and context.get("external_tools") != external_tools(env):
+            raise RuntimeError("Verification tools changed during desktop driving; restart the run")
+        record["passed"] = passed
         if not passed:
             _print_failure_transcripts(evidence)
         return 0 if passed else 1

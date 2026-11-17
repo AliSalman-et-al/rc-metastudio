@@ -5,14 +5,21 @@ import importlib.metadata
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 from uuid import uuid4
 
+if __package__:
+    from scripts.r_verification_support import resolve_rscript
+else:
+    from r_verification_support import resolve_rscript
+
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "artifacts/verification/rcms/cache"
 R_PATH_VARIABLES = ("R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH")
+PDF_TOOLS = ("pdfimages", "pdfinfo", "pdftohtml", "pdftoppm", "pdftotext")
 EVIDENCE_ENVIRONMENT = (
     "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "QT_QPA_PLATFORM",
     "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "FONTCONFIG_FILE", "FONTCONFIG_PATH",
@@ -83,6 +90,22 @@ def desktop_environment(*, native: bool = False) -> dict[str, str]:
     return env
 
 
+def typing_command(build_root: Path) -> list[str]:
+    command = [sys.executable, "-m", "ty", "check", "--python", sys.executable, "--python-platform", "win32"]
+    for path in (
+        build_root / "generated/rc_metastudio",
+        build_root / "generated/rc_metastudio/forms",
+        ".",
+        "src/rc_metastudio",
+        "src",
+        "scripts",
+        "tests/python/gui",
+    ):
+        command += ["--extra-search-path", str(path)]
+    return command + ["src/rc_metastudio", "scripts", "tests", "r/RCMetaR/inst/qa",
+                      ".agents/skills/verify-rcms/scripts"]
+
+
 def verified_typing(path: object, build_root: Path, source: str) -> bool:
     if not isinstance(path, str):
         return False
@@ -94,7 +117,7 @@ def verified_typing(path: object, build_root: Path, source: str) -> bool:
         return (
             record["exit_code"] == 0 and record["python_platform"] == "win32"
             and record["build_root"] == str(build_root)
-            and record["command"][:4] == [sys.executable, "-m", "ty", "check"]
+            and record["command"] == typing_command(build_root)
             and record["source_sha256"] == source and record["source_unchanged"] is True
             and (receipt.parent / "stdout.log").is_file() and (receipt.parent / "stderr.log").is_file()
         )
@@ -110,12 +133,12 @@ def evidence_environment(env: dict[str, str]) -> dict[str, str | None]:
 
 def verification_launch_inputs(env: dict[str, str]) -> dict[str, str | None]:
     return evidence_environment(env) | {name: env.get(name) for name in (
-        *R_PATH_VARIABLES, "RCMS_R_HOME", "RCMS_R_LIBS", "RCMS_QT6_BUILD_ROOT", "PATH",
+        *R_PATH_VARIABLES, "RCMS_R_HOME", "RCMS_R_LIBS", "RCMS_RSCRIPT", "RCMS_QT6_BUILD_ROOT", "PATH", "PATHEXT",
     )}
 
 
-def verification_context(env: dict[str, str]) -> dict[str, object]:
-    runtime = json.loads(subprocess.check_output(
+def _runtime_environment(env: dict[str, str]) -> dict[str, str | None]:
+    return json.loads(subprocess.check_output(
         [sys.executable, "-c", """
 import json, os
 from rc_metastudio.r_runtime import configure_bundled_r_environment
@@ -124,12 +147,31 @@ configure_bundled_r_environment()
 names = (
     "R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH",
     "R_ENVIRON", "R_ENVIRON_USER", "R_PROFILE", "R_PROFILE_USER",
-    "RPY2_CFFI_MODE", "LANG", "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_NUMERIC",
+    "RPY2_CFFI_MODE", "LANG", "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_NUMERIC", "PATH",
 )
 print(json.dumps({name: os.environ.get(name) for name in names}))
 """],
         cwd=ROOT, env=env, text=True, encoding="utf-8",
     ))
+
+
+def external_tools(env: dict[str, str], runtime: dict[str, str | None] | None = None) -> dict[str, dict[str, str] | None]:
+    if runtime is None:
+        runtime = _runtime_environment(env)
+    effective_env = env | {name: value for name, value in runtime.items() if value is not None}
+    commands: dict[str, str | Path | None] = {
+        name: shutil.which(name, path=effective_env.get("PATH")) for name in PDF_TOOLS
+    }
+    commands["Rscript"] = resolve_rscript("Rscript", effective_env)
+    identities: dict[str, dict[str, str] | None] = {}
+    for name, command in commands.items():
+        path = Path(command).resolve() if command else None
+        identities[name] = {"path": str(path), "sha256": file_digest(path)} if path and path.is_file() else None
+    return identities
+
+
+def verification_context(env: dict[str, str]) -> dict[str, object]:
+    runtime = _runtime_environment(env)
     startup = {name: runtime.pop(name) for name in ("R_ENVIRON", "R_ENVIRON_USER", "R_PROFILE", "R_PROFILE_USER")}
     runtime_roots = _runtime_roots(env, runtime)
     record = {
@@ -137,12 +179,13 @@ print(json.dumps({name: os.environ.get(name) for name in names}))
         "python": sys.version,
         "platform": platform.platform(),
         "libc": platform.libc_ver(),
-        "r_environment": {key: value for key, value in runtime.items() if key not in R_PATH_VARIABLES},
+        "r_environment": {key: value for key, value in runtime.items() if key not in (*R_PATH_VARIABLES, "PATH")},
         "r_startup_files": {
             name: file_digest(Path(value)) if value and Path(value).is_file() else None
             for name, value in startup.items()
         },
         "runtime_trees": [tree_digest(path) for path in runtime_roots],
+        "external_tools": external_tools(env, runtime),
         "distributions": sorted((d.metadata["Name"], d.version) for d in importlib.metadata.distributions()),
         "environment": evidence_environment(env),
     }

@@ -9,7 +9,7 @@ import importlib.util
 import os
 import shutil
 import subprocess
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 
@@ -113,18 +113,15 @@ def windows_registry_r_homes(*, platform_name: str = os.name) -> list[Path]:
     return homes
 
 
-def common_rscript_candidates(env: dict[str, str] | None = None) -> list[Path]:
+def common_rscript_candidates(env: dict[str, str] | None = None) -> Iterator[Path]:
     active_env = dict(os.environ) if env is None else env
-    candidates: list[Path] = []
     if active_env.get("RCMS_RSCRIPT"):
-        candidates.append(Path(active_env["RCMS_RSCRIPT"]))
+        yield Path(active_env["RCMS_RSCRIPT"])
     for variable in ("RCMS_R_HOME", "R_HOME"):
-        candidates.extend(rscript_paths_for_r_home(active_env.get(variable)))
-    r_home = r_home_from_r_command(active_env)
-    candidates.extend(rscript_paths_for_r_home(r_home))
+        yield from rscript_paths_for_r_home(active_env.get(variable))
+    yield from rscript_paths_for_r_home(r_home_from_r_command(active_env))
     for r_home in windows_registry_r_homes():
-        candidates.extend(rscript_paths_for_r_home(r_home))
-    return candidates
+        yield from rscript_paths_for_r_home(r_home)
 
 
 def resolve_rscript(name: str, env: dict[str, str] | None = None) -> Path | None:

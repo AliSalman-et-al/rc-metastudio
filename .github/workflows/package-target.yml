@@ -41,7 +41,7 @@ jobs:
       - name: Resolve package metadata
         id: package-metadata
         shell: bash
-        run: uv run --no-project --python 3.14.10 python scripts/resolve_package_ci_metadata.py --version-only
+        run: uv run --no-project --python 3.14.10 python scripts/resolve_package_ci_metadata.py
 
       - name: Resolve target contract
         shell: bash

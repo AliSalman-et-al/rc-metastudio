@@ -25,10 +25,10 @@ def pytest_configure(config: pytest.Config) -> None:
     if hasattr(config, "workerinput"):
         config.stash[_DESKTOP_ENV] = dict(os.environ)
         return
-    from scripts.verify import run_typing
+    from scripts.verify import ensure_typing
 
     env = desktop_environment()
-    receipt = run_typing(Path(env["RCMS_QT6_BUILD_ROOT"]))
+    receipt = ensure_typing(Path(env["RCMS_QT6_BUILD_ROOT"]), env)
     context = verification_context(env) if env.get("RCMS_R_HOME") else None
     os.environ["RCMS_E2E_CONTEXT"] = json.dumps({
         "typing": str(receipt),

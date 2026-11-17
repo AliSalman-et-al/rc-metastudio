@@ -136,6 +136,7 @@ def isolated_r_env(
     env["RCMS_R_LIBS"] = str(library)
     if r_home is not None:
         env["R_HOME"] = str(r_home)
+        env["RCMS_R_HOME"] = str(r_home)
         r_path_entries = [r_home / "bin"]
         if os.name == "nt":
             r_path_entries.insert(0, r_home / "bin" / "x64")
@@ -448,17 +449,18 @@ def bridge_test_command(python: str, pytest_runner: str) -> list[str | Path]:
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     if __package__:
-        from scripts.verify import DEFAULT_BUILD_ROOT, prepare_qt_environment, run_typing
+        from scripts import verify as source_verifier
     else:
-        from verify import DEFAULT_BUILD_ROOT, prepare_qt_environment, run_typing
-    build_root = Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve()
-    prepare_qt_environment(build_root)
-    run_typing(build_root)
+        import verify as source_verifier
+    build_root = source_verifier.configured_build_root(dict(os.environ))
+    prepared_env = source_verifier.prepare_qt_environment(build_root)
+    receipt = source_verifier.run_typing(build_root)
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
     rscript = resolve_rscript(args.rscript)
-    base_env = r_support.verification_base_env(dict(os.environ))
+    base_env = r_support.verification_base_env(prepared_env)
+    base_env[source_verifier.TYPING_RECEIPT_ENV] = str(receipt)
     base_env["RCMS_RSCRIPT"] = str(rscript)
     policy = binary_dependency_policy(root)
     configured_repo = args.cran_repo or base_env.get("RCMS_CRAN_REPO")
@@ -485,9 +487,9 @@ def verify(args: argparse.Namespace) -> None:
         bootstrap_library = work_dir / "bootstrap-library"
         bootstrap_library.mkdir(parents=True)
         env = isolated_r_env(base_env, bootstrap_library)
-        r_exe = resolve_r_exe(rscript, root, env)
         r_home = resolve_r_home(rscript, root, env)
         env = isolated_r_env(base_env, bootstrap_library, r_home)
+        r_exe = resolve_r_exe(rscript, root, env)
         cache_root = (
             args.r_library_cache_root.resolve() if args.r_library_cache_root else None
         )
