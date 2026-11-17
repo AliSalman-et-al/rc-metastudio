@@ -4,6 +4,7 @@
 
 import math
 from collections.abc import Buffer
+from statistics import NormalDist
 from typing import SupportsFloat, SupportsIndex, SupportsInt, cast
 
 from rc_metastudio.qt_text import parse_decimal
@@ -69,6 +70,11 @@ def validate_confidence_level(confidence_level):
         raise ValueError(INVALID_CONFIDENCE_LEVEL_MESSAGE)
 
     return value
+
+
+def normal_confidence_multiplier(confidence_level: object) -> float:
+    level = validate_confidence_level(confidence_level)
+    return abs(NormalDist().inv_cdf((1.0 - level / 100.0) / 2.0))
 
 
 def validate_confidence_interval_order(

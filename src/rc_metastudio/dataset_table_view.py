@@ -34,8 +34,10 @@ from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import row_padding
 from rc_metastudio.analysis_catalog import CONTINUOUS
+from rc_metastudio.domain_ids import SheetId
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+from rc_metastudio.workspace_column_identity import WorkspaceColumnIdentity
 
 if TYPE_CHECKING:
     from rc_metastudio.dataset_table_model import DatasetTableModel
@@ -110,8 +112,7 @@ class DatasetTableView(QtWidgets.QTableView):
             app_error_handler.safe_slot(self.row_header_clicked, parent=self)
         )
 
-        # Additional covariate sort columns are registered as they become visible.
-        self.reverse_column_sorts = {0: False, 1: False}
+        self.reverse_column_sorts: dict[tuple[SheetId, WorkspaceColumnIdentity], bool] = {}
         self.setAlternatingRowColors(True)
         palette = self.palette()
         for group in (QtGui.QPalette.ColorGroup.Active, QtGui.QPalette.ColorGroup.Inactive):
@@ -529,15 +530,14 @@ class DatasetTableView(QtWidgets.QTableView):
         model = self.model()
         return list(range(model.columns.first_covariate, model.columnCount()))
 
-    def sort_by_col(self, column):
-        # This uses the visible column number because sort state is owned by the
-        # current table view; rebuild it when covariate columns move or vanish.
-        if column not in self.reverse_column_sorts:
-            self.reverse_column_sorts[column] = False
-        self.model().sort_studies(column, self.reverse_column_sorts[column])
-        self.model().reset_model()
-        self.reverse_column_sorts[column] = not self.reverse_column_sorts[column]
-        self.dataDirtied.emit()
+    def sort_by_col(self, column: int) -> None:
+        model = self.model()
+        sheet_id = model.current_sheet_id
+        if sheet_id is not None:
+            key = (sheet_id, model.workspace_column_identity(column))
+            reverse = self.reverse_column_sorts.get(key, False)
+            model.sort_studies(column, reverse)
+            self.reverse_column_sorts[key] = not reverse
 
     def _normalize_newlines(self, text: str) -> str:
         return text.replace("\r\n", "\n").replace("\r", "\n")

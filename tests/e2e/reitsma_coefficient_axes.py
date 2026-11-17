@@ -1,5 +1,6 @@
 """Reitsma coefficient-axis settings, persistence and exported intervals."""
 
+import hashlib
 import json
 from pathlib import Path
 from PyQt6 import QtCore, QtWidgets
@@ -7,9 +8,9 @@ from tests.e2e.plot_observations import load_saved_analysis
 
 
 def run_coefficients(app, window, work, record):
-    from analysis_matrix import run as matrix
+    from analysis_matrix import run as matrix, set_parameter
     from advanced_workflows import modal, click, export_formats
-    from rc_metastudio import r_bridge
+    from rc_metastudio import analysis_setup_dialog, r_bridge, results_window
     from rc_metastudio.plot_editor_dialog import EditPlotDialog
     from tests.e2e.axis_conventions import check_axis
     def prepare(target):
@@ -27,6 +28,36 @@ def run_coefficients(app, window, work, record):
     view = matrix(app, window, 'analysis-data-diagnostic', record,
                   keep_results=True, workflow_override='meta-regression', prepare=prepare,
                   parameters={'digits':6})
+
+    def plot_hashes(result_view):
+        return {
+            path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+            for path in result_view.results.images.values()
+        }
+
+    original_plots = plot_hashes(view)
+    original_report = view.manuscript.results
+    view.change_settings_action.trigger()
+    app.processEvents()
+    dialog = next(
+        widget for widget in app.topLevelWidgets()
+        if isinstance(widget, analysis_setup_dialog.AnalysisSetupDialog) and widget.isVisible()
+    )
+    set_parameter(app, dialog, "conf.level", 90)
+    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+    rerun = next(
+        widget for widget in app.topLevelWidgets()
+        if isinstance(widget, results_window.ResultsWindow) and widget.isVisible() and widget is not view
+    )
+    rerun_plots = plot_hashes(rerun)
+    record("coefficient-rerun-retains-original-plots", rerun,
+           original=original_plots, original_after=plot_hashes(view), rerun=rerun_plots)
+    assert len(original_plots) == len(rerun_plots) == 2
+    assert not original_plots.keys() & rerun_plots.keys()
+    assert plot_hashes(view) == original_plots
+    assert view.manuscript.results == original_report
+    rerun.close()
+
     report = dict(view.texts)
     def record_bottom(action, **observations):
         _, item = view._selected_plot()

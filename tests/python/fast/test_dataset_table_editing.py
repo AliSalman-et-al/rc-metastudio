@@ -226,12 +226,50 @@ def test_open_display_refresh_does_not_edit_archived_study_data(tmp_path):
         table = dataset_table_model.DatasetTableModel(dataset=runtime.dataset)
         table.set_current_sheet(runtime.current_sheet_id)
         table.recalculate_display_scale()
+        table.sort_studies(table.OUTCOMES[0], reverse=False)
 
     session.open(destination, install=install)
 
     assert session.document == document
     assert not session.is_dirty
     assert not session.can_undo
+
+
+def test_effect_edit_failure_preserves_the_previous_standard_error(monkeypatch):
+    arm = analysis_dataset.Arm(ArmId("group"), "Group")
+    sheet = analysis_dataset.Sheet(
+        SheetId("sheet"), "Measurement", analysis_catalog.CONTINUOUS,
+        sub_type="generic_effect", family="continuous", arms=[arm],
+        settings={"metric": "Mean"},
+    )
+    unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
+    unit.set_effect_for_source("entered", "Mean", (arm.id,), 1.0, standard_error=0.1)
+    study = analysis_dataset.StudyRow(RowId("study"), "Study", unit)
+    sheet.rows.append(study)
+    model = dataset_table_model.DatasetTableModel(
+        dataset=analysis_dataset.Dataset(sheets=[sheet]), add_blank_study=False,
+    )
+    model.set_current_sheet(sheet.id)
+    errors = []
+    committed = []
+    model.dataError.connect(errors.append)
+    model.workspaceEditCommitted.connect(lambda: committed.append(
+        study.analysis_unit.get_effect_for_source("entered", "Mean", (arm.id,)).standard_error
+    ))
+
+    def fail_display(*_args):
+        raise RuntimeError("Display conversion failed")
+
+    column = model.OUTCOMES[1]
+    with monkeypatch.context() as failure:
+        failure.setattr(model.editing_service, "display_scale_converter", fail_display)
+        assert not model.setData(model.index(0, column), "")
+
+    assert len(errors) == 1 and "Display conversion failed" in errors[0]
+    assert committed == []
+    assert study.analysis_unit.get_effect_for_source("entered", "Mean", (arm.id,)).standard_error == 0.1
+    assert model.setData(model.index(0, column), "")
+    assert committed == [None]
 
 
 def _continuous_model_with_named_study():
@@ -275,13 +313,15 @@ def test_failed_raw_preview_restores_values_and_keeps_sheet_ownership(monkeypatc
     model = _diagnostic_model_with_empty_cells()
     sheet = model.current_sheet
     unit = sheet.rows[0].analysis_unit
+    unit.arms[model.arm_names[0]].raw_data[:] = [9.0, 10.0, 1.0, 81.0]
     before = list(unit.get_raw_data_for_arms(model.arm_names))
 
-    def fail_preview(_row):
+    def fail_preview(*_args, **_kwargs):
         raise RuntimeError("preview failed")
 
-    monkeypatch.setattr(model, "update_effect_previews_if_possible", fail_preview)
+    monkeypatch.setattr(model.editing_service.bridge, "diagnostic_effects_for_study", fail_preview)
     assert not model.setData(model.index(0, model.RAW_DATA[0]), "1")
+    assert sheet.rows[0].analysis_unit is unit
     assert unit.get_raw_data_for_arms(model.arm_names) == before
     assert unit.sheet is sheet
 
@@ -385,11 +425,10 @@ def test_invalid_continuous_covariate_edit_emits_error_and_preserves_value():
     assert model.current_sheet.rows[0].covariate_values["Dose"] == 5.5
 
 
-def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
+def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table():
     model = _diagnostic_model_with_empty_cells()
     errors = []
     model.dataError.connect(errors.append)
-    monkeypatch.setattr(model, "update_effect_previews_if_possible", lambda _row: None)
 
     for column in model.RAW_DATA[:3]:
         assert model.setData(model.index(0, column), "0") is True
@@ -404,9 +443,8 @@ def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table(monkeypatch):
     ) == [0.0, 0.0, 0.0, ""]
 
 
-def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table(monkeypatch):
+def test_diagnostic_raw_count_edit_allows_zero_cells_in_nonempty_table():
     model = _diagnostic_model_with_empty_cells()
-    monkeypatch.setattr(model, "update_effect_previews_if_possible", lambda _row: None)
 
     for column, value in zip(model.RAW_DATA, ("0", "1", "0", "1")):
         assert model.setData(model.index(0, column), value) is True

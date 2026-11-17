@@ -153,7 +153,7 @@ def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp
     store.setValue("1", "second.rcms")
     store.endGroup()
 
-    settings.load_settings()
+    settings.migrate_application_settings()
 
     assert not store.contains("main_window/geometry")
     assert not store.contains("main_window/window_state")
@@ -167,7 +167,7 @@ def test_qt6_settings_migration_preserves_domain_values_and_recent_projects(qapp
     assert store.value("analysis/default_method") == "REML"
     assert store.value("domain/confidence_level", type=int) == 95
     assert store.value(settings.APPLICATION_SETTINGS_SCHEMA_KEY, type=int) == 1
-    assert settings.get_setting("recent_files") == ["first.rcms", "second.rcms"]
+    assert settings.get_recent_files() == ["first.rcms", "second.rcms"]
 
 
 def test_workspace_settings_store_only_portable_typed_values(qapp):
@@ -192,25 +192,19 @@ def test_workspace_settings_store_only_portable_typed_values(qapp):
     ).frame_geometry == QtCore.QRect(20, 30, 900, 600)
 
 
-def test_invalid_portable_setting_resets_only_its_own_field(qapp):
+@pytest.mark.parametrize("stored", ["invalid json", "[1]", json.dumps(["study.rcms"] * 11)])
+def test_invalid_recent_projects_do_not_reset_other_settings(qapp, stored):
     from rc_metastudio import settings
 
     _configure_qsettings_identity(qapp)
     store = QtCore.QSettings()
     store.clear()
     store.setValue("domain/confidence_level", 90)
-    store.setValue("digits", 100)
+    store.setValue("recent_files", stored)
 
-    assert settings.get_setting("digits") == 2
+    assert settings.get_recent_files() == []
+    assert json.loads(store.value("recent_files")) == []
     assert store.value("domain/confidence_level", type=int) == 90
-
-    with pytest.raises(TypeError):
-        settings.update_setting("digits", "5")
-    assert settings.get_setting("digits") == 2
-    with pytest.raises(TypeError):
-        settings.update_setting(
-            "recent_files", ["project-%d.rcms" % index for index in range(11)]
-        )
 
 
 def test_schema_versions_use_strict_raw_integer_validation(qapp):
@@ -284,8 +278,8 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
         store.setValue("workspace_layout/results/splitter_proportions", invalid)
         store.setValue("workspace_layout/results/portable_note", "keep")
         state = settings.load_results_window_state([QtCore.QRect(0, 0, 1920, 1080)])
-        assert state.maximized is True
-        assert state.full_screen is False
+        assert state.placement.maximized is True
+        assert state.placement.full_screen is False
         assert state.splitter_proportions == (0.18, 0.82)
         assert not store.contains("workspace_layout/results/maximized")
         assert not store.contains("workspace_layout/results/full_screen")
@@ -402,11 +396,6 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
     target = str(ROOT / "sample_projects" / "amino.rcms")
     for source_path in ("new_dataset", "csv_import"):
         app, window = automation.start_automation()
-        monkeypatch.setattr(
-            type(window.model),
-            "update_effect_previews_if_possible",
-            lambda _model, _row: None,
-        )
         import_errors = []
         monkeypatch.setattr(
             QtWidgets.QMessageBox,
@@ -502,7 +491,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
         assert window.open(str(good)) is True
         prior_path = window.workspace.path
         prior_title = window.model.dataset.title
-        prior_recents = list(settings.get_setting("recent_files"))
+        prior_recents = list(settings.get_recent_files())
 
         malformed = tmp_path / "malformed.rcms"
         malformed.write_bytes(b"not a project")
@@ -566,7 +555,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
             assert window.open(str(rejected)) is None
             assert window.workspace.path == prior_path
             assert window.model.dataset.title == prior_title
-            assert settings.get_setting("recent_files") == prior_recents
+            assert settings.get_recent_files() == prior_recents
             assert expected_message in critical_messages[-1][1]
 
         window.model.dataset.notes = "unsaved"
@@ -593,7 +582,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
             assert window.workspace.path == prior_path
             assert window.model.dataset.notes == "unsaved"
             assert window.workspace.is_dirty is True
-            assert settings.get_setting("recent_files") == prior_recents
+            assert settings.get_recent_files() == prior_recents
             assert boundary in critical_messages[-1][1]
     finally:
         _close_shell(app, window)
@@ -807,7 +796,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         def ui_failure(context):
             context.setattr(
                 window,
-                "model_updated",
+                "_refresh_projected_sheet_controls",
                 lambda *_args, **_kwargs: (_ for _ in ()).throw(
                     RuntimeError("UI initialization failed")
                 ),

@@ -11,7 +11,6 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QFileDialog,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -23,9 +22,8 @@ from PyQt6.QtWidgets import (
 
 import copy
 import math
-import hashlib
 import re
-import os
+from uuid import uuid4
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
@@ -377,7 +375,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
 
         def reopen(plot_params=None):
-            import uuid
             restored = copy.deepcopy(saved)
             parameters = copy.deepcopy(saved_parameters)
             if plot_params:
@@ -388,14 +385,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
                 analysis_service=service, initial_settings=restored)
-            name = "regression" if workflow == "meta-regression" else "forest"
-            form.image_path.setText(analysis_output_path(f"{name}-{uuid.uuid4().hex[:12]}.png"))
             form.show()
 
         return reopen
 
     def _initialize_controls(self, external_params, analysis_type):
-        self._hide_internal_plot_path_controls()
         # Method controls must fit inside the adaptive viewport. An
         # outer horizontal scrollbar would hide the estimator control on
         # narrow first-use dialog sizes.
@@ -443,11 +437,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         apply_default_forest_arm_labels(self)
-        if _text_value(self.image_path) == "":
-            self.image_path.setText(analysis_output_path("forest.png"))
         self.current_param_vals: dict[str, object] = dict(external_params or {})
         self.analysis_type = analysis_type
         self.is_meta_regression = analysis_type == "meta-regression"
+        plot_kind = "reg" if self.is_meta_regression else "forest"
+        self._fit_output_stem = analysis_output_path(f"{uuid4().hex}-{plot_kind}")
         self._setup_plot_controls()
         self._load_plot_params()
 
@@ -481,9 +475,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.buttonBox.rejected.connect(
             app_error_handler.safe_slot(self.cancel, parent=self)
         )
-        self.save_btn.pressed.connect(
-            app_error_handler.safe_slot(self.select_out_path, parent=self)
-        )
         self._configure_method_selector(self.method_cbo_box)
         self.method_cbo_box.currentTextChanged.connect(
             app_error_handler.safe_slot(
@@ -511,11 +502,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             self._combined_diagnostic = self.sens_spec and self.lr_dor
             self.setup_diagnostic_ui()
-
-    def _hide_internal_plot_path_controls(self):
-        """Keep generated output paths out of the researcher-facing form."""
-        for widget in (self.label_3, self.image_path, self.save_btn):
-            widget.hide()
 
     def sizeHint(self):
         """Include the scroll body's content width in first-use negotiation."""
@@ -671,7 +657,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.moderator_values_note = QLabel(self.covariate_group_box)
         self.moderator_values_note.setWordWrap(True)
         self.covariates_layout.addWidget(self.moderator_values_note, len(self.covs_and_check_boxes), 0)
-        self.image_path.setText(analysis_output_path("reg.png"))
         self._update_meta_regression_ok()
         self._update_meta_regression_plot_availability()
 
@@ -712,19 +697,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
         else:
             self._accepted_connection.replace(handler, parent=self)
-
-    def select_out_path(self):
-        out_f = "."
-        out_f, _selected_filter = QFileDialog.getSaveFileName(
-            self,
-            "Choose plot image location",
-            out_f,
-            "PNG images (*.png)",
-        )
-        if out_f == "" or out_f is None:
-            return None
-        else:
-            self.image_path.setText(out_f)
 
     def _setup_plot_controls(self):
         if self.analysis_type == "subgroup":
@@ -846,13 +818,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         parameters = copy.deepcopy(self.current_param_vals)
         parameters["measure"] = metric
         parameters["metric.label"] = self._result_metric_label()
-        if self.data_type == "diagnostic" and self.is_meta_regression:
+        method = "meta.regression"
+        if self.data_type == "diagnostic":
+            method = "diagnostic.reitsma"
+            parameters["fp_outpath"] = f"{self._fit_output_stem}.svg"
             parameters["joint.metrics"] = "Sens,Spec"
-        method = (
-            "diagnostic.reitsma"
-            if self.data_type == "diagnostic"
-            else "meta.regression"
-        )
         return self.analysis_service.make_request(
             data_type=self.data_type,
             workflow="meta-regression",
@@ -1179,17 +1149,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
 
         self.add_current_analysis_details()
-        method_names, parameter_values = _diagnostic_analysis_requests(self)
-        return tuple(
-            self.analysis_service.make_request(
-                data_type=self.data_type,
-                workflow=workflow,
-                method=method,
-                metric=str(parameters["measure"]),
-                parameters=parameters,
-            )
-            for method, parameters in zip(method_names, parameter_values)
-        )
+        return _diagnostic_analysis_requests(self, workflow)
 
     def enable_diagnostic_fields(self):
         set_plot_text_value(self.col3_str_edit, "[default]")
@@ -1973,20 +1933,12 @@ def _is_integer_analysis_param(name):
     return name == "digits"
 
 
-def _display_svg_path(output_path):
-    root, _extension = os.path.splitext(str(output_path))
-    normalized_path = os.path.normcase(os.path.abspath(str(output_path)))
-    path_digest = hashlib.sha256(normalized_path.encode("utf-8")).hexdigest()[:12]
-    plot_name = os.path.basename(root) or "plot"
-    return analysis_output_path("%s-%s.display.svg" % (plot_name, path_digest))
-
-
-def add_plot_params(specs_form):
+def add_plot_params(specs_form: AnalysisSetupDialog) -> None:
     specs_form.current_param_vals["plot_caption"] = analysis_identity.plot_caption(
         specs_form.model, specs_form.analysis_type, specs_form.current_param_vals.get("plot_caption")
     )
-    if getattr(specs_form, "analysis_type", None) == "meta-regression":
-        bubble_outpath = _text_value(specs_form.image_path)
+    output_stem = specs_form._fit_output_stem
+    if specs_form.is_meta_regression:
         specs_form.current_param_vals.update(
             {
                 "bp_style": selected_plot_style(specs_form.style_cbo),
@@ -1996,8 +1948,8 @@ def add_plot_params(specs_form):
                 "bp_xticks": _validated_plot_ticks(specs_form.x_ticks_le),
                 "bp_plot_lb": _validated_plot_bound(specs_form.plot_lb_le),
                 "bp_plot_ub": _validated_plot_bound(specs_form.plot_ub_le),
-                "bp_outpath": bubble_outpath,
-                "bp_display_path": _display_svg_path(bubble_outpath),
+                "bp_outpath": f"{output_stem}.png",
+                "bp_display_path": f"{output_stem}.display.svg",
                 "bp_show_regression_line": specs_form.show_regression_line.isChecked(),
                 "bp_show_confidence_band": specs_form.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": specs_form.show_prediction_interval.isChecked(),
@@ -2026,9 +1978,8 @@ def add_plot_params(specs_form):
     specs_form.current_param_vals["fp_show_col4"] = specs_form.show_4.isChecked()
     specs_form.current_param_vals["fp_col4_str"] = _text_value(specs_form.col4_str_edit)
     specs_form.current_param_vals.update(plot_axis_label_params(specs_form.x_lbl_le, "fp"))
-    forest_outpath = _text_value(specs_form.image_path)
-    specs_form.current_param_vals["fp_outpath"] = forest_outpath
-    specs_form.current_param_vals["fp_display_path"] = _display_svg_path(forest_outpath)
+    specs_form.current_param_vals["fp_outpath"] = f"{output_stem}.png"
+    specs_form.current_param_vals["fp_display_path"] = f"{output_stem}.display.svg"
 
     specs_form.current_param_vals["fp_plot_lb"] = _validated_plot_bound(specs_form.plot_lb_le)
     specs_form.current_param_vals["fp_plot_ub"] = _validated_plot_bound(specs_form.plot_ub_le)
@@ -2084,8 +2035,10 @@ def _float_plot_param(value, default):
         return default
 
 
-def _diagnostic_analysis_requests(specs_form):
-    method_names, list_of_param_vals = [], []
+def _diagnostic_analysis_requests(
+    specs_form: AnalysisSetupDialog, workflow: str,
+) -> tuple[analysis_adapter.AnalysisRequest, ...]:
+    requests = []
     missing_metrics = []
 
     joint, pending = _diagnostic_pending_requests(specs_form)
@@ -2108,24 +2061,20 @@ def _diagnostic_analysis_requests(specs_form):
         param_vals = copy.deepcopy(param_vals)
         param_vals["plot_caption"] = specs_form.current_param_vals.get("plot_caption", "")
 
-        # update the forest plot path
-        split_fp_path = specs_form.current_param_vals["fp_outpath"].split(".")
-        new_str = (
-            split_fp_path[0]
-            if len(split_fp_path) == 1
-            else ".".join(split_fp_path[:-1])
-        )
-        new_str = new_str + "_%s" % diagnostic_metric.lower() + ".png"
-        param_vals["fp_outpath"] = new_str
-        param_vals["fp_display_path"] = _display_svg_path(new_str)
-
-        # update the metric
-        param_vals["measure"] = diagnostic_metric
+        output_stem = f"{specs_form._fit_output_stem}_{diagnostic_metric.lower()}"
+        param_vals["fp_outpath"] = f"{output_stem}.png"
+        param_vals["fp_display_path"] = f"{output_stem}.display.svg"
+        param_vals.pop("measure", None)
         if joint is not None and diagnostic_metric == "Sens":
             param_vals["joint.metrics"] = "Sens,Spec"
 
-        method_names.append(method)
-        list_of_param_vals.append(param_vals)
+        requests.append(specs_form.analysis_service.make_request(
+            data_type=specs_form.data_type,
+            workflow=workflow,
+            method=method,
+            metric=diagnostic_metric,
+            parameters=param_vals,
+        ))
 
     if missing_metrics:
         raise ValueError(
@@ -2134,10 +2083,10 @@ def _diagnostic_analysis_requests(specs_form):
             % ", ".join(missing_metrics)
         )
 
-    if not method_names:
+    if not requests:
         raise ValueError("No diagnostic metrics were configured for analysis.")
 
-    return method_names, list_of_param_vals
+    return tuple(requests)
 
 
 def _text_value(widget):

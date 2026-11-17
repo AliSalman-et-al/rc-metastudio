@@ -54,10 +54,10 @@ from rc_metastudio.settings import (
     get_sample_projects_path,
     get_user_documents_path,
     load_main_column_widths,
-    load_settings,
+    migrate_application_settings,
     recent_file_display_name,
+    remove_recent_file,
     save_main_window_placement,
-    update_setting,
 )
 from rc_metastudio.qt_object_guard import required
 
@@ -385,7 +385,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_meta_regression.setEnabled(False)
         self.action_publication_bias.setEnabled(False)
 
-        load_settings()
+        migrate_application_settings()
         self.populate_open_recent_menu()
         self.workspace.mark_saved()
         self._update_project_identity()
@@ -470,16 +470,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_go.setShortcut(QKeySequence("Ctrl+R"))
         for menu in (self.menu_file, self.menuEdit, self.menuView, self.menuAnalysis, self.menuDataset, self.menuHelp):
             menu.setTitle("&" + menu.title().replace("&", ""))
-
-    def _model_about_to_be_reset(self):
-        """Call all the functions here that should be called when the model is
-        about to be reset
-        """
-        self._recalculate_display_scale_values()
-
-    def _recalculate_display_scale_values(self):
-
-        self.tableView.model().recalculate_display_scale()
 
     def create_new_dataset(self, _checked=False):
         if not self._confirm_discard_or_save():
@@ -602,7 +592,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
 
     def _remove_recent_project(self, path):
-        update_setting("recent_files", [entry for entry in get_recent_files() if entry != path])
+        remove_recent_file(path)
         self.populate_open_recent_menu()
 
     def _locate_recent_project(self, path):
@@ -659,13 +649,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 model.workspaceEditCommitted,
                 self._workspace_edit_committed,
                 parent=self,
-            )
-        )
-
-        # Recalculate display-scale values before model resets.
-        self._model_signal_connections.append(
-            app_error_handler.connect_safely(
-                model.modelAboutToBeReset, self._model_about_to_be_reset, parent=self
             )
         )
 
@@ -1184,35 +1167,24 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         current_sheet_id: SheetId | None = None,
         recalculate_effect_previews=True,
     ):
-        # An empty dataset starts with one editable blank row.
-        add_blank_study = not data_model.sheets
-        self.model = dataset_table_model.DatasetTableModel(
-            dataset=data_model, add_blank_study=add_blank_study
+        model = dataset_table_model.DatasetTableModel(
+            dataset=data_model, add_blank_study=False, current_sheet_id=current_sheet_id,
         )
-
+        model.reset_model(refresh_previews=recalculate_effect_previews)
         self._disconnect_model_signals()
+        self.model = model
         self.tableView.setModel(self.model)
-
-        if current_sheet_id is not None:
-            self.model.set_current_sheet(current_sheet_id)
-
-        self.tableView.model().update_column_indices()
-        self.tableView.synchronize_column_widths()
-
-        self.model_updated(
-            recalculate_effect_previews=recalculate_effect_previews,
-        )
-
-    def model_updated(self, recalculate_effect_previews=True):
-        if self.model.current_sheet:
-            self.model.set_current_sheet(self.model.current_sheet_id)
-            if recalculate_effect_previews:
-                self.model.hydrate_derived_previews()
-        self._disconnect_model_signals()
         self._setup_connections(menu_actions=False)
-        self.tableView.synchronize_column_widths()
+        self._refresh_projected_sheet_controls()
+
+    def model_updated(self, *, sheet_id: SheetId | None = None) -> None:
+        selected = sheet_id if sheet_id is not None else self.model.current_sheet_id
+        if selected is not None:
+            self.model.set_current_sheet(selected, refresh_previews=True)
+        self._refresh_projected_sheet_controls()
+
+    def _refresh_projected_sheet_controls(self) -> None:
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)
-        self.model.reset_model()
         self._update_confidence_level_label()
         self._refresh_sheet_tabs()
         self.tableView._enable_analysis_menus_if_appropriate()
@@ -1382,17 +1354,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet_id = self.sheet_tabs.tabData(index)
         if sheet_id == self.model.current_sheet_id:
             return
-        self.model.set_current_sheet(sheet_id)
+        self.model_updated(sheet_id=sheet_id)
         self.workspace.select_sheet(sheet_id)
-        self.model_updated()
         self._update_workspace_guidance()
 
     def _sheet_change(self, sheet_id, operation):
-        self.model.set_current_sheet(sheet_id)
+        if sheet_id != self.model.current_sheet_id:
+            self.model.set_current_sheet(sheet_id)
         self.workspace.select_sheet(sheet_id)
         def commit():
-            operation()
-            self.model_updated()
+            self.model_updated(sheet_id=operation())
         self._commit_model_operation(commit)
 
     def _finish_sheet_rename(self, cancel=False):
@@ -1434,7 +1405,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = self._sheet_from_dataset_info(result["outcome_info"])
         def add():
             self.model.dataset.sheets.append(sheet)
-            self.model.set_current_sheet(sheet.id)
+            return sheet.id
         self._sheet_change(self.model.current_sheet_id, add)
 
     def _rename_sheet(self, index):
@@ -1482,8 +1453,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         def delete():
             remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
-            self.model.set_current_sheet(remaining[max(0, index - 1)].id)
             self.model.dataset.sheets.remove(sheet)
+            return remaining[max(0, index - 1)].id
         self._sheet_change(sheet.id, delete)
 
     def _save_sheet_order(self):
@@ -1582,9 +1553,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo):
         sheet = self._sheet_from_dataset_info(dataset_info)
         self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
-        self.model.current_effect = dataset_info.get('effect')
-        self.populate_metrics_menu(metric_to_check=self.model.current_effect)
-        self.model.reset_model()
 
     def _handle_wizard_results(self, wizard_data: main_wizard.WizardResult):
         if wizard_data["path"] == "open":
@@ -1605,7 +1573,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = self._sheet_from_dataset_info(dataset_info)
         dataset = analysis_dataset.Dataset(sheets=[sheet])
         candidate = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
-        candidate.set_current_sheet(sheet.id)
         for name, data_type in zip(csv_data["covariate_names"], csv_data["covariate_types"], strict=True):
             candidate.add_covariate(name, data_type)
         rows = csv_import.normalize_import_rows(csv_data["data"])

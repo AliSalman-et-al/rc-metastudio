@@ -377,19 +377,11 @@ def execute_meta_regression_request(
     return _typed_result(r_bridge.run_model_analysis(model, versioned, **conversion_kwargs))
 
 
-def _run_diagnostic_backend(workflow, method_names, parameter_values, data):
-    requests: list[Mapping[str, object]] = [
-        {
-            "version": 1,
-            "data_type": "diagnostic",
-            "workflow": workflow,
-            "method": method,
-            "metric": params.get("measure", "DOR"),
-            "params": params,
-        }
-        for method, params in zip(method_names, parameter_values, strict=True)
+def _run_diagnostic_backend(requests: Sequence[AnalysisRequest], data: object):
+    wire_requests: list[Mapping[str, object]] = [
+        request.to_mapping() for request in requests
     ]
-    return r_bridge.run_versioned_analysis_requests(requests, data)
+    return r_bridge.run_versioned_analysis_requests(wire_requests, data)
 
 
 def _diagnostic_direct_effects_need_metric_specific_data(model, requests):
@@ -421,37 +413,25 @@ def _diagnostic_direct_effects_need_metric_specific_data(model, requests):
     return True
 
 
-def _run_diagnostic_analysis_isolating_metric_failures(model, requests):
+def _run_diagnostic_analysis_isolating_metric_failures(
+    model: DiagnosticExecutionModel, requests: Sequence[AnalysisRequest],
+) -> AnalysisResult:
     if _diagnostic_direct_effects_need_metric_specific_data(model, requests):
         return _run_diagnostic_with_metric_specific_data(model, requests)
 
     data = r_bridge.dataset_to_simple_diagnostic_r_object(model)
     try:
-        method_names = [request.method for request in requests]
-        parameter_values = [request.parameter_values() for request in requests]
-        workflow = requests[0].workflow
-        return _typed_result(
-            _run_diagnostic_backend(workflow, method_names, parameter_values, data)
-        )
+        return _typed_result(_run_diagnostic_backend(requests, data))
     except DiagnosticExecutionError:
-        return _run_diagnostic_with_shared_data_per_metric(requests, data)
-
-
-def _run_diagnostic_with_shared_data_per_metric(requests, data):
-    return _run_diagnostic_methods_per_metric(
-        requests,
-        lambda request: _run_diagnostic_backend(
-            request.workflow, [request.method], [request.parameter_values()], data
-        ),
-    )
+        return _run_diagnostic_methods_per_metric(
+            requests, lambda request: _run_diagnostic_backend((request,), data),
+        )
 
 
 def _run_diagnostic_with_metric_specific_data(model, requests):
-    def run_metric(request):
+    def run_metric(request: AnalysisRequest):
         data = r_bridge.dataset_to_simple_diagnostic_r_object(model, metric=request.metric)
-        return _run_diagnostic_backend(
-            request.workflow, [request.method], [request.parameter_values()], data
-        )
+        return _run_diagnostic_backend((request,), data)
 
     return _run_diagnostic_methods_per_metric(requests, run_metric)
 

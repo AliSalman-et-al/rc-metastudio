@@ -12,18 +12,6 @@ def _identity(value: object, *_args: object, **_kwargs: object) -> object:
 def _unavailable(*_args: object, **_kwargs: object) -> None:
     raise RuntimeError("native smoke test capability is not an R analysis")
 
-
-class _LibraryLoader:
-    def load_metafor(self) -> None:
-        pass
-
-    def load_rcmetar(self) -> None:
-        pass
-
-    def load_grid(self) -> None:
-        pass
-
-
 def create() -> SimpleNamespace:
     """Return a local capability object; it never replaces the app module."""
     backend = SimpleNamespace()
@@ -61,5 +49,5 @@ def create() -> SimpleNamespace:
     backend.run_versioned_analysis_request = _unavailable
     backend.run_versioned_analysis_requests = _unavailable
     backend.ro = SimpleNamespace(r=lambda _expression: [95.0])
-    backend.RLibraryLoader = _LibraryLoader
+    backend.load_required_packages = lambda _on_phase=None: None
     return backend

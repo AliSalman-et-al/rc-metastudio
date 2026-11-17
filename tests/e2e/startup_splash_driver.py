@@ -22,6 +22,12 @@ app = app_error_handler.get_or_create_application([sys.argv[0]])
 observations = []
 
 def observe(phase):
+    ready = r_runtime.is_ready()
+    observations.append({"phase": phase, "r_ready": ready})
+    if phase == "splash:visible" or phase.startswith("r-library:"):
+        assert not ready, f"R became ready during {phase}"
+    if phase == "window:visible":
+        assert ready is not args.failure
     if phase == "splash:visible" or phase.startswith("r-library:") and phase.endswith(":start"):
         splash = next(w for w in app.topLevelWidgets() if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible())
         assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible() for w in app.topLevelWidgets())
@@ -47,6 +53,7 @@ def observe(phase):
         observations.append({"phase": phase, "message": splash.message(), "dpr": splash.devicePixelRatioF(), "size": [splash.width(), splash.height()], "statistics_line": names, "statistics_line_width": names_width, "clip_width": 344})
 
 errors = []
+capture_failures = []
 
 class ShellPaintObserver(QtCore.QObject):
     paint_count = 0
@@ -62,17 +69,22 @@ def capture_error(widget):
     assert widget.isVisible()
     assert widget.windowTitle() == "Analysis unavailable"
     assert paint_observer.paint_count > 0, "Startup shell never painted before the error dialog"
-    assert widget.text() == (
-        "The analysis backend (R) could not start. "
-        "Install or repair the pinned R/RCMetaR runtime, then restart RC MetaStudio.\n\n"
-        "Details: RuntimeError: Injected grid load failure after real R packages"
-    )
+    assert "analyses are unavailable" in widget.text(), widget.text()
+    assert "The grid R package could not be loaded" in widget.text(), widget.text()
     errors.append(widget.text())
     observations.append({"shell_paint_events_before_error_capture": paint_observer.paint_count,
                          "startup_error": widget.text()})
     widget.screen().grabWindow(0).save(str(output / "failure-desktop.png"))
     widget.grab().save(str(output / "failure-dialog.png"))
-    widget.accept()
+
+
+def capture_and_close(widget):
+    try:
+        capture_error(widget)
+    except Exception as error:
+        capture_failures.append(error)
+    finally:
+        widget.accept()
 
 
 def close_error():
@@ -80,12 +92,9 @@ def close_error():
         if isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible():
             timer.stop()
             # Let the native window animations/compositor finish before the desktop capture.
-            QtCore.QTimer.singleShot(500, lambda dialog=widget: capture_error(dialog))
+            QtCore.QTimer.singleShot(500, lambda dialog=widget: capture_and_close(dialog))
             return
 
-
-def failing_grid(_self):
-    raise RuntimeError("Injected grid load failure after real R packages")
 
 os.environ["RCMS_ANALYSIS_SCRATCH_DIR"] = str(output / "scratch")
 timer = QtCore.QTimer()
@@ -119,11 +128,20 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
             assert paint_observer.paint_count > 0, "Shell must paint before opening the startup error"
             observations.append({"shell_paint_events_before_dialog": paint_observer.paint_count})
             show_error(window, exception, startup=startup)
-        with patch.object(r_bridge.RLibraryLoader, "load_grid", failing_grid), patch.object(MainWindow, "_show_analysis_backend_error", observed_error):
+        execute_r_function = r_bridge.execute_r_function
+
+        def fail_loading_grid(function, *args, **kwargs):
+            if function == "library" and args == ("grid",):
+                raise RuntimeError("Injected grid load failure after real R packages")
+            return execute_r_function(function, *args, **kwargs)
+
+        with patch.object(r_bridge, "execute_r_function", fail_loading_grid), patch.object(MainWindow, "_show_analysis_backend_error", observed_error):
             _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     else:
         _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     try:
+        if capture_failures:
+            raise capture_failures[0]
         assert window.isEnabled() and window.isVisible()
         assert not any(isinstance(w, QtWidgets.QSplashScreen) and w.isVisible() for w in app.topLevelWidgets())
         assert window.statusBar().currentMessage() == ""

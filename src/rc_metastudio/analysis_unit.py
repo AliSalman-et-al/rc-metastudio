@@ -7,7 +7,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import copy
 from collections.abc import Iterable
-from statistics import NormalDist
 from typing import Literal, NewType
 from rc_metastudio.domain_ids import ArmId
 import uuid
@@ -154,18 +153,6 @@ class AnalysisUnit:
             "display_upper": None,
         }
 
-    @staticmethod
-    def _effect_entry(store, effect, arm_comparison):
-        return store.setdefault(effect, {}).setdefault(
-            arm_comparison,
-            {
-                "est": None,
-                "lower": None,
-                "upper": None,
-                "SE": None,
-            },
-        )
-
     def set_effect_for_source(
         self,
         source: EffectSource,
@@ -177,12 +164,7 @@ class AnalysisUnit:
         standard_error: float | None = None,
     ) -> None:
         """Store a value without conflating entered, preview, and analysis data."""
-        stores = {
-            "entered": self.entered_effects,
-            "derived_preview": self.derived_effect_previews,
-            "analysis": self.analysis_effects,
-        }
-        entry = self._effect_entry(stores[source], effect, arm_comparison)
+        entry = self._store(source).setdefault(effect, {}).setdefault(arm_comparison, {})
         entry.update(
             {
                 "est": estimate,
@@ -201,7 +183,10 @@ class AnalysisUnit:
             "analysis": self.analysis_effects,
         }[source]
 
-    def _entry(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
+    def _read_effect_entry(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
+        return self._store(source).get(effect, {}).get(arm_comparison, {})
+
+    def _effect_entry_for_update(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
         return self._store(source).setdefault(effect, {}).setdefault(
             arm_comparison, self._new_effect_entry()
         )
@@ -209,7 +194,7 @@ class AnalysisUnit:
     def get_effect_for_source(
         self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]
     ) -> EffectEstimate:
-        entry = self._store(source).get(effect, {}).get(arm_comparison, {})
+        entry = self._read_effect_entry(source, effect, arm_comparison)
         return EffectEstimate(
             entry.get("est"),
             entry.get("lower"),
@@ -247,15 +232,15 @@ class AnalysisUnit:
         if confidence_multiplier is None:
             raise ValueError("Mult must be specified")
 
-        entry = self._entry(source, effect, arm_comparison)
+        entry = self._read_effect_entry(source, effect, arm_comparison)
         if source == "entered":
             confidence_multiplier = entry.get("source_multiplier", confidence_multiplier)
         if est is None:
-            est = entry["est"]
+            est = entry.get("est")
         if lower is None:
-            lower = entry["lower"]
+            lower = entry.get("lower")
         if upper is None:
-            upper = entry["upper"]
+            upper = entry.get("upper")
 
         for high, low, divisor in (
             (upper, est, confidence_multiplier),
@@ -267,7 +252,7 @@ class AnalysisUnit:
         return None
 
     def set_calculator_source(self, effect, arm_comparison, source: EffectSource):
-        entry = self._entry("entered", effect, arm_comparison)
+        entry = self._effect_entry_for_update("entered", effect, arm_comparison)
         if source == "entered":
             entry["calculator_source"] = source
         else:
@@ -277,27 +262,27 @@ class AnalysisUnit:
         return self.entered_effects.get(effect, {}).get(arm_comparison, {}).get("calculator_source")
 
     def set_effect(self, effect, arm_comparison, value):
-        entry = self._entry("entered", effect, arm_comparison)
+        entry = self._effect_entry_for_update("entered", effect, arm_comparison)
         entry["est"] = value
         entry["SE"] = None
         self._invalidate_entered_display(effect, arm_comparison, entry)
 
     def set_lower(self, effect, arm_comparison, lower):
-        entry = self._entry("entered", effect, arm_comparison)
+        entry = self._effect_entry_for_update("entered", effect, arm_comparison)
         entry["lower"] = lower
         entry["SE"] = None
         self._invalidate_entered_display(effect, arm_comparison, entry)
-        entry["source_multiplier"] = NormalDist().inv_cdf(
-            .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
+        entry["source_multiplier"] = analysis_validation.normal_confidence_multiplier(
+            self.sheet.settings.get("confidence_level", analysis_validation.DEFAULT_CONFIDENCE_LEVEL)
         )
 
     def set_upper(self, effect, arm_comparison, upper):
-        entry = self._entry("entered", effect, arm_comparison)
+        entry = self._effect_entry_for_update("entered", effect, arm_comparison)
         entry["upper"] = upper
         entry["SE"] = None
         self._invalidate_entered_display(effect, arm_comparison, entry)
-        entry["source_multiplier"] = NormalDist().inv_cdf(
-            .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
+        entry["source_multiplier"] = analysis_validation.normal_confidence_multiplier(
+            self.sheet.settings.get("confidence_level", analysis_validation.DEFAULT_CONFIDENCE_LEVEL)
         )
 
 
@@ -312,12 +297,12 @@ class AnalysisUnit:
             if cached is not None:
                 return cached
         # Old archives can carry a display result in the entered-effect record.
-        return self._store(source).get(effect, {}).get(arm_comparison, {})
+        return self._read_effect_entry(source, effect, arm_comparison)
 
     def _display_for_update(self, source: EffectSource, effect, arm_comparison):
         if source == "entered":
             return self._entered_display.setdefault((effect, arm_comparison), {})
-        return self._entry(source, effect, arm_comparison)
+        return self._effect_entry_for_update(source, effect, arm_comparison)
 
     def set_display_effect_for_source(
         self, source: EffectSource, effect, arm_comparison, value
@@ -446,7 +431,7 @@ class AnalysisUnit:
         )
 
     def get_estimate_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("est")
+        return self._read_effect_entry(source, effect, arm_comparison).get("est")
 
     def get_lower_for_source(
         self, source: EffectSource, effect, arm_comparison, confidence_multiplier
@@ -476,16 +461,16 @@ class AnalysisUnit:
         if boundary not in ["upper", "lower"]:
             raise Exception("Boundary must be one of 'upper' or 'lower'")
 
-        entry = self._entry(source, effect, arm_comparison)
+        entry = self._read_effect_entry(source, effect, arm_comparison)
         if (source == "entered" and entry.get("SE") is None
                 and entry.get(boundary) is not None
                 and abs(entry.get("source_multiplier", 0) - confidence_multiplier) < 1e-12):
             return entry[boundary]
-        if self.get_se(source, effect, arm_comparison, confidence_multiplier) is None:
-            return self._entry(source, effect, arm_comparison)[boundary]
-        est = self.get_estimate_for_source(source, effect, arm_comparison)
         se = self.get_se(source, effect, arm_comparison, confidence_multiplier)
-        if est is None or se is None:
+        if se is None:
+            return entry.get(boundary)
+        est = entry.get("est")
+        if est is None:
             return None
         return (
             est - confidence_multiplier * se
@@ -496,7 +481,7 @@ class AnalysisUnit:
     def get_se(
         self, source: EffectSource, effect, arm_comparison, confidence_multiplier
     ):
-        entry = self._entry(source, effect, arm_comparison)
+        entry = self._read_effect_entry(source, effect, arm_comparison)
         standard_error = entry.get("SE")
         if standard_error is not None:
             return standard_error

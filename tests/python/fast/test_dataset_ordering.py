@@ -86,6 +86,54 @@ def test_outcome_sort_uses_each_study_display_effect_source():
     assert _study_names(model) == ["Beta", "Gamma", "Alpha"]
 
 
+@pytest.mark.parametrize("covariate_name", ["name", "year", "raw_data"])
+def test_covariate_sort_uses_values_independent_of_study_field_names(covariate_name):
+    model = _sortable_dataset_model()
+    model.rename_covariate("Dose", covariate_name)
+    for study, dose in zip(model.current_sheet.rows, (10, 30, 20), strict=True):
+        study.covariate_values["Dose"] = dose
+
+    model.sort_studies(model.columns.first_covariate, reverse=False)
+
+    assert _study_names(model) == ["Gamma", "Beta", "Alpha"]
+    assert [study.label for study in model.current_sheet.rows] == ["Gamma", "Alpha", "Beta"]
+
+
+def test_standard_error_sort_does_not_sort_confidence_bounds():
+    from rc_metastudio.analysis_unit import AnalysisUnit
+
+    arm = analysis_dataset.Arm(ArmId("group"), "Group")
+    sheet = analysis_dataset.Sheet(
+        SheetId("sheet"), "Measurement", analysis_catalog.CONTINUOUS,
+        sub_type="generic_effect", family="continuous", arms=[arm],
+        settings={"metric": "Mean", "confidence_level": 90.0},
+    )
+    for name, se in (("Narrow", 0.1), ("Wide", 1.0)):
+        unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
+        unit.set_effect_for_source("entered", "Mean", (arm.id,), 1.0, standard_error=se)
+        sheet.rows.append(analysis_dataset.StudyRow(RowId(name), name, unit))
+    model = dataset_table_model.DatasetTableModel(
+        dataset=analysis_dataset.Dataset(sheets=[sheet]), add_blank_study=False,
+    )
+    model.set_current_sheet(sheet.id)
+
+    model.sort_studies(model.OUTCOMES[1], reverse=False)
+
+    assert _study_names(model) == ["Narrow", "Wide"]
+
+
+def test_initial_sheet_uses_its_saved_metric_and_confidence():
+    model = _sortable_dataset_model()
+    sheet = model.current_sheet
+    sheet.settings.update(metric="RR", confidence_level=90.0)
+    reopened = dataset_table_model.DatasetTableModel(
+        dataset=model.dataset, add_blank_study=False,
+    )
+
+    assert reopened.current_effect == "RR"
+    assert reopened.get_confidence_level() == 90.0
+
+
 def test_sheet_arm_order_is_stable_across_hash_seeds():
     script = """
 import json

@@ -95,21 +95,20 @@ def test_diagnostic_metric_conversion_failure_does_not_discard_other_metrics(
         def dataset_to_simple_diagnostic_r_object(_model, metric):
             return convert_metric(_model, metric)
 
+        @staticmethod
+        def run_versioned_analysis_requests(requests, _data):
+            return _raw_result(
+                {"Spec Summary": requests[0]["metric"]}, "diagnostic.spec"
+            )
+
     monkeypatch.setattr(analysis_adapter, "r_bridge", FakeDiagnosticBridge())
-    monkeypatch.setattr(
-        analysis_adapter,
-        "_run_diagnostic_backend",
-        lambda _module_loader, _methods, parameter_values, _data: _raw_result(
-            {"Spec Summary": parameter_values[0]["measure"]}, "diagnostic.spec"
-        ),
-    )
     requests = tuple(
         make_analysis_request(
             data_type="diagnostic",
             workflow="standard",
             method="diagnostic.random",
             metric=metric,
-            parameters={"measure": metric},
+            parameters={},
         )
         for metric in ("Sens", "Spec")
     )

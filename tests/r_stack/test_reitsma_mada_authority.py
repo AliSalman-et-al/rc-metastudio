@@ -175,7 +175,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
         from tests.analysis_regression.golden.support import headless_analysis
         from rc_metastudio import analysis_adapter, r_bridge
         try:
-            r_bridge.RLibraryLoader().load_rcmetar()
+            r_bridge.load_required_packages()
         except Exception:
             # The source checkout is the documented local evidence fallback;
             # release lanes still prefer the packaged RCMetaR installation.
@@ -189,6 +189,24 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     from rc_metastudio.r_call_serialization import r_transaction
 
     sample = os.path.join(repo_root, "sample_projects", "lymph.rcms")
+    univariate_requests = tuple(
+        analysis_adapter.make_analysis_request(
+            data_type="diagnostic", workflow="standard", method="diagnostic.random",
+            metric=metric, parameters={
+                "create.plot": False, "write.to.file": False, "conf.level": 95,
+                "digits": 3, "rm.method": "REML", "adjust": 0.5, "to": "only0",
+            },
+        )
+        for metric in ("Sens", "Spec")
+    )
+    univariate = headless_analysis.run_headless_analysis(
+        headless_analysis.HeadlessAnalysisCase(sample, univariate_requests)
+    )
+    summaries = {section.semantic_id: section.title for section in univariate.sections}
+    assert summaries["diagnostic.Sens.summary"] == "Sensitivity summary", summaries
+    assert summaries["diagnostic.Spec.summary"] == "Specificity summary", summaries
+    print("Diagnostic request summaries:", summaries)
+
     parameters = {
         "measure": "Sens", "estimator": "REML", "conf.level": 95,
         "digits": 3, "adjust": 0.5,

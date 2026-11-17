@@ -276,14 +276,16 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         placement = settings.load_results_window_state(
             available_geometries=[QtCore.QRect(0, 0, 800, 600)]
         )
-        assert QtCore.QRect(0, 0, 800, 600).contains(placement["frame_geometry"])
+        assert QtCore.QRect(0, 0, 800, 600).contains(placement.placement.frame_geometry)
         sizes = restored.results_nav_splitter.sizes()
         total_size = sum(sizes)
         assert total_size > 0
         if total_size == 0:
             pytest.fail("results splitter has no allocated space")
         assert sizes[0] >= restored.nav_tree.minimumWidth()
-        assert sizes[0] / total_size == pytest.approx(placement["splitter_proportions"][0], abs=.02)
+        proportions = placement.splitter_proportions
+        assert proportions is not None
+        assert sizes[0] / total_size == pytest.approx(proportions[0], abs=.02)
     finally:
         _dispose(restored, qapp)
 

@@ -2008,13 +2008,13 @@ def test_recent_files_persist_through_pyqt6_settings(tmp_path):
         str(tmp_path),
     )
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    settings.reset_settings()
+    QtCore.QSettings().clear()
 
     settings.add_file_to_recent_files("first.rcms")
     settings.add_file_to_recent_files("second.rcms")
-    settings.load_settings()
+    settings.migrate_application_settings()
 
-    assert settings.get_setting("recent_files") == ["first.rcms", "second.rcms"]
+    assert settings.get_recent_files() == ["first.rcms", "second.rcms"]
 
 
 def test_main_window_maximized_state_persists_through_pyqt6_settings(tmp_path):
@@ -2027,7 +2027,7 @@ def test_main_window_maximized_state_persists_through_pyqt6_settings(tmp_path):
         str(tmp_path),
     )
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    settings.reset_settings()
+    QtCore.QSettings().clear()
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     saved = QtWidgets.QMainWindow()
@@ -2339,9 +2339,8 @@ def test_open_existing_dialog_starts_in_sample_projects_even_when_cwd_is_app_dat
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    from rc_metastudio import settings
 
-    settings.reset_settings()
+    QtCore.QSettings().clear()
     calls = []
 
     def choose_project(**kwargs):

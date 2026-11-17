@@ -75,8 +75,8 @@ def test_stale_main_placement_is_clamped_to_available_screen(tmp_path):
 
     placement = settings.load_main_window_placement([QtCore.QRect(0, 0, 1920, 1040)])
 
-    assert placement["frame_geometry"] == QtCore.QRect(1020, 340, 900, 700)
-    assert placement["maximized"] is False
+    assert placement.frame_geometry == QtCore.QRect(1020, 340, 900, 700)
+    assert placement.maximized is False
 
 
 def test_main_column_widths_round_trip_in_versioned_workspace_state(tmp_path, qapp):

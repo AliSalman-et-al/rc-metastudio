@@ -14,10 +14,9 @@ from rc_metastudio.domain_ids import RowId, SheetId
 import math
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, replace
 import uuid
-from statistics import NormalDist
-from typing import Callable, Literal, Protocol
+from typing import Literal, Protocol
 
 from rc_metastudio import name_validation, qt_text
 from rc_metastudio import r_runtime, r_bridge
@@ -41,7 +40,7 @@ from rc_metastudio.dataset_analysis_domain import (
 from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC_METRICS, FACTOR
 from rc_metastudio.analysis_validation import (
     is_float_convertible, is_an_int, is_empty,
-    validate_confidence_interval_order, validate_confidence_level,
+    normal_confidence_multiplier, validate_confidence_interval_order, validate_confidence_level,
 )
 
 
@@ -160,12 +159,7 @@ class WorkspaceEditingService:
 
     def confidence_settings(self, level: object) -> ConfidenceSettings:
         validated = validate_confidence_level(level)
-        if r_runtime.is_ready():
-            multiplier = self.bridge.get_confidence_multiplier_from_r(validated)
-        else:
-            tail = (1.0 + validated / 100.0) / 2.0
-            multiplier = NormalDist().inv_cdf(tail)
-        return ConfidenceSettings(float(validated), float(multiplier))
+        return ConfidenceSettings(validated, normal_confidence_multiplier(validated))
 
     def preview_raw_effects(
         self,
@@ -206,7 +200,6 @@ class WorkspaceEditingService:
         value: object,
         *,
         import_csv: bool = False,
-        recalculate: Callable[[int], None] | None = None,
     ) -> CellRejection | None:
         if context.sheet_id is None or target.row < 0 or target.column < 0:
             return CellRejection("Cannot edit that cell.")
@@ -220,22 +213,8 @@ class WorkspaceEditingService:
             return self._edit_year(study, value)
         if not study.label.strip() and not qt_text.is_blank(value):
             return CellRejection("Enter a study name first.")
-        rejection = self._apply_analysis_edit(
-            dataset, study, target, context, value, import_csv, recalculate
-        )
-        if rejection is None:
-            self._update_inclusion(dataset, study, target, context, import_csv=import_csv)
-        return rejection
-
-    def _apply_analysis_edit(
-        self, dataset, study, target, context, value, import_csv, recalculate
-    ) -> CellRejection | None:
-        if context.data_type in RATIO_DATA_TYPES and target.column in context.outcome_columns:
-            return self._edit_ratio_input(dataset, study, target, context, value)
-        if context.sheet_id is not None and target.column in context.raw_columns:
-            return self._edit_raw_data(dataset, study, target, context, value, recalculate)
-        if target.column in context.outcome_columns:
-            return self._edit_outcome(dataset, study, target, context, value, import_csv)
+        if target.column in context.raw_columns + context.outcome_columns:
+            return self._edit_measurement(study, target, context, value, import_csv=import_csv)
         if target.column == context.include_column:
             if type(value) is not bool:
                 return CellRejection("Study inclusion must be checked or unchecked.")
@@ -243,8 +222,31 @@ class WorkspaceEditingService:
             return None
         return self._edit_covariate(study, context, value)
 
-    def _edit_ratio_input(self, dataset, study, target, context, value):
-        from dataclasses import replace
+    def _edit_measurement(
+        self, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext,
+        value: object, *, import_csv: bool,
+    ) -> CellRejection | None:
+        draft = replace(study, analysis_unit=study.analysis_unit.copy_for_edit())
+        try:
+            rejection = self._apply_measurement(draft, target, context, value, import_csv)
+            if rejection is not None:
+                return rejection
+            self._update_inclusion(draft, context, import_csv=import_csv)
+        except Exception as error:
+            edited = "raw data" if target.column in context.raw_columns else "outcome data"
+            return CellRejection(f"Could not compute study effects from the edited {edited}: {error}", kind="backend")
+        study.analysis_unit.adopt_calculated_state(draft.analysis_unit)
+        study.include = draft.include
+        return None
+
+    def _apply_measurement(self, study, target, context, value, import_csv):
+        if target.column in context.raw_columns:
+            return self._edit_raw_data(study, target, context, value)
+        if context.data_type in RATIO_DATA_TYPES:
+            return self._edit_ratio_input(study, target, context, value)
+        return self._edit_outcome(study, target, context, value, import_csv)
+
+    def _edit_ratio_input(self, study, target, context, value):
         unit = study.analysis_unit
         field = RATIO_FIELDS[context.outcome_columns.index(target.column)]
         text = qt_text.to_native_text(value).strip()
@@ -266,17 +268,13 @@ class WorkspaceEditingService:
 
     def _update_inclusion(
         self,
-        dataset,
         study,
-        target,
         context,
         *,
         import_csv: bool = False,
     ) -> None:
         if (
-            context.sheet_id is None
-            or context.data_type == DIAGNOSTIC
-            or target.column not in context.raw_columns + context.outcome_columns
+            context.data_type == DIAGNOSTIC
             or (import_csv and not raw_data_is_empty(self._raw_data(study, context)))
         ):
             return
@@ -340,7 +338,7 @@ class WorkspaceEditingService:
         )
 
     def _verify_raw_data(
-        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
+        self, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
     ) -> CellRejection | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -433,7 +431,7 @@ class WorkspaceEditingService:
         return None
 
     def _verify_outcome_data(
-        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> CellRejection | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
@@ -444,7 +442,7 @@ class WorkspaceEditingService:
             return CellRejection("Enter a number.", kind="number")
         unit = study.analysis_unit
         previous_display = self._previous_display_outcome(
-            dataset, study, target, context, unit
+            study, target, context, unit
         )
         raw_data = self._raw_data(study, context)
         if not import_csv and not all(is_empty(item) for item in raw_data):
@@ -454,7 +452,7 @@ class WorkspaceEditingService:
         return self._verify_outcome_value(text, previous_display, target, context)
 
     def _previous_display_outcome(
-        self, dataset, study, target, context, unit: AnalysisUnit
+        self, study, target, context, unit: AnalysisUnit
     ) -> tuple[object, object, object]:
         if context.data_type == DIAGNOSTIC:
             metric = "Sens" if target.column in context.outcome_columns[:3] else "Spec"
@@ -499,43 +497,28 @@ class WorkspaceEditingService:
 
     def _edit_raw_data(
         self,
-        dataset: Dataset,
         study: StudyRow,
         target: WorkspaceEditTarget,
         context: WorkspaceEditingContext,
         value: object,
-        recalculate: Callable[[int], None] | None,
     ) -> CellRejection | None:
-        error = self._verify_raw_data(dataset, study, target, context, value)
+        error = self._verify_raw_data(study, target, context, value)
         if error:
             return error
         unit = study.analysis_unit
-        snapshot = unit.copy_for_edit()
-        included_before_edit = study.include
-        try:
-            position = context.raw_columns.index(target.column)
-            per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
-            group = context.arm_names[0] if position < per_group else context.arm_names[1]
-            unit.get_raw_data_for_arm(group)[position % per_group] = (
-                "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
-            )
-            if recalculate is None:
-                self.update_effect_previews_if_possible(dataset, study.id, context)
-            else:
-                recalculate(target.row)
-        except Exception as exc:
-            unit.adopt_calculated_state(snapshot)
-            study.include = included_before_edit
-            return CellRejection(
-                f"Could not compute study effects from the edited raw data: {exc}",
-                kind="backend",
-            )
+        position = context.raw_columns.index(target.column)
+        per_group = len(unit.get_raw_data_for_arm(context.arm_names[0]))
+        group = context.arm_names[position // per_group]
+        unit.get_raw_data_for_arm(group)[position % per_group] = (
+            "" if qt_text.is_blank(value) else float(qt_text.normalize_decimal_text(value)[0])
+        )
+        self.update_effect_previews_if_possible(study, context)
         return None
 
     def _edit_outcome(
-        self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
+        self, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
     ) -> CellRejection | None:
-        error = self._verify_outcome_data(dataset, study, target, context, value, import_csv)
+        error = self._verify_outcome_data(study, target, context, value, import_csv)
         if error:
             return error
         unit = study.analysis_unit
@@ -544,7 +527,7 @@ class WorkspaceEditingService:
         metric, outcome_index = self._outcome_metric(target, context)
         if metric is None:
             return CellRejection("Choose an effect measure first.")
-        n1 = self._outcome_sample_size(dataset, study, context)
+        n1 = self._outcome_sample_size(study, context)
         calculation_value = self.to_calculation_scale(
             display_value, context.data_type, metric, n1
         )
@@ -571,7 +554,7 @@ class WorkspaceEditingService:
             return ("Spec" if outcome_index >= 3 else "Sens", outcome_index % 3)
         return context.current_effect, outcome_index
 
-    def _outcome_sample_size(self, dataset, study, context):
+    def _outcome_sample_size(self, study, context):
         if context.current_effect != "PFT":
             return None
         return self._raw_data(study, context)[1]
@@ -642,15 +625,11 @@ class WorkspaceEditingService:
 
     def update_effect_previews_if_possible(
         self,
-        dataset: Dataset,
-        row_id: str,
+        study: StudyRow,
         context: WorkspaceEditingContext,
         *,
         update_inclusion: bool = True,
     ) -> None:
-        if context.sheet_id is None:
-            return
-        study = next(row for row in dataset.sheet(context.sheet_id).rows if row.id == row_id)
         unit = study.analysis_unit
         raw_data = self._raw_data(study, context)
         if context.data_type in RATIO_DATA_TYPES:

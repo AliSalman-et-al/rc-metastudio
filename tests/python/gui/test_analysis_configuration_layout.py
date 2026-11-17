@@ -145,23 +145,7 @@ def test_method_parameters_declares_scroll_body_with_actions_outside(qapp):
         dialog.close()
 
 
-def test_analysis_setup_keeps_scratch_plot_path_internal(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
-
-    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
-    dialog = analysis_setup_dialog.AnalysisSetupDialog(
-        _AnalysisModel("binary"), confidence_level=95.0
-    )
-    try:
-        assert dialog.image_path.text().endswith("forest.png")
-        assert dialog.label_3.isHidden()
-        assert dialog.image_path.isHidden()
-        assert dialog.save_btn.isHidden()
-    finally:
-        dialog.close()
-
-
-def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
+def test_analysis_setup_plot_accent_control_exposes_accessibility_metadata(qapp):
     dialog = QtWidgets.QDialog()
     ui = Ui_AnalysisSetupDialog()
     ui.setupUi(dialog)
@@ -170,12 +154,7 @@ def test_analysis_setup_plot_actions_expose_browse_metadata(qapp):
         assert ui.color_btn.accessibleName() == "Choose plot accent color"
         assert ui.color_btn.accessibleDescription()
         assert ui.color_btn.toolTip()
-        assert ui.save_btn.text() == "Browse..."
-        assert ui.save_btn.accessibleName() == "Browse plot image save path"
-        assert ui.save_btn.accessibleDescription()
-        assert ui.save_btn.toolTip()
         assert ui.accent_label.buddy() is ui.accent_color
-        assert ui.label_3.buddy() is ui.image_path
     finally:
         dialog.close()
 

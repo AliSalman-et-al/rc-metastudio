@@ -226,40 +226,23 @@ def execute_r_function(function_name, *args, **kwargs):
     return _r_function(function_name)(*args, **kwargs)
 
 
-class RLibraryLoader:
-    def __init__(self):
-        initialize_r()
-
-
-    def load_metafor(self):
-        return self._load_r_lib("metafor")
-
-    def load_rcmetar(self):
-        result = self._load_r_lib("RCMetaR")
-        from rc_metastudio import r_runtime
-        r_runtime.mark_ready()
-        return result
-
-    def load_grid(self):
-        return self._load_r_lib("grid")
-
-    def _load_r_lib(self, name, expected_version=None):
+def load_required_packages(
+    on_phase: Callable[[str, str], None] | None = None,
+) -> None:
+    """Initialize embedded R and attach the packages used by analyses."""
+    initialize_r()
+    for name in ("metafor", "RCMetaR", "grid"):
+        if on_phase is not None:
+            on_phase(name, "start")
         try:
             execute_r_function("library", name)
-            if expected_version is not None:
-                version = get_r_package_version(name)
-                if version != expected_version:
-                    raise RuntimeError(
-                        "%s package version %s is required; found %s"
-                        % (name, expected_version, version)
-                    )
-            msg = "%s package successfully loaded" % name
-            return (True, msg)
         except Exception as exc:
             raise RuntimeError(
-                "The %s R package is not installed.\nInstall this R package, then restart RC MetaStudio."
-                % name
+                f"The {name} R package could not be loaded.\n"
+                "Install or repair this R package, then restart RC MetaStudio."
             ) from exc
+        if on_phase is not None:
+            on_phase(name, "complete")
 
 
 @serialized_r_call

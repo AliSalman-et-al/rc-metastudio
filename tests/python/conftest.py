@@ -51,19 +51,6 @@ class _TestObjects:
     def r(_expression: object) -> list[float]:
         return [95.0]
 
-
-class _TestLoader:
-
-    def load_metafor(self) -> None:
-        pass
-
-    def load_rcmetar(self) -> None:
-        pass
-
-    def load_grid(self) -> None:
-        pass
-
-
 @pytest.fixture
 def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject a local, explicit test capability at the R boundary."""
@@ -120,7 +107,7 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     for name, function in functions.items():
         monkeypatch.setattr(r_bridge, name, function, raising=False)
     monkeypatch.setattr(r_bridge, "ro", _TestObjects, raising=False)
-    monkeypatch.setattr(r_bridge, "RLibraryLoader", _TestLoader, raising=False)
+    monkeypatch.setattr(r_bridge, "load_required_packages", lambda _on_phase=None: None)
 
 
 @pytest.fixture

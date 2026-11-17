@@ -2,7 +2,6 @@
 
 from dataclasses import replace
 import math
-from statistics import NormalDist
 from PyQt6.QtGui import QPalette
 
 from PyQt6.QtWidgets import (
@@ -12,6 +11,7 @@ from PyQt6.QtWidgets import (
 
 from rc_metastudio import adaptive_window, qt_text
 from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES
+from rc_metastudio.analysis_validation import normal_confidence_multiplier
 from rc_metastudio.result_formatting import NUM_DIGITS, format_effect_number
 
 
@@ -136,7 +136,7 @@ class RatioDataDialog(QDialog):
             try:
                 estimate = self._number(self.fields["estimate"].text())
                 level = self._number(self.fields["confidence"].text())
-                quantile = NormalDist().inv_cdf((1 + level / 100) / 2)
+                quantile = normal_confidence_multiplier(level)
                 display = lambda value: format_effect_number(value, NUM_DIGITS + 2)
                 if self.fields["scale"].currentData() == "ratio":
                     lower, upper = (self._number(self.fields[name].text()) for name in ("lower", "upper"))

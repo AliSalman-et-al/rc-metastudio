@@ -28,7 +28,7 @@ from rc_metastudio.calculator_service import (
     Numeric,
 )
 from rc_metastudio.analysis_catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_ARM_NAMES
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 
 from rc_metastudio import app_error_handler
@@ -74,7 +74,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             raise ValueError("Confidence level must be specified")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
         self.current_item_data: int | None = None

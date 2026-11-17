@@ -710,7 +710,7 @@ def _current_artifact_path(result, label):
 
 
 def run_curated_golden_set(report_path=None):
-    r_bridge.RLibraryLoader().load_rcmetar()
+    r_bridge.load_required_packages()
     reports = []
     for bundle in curated_golden_bundles():
         result = headless_analysis.run_headless_analysis(bundle["case"])
@@ -829,7 +829,7 @@ def capture_bundle(
 
 
 def capture_curated_binary_bundle(report_path=None):
-    r_bridge.RLibraryLoader().load_rcmetar()
+    r_bridge.load_required_packages()
     capture = capture_bundle(curated_golden_bundles()[0])
     if report_path:
         with open(report_path, "w") as f:
@@ -856,7 +856,7 @@ def capture_comprehensive_golden_baseline(
     _ensure_dir(captures_dir)
     _ensure_dir(artifacts_dir)
 
-    r_bridge.RLibraryLoader().load_rcmetar()
+    r_bridge.load_required_packages()
     rows = []
     for bundle in curated_golden_bundles(root_dir):
         capture = capture_bundle(

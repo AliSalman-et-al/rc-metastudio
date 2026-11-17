@@ -23,7 +23,6 @@ from PyQt6.QtCore import (
     QTimer,
     QSignalBlocker,
     Qt,
-    QSettings,
 )
 from PyQt6.QtGui import (
     QAction,
@@ -86,8 +85,8 @@ from rc_metastudio.plot_service import PlotService
 from rc_metastudio.qt_geometry import logical_extent_to_physical_pixels
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import (
+    DEFAULT_RESULTS_SPLITTER_PROPORTIONS,
     restore_results_window_state,
-    RESULTS_WORKSPACE_GROUP,
     save_results_window_state,
 )
 
@@ -282,6 +281,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._viewport_refit_timer.timeout.connect(self._run_scheduled_viewport_refit)
         self._viewport_width_override = None
         self._first_show_refit_pending = True
+        self._restored_splitter_proportions: tuple[float, ...] | None = None
+        self._splitter_user_sized = False
         self._layout_items = []
         self._nav_items_to_sections = {}
         self._nav_plot_artifacts = {}
@@ -303,6 +304,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self, adaptive_window.WindowRole.RESULTS
         )
         restored_state = restore_results_window_state(self)
+        self._restored_splitter_proportions = restored_state.splitter_proportions
         self.add_offset = 5
         self.borders = []
         self.plot_service = plot_service or PlotService()
@@ -312,7 +314,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.nav_tree.itemClicked.connect(
             app_error_handler.safe_slot(self.item_clicked, parent=self)
         )
-        self._splitter_user_sized = False
         self.results_nav_splitter.splitterMoved.connect(
             app_error_handler.safe_slot(
                 self._splitter_moved, parent=self
@@ -345,8 +346,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.x_coord = 5.0
         self.y_coord = 5.0
 
-        self._restored_splitter_proportions = restored_state["splitter_proportions"]
-        self._has_saved_splitter = QSettings().contains(RESULTS_WORKSPACE_GROUP + "/splitter_proportions")
         self._splitter_restore_pending = True
 
         self.scene = QGraphicsScene(self)
@@ -1389,11 +1388,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _set_restored_splitter_sizes(self):
         splitter_extent = max(2, self.results_nav_splitter.width())
-        if self._has_saved_splitter:
-            sizes = [max(1, int(splitter_extent * value)) for value in self._restored_splitter_proportions]
+        proportions = self._restored_splitter_proportions
+        if proportions is not None:
+            sizes = [max(1, int(splitter_extent * value)) for value in proportions]
         else:
             em = self.fontMetrics().height()
-            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), int(splitter_extent * .18))
+            max_navigation = int(splitter_extent * DEFAULT_RESULTS_SPLITTER_PROPORTIONS[0])
+            navigation = min(max(self.nav_tree.sizeHintForColumn(0) + 2 * em, 12 * em), max_navigation)
             sizes = [navigation, splitter_extent - navigation]
         self.results_nav_splitter.setSizes(sizes)
 
@@ -1401,14 +1402,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self, event: QResizeEvent | None
     ) -> None:
         super(ResultsWindow, self).resizeEvent(event)
-        if getattr(self, "_has_saved_splitter", False) and not self._splitter_user_sized:
+        if self._restored_splitter_proportions is not None and not self._splitter_user_sized:
             self._first_show_refit_pending = True
         self._schedule_viewport_refit()
 
     def closeEvent(
         self, event: QCloseEvent | None
     ) -> None:
-        save_results_window_state(self)
+        sizes = self.results_nav_splitter.sizes() if self._splitter_user_sized else None
+        save_results_window_state(self, sizes)
         super(ResultsWindow, self).closeEvent(event)
         if event is not None and not event.isAccepted():
             return

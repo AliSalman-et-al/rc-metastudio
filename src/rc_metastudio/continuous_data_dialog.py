@@ -35,7 +35,7 @@ from rc_metastudio.calculator_service import (
     CalculatorService,
 )
 from rc_metastudio.analysis_catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
-from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
+from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
@@ -117,7 +117,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             raise ValueError("Confidence level is missing.")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
 

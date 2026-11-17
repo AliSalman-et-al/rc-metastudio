@@ -28,7 +28,8 @@ from rc_metastudio import adaptive_window
 from rc_metastudio import row_padding
 from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRICS, DIAG_FIELDS_TO_RAW_INDICES
 from rc_metastudio.analysis_validation import (
-    EMPTY_VALS, is_nan, is_float_convertible, is_empty, validate_confidence_interval_order,
+    EMPTY_VALS, is_nan, is_float_convertible, is_empty,
+    normal_confidence_multiplier, validate_confidence_interval_order,
 )
 from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
 from rc_metastudio.qt_object_guard import required
@@ -67,7 +68,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             raise ValueError("Confidence level must be specified")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
-        self.confidence_multiplier = self.calculator.get_confidence_multiplier(
+        self.confidence_multiplier = normal_confidence_multiplier(
             self.confidence_level
         )
         self.current_item_data: int | None = None

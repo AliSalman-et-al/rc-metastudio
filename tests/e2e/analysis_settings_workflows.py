@@ -1,5 +1,6 @@
 """Drive result properties and presentation-only ordering with real Qt and R."""
 
+import hashlib
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
@@ -26,8 +27,35 @@ def run(app, window, root, record, analyze):
         return next(w for w in app.topLevelWidgets()
                     if isinstance(w, results_window.ResultsWindow) and w.isVisible() and id(w) not in before)
 
+    def plot_hashes(result_view):
+        paths = [*result_view.results.images.values(), *result_view.results.display_images.values()]
+        assert len(paths) == 2, paths
+        return {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
+
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
+    first_plot = plot_hashes(view)
+    first_numbers = parsed_numeric_sections(view.results)
+    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+    window.action_go.trigger()
+    app.processEvents()
+    fresh_dialog = setup()
+    fresh_dialog.specs_tab.setCurrentWidget(fresh_dialog.plot_tab)
+    fresh_dialog.x_lbl_le.selectAll()
+    key_clicks(fresh_dialog.x_lbl_le, "Second analysis axis")
+    fresh_view = submit(fresh_dialog)
+    fresh_plot = plot_hashes(fresh_view)
+    record("review-fresh-fit-plots", fresh_view, original=first_plot, fresh=fresh_plot,
+           original_after=plot_hashes(view))
+    assert not first_plot.keys() & fresh_plot.keys(), (first_plot, fresh_plot)
+    assert plot_hashes(view) == first_plot
+    assert parsed_numeric_sections(view.results) == first_numbers
+    fresh_svg = next(iter(fresh_view.results.display_images.values()))
+    assert "Second analysis axis" in {
+        "".join(node.itertext()) for node in ET.parse(fresh_svg).iter("{http://www.w3.org/2000/svg}text")
+    }
+    fresh_view.close()
+    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     assert view.result_identity.isVisible()
     assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
     report = view.manuscript_text.toPlainText()
@@ -48,6 +76,8 @@ def run(app, window, root, record, analyze):
     dialog.x_lbl_le.selectAll()
     key_clicks(dialog.x_lbl_le, "[default]")
     literal_view = submit(dialog)
+    assert not first_plot.keys() & plot_hashes(literal_view).keys()
+    assert plot_hashes(view) == first_plot
     literal_svg = next(iter(literal_view.results.display_images.values()))
     captions = {"".join(node.itertext()): node for node in ET.parse(literal_svg).iter("{http://www.w3.org/2000/svg}text")}
     assert "[default]" in captions, captions.keys()

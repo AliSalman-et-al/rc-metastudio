@@ -196,34 +196,17 @@ def _emit_automation_phase(phase_callback, phase):
 
 
 def load_R_libraries(app, splash=None, phase_callback=None):
-    """Loads the R libraries while updating the splash screen"""
+    """Load R packages while updating the splash screen."""
     from rc_metastudio import r_bridge
-    r_bridge.initialize_r()
 
-    def _status(message):
-        if splash is not None:
-            splash.showMessage(message)
-        app.processEvents()
+    def observe_package(name: str, phase: str) -> None:
+        if phase == "start":
+            if splash is not None:
+                splash.showMessage(f"Loading {name}…")
+            app.processEvents()
+        _emit_automation_phase(phase_callback, f"r-library:{name}:{phase}")
 
-    _emit_automation_phase(phase_callback, "r-library-paths:start")
-    r_bridge.get_r_library_paths()
-    _emit_automation_phase(phase_callback, "r-library-paths:complete")
-    rloader = r_bridge.RLibraryLoader()
-
-    _status("Loading metafor…")
-    _emit_automation_phase(phase_callback, "r-library:metafor:start")
-    rloader.load_metafor()
-    _emit_automation_phase(phase_callback, "r-library:metafor:complete")
-
-    _status("Loading RCMetaR…")
-    _emit_automation_phase(phase_callback, "r-library:RCMetaR:start")
-    rloader.load_rcmetar()
-    _emit_automation_phase(phase_callback, "r-library:RCMetaR:complete")
-
-    _status("Loading grid…")
-    _emit_automation_phase(phase_callback, "r-library:grid:start")
-    rloader.load_grid()
-    _emit_automation_phase(phase_callback, "r-library:grid:complete")
+    r_bridge.load_required_packages(observe_package)
 
 
 def _open_startup_project(app, meta, project_path, startup_argv):
@@ -367,6 +350,7 @@ def _load_composition_runtime(
 ):
     if not interactive and r_loader is None and os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") != "1":
         return None
+    r_runtime.mark_unavailable()
     splash = create_startup_splash() if interactive else None
     try:
         if splash is not None:

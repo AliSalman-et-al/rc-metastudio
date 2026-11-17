@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import shutil
 import sys
-import types
 from decimal import Decimal
 import zipfile
 
@@ -1208,8 +1207,8 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
     )
     monkeypatch.setattr(
         golden_analysis.r_bridge,
-        "RLibraryLoader",
-        lambda: types.SimpleNamespace(load_rcmetar=lambda: None),
+        "load_required_packages",
+        lambda: None,
     )
     monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
     monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.2.1"}[package])
