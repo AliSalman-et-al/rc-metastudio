@@ -1574,10 +1574,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             "sroc": "fp_outpath", "funnel": "funnel.outpath",
         }[regenerator]
         outpath = updated_params.get(output_parameter) or artifact.image_path
-        if regenerator == "funnel" and str(outpath).lower().endswith(".svgz"):
-            raise ValueError(
-                "SVGZ output is not supported when editing funnel plots; use SVG instead."
-            )
         try:
             self.plot_service.apply_edits(
                 regenerator=regenerator, params_path=artifact.params_path,
