@@ -658,11 +658,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
 
-        self._model_signal_connections.append(
-            app_error_handler.connect_safely(
-                self.tableView.dataDirtied, self.data_dirtied, parent=self
-            )
-        )
         if menu_actions:
             _connect_action(self.action_save, self.save)
             _connect_action(self.action_save_as, self.save_as)

@@ -738,21 +738,6 @@ def test_safe_slot_preserves_callback_type_errors(monkeypatch):
     assert str(unexpected_errors[0][1]) == "internal type problem"
 
 
-def test_main_window_model_reconnect_preserves_external_signal_subscribers():
-
-    app, window = automation.start_automation()
-    calls = []
-    try:
-        window.tableView.dataDirtied.connect(lambda: calls.append("external"))
-
-        _create_binary_dataset(window)
-        window.tableView.dataDirtied.emit()
-
-        assert calls == ["external"]
-    finally:
-        _close_without_prompt(app, window)
-
-
 def test_main_window_action_exceptions_are_recoverable(monkeypatch, tmp_path):
     from PyQt6.QtGui import QAction
 

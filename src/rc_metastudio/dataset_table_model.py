@@ -907,7 +907,11 @@ class DatasetTableModel(QAbstractTableModel):
             for study in self._studies_with_data():
                 self.editing_service.set_inclusion(study, included)
             self.workspaceEditCommitted.emit()
-            self.reset_model()
+            self.dataChanged.emit(
+                self.index(0, self.INCLUDE_STUDY),
+                self.index(self.rowCount() - 1, self.INCLUDE_STUDY),
+                [Qt.ItemDataRole.CheckStateRole],
+            )
 
     def all_studies_are_included(self):
         return all(study.include for study in self._studies_with_data())

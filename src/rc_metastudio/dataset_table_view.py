@@ -12,7 +12,6 @@ from PyQt6.QtCore import (
     QObject,
     QSignalBlocker,
     Qt,
-    pyqtSignal,
 )
 from PyQt6.QtGui import QAction, QKeyEvent
 
@@ -73,7 +72,6 @@ def _connect_action(action, callback):
 
 
 class DatasetTableView(QtWidgets.QTableView):
-    dataDirtied = pyqtSignal()
 
     def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
         super().paintEvent(event)
@@ -513,14 +511,16 @@ class DatasetTableView(QtWidgets.QTableView):
             study_name = qt_text.to_native_text(self.model().data(self.model().index(row, self.model().NAME)))
             form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
-                self.model().set_current_analysis_unit_for_study(
-                    study_index, form.analysis_unit
-                )
-                self.model().update_all_effect_previews()
-                self.model().reset_model()
-                self._enable_analysis_menus_if_appropriate()
-                self.synchronize_column_widths()
-                self.dataDirtied.emit()
+                model = self.model()
+
+                def apply_calculator_result():
+                    model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
+                    model.update_all_effect_previews()
+                    model.reset_model()
+                    self._enable_analysis_menus_if_appropriate()
+                    self.synchronize_column_widths()
+
+                self._main_gui()._commit_model_operation(apply_calculator_result)
         finally:
             del signal_blocker
 

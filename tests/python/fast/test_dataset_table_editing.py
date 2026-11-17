@@ -13,7 +13,7 @@ from rc_metastudio import r_bridge
 
 r_bridge.initialize_r()
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QPersistentModelIndex, Qt
 from PyQt6.QtGui import QColor
 
 from rc_metastudio import dataset_table_model
@@ -191,9 +191,11 @@ def test_bulk_exclusion_does_not_turn_empty_grid_rows_into_saved_studies(tmp_pat
     assert model.setData(model.index(4, model.NAME), "Beta")
     checkbox = Qt.ItemDataRole.CheckStateRole
     assert model.data(model.index(2, model.INCLUDE_STUDY), checkbox) is None
+    existing_cell = QPersistentModelIndex(model.index(0, model.NAME))
 
     model.set_all_studies_included(False)
 
+    assert existing_cell.data() == "Alpha"
     assert model.data(model.index(0, model.INCLUDE_STUDY), checkbox) == Qt.CheckState.Unchecked
     assert model.data(model.index(4, model.INCLUDE_STUDY), checkbox) == Qt.CheckState.Unchecked
     destination = tmp_path / "bulk-exclusion.rcms"

@@ -409,6 +409,70 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
         _close_shell(app, window)
 
 
+def test_failed_calculator_projection_keeps_study_and_history(
+    qapp, monkeypatch, inject_python_boundary,
+):
+    from rc_metastudio import app_error_handler, binary_data_dialog, r_bridge
+
+    replacement = 12.345
+
+    class AcceptCalculatorEdit:
+        def __init__(self, analysis_unit, _arm_names, arm_key, metric, **_kwargs):
+            self.analysis_unit = analysis_unit
+            analysis_unit.set_effect(metric, arm_key, replacement)
+            analysis_unit.set_calculator_source(metric, arm_key, "entered")
+
+        def setWindowTitle(self, _title):
+            pass
+
+        def exec(self):
+            return True
+
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "show_unexpected_error",
+        lambda error, **_kwargs: errors.append(str(error)),
+    )
+    monkeypatch.setattr(binary_data_dialog, "BinaryDataDialog", AcceptCalculatorEdit)
+    app, window = automation.start_automation()
+    try:
+        assert window.open(str(ROOT / "sample_projects" / "amino.rcms"), raise_on_error=True)
+        metric = window.model.current_effect
+        arm_key = window.model.get_current_arm_key()
+
+        def entered_estimate():
+            unit = window.model.get_current_analysis_unit_for_study(0)
+            return unit.get_effect_for_source("entered", metric, arm_key).estimate
+
+        initial_estimate = entered_estimate()
+        scale = r_bridge.binary_convert_scale
+
+        def fail_on_replacement(value, metric_name, **kwargs):
+            if value == replacement:
+                raise RuntimeError("calculator display conversion failed")
+            return scale(value, metric_name, **kwargs)
+
+        with monkeypatch.context() as failure:
+            failure.setattr(r_bridge, "binary_convert_scale", fail_on_replacement)
+            window.tableView.vert_header.sectionClicked.emit(0)
+
+        assert errors == ["calculator display conversion failed"]
+        assert entered_estimate() == initial_estimate
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+
+        window.tableView.vert_header.sectionClicked.emit(0)
+        assert entered_estimate() == replacement
+        assert window.workspace.is_dirty
+        assert window.workspace.can_undo
+        window.undo()
+        assert entered_estimate() == initial_estimate
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+    finally:
+        _close_shell(app, window)
+
+
 def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
     qapp, tmp_path, monkeypatch
 ):
