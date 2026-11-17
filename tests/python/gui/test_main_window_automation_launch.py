@@ -1294,9 +1294,12 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             required(self.callback, "fake signal callback")()
 
     class FakeDialog(object):
-        def __init__(self, plot_params, dialog_image_path, parent=None):
+        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest"):
+            assert plot_type == plot_kind
             calls.append(("dialog", plot_params, dialog_image_path))
             self.applied = FakeSignal()
+            self.sequence_rerun = QtWidgets.QPushButton()
+            self.rerun_requested = FakeSignal()
 
         def plot_params(self):
             return {"fp_outpath": str(image_path)}
@@ -1928,8 +1931,11 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 callback()
 
     class FakeEditPlotDialog(object):
-        def __init__(self, plot_params, image_path, parent=None):
+        def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
+            assert plot_type == "forest"
             self.applied = FakeSignal()
+            self.sequence_rerun = QtWidgets.QPushButton()
+            self.rerun_requested = FakeSignal()
             self._params = {
                 "fp_col1_str": "EDIT TEST HEADING",
                 "fp_outpath": out_path,

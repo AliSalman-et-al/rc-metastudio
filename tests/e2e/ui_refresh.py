@@ -105,6 +105,8 @@ def run(app, window, work, root, record, analyze):
     assert view.result_identity.text() == 'Clinical failure'
     assert view.result_facts.accessibleDescription().endswith('19 studies')
     assert 'Intervention vs Control' in view.result_facts.accessibleDescription()
+    assert 'Random-effects (REML)' in view.result_facts.accessibleDescription()
+    assert 'Restricted maximum likelihood (REML)' in view.result_facts.toolTip()
     scheme = app.styleHints().colorScheme()
     size = view.size()
     view.resize(900, 700)

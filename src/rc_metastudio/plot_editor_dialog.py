@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities, qt_text
+from rc_metastudio import adaptive_window, analysis_identity, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -54,6 +54,7 @@ FOREST_STYLE_DEFAULT_COLORS = {
 
 class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     applied = pyqtSignal()
+    rerun_requested = pyqtSignal()
 
     def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
         super(EditPlotDialog, self).__init__(parent)
@@ -79,16 +80,34 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._option_groups = plot_capabilities.option_groups(option_kind)
         self.study_order = QComboBox(self)
         self.study_order.setAccessibleName("Forest study order")
-        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
-                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
+        cumulative = plot_type == "cumulative_forest"
+        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if plot_type == "leave_one_out_forest" else analysis_identity.FOREST_STUDY_ORDERS
+        for label, key in options:
             self.study_order.addItem(label, key)
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._params.get("fp_study_order", "table"))))
-        self.study_order.setEnabled(plot_type != "cumulative_forest")
-        self.study_order.setToolTip("Display order only; pooled estimates are unchanged. Cumulative analysis follows the input table sequence.")
-        self.study_order_label = QLabel("Study order", self)
+        order = self._params.get("cum_sequence" if cumulative else "fp_study_order", "table")
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._scalar(order))))
+        self.study_order.setEnabled(not cumulative)
+        self.study_order.setToolTip("Changing the addition sequence requires rerunning the analysis." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
+        self.study_order_label = QLabel("Studies added in" if cumulative else "Row order" if plot_type == "leave_one_out_forest" else "Study order", self)
         self.study_order_label.setBuddy(self.study_order)
-        self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
-        self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
+        self.study_order.setAccessibleName(self.study_order_label.text())
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(self.study_order_label, row, 0)
+        self.style_layout.addWidget(self.study_order, row, 1)
+        self.sequence_rerun = QPushButton("Change sequence and rerun…", self)
+        self.sequence_rerun.setVisible(cumulative)
+        self.sequence_rerun.setEnabled(False)
+        self.sequence_rerun.clicked.connect(self._request_sequence_rerun)
+        if cumulative:
+            note = QLabel("Changing the addition sequence requires rerunning the analysis.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, row + 1, 0, 1, 2)
+            self.style_layout.addWidget(self.sequence_rerun, row + 2, 1)
+        self.show_i2 = QCheckBox("Show I² column", self)
+        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
+        self.show_i2.setVisible(plot_type in {"cumulative_forest", "leave_one_out_forest"})
+        self.show_i2.setToolTip("Tables and reports always retain I² from each fitted subset.")
+        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
         self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
         self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
@@ -152,6 +171,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
+
+    def _request_sequence_rerun(self):
+        # Draft appearance goes into the new setup; Cancel leaves this result intact.
+        self.reject()
+        self.rerun_requested.emit()
 
     def _setup_axis_scale(self):
         self.axis_scale = QComboBox(self)
@@ -637,6 +661,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         params = {
             "fp_style": style,
             "fp_axis_scale": self.axis_scale.currentData(),
+            "fp_show_i2": self.show_i2.isChecked(),
             "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
             "fp_favours_left": self.favours_left.text().strip(),
             "fp_favours_right": self.favours_right.text().strip(),

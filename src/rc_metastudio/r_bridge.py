@@ -1395,6 +1395,9 @@ def _held_study_report(metadata, reports, *, digits=None, level=None):
         if data is None:
             continue
         fields, display = data
+        # Sequential rows are pooled subset fits, not individual study effects.
+        if fields.get('forest_variant') in ('cumulative', 'leave-one-out'):
+            continue
         rows = _held_weight_rows(fields, weights)
         if rows is None:
             continue

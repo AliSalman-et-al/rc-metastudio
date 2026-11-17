@@ -378,6 +378,28 @@ def run(app, window, scenario, record):
         record("ratio-analysis-results", view, workflow=workflow, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
         return view
 
+    def sequential_comparison(view, workflow, expected):
+        title = 'Cumulative results' if workflow == 'cumulative' else 'Leave-one-out results'
+        table = next(table for section in view.results.sections for table in section.tables if table.title == title)
+        label_column = table.headers.index('Study added' if workflow == 'cumulative' else 'Study omitted')
+        names = [f"Study {i+1}, {2020+i}" for i in range(12)]
+        labels = names if workflow == 'cumulative' else ['All studies', *names]
+        assert [row[label_column] for row in table.rows] == labels, table.rows
+        roles = {'estimate': 'estimate', 'lower_bound': 'ci_lower',
+                 'upper_bound': 'ci_upper', 'standard_error': 'se'}
+        actual = {}
+        for label, row, reference in zip(labels, table.quantities, expected, strict=True):
+            values = {quantity.role: quantity.value for cell in row for quantity in cell}
+            if reference is None or reference == {}:
+                assert all(role in values and values[role] is None for role in roles.values()), (label, values)
+                assert label in view.texts.get("Non-estimable rows", ""), (label, view.texts)
+            else:
+                for key, value in reference.items():
+                    observed = values[roles[key]]
+                    assert observed is not None and abs(observed-value) <= 1.1e-6, (label, values, reference)
+            actual[label] = values
+        return actual
+
     for suffix in ("fixed", "random"):
         view = analysis("standard", suffix)
         expression = prefix + f'f <- metafor::rma.uni(e$yi, vi=e$vi, method="{"FE" if suffix == "fixed" else "REML"}"); '
@@ -413,18 +435,19 @@ def run(app, window, scenario, record):
         else:
             regions = "c(" + ",".join('"A"' if i % 2 else '"B"' for i in range(12)) + ")[keep]"
             indices = 'lapply(seq_len(nrow(e)), function(i) seq_len(i))' if workflow == "cumulative" else 'lapply(seq_len(nrow(e)), function(i) setdiff(seq_len(nrow(e)),i))'
+            if workflow == "leave-one-out":
+                indices = f'c(list(seq_len(nrow(e))), {indices})'
             if workflow == "subgroup":
                 indices = f'c(lapply(unique({regions}), function(g) which({regions} == g)),list(seq_len(nrow(e))))'
             expression = prefix + f'fits <- lapply({indices}, function(ix) metafor::rma.uni(e$yi[ix],vi=e$vi[ix],method="REML")); '
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
-            actual = _parse_result_table(view.texts["Subgroup Summary" if workflow == "subgroup" else "Sequential Summary"])
-            names = [f"Study {i+1}" for i in range(12)]
-            labels = (["B", "A", "Overall"] if workflow == "subgroup" else
-                      [f"{name} (k = {i+1})" if workflow == "cumulative" else f"Study omitted: {name}"
-                       for i, name in enumerate(names)])
-            for label, row in zip(labels, expected, strict=True):
-                for key, value in row.items():
-                    assert abs(actual[f"model.{_result_row_key(label)}.{key}"]-value) <= 1.1e-6, (label, actual, expected)
+            if workflow == "subgroup":
+                actual = _parse_result_table(view.texts["Subgroup Summary"])
+                for label, row in zip(("B", "A", "Overall"), expected, strict=True):
+                    for key, value in row.items():
+                        assert abs(actual[f"model.{_result_row_key(label)}.{key}"]-value) <= 1.1e-6, (label, actual, expected)
+            else:
+                actual = sequential_comparison(view, workflow, expected)
             record("ratio-workflow-metafor-comparison", view, workflow=workflow, actual=actual, expected=expected)
         plots(app, window, "regression" if workflow == "meta-regression" else workflow, record, view=view)
         app.processEvents()
@@ -470,20 +493,19 @@ def run(app, window, scenario, record):
             if workflow == "cumulative":
                 assert "zero total events" in "\n".join(view.texts.values())
             indices = 'lapply(1:12,function(i)seq_len(i))' if workflow == "cumulative" else 'lapply(1:12,function(i)setdiff(1:12,i))'
+            if workflow == "leave-one-out":
+                indices = f'c(list(1:12), {indices})'
             if workflow == "subgroup":
                 indices = 'list(seq(1,12,2),seq(2,12,2),1:12)'
             expression = f'x1 <- {vector(0)}; t1 <- {vector(1)}; x2 <- {vector(2)}; t2 <- {vector(3)}; fits <- lapply({indices},function(ix) {{ if(sum(x1[ix])==0 || sum(x2[ix])==0)return(NULL); f <- metafor::rma.mh(measure="IRR",x1i=x1[ix],t1i=t1[ix],x2i=x2[ix],t2i=t2[ix],add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se) }}); jsonlite::toJSON(fits,auto_unbox=TRUE,digits=16)'
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
-            actual = _parse_result_table(view.texts["Subgroup Summary" if workflow == "subgroup" else "Sequential Summary"])
-            labels = (["B", "A", "Overall"] if workflow == "subgroup" else
-                      [f"Study {i+1}, {2020+i} (k = {i+1})" if workflow == "cumulative" else f"Study omitted: Study {i+1}, {2020+i}"
-                       for i in range(12)])
-            for label, row in zip(labels, expected, strict=True):
-                if row is None or row == {}:
-                    assert label in view.texts["Non-estimable rows"]
-                    continue
-                for key, value in row.items():
-                    assert abs(actual[f"model.{_result_row_key(label)}.{key}"] - value) <= 1.1e-6, (label, actual, expected)
+            if workflow == "subgroup":
+                actual = _parse_result_table(view.texts["Subgroup Summary"])
+                for label, row in zip(("B", "A", "Overall"), expected, strict=True):
+                    for key, value in row.items():
+                        assert abs(actual[f"model.{_result_row_key(label)}.{key}"] - value) <= 1.1e-6, (label, actual, expected)
+            else:
+                actual = sequential_comparison(view, workflow, expected)
             record("ratio-mh-workflow-metafor-comparison", view, workflow=workflow, actual=actual, expected=expected)
             view.close(); app.processEvents()
         # Restore mixed sources before saving the durable inspection fixture.

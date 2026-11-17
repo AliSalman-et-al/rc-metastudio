@@ -6,6 +6,9 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
 cum.ma.binary <- function(fname, binary.data, params){
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
 
+    params$cum_sequence_index <- rcmetar.cumulative.sequence(binary.data, params$cum_sequence)
+    binary.data <- get.subset(binary.data, params$cum_sequence_index)
+
     suppressed_params <- params
 	suppressed_params$supress.output <- TRUE
     res <- .rcmetar.call.method(fname, binary.data, suppressed_params)
@@ -14,21 +17,7 @@ cum.ma.binary <- function(fname, binary.data, params){
     cum.results <- array(list(NULL), dim=c(length(binary.data@study.names)))
 
     for (i in 1:length(binary.data@study.names)){
-        subset_effects <- binary.data@y[1:i]
-        subset_standard_errors <- binary.data@SE[1:i]
-        subset_study_names <- binary.data@study.names[1:i]
-        subset_binary_data <- NULL
-        if (length(binary.data@g1O1) > 0){
-            subset_g1O1 <- binary.data@g1O1[1:i]
-            subset_g1O2 <- binary.data@g1O2[1:i]
-            subset_g2O1 <- binary.data@g2O1[1:i]
-            subset_g2O2 <- binary.data@g2O2[1:i]
-            subset_binary_data <- new('BinaryData', g1O1=subset_g1O1,
-                               g1O2=subset_g1O2 , g2O1=subset_g2O1,
-                               g2O2=subset_g2O2, y=subset_effects, SE=subset_standard_errors, study.names=subset_study_names)
-        } else {
-            subset_binary_data <- new('BinaryData', y=subset_effects, SE=subset_standard_errors, study.names=subset_study_names)
-        }
+        subset_binary_data <- get.subset(binary.data, seq_len(i))
         current_result <- .rcmetar.call.method(fname, subset_binary_data, suppressed_params)
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
@@ -77,7 +66,7 @@ cum.ma.binary <- function(fname, binary.data, params){
 
 construct.sequential.res.output <- function(seq.res, value.info, replacements=list()) {
 
-	value.names <- names(value.info)
+	value.names <- unique(c(names(value.info), "k", "I2"))
 	results.table <- c()
 
 	get.val<-function(x) {
@@ -87,7 +76,7 @@ construct.sequential.res.output <- function(seq.res, value.info, replacements=li
 			val <- x[[name]]
 
 		if (is.null(val))
-			val <- NA
+			val <- NA_real_
 		val
 	}
 
@@ -488,6 +477,9 @@ loo.ma.binary <- function(fname, binary.data, params){
 cum.ma.continuous <- function(fname, cont.data, params){
     if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
+    params$cum_sequence_index <- rcmetar.cumulative.sequence(cont.data, params$cum_sequence)
+    cont.data <- get.subset(cont.data, params$cum_sequence_index)
+
     suppressed_params <- params
 	suppressed_params$supress.output <- TRUE
     res <- .rcmetar.call.method(fname, cont.data, suppressed_params)
@@ -500,28 +492,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
     cum.results <- array(list(NULL), dim=c(length(cont.data@study.names)))
 
     for (i in 1:length(cont.data@study.names)){
-        subset_effects <- cont.data@y[1:i]
-        subset_standard_errors <- cont.data@SE[1:i]
-        subset_study_names <- cont.data@study.names[1:i]
-        subset_continuous_data <- NULL
-        if (length(cont.data@N1) > 0){
-            subset_N1 <- cont.data@N1[1:i]
-            subset_mean1 <- cont.data@mean1[1:i]
-            subset_sd1 <- cont.data@sd1[1:i]
-            subset_N2 <- cont.data@N2[1:i]
-            subset_mean2 <- cont.data@mean2[1:i]
-            subset_sd2 <- cont.data@sd2[1:i]
-            subset_continuous_data <- new('ContinuousData',
-                               N1=subset_N1, mean1=subset_mean1 , sd1=subset_sd1,
-                               N2=subset_N2, mean2=subset_mean2, sd2=subset_sd2,
-                               y=subset_effects, SE=subset_standard_errors,
-                               study.names=subset_study_names)
-        }
-        else{
-            subset_continuous_data <- new('ContinuousData',
-                                y=subset_effects, SE=subset_standard_errors,
-                                study.names=subset_study_names)
-        }
+        subset_continuous_data <- get.subset(cont.data, seq_len(i))
         current_result <- .rcmetar.call.method(fname, subset_continuous_data, suppressed_params)
         current_overall <- .rcmetar.call.overall(fname, current_result)
         cum.results[[i]] <- current_overall
@@ -573,7 +544,10 @@ cum.ma.continuous <- function(fname, cont.data, params){
 cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
-	suppressed_params <- params
+	params$cum_sequence_index <- rcmetar.cumulative.sequence(diagnostic.data, params$cum_sequence)
+    diagnostic.data <- get.subset(diagnostic.data, params$cum_sequence_index)
+
+    suppressed_params <- params
 	suppressed_params$create.plot <- FALSE
 	suppressed_params$write.to.file <- FALSE
 	res <- .rcmetar.call.method(fname, diagnostic.data, suppressed_params)
@@ -583,23 +557,8 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	cum.results <- array(list(NULL), dim=c(length(diagnostic.data@study.names)))
 
 	for (i in 1:length(diagnostic.data@study.names)){
-		subset_effects <- diagnostic.data@y[1:i]
-		subset_standard_errors <- diagnostic.data@SE[1:i]
-		subset_study_names <- diagnostic.data@study.names[1:i]
-		subset_binary_data <- NULL
-
-		if (length(diagnostic.data@TP) > 0){
-			subset_TP <- diagnostic.data@TP[1:i]
-			subset_FN <- diagnostic.data@FN[1:i]
-			subset_FP <- diagnostic.data@FP[1:i]
-			subset_TN <- diagnostic.data@TN[1:i]
-			subset_diagnostic_data <- new('DiagnosticData', TP=subset_TP,
-					FN=subset_FN , FP=subset_FP,
-					TN=subset_TN, y=subset_effects, SE=subset_standard_errors, study.names=subset_study_names)
-		} else {
-			subset_diagnostic_data <- new('DiagnosticData', y=subset_effects, SE=subset_standard_errors, study.names=subset_study_names)
-		}
-		current_result <- .rcmetar.call.method(fname, subset_diagnostic_data, suppressed_params)
+        subset_diagnostic_data <- get.subset(diagnostic.data, seq_len(i))
+        current_result <- .rcmetar.call.method(fname, subset_diagnostic_data, suppressed_params)
 		current_overall <- .rcmetar.call.overall(fname, current_result)
 		cum.results[[i]] <- current_overall
 	}

@@ -2553,6 +2553,7 @@ try:
 
         run(app, window, WORK, ROOT, record_step, analyze)
     elif scenario == "review-workflows":
+        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
         from tests.e2e.analysis_settings_workflows import run
 
         run(app, window, ROOT, record_step, analyze)

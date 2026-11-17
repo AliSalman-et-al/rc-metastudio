@@ -29,7 +29,9 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
   load(file.path(directory, '0.res'), env)
   load(file.path(directory, '0.params'), env)
   tables <- jsonlite::read_json(file.path(directory, 'tables.json'), simplifyVector=FALSE)
-  table <- Filter(function(t) t$title %in% c('Model Results', 'Regression coefficients'), tables)[[1]]
+  table.title <- switch(label, cumulative='Cumulative results',
+    `leave-one-out`='Leave-one-out results', `meta-regression`='Regression coefficients', 'Model Results')
+  table <- Filter(function(t) t$title == table.title, tables)[[1]]
   transform <- if (label == 'continuous' || label == 'meta-regression') identity else exp
   if (label %in% c('binary', 'continuous', 'HR', 'IRR', 'meta-regression')) {
     reference <- refit(env$om.data, env$res)

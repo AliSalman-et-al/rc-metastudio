@@ -619,7 +619,7 @@ adjusted_means_display <- function(res, params, display.data) {
 
 rcmetar.sequential.labels <- function(study.names, workflow, has.overall) {
   if (identical(workflow, "cumulative")) {
-    return(sprintf("%s (k = %d)", study.names, seq_along(study.names)))
+    return(study.names)
   }
   c(if (has.overall) "All studies", study.names)
 }
@@ -637,7 +637,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   scale.str <- get.scale(params)
   overall.array <- array(dim=c(length(study.names) + 1, 6))
 
-  overall.array[1,] <- c(if (workflow == "cumulative") "Study added (k)" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
+  overall.array[1,] <- c(if (workflow == "cumulative") "Study added" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
   raw <- matrix(NA_real_, nrow=length(study.names), ncol=5)
 
   for (count in 1:length(res)) {
@@ -661,10 +661,25 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     overall.array[count+1,] <- c(study.names[count], y.disp, lb.disp, ub.disp, se.disp, pVal)
   }
 
-  table.titles <- c("Model Results")
-  overall.array <- rcmetar.numeric.fields(overall.array, 2:6, c("estimate", "ci_lower", "ci_upper", "se", "p"),
-    raw, c("display", "display", "display", rcmetar.analysis.scale(params), ""),
-    c(NA, display.confidence.level(params), display.confidence.level(params), NA, NA))
+  k <- rcmetar.result.vector(res, "k")
+  i2 <- rcmetar.result.vector(res, "I2")
+  overall.array <- cbind(overall.array[,1], c("k", ifelse(is.finite(k), as.character(k), "\u2014")),
+    overall.array[,2:6], c("I\u00b2", rcmetar.sequential.i2.labels(res)))
+  raw <- cbind(k, raw, i2)
+  columns <- 2:8
+  roles <- c("k", "estimate", "ci_lower", "ci_upper", "se", "p", "i2")
+  scales <- c("", "display", "display", "display", rcmetar.analysis.scale(params), "", "percent")
+  levels <- c(NA, NA, display.confidence.level(params), display.confidence.level(params), NA, NA, NA)
+  if (workflow == "cumulative") {
+    overall.array <- cbind(c("Step", as.character(seq_along(res))), overall.array)
+    raw <- cbind(seq_along(res), raw)
+    columns <- c(1L, columns+1L)
+    roles <- c("value", roles)
+    scales <- c("", scales)
+    levels <- c(NA, levels)
+  }
+  table.titles <- if (workflow == "cumulative") "Cumulative results" else "Leave-one-out results"
+  overall.array <- rcmetar.numeric.fields(overall.array, columns, roles, raw, scales, levels)
   arrays <- list(arr1=overall.array)
   overall.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
              "MAResults" = res )

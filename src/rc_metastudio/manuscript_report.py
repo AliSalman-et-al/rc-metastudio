@@ -2,6 +2,7 @@
 from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
 import re
+import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
 from rc_metastudio.application_metadata import CITATION_DOI, citation_text
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
@@ -35,7 +36,7 @@ def binary_correction_prose(method, adjust, label, double_zero):
     return text
 
 
-def methods_prose(metric, model, parameters, confidence, workflow, details, fits, applied_inference=""):
+def methods_prose(metric, model, parameters, confidence, workflow, details, fits, applied_inference="", *, missing_years=False):
     from rc_metastudio.analysis_method_labels import parameter_value_display_label
     plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
               "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, (metric[:1].upper() + metric[1:]) + " estimates")
@@ -74,7 +75,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
                            't': 'the t distribution', 'knha': 'the Knapp–Hartung adjustment',
                            'adhoc': 'the modified Knapp–Hartung adjustment'}.get(inference, parameter_value_display_label('inference.method', inference))
             parts.append(f"Confidence intervals ({float(confidence):g}%) used {description}.")
-    parts.extend(_workflow_prose(workflow, parameters, details))
+    parts.extend(_workflow_prose(workflow, parameters, details, missing_years=missing_years))
     if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
         parts.append('Regression coefficients and their confidence intervals are on the log scale.')
     if any('reitsma' in method.lower() for _, method, _ in fits):
@@ -351,6 +352,10 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
     if section.source_key == 'Weights' or table.title == 'Study weights':
         return level, statistic
     lower, upper, ci_level = _interval_fields(table)
+    if table.title in ('Cumulative results', 'Leave-one-out results'):
+        if table.rows and lower and upper:
+            _sequential_prose(result, section, table, lower, upper, ci_level, summary)
+        return ci_level or level, statistic
     if lower and upper and ci_level.endswith(' PI'):
         context = section.title.removesuffix(' summary') if ',' in result.manuscript_metric else ''
         _prediction_rows(table, lower, upper, ci_level, vertical, fit, summary, context)
@@ -366,6 +371,80 @@ def _report_table(result, section, table, summary, pooled, fit, level, statistic
         return level, statistic
     _fit_table(table, fit, summary)
     return level, statistic
+
+
+def _sequential_prose(result, section, table, lower, upper, level, summary):
+    cumulative = table.title == 'Cumulative results'
+    label = 'Study added' if cumulative else 'Study omitted'
+    records = [_row(table, i) for i in range(len(table.rows))]
+    metric = _effect_metric(result.manuscript_metric or 'effect', section, table, False, False)
+    def has_estimate(record):
+        return any(q.role == 'estimate' and q.value is not None and math.isfinite(q.value)
+                   for q in record[1].get('Estimate', ()))
+    reference = records[-1] if cumulative else records[0]
+    if reference is not None and has_estimate(reference):
+        values, _ = reference
+        lead = 'After the final addition' if cumulative else 'With all studies'
+        heterogeneity = f"; I² = {values['I²']}" if values.get('I²') not in (None, '', '—', 'NA') else ''
+        summary.append(f"{lead}, the pooled {metric} was {values['Estimate']} ({level} {values[lower]} to {values[upper]}{heterogeneity}).")
+    subsets = records if cumulative else records[1:]
+    estimable = [row for row in subsets if has_estimate(row)]
+    if not cumulative:
+        def endpoints(field, role):
+            available = [(values, next((q.value for q in qs.get(field, ()) if q.role == role and q.value is not None and math.isfinite(q.value)), None))
+                         for values, qs in estimable]
+            available = [(values, number) for values, number in available if number is not None]
+            if not available:
+                return '', False, 0
+            low, high = min(available, key=lambda pair: pair[1]), max(available, key=lambda pair: pair[1])
+            if low[1] == high[1]:
+                return low[0][field], False, len(available)
+            def endpoint(item):
+                ties = sum(number == item[1] for _, number in available) - 1
+                suffix = f'; tied with {ties} other omission' + ('s' if ties != 1 else '') if ties else ''
+                return f"{item[0][field]} (omitting {item[0][label]}{suffix})"
+            return endpoint(low) + ' to ' + endpoint(high), True, len(available)
+        effect_range, varied, count = endpoints('Estimate', 'estimate')
+        denominator = f'all {len(subsets)} omission fits' if count == len(subsets) else f'the {count} of {len(subsets)} omission fits that could be estimated'
+        if effect_range:
+            summary.append(f"Across {denominator}, pooled estimates ranged from {effect_range}." if varied else
+                           f"Every estimable omission fit ({count} of {len(subsets)}) gave a pooled estimate of {effect_range}.")
+        i2_range, varied, count = endpoints('I²', 'i2')
+        if i2_range:
+            if count != len(subsets):
+                summary.append(f'I² was reported for {count} of {len(subsets)} omission fits.')
+            summary.append(f"I² after omission ranged from {i2_range}." if varied else
+                           f"I² was {i2_range} in every omission fit" + ('.' if count == len(subsets) else ' reporting it.'))
+    missing = [values[label] for values, quantities in subsets if not has_estimate((values, quantities))]
+    if missing:
+        context = 'after adding' if cumulative else 'after omitting'
+        summary.append(f"The model could not be estimated {context} " + '; '.join(missing) + '. See the detailed rows and analysis notes.')
+    sequential_tables = [(s, t) for s in result.sections for t in s.tables
+                         if t.title in {'Cumulative results', 'Leave-one-out results'}]
+    number = next(i for i, (s, t) in enumerate(sequential_tables, 1) if s is section and t is table)
+    summary.append(f'Table {number} gives the estimate, {level} and I² after each addition.' if cumulative else f'Table {number} gives every omission fit.')
+
+
+def _sequential_report_table(table, title):
+    lower, upper, level = _interval_fields(table)
+    headers = list(table.headers)
+    start = headers.index(lower)
+    headers[start] = level
+    headers.remove(upper)
+    headers = ['P' if header == 'p-value' else header for header in headers]
+    rows = []
+    for index in range(len(table.rows)):
+        values, quantities = _row(table, index)
+        cells = []
+        for header in headers:
+            if header == level:
+                cells.append((values[lower] + ' to ' + values[upper], quantities[lower] + quantities[upper]))
+            else:
+                key = 'p-value' if header == 'P' else header
+                text = p_value(values[key], quantities.get(key, ())) if header == 'P' else values[key]
+                cells.append((text, quantities.get(key, ())))
+        rows.append(cells)
+    return _table(title, headers, rows)
 
 
 def _section_statistics(section):
@@ -395,6 +474,17 @@ def _report_sections(result, summary, methods):
                 continue
             level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     primary = _primary_sections(result, text_sections, pooled, fit, level, statistic)
+    sequential = []
+    for section in text_sections:
+        for table in section.tables:
+            if table.title not in ('Cumulative results', 'Leave-one-out results'):
+                continue
+            title = table.title + (' — ' + section.title.removesuffix(' summary') if ',' in result.manuscript_metric else '')
+            note = 'Note: k is the number of studies in the fitted model; it can be smaller than the number entered when the package excludes non-estimable study effects.'
+            sequential.append(replace(section, title=table.title, paragraphs=(note,),
+                                      tables=(_sequential_report_table(table, title),)))
+    if sequential:
+        primary = sequential + [section for section in primary if section.title == 'Model fit']
     represented = {q for section in primary for table in section.tables
                    for row in table.quantities for cell in row for q in cell}
     supplementary = []
@@ -407,6 +497,7 @@ def _report_sections(result, summary, methods):
             transferred = table.title.rsplit(' — ', 1)[-1] in {
                 'Model Results', 'Study weights', 'Heterogeneity',
                 'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences',
+                'Cumulative results', 'Leave-one-out results',
             }
             if not (transferred and quantities and quantities <= represented):
                 tables.append(table)
@@ -418,6 +509,9 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     template = text_sections[0]
     primary_title = 'Diagnostic summary' if result.analysis_method == 'diagnostic.reitsma' else 'Pooled effect'
     notes = _prediction_notes(text_sections)
+    if any(t.title in {'Cumulative results', 'Leave-one-out results'} for s in text_sections for t in s.tables):
+        return [replace(template, title='Model fit', paragraphs=notes,
+                        tables=(_table('Model fit', ('Statistic', 'Value'), fit),))] if fit else []
     sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
                          ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
                         tables=(_pooled_table(primary_title, pooled, level, statistic),)),
@@ -580,7 +674,7 @@ def paint_figure(painter, source, rect):
         painter.drawImage(rect, source)
 
 
-def _workflow_prose(workflow, parameters, details):
+def _workflow_prose(workflow, parameters, details, *, missing_years=False):
     parts = []
     if workflow == 'subgroup':
         parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
@@ -589,9 +683,14 @@ def _workflow_prose(workflow, parameters, details):
         if moderators:
             parts.append(f"The meta-regression model included {moderators}.")
     elif workflow == 'cumulative':
-        parts.append('Cumulative meta-analysis added one study at a time in study table order.')
+        sequence = {'table': 'study table order', 'year': 'publication-year order (earliest first)',
+                    'effect': 'ascending order of the individual study effect estimates'}.get(parameters.get('cum_sequence', 'table'), 'study table order')
+        sentence = f'Cumulative meta-analysis refitted the model after each study was added in {sequence}'
+        if parameters.get('cum_sequence') == 'year' and missing_years:
+            sentence += '; studies without a year were added last, in table order'
+        parts.append(sentence + '.')
     elif workflow == 'leave-one-out':
-        parts.append('Leave-one-out analyses were performed by omitting each study in turn.')
+        parts.append('Leave-one-out analyses refitted the model after omitting each study in turn. Each fit’s pooled estimate and confidence interval are reported, with I² where the package reports it.')
     return parts
 
 

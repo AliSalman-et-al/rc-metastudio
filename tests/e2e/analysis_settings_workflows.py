@@ -157,7 +157,116 @@ def run(app, window, root, record, analyze):
     window.cum_ma()
     app.processEvents()
     dialog = setup()
-    assert not dialog.study_order.isEnabled()
-    assert "current table order" in dialog.study_order.toolTip()
+    assert dialog.study_order.isEnabled()
+    assert [dialog.study_order.itemData(i) for i in range(dialog.study_order.count())] == ['table', 'year', 'effect']
+    assert dialog.study_order_label.text() == 'Add studies in'
+    assert dialog.show_i2.isChecked()
+    # The amino effect-ordered REML prefixes can fail to converge in metafor.
+    # Use an explicit FE fit to prove successful sequence/rerun preservation;
+    # the independent prefix oracle separately exercises REML sequences.
+    dialog.method_cbo_box.setCurrentText(next(label for label, method in dialog.available_method_d.items()
+                                            if method == 'binary.fixed.inv.var'))
+    app.processEvents()
     record("review-cumulative-order", dialog, explanation=dialog.study_order.toolTip())
+    dialog.study_order.setCurrentIndex(dialog.study_order.findData('year'))
+    view = submit(dialog)
+    assert_report(view)
+    assert view.manuscript.results.count('the pooled odds ratio was') == 1
+    assert 'publication-year order' in view.manuscript.methods
+    assert ('studies without a year' in view.manuscript.methods) == any(not study.year for study in window.model.get_studies())
+    sequential = [t for s in view.manuscript.sections for t in s.tables if t.title == 'Cumulative results']
+    assert len(sequential) == 1 and len(sequential[0].rows) == len(window.model.get_studies())
+    assert {'Step', 'Study added', 'k', 'I²'} <= set(sequential[0].headers)
+    record('review-cumulative-forest', view, plots=dict(view.results.display_images))
+    view.report_action.setChecked(True)
+    record('review-cumulative-summary', view, text=view.manuscript.results, plots=dict(view.results.display_images))
+    from advanced_workflows import modal, click
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    original_plot = Path(next(iter(view.results.display_images.values())))
+    original_bytes = original_plot.read_bytes()
+    original_last = sequential[0].rows[-1]
+    def change_sequence(editor):
+        assert not editor.study_order.isEnabled() and editor.study_order.currentData() == 'year'
+        editor.style_cbo.setCurrentText('BMJ')
+        editor.show_i2.setChecked(False)
+        record('review-sequence-rerun-draft', editor)
+        click(app, editor.sequence_rerun)
+    view.report_action.trigger()
+    modal(app, EditPlotDialog, change_sequence, view.edit_plot_action.trigger)
+    dialog = setup()
+    assert dialog.style_cbo.currentText() == 'BMJ' and not dialog.show_i2.isChecked()
+    assert dialog.study_order.currentData() == 'year'
     dialog.reject()
+    assert original_plot.read_bytes() == original_bytes
+    modal(app, EditPlotDialog, change_sequence, view.edit_plot_action.trigger)
+    dialog = setup()
+    dialog.study_order.setCurrentIndex(dialog.study_order.findData('effect'))
+    changed = submit(dialog)
+    assert_report(changed)
+    changed_table = next(t for s in changed.manuscript.sections for t in s.tables if t.title == 'Cumulative results')
+    assert changed_table.rows[0] != sequential[0].rows[0]
+    for header in ('Estimate', '95% CI', 'I²'):
+        index = changed_table.headers.index(header)
+        assert changed_table.rows[-1][index] == original_last[index]
+    assert original_plot.read_bytes() == original_bytes
+    record('review-effect-sequence-rerun', changed, plots=dict(changed.results.display_images))
+    changed_bytes = Path(next(iter(changed.results.display_images.values()))).read_bytes()
+    existing = {id(w) for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow)}
+    changed.change_settings_action.trigger()
+    app.processEvents()
+    failed = setup()
+    failed.method_cbo_box.setCurrentText(next(label for label, method in failed.available_method_d.items()
+                                            if method == 'binary.random'))
+    app.processEvents()
+    from analysis_matrix import set_parameter
+    set_parameter(app, failed, 'rm.method', 'REML')
+    mouse_click(required(failed.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert failed.isVisible() and failed.analysis_error_panel.isVisible()
+    assert 'did not converge' in failed.analysis_error_details.toPlainText()
+    assert {id(w) for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow)} == existing
+    assert Path(next(iter(changed.results.display_images.values()))).read_bytes() == changed_bytes
+    record('review-package-convergence-error', failed, details=failed.analysis_error_details.toPlainText())
+    failed.reject()
+    changed.close()
+    view.close()
+
+    window.loo_ma()
+    app.processEvents()
+    dialog = setup()
+    assert [dialog.study_order.itemData(i) for i in range(dialog.study_order.count())] == ['table', 'year', 'effect', 'i2']
+    assert dialog.study_order_label.text() == 'Row order'
+    dialog.study_order.setCurrentIndex(dialog.study_order.findData('i2'))
+    view = submit(dialog)
+    assert_report(view)
+    assert view.manuscript.results.count('The pooled odds ratio was') <= 1
+    assert 'omission fits' in view.manuscript.results
+    sequential = [t for s in view.manuscript.sections for t in s.tables if t.title == 'Leave-one-out results']
+    assert len(sequential) == 1 and len(sequential[0].rows) == len(window.model.get_studies()) + 1
+    assert {'Study omitted', 'k', 'I²'} <= set(sequential[0].headers)
+    assert not any(t.title == 'Study weights' for s in view.results.sections for t in s.tables)
+    record('review-leave-one-out-forest', view, plots=dict(view.results.display_images))
+    view.report_action.setChecked(True)
+    record('review-leave-one-out-summary', view, text=view.manuscript.results, plots=dict(view.results.display_images))
+    path = next(iter(view.params_paths.values()))
+    def saved_plot():
+        r_bridge.load_in_r(str(path) + '.plotdata')
+        return json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(order=plot.data$display_order, i2=vapply(plot.data$res,function(f)f$I2,numeric(1)), effect=plot.data$effect$yi, headers=plot.data$ilab$headers),digits=16)')[0]))
+    before = saved_plot()
+    assert before['order'] == [1, *[i + 2 for i in sorted(range(len(before['i2']) - 1), key=lambda i: (before['i2'][i + 1], i))]]
+    view.report_action.trigger()
+    def edit_omissions(editor):
+        assert editor.study_order.currentData() == 'i2'
+        editor.study_order.setCurrentIndex(editor.study_order.findData('effect'))
+        editor.show_i2.setChecked(False)
+        click(app, editor.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+        assert editor._commit_error.isHidden(), editor._commit_error.text()
+        record('review-omission-display-only-edit', editor)
+        editor.reject()
+    modal(app, EditPlotDialog, edit_omissions, view.edit_plot_action.trigger)
+    after = saved_plot()
+    assert after['headers'] == ['k']
+    assert after['effect'] == before['effect'] and after['i2'] == before['i2']
+    assert after['order'] == [1, *[i + 2 for i in sorted(range(len(after['effect']) - 1), key=lambda i: (after['effect'][i + 1], i))]]
+    record('review-omission-effect-sorted', view, plots=dict(view.results.display_images), fit_values=after)
+    view.close()

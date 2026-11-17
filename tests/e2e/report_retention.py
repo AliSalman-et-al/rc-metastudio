@@ -206,6 +206,8 @@ def expected_pooled(result):
 def expected_effect_rows(result, section, overall, calculation):
     rows = []
     for table in section.tables:
+        if table.title in ('Cumulative results', 'Leave-one-out results'):
+            continue
         vertical = table.headers == ('Statistic', 'Value') and 'Estimate' in dict(table.rows)
         headers = tuple(dict(table.rows)) if vertical else table.headers
         values = [dict(table.rows)] if vertical else [dict(zip(headers, row)) for row in table.rows]
@@ -243,6 +245,8 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
 
 
 def expected_studies(result):
+    if any(t.title in {'Cumulative results', 'Leave-one-out results'} for s in result.sections for t in s.tables):
+        return ()
     rows = []
     for section in result.sections:
         for table in section.tables:
@@ -409,7 +413,7 @@ def assert_report(view):
         assert studies.rows == expected
     for section in view.results.sections:
         for source in section.tables:
-            if source.title in ('Model Results', 'Study weights', 'Heterogeneity', 'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences'):
+            if source.title in ('Model Results', 'Study weights', 'Heterogeneity', 'Residual heterogeneity', 'Test for overall effect', 'Prediction interval', 'Test of subgroup differences', 'Cumulative results', 'Leave-one-out results'):
                 title = section.title + ' — ' + source.title
                 retained = any(table.title == title for s in view.manuscript.sections for table in s.tables)
                 if not retained:

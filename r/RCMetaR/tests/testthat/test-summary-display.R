@@ -281,8 +281,9 @@ test_that("overall display leaves unavailable p-values blank", {
   display <- overall_display_fixture()
   overall <- display$arrays$arr1
 
-  expect_equal(overall[2, 6], "")
-  expect_equal(overall[3, 6], "0.277")
+  p.column <- match("p-value", overall[1,])
+  expect_equal(overall[2, p.column], "")
+  expect_equal(overall[3, p.column], "0.277")
 })
 
 regression_display_fixture <- function(method = "REML", inference.method = "z", conf.level = 95) {
@@ -356,7 +357,7 @@ test_that("result tables identify their configured confidence level", {
 
   overall <- overall_display_fixture(conf.level = 90)
   expect_equal(
-    unname(overall$arrays$arr1[1, 3:4]),
+    unname(overall$arrays$arr1[1, 5:6]),
     c("Lower bound (90% CI)", "Upper bound (90% CI)")
   )
 

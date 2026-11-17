@@ -376,7 +376,7 @@
     estimate <- .small.study.test.coefficient(fit)
     ess <- 4 * fit.model$n.e * fit.model$n.c / (fit.model$n.e + fit.model$n.c)
     list(
-        method="Deeks test (meta implementation)", role=entry$role, package="meta",
+        method="deeks", role=entry$role, package="meta",
         package.version=utils::packageDescription("meta")$Version,
         call=paste0("meta::metabin(event.e=TP, n.e=TP+FN, event.c=FP, n.c=FP+TN, sm='OR', incr=0.5, method.incr='", .small.study.correction.method(params), "', common=TRUE, random=TRUE, method.tau='REML', level=", .small.study.meta.level(confidence.level), "); meta::metabias(x=prepared.DOR.model, method.bias='Deeks', k.min=", k.min, ", level=", .small.study.meta.level(confidence.level), ")"),
         predictor="1/sqrt(ESS), ESS = 4 \u00d7 diseased total \u00d7 non-diseased total / (diseased total + non-diseased total)", weighting="native ESS weights",

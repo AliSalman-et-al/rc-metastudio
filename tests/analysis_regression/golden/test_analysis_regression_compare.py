@@ -1510,6 +1510,40 @@ def test_scoped_text_exception_rejects_arbitrary_replacement(text):
     assert not compare_golden_baseline(reference, current, [exception])["passed"]
 
 
+@pytest.mark.parametrize("change", ["before_hash", "after_hash", "name", "type", "metadata", "label", "missing", "numeric", "other_case", "invalid_hash"])
+def test_scoped_plot_redesign_requires_exact_artifact_and_preserves_other_checks(change):
+    reference, current = _baseline(), _current()
+    expected, actual = reference["curated_golden_set"][0], current["curated_golden_set"][0]
+    expected["tool_versions"] = actual["tool_versions"] = {"os": "Windows"}
+    actual["artifacts"][0]["sha256"] = "b" * 64
+    before = {"label": "Forest Plot", "name": "reference.png", "type": "png", "sha256": "a" * 64, "metadata": {"kind": "plot"}}
+    after = {**before, "sha256": "b" * 64}
+    exception = {"id": "reviewed-plot", "ids": [expected["id"]],
+        "accepted_classifications": [TEXT_ARTIFACT_DRIFT],
+        "accepted_details": ["Artifact Forest Plot descriptor or content changed under the same-platform exact artifact policy (Windows)."],
+        "accepted_artifacts": {"Forest Plot": {"before": before, "after": after}}}
+    assert compare_golden_baseline(reference, current, [exception])["passed"]
+    if change == "before_hash":
+        expected["artifacts"][0]["sha256"] = "c" * 64
+    elif change == "after_hash":
+        actual["artifacts"][0]["sha256"] = "c" * 64
+    elif change in {"name", "type"}:
+        actual["artifacts"][0]["path"] = "changed.png" if change == "name" else "reference.svg"
+    elif change == "metadata":
+        actual["artifacts"][0]["kind"] = "changed"
+    elif change == "label":
+        actual["artifacts"][0]["label"] = "Other Plot"
+    elif change == "missing":
+        actual["artifacts"] = []
+    elif change == "numeric":
+        actual["outputs"]["Summary"]["estimate"] = 999
+    elif change == "other_case":
+        expected["id"] = actual["id"] = "unreviewed-case"
+    elif change == "invalid_hash":
+        actual["artifacts"][0]["sha256"] = after["sha256"] = "invalid"
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]
+
+
 
 def test_standalone_extended_cases_require_frozen_numbers(monkeypatch):
     from tests.analysis_regression.golden.support import golden_analysis as golden

@@ -9,6 +9,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Added persistent System, Light and Dark appearance choices.
 - Added a shared plot-export dialog with format, proportional dimensions, units and raster resolution controls.
 - Added a native citation dialog with copying and BibTeX, RIS and EndNote exports.
+- Added cumulative sequencing by publication year or study effect, leave-one-out ordering by the pooled effect or I² after omission, and per-fit k/I² forest columns.
 
 ### Changed
 
@@ -16,6 +17,8 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Improved About with a legible logo, runtime versions, website link and copyable debug information.
 - Standardized application copy, report intervals, statistical headings and numbered citations; made the RC MetaStudio Zenodo citation the first reference.
 - Removed redundant report tables, obsolete controls, unreachable dialogs and unused Python and R helpers.
+- Replaced repetitive sequential Results prose with concise summaries and complete labelled tables; added all-studies reference fits to HR/IRR leave-one-out analyses.
+- Simplified Results headers with compact estimator names and test labels; kept package attribution in Methods and References.
 - Corrected theme-switch contrast, SVG namespaces and original-resolution handling for raster-only plots.
 
 ### Fixed

@@ -122,9 +122,13 @@ test_that("omission and subgroup fits use the same prepared effects", {
     params <- ratio_params()
     yi <- log(data@estimate); se <- seq(.1,.3,length.out=12)
     loo <- rcmetar.run.analysis(data, method="time_to_event.random", params=params, workflow="leave-one-out")$res$summary.table
+    reference <- metafor::rma.uni(yi, sei=se, method="REML")
+    expect_equal(loo$estimate[1], as.numeric(reference$b))
+    expect_equal(loo$k[1], reference$k)
     for (i in seq_len(12)) {
         expected <- metafor::rma.uni(yi[-i], sei=se[-i], method="REML")
-        expect_equal(loo$estimate[i], as.numeric(expected$b))
+        expect_equal(loo$estimate[i+1], as.numeric(expected$b))
+        expect_equal(loo$I2[i+1], expected$I2)
     }
     subgroup <- rcmetar.run.analysis(data, method="time_to_event.random", params=params, workflow="subgroup")$res
     for (i in seq_len(2)) {

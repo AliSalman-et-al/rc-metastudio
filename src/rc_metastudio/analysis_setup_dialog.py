@@ -5,7 +5,7 @@
 from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent, QPalette
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -350,7 +350,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _restore_plot_settings(self, parameters):
         self._load_plot_params()
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("cum_sequence" if self.analysis_type == "cumulative" else "fp_study_order", "table"))))
         prefix = "bp" if self.is_meta_regression else "fp"
         for field, name in ((self.col1_str_edit, "fp_col1_str"), (self.col2_str_edit, "fp_col2_str"),
                             (self.col3_str_edit, "fp_col3_str"), (self.col4_str_edit, "fp_col4_str"),
@@ -361,6 +361,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     set_plot_text_value(field, parameters[name])
                 else:
                     field.setText(str(parameters[name]))
+        self.show_i2.setChecked(_bool_plot_param(parameters.get("fp_show_i2"), True))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
                                (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),
                                (self.show_summary_line, "fp_show_summary_line")):
@@ -384,12 +385,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
         project_path = self._project_path
 
-        def reopen(axis_scale=None):
+        def reopen(plot_params=None):
             import uuid
             restored = copy.deepcopy(saved)
             parameters = copy.deepcopy(saved_parameters)
-            if axis_scale is not None:
-                parameters["fp_axis_scale"] = axis_scale
+            if plot_params:
+                parameters.update({key: value for key, value in plot_params.items()
+                                   if key.startswith("fp_") and key not in {"fp_outpath", "fp_display_path"}})
             restored["parameters"] = parameters
             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
@@ -742,17 +744,35 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self.study_order = QComboBox(self)
         self.study_order.setAccessibleName("Forest study order")
-        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
-                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
+        cumulative = self.analysis_type == "cumulative"
+        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if self.analysis_type == "leave-one-out" else analysis_identity.FOREST_STUDY_ORDERS
+        for label, key in options:
             self.study_order.addItem(label, key)
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self.current_param_vals.get("fp_study_order", "table"))))
-        self.study_order.setEnabled(self.analysis_type != "cumulative")
-        self.study_order.setToolTip("Changes forest display order only. Cumulative analysis follows the current table order; sort the table before running to change that sequence.")
-        self.study_order_label = QLabel("Study order", self)
+        key = "cum_sequence" if cumulative else "fp_study_order"
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self.current_param_vals.get(key, "table"))))
+        self.study_order.setToolTip("Sets which studies each cumulative fit includes. A different sequence gives different intermediate results." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
+        self.study_order_label = QLabel("Add studies in" if cumulative else "Row order" if self.analysis_type == "leave-one-out" else "Study order", self)
         self.study_order_label.setBuddy(self.study_order)
-        row = self.style_layout.rowCount()
-        self.style_layout.addWidget(self.study_order_label, row, 0)
-        self.style_layout.addWidget(self.study_order, row, 1)
+        self.study_order.setAccessibleName(self.study_order_label.text())
+        layout = self.style_layout
+        if cumulative:
+            self._sequence_row = QtWidgets.QWidget(self)
+            self._sequence_layout = QGridLayout(self._sequence_row)
+            layout = self._sequence_layout
+            self.gridLayout.addWidget(self._sequence_row, self.gridLayout.rowCount(), 0, 1, 4)
+        row = layout.rowCount()
+        layout.addWidget(self.study_order_label, row, 0)
+        layout.addWidget(self.study_order, row, 1)
+        if cumulative:
+            note = QLabel(self.study_order.toolTip(), self)
+            note.setWordWrap(True)
+            note.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+            layout.addWidget(note, row + 1, 1)
+        self.show_i2 = QCheckBox("Show I² column", self)
+        self.show_i2.setChecked(_bool_plot_param(self.current_param_vals.get("fp_show_i2"), True))
+        self.show_i2.setToolTip("Show heterogeneity from each fitted subset. Tables and reports always retain I².")
+        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
+        self.show_i2.setVisible(self.analysis_type in {"cumulative", "leave-one-out"})
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
@@ -779,8 +799,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.regression_group.setVisible("regression" in groups)
         self.label_11.setVisible("summary" in groups)
         self.show_summary_line.setVisible("summary" in groups)
-        self.study_order.setVisible("forest" in groups)
-        self.study_order_label.setVisible("forest" in groups)
+        self.study_order.setVisible(self.analysis_type == "cumulative" or "forest" in groups)
+        self.study_order_label.setVisible(self.analysis_type == "cumulative" or "forest" in groups)
         self.plot_tab.setEnabled(
             any(capability["styleable"] for capability in capabilities)
         )
@@ -1038,7 +1058,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits, result.texts.get("Inference Method", ""))
+                                self.analysis_type, details, fits, result.texts.get("Inference Method", ""),
+                                missing_years=any(not study.year for study in self._manuscript_studies()))
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
@@ -1101,7 +1122,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
         applied_parameters = {key: value for key, value in self.current_param_vals.items()
-                              if key in definitions or key == "cov_name"}
+                              if key in definitions or key in {"cov_name", "cum_sequence"}}
         if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
             applied_parameters.pop("rm.method", None)
         return applied_parameters
@@ -1708,6 +1729,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _fit_method_text(self):
         rows = [(self._method_row, self._method_layout, self.method_lbl, self.method_cbo_box)]
+        if self.analysis_type == 'cumulative':
+            rows.append((self._sequence_row, self._sequence_layout, self.study_order_label, self.study_order))
         if hasattr(self, "_lr_dor_method_row"):
             rows.append((self._lr_dor_method_row, self._lr_dor_method_layout,
                          self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
@@ -1947,8 +1970,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         # Subgroup selection is workflow state, not a method parameter. Keep it
         # on each filtered request so combined diagnostic panels use the same
         # subgroup while retaining per-method parameter filtering above.
-        if "cov_name" in self.current_param_vals:
-            params["cov_name"] = self.current_param_vals["cov_name"]
+        for key in ("cov_name", "cum_sequence"):
+            if key in self.current_param_vals:
+                params[key] = self.current_param_vals[key]
         return params
 
     def setup_diagnostic_ui(self):
@@ -2033,6 +2057,9 @@ def add_plot_params(specs_form):
             labels = ["Favours " + name for name in specs_form.model.arm_names]
         for side, label in zip(("left", "right"), labels):
             specs_form.current_param_vals.setdefault("fp_favours_" + side, label)
+    if specs_form.analysis_type == "cumulative":
+        specs_form.current_param_vals["cum_sequence"] = specs_form.study_order.currentData()
+    specs_form.current_param_vals["fp_show_i2"] = specs_form.show_i2.isChecked()
     specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
     specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
         str(specs_form.style_cbo.currentText()), "default"

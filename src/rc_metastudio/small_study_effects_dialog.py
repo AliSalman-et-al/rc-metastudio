@@ -536,9 +536,5 @@ def _eligibility_identity(report):
     for method in report.methods:
         if method.available and method.role == 'primary':
             label = _TEST_LABELS.get(method.method, method.method)
-            if method.method == 'deeks':
-                version = dict(report.package_versions).get('meta')
-                if version:
-                    label += f' (meta {version})'
             facts.append('Primary test: ' + label)
     return facts

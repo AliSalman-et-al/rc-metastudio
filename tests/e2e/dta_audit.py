@@ -39,7 +39,9 @@ def check_fixed_workflow(app, window, workflow, record):
         button.click()
         app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
-        tables = [(section, table) for section in view.results.sections for table in section.tables if table.title == 'Model Results']
+        title = {'cumulative': 'Cumulative results', 'leave-one-out': 'Leave-one-out results',
+                 'subgroup': 'Model Results'}[workflow]
+        tables = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]
         metrics = ('DOR',) if selected == ('dor',) else ('PLR', 'NLR')
         assert len(tables) == len(metrics), tables
         record('dta-fixed-workflow-result', view, workflow=workflow, method=method,

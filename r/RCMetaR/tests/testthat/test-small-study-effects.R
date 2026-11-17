@@ -735,7 +735,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
     tests=character()
   ))
   expect_true(result$eligibility$methods[[1]]$available)
-  expect_identical(result$tests.data$deeks$method, "Deeks test (meta implementation)")
+  expect_identical(result$tests.data$deeks$method, "deeks")
   expect_identical(result$tests.data$deeks$package.version, "8.5-0")
   expect_match(result$tests.data$deeks$call, "method.bias='Deeks'")
   expect_match(result$tests.data$deeks$predictor, "diseased total", fixed=TRUE)

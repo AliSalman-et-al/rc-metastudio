@@ -618,8 +618,12 @@ def run(
         assert not callback_errors, callback_errors
         view = observe()
         texts = "\n".join(view.texts.values())
+        facts = view.result_facts.accessibleDescription()
+        assert not re.search(r'\b(?:meta|metafor|mada)\b', facts), facts
         if sample == "lymph":
             assert "Deeks" in texts
+            assert 'Deeks test' in facts, facts
+            assert 'meta implementation' not in texts, texts
             assert any("deeks" in key for key in view.results.images)
         else:
             assert any("contour" in key for key in view.results.images)

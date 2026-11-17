@@ -1743,9 +1743,9 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_true(file.exists(unname(case$result$images[[1]])), info=variant)
     expect_gt(file.info(unname(case$result$images[[1]]))$size, 5000)
     if (identical(variant, "cumulative")) {
-      expect_equal(original$slab, c("Aaronson, 1991 (k = 1)", "Ferguson, 1992 (k = 2)",
-                                    "Rosenthal, 1993 (k = 3)", "Hart, 1994 (k = 4)",
-                                    "Frimodt-Moller, 1995 (k = 5)", "Stein, 1996 (k = 6)"))
+      expect_equal(original$slab, c("Aaronson, 1991", "Ferguson, 1992",
+                                    "Rosenthal, 1993", "Hart, 1994",
+                                    "Frimodt-Moller, 1995", "Stein, 1996"))
     } else if (identical(variant, "leave-one-out")) {
       expect_equal(original$slab, c("All studies", "Allen, 2001", "Baker, 2002",
                                     "Cole, 2003", "Diaz, 2004", "Evans, 2005"))
@@ -1754,7 +1754,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     load(paste0(params.path, ".params"))
     load(paste0(params.path, ".res"))
     if (identical(variant, "cumulative")) {
-      expect_equal(params$fp_col1_str, "Study added (k)")
+      expect_equal(params$fp_col1_str, "Study added")
       expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
     expect_identical(params$fp_plot_lb, "[default]")
@@ -1768,7 +1768,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_equal(regenerated$forest_variant, variant)
     expect_equal(regenerated$fp_style, "bmj")
     if (identical(variant, "cumulative")) {
-      expect_equal(regenerated$params$fp_col1_str, "Study added (k)")
+      expect_equal(regenerated$params$fp_col1_str, "Study added")
       expect_equal(regenerated$params$fp_col2_str, "Cumulative Estimate")
     }
     expect_true(rcmetar.is.metafor.forest.bundle(regenerated))

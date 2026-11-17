@@ -390,8 +390,8 @@ def run(app, window, work, record, scenario):
             else:
                 check_sequential(view, workflow, record)
                 if workflow == "leave-one-out":
-                    assert "Omission-only fits" in view.manuscript_text.toPlainText()
-                    assert "All studies" not in next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0][0]
+                    assert "With all studies" in view.manuscript.results
+                    assert next(t for s in view.results.sections for t in s.tables if t.title == "Leave-one-out results").rows[0][0] == "All studies"
             view.close()
         if family == "event_rates":
             # Only one included study has treated events. Omitting it leaves a

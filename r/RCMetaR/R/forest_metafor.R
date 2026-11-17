@@ -224,7 +224,26 @@ rcmetar.bundle.transform <- function(bundle) {
 }
 
 rcmetar.result.vector <- function(results, field) {
-    vapply(results, function(result) as.numeric(result[[field]][1]), numeric(1))
+    vapply(results, function(result) as.numeric((result[[field]] %||% NA_real_)[1]), numeric(1))
+}
+
+rcmetar.sequential.i2.labels <- function(results) {
+    values <- rcmetar.result.vector(results, "I2")
+    ifelse(is.finite(values), sprintf("%.1f%%", values), "\u2014")
+}
+
+rcmetar.sequential.ilab <- function(results, params) {
+    k <- rcmetar.result.vector(results, "k")
+    values <- matrix(ifelse(is.finite(k), as.character(k), "\u2014"), ncol=1)
+    keys <- "k"
+    headers <- "k"
+    if (rcmetar.param.is.true(params, "fp_show_i2", TRUE)) {
+        values <- cbind(values, rcmetar.sequential.i2.labels(results))
+        keys <- c(keys, "i2")
+        headers <- c(headers, "I\u00b2")
+    }
+    list(matrix=values, headers=headers, groups=character(),
+        columns=lapply(keys, function(key) list(key=key, group="")))
 }
 
 rcmetar.forest.regeneration.state <- function(variant, results=NULL, labels=NULL, subgroup.data=NULL,
@@ -366,9 +385,24 @@ rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
 
 rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, variant, labels, has.overall) {
     params <- rcmetar.normalize.plot.text.params(params)
-    if (params$fp_col1_str %in% c("Study or Subgroup", "Study added")) {
-        params$fp_col1_str <- if (variant == "cumulative") "Study added (k)" else "Study omitted"
+    sequence.labels <- c(table="current table order", year="publication year (earliest first)",
+                         effect="study effect size (smallest first)")
+    row.labels <- c(year="year (earliest first)", effect="pooled effect after omission (smallest first)",
+                    i2="I\u00b2 after omission (lowest first)")
+    caption <- params$plot_caption
+    if (!is.null(caption) && nzchar(caption)) {
+        caption <- sub(" \u00b7 Order: dataset row order$", "", caption)
+        suffix <- if (variant == "cumulative") paste0("Sequence: ", sequence.labels[[params$cum_sequence %||% "table"]]) else
+            if ((params$fp_study_order %||% "table") %in% names(row.labels)) paste0("Rows: ", row.labels[[params$fp_study_order]]) else ""
+        params$plot_caption <- paste0(caption, if (nzchar(suffix)) paste0(" \u00b7 ", suffix))
     }
+    legacy.labels <- identical(params$fp_col1_str, "Study added (k)")
+    if (params$fp_col1_str %in% c("Study or Subgroup", "Study added", "Study added (k)")) {
+        params$fp_col1_str <- if (variant == "cumulative") "Study added" else "Study omitted"
+    }
+    # Earlier saved cumulative plots embedded the step count in each label.
+    if (variant == "cumulative" && legacy.labels) labels <- mapply(function(label, i)
+        sub(paste0(" \\(k = ", i, "\\)$"), "", label), labels, seq_along(labels), USE.NAMES=FALSE)
     labels <- rcmetar.truncate.plot.display.text(labels)
 
     yi <- rcmetar.result.vector(results, "b")
@@ -411,7 +445,7 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
             slab = as.character(labels)
         ),
         single_study = TRUE,
-        ilab = rcmetar.empty.forest.ilab(length(labels)),
+        ilab = rcmetar.sequential.ilab(results, params),
         slab = as.character(labels),
         has_overall = has.overall,
         weights = if (has.overall) c(NA_real_, rcmetar.metafor.weights(results[[1]])) else NULL,
@@ -906,7 +940,14 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     graphics::par(xpd=NA)
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
-    graphics::text(study.x, rows, bundle$slab, pos=4, cex=cex, col="black")
+    graphics::text(study.x, rows, bundle$slab, pos=4, cex=cex, col="black",
+        font=ifelse(seq_along(rows) == 1L & isTRUE(bundle$has_overall), 2, 1))
+    if (isTRUE(bundle$has_overall) && length(rows) > 1) {
+        graphics::segments(study.x, rows[1] - .5, annotation.x, rows[1] - .5, col="grey65", lwd=.6)
+    }
+    for (column in seq_len(ncol(bundle$ilab$matrix))) {
+        graphics::text(layout$ilab.xpos[column], rows, bundle$ilab$matrix[, column], cex=cex, col="black")
+    }
     if (!is.null(bundle$summary_res)) {
         graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
         rcmetar.draw.forest.inference(bundle, study.x, -0.5, cex, bundle$summary_res)
@@ -920,6 +961,7 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
         header.y <- first.row + 1.25
         rule.y <- first.row + 0.70
         graphics::text(study.x, header.y, rcmetar.metafor.study.header(bundle), pos=4, font=2, cex=cex, col="black")
+        graphics::text(layout$ilab.xpos, header.y, bundle$ilab$headers, font=2, cex=cex, col="black")
         graphics::text(annotation.x, header.y, rcmetar.metafor.effect.header(bundle), pos=2, font=2, cex=cex, col="black")
         graphics::segments(study.x, rule.y, annotation.x, rule.y, lwd=0.8)
     }

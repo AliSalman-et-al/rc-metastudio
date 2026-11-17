@@ -218,7 +218,7 @@ and ad hoc inference directly with metafor, including p-values and CI bounds.
 
 The sample diagnostic drive checks that visible method-page labels and value controls stay within the horizontal scroll viewport after deferred form replacements are disposed.
 
-The standard binary MH/Peto fixed-estimator scenarios also assert the rendered SVG overall-effect heading has no zero odds-ratio null. On amino's two double-zero studies, MH report/figure rows agree on Not estimable; Peto retains finite corrected effects and zero weight, matching its explicit `drop00=FALSE` fit policy. Sequential rows show pooled subset fits, so omitting a double-zero study still shows the estimable pooled result; the study-level omission assertion does not apply.
+The standard binary MH/Peto fixed-estimator scenarios also assert the rendered SVG overall-effect heading has no zero odds-ratio null. On amino's two double-zero studies, MH and Peto report/figure rows agree on Not estimable, following metafor's pooling and exclusion defaults. Sequential rows show pooled subset fits, so omitting a double-zero study still shows the estimable pooled result; the study-level omission assertion does not apply.
 
 `Mean` is the canonical one-arm continuous metric. `analysis-data-generic-effect`
 opens and resaves a separate project containing the old `TX Mean` identifier,
@@ -236,3 +236,28 @@ the R package tests cover old saved forests in Default/RevMan/BMJ.
 `plot-workflow-mh-rd` proves MH risk-difference double-zero rows remain estimable, all forest weights equal the report at plotted precision and sum to 100% within rounding, and switching to BMJ retains the fit's M–H, Fixed header. It also rejects a nonnumeric axis bound in the editor before rendering, retaining the current figure.
 
 Standard study effects now use one contribution rule across estimators and metrics: retain a finite fitted individual effect, otherwise use the prepared effect for positive fit weight; only unavailable effects without contribution are Not estimable. Standard MH/Peto drives compare all visual-row weights with the report, including 0.0% for genuinely non-estimable rows.
+## Sequential analysis ordering and reports
+
+Small-study result headers show the test name without package/version suffixes.
+The three small-study matrix drives check this while retaining package attribution
+in Methods and References. Diagnostic Deeks labels use the shared method label.
+
+Cumulative setup's **Add studies in** selects table, publication-year or individual
+study-effect order before fitting. Changing sequence reruns the prefix fits.
+The plot editor shows the stored sequence and offers a rerun; Cancel preserves
+the existing result. Leave-one-out **Row order** sorts the omission fits by table,
+year, pooled effect after omission or package-reported I². Its all-studies
+reference stays first, including HR/IRR. Sorting never changes the fitted subsets.
+
+Both forests use study label, package k, optional I², forest and effect/CI columns.
+Tables always retain k/I²; cumulative tables also distinguish Step from package
+k. The report gives a short workflow-specific summary followed by every labelled
+fit, without treating omission rows as individual-study effects or weights.
+
+`test-sequential-order.R` compares prefix/omission values with public metafor and
+checks saved regeneration. `review-workflows` exercises the setup controls and
+retains complete screen/clipboard/PDF/DOCX reports. The cumulative and
+leave-one-out plot workflows exercise all styles and four decoded exports.
+Native fractional-DPI, missing/non-estimable fits, combined diagnostic metric
+sequences and editor-to-rerun preservation require the targeted evidence listed
+in `docs/sequential-analysis-design.md`; nearby passes do not establish them.

@@ -104,7 +104,7 @@ ratio.fit <- function(data, params, method) {
     if (endsWith(method, ".mh")) {
         if (!ratio.mh.feasible(data)) stop("Mantel-Haenszel requires complete selected raw inputs for every included study.")
         if (sum(data@x1) == 0 || sum(data@x2) == 0) return(list(b=NA_real_, se=NA_real_,
-            ci.lb=NA_real_, ci.ub=NA_real_, pval=NA_real_, zval=NA_real_, k=length(data@y),
+            ci.lb=NA_real_, ci.ub=NA_real_, pval=NA_real_, zval=NA_real_, k=NA_real_,
             method="MH", tau2=0, QE=NA_real_, QEp=NA_real_, I2=NA_real_,
             reason="Non-estimable: zero total events in an arm."))
         return(metafor::rma.mh(measure="IRR", x1i=data@x1, x2i=data@x2,
@@ -152,9 +152,13 @@ ratio.workflow <- function(data, request) {
     n <- length(data@study.names)
     if (!n) stop("No eligible studies remain.")
     state <- if (request$workflow == "subgroup") ratio.subgroup(data, request, suppressed) else ratio.sequential(data, request, suppressed)
+    if (!is.null(state$data)) {
+        data <- state$data
+        params <- state$params
+    }
     result <- state$result
     fits <- state$fits
-    result$References <- rcmetar.fit.references(fits[[length(fits)]])
+    result$References <- rcmetar.fit.references(fits[[if (request$workflow == "leave-one-out") 1L else length(fits)]])
     labels <- state$labels
     title <- state$title
     plot.name <- state$plot.name
@@ -200,6 +204,10 @@ ratio.subgroup <- function(data, request, suppressed) {
 ratio.sequential <- function(data, request, suppressed) {
     params <- request$params
     method <- request$method
+    if (request$workflow == "cumulative") {
+        params$cum_sequence_index <- rcmetar.cumulative.sequence(data, params$cum_sequence)
+        data <- get.subset(data, params$cum_sequence_index)
+    }
     n <- length(data@study.names)
     plot <- NULL
     loo <- request$workflow == "leave-one-out"
@@ -208,16 +216,18 @@ ratio.sequential <- function(data, request, suppressed) {
     fits <- lapply(subsets, function(subset) {
         ratio.fit(subset, suppressed, method)
     })
-    labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, FALSE)
+    if (loo) fits <- c(list(ratio.fit(data, suppressed, method)), fits)
+    labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, loo)
     model.title <- paste(pretty.metric.name(data@metric),
         if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
     disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
-    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=FALSE)
+    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=loo)
     result <- list("Sequential Summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out forest plot" else "Cumulative forest plot"
     plot.name <- if (loo) "leave_one_out_forest_plot" else "cumulative_forest_plot"
-    list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot)
+    list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot,
+         data=data, params=params)
 }
 
 ratio.parameters <- function(method) {

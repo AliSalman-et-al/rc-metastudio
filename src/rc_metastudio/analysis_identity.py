@@ -3,6 +3,13 @@
 from rc_metastudio import analysis_catalog
 from rc_metastudio.analysis_method_labels import parameter_value_display_label
 
+CUMULATIVE_SEQUENCES = (("Table order", "table"),
+    ("Publication year (earliest first)", "year"), ("Study effect size (smallest first)", "effect"))
+LOO_ROW_ORDERS = (("Current table order", "table"), ("Year (earliest first)", "year"),
+    ("Pooled effect after omission (smallest first)", "effect"), ("I² after omission (lowest first)", "i2"))
+FOREST_STUDY_ORDERS = (("Current table order", "table"), ("Year (earliest first)", "year"),
+    ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight"))
+
 
 def workflow_label(workflow):
     return {
@@ -26,12 +33,10 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
     header = workflow_label(workflow) + " — " + dataset_identity(model, metric)
     details = [f"Confidence level: {float(parameters.get('conf.level', confidence)):g}%"]
     if workflow == "cumulative":
-        details.append("Order: dataset row order; each row adds a study to the preceding studies.")
+        sequence = dict((key, label) for label, key in CUMULATIVE_SEQUENCES).get(parameters.get("cum_sequence", "table"), "Table order")
+        details.append(f"Sequence: {sequence}; each step adds a study to the preceding studies.")
     elif workflow == "leave-one-out":
-        if model.get_current_data_type() in {"time_to_event", "event_rates"}:
-            details.append("Omission-only fits: each row omits the named study. No all-studies fit is included.")
-        else:
-            details.append("Each row omits the named study; compare with the all-studies estimate.")
+        details.append("Each omission row excludes the named study; compare with the all-studies estimate.")
     elif workflow == "subgroup":
         details.append(f"Subgroups defined by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
@@ -97,6 +102,4 @@ def dataset_identity(model, metric=None):
 
 def plot_caption(model, workflow, caption=None):
     caption = caption or dataset_identity(model)
-    if workflow == "cumulative" and "Order: dataset row order" not in caption:
-        caption += " · Order: dataset row order"
     return caption
