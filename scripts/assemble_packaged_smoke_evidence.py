@@ -22,6 +22,8 @@ from rc_metastudio.result_text_identity import normalize_packaged_summary_identi
 
 PACKAGED_EDIT_VALUE = "Packaged Smoke – München"
 PACKAGED_ANALYSIS_METHOD = "binary.random"
+# The frozen summary identity predates the application's REML default.
+PACKAGED_ANALYSIS_ESTIMATOR = "DL"
 PACKAGED_PROCESS_TIMEOUT_SECONDS = 300
 
 
@@ -131,7 +133,7 @@ def _capture_workflow_operations(
     _run_packaged(
         executable,
         ["--automation-package-analyze", str(base_analysis_path), str(sample),
-         PACKAGED_ANALYSIS_METHOD],
+         PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
         environment=environment,
     )
     observations["analysis_base"] = json.loads(
@@ -154,7 +156,7 @@ def _capture_workflow_operations(
     _run_packaged(
         executable,
         ["--automation-package-analyze", str(analysis_path), str(english_project),
-         PACKAGED_ANALYSIS_METHOD],
+         PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
         environment=environment,
     )
     observations["analysis_en"] = json.loads(analysis_path.read_text(encoding="utf-8"))
@@ -174,7 +176,7 @@ def _capture_workflow_operations(
     _run_packaged(
         executable,
         ["--automation-package-analyze", str(locale_analysis_path),
-         str(locale_project), PACKAGED_ANALYSIS_METHOD],
+         str(locale_project), PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
         environment=locale_environment,
     )
     observations["analysis_de"] = json.loads(locale_analysis_path.read_text(encoding="utf-8"))
@@ -183,7 +185,7 @@ def _capture_workflow_operations(
     _run_packaged(
         executable,
         ["--automation-package-analyze", str(reopened_analysis_path),
-         str(edited_project), PACKAGED_ANALYSIS_METHOD],
+         str(edited_project), PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
         environment=environment,
     )
     observations["save_reopen"] = json.loads(reopened_analysis_path.read_text(encoding="utf-8"))

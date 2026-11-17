@@ -287,3 +287,25 @@ statistical result changed in these final fixture/copy corrections.
 These are Windows source/runtime and native checks. They do not qualify macOS or
 Linux release artifacts. The requested local Windows package is built separately
 from the committed source and receives its own packaged and exact-archive checks.
+
+## Packaged historical estimator correction
+
+The first local archive build executed its runtime, sample, scale, locale,
+save/reopen and normal-entry smoke operations successfully, but final evidence
+validation rejected the normalized summary identity. The packaged fixture still
+expected historical DL output while its atomic analysis operation inherited the
+new REML default. Neither inspector hash nor any numerical oracle was changed.
+
+The existing atomic analysis command now accepts an optional explicit estimator;
+the developer smoke assembler requests DL for its four historical analysis
+operations. Omitting that option retains the application's REML default. The
+existing boundary test was extended before implementation and failed in
+package-estimator-before.log. Strict win32 typing and all affected automation and
+packaging-contract checks pass (153 passed, two skips). Real Qt/R source probes
+passed for both requests: explicit DL restores the original frozen identity
+16303526c7c3a40c8805b6245b8806fc765bf4efc2c269807c1a5d460060539d,
+while the unconfigured path keeps REML output. Inputs, commands, observations and
+results are retained under artifacts/verification/dta-audit/package-estimator-live.
+This changes qualification configuration only; ordinary GUI analysis defaults
+and statistical calculations are unchanged. The Windows archive is rebuilt from
+the following committed correction and qualified again.
