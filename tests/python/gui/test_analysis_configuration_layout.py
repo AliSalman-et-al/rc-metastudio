@@ -416,12 +416,15 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         if analysis_type is None:
             return
 
+        from rc_metastudio.analysis_results import empty_analysis_result
+
         requests = []
         monkeypatch.setattr(
             analysis_adapter,
             "execute_meta_regression_request",
-            lambda *args, **_kwargs: requests.append(args) or {},
+            lambda *args, **_kwargs: requests.append(args) or empty_analysis_result(),
         )
+        monkeypatch.setattr(dialog, "_with_result_identity", lambda result: result)
         monkeypatch.setattr(
             dialog,
             "_run_analysis",

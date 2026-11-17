@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import os
+import sys
+import traceback
 from pathlib import Path
 
 
@@ -25,7 +27,15 @@ def main() -> int:
     if command.startswith("--automation-") and command != "--automation-startup-project-smoke":
         from rc_metastudio import automation
 
-        return automation.dispatch(arguments)
+        try:
+            return automation.dispatch(arguments)
+        except Exception as error:
+            try:
+                app_error_handler.log_exception(type(error), error, error.__traceback__)
+            except OSError:
+                if sys.stderr is not None:
+                    traceback.print_exc()
+            return 1
     return launch.start(arguments) or 0
 
 

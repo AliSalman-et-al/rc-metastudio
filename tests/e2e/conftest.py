@@ -10,6 +10,9 @@ from scripts.desktop_worker_capacity import desktop_resources
 from scripts.verification_evidence import desktop_environment, verification_context, verification_launch_inputs
 
 
+_DESKTOP_ENV = pytest.StashKey[dict[str, str]]()
+
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption("--desktop-shard", type=int, choices=(1, 2, 3), default=None)
     parser.addoption("--shard-report", default=None)
@@ -17,7 +20,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    if hasattr(config, "workerinput") or config.option.collectonly:
+    if config.option.collectonly:
+        return
+    if hasattr(config, "workerinput"):
+        config.stash[_DESKTOP_ENV] = dict(os.environ)
         return
     from scripts.verify import run_typing
 
@@ -31,6 +37,13 @@ def pytest_configure(config: pytest.Config) -> None:
     })
     fresh = config.getoption("--fresh") or os.environ.get("RCMS_E2E_FRESH") == "1"
     os.environ["RCMS_E2E_REUSE_PASSED"] = "0" if fresh else "1"
+    config.stash[_DESKTOP_ENV] = dict(os.environ)
+
+
+@pytest.fixture(scope="session")
+def desktop_launch_environment(pytestconfig: pytest.Config) -> dict[str, str]:
+    # Collection can import Qt, whose Windows bootstrap prepends to PATH.
+    return pytestconfig.stash[_DESKTOP_ENV]
 
 
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:

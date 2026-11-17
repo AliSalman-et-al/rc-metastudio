@@ -219,8 +219,11 @@ def expected_effect_rows(result, section, overall, calculation):
         effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
         if table.role == 'coefficients':
             scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
-            if scale:
-                effects = [(*row[:4], '(' + ('outcome' if scale == 'display' else scale) + ' scale)', *row[5:]) for row in effects]
+            label = {'SMD': 'standardized', 'PFT': 'Freeman-Tukey'}.get(
+                table.metric, 'outcome' if scale == 'display' else scale,
+            )
+            if label:
+                effects = [(*row[:4], f'({label} scale)', *row[5:]) for row in effects]
         if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1 and table.role != 'coefficients':
             effects = tuple((metric.capitalize() + ': ' + row[0], *row[1:]) if row[0].lower() != metric else row for row in effects)
         rows.extend(effects)

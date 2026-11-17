@@ -26,6 +26,7 @@ import math
 import hashlib
 import re
 import os
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
@@ -40,6 +41,7 @@ from rc_metastudio import (
     progress_dialog,
     qt_text,
 )
+from rc_metastudio.analysis_results import AnalysisResult, normalize_analysis_result
 from rc_metastudio.analysis_method_labels import (
     diagnostic_metric_group_display_label,
     normalize_available_method_labels,
@@ -808,16 +810,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._executed_studies = selection.studies
         request = self._meta_regression_request()
         fixed_effects = self.fixed_effects_radio.isChecked()
-        self._run_analysis(
-            lambda: self.analysis_service.execute_meta_regression(
+        def execute_regression() -> AnalysisResult:
+            result = self.analysis_service.execute_meta_regression(
                 self.model,
                 selection.studies,
                 tuple(selected_covariates),
                 request,
                 fixed_effects,
                 self.confidence_level,
-            ),
-        )
+            )
+            return self._prepare_analysis_result(result)
+
+        self._run_analysis(execute_regression)
 
     def _confirm_excluded_studies(self, names):
         excluded = ", ".join(names)
@@ -908,11 +912,17 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def run_ma(self):
-        self._run_analysis(
-            lambda: self.analysis_service.execute(self.model, self.analysis_requests()),
-        )
+        self._run_analysis(self.execute_configured_analysis)
 
-    def _run_analysis(self, operation):
+    def execute_configured_analysis(self) -> AnalysisResult:
+        """Execute the current settings and prepare the result for presentation."""
+        result = self.analysis_service.execute(self.model, self.analysis_requests())
+        return self._prepare_analysis_result(result)
+
+    def _prepare_analysis_result(self, result: AnalysisResult) -> AnalysisResult:
+        return normalize_analysis_result(self._with_result_identity(result))
+
+    def _run_analysis(self, operation: Callable[[], AnalysisResult]):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
@@ -920,10 +930,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         bar.show()
         bar.repaint()
         try:
-            from rc_metastudio.analysis_results import normalize_analysis_result
             from rc_metastudio.manuscript_report import ManuscriptReport
 
-            result = normalize_analysis_result(self._with_result_identity(operation()))
+            result = operation()
             manuscript = ManuscriptReport.from_result(result)
             change_settings = self._change_settings_callback()
             callback = getattr(self.parentWidget(), "analysis", None)

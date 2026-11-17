@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
     "scenario",
     QUALIFICATION_SCENARIOS,
 )
-def test_desktop_workflow(scenario):
+def test_desktop_workflow(scenario, desktop_launch_environment):
     # The same launcher owns timeouts, isolation and durable evidence in CI.
     result = subprocess.run(
         [
@@ -27,6 +27,7 @@ def test_desktop_workflow(scenario):
             scenario,
         ],
         cwd=ROOT,
+        env=desktop_launch_environment,
         capture_output=True,
         check=False,
         text=True,
@@ -37,3 +38,6 @@ def test_desktop_workflow(scenario):
     manifest = json.loads((evidence / "manifest.json").read_text(encoding="utf-8"))
     assert result.returncode == 0, result.stdout + result.stderr
     assert manifest["passed"], evidence
+    context = json.loads(desktop_launch_environment["RCMS_E2E_CONTEXT"])["verification"]
+    if context is not None:
+        assert manifest["verification_context"] == context

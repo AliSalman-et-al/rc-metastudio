@@ -167,7 +167,8 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         result = replace(parse_analysis_result({'version': 1, 'texts': texts, 'images': {}, 'sections': sections}),
                          identity='Binary analysis', details='Confidence level: 95%\nInference: stale',
                          software='metafor 5.2-1', manuscript_methods='Executed methods.', inference_methods=('z',))
-        form._run_analysis(lambda: result)
+        monkeypatch.setattr(form.analysis_service, 'execute', lambda *_args: result)
+        form.run_ma()
         QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         qapp.processEvents()
         assert not sip.isdeleted(form)
@@ -199,7 +200,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         monkeypatch.setattr(form, '_with_result_identity', lambda result: result)
         monkeypatch.setattr(ManuscriptReport, 'from_result', prepare)
         monkeypatch.setattr(window, 'analysis', deliver)
-        form._run_analysis(lambda: result)
+        form.run_ma()
         QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         qapp.processEvents()
         assert sip.isdeleted(form)
