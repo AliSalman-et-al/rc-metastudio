@@ -481,17 +481,23 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
     params = {"fp_outpath": str(svg), "fp_col1_str": "Study"}
     Path(str(base) + ".params").write_text(json.dumps(params), encoding="utf-8")
     payload = svg.read_text(encoding="utf-8")
-    def load(_path, return_params_dict=False):
-        return json.loads(Path(str(base) + ".params").read_text(encoding="utf-8")) if return_params_dict else True
-    def update(values, **kwargs):
-        params.clear()
-        params.update(values)
-        if kwargs.get("outpath"):
-            Path(kwargs["outpath"]).write_text(json.dumps(values), encoding="utf-8")
-    def generate(path):
-        Path(path).write_text(payload.replace("</svg>", '<text x="80" y="150" font-size="24">Edited fixture</text></svg>'), encoding="utf-8")
-    def plotdata(path, **_kwargs):
-        Path(str(path) + ".plotdata").write_text("controlled fixture plot data", encoding="utf-8")
+    def load(_prefix):
+        return json.loads(Path(str(base) + ".params").read_text(encoding="utf-8"))
+
+    def prepare(prefix, _regenerator, values, output, directory):
+        pending_params = Path(directory) / "plot.params"
+        pending_svg = Path(directory) / "plot.svg"
+        pending_params.write_text(json.dumps(values), encoding="utf-8")
+        pending_svg.write_text(
+            payload.replace("</svg>", '<text x="80" y="150" font-size="24">Edited fixture</text></svg>'),
+            encoding="utf-8",
+        )
+        return {f"{prefix}.params": str(pending_params), output: str(pending_svg)}
+
+    def render(_prefix, _regenerator, output):
+        Path(output).write_bytes(svg.read_bytes())
+        return True
+
     observed = []
     def edit():
         dialog = next((widget for widget in app.topLevelWidgets() if isinstance(widget, EditPlotDialog) and widget.isVisible()), None)
@@ -505,7 +511,11 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
             observed.append(dialog.result() == QtWidgets.QDialog.DialogCode.Accepted)
     destination = root / ("exported-" + slug + ".svg")
     before = _sha256(svg)
-    with patch.object(r_bridge, "load_vars_for_plot", load), patch.object(r_bridge, "update_plot_params", update), patch.object(r_bridge, "regenerate_plot_data", lambda: None), patch.object(r_bridge, "write_out_plot_data", plotdata), patch.object(r_bridge, "load_in_r", lambda _path: None), patch.object(r_bridge, "generate_forest_plot", generate):
+    with (
+        patch.object(r_bridge, "load_plot_parameters", load),
+        patch.object(r_bridge, "prepare_plot_edit", prepare),
+        patch.object(r_bridge, "render_plot_bundle", render),
+    ):
         results.nav_tree.setCurrentItem(next(item for item in results.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == "Forest plot"))
         app.processEvents()
         QtCore.QTimer.singleShot(0, edit)

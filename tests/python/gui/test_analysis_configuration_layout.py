@@ -1,5 +1,5 @@
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.project_domain import RowId, SheetId
+from rc_metastudio.domain_ids import RowId, SheetId
 import json
 import os
 from pathlib import Path

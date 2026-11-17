@@ -3,9 +3,10 @@
 """Main RC MetaStudio desktop window."""
 
 from __future__ import annotations
-from rc_metastudio.project_domain import ArmId, SheetId
+from rc_metastudio.domain_ids import ArmId, SheetId
 
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
@@ -42,7 +43,6 @@ from rc_metastudio import r_runtime
 from rc_metastudio import progress_dialog
 from rc_metastudio import qt_layout
 from rc_metastudio import adaptive_window
-from rc_metastudio import qt_text
 from rc_metastudio import name_validation
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
@@ -109,13 +109,7 @@ def _resolve_open_file_path(file_path):
 
 
 def _format_open_project_error(file_path, exception):
-    if isinstance(
-        exception,
-        (
-            project_adapter.ProjectAdapterError,
-            project_format.ProjectFormatError,
-        ),
-    ):
+    if isinstance(exception, project_format.ProjectFormatError):
         reason = str(exception)
         if reason.startswith('unsupported project format version'):
             message = 'This project’s file format is not supported. Update RC MetaStudio, then try again.'
@@ -143,30 +137,24 @@ def _connect_action(action, callback):
 
 
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
-    def __init__(self, parent=None, min_=0, max_=10):
+    def __init__(self, parent=None, row_count: int = 1):
         super().__init__(parent, operation="Importing study data…", blocking=False)
-
         self.setWindowTitle("Import CSV")
-        self.progress_bar.setRange(min_, max_)
+        self.progress_bar.setRange(0, row_count)
         self.progress_bar.show()
-
-    def setValue(self, value):
-        if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
-            self.progress_bar.setValue(value)
-
-    def minimum(self):
-        return self.progress_bar.minimum()
-
-    def maximum(self):
-        return self.progress_bar.maximum()
-
-    def value(self):
-        return self.progress_bar.value()
 
 
 class SheetTabBar(QtWidgets.QTabBar):
+    stripPaletteChanged = QtCore.pyqtSignal(QtGui.QPalette, str)
+    resized = QtCore.pyqtSignal()
+    orderChanged = QtCore.pyqtSignal()
     _updating_palette: bool = False
     _tab_width_limit: int = 0
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._drag_order_changed = False
+        self.tabMoved.connect(self._tab_moved)
 
     def changeEvent(self, a0: QtCore.QEvent | None) -> None:
         super().changeEvent(a0)
@@ -207,36 +195,17 @@ class SheetTabBar(QtWidgets.QTabBar):
                 border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }}
             QTabBar::tab:selected:focus {{ border-bottom-color: {highlight}; }}
         """)
-        window = self.window()
-        if isinstance(window, MainWindow):
-            # Palette events can arrive before the strip is fully constructed.
-            if hasattr(window, "sheet_tab_content"):
-                window.sheet_tab_content.setPalette(palette)
-            if hasattr(window, "add_sheet_button"):
-                window.add_sheet_button.setStyleSheet(f"""
-                    QToolButton {{ background: transparent; color: {text.name()};
-                        border: 0; border-top: 1px solid {rule}; padding: 0; }}
-                    QToolButton:hover {{ background: {hover}; }}
-                    QToolButton:focus {{ border: 1px solid {highlight}; }}
-                """)
-            if hasattr(window, "_sheet_strip_timer"):
-                window._schedule_sheet_strip_update()
+        self.stripPaletteChanged.emit(palette, f"""
+            QToolButton {{ background: transparent; color: {text.name()};
+                border: 0; border-top: 1px solid {rule}; padding: 0; }}
+            QToolButton:hover {{ background: {hover}; }}
+            QToolButton:focus {{ border: 1px solid {highlight}; }}
+        """)
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
         if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
             self.changeEvent(a1)
-        window = self.window()
-        event = a1
-        if (
-            isinstance(window, MainWindow)
-            and window.sheet_name_edit is not None
-            and a0 is window.sheet_name_edit
-            and isinstance(event, QKeyEvent)
-            and event.key() == Qt.Key.Key_Escape
-        ):
-            window._finish_sheet_rename(cancel=True)
-            return True
-        return super().eventFilter(a0, event)
+        return super().eventFilter(a0, a1)
 
     def tabSizeHint(self, index):
         size = super().tabSizeHint(index)
@@ -246,19 +215,19 @@ class SheetTabBar(QtWidgets.QTabBar):
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:
         super().resizeEvent(a0)
-        window = self.window()
-        if isinstance(window, MainWindow):
-            QtCore.QTimer.singleShot(0, window._scroll_to_sheet_tab)
+        self.resized.emit()
+
+    def _tab_moved(self, _source: int, _destination: int) -> None:
+        if QApplication.mouseButtons() & Qt.MouseButton.LeftButton:
+            self._drag_order_changed = True
+        else:
+            self.orderChanged.emit()
 
     def mouseReleaseEvent(self, a0: QMouseEvent | None) -> None:
-        event = a0
-        try:
-            super().mouseReleaseEvent(event)
-        finally:
-            window = self.window()
-            if isinstance(window, MainWindow) and window._sheet_dragging:
-                window._sheet_dragging = False
-                window.workspace.end_change()
+        super().mouseReleaseEvent(a0)
+        if self._drag_order_changed:
+            self._drag_order_changed = False
+            self.orderChanged.emit()
 
 
 class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
@@ -330,7 +299,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self._setup_sheet_strip()
         self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
-        self.sheet_tabs.tabMoved.connect(self._move_sheet_tab)
+        self.sheet_tabs.orderChanged.connect(app_error_handler.safe_slot(self._save_sheet_order, parent=self))
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
         self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
         self.add_sheet_button.clicked.connect(self._add_sheet)
@@ -384,7 +353,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
-        self.new_dataset()
+        data_model = analysis_dataset.Dataset(title=DEFAULT_DATASET_NAME)
+        self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
+        self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.current_sheet_id))
 
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
@@ -398,8 +369,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.main_gui = cast(dataset_table_view.MainWindowProtocol, self)
         self.tableView.synchronize_column_widths()
 
-        self.out_path = None
-        self.metric_menu_is_set_for = None
+        self._metric_actions: QtGui.QActionGroup | None = None
 
         self.action_meta_regression.setEnabled(False)
         self.action_publication_bias.setEnabled(False)
@@ -424,23 +394,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ) -> None:
         if event is None:
             return
-        if not self._confirm_close():
+        if not self._confirm_discard_or_save():
             event.ignore()
             return
         self._disconnect_model_signals()
         save_main_window_placement(self, self.tableView.column_width_state())
         event.accept()
 
-    def _confirm_close(self):
-        if not self.workspace.is_dirty:
-            return True
-        choice = self.prompt_to_save_unsaved_data()
-        if choice == QMessageBox.StandardButton.Save:
-            return self.save() is True
-        return choice == QMessageBox.StandardButton.Discard
-
-    def _authorize_destructive_project_action(self):
-        """Return whether New/Open/Import may replace the current project."""
+    def _confirm_discard_or_save(self):
         if not self.workspace.is_dirty:
             return True
         choice = self.prompt_to_save_unsaved_data()
@@ -510,7 +471,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.model().recalculate_display_scale()
 
     def create_new_dataset(self, _checked=False):
-        if not self._authorize_destructive_project_action():
+        if not self._confirm_discard_or_save():
             return
 
         wizard = main_wizard.MainWizard(parent=self, path="new_dataset")
@@ -518,22 +479,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             wizard_data = wizard.get_results()
             self._handle_wizard_results(wizard_data)
 
-    def new_dataset(self, name=DEFAULT_DATASET_NAME, is_diagnostic=False, ):
-        data_model = analysis_dataset.Dataset(title=name)
-        self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
-        self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.get_state(), False))
-        self.out_path = None
-        self._notify_user_that_data_is_unsaved()
-
-    def _notify_user_that_data_is_unsaved(self):
-        self._update_project_identity()
-
     def _update_project_identity(self, state=None):
-        path = getattr(self, "out_path", None)
-        name = os.path.basename(path) if path else "Untitled project"
+        path = self.workspace.path
+        name = path.name if path is not None else "Untitled project"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
-        self.setWindowFilePath(path or "")
+        self.setWindowFilePath(str(path) if path is not None else "")
         if state:
             self.statusbar.showMessage(state, 4000)
 
@@ -621,15 +572,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def data_error(self, msg):
         QMessageBox.warning(self, "Warning", msg)
 
-    def set_edit_focus(self, index):
-        """Sets edit focus to the row,col specified by index."""
-        if not index.isValid():
-            return
-        self.tableView.setCurrentIndex(index)
-        if os.environ.get("QT_QPA_PLATFORM") == "offscreen":
-            return
-        self.tableView.edit(index)
-
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()
         self.start_page.set_recent_projects(recent_datasets, self.dataset_selected, self._locate_recent_project, self._remove_recent_project)
@@ -679,7 +621,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self.model.set_confidence_level(new_confidence_level)
                 self._update_confidence_level_label()
                 self.model.reset_model()
-                self.data_dirtied()
 
             self._commit_model_operation(apply_confidence_level)
 
@@ -694,7 +635,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if not wizard.import_file(path):
                 return
             if wizard.get_wizard_path() == "rm5_import" or wizard.exec():
-                if self._authorize_destructive_project_action():
+                if self._confirm_discard_or_save():
                     self._handle_wizard_results(wizard.get_results())
         finally:
             wizard.deleteLater()
@@ -705,22 +646,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
                 model.workspaceEditCommitted,
-                self.tableView.cell_content_changed,
-                parent=self,
-            )
-        )
-        self._model_signal_connections.append(
-            app_error_handler.connect_safely(
-                model.workspaceEditCommitted,
                 self._workspace_edit_committed,
                 parent=self,
-            )
-        )
-
-        # Model resets clear the active editor, so restore its index explicitly.
-        self._model_signal_connections.append(
-            app_error_handler.connect_safely(
-                model.editFocusRequested, self.set_edit_focus, parent=self
             )
         )
 
@@ -812,21 +739,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.exec()
 
     def data_dirtied(self):
-        try:
-            runtime = project_adapter.RuntimeProject(
-                dataset=self.model.dataset,
-                model_state=self.model.get_state(),
-                restored_active_sheet=self.model.current_outcome_name is not None,
-            )
-        except project_adapter.ProjectAdapterError:
-            self.workspace.mark_dirty()
-        else:
-            self.workspace.update_live_state(runtime)
-            self.workspace.checkpoint()
-        self._notify_user_that_data_is_unsaved()
+        self.workspace.update_live_state(project_adapter.RuntimeProject(
+            dataset=self.model.dataset, current_sheet_id=self.model.current_sheet_id,
+        ))
+        self.workspace.checkpoint()
+        self._update_project_identity()
 
-    def _workspace_edit_committed(self, _edit):
+    def _workspace_edit_committed(self):
         self.data_dirtied()
+        self.tableView._enable_analysis_menus_if_appropriate()
 
     def _commit_model_operation(self, operation):
         """Run one already validated UI operation as one workspace change."""
@@ -837,7 +758,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.workspace.end_change()
         except BaseException as error:
             runtime = self.workspace.abort_change()
-            self._sheet_dragging = False
             if runtime is None:
                 raise
             try:
@@ -976,140 +896,57 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         position = (current.row(), current.column()) if current.isValid() else None
         self._set_model_adapter(
             runtime.dataset,
-            runtime.model_state,
+            runtime.current_sheet_id,
             recalculate_effect_previews=False,
         )
         self.workspace.update_live_state(runtime)
         self.workspace.checkpoint(expected_digest=target_digest)
-        self.out_path = str(self.workspace.path) if self.workspace.path else None
         self._update_project_identity()
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
 
     def populate_metrics_menu(self, metric_to_check=None):
-        """Populates the `metric` sub-menu with available metrics for the
-        current datatype.
-        """
-        # Clearing a checked QAction emits ``toggled(False)`` while Qt tears the
-        # old submenu down.  Those actions are connected to ``metric_selected``,
-        # which would otherwise recalculate every study while a restored
-        # project's menu is being rebuilt.  A document open must preserve the
-        # persisted effects rather than treating menu destruction as a user edit.
-        for menu_action in self.menuMetric.actions():
-            menu_action.blockSignals(True)
-            submenu = menu_action.menu()
-            if submenu is not None:
-                for action in submenu.actions():
-                    action.blockSignals(True)
+        for menu in self.menuMetric.findChildren(QtWidgets.QMenu,
+                                                 options=Qt.FindChildOption.FindDirectChildrenOnly):
+            menu.deleteLater()
+        if self._metric_actions is not None:
+            self._metric_actions.deleteLater()
         self.menuMetric.clear()
-        self.menuMetric.setDisabled(False)
+        data_type = self.model.get_current_data_type(get_str=False)
+        single, paired = {
+            analysis_catalog.BINARY: (analysis_catalog.BINARY_ONE_ARM_METRICS, analysis_catalog.BINARY_TWO_ARM_METRICS),
+            analysis_catalog.CONTINUOUS: (analysis_catalog.CONTINUOUS_ONE_ARM_METRICS, analysis_catalog.CONTINUOUS_TWO_ARM_METRICS),
+            analysis_catalog.TIME_TO_EVENT: ((), ("HR",)),
+            analysis_catalog.EVENT_RATES: ((), ("IRR",)),
+        }.get(data_type, ((), ()))
+        self.menuMetric.setEnabled(bool(single or paired))
+        if not self.menuMetric.isEnabled():
+            self._metric_actions = None
+            return
+        group = self._metric_actions = QtGui.QActionGroup(self.menuMetric)
+        group.setExclusive(True)
+        selected = metric_to_check or (paired[0] if paired else None)
+        for scope, metrics in (("Two-arm", paired), ("One-arm", single)):
+            submenu = required(self.menuMetric.addMenu(f"{scope} metrics"), "metric submenu")
+            submenu.setToolTip(f"Choose a {scope.lower()} effect measure.")
+            for metric in metrics:
+                label = analysis_identity.metric_label(self.model, metric)
+                action = required(group.addAction(label if metric == "Mean" else f"{label} ({metric})"), "metric action")
+                action.setToolTip(label)
+                action.setData(metric)
+                action.setCheckable(True)
+                action.setChecked(metric == selected)
+                submenu.addAction(action)
+        group.triggered.connect(app_error_handler.safe_slot(self._metric_selected, parent=self))
 
-        if self.model.get_current_data_type() == "binary":
-            self.add_binary_metrics(metric_to_check=metric_to_check)
-            self.metric_menu_is_set_for = analysis_catalog.BINARY
-
-        elif self.model.get_current_data_type() in ("time_to_event", "event_rates"):
-            metric = "HR" if self.model.get_current_data_type() == "time_to_event" else "IRR"
-            self.add_metrics([], [metric], metric_to_check=metric)
-            self.metric_menu_is_set_for = self.model.get_current_data_type(get_str=False)
-        elif self.model.get_current_data_type() == "continuous":
-            self.add_continuous_metrics(metric_to_check=metric_to_check)
-            self.metric_menu_is_set_for = analysis_catalog.CONTINUOUS
-
-        else:
-            # diagnostic data; deactive metrics option
-            # we always show sens. + spec. for diag. data.
-            self.menuMetric.setDisabled(True)
-            self.metric_menu_is_set_for = analysis_catalog.DIAGNOSTIC
-
-    def add_binary_metrics(self, metric_to_check=None):
-        self.add_metrics(
-            analysis_catalog.BINARY_ONE_ARM_METRICS,
-            analysis_catalog.BINARY_TWO_ARM_METRICS,
-            metric_to_check=metric_to_check,
-        )
-
-    def add_continuous_metrics(self, metric_to_check=None):
-        self.add_metrics(
-            analysis_catalog.CONTINUOUS_ONE_ARM_METRICS,
-            analysis_catalog.CONTINUOUS_TWO_ARM_METRICS,
-            metric_to_check=metric_to_check,
-        )
-
-    def add_metrics(self, one_arm_metrics, two_arm_metrics, metric_to_check=None):
-        # we'll add sub-menus for two-arm and one-arm metrics
-        self.twoArmMetricMenu = self.add_sub_metric_menu("Two-arm metrics")
-        self.oneArmMetricMenu = self.add_sub_metric_menu("One-arm metrics")
-
-        for i, metric in enumerate(two_arm_metrics):
-            metric_action = self.add_metric_action(metric, self.twoArmMetricMenu)
-            if metric == metric_to_check or (metric_to_check is None and i == 0):
-                # arbitrarily check the first metric in the case that none
-                # is specificied
-                metric_action.blockSignals(True)
-                metric_action.setChecked(True)
-                metric_action.blockSignals(False)
-
-        # now add the one-arm metrics
-        for metric in one_arm_metrics:
-            metric_action = self.add_metric_action(metric, self.oneArmMetricMenu)
-            if metric == metric_to_check:
-                metric_action.blockSignals(True)
-                metric_action.setChecked(True)
-                metric_action.blockSignals(False)
-
-    def add_sub_metric_menu(self, name):
-        sub_menu = QtWidgets.QMenu(str(name), self.menuMetric)
-        sub_menu.setToolTip(
-            "Choose a %s effect measure." % str(name).lower().removesuffix(' metrics')
-        )
-        self.menuMetric.addAction(sub_menu.menuAction())
-        return sub_menu
-
-    def add_metric_action(self, metric, menu):
-        label = analysis_identity.metric_label(self.model, metric)
-        text = label if metric == "Mean" else f"{label} ({metric})"
-        metric_action = QAction(text, self)
-        metric_action.setToolTip(label)
-        metric_action.setData(metric)
-        metric_action.setCheckable(True)
-        metric_action.toggled.connect(
-            app_error_handler.safe_slot(
-                lambda checked=False, metric=metric, menu=menu: self.metric_selected(
-                    metric, menu
-                ),
-                parent=self,
-            )
-        )
-        menu.addAction(metric_action)
-        return metric_action
-
-    def deselect_all_metrics(self):
-        data_type = self.tableView.model().get_current_data_type(get_str=False)
-        if data_type in (analysis_catalog.BINARY, analysis_catalog.CONTINUOUS, *analysis_catalog.RATIO_DATA_TYPES):
-            for menu_action in self.menuMetric.actions():
-                sub_menu = menu_action.menu()
-                if sub_menu is None:
-                    continue
-                for action in sub_menu.actions():
-                    action.blockSignals(True)
-                    action.setChecked(False)
-                    action.blockSignals(False)
-
-    def metric_selected(self, metric_name, menu):
-        self.deselect_all_metrics()
-
-        for action in menu.actions():
-            action_data = qt_text.to_native_text(action.data())
-            if action_data == metric_name:
-                action.blockSignals(True)
-                action.setChecked(True)
-                action.blockSignals(False)
+    def _metric_selected(self, action: QAction) -> None:
+        metric_name = str(action.data())
+        if metric_name == self.model.current_effect:
+            return
 
         def apply_metric():
             self.model.set_current_metric(metric_name)
             self.model.hydrate_derived_previews()
-            self.data_dirtied()
 
         self._commit_model_operation(apply_metric)
         self.model.reset_model()
@@ -1186,10 +1023,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         reset after a successful load so Ctrl+Z cannot step back into the previously open
         dataset.
         """
-        if not self._authorize_destructive_project_action():
+        if not self._confirm_discard_or_save():
             return
 
-        # if no file path is provided, prompt the user.
         if file_path is None:
             file_path, _selected_filter = QFileDialog.getOpenFileName(
                 parent=self,
@@ -1198,7 +1034,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 filter="RC MetaStudio projects (*.rcms)",
             )
 
-            # if the user didn't select anything, we return false.
             if file_path == "":
                 return False
 
@@ -1213,15 +1048,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             QMessageBox.critical(self, "Could not open project", msg)
             return None
 
-        self.out_path = file_path
-        self.model.analysis_source_path = file_path
         self._update_project_identity("Opened")
-        self._update_recent_project_nonfatal(file_path, "opened")
+        self._update_recent_project_nonfatal(os.fspath(file_path), "opened")
         return True
 
-    def _install_open_document(self, document):
+    def _install_open_document(self, runtime: project_adapter.RuntimeProject):
         """Adapt a validated session document into the live Qt model."""
-        runtime = document
         previous_model = self.model
         previous_current = self.tableView.currentIndex()
         current_cell = (
@@ -1238,7 +1070,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             self._set_model_adapter(
                 runtime.dataset,
-                runtime.model_state,
+                runtime.current_sheet_id,
                 recalculate_effect_previews=True,
             )
         except Exception:
@@ -1321,17 +1153,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _remove_study(self, study):
         self.model.current_sheet.rows.remove(study)
         self.model.reset_model()
-        self.data_dirtied()
 
     def set_model(
         self,
         data_model,
-        state_dict=None,
+        current_sheet_id: SheetId | None = None,
         recalculate_effect_previews=True,
     ):
         self._set_model_adapter(
             data_model,
-            state_dict=state_dict,
+            current_sheet_id=current_sheet_id,
             recalculate_effect_previews=recalculate_effect_previews,
         )
         self.data_dirtied()
@@ -1339,7 +1170,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _set_model_adapter(
         self,
         data_model,
-        state_dict=None,
+        current_sheet_id: SheetId | None = None,
         recalculate_effect_previews=True,
     ):
         # An empty dataset starts with one editable blank row.
@@ -1351,9 +1182,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._disconnect_model_signals()
         self.tableView.setModel(self.model)
 
-        # Restore view state only after replacing the model.
-        if state_dict is not None:
-            self.model.set_state(state_dict)
+        if current_sheet_id is not None:
+            self.model.set_current_sheet(current_sheet_id)
 
         self.tableView.model().update_column_indices()
         self.tableView.synchronize_column_widths()
@@ -1390,7 +1220,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._sheet_change(sheet.id, swap)
 
     def _setup_sheet_strip(self):
-        self._sheet_dragging = False
         self.sheet_name_edit = None
         self.sheet_tabs: SheetTabBar = SheetTabBar(self)
         required(QtWidgets.QApplication.instance(), "application").installEventFilter(self.sheet_tabs)
@@ -1460,9 +1289,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer = QtCore.QTimer(self)
         self._sheet_strip_timer.setSingleShot(True)
         self._sheet_strip_timer.timeout.connect(self._update_sheet_strip)
+        self.sheet_tabs.stripPaletteChanged.connect(self._apply_sheet_strip_palette)
+        self.sheet_tabs.resized.connect(lambda: QtCore.QTimer.singleShot(0, self._scroll_to_sheet_tab))
         self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
         scroll.rangeChanged.connect(self._schedule_sheet_strip_update)
         scroll.valueChanged.connect(self._sheet_scroll_changed)
+        self._schedule_sheet_strip_update()
+
+    def _apply_sheet_strip_palette(self, palette: QtGui.QPalette, add_button_style: str) -> None:
+        self.sheet_tab_content.setPalette(palette)
+        self.add_sheet_button.setStyleSheet(add_button_style)
         self._schedule_sheet_strip_update()
 
     def _schedule_sheet_strip_update(self, *_args):
@@ -1532,8 +1368,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if index < 0:
             return
         self._scroll_to_sheet_tab()
-        self.model.set_current_sheet(self.sheet_tabs.tabData(index))
-        self.workspace.select_sheet(self.model.current_sheet_id)
+        sheet_id = self.sheet_tabs.tabData(index)
+        if sheet_id == self.model.current_sheet_id:
+            return
+        self.model.set_current_sheet(sheet_id)
+        self.workspace.select_sheet(sheet_id)
         self.model_updated()
         self._update_workspace_guidance()
 
@@ -1543,7 +1382,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         def commit():
             operation()
             self.model_updated()
-            self.data_dirtied()
         self._commit_model_operation(commit)
 
     def _finish_sheet_rename(self, cancel=False):
@@ -1579,7 +1417,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         wizard.setField("outcomeName", f"Outcome {number}")
         if not wizard.exec():
             return
-        sheet = self._sheet_from_dataset_info(wizard.get_results()["outcome_info"])
+        result = wizard.get_results()
+        if result["path"] != "new_dataset":
+            raise RuntimeError("Add outcome requires a new sheet")
+        sheet = self._sheet_from_dataset_info(result["outcome_info"])
         def add():
             self.model.dataset.sheets.append(sheet)
             self.model.set_current_sheet(sheet.id)
@@ -1601,7 +1442,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         edit.setGeometry(rect)
         edit.returnPressed.connect(self._finish_sheet_rename)
         edit.editingFinished.connect(self._finish_sheet_rename)
-        edit.installEventFilter(self.sheet_tabs)
+        cancel = QtGui.QShortcut(QKeySequence(Qt.Key.Key_Escape), edit)
+        cancel.setContext(Qt.ShortcutContext.WidgetShortcut)
+        cancel.activated.connect(lambda: self._finish_sheet_rename(cancel=True))
         edit.show()
         edit.setFocus()
         edit.selectAll()
@@ -1634,17 +1477,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model.dataset.sheets.remove(sheet)
         self._sheet_change(sheet.id, delete)
 
-    def _move_sheet_tab(self, source, destination):
-        sheet_id = self.model.current_sheet_id
-        self.model.set_current_sheet(sheet_id)
-        self.workspace.select_sheet(sheet_id)
-        if QApplication.mouseButtons() & Qt.MouseButton.LeftButton and not self._sheet_dragging:
-            self.workspace.begin_change()
-            self._sheet_dragging = True
+    def _save_sheet_order(self):
+        sheets = self.model.dataset.sheets
+        by_id = {sheet.id: sheet for sheet in sheets}
+        order = [by_id[self.sheet_tabs.tabData(index)] for index in range(self.sheet_tabs.count())]
         def move():
-            sheets = self.model.dataset.sheets
-            sheets.insert(destination, sheets.pop(source))
-            self.data_dirtied()
+            sheets[:] = order
         self._commit_model_operation(move)
 
     def quit(self):
@@ -1654,7 +1492,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         prompt = QMessageBox(self)
         prompt.setIcon(QMessageBox.Icon.Warning)
         prompt.setWindowTitle("Unsaved changes")
-        project = os.path.basename(self.out_path) if self.out_path else "Untitled project"
+        path = self.workspace.path
+        project = path.name if path is not None else "Untitled project"
         prompt.setText(f"Save changes to “{project}”?")
         prompt.setStandardButtons(
             QMessageBox.StandardButton.Save
@@ -1671,26 +1510,22 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def save_as(self):
         return self.save(save_as=True)
 
-    def save(self, save_as=False):
-
-        docs_path = get_user_documents_path()
-        destination = self.out_path
-        if self.out_path is None or save_as:
-            # use current out_path otherwise base it on the current dataset name
-            if self.out_path:
-                out_f = str(self.out_path)
-            else:
-                out_f = os.path.join(docs_path, self.model.get_name())
-
-            out_f, _selected_filter = QFileDialog.getSaveFileName(
-                parent=self,
-                caption="Save project",
-                directory=out_f,
-                filter="RC MetaStudio projects (*.rcms)",
-            )
-            if out_f == "" or out_f is None:
-                return None
-            destination = out_f
+    def save(self, save_as=False, *, destination: str | Path | None = None):
+        if destination is None:
+            destination = self.workspace.path
+            if destination is None or save_as:
+                suggested = str(destination) if destination is not None else os.path.join(
+                    get_user_documents_path(), self.model.get_name()
+                )
+                selected, _ = QFileDialog.getSaveFileName(
+                    parent=self,
+                    caption="Save project",
+                    directory=suggested,
+                    filter="RC MetaStudio projects (*.rcms)",
+                )
+                if not selected:
+                    return None
+                destination = selected
 
         destination = str(destination)
         if not destination.lower().endswith(".rcms"):
@@ -1714,8 +1549,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         # The durable document commit is complete. Machine-local recent-project
         # bookkeeping must never turn this successful save into a false failure.
-        self.out_path = destination
-        self.model.analysis_source_path = destination
         self._update_project_identity("Saved")
         if durability_error is not None:
             self._report_durability_uncertain_save(destination, durability_error)
@@ -1723,102 +1556,63 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         return True
 
     @staticmethod
-    def _sheet_from_dataset_info(dataset_info):
+    def _sheet_from_dataset_info(dataset_info: main_wizard.DatasetInfo) -> analysis_dataset.Sheet:
         import uuid
         from rc_metastudio.analysis_dataset import Sheet, Arm
-        data_type = analysis_catalog.STR_TO_TYPE_DICT[dataset_info['data_type']]
-        groups = dataset_info.get('groups') or analysis_catalog.default_arm_names(data_type, dataset_info.get('sub_type'))
-        sheet = Sheet(SheetId(uuid.uuid4().hex), dataset_info['name'], data_type, dataset_info.get('sub_type'), dataset_info['data_type'], [Arm(ArmId(uuid.uuid4().hex), name) for name in groups], settings={'metric': dataset_info.get('effect')})
-        return sheet
+        family = required(dataset_info["data_type"], "dataset type")
+        name = required(dataset_info["name"], "outcome name")
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[family]
+        subtype = dataset_info.get("sub_type")
+        groups = dataset_info.get("groups") or analysis_catalog.default_arm_names(data_type, subtype)
+        return Sheet(
+            SheetId(uuid.uuid4().hex), name, data_type, subtype, family,
+            [Arm(ArmId(uuid.uuid4().hex), group) for group in groups],
+            settings={"metric": dataset_info.get("effect")},
+        )
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info):
+    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo):
         sheet = self._sheet_from_dataset_info(dataset_info)
         self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
         self.model.current_effect = dataset_info.get('effect')
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)
         self.model.reset_model()
 
-    def _handle_wizard_results(self, wizard_data):
-        path = wizard_data["path"]  # route through wizard
-
-        dataset_info = wizard_data["outcome_info"]
-
-        if path == "open":
+    def _handle_wizard_results(self, wizard_data: main_wizard.WizardResult):
+        if wizard_data["path"] == "open":
             self.open(file_path=wizard_data["selected_dataset"])
-        elif path == "rm5_import":
+        elif wizard_data["path"] == "rm5_import":
             self.set_model(wizard_data["rm5_dataset"])
             self.workspace.start_new_document()
-            self.out_path = None
-            self._notify_user_that_data_is_unsaved()
-        elif path == "new_dataset":
-            self._make_new_dataset_and_setup_spreadsheet(dataset_info)
+            self._update_project_identity()
+        elif wizard_data["path"] == "new_dataset":
+            self._make_new_dataset_and_setup_spreadsheet(wizard_data["outcome_info"])
             self.workspace.start_new_document()
-            self.out_path = None
-            self._notify_user_that_data_is_unsaved()
+            self._update_project_identity()
 
-        elif path == "csv_import":
-            csv_data = wizard_data["csv_data"]
+        else:
+            self._install_csv_import(wizard_data["outcome_info"], wizard_data["csv_data"])
 
-            def import_csv() -> None:
-                self._make_new_dataset_and_setup_spreadsheet(dataset_info)
-                ImportCsvCommand(
-                    imported_data=csv_data["data"],
-                    main_form=self,
-                    covariate_names=csv_data["covariate_names"],
-                    covariate_types=csv_data["covariate_types"],
-                ).redo()
-
-            self._commit_model_operation(import_csv)
-            self.workspace.start_new_document(keep_last_change=True)
-            self.out_path = None
-            self._notify_user_that_data_is_unsaved()
-
-
-class ImportCsvCommand:
-    def __init__(
-        self,
-        main_form=None,
-        imported_data=None,
-        covariate_names=None,
-        covariate_types=None,
-        description="Import a CSV file",
-    ):
-        if main_form is None:
-            raise ValueError("CSV import requires a main form")
-        self.imported_data = csv_import.normalize_import_rows(imported_data or [])
-        self.covariate_names = list(covariate_names or [])
-        self.covariate_types = list(covariate_types or [])
-        self.main_form: MainWindow = main_form
-
-    def redo(self):
-        self._import_data_into_new_dataset()
-
-    def _import_data_into_new_dataset(self):
-        num_rows = len(self.imported_data)
-        if num_rows == 0:
-            return
-        num_cols = len(self.imported_data[0])
-
-        if self.covariate_names != []:
-            for name, covariate_type in zip(self.covariate_names, self.covariate_types):
-                self.main_form._add_new_covariate(name, covariate_type)
-
-        # Copy data into table
-        import_progress = ImportProgressDialog(
-            self.main_form, 0, num_rows * num_cols - 1
-        )
-
-        import_progress.setValue(0)
-        import_progress.show()
+    def _install_csv_import(self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportPayload):
+        sheet = self._sheet_from_dataset_info(dataset_info)
+        dataset = analysis_dataset.Dataset(sheets=[sheet])
+        candidate = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
+        candidate.set_current_sheet(sheet.id)
+        for name, data_type in zip(csv_data["covariate_names"], csv_data["covariate_types"], strict=True):
+            candidate.add_covariate(name, data_type)
+        rows = csv_import.normalize_import_rows(csv_data["data"])
+        progress = ImportProgressDialog(self, len(rows))
         try:
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    import_progress.setValue(row * num_cols + col)
-                    QApplication.processEvents()
-                    value = str(self.imported_data[row][col])
-                    self.main_form.model.setData(
-                        self.main_form.model.index(row, col + 1), value, import_csv=True
-                    )
-
+            progress.progress_bar.setValue(0)
+            progress.show()
+            QApplication.processEvents(QtCore.QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
+            def show_progress(completed: int) -> None:
+                progress.progress_bar.setValue(completed)
+                progress.progress_bar.repaint()
+            warnings = candidate.load_import_rows(rows, show_progress)
         finally:
-            progress_dialog.dispose(import_progress)
+            progress_dialog.dispose(progress)
+        self._commit_model_operation(lambda: self.set_model(dataset, recalculate_effect_previews=False))
+        self.workspace.start_new_document(keep_last_change=True)
+        self._update_project_identity()
+        if warnings:
+            self.statusbar.showMessage(f"Skipped {len(warnings)} invalid cells. {warnings[0]}", 8000)

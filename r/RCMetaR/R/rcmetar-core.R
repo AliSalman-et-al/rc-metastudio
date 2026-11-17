@@ -50,51 +50,101 @@
 #' @name RCMetaR-core-api
 NULL
 
-rcmetar.analysis.methods <- function(data.type=NULL, workflow=NULL) {
-    methods <- list(
-        binary=list(
-            standard=c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random"),
-            cumulative=c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random"),
-            "leave-one-out"=c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random"),
-            subgroup=c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random"),
-            bootstrap=c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random"),
-            "meta-regression"=c("meta.regression")
-        ),
-        continuous=list(
-            standard=c("continuous.fixed", "continuous.random"),
-            cumulative=c("continuous.fixed", "continuous.random"),
-            "leave-one-out"=c("continuous.fixed", "continuous.random"),
-            subgroup=c("continuous.fixed", "continuous.random"),
-            bootstrap=c("continuous.fixed", "continuous.random"),
-            "meta-regression"=c("meta.regression")
-        ),
-        diagnostic=list(
-            standard=c("diagnostic.fixed.inv.var", "diagnostic.fixed.mh", "diagnostic.fixed.peto", "diagnostic.random", "diagnostic.reitsma"),
-            cumulative=c("diagnostic.fixed.inv.var", "diagnostic.fixed.mh", "diagnostic.fixed.peto", "diagnostic.random"),
-            "leave-one-out"=c("diagnostic.fixed.inv.var", "diagnostic.fixed.mh", "diagnostic.fixed.peto", "diagnostic.random"),
-            subgroup=c("diagnostic.fixed.inv.var", "diagnostic.fixed.mh", "diagnostic.fixed.peto", "diagnostic.random"),
-            "meta-regression"=c("diagnostic.reitsma")
-        )
+.rcmetar.method.registry <- function() {
+    repeated <- c("standard", "cumulative", "leave-one-out", "subgroup")
+    pooling <- c(repeated, "bootstrap")
+    method <- function(families, fit, parameters, pretty.names, overall=NULL,
+                       feasible=NULL, workflows=pooling, raw.data=FALSE, regression=NULL,
+                       plots=NULL) {
+        list(families=families, workflows=workflows, fit=fit, overall=overall,
+             parameters=parameters, pretty.names=pretty.names, feasible=feasible,
+             raw.data=raw.data, regression=regression, plots=plots)
+    }
+    ratio <- function(family, key, workflows=pooling, feasible=NULL) {
+        force(key)
+        descriptor <- method(family, function(data, params) ratio.analysis(data, params, key),
+                             function() ratio.parameters(key), function() ratio.pretty.names(key),
+                             function(result) result$res, feasible, workflows)
+        setNames(list(descriptor), key)
+    }
+    univariate.and.joint <- list(
+        binary.fixed.inv.var=method("binary", binary.fixed.inv.var,
+            binary.fixed.inv.var.parameters, binary.fixed.inv.var.pretty.names,
+            binary.fixed.inv.var.overall),
+        binary.fixed.mh=method("binary", binary.fixed.mh,
+            binary.fixed.mh.parameters, binary.fixed.mh.pretty.names,
+            binary.fixed.mh.overall, binary.fixed.mh.is.feasible),
+        binary.fixed.peto=method("binary", binary.fixed.peto,
+            binary.fixed.peto.parameters, binary.fixed.peto.pretty.names,
+            binary.fixed.peto.overall, binary.fixed.peto.is.feasible, raw.data=TRUE),
+        binary.random=method("binary", binary.random,
+            binary.random.parameters, binary.random.pretty.names, binary.random.overall),
+        continuous.fixed=method("continuous", continuous.fixed,
+            continuous.fixed.parameters, continuous.fixed.pretty.names, continuous.fixed.overall),
+        continuous.random=method("continuous", continuous.random,
+            continuous.random.parameters, continuous.random.pretty.names, continuous.random.overall),
+        diagnostic.fixed.inv.var=method("diagnostic", diagnostic.fixed.inv.var,
+            diagnostic.fixed.inv.var.parameters, diagnostic.fixed.inv.var.pretty.names,
+            diagnostic.fixed.inv.var.overall, diagnostic.fixed.inv.var.is.feasible, repeated),
+        diagnostic.fixed.mh=method("diagnostic", diagnostic.fixed.mh,
+            diagnostic.fixed.mh.parameters, diagnostic.fixed.mh.pretty.names,
+            diagnostic.fixed.mh.overall, diagnostic.fixed.mh.is.feasible, repeated),
+        diagnostic.fixed.peto=method("diagnostic", diagnostic.fixed.peto,
+            diagnostic.fixed.peto.parameters, diagnostic.fixed.peto.pretty.names,
+            diagnostic.fixed.peto.overall, diagnostic.fixed.peto.is.feasible, repeated),
+        diagnostic.random=method("diagnostic", diagnostic.random,
+            diagnostic.random.parameters, diagnostic.random.pretty.names,
+            diagnostic.random.overall, diagnostic.random.is.feasible, repeated),
+        diagnostic.reitsma=method("diagnostic", diagnostic.reitsma,
+            diagnostic.reitsma.parameters, diagnostic.reitsma.pretty.names,
+            feasible=diagnostic.reitsma.is.feasible, workflows=c("standard", "meta-regression"),
+            raw.data=TRUE,
+            regression=function(data, params, cond.means.data, stop.at.rma)
+                diagnostic.reitsma.meta.regression(data, params, stop.at.rma),
+            plots=c(standard="sroc", "meta-regression"="reitsma_coefficient")),
+        meta.regression=method(c("binary", "continuous", "time_to_event", "event_rates"),
+            meta.regression, meta.regression.parameters, meta.regression.pretty.names,
+            workflows="meta-regression", regression=meta.regression)
     )
+    c(univariate.and.joint,
+        ratio("time_to_event", "time_to_event.fixed"),
+        ratio("time_to_event", "time_to_event.random"),
+        ratio("event_rates", "event_rates.fixed"),
+        ratio("event_rates", "event_rates.random"),
+        ratio("event_rates", "event_rates.mh", repeated,
+              function(data, metric) ratio.mh.feasible(data))
+    )
+}
 
-    for (family in c("time_to_event", "event_rates")) {
-        base <- paste0(family, c(".fixed", ".random"))
-        pooling <- c(base, if (family == "event_rates") "event_rates.mh")
-        methods[[family]] <- list(standard=pooling, cumulative=pooling, "leave-one-out"=pooling,
-            subgroup=pooling, bootstrap=base, "meta-regression"="meta.regression")
+.rcmetar.method.choices <- function(registry, family, workflow) {
+    names(Filter(function(method) {
+        family %in% method$families && workflow %in% method$workflows
+    }, registry))
+}
+
+rcmetar.analysis.methods <- function(data.type=NULL, workflow=NULL) {
+    registry <- .rcmetar.method.registry()
+    families <- unique(unlist(lapply(registry, `[[`, "families"), use.names=FALSE))
+    workflows <- unique(unlist(lapply(registry, `[[`, "workflows"), use.names=FALSE))
+    family.methods <- function(family) {
+        choices <- setNames(lapply(workflows, function(workflow) {
+            .rcmetar.method.choices(registry, family, workflow)
+        }), workflows)
+        Filter(length, choices)
     }
     if (is.null(data.type)) {
-        return(methods)
+        return(setNames(lapply(families, family.methods), families))
     }
-    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), names(methods), "data.type")
+    data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), families, "data.type")
     if (is.null(workflow)) {
-        return(methods[[data.type]])
+        return(family.methods(data.type))
     }
     workflow <- .rcmetar.normalize.workflow(workflow)
-    if (is.null(methods[[data.type]][[workflow]])) {
+    choices <- .rcmetar.method.choices(registry, data.type, workflow)
+    if (!length(choices)) {
         stop(sprintf("Workflow '%s' is not supported for %s data.", workflow, data.type), call.=FALSE)
     }
-    methods[[data.type]][[workflow]]
+    choices
 }
 
 rcmetar.available.methods <- function(data.type=NULL, om.data=NULL, metric=NULL, workflow="standard") {
@@ -106,29 +156,22 @@ rcmetar.available.methods <- function(data.type=NULL, om.data=NULL, metric=NULL,
     }
 
     methods <- rcmetar.analysis.methods(data.type, workflow)
+    registry <- .rcmetar.method.registry()
     available <- c()
     for (method in methods) {
-        feasible <- TRUE
-        if (!is.null(om.data)) {
-            feasible <- isTRUE(.rcmetar.method.feasible(method, om.data, metric))
-        }
-
-        if (feasible) {
-            pretty.names <- .rcmetar.method.pretty.names(method)
-            pretty.name <- method
-            if (!is.null(pretty.names$pretty.name)) {
-                pretty.name <- as.character(pretty.names$pretty.name)
-            }
-            available[[pretty.name]] <- method
+        entry <- registry[[method]]
+        if (is.null(om.data) || is.null(entry$feasible) || isTRUE(entry$feasible(om.data, metric))) {
+            label <- as.character(entry$pretty.names()$pretty.name %||% method)
+            available[[label]] <- method
         }
     }
     available
 }
 
 rcmetar.method.parameters <- function(method) {
-    .rcmetar.validate.method.name(method)
-    parameters <- .rcmetar.method.parameters(method)
-    parameters$pretty.names <- .rcmetar.method.pretty.names(method)
+    method <- .rcmetar.method.registry()[[.rcmetar.validate.method.name(method)]]
+    parameters <- method$parameters()
+    parameters$pretty.names <- method$pretty.names()
     parameters
 }
 
@@ -148,26 +191,12 @@ rcmetar.analysis.plot.capabilities <- function(data.type, method, workflow="stan
         stop(sprintf("Method '%s' is not available for %s %s analysis.", method, data.type, workflow), call.=FALSE)
     }
 
-    descriptor <- function(plot.kind) {
-        .rcmetar.plot.descriptor.for.kind(plot.kind, has.params=TRUE)
-    }
-    if (workflow == "cumulative") return(list(descriptor("cumulative_forest")))
-    if (workflow == "leave-one-out") return(list(descriptor("leave_one_out_forest")))
-    if (workflow == "subgroup") return(list(descriptor("subgroup_forest")))
-    if (workflow == "bootstrap") return(list(descriptor("other")))
-    if (method == "diagnostic.reitsma") {
-        if (workflow == "meta-regression") {
-            # Reitsma meta-regression emits one coefficient forest per modeled
-            # side.  Do not advertise the generic metafor bubble plot or its
-            # controls for this joint model.
-            return(list(descriptor("forest")))
-        }
-        return(list(
-            .rcmetar.plot.descriptor.for.kind("sroc", has.params=TRUE)
-        ))
-    }
-    if (workflow == "meta-regression") return(list(descriptor("regression")))
-    list(descriptor("forest"))
+    defaults <- c(standard="forest", cumulative="cumulative_forest",
+                  "leave-one-out"="leave_one_out_forest", subgroup="subgroup_forest",
+                  bootstrap="other", "meta-regression"="regression")
+    kinds <- .rcmetar.method.registry()[[method]]$plots
+    kind <- if (workflow %in% names(kinds)) kinds[[workflow]] else defaults[[workflow]]
+    list(.rcmetar.plot.descriptor.for.kind(kind, has.params=TRUE))
 }
 
 rcmetar.set.global.conf.level <- function(conf.level) {
@@ -560,11 +589,9 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         stop.at.rma=stop.at.rma
     )
 
-    # Reitsma owns the count transformation.  Keep raw TP/FN/FP/TN all the
-    # way through that method; other methods still receive their prepared
-    # effect data at this boundary.
-    raw.diagnostic <- identical(request$data.type, "diagnostic") && identical(request$method, "diagnostic.reitsma")
-    if (!identical(request$method, "binary.fixed.peto") && !raw.diagnostic) {
+    # Peto and Reitsma delegate count transformation to the fit authority.
+    selected.method <- .rcmetar.method.registry()[[request$method]]
+    if (!selected.method$raw.data) {
         om.data <- rcmetar.prepare.analysis.data(om.data, request$params)
     }
 
@@ -572,14 +599,13 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     package.warnings <- character()
     result <- withCallingHandlers(switch(
         request$workflow,
-        standard=.rcmetar.dispatch.standard(om.data, request),
+        standard=selected.method$fit(om.data, request$params),
         cumulative=.rcmetar.dispatch.meta.workflow(om.data, request),
         "leave-one-out"=.rcmetar.dispatch.meta.workflow(om.data, request),
         subgroup=.rcmetar.dispatch.meta.workflow(om.data, request),
         bootstrap=bootstrap(request$method, om.data, request$params, request$cond.means.data),
-        "meta-regression"=if (identical(request$data.type, "diagnostic") && identical(request$method, "diagnostic.reitsma")) {
-            diagnostic.reitsma.meta.regression(om.data, request$params, request$stop.at.rma)
-        } else meta.regression(om.data, request$params, request$cond.means.data, request$stop.at.rma)
+        "meta-regression"=selected.method$regression(
+            om.data, request$params, request$cond.means.data, request$stop.at.rma)
     ), warning=function(condition) {
         package.warnings <<- unique(c(package.warnings, conditionMessage(condition)))
     })
@@ -832,46 +858,12 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     )
 }
 
-.rcmetar.dispatch.standard <- function(om.data, request) {
-    .rcmetar.call.method(request$method, om.data, request$params)
-}
-
 .rcmetar.call.method <- function(method, om.data, params) {
-    if (is(om.data, "RatioData") && method != "meta.regression") return(ratio.analysis(om.data, params, method))
-    switch(
-        method,
-        binary.fixed.inv.var = binary.fixed.inv.var(om.data, params),
-        binary.fixed.mh = binary.fixed.mh(om.data, params),
-        binary.fixed.peto = binary.fixed.peto(om.data, params),
-        binary.random = binary.random(om.data, params),
-        continuous.fixed = continuous.fixed(om.data, params),
-        continuous.random = continuous.random(om.data, params),
-        diagnostic.fixed.inv.var = diagnostic.fixed.inv.var(om.data, params),
-        diagnostic.fixed.mh = diagnostic.fixed.mh(om.data, params),
-        diagnostic.fixed.peto = diagnostic.fixed.peto(om.data, params),
-        diagnostic.random = diagnostic.random(om.data, params),
-        diagnostic.reitsma = diagnostic.reitsma(om.data, params),
-        meta.regression = meta.regression(om.data, params),
+    selected <- .rcmetar.method.registry()[[method]]
+    if (is.null(selected)) {
         stop(sprintf("Unknown RCMetaR analysis method '%s'.", method), call.=FALSE)
-    )
-}
-
-.rcmetar.call.overall <- function(method, result) {
-    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(result$res)
-    switch(
-        method,
-        binary.fixed.inv.var = binary.fixed.inv.var.overall(result),
-        binary.fixed.mh = binary.fixed.mh.overall(result),
-        binary.fixed.peto = binary.fixed.peto.overall(result),
-        binary.random = binary.random.overall(result),
-        continuous.fixed = continuous.fixed.overall(result),
-        continuous.random = continuous.random.overall(result),
-        diagnostic.fixed.inv.var = diagnostic.fixed.inv.var.overall(result),
-        diagnostic.fixed.mh = diagnostic.fixed.mh.overall(result),
-        diagnostic.fixed.peto = diagnostic.fixed.peto.overall(result),
-        diagnostic.random = diagnostic.random.overall(result),
-        stop(sprintf("Unknown RCMetaR overall method '%s'.", method), call.=FALSE)
-    )
+    }
+    selected$fit(om.data, params)
 }
 
 .rcmetar.dispatch.meta.workflow <- function(om.data, request) {
@@ -1006,7 +998,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     if (method %in% c("diagnostic.hsroc", "diagnostic.bivariate.ml")) {
         stop(sprintf("Diagnostic method '%s' was removed. Use 'diagnostic.reitsma' (Reitsma bivariate model) for count-based joint analysis.", method), call.=FALSE)
     }
-    known.methods <- unique(unlist(rcmetar.analysis.methods(), use.names=FALSE))
+    known.methods <- names(.rcmetar.method.registry())
     if (!(method %in% known.methods)) {
         stop(sprintf("Unknown RCMetaR analysis method '%s'.", method), call.=FALSE)
     }
@@ -1014,56 +1006,8 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 }
 
 .rcmetar.method.pretty.names <- function(method) {
-    method <- .rcmetar.validate.method.name(method)
-    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(ratio.pretty.names(method))
-    switch(method,
-        binary.fixed.inv.var = binary.fixed.inv.var.pretty.names(),
-        binary.fixed.mh = binary.fixed.mh.pretty.names(),
-        binary.fixed.peto = binary.fixed.peto.pretty.names(),
-        binary.random = binary.random.pretty.names(),
-        continuous.fixed = continuous.fixed.pretty.names(),
-        continuous.random = continuous.random.pretty.names(),
-        diagnostic.fixed.inv.var = diagnostic.fixed.inv.var.pretty.names(),
-        diagnostic.fixed.mh = diagnostic.fixed.mh.pretty.names(),
-        diagnostic.fixed.peto = diagnostic.fixed.peto.pretty.names(),
-        diagnostic.random = diagnostic.random.pretty.names(),
-        diagnostic.reitsma = diagnostic.reitsma.pretty.names(),
-        meta.regression = meta.regression.pretty.names(),
-        list(pretty.name=method, description="None provided.")
-    )
-}
-
-.rcmetar.method.parameters <- function(method) {
-    if (startsWith(method, "time_to_event.") || startsWith(method, "event_rates.")) return(ratio.parameters(method))
-    switch(method,
-        binary.fixed.inv.var = binary.fixed.inv.var.parameters(),
-        binary.fixed.mh = binary.fixed.mh.parameters(),
-        binary.fixed.peto = binary.fixed.peto.parameters(),
-        binary.random = binary.random.parameters(),
-        continuous.fixed = continuous.fixed.parameters(),
-        continuous.random = continuous.random.parameters(),
-        diagnostic.fixed.inv.var = diagnostic.fixed.inv.var.parameters(),
-        diagnostic.fixed.mh = diagnostic.fixed.mh.parameters(),
-        diagnostic.fixed.peto = diagnostic.fixed.peto.parameters(),
-        diagnostic.random = diagnostic.random.parameters(),
-        diagnostic.reitsma = diagnostic.reitsma.parameters(),
-        meta.regression = meta.regression.parameters(),
-        stop(sprintf("Method '%s' does not expose parameters.", method), call.=FALSE)
-    )
-}
-
-.rcmetar.method.feasible <- function(method, om.data, metric) {
-    if (method == "event_rates.mh") return(ratio.mh.feasible(om.data))
-    switch(method,
-        binary.fixed.mh = binary.fixed.mh.is.feasible(om.data, metric),
-        binary.fixed.peto = binary.fixed.peto.is.feasible(om.data, metric),
-        diagnostic.fixed.inv.var = diagnostic.fixed.inv.var.is.feasible(om.data, metric),
-        diagnostic.fixed.mh = diagnostic.fixed.mh.is.feasible(om.data, metric),
-        diagnostic.fixed.peto = diagnostic.fixed.peto.is.feasible(om.data, metric),
-        diagnostic.random = diagnostic.random.is.feasible(om.data, metric),
-        diagnostic.reitsma = diagnostic.reitsma.is.feasible(om.data, metric),
-        TRUE
-    )
+    selected <- .rcmetar.method.registry()[[.rcmetar.validate.method.name(method)]]
+    selected$pretty.names()
 }
 
 .rcmetar.attach.inference.method <- function(result) {
@@ -1242,6 +1186,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         cumulative_forest=list(styleable=TRUE, regenerator="forest", option.groups=TRUE),
         leave_one_out_forest=list(styleable=TRUE, regenerator="forest", option.groups=TRUE),
         subgroup_forest=list(styleable=TRUE, regenerator="forest", option.groups=TRUE),
+        reitsma_coefficient=list(styleable=TRUE, regenerator="forest", option.groups=TRUE),
         regression=list(styleable=TRUE, regenerator="regression", option.groups=TRUE),
         roc=list(styleable=FALSE, regenerator="none", option.groups=FALSE),
         sroc=list(styleable=TRUE, regenerator="sroc", option.groups=TRUE),

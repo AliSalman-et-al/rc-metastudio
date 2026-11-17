@@ -77,7 +77,6 @@ class CovariateTypeModel(QAbstractTableModel):
         self.dataset = dataset
         self.covariate = covariate
 
-        # now we add a covariate with the new type
         self.new_data_type = CONTINUOUS if covariate["data_type"] == FACTOR else FACTOR
 
         self.update_preview_rows()

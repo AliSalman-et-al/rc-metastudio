@@ -133,8 +133,7 @@ def run(app, window, work, record):
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names
-    window.out_path=str(work / "legacy-arm-names.rcms")
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=work / "legacy-arm-names.rcms") and window.open(window.workspace.path, raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"]
     assert legacy.read_bytes() == original
     record("round5-arm-legacy-reopened", window, groups=window.model.arm_names)

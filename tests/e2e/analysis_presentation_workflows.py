@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
-from tests.python.gui.qt_test_support import required
+from tests.python.gui.qt_test_support import metric_action, required
 from tests.e2e.analysis_result_checks import (
     check_fixed_references,
     check_report,
@@ -21,6 +21,7 @@ from tests.e2e.plot_geometry_checks import (
     check_interval_caps,
     check_sequential,
 )
+from tests.e2e.plot_observations import load_serialized_object
 
 
 def analyze_existing(app, window, workflow, method, record, parameters=None, *, covariates=('Dose',)):
@@ -104,7 +105,7 @@ def run(app, window, work, record, scenario):
         for family, metric in cases:
             def select_metric(target):
                 if metric:
-                    next(action for action in target.oneArmMetricMenu.actions() if action.data() == metric).trigger()
+                    metric_action(target.menuMetric, metric).trigger()
                     app.processEvents()
             for digits in ((3,) if metric else (3, 6)):
                 for style in ("default", "revman", "bmj"):
@@ -115,7 +116,7 @@ def run(app, window, work, record, scenario):
                     if metric:
                         from rc_metastudio import r_bridge
                         for title, path in view.results.display_images.items():
-                            r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+                            load_serialized_object(str(view.params_paths[title]) + ".plotdata")
                             axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); list(metric=plot.data$params$measure, ticks=ticks, labels=RCMetaR:::rcmetar.revman.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
                             raw = [[float(window.model.data(window.model.index(row, column))) for column in window.model.RAW_DATA[:2]] for row in range(6)]
                             assert raw == [[4.0+i, 20.0+i] for i in range(6)], raw
@@ -304,7 +305,7 @@ def run(app, window, work, record, scenario):
             assert view.results.display_images, "missing degenerate-axis figures"
             bounds, ticks = [], set()
             for title, path in view.results.display_images.items():
-                r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+                load_serialized_object(str(view.params_paths[title]) + ".plotdata")
                 bounds = r_bridge.r_iterable_to_list(r_bridge.execute_r_string('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
                 assert all(math.isfinite(x) for x in bounds) and bounds[1] > bounds[0], bounds
                 nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
@@ -329,7 +330,7 @@ def run(app, window, work, record, scenario):
                     for row, events in enumerate((3, 15, 30, 50, 70, 90)):
                         for column, value in zip(reversed(target.model.RAW_DATA[:2]), (100, events), strict=True):
                             assert target.model.setData(target.model.index(row, column), str(value))
-                    next(action for action in target.oneArmMetricMenu.actions() if action.data() == "PLO").trigger()
+                    metric_action(target.menuMetric, "PLO").trigger()
                     app.processEvents()
                     from PyQt6.QtCore import Qt
                     for row in range(6):
@@ -504,7 +505,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
                                     parameters={"fp_style": style})
             check_report(app, view, work, record)
             title, path = next(iter(view.results.display_images.items()))
-            r_bridge.load_in_r(str(view.params_paths[title]) + ".plotdata")
+            load_serialized_object(str(view.params_paths[title]) + ".plotdata")
             layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$metrics$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
             assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
             assert layout["height"] > 18, layout
@@ -611,8 +612,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         window.workspace.mark_saved()
         def prepare_metric(target):
             if metric:
-                menu = target.oneArmMetricMenu if family == "onearm-proportion" else target.twoArmMetricMenu
-                next(action for action in menu.actions() if action.data() == metric).trigger()
+                metric_action(target.menuMetric, metric).trigger()
                 app.processEvents()
             add_dose(target)
         view = run_analysis_case(app, window, "analysis-data-" + family, record, keep_results=True,

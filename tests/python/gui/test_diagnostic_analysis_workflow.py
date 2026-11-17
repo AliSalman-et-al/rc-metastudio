@@ -40,8 +40,6 @@ def _create_diagnostic_dataset(window):
                 "metric_choices": [],
                 "name": "Accuracy",
             },
-            "csv_data": None,
-            "selected_dataset": None,
         }
     )
 

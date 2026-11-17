@@ -20,64 +20,11 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.verification_evidence import passed_evidence, remember_evidence, source_digest
-sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-from advanced_workflows import PLOT_PRODUCERS, SCENARIOS as ADVANCED_SCENARIOS
-from analysis_matrix import SCENARIOS as ANALYSIS_SCENARIOS
-from ratio_workflows import SCENARIOS as RATIO_SCENARIOS
-
-SCENARIOS = (
-    *("audit-round3-" + family for family in ("onearm-proportion", "onearm-mean", "reg-coef", "generic-effect", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "diagnostic", "hr", "irr", "references", "precision", "round5", "bubble-metrics", "irr-context", "arm-names", *("presentation-" + family for family in ("diagnostic", "onearm-proportion", "twoarm-proportion", "twoarm-mean", "twoarm-smd", "reg-coef", "generic-effect", "sequential", "transforms")))),
-    "review1-design",
-    "ui-fine-tuning",
-    "ui-fable-polish",
-    "ui-design-direction",
-    "review-workflows",
-    "subgroup-image",
-    "subgroup-image-dark-large",
-    "doctor",
-    "hillclimb",
-    "analysis-dialog",
-    "grid-entry",
-    "ui-refresh",
-    "ux-improvements",
-    "results-window",
-    "manuscript-export-direct",
-    "manuscript-export",
-    "manuscript-split-figure",
-    "results-presentation",
-    "results-values",
-    "amino",
-    "sheets",
-    "ui-crawl",
-    "rm5-import",
-    "sheets-legacy",
-    "sheets-edges",
-    "sheets-persist",
-    "sheets-swap",
-    "continuous",
-    "lymph",
-    "editing",
-    "csv",
-    "xlsx-import",
-    "plot-edit",
-    "small-study-effects",
-    "calculator-binary",
-    "calculator-continuous",
-    "calculator-diagnostic",
-    *ANALYSIS_SCENARIOS,
-    *ADVANCED_SCENARIOS,
-    *RATIO_SCENARIOS,
+from scripts.verification_evidence import (
+    desktop_environment, passed_evidence, remember_evidence, source_digest,
+    verification_launch_inputs, verified_typing,
 )
-
-
-# Plot workflows execute the full producer proof; exact CLI aliases run once.
-QUALIFICATION_SCENARIOS = tuple(
-    scenario for scenario in SCENARIOS
-    if scenario not in {
-        "doctor", "ui-crawl", "results-window", "project-structure", *PLOT_PRODUCERS.values()
-    }
-)
+from tests.e2e.desktop_scenarios import SCENARIOS
 
 
 def git_output(*arguments: str) -> str:
@@ -137,27 +84,6 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
     )
 
 
-def _scenario_timeout(scenario: str) -> int:
-    if scenario in {"ui-fine-tuning", "ui-design-direction"}:
-        return 240
-    if scenario == "ui-crawl":
-        return 600
-    if scenario == "ratios-irr":
-        return 1200
-    timeout_seconds = 120
-    if scenario in {"sheets-legacy", "sheets-swap"}:
-        return 600
-    if scenario in {"hillclimb", "manuscript-export", "manuscript-export-direct", "results-window", "ux-improvements", "results-values"}:
-        return 600
-    if scenario in {"ratios-hr", "project-display-labels", "project-round6-polish", "project-release-coefficients", "project-reviewer-predictions", "project-reviewer-groups", "project-reviewer-colours", "calculator-ratio-precision", "project-axis-proportions", "project-axis-others", "project-axis-sequential"}:
-        timeout_seconds = 600
-    elif scenario.startswith("audit-round3-"):
-        timeout_seconds = 600
-    elif scenario in {"rm5-import", "review-workflows", "subgroup-image", "subgroup-image-dark-large"} or scenario.startswith("plot-workflow-"):
-        timeout_seconds = 240
-    return timeout_seconds
-
-
 def _reuse_evidence(context, args) -> bool:
     if args.compare_measures is not None:
         return False
@@ -178,29 +104,16 @@ def _print_failure_transcripts(evidence: Path) -> None:
         print(display.encode(encoding, errors="backslashreplace").decode(encoding), flush=True)
 
 
-def _desktop_environment(work: Path, evidence: Path, native: bool) -> dict[str, str]:
+def _desktop_environment(work: Path, evidence: Path, base: dict[str, str]) -> dict[str, str]:
     r_temporary = work / "tmp"
     r_temporary.mkdir()
-    env = os.environ | {
-        "PYTHONIOENCODING": "utf-8",
-        "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
-        "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
-        "RCMS_QT6_BUILD_ROOT": os.environ.get(
-            "RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification")
-        ),
+    return base | {
         "RCMS_ANALYSIS_SCRATCH_DIR": str(work / "analysis"),
         "RCMS_E2E_EVIDENCE_DIR": str(evidence),
         "TMPDIR": str(r_temporary),
         "TMP": str(r_temporary),
         "TEMP": str(r_temporary),
     }
-    if native:
-        env.pop("QT_QPA_PLATFORM", None)
-    else:
-        env["QT_QPA_PLATFORM"] = "offscreen"
-        if sys.platform == "win32":
-            env.setdefault("QT_QPA_FONTDIR", str(Path(env["WINDIR"]) / "Fonts"))
-    return env
 
 
 def _compare_hillclimb(passed, args, evidence):
@@ -218,7 +131,7 @@ def _compare_hillclimb(passed, args, evidence):
 
 
 def _desktop_command(scenario, work):
-    timeout_seconds = _scenario_timeout(scenario)
+    timeout_seconds = SCENARIOS[scenario].timeout_seconds
     command = [
         sys.executable,
         str(ROOT / "scripts/run_with_timeout.py"),
@@ -237,6 +150,23 @@ def _desktop_command(scenario, work):
     return command
 
 
+def _desktop_typing(build_root: Path, source: str, env: dict[str, str], *, native: bool):
+    try:
+        controller = json.loads(os.environ.get("RCMS_E2E_CONTEXT", "{}"))
+    except ValueError:
+        controller = {}
+    typing_evidence = controller.get("typing") if isinstance(controller, dict) else None
+    if not native and verified_typing(typing_evidence, build_root, source):
+        context = controller.get("verification")
+        if context is not None and source != context["source_sha256"]:
+            raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
+        if controller.get("launch_inputs") != verification_launch_inputs(env):
+            context = None
+        return typing_evidence, context
+    from scripts.verify import run_typing
+    return str(run_typing(build_root)), None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("scenario", choices=SCENARIOS)
@@ -247,12 +177,10 @@ def main() -> int:
     )
     parser.add_argument("--compare-measures", type=Path, help="Compare hillclimb counts and numerical output with a previous measures.json")
     args = parser.parse_args()
-    context = json.loads(os.environ["RCMS_E2E_CONTEXT"]) if os.environ.get("RCMS_E2E_CONTEXT") else None
-    if context is not None and source_digest() != context["source_sha256"]:
-        raise RuntimeError("Verification inputs changed after desktop collection; restart the run")
-    if context is None:
-        from scripts.verify import DEFAULT_BUILD_ROOT, run_typing
-        run_typing(Path(os.environ.get("RCMS_QT6_BUILD_ROOT", str(DEFAULT_BUILD_ROOT))).resolve())
+    env = desktop_environment(native=args.native)
+    build_root = Path(env["RCMS_QT6_BUILD_ROOT"])
+    source = source_digest(build_root)
+    typing_evidence, context = _desktop_typing(build_root, source, env, native=args.native)
     if _reuse_evidence(context, args):
         return 0
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
@@ -261,6 +189,7 @@ def main() -> int:
     scratch_root = ROOT / "build/verification/rcms"
     scratch_root.mkdir(parents=True, exist_ok=True)
     record = run_metadata(args.scenario, args.native)
+    record["typing_evidence"] = typing_evidence
     if context is not None:
         record["verification_context"] = context
     try:
@@ -268,12 +197,12 @@ def main() -> int:
             prefix="desktop-", dir=scratch_root
         ) as temporary:
             work = Path(temporary)
-            env = _desktop_environment(work, evidence, args.native)
+            child_environment = _desktop_environment(work, evidence, env)
             command = _desktop_command(args.scenario, work)
             record["command"] = command
             print(f"Evidence: {evidence}", flush=True)
             try:
-                env["RCMS_DRIVE_STARTED"] = str(time.time())
+                child_environment["RCMS_DRIVE_STARTED"] = str(time.time())
                 with (
                     (evidence / "stdout.log").open("wb") as stdout,
                     (evidence / "stderr.log").open("wb") as stderr,
@@ -281,7 +210,7 @@ def main() -> int:
                     result = subprocess.run(
                         command,
                         cwd=work,
-                        env=env,
+                        env=child_environment,
                         stdout=stdout,
                         stderr=stderr,
                         check=False,
@@ -299,7 +228,7 @@ def main() -> int:
             _print_failure_transcripts(evidence)
         return 0 if passed else 1
     finally:
-        if context is not None and source_digest() != context["source_sha256"]:
+        if source_digest(build_root) != source:
             record["passed"] = False
             write_manifest(evidence, record)
             raise RuntimeError("Verification inputs changed during desktop driving; restart the run")

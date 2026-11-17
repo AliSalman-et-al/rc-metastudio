@@ -229,7 +229,7 @@ qa_render <- function(output.root=root) {
     reg_data <- reg; reg_data@covariates <- entry$covariates
     params <- list(create.plot=TRUE, fp_outpath=file.path(root, paste0("coeff-", entry$label, ".svg")), estimator="REML", conf.level=95, correction.policy="All studies if any zero exists", adjust=.5)
     result <- RCMetaR:::diagnostic.reitsma.meta.regression(reg_data, params)
-    normalized <- lapply(result$plot_capabilities, qa_descriptor, expected.kind="forest")
+    normalized <- lapply(result$plot_capabilities, qa_descriptor, expected.kind="reitsma_coefficient")
     descriptor.contract$descriptors$coefficient_forest <- normalized[[1L]]
     for (title in names(result$images)) {
       image <- unname(result$images[[title]])

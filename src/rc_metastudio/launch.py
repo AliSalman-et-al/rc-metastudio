@@ -17,8 +17,6 @@ prepare_generated_ui_imports()
 from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_runtime, settings
 
 APPLICATION_ICON_PATH = ":/misc/meta.png"
-
-
 def screen_bounded_splash_pixmap(source, available_logical_size):
     """Bound a splash in Logical Layout Space while preserving source DPR."""
     pixmap = QPixmap(source)
@@ -164,7 +162,7 @@ def _startup_project_path(argv):
     return None
 
 
-def _argument_value(argv, option):
+def startup_argument_value(argv, option):
     args = list(argv or [])
     if option not in args:
         return None
@@ -174,7 +172,7 @@ def _argument_value(argv, option):
     return args[index + 1]
 
 
-def _resolve_startup_argv(argv=None, native_argv=None, frozen=None):
+def resolve_startup_argv(argv=None, native_argv=None, frozen=None):
     resolved = list(sys.argv if argv is None else argv)
     is_frozen = getattr(sys, "frozen", False) if frozen is None else frozen
     if not is_frozen:
@@ -228,22 +226,6 @@ def load_R_libraries(app, splash=None, phase_callback=None):
     _emit_automation_phase(phase_callback, "r-library:grid:complete")
 
 
-def _write_automation_pid(startup_argv):
-    pid_path = _argument_value(startup_argv, "--automation-pid-file") or os.environ.get(
-        "RCMS_AUTOMATION_PID_FILE"
-    )
-    if pid_path:
-        Path(pid_path).write_text(str(os.getpid()) + "\n", encoding="utf-8")
-
-
-def _is_automation_command(startup_argv):
-    return (
-        len(startup_argv) > 1
-        and startup_argv[1].startswith("--automation-")
-        and startup_argv[1] != "--automation-startup-project-smoke"
-    )
-
-
 def _open_startup_project(app, meta, project_path, startup_argv):
     opened = meta.open(project_path)
     smoke_requested = (
@@ -258,7 +240,7 @@ def _open_startup_project(app, meta, project_path, startup_argv):
         meta,
         project_path,
         opened,
-        completion_marker=_argument_value(
+        completion_marker=startup_argument_value(
             startup_argv, "--automation-startup-completion-marker"
         ),
     )
@@ -297,15 +279,7 @@ def _mark_startup_workspace_saved(window):
         workspace.mark_saved()
 
 
-def start():
-    qt6_resources.ensure_application_resources()
-    app_error_handler.install_global_exception_handler()
-    startup_argv = _resolve_startup_argv()
-    _write_automation_pid(startup_argv)
-    if _is_automation_command(startup_argv):
-        from rc_metastudio import automation
-
-        return automation.dispatch(startup_argv)
+def start(startup_argv: list[str]):
     startup_project_path = _startup_project_path(startup_argv)
     if startup_project_path:
         startup_project_path = os.path.abspath(startup_project_path)
@@ -476,7 +450,3 @@ def _import_main_window():
     from rc_metastudio import main_window
 
     return main_window
-
-
-if __name__ == "__main__":
-    start()

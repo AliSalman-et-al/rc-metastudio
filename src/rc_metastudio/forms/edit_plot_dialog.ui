@@ -43,21 +43,6 @@
       </item>
       <item row="0" column="1" colspan="2">
        <widget class="QComboBox" name="style_cbo">
-        <item>
-         <property name="text">
-          <string>Default</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>RevMan</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>BMJ</string>
-         </property>
-        </item>
        </widget>
       </item>
      </layout>
@@ -77,9 +62,6 @@
        </widget>
       </item>
       <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color"><property name="accessibleName"><string>Plot accent color</string></property>
-        <property name="text">
-         <string>#2f5597</string>
-        </property>
        </widget></item><item><widget class="QPushButton" name="color_btn">
         <property name="toolTip">
          <string>Choose the plot accent color</string>

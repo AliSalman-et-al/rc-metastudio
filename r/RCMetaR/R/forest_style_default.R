@@ -161,53 +161,6 @@ rcmetar.default.ilab.for.data <- function(om.data, params, res=NULL) {
     rcmetar.empty.default.ilab(length(om.data@study.names))
 }
 
-rcmetar.default.xlab <- function(bundle) {
-    params <- bundle$params
-    if (!rcmetar.is.plot.default.text(params$fp_xlabel)) {
-        return(as.character(params$fp_xlabel))
-    }
-    rcmetar.forest.axis.title(bundle)
-}
-
-rcmetar.default.study.header <- function(bundle) {
-    if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
-        return("")
-    }
-    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
-}
-
-rcmetar.default.effect.header <- function(bundle) {
-    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
-        return("")
-    }
-    paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]")
-}
-
-rcmetar.default.heterogeneity.measure.label <- function(bundle) {
-    if (isTRUE(bundle$single_study)) return("")
-    rcmetar.forest.model.label(bundle$res)
-}
-
-
-rcmetar.default.wrap.header <- function(label, width=18) {
-    label <- as.character(label)
-    wrapped <- strwrap(label, width=width)
-    if (length(wrapped) <= 1) {
-        return(label)
-    }
-    paste(wrapped, collapse="\n")
-}
-
-rcmetar.default.group.headers <- function(bundle) {
-    if (length(bundle$ilab$groups) == 0) {
-        return(character(0))
-    }
-    headers <- vapply(bundle$ilab$groups, rcmetar.default.wrap.header, character(1))
-    names(headers) <- bundle$ilab$groups
-    headers
-}
-
-
 rcmetar.draw.default.forest <- function(bundle, outpath) {
     plan <- rcmetar.forest.layout.preflight(bundle, style="default")
     size <- plan$device
@@ -216,10 +169,6 @@ rcmetar.draw.default.forest <- function(bundle, outpath) {
 
     rcmetar.draw.default.forest.panel(bundle, plan)
     }, display.path=display.path, caption=bundle$params$plot_caption)
-}
-
-rcmetar.draw.default.metafor.forest <- function(bundle, outpath) {
-    rcmetar.draw.default.forest(bundle, outpath)
 }
 
 rcmetar.draw.default.summary.diamond <- function(res, row, color, alim, bundle) {

@@ -117,9 +117,6 @@
     "r/RCMetaR/R/repeated_analyses.R": {
       "bootstrap": "statistical resampling has independent method, seed, and result-shape branches"
     },
-    "r/RCMetaR/R/plotting.R": {
-      "create.subgroup.plot.data.generic": "plot data must preserve the package's independent subgroup layouts"
-    },
     "r/RCMetaR/R/rcmetar-core.R": {
       "rcmetar.validate.analysis.request": "the public boundary validates independent request fields before dispatch"
     },

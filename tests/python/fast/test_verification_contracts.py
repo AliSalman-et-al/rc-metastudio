@@ -40,16 +40,19 @@ def test_selected_python_rpy2_identity(tmp_path):
         stack.verify_rpy2_identities(str(python))
 
 
-def test_typing_before_direct_desktop(monkeypatch, tmp_path):
+@pytest.mark.parametrize("unverified_context", [None, '{"source_sha256":"same"}', "invalid-json"])
+def test_typing_before_direct_desktop(monkeypatch, unverified_context):
     calls = []
     def typing(root):
         calls.append('typing')
         raise verify.VerificationError('controlled typing failure')
     monkeypatch.setattr(verify, 'run_typing', typing)
     monkeypatch.setattr(verify_rcms, '_reuse_evidence', lambda *a: calls.append('desktop') or True)
-    monkeypatch.setattr(verify_rcms, 'source_digest', lambda: 'same')
+    monkeypatch.setattr(verify_rcms, 'source_digest', lambda _root: 'same')
     monkeypatch.setattr(sys, 'argv', ['verify_rcms', 'doctor'])
     monkeypatch.delenv('RCMS_E2E_CONTEXT', raising=False)
+    if unverified_context is not None:
+        monkeypatch.setenv('RCMS_E2E_CONTEXT', unverified_context)
     with pytest.raises(verify.VerificationError, match='controlled typing'):
         verify_rcms.main()
     assert calls == ['typing']
@@ -84,6 +87,80 @@ def test_comparison_disables_reuse(monkeypatch, tmp_path):
     assert not verify_rcms._reuse_evidence({}, args)
     args.compare_measures = None
     assert verify_rcms._reuse_evidence({}, args)
+
+
+def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypatch, tmp_path, capsys):
+    from scripts import verification_evidence as evidence_store
+
+    monkeypatch.setattr(evidence_store, 'ROOT', tmp_path)
+    monkeypatch.setattr(evidence_store, 'CACHE', tmp_path / 'cache')
+    monkeypatch.setattr(verify_rcms, 'ROOT', tmp_path)
+    monkeypatch.setattr(verify_rcms, 'git_output', lambda *args: '')
+    driver = tmp_path / 'tests/e2e/desktop_driver.py'
+    driver.parent.mkdir(parents=True)
+    driver.touch()
+    monkeypatch.setattr(verify_rcms, 'source_digest', lambda root: 'same-source')
+    monkeypatch.setattr(evidence_store, 'source_digest', lambda root: 'same-source')
+    monkeypatch.setattr(evidence_store, '_runtime_roots', lambda env, runtime: [])
+    monkeypatch.setattr(evidence_store.subprocess, 'check_output', lambda *args, **kwargs: json.dumps({
+        name: None for name in ('R_ENVIRON', 'R_ENVIRON_USER', 'R_PROFILE', 'R_PROFILE_USER')
+    }))
+    monkeypatch.delenv('RCMS_AXIS_BASELINE', raising=False)
+    monkeypatch.setenv('RCMS_E2E_REUSE_PASSED', '1')
+    monkeypatch.setattr(sys, 'argv', ['verify_rcms', 'doctor'])
+    env = evidence_store.desktop_environment()
+    context = evidence_store.verification_context(env)
+    receipt = tmp_path / 'artifacts/verification/typing/gate/command.json'
+    receipt.parent.mkdir(parents=True)
+    receipt.write_text(json.dumps({
+        'exit_code': 0, 'python_platform': 'win32', 'command': [sys.executable, '-m', 'ty', 'check'],
+        'build_root': env['RCMS_QT6_BUILD_ROOT'],
+        'source_sha256': 'same-source', 'source_unchanged': True,
+    }))
+    for name in ('stdout.log', 'stderr.log'):
+        (receipt.parent / name).touch()
+    monkeypatch.setenv('RCMS_E2E_CONTEXT', json.dumps({
+        'typing': str(receipt), 'verification': context,
+        'launch_inputs': evidence_store.verification_launch_inputs(env),
+    }))
+
+    evidence = tmp_path / 'evidence'
+    evidence.mkdir()
+    transcript = evidence / 'stdout.log'
+    transcript.write_text('WORKFLOW PASSED\n')
+    (evidence / 'manifest.json').write_text(json.dumps({
+        'passed': True, 'exit_code': 0, 'verification_context': context,
+        'files': [{'path': transcript.name, 'sha256': evidence_store.file_digest(transcript)}],
+    }))
+    evidence_store.remember_evidence(context, 'doctor', evidence)
+    assert verify_rcms.main() == 0
+    assert 'Reused passed evidence' in capsys.readouterr().out
+
+    def fresh_drive(*args):
+        raise RuntimeError('Fresh desktop command required')
+
+    monkeypatch.setattr(verify_rcms, '_desktop_command', fresh_drive)
+    monkeypatch.setenv('RCMS_AXIS_BASELINE', '1')
+    diagnostic = evidence_store.verification_context(evidence_store.desktop_environment())
+    assert diagnostic['sha256'] != context['sha256']
+    with pytest.raises(RuntimeError, match='Fresh desktop command required'):
+        verify_rcms.main()
+    monkeypatch.delenv('RCMS_AXIS_BASELINE')
+    with monkeypatch.context() as changed:
+        changed.setenv('RCMS_R_LIBS', str(tmp_path / 'different-library'))
+        with pytest.raises(RuntimeError, match='Fresh desktop command required'):
+            verify_rcms.main()
+    with monkeypatch.context() as fresh:
+        fresh.setenv('RCMS_E2E_REUSE_PASSED', '0')
+        with pytest.raises(RuntimeError, match='Fresh desktop command required'):
+            verify_rcms.main()
+    transcript.write_text('damaged transcript')
+    with pytest.raises(RuntimeError, match='Fresh desktop command required'):
+        verify_rcms.main()
+    index = next(evidence_store.CACHE.rglob('doctor.json'))
+    index.write_text('[]')
+    with pytest.raises(RuntimeError, match='Fresh desktop command required'):
+        verify_rcms.main()
 
 
 @pytest.mark.parametrize('code,records,expected', [(0, True, 0), (7, True, 1), (0, False, 1)])

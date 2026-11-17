@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import ArmId, RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 import os
 import sys
 
@@ -102,13 +102,13 @@ def test_workspace_model_rejects_non_owned_indexes_and_valid_parents(invalid_kin
     assert model.index(0, 0, parent).isValid() is False
 
 
-def test_inclusion_workspace_edit_captures_complete_semantic_state():
+def test_inclusion_edit_notifies_after_study_state_changes():
     model = _diagnostic_model_with_empty_cells()
     study = model.current_sheet.rows[0]
     study.include = False
     study.manually_excluded = False
-    edits = []
-    model.workspaceEditCommitted.connect(edits.append)
+    states = []
+    model.workspaceEditCommitted.connect(lambda: states.append((study.include, study.manually_excluded)))
 
     assert (
         model.setData(
@@ -119,9 +119,7 @@ def test_inclusion_workspace_edit_captures_complete_semantic_state():
         is True
     )
 
-    assert len(edits) == 1
-    assert edits[0].old_value == dataset_table_model.StudyInclusionState(False, False)
-    assert edits[0].new_value == dataset_table_model.StudyInclusionState(True, False)
+    assert states == [(True, False)]
 
 
 def test_inclusion_edit_accepts_only_explicit_pyqt6_check_states_and_booleans():
@@ -183,6 +181,57 @@ def test_blank_entry_row_stays_out_of_the_durable_dataset_until_named():
     assert [study.label for study in model.current_sheet.rows] == ["Alpha", "Beta"]
     assert model._study_for_row(len(model.current_sheet.rows)) not in model.current_sheet.rows
     assert model.get_ordered_study_ids() == ["study1", model.current_sheet.rows[1].id]
+
+
+def test_bulk_exclusion_does_not_turn_empty_grid_rows_into_saved_studies(tmp_path):
+    from rc_metastudio.project_adapter import dataset_to_project, project_to_dataset
+    from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, load_project, save_project
+
+    model = _model_with_real_study_and_empty_new_entry_row(analysis_catalog.BINARY)
+    assert model.setData(model.index(4, model.NAME), "Beta")
+    checkbox = Qt.ItemDataRole.CheckStateRole
+    assert model.data(model.index(2, model.INCLUDE_STUDY), checkbox) is None
+
+    model.set_all_studies_included(False)
+
+    assert model.data(model.index(0, model.INCLUDE_STUDY), checkbox) == Qt.CheckState.Unchecked
+    assert model.data(model.index(4, model.INCLUDE_STUDY), checkbox) == Qt.CheckState.Unchecked
+    destination = tmp_path / "bulk-exclusion.rcms"
+    save_project(destination, dataset_to_project(model.dataset), {
+        "schema_version": CURRENT_FORMAT_VERSION,
+        "current_sheet_id": model.current_sheet_id,
+    })
+    reopened = project_to_dataset(load_project(destination).project)
+    assert [row.label for row in reopened.sheets[0].rows] == ["Alpha", "Beta"]
+    assert all(row.manually_excluded for row in reopened.sheets[0].rows)
+
+    assert model.setData(model.index(2, model.NAME), "Gamma")
+    assert model.data(model.index(2, model.INCLUDE_STUDY), checkbox) == Qt.CheckState.Checked
+
+
+def test_open_display_refresh_does_not_edit_archived_study_data(tmp_path):
+    from rc_metastudio.project_adapter import RuntimeProject, runtime_project_to_document
+    from rc_metastudio.workspace_session import WorkspaceSession
+    from rc_metastudio.project_format import save_project
+
+    model = _model_with_real_study_and_empty_new_entry_row(analysis_catalog.BINARY)
+    model.current_sheet.rows[0].analysis_unit.entered_effects.clear()
+    document = runtime_project_to_document(RuntimeProject(model.dataset, model.current_sheet_id))
+    destination = tmp_path / "sparse-effects.rcms"
+    save_project(destination, document.project, document.state)
+
+    session = WorkspaceSession()
+
+    def install(runtime):
+        table = dataset_table_model.DatasetTableModel(dataset=runtime.dataset)
+        table.set_current_sheet(runtime.current_sheet_id)
+        table.recalculate_display_scale()
+
+    session.open(destination, install=install)
+
+    assert session.document == document
+    assert not session.is_dirty
+    assert not session.can_undo
 
 
 def _continuous_model_with_named_study():

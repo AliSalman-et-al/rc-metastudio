@@ -98,7 +98,8 @@ def test_close_cancel_and_failed_save_keep_owned_shell_alive(qapp, monkeypatch):
     monkeypatch.setattr(app_error_handler, "show_unexpected_error",
                         lambda error, parent=None, **kwargs: unexpected.append(str(error)))
     app, window = automation.start_automation()
-    window.workspace.mark_dirty()
+    window.model.dataset.notes = "Unsaved project notes"
+    window.data_dirtied()
     monkeypatch.setattr(
         window,
         "prompt_to_save_unsaved_data",
@@ -354,7 +355,6 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
             lambda **_kwargs: (str(previous_project), ""),
         )
         assert window.save_as() is True
-        assert window.out_path == str(previous_project)
         assert window.workspace.path == previous_project
         assert not window.workspace.is_dirty
 
@@ -369,11 +369,9 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
                     "metric_choices": ["Mean"],
                     "name": "QA generic",
                 },
-                "selected_dataset": None,
             }
         )
 
-        assert window.out_path is None
         assert window.workspace.path is None
         assert window.workspace.is_dirty
         assert not window.workspace.can_undo
@@ -428,7 +426,6 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                     "metric_choices": ["OR", "RR"],
                     "name": "Unsaved outcome",
                 },
-                "selected_dataset": None,
             }
             if source_path == "csv_import":
                 result["csv_data"] = {
@@ -441,7 +438,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
             window._handle_wizard_results(result)
             assert import_errors == []
             original_model = window.model
-            original_path = window.out_path
+            original_path = window.workspace.path
             original_title = window.model.dataset.title
             assert window.workspace.is_dirty is True
 
@@ -478,7 +475,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 assert save_as_calls == [True]
                 assert window.model is original_model
                 assert window.tableView.model() is original_model
-                assert window.out_path == original_path
+                assert window.workspace.path == original_path
                 assert window.model.dataset.title == original_title
                 assert window.workspace.is_dirty is True
         finally:
@@ -503,7 +500,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
     try:
         good = ROOT / "sample_projects" / "amino.rcms"
         assert window.open(str(good)) is True
-        prior_path = window.out_path
+        prior_path = window.workspace.path
         prior_title = window.model.dataset.title
         prior_recents = list(settings.get_setting("recent_files"))
 
@@ -567,7 +564,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
             (schema_invalid, "confidence_level"),
         ):
             assert window.open(str(rejected)) is None
-            assert window.out_path == prior_path
+            assert window.workspace.path == prior_path
             assert window.model.dataset.title == prior_title
             assert settings.get_setting("recent_files") == prior_recents
             assert expected_message in critical_messages[-1][1]
@@ -593,7 +590,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
                     ),
                 )
                 assert window.save_as() is False
-            assert window.out_path == prior_path
+            assert window.workspace.path == prior_path
             assert window.model.dataset.notes == "unsaved"
             assert window.workspace.is_dirty is True
             assert settings.get_setting("recent_files") == prior_recents
@@ -647,9 +644,8 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                     )
                 assert window.save_as() is True
             assert destination.is_file()
-            assert window.out_path == str(destination)
+            assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
-            assert window.model.analysis_source_path == str(destination)
             assert "saved successfully" in warnings[-1][1]
 
             with monkeypatch.context() as context:
@@ -670,7 +666,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
                         ),
                     )
                 assert window.open(str(destination)) is True
-            assert window.out_path == str(destination)
+            assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
             assert window.model.dataset.notes == f"durable-{fault}"
             assert "opened successfully" in warnings[-1][1]
@@ -719,8 +715,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         with monkeypatch.context() as context:
             context.setattr(project_format, "_fsync_parent_directory", uncertain)
             assert window.save_as() is True
-        assert window.out_path == str(destination)
-        assert window.model.analysis_source_path == str(destination)
+        assert window.workspace.path == destination
         assert window.workspace.is_dirty is False
         saved_dataset = _json_map(
             project_format.load_project(destination).project
@@ -784,7 +779,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         assert window.open(source) is True
         old_model = window.model
         old_table_model = window.tableView.model()
-        old_path = window.out_path
+        old_path = window.workspace.path
         old_dirty = window.workspace.is_dirty
         old_connection_count = len(window._model_signal_connections)
         selected = old_model.index(0, old_model.NAME)
@@ -839,7 +834,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
             assert message in errors[-1][1]
             assert window.model is old_model
             assert window.tableView.model() is old_table_model
-            assert window.out_path == old_path
+            assert window.workspace.path == old_path
             assert window.workspace.is_dirty is old_dirty
             assert len(window._model_signal_connections) == old_connection_count
             assert window.tableView.currentIndex().row() == 0
@@ -895,7 +890,6 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         assert window.open(binary) is True
         binary_model = window.model
         binary_menu = metric_menu_signature(window)
-        binary_marker = window.metric_menu_is_set_for
         with monkeypatch.context() as context:
             context.setattr(
                 window,
@@ -908,13 +902,11 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         assert "late continuous installation failure" in errors[-1][1]
         assert window.model is binary_model
         assert window.tableView.model() is binary_model
-        assert window.metric_menu_is_set_for == binary_marker
         assert metric_menu_signature(window) == binary_menu
 
         assert window.open(continuous) is True
         continuous_model = window.model
         continuous_menu = metric_menu_signature(window)
-        continuous_marker = window.metric_menu_is_set_for
         with monkeypatch.context() as context:
             context.setattr(
                 window,
@@ -927,7 +919,6 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         assert "late binary installation failure" in errors[-1][1]
         assert window.model is continuous_model
         assert window.tableView.model() is continuous_model
-        assert window.metric_menu_is_set_for == continuous_marker
         assert metric_menu_signature(window) == continuous_menu
     finally:
         _close_shell(app, window)

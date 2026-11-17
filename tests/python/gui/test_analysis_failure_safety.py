@@ -128,8 +128,6 @@ def _create_binary_dataset(window):
                 "metric_choices": [],
                 "name": "Binary",
             },
-            "csv_data": None,
-            "selected_dataset": None,
         }
     )
 
@@ -320,8 +318,6 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
                     "metric_choices": [],
                     "name": "Continuous",
                 },
-                "csv_data": None,
-                "selected_dataset": None,
             }
         )
 
@@ -409,8 +405,6 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
                     "metric_choices": [],
                     "name": "Accuracy",
                 },
-                "csv_data": None,
-                "selected_dataset": None,
             }
         )
 
@@ -601,7 +595,6 @@ def test_project_save_failure_reports_original_error(monkeypatch, tmp_path):
     shown = []
     try:
         _create_binary_dataset(window)
-        window.out_path = str(tmp_path / "project.rcms")
 
         def _boom(*args, **kwargs):
             raise OSError("disk is full")
@@ -613,7 +606,7 @@ def test_project_save_failure_reports_original_error(monkeypatch, tmp_path):
             lambda *args, **kwargs: shown.append(args),
         )
 
-        assert window.save() is False
+        assert window.save(destination=tmp_path / "project.rcms") is False
         assert shown
         assert shown[0][1] == "Could not save project"
         assert "disk is full" in shown[0][2]
@@ -643,7 +636,7 @@ def test_opening_non_project_payload_reports_invalid_project(monkeypatch, tmp_pa
         assert shown[0][1] == "Could not open project"
         assert "This file is damaged or is not a valid RC MetaStudio project" in shown[0][2]
         assert "get_outcome_names" not in shown[0][2]
-        assert window.out_path is None
+        assert window.workspace.path is None
 
         shown.clear()
         with pytest.raises(RuntimeError, match="This file is damaged or is not a valid RC MetaStudio project"):

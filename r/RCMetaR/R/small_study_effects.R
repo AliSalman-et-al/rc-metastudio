@@ -1193,9 +1193,9 @@ publication.bias.effects <- function(om.data, params) {
     om.data <- data.object
     res <- result.object
     params <- params.object
-    save(om.data, file=paste0(base, ".data"))
-    save(res, file=paste0(base, ".res"))
-    save(params, file=paste0(base, ".params"))
+    save(om.data, file=.rcmetar.plot.bundle.paths(base, "om.data"))
+    save(res, file=.rcmetar.plot.bundle.paths(base, "res"))
+    save(params, file=.rcmetar.plot.bundle.paths(base, "params"))
 }
 
 .small.study.trimfill <- function(pooled, params, metric, prepared=NULL) {

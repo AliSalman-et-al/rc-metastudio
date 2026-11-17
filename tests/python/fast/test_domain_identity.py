@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import ArmId, RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from rc_metastudio import analysis_dataset, analysis_catalog

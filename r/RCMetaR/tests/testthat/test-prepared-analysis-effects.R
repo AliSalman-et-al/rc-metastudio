@@ -70,25 +70,29 @@ test_that("single diagnostic execution uses reconstructed or entered DOR", {
 })
 
 test_that("wrapped binary workflows consume the prepared base effects", {
-  for (workflow in c("cumulative", "leave-one-out")) {
+  for (workflow in c("cumulative", "leave-one-out", "subgroup")) {
     only0 <- run_prepared_binary("binary.random", "only0", workflow)
     all <- run_prepared_binary("binary.random", "all", workflow)
     expect_false(identical(only0$res, all$res), info=workflow)
   }
-
-  only0 <- rcmetar.prepare.analysis.data(binary_preparation_fixture(),
-                                         binary_preparation_params("only0"))
-  all <- rcmetar.prepare.analysis.data(binary_preparation_fixture(),
-                                       binary_preparation_params("all"))
-  only0.group <- RCMetaR:::get.subgroup.data.binary(only0, "A", c("A", "A", "B", "B"))
-  all.group <- RCMetaR:::get.subgroup.data.binary(all, "A", c("A", "A", "B", "B"))
-  expect_false(identical(only0.group@y, all.group@y))
 
   set.seed(42)
   only0 <- run_prepared_binary("binary.random", "only0", "bootstrap")
   set.seed(42)
   all <- run_prepared_binary("binary.random", "all", "bootstrap")
   expect_false(identical(only0$res$t, all$res$t))
+})
+
+test_that("diagnostic leave-one-out results retain years for the contributing studies", {
+  years <- c(2010L, 2016L, 2020L, 2019L)
+  data <- new("DiagnosticData", y=c(.1, .2, .3, .4), SE=rep(.15, 4),
+              study.names=letters[1:4], years=years)
+  params <- list(measure="DOR", conf.level=95, digits=3,
+                 create.plot=FALSE, write.to.file=FALSE)
+  result <- rcmetar.run.analysis(data, method="diagnostic.fixed.inv.var",
+                                workflow="leave-one-out", params=params)
+  expect_identical(lapply(result$res, `[[`, "study.years"),
+                   list(years, years[-1], years[-2], years[-3], years[-4]))
 })
 
 test_that("Peto remains count-native and entered effect-only data stay unchanged", {

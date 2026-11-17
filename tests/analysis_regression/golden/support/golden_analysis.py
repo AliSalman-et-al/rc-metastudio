@@ -954,7 +954,7 @@ def _capture_plot_descriptors(bundle, result: AnalysisResult):
                     "kind": capability.plot_kind if capability else None,
                     "editable": capability.editable if capability else None,
                     "styleable": capability.styleable if capability else None,
-                    "composition": capability.composition if capability else None,
+                    "composition": "single" if capability else None,
                     "regeneration": capability.regenerator if capability else None,
                 },
             }

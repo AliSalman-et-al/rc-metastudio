@@ -77,7 +77,7 @@ def _remaining_surface_inventory():
         (
             "import-progress",
             "progress",
-            main_window.ImportProgressDialog(min_=0, max_=100),
+            main_window.ImportProgressDialog(row_count=100),
         ),
         ("shared-progress", "progress", progress_dialog.AnalysisProgressDialog()),
         ("startup-splash", "splash", launch.create_startup_splash()),

@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 from PyQt6 import QtCore, QtWidgets
+from tests.e2e.plot_observations import load_saved_analysis
 
 
 def run_coefficients(app, window, work, record):
@@ -20,8 +21,7 @@ def run_coefficients(app, window, work, record):
             {study.label:float(i+1) for i,study in enumerate(target.model.get_studies(only_if_included=True))})
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
-        target.out_path = str(work / 'reitsma-six-dose.rcms')
-        assert target.save() and target.open(target.out_path,raise_on_error=True)
+        assert target.save(destination=work / 'reitsma-six-dose.rcms') and target.open(target.workspace.path,raise_on_error=True)
         assert [list(row) for row in target.model.get_current_raw_data()] == raw
         record('release-reitsma-exact-input', target, raw=raw, dose=list(range(1,7)))
     view = matrix(app, window, 'analysis-data-diagnostic', record,
@@ -46,7 +46,7 @@ def run_coefficients(app, window, work, record):
         view._show_report(False)
         app.processEvents()
         artifact, _ = view._selected_plot()
-        r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+        load_saved_analysis(artifact.params_path, include_plot_data=True)
         expression = 'jsonlite::toJSON(plot.data[c("estimate","ci.lb","ci.ub")],digits=16)'
         before = str(r_bridge.execute_r_string(expression)[0])
         observed = check_axis(artifact.display_path(), 'transformed', ratio=True)
@@ -59,7 +59,7 @@ def run_coefficients(app, window, work, record):
             record('coefficient-linear-choice', dialog, title=title)
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         modal(app, EditPlotDialog, edit, view.edit_plot_action.trigger)
-        r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+        load_saved_analysis(artifact.params_path, include_plot_data=True)
         assert str(r_bridge.execute_r_string(expression)[0]) == before
         assert dict(view.texts) == report
         linear = check_axis(artifact.display_path(), 'natural', ratio=True)

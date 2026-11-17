@@ -61,7 +61,6 @@ def main():
                 ]
             )
         # The full R-stack lane already exercises the desktop qualification selection via pytest.
-        # Keep doctor here; repeating the whole registry doubles the expensive work.
         if not args.full:
             commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])
         scenarios = ("doctor",)

@@ -5,7 +5,7 @@
 from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent, QPalette
+from PyQt6.QtGui import QResizeEvent, QCloseEvent, QHideEvent, QShowEvent, QPalette
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -48,10 +48,13 @@ from rc_metastudio.analysis_method_labels import (
     parameter_value_display_label,
 )
 from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
+from rc_metastudio.plot_style_controls import (
+    configure_plot_style, load_plot_style, selected_plot_style,
+)
 from rc_metastudio.dataset_analysis_domain import raw_data_is_complete
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
-    plot_parameter_text_value,
+    plot_axis_label_params,
     plot_text_value,
     set_plot_text_value,
 )
@@ -64,18 +67,6 @@ if TYPE_CHECKING:
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
-
-PLOT_STYLE_LABELS = {
-    "default": "Default",
-    "revman": "RevMan",
-    "bmj": "BMJ",
-}
-PLOT_STYLE_VALUES = {label: value for value, label in PLOT_STYLE_LABELS.items()}
-PLOT_STYLE_DEFAULT_COLORS = {
-    "default": "#2f5597",
-    "revman": "#000000",
-    "bmj": "#6b58a6",
-}
 
 COUNT_BASED_DIAGNOSTIC_METHODS = {
     "diagnostic.reitsma",
@@ -240,7 +231,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
-        self._project_path = getattr(parent, "out_path", None)
         self.setupUi(self)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
@@ -263,10 +253,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
-        if initial_settings is None and analysis_type is None and model.current_sheet:
-            initial_settings = model.current_sheet.settings.get('analysis')
-        if initial_settings is not None:
-            self._restore_settings(initial_settings)
         for field in self.findChildren(QLineEdit):
             if field.text() == "[default]":
                 set_plot_text_value(field, "[default]")
@@ -274,6 +260,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     field.setToolTip("Automatic: " + self._result_metric_label())
                 elif field is self.col3_str_edit and self.data_type == "diagnostic":
                     field.setToolTip("Automatic: diagnostic counts")
+        if initial_settings is None and analysis_type is None and model.current_sheet:
+            initial_settings = model.current_sheet.settings.get('analysis')
+        if initial_settings is not None:
+            self._restore_settings(initial_settings)
 
     def _setup_result_context(self):
         workflow = {"cumulative": "Cumulative meta-analysis", "leave-one-out": "Leave-one-out analysis", "subgroup": "Subgroup analysis", "meta-regression": "Meta-regression"}.get(self.analysis_type, "")
@@ -356,7 +346,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                             (self.plot_lb_le, f"{prefix}_plot_lb"), (self.plot_ub_le, f"{prefix}_plot_ub"), (self.x_ticks_le, f"{prefix}_xticks")):
             if parameters.get(name) is not None:
                 if field in (self.col1_str_edit, self.col2_str_edit, self.col3_str_edit, self.col4_str_edit, self.x_lbl_le):
-                    set_plot_text_value(field, parameters[name])
+                    set_plot_text_value(
+                        field, parameters[name],
+                        literal=field is self.x_lbl_le and _bool_plot_param(parameters.get(f"{prefix}_xlabel_literal"), False),
+                    )
                 else:
                     field.setText(str(parameters[name]))
         self.show_i2.setChecked(_bool_plot_param(parameters.get("fp_show_i2"), True))
@@ -369,8 +362,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _change_settings_callback(self):
         from rc_metastudio.dataset_table_model import DatasetTableModel
         model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
-        model.set_state(copy.deepcopy(self.model.get_state()))
-        model.analysis_source_path = self.model.analysis_source_path
+        model.set_current_sheet(self.model.current_sheet_id)
         saved_parameters = copy.deepcopy(self.current_param_vals)
         saved = dict(method=self.current_method, parameters=saved_parameters,
                      covariates=[cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
@@ -381,7 +373,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         workflow, metrics = self.analysis_type, self.diagnostic_metrics
         details = copy.deepcopy(self.diagnostic_analysis_details)
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
-        project_path = self._project_path
 
         def reopen(plot_params=None):
             import uuid
@@ -395,7 +386,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
                 analysis_service=service, initial_settings=restored)
-            form._project_path = project_path
             name = "regression" if workflow == "meta-regression" else "forest"
             form.image_path.setText(analysis_output_path(f"{name}-{uuid.uuid4().hex[:12]}.png"))
             form.show()
@@ -456,7 +446,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.current_param_vals: dict[str, object] = dict(external_params or {})
         self.analysis_type = analysis_type
         self.is_meta_regression = analysis_type == "meta-regression"
-        self._loading_plot_style = False
         self._setup_plot_controls()
         self._load_plot_params()
 
@@ -772,12 +761,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
         self.show_i2.setVisible(self.analysis_type in {"cumulative", "leave-one-out"})
         add_color_swatch(self.accent_color, self.accent_color_layout)
-        self.color_btn.clicked.connect(
-            app_error_handler.safe_slot(self._choose_plot_color, parent=self)
-        )
-        self.style_cbo.currentTextChanged.connect(
-            app_error_handler.safe_slot(self._plot_style_changed, parent=self)
-        )
+        configure_plot_style(self.style_cbo, self.accent_color, self.color_btn)
 
         align_field_columns((self.style_layout, self.appearance_layout, self.gridLayout_2, self.default_layout, self.gridLayout_3, self.regression_layout))
 
@@ -833,7 +817,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 fixed_effects,
                 self.confidence_level,
             ),
-            string_result_is_failure=True,
         )
 
     def _confirm_excluded_studies(self, names):
@@ -875,105 +858,77 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )
 
     def _load_plot_params(self):
-        self._loading_plot_style = True
-        try:
-            prefix = "bp" if self.is_meta_regression else "fp"
-            style = _normalized_plot_style(
-                self.current_param_vals.get("%s_style" % prefix, "default")
+        prefix = "bp" if self.is_meta_regression else "fp"
+        load_plot_style(
+            self.style_cbo,
+            self.accent_color,
+            self.current_param_vals.get(f"{prefix}_style"),
+            self.current_param_vals.get(f"{prefix}_accent_color"),
+        )
+        self.point_size_multiplier.setValue(
+            _float_plot_param(
+                self.current_param_vals.get("%s_point_size_multiplier" % prefix),
+                1.0,
             )
-            self.style_cbo.setCurrentText(PLOT_STYLE_LABELS[style])
-            self._set_plot_accent_color(
-                self.current_param_vals.get("%s_accent_color" % prefix)
-                or PLOT_STYLE_DEFAULT_COLORS[style]
-            )
-            self.point_size_multiplier.setValue(
-                _float_plot_param(
-                    self.current_param_vals.get("%s_point_size_multiplier" % prefix),
-                    1.0,
-                )
-            )
-            if self.is_meta_regression:
-                self.show_regression_line.setChecked(
-                    _bool_plot_param(
-                        self.current_param_vals.get("bp_show_regression_line"), True
-                    )
-                )
-                self.show_confidence_band.setChecked(
-                    _bool_plot_param(
-                        self.current_param_vals.get("bp_show_confidence_band"), True
-                    )
-                )
-                self.show_prediction_interval.setChecked(
-                    _bool_plot_param(
-                        self.current_param_vals.get("bp_show_prediction_interval"),
-                        False,
-                    )
-                )
-                self.show_legend.setChecked(
-                    _bool_plot_param(
-                        self.current_param_vals.get("bp_show_legend"), True
-                    )
-                )
-            self.show_raw_counts.setChecked(
+        )
+        if self.is_meta_regression:
+            self.show_regression_line.setChecked(
                 _bool_plot_param(
-                    self.current_param_vals.get("fp_show_raw_counts"), True
+                    self.current_param_vals.get("bp_show_regression_line"), True
                 )
             )
-            self.show_headers.setChecked(
-                _bool_plot_param(self.current_param_vals.get("fp_show_headers"), True)
-            )
-            self.show_annotation.setChecked(
+            self.show_confidence_band.setChecked(
                 _bool_plot_param(
-                    self.current_param_vals.get("fp_show_annotation"), True
+                    self.current_param_vals.get("bp_show_confidence_band"), True
                 )
             )
-        finally:
-            self._loading_plot_style = False
-
-    def _plot_style_changed(self, label):
-        if self._loading_plot_style:
-            return
-        style = PLOT_STYLE_VALUES.get(str(label), "default")
-        self._set_plot_accent_color(PLOT_STYLE_DEFAULT_COLORS[style])
-
-    def _choose_plot_color(self):
-        current = QColor(self.accent_color.text())
-        color = QtWidgets.QColorDialog.getColor(current, self, "Plot accent color")
-        if color.isValid():
-            self._set_plot_accent_color(color.name())
-
-    def _set_plot_accent_color(self, color):
-        text = str(color or PLOT_STYLE_DEFAULT_COLORS["default"])
-        self.accent_color.setText(text)
+            self.show_prediction_interval.setChecked(
+                _bool_plot_param(
+                    self.current_param_vals.get("bp_show_prediction_interval"),
+                    False,
+                )
+            )
+            self.show_legend.setChecked(
+                _bool_plot_param(
+                    self.current_param_vals.get("bp_show_legend"), True
+                )
+            )
+        self.show_raw_counts.setChecked(
+            _bool_plot_param(
+                self.current_param_vals.get("fp_show_raw_counts"), True
+            )
+        )
+        self.show_headers.setChecked(
+            _bool_plot_param(self.current_param_vals.get("fp_show_headers"), True)
+        )
+        self.show_annotation.setChecked(
+            _bool_plot_param(
+                self.current_param_vals.get("fp_show_annotation"), True
+            )
+        )
 
     def run_ma(self):
         self._run_analysis(
             lambda: self.analysis_service.execute(self.model, self.analysis_requests()),
         )
 
-    def _run_analysis(self, operation, string_result_is_failure=False):
+    def _run_analysis(self, operation):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
         bar = progress_dialog.AnalysisProgressDialog(self, context=self.windowTitle())
         bar.show()
         bar.repaint()
-        result = None
-        succeeded = False
         try:
-            result = operation()
-            if string_result_is_failure and isinstance(result, str):
-                raise RuntimeError(result)
-            from rc_metastudio.analysis_results import AnalysisResult, normalize_analysis_result
-            if isinstance(result, AnalysisResult):
-                result = normalize_analysis_result(self._with_result_identity(result))
-                from rc_metastudio.manuscript_report import ManuscriptReport
-                manuscript = ManuscriptReport.from_result(result)
+            from rc_metastudio.analysis_results import normalize_analysis_result
+            from rc_metastudio.manuscript_report import ManuscriptReport
+
+            result = normalize_analysis_result(self._with_result_identity(operation()))
+            manuscript = ManuscriptReport.from_result(result)
+            change_settings = self._change_settings_callback()
             callback = getattr(self.parentWidget(), "analysis", None)
             if not callable(callback):
                 raise RuntimeError("analysis configuration has no results owner")
-            change_settings = self._change_settings_callback() if isinstance(result, AnalysisResult) else None
-            succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.analysis_error_label.setText(
@@ -985,21 +940,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_error_details.setPlainText(str(error))
             self.analysis_error_panel.show()
             self.analysis_error_label.show()
-            self._reset_working_dir_safely()
-        finally:
-            progress_dialog.dispose(bar)
-        if not succeeded:
             self._resize_on_reflow = True
             self._schedule_local_reflow()
             self.activateWindow()
             self.analysis_error_toggle.setFocus()
-        if succeeded:
-            assert callable(callback)
-            self.done(QDialog.DialogCode.Accepted.value)
-            if change_settings is not None:
-                callback(result, change_settings=change_settings, manuscript=manuscript)
-            else:
-                callback(result)
+            return
+        finally:
+            progress_dialog.dispose(bar)
+        self.done(QDialog.DialogCode.Accepted.value)
+        callback(result, change_settings=change_settings, manuscript=manuscript)
 
     def _expand_error_details(self, expanded):
         self.analysis_error_details.setVisible(expanded)
@@ -1012,12 +961,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._release_owned_connections()
         super().done(result)
         self.deleteLater()
-
-    def _reset_working_dir_safely(self):
-        try:
-            self.analysis_service.reset_working_directory()
-        except Exception:
-            pass
 
     def _release_owned_connections(self) -> None:
         self._disconnect_focus_reveal()
@@ -2037,12 +1980,10 @@ def add_plot_params(specs_form):
         bubble_outpath = _text_value(specs_form.image_path)
         specs_form.current_param_vals.update(
             {
-                "bp_style": PLOT_STYLE_VALUES.get(
-                    str(specs_form.style_cbo.currentText()), "default"
-                ),
+                "bp_style": selected_plot_style(specs_form.style_cbo),
                 "bp_accent_color": _text_value(specs_form.accent_color),
                 "bp_point_size_multiplier": specs_form.point_size_multiplier.value(),
-                "bp_xlabel": _plot_axis_label_value(specs_form.x_lbl_le),
+                **plot_axis_label_params(specs_form.x_lbl_le, "bp"),
                 "bp_xticks": _validated_plot_ticks(specs_form.x_ticks_le),
                 "bp_plot_lb": _validated_plot_bound(specs_form.plot_lb_le),
                 "bp_plot_ub": _validated_plot_bound(specs_form.plot_ub_le),
@@ -2066,9 +2007,7 @@ def add_plot_params(specs_form):
         specs_form.current_param_vals["cum_sequence"] = specs_form.study_order.currentData()
     specs_form.current_param_vals["fp_show_i2"] = specs_form.show_i2.isChecked()
     specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
-    specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
-        str(specs_form.style_cbo.currentText()), "default"
-    )
+    specs_form.current_param_vals["fp_style"] = selected_plot_style(specs_form.style_cbo)
     specs_form.current_param_vals["fp_show_col1"] = specs_form.show_1.isChecked()
     specs_form.current_param_vals["fp_col1_str"] = _text_value(specs_form.col1_str_edit)
     specs_form.current_param_vals["fp_show_col2"] = specs_form.show_2.isChecked()
@@ -2077,9 +2016,7 @@ def add_plot_params(specs_form):
     specs_form.current_param_vals["fp_col3_str"] = _text_value(specs_form.col3_str_edit)
     specs_form.current_param_vals["fp_show_col4"] = specs_form.show_4.isChecked()
     specs_form.current_param_vals["fp_col4_str"] = _text_value(specs_form.col4_str_edit)
-    specs_form.current_param_vals["fp_xlabel"] = _plot_axis_label_value(
-        specs_form.x_lbl_le
-    )
+    specs_form.current_param_vals.update(plot_axis_label_params(specs_form.x_lbl_le, "fp"))
     forest_outpath = _text_value(specs_form.image_path)
     specs_form.current_param_vals["fp_outpath"] = forest_outpath
     specs_form.current_param_vals["fp_display_path"] = _display_svg_path(forest_outpath)
@@ -2116,17 +2053,6 @@ def _validated_plot_bound(widget):
 def _validated_plot_ticks(widget):
     value = _text_value(widget)
     return value if value != "[default]" and is_valid_plot_tick_list(value) else "[default]"
-
-
-def _plot_axis_label_value(widget):
-    """Return an axis label without leaking an untouched form placeholder."""
-    value = plot_parameter_text_value(widget)
-    return None if value is None else qt_text.to_native_text(value)
-
-
-def _normalized_plot_style(style):
-    style = str(_scalar_plot_param(style) or "default").strip().lower()
-    return style if style in PLOT_STYLE_LABELS else "default"
 
 
 def _scalar_plot_param(value):

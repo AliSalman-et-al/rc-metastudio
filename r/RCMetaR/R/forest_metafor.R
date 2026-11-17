@@ -16,7 +16,6 @@ rcmetar.metafor.binary.default.supported <- function(binary.data, params, select
     has.entered.effects <- rcmetar.has.entered.effects(binary.data, n)
     is.null(selected.cov) &&
         "BinaryData" %in% class(binary.data) &&
-        rcmetar.forest.style(params) %in% c("default", "revman", "bmj") &&
         measure %in% c(binary.two.arm.metrics, binary.one.arm.metrics) &&
         n > 0 &&
         (has.raw || has.entered.effects)
@@ -26,7 +25,6 @@ rcmetar.metafor.continuous.default.supported <- function(cont.data, params, sele
     n <- length(cont.data@study.names)
     is.null(selected.cov) &&
         "ContinuousData" %in% class(cont.data) &&
-        rcmetar.forest.style(params) %in% c("default", "revman", "bmj") &&
         as.character(params$measure) %in% c(continuous.two.arm.metrics, continuous.one.arm.metrics) &&
         n > 0 &&
         (rcmetar.has.continuous.raw.columns(cont.data, n, params) || rcmetar.has.entered.effects(cont.data, n))
@@ -40,7 +38,6 @@ rcmetar.metafor.diagnostic.default.supported <- function(diagnostic.data, params
     is.null(selected.cov) &&
         !identical(params$create.plot, FALSE) &&
         "DiagnosticData" %in% class(diagnostic.data) &&
-        rcmetar.forest.style(params) %in% c("default", "revman", "bmj") &&
         as.character(params$measure) %in% c(diagnostic.logit.metrics, diagnostic.log.metrics) &&
         n > 0 &&
         (has.counts || has.entered.effects)
@@ -197,20 +194,6 @@ rcmetar.study.labels <- function(om.data) {
     rcmetar.truncate.plot.display.text(labels)
 }
 
-rcmetar.metafor.weights <- function(res) {
-    if (inherits(res, "rma")) {
-        return(as.numeric(weights(res)))
-    }
-    if (!is.null(res$study.weights)) {
-        return(as.numeric(res$study.weights))
-    }
-    NULL
-}
-
-rcmetar.metafor.default.supported <- function(params) {
-    rcmetar.forest.style(params) %in% c("default", "revman", "bmj")
-}
-
 rcmetar.bundle.transform <- function(bundle) {
     switch(
         bundle$data_type,
@@ -287,14 +270,6 @@ rcmetar.validate.forest.regeneration.state <- function(state) {
     )
 }
 
-rcmetar.metafor.plot.sample.sizes <- function(om.data, params) {
-    if (as.character(params$measure) == "PFT" &&
-            length(om.data@g1O1) > 0 && length(om.data@g1O2) > 0) {
-        return(as.numeric(om.data@g1O1) + as.numeric(om.data@g1O2))
-    }
-    NULL
-}
-
 rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes=NULL) {
     plot.options <- set.plot.options(params)
     transform.name <- get.transform.name(om.data)
@@ -317,18 +292,6 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     y <- as.numeric(y)
     lb <- as.numeric(lb)
     ub <- as.numeric(ub)
-    display <- function(values) {
-        if (!is.null(sample.sizes) && length(values) == length(sample.sizes) + 1) {
-            return(c(
-                transform$display.scale(values[-length(values)], ni=sample.sizes),
-                transform$display.scale(values[[length(values)]], ni=sample.sizes)
-            ))
-        }
-        transform$display.scale(values, ni=sample.sizes)
-    }
-    y.disp <- display(y)
-    lb.disp <- display(lb)
-    ub.disp <- display(ub)
     effects <- list(ES=y, LL=lb, UL=ub)
     finite <- is.finite(y) & is.finite(lb) & is.finite(ub)
     plot.range <- calc.plot.range(lapply(effects, function(values) values[finite]), plot.options)
@@ -339,38 +302,14 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     list(
         plot_range=plot.range,
         changed.params=changed.params,
-        effect_display=list(y.disp=y.disp, lb.disp=lb.disp, ub.disp=ub.disp)
+        effect_display=rcmetar.study.display.effects(transform, y, lb, ub, sample.sizes)
     )
 }
 
-rcmetar.metafor.standard.study.effects <- function(om.data, params, res) {
-    display.data <- om.data
-    n <- length(om.data@y)
-    if (length(res$yi.f) == n && length(res$vi.f) == n) {
-        finite <- is.finite(res$yi.f) & is.finite(res$vi.f)
-        old.options <- options(na.action="na.pass")
-        on.exit(options(old.options), add=TRUE)
-        weights <- rcmetar.metafor.weights(res)
-        contributes <- is.finite(weights) & weights > 0
-        # Pooling and individual-effect eligibility can differ. Use the fitted
-        # effect where available, otherwise the prepared display effect only
-        # for studies that contribute to the fit.
-        display.data@y[finite] <- res$yi.f[finite]
-        display.data@SE[finite] <- sqrt(res$vi.f[finite])
-        omitted <- !finite & !contributes
-        display.data@y[omitted] <- NA_real_
-        display.data@SE[omitted] <- NA_real_
-    }
-    bounds <- calc.ci.bounds(display.data, params,
-                            ni=rcmetar.metafor.plot.sample.sizes(om.data, params))
-    list(yi=as.numeric(display.data@y), vi=as.numeric(display.data@SE)^2,
-         sei=as.numeric(display.data@SE), ci.lb=bounds$lb, ci.ub=bounds$ub,
-         slab=rcmetar.study.labels(om.data))
-}
-
 rcmetar.metafor.standard.plot.fields <- function(om.data, params, res) {
-    sample.sizes <- rcmetar.metafor.plot.sample.sizes(om.data, params)
-    effect <- rcmetar.metafor.standard.study.effects(om.data, params, res)
+    sample.sizes <- rcmetar.pft.sample.sizes(om.data, params)
+    effect <- rcmetar.fitted.study.effects(om.data, params, res)
+    effect$slab <- rcmetar.study.labels(om.data)
     fields <- rcmetar.metafor.plot.fields(
         om.data,
         params,
@@ -784,27 +723,24 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
 }
 
 rcmetar.metafor.xlab <- function(bundle) {
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "xlab")
-    if (!is.null(helper)) {
-        return(helper(bundle))
-    }
-    rcmetar.default.xlab(bundle)
+    params <- bundle$params
+    xlabel <- rcmetar.plot.axis.label(params, "fp")
+    if (!is.null(xlabel)) return(xlabel)
+    rcmetar.forest.axis.title(bundle)
 }
 
 rcmetar.metafor.study.header <- function(bundle) {
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "study.header")
-    if (!is.null(helper)) {
-        return(helper(bundle))
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
+        return("")
     }
-    rcmetar.default.study.header(bundle)
+    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
 }
 
 rcmetar.metafor.effect.header <- function(bundle) {
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "effect.header")
-    if (!is.null(helper)) {
-        return(helper(bundle))
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
+        return("")
     }
-    rcmetar.default.effect.header(bundle)
+    paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]")
 }
 
 rcmetar.metafor.psize <- function(bundle) {
@@ -892,30 +828,37 @@ rcmetar.metafor.effect.labels <- function(bundle) {
 }
 
 rcmetar.metafor.heterogeneity.measure.label <- function(bundle) {
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "heterogeneity.measure.label")
-    if (!is.null(helper)) {
-        return(helper(bundle))
-    }
-    rcmetar.default.heterogeneity.measure.label(bundle)
+    if (isTRUE(bundle$single_study)) return("")
+    rcmetar.forest.model.label(bundle$res)
 }
 
 
 
-rcmetar.metafor.group.headers <- function(bundle) {
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "group.headers")
-    if (!is.null(helper)) {
-        return(helper(bundle))
+rcmetar.metafor.wrap.header <- function(label, width=18) {
+    label <- as.character(label)
+    wrapped <- strwrap(label, width=width)
+    if (length(wrapped) <= 1) {
+        return(label)
     }
-    rcmetar.default.group.headers(bundle)
+    paste(wrapped, collapse="\n")
+}
+
+rcmetar.metafor.group.headers <- function(bundle) {
+    if (length(bundle$ilab$groups) == 0) {
+        return(character(0))
+    }
+    headers <- vapply(bundle$ilab$groups, rcmetar.metafor.wrap.header, character(1))
+    names(headers) <- bundle$ilab$groups
+    headers
 }
 
 
 
 rcmetar.draw.metafor.forest <- function(bundle, outpath) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
-    renderer <- rcmetar.metafor.style.renderer(bundle$fp_style)
-    if (!is.null(renderer)) {
-        return(renderer(bundle, outpath))
+    style <- rcmetar.metafor.style(bundle$fp_style)
+    if (!is.null(style)) {
+        return(style$draw(bundle, outpath))
     }
     rcmetar.draw.default.forest(bundle, outpath)
 }

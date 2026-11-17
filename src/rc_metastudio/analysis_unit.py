@@ -6,12 +6,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import copy
+from collections.abc import Iterable
 from statistics import NormalDist
 from typing import Literal, NewType
-from rc_metastudio.project_domain import ArmId
+from rc_metastudio.domain_ids import ArmId
 import uuid
 
 from rc_metastudio import analysis_catalog, analysis_validation
+from rc_metastudio.ratio_data import RatioInput
 
 BINARY = analysis_catalog.BINARY
 CONTINUOUS = analysis_catalog.CONTINUOUS
@@ -62,46 +64,19 @@ class AnalysisUnit:
         # Arm IDs keep effect entries stable when users rename arms.
         self._arms_by_id = {}
 
-        self.raw_data_length = 0
-        if sheet.data_type == BINARY:
-            self.raw_data_length = 2
-        elif sheet.data_type == analysis_catalog.TIME_TO_EVENT:
-            self.raw_data_length = 0
-        elif sheet.data_type == analysis_catalog.EVENT_RATES:
-            self.raw_data_length = 2
-        elif sheet.data_type == CONTINUOUS:
-            self.raw_data_length = 3
-        elif sheet.data_type == DIAGNOSTIC:
-            self.raw_data_length = 4
-        else:
-            raise ValueError(f"unrecognized sheet data type: {sheet.data_type!r}")
+        try:
+            self.raw_data_length = analysis_catalog.RAW_FIELDS_PER_ARM[sheet.data_type]
+        except KeyError:
+            raise ValueError(f"unrecognized sheet data type: {sheet.data_type!r}") from None
 
         raw_data = raw_data or [[""] * self.raw_data_length for _ in arm_names]
 
-        self.entered_effects = {}
+        family = analysis_catalog.TYPE_TO_STR_DICT[sheet.data_type]
+        self.entered_effects = {metric: {} for metric in analysis_catalog.FAMILY_METRICS[family]}
+        self._entered_display = {}
         self.derived_effect_previews = {}
         self.analysis_effects = {}
-        self.ratio_inputs = {}
-
-        if self.sheet.data_type == BINARY:
-            for effect in (
-                analysis_catalog.BINARY_TWO_ARM_METRICS
-                + analysis_catalog.BINARY_ONE_ARM_METRICS
-            ):
-                self.entered_effects[effect] = {}
-        elif self.sheet.data_type == CONTINUOUS:
-            # Continuous display effects are limited to the implemented mean
-            # difference and standardized mean difference metrics.
-            for effect in (
-                analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
-                + analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
-            ):
-                self.entered_effects[effect] = {}
-        elif self.sheet.data_type == DIAGNOSTIC:
-            for effect in analysis_catalog.DIAGNOSTIC_METRICS:
-                self.entered_effects[effect] = {}
-        elif self.sheet.data_type in analysis_catalog.RATIO_DATA_TYPES:
-            self.entered_effects["HR" if self.sheet.data_type == analysis_catalog.TIME_TO_EVENT else "IRR"] = {}
+        self.ratio_inputs: dict[tuple[ArmId, ...], RatioInput] = {}
 
         identities = arm_stable_ids or [None] * len(arm_names)
         for i, arm in enumerate(arm_names):
@@ -150,25 +125,23 @@ class AnalysisUnit:
             if arm.name not in candidate.arms:
                 existing_arms.pop(identity)
         self.entered_effects = copy.deepcopy(candidate.entered_effects)
+        self._entered_display = copy.deepcopy(candidate._entered_display)
         self.derived_effect_previews = copy.deepcopy(candidate.derived_effect_previews)
         self.analysis_effects = copy.deepcopy(candidate.analysis_effects)
         self.ratio_inputs = copy.deepcopy(candidate.ratio_inputs)
 
-    def ratio_input(self, arms):
-        from rc_metastudio.ratio_data import RatioInput
-        identities = tuple(self.arms[name].stable_id for name in arms)
-        key = "|".join(identities)
-        reverse_key = "|".join(reversed(identities))
-        if key not in self.ratio_inputs:
-            if reverse_key in self.ratio_inputs:
-                return self.ratio_inputs[reverse_key].reversed()
-            return RatioInput()
-        return self.ratio_inputs[key]
+    def ratio_input(self, arms: Iterable[str]) -> RatioInput:
+        key = tuple(self.arms[name].stable_id for name in arms)
+        value = self.ratio_inputs.get(key)
+        if value is not None:
+            return value
+        reversed_value = self.ratio_inputs.get(key[::-1])
+        return reversed_value.reversed() if reversed_value is not None else RatioInput()
 
-    def set_ratio_input(self, arms, value):
-        identities = tuple(self.arms[name].stable_id for name in arms)
-        self.ratio_inputs["|".join(identities)] = value
-        self.ratio_inputs.pop("|".join(reversed(identities)), None)
+    def set_ratio_input(self, arms: Iterable[str], value: RatioInput) -> None:
+        key = tuple(self.arms[name].stable_id for name in arms)
+        self.ratio_inputs.pop(key[::-1], None)
+        self.ratio_inputs[key] = value
 
     def _new_effect_entry(self):
         return {
@@ -218,6 +191,8 @@ class AnalysisUnit:
                 "SE": standard_error,
             }
         )
+        if source == "entered":
+            self._invalidate_entered_display(effect, arm_comparison, entry)
 
     def _store(self, source: EffectSource):
         return {
@@ -302,48 +277,67 @@ class AnalysisUnit:
         return self.entered_effects.get(effect, {}).get(arm_comparison, {}).get("calculator_source")
 
     def set_effect(self, effect, arm_comparison, value):
-        self.entered_effects[effect][arm_comparison]["est"] = value
-        self.entered_effects[effect][arm_comparison]["SE"] = None
-        self.entered_effects[effect][arm_comparison]["display_conf_level"] = None
+        entry = self._entry("entered", effect, arm_comparison)
+        entry["est"] = value
+        entry["SE"] = None
+        self._invalidate_entered_display(effect, arm_comparison, entry)
 
     def set_lower(self, effect, arm_comparison, lower):
-        self.entered_effects[effect][arm_comparison]["lower"] = lower
-        entry = self.entered_effects[effect][arm_comparison]
+        entry = self._entry("entered", effect, arm_comparison)
+        entry["lower"] = lower
         entry["SE"] = None
-        entry["display_conf_level"] = None
+        self._invalidate_entered_display(effect, arm_comparison, entry)
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
 
     def set_upper(self, effect, arm_comparison, upper):
-        self.entered_effects[effect][arm_comparison]["upper"] = upper
-        entry = self.entered_effects[effect][arm_comparison]
+        entry = self._entry("entered", effect, arm_comparison)
+        entry["upper"] = upper
         entry["SE"] = None
-        entry["display_conf_level"] = None
+        self._invalidate_entered_display(effect, arm_comparison, entry)
         entry["source_multiplier"] = NormalDist().inv_cdf(
             .5 + float(self.sheet.settings.get("confidence_level", 95)) / 200
         )
 
 
+    def _invalidate_entered_display(self, effect, arm_comparison, entry):
+        self._entered_display.pop((effect, arm_comparison), None)
+        for field in ("display_est", "display_lower", "display_upper", "display_se", "display_conf_level"):
+            entry.pop(field, None)
+
+    def _cached_display(self, source: EffectSource, effect, arm_comparison):
+        if source == "entered":
+            cached = self._entered_display.get((effect, arm_comparison))
+            if cached is not None:
+                return cached
+        # Old archives can carry a display result in the entered-effect record.
+        return self._store(source).get(effect, {}).get(arm_comparison, {})
+
+    def _display_for_update(self, source: EffectSource, effect, arm_comparison):
+        if source == "entered":
+            return self._entered_display.setdefault((effect, arm_comparison), {})
+        return self._entry(source, effect, arm_comparison)
+
     def set_display_effect_for_source(
         self, source: EffectSource, effect, arm_comparison, value
     ):
-        self._entry(source, effect, arm_comparison)["display_est"] = value
+        self._display_for_update(source, effect, arm_comparison)["display_est"] = value
 
     def set_display_lower_for_source(
         self, source: EffectSource, effect, arm_comparison, lower
     ):
-        self._entry(source, effect, arm_comparison)["display_lower"] = lower
+        self._display_for_update(source, effect, arm_comparison)["display_lower"] = lower
 
     def set_display_upper_for_source(
         self, source: EffectSource, effect, arm_comparison, upper
     ):
-        self._entry(source, effect, arm_comparison)["display_upper"] = upper
+        self._display_for_update(source, effect, arm_comparison)["display_upper"] = upper
 
     def set_display_se_for_source(
         self, source: EffectSource, effect, arm_comparison, se
     ):
-        self._entry(source, effect, arm_comparison)["display_se"] = se
+        self._display_for_update(source, effect, arm_comparison)["display_se"] = se
 
     def calculate_display_effect_and_ci(
         self,
@@ -357,7 +351,7 @@ class AnalysisUnit:
         source: EffectSource,
     ):
         if self.get_effect_for_source(source, effect, arm_comparison).estimate is None:
-            entry = self._entry(source, effect, arm_comparison)
+            entry = self._display_for_update(source, effect, arm_comparison)
             for field in ("display_est", "display_lower", "display_upper", "display_se"):
                 entry[field] = None
             entry["display_conf_level"] = confidence_level
@@ -400,21 +394,21 @@ class AnalysisUnit:
         self.set_display_se_for_source(
             source, effect, arm_comparison, display_standard_error
         )
-        self._entry(source, effect, arm_comparison)[
+        self._display_for_update(source, effect, arm_comparison)[
             "display_conf_level"
         ] = confidence_level
 
     def get_display_effect_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_est")
+        return self._cached_display(source, effect, arm_comparison).get("display_est")
 
     def get_display_lower_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_lower")
+        return self._cached_display(source, effect, arm_comparison).get("display_lower")
 
     def get_display_upper_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_upper")
+        return self._cached_display(source, effect, arm_comparison).get("display_upper")
 
     def get_display_se_for_source(self, source: EffectSource, effect, arm_comparison):
-        return self._store(source).get(effect, {}).get(arm_comparison, {}).get("display_se")
+        return self._cached_display(source, effect, arm_comparison).get("display_se")
 
     def get_display_effect_and_ci_for_source(
         self, source: EffectSource, effect, arm_comparison
@@ -444,7 +438,7 @@ class AnalysisUnit:
         if confidence_level is None:
             raise ValueError("Confidence level must be specified")
 
-        display_confidence_level = self._entry(
+        display_confidence_level = self._cached_display(
             source, effect, arm_comparison
         ).get("display_conf_level")
         return display_confidence_level is None or not analysis_validation.within_absolute_tolerance(
@@ -594,13 +588,17 @@ class AnalysisUnit:
         self._arms_by_id.pop(arm.stable_id, None)
         self.ratio_inputs = {
             key: value for key, value in self.ratio_inputs.items()
-            if arm.stable_id not in key.split("|")
+            if arm.stable_id not in key
         }
         for store in (self.entered_effects, self.derived_effect_previews, self.analysis_effects):
             for entries in store.values():
                 for pair in tuple(entries):
                     if arm.stable_id in pair:
                         del entries[pair]
+        self._entered_display = {
+            key: value for key, value in self._entered_display.items()
+            if arm.stable_id not in key[1]
+        }
 
     def rename_arm(self, old_name, new_name):
         self.arms[old_name].name = new_name

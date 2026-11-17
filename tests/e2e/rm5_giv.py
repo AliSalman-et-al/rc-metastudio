@@ -111,6 +111,7 @@ def run(app, window, ROOT, WORK, record_step):
                 te = math.log(te)
             if index == 0:
                 value = row.analysis_unit.ratio_input([a.name for a in sheet.arms])
+                assert value.estimate is not None and value.se is not None, row.label
                 actual_te = math.log(value.estimate) if value.scale == 'ratio' else value.estimate
                 se = value.se
             else:

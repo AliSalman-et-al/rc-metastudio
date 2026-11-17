@@ -9,7 +9,8 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 
 from rc_metastudio import funnel_plot_editor_dialog, plot_service, results_window
-from rc_metastudio.analysis_results import PlotCapability, empty_analysis_result
+from rc_metastudio.analysis_results import empty_analysis_result
+from rc_metastudio.plot_capabilities import PlotCapability
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
 
 
@@ -26,7 +27,7 @@ def _params(kind):
 
 
 def _funnel_capability():
-    return PlotCapability("funnel", True, True, "single", "funnel")
+    return PlotCapability("funnel", True, True, "funnel")
 
 
 def test_funnel_editor_preserves_statistical_params_and_updates_presentation(qapp):
@@ -281,28 +282,18 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
     window = results_window.ResultsWindow(empty_analysis_result())
     regenerate_count = [0]
 
-    def write_params(params, **kwargs):
-        Path(kwargs["outpath"]).write_text(
-            repr(sorted(params.items())), encoding="utf-8"
-        )
-
-    def regenerate(_params_path, output_path=None):
+    def prepare(_prefix, regenerator, changed, output, directory):
+        assert regenerator == "funnel"
         regenerate_count[0] += 1
-        if regenerate_count[0] == 1:
-            assert output_path is not None
-            Path(output_path).write_bytes(b"first good image")
-            return output_path
-        raise RuntimeError("render failed")
+        if regenerate_count[0] != 1:
+            raise RuntimeError("render failed")
+        staged_params = Path(directory) / "funnel.params"
+        staged_render = Path(directory) / "funnel.png"
+        staged_params.write_text(repr(sorted(changed.items())), encoding="utf-8")
+        staged_render.write_bytes(b"first good image")
+        return {str(params_path): str(staged_params), output: str(staged_render)}
 
-    monkeypatch.setattr(
-        plot_service.r_bridge, "update_plot_params", write_params, raising=False
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_small_study_effects_funnel",
-        regenerate,
-        raising=False,
-    )
+    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
     dialog = FunnelPlotEditorDialog(
         {"funnel.kind": "ordinary", "funnel.point.size": 1.0},
         str(image_path),
@@ -310,7 +301,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
     )
     try:
         dialog.point_size_spin.setValue(2.0)
-        window._apply_funnel_plot_edits(dialog, artifact, None)
+        window._apply_plot_edits(dialog, artifact, None)
         assert regenerate_count == [1]
         assert image_path.read_bytes() == b"first good image"
         import ast
@@ -320,7 +311,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         committed_image = image_path.read_bytes()
         dialog.point_size_spin.setValue(3.0)
         with pytest.raises(RuntimeError, match="render failed"):
-            window._apply_funnel_plot_edits(dialog, artifact, None)
+            window._apply_plot_edits(dialog, artifact, None)
         assert params_path.read_bytes() == committed_params
         assert image_path.read_bytes() == committed_image
         assert dialog._dirty
@@ -343,4 +334,4 @@ def test_funnel_editor_rejects_svgz_output_path(qapp):
             return {"funnel.outpath": "edited-funnel.svgz"}
 
     with pytest.raises(ValueError, match="SVGZ output is not supported"):
-        window._apply_funnel_plot_edits(Dialog(), artifact, None)
+        window._apply_plot_edits(Dialog(), artifact, None)

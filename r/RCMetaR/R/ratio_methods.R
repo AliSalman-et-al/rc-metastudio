@@ -185,13 +185,15 @@ ratio.subgroup <- function(data, request, suppressed) {
     if (is(selected, "CovariateValues")) selected <- selected@cov.name
     cov <- .rcmetar.resolve.selected.cov(data, selected, params)
     groups <- unique(as.character(cov@cov.vals))
-    subsets <- lapply(groups, function(group) get.subset(data, which(as.character(cov@cov.vals) == group)))
+    indices <- lapply(groups, function(group) which(as.character(cov@cov.vals) == group))
+    subsets <- lapply(indices, function(rows) get.subset(data, rows))
     fits <- lapply(c(subsets, list(data)), ratio.fit, params=suppressed, method=method)
     labels <- c(groups, "Overall")
     disp <- create.subgroup.display(fits, labels, params, "Subgroup meta-analysis", .rcmetar.data.type(data))
+    disp$study.results <- rcmetar.study.result.values(data, params, tail(fits, 1L)[[1L]], indices)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.subgroup.metafor.bundle(data, params,
         list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
-             row.indices=lapply(groups, function(group) which(as.character(cov@cov.vals) == group))))
+             row.indices=indices))
     result <- list("Subgroup Summary"=disp, res=construct.subgroup.res.output(fits))
     test <- rcmetar.metafor.subgroup.difference.test(fits[seq_along(groups)])
     disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
@@ -212,11 +214,8 @@ ratio.sequential <- function(data, request, suppressed) {
     plot <- NULL
     loo <- request$workflow == "leave-one-out"
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
-    subsets <- lapply(seq_len(n), function(i) get.subset(data, if (loo) setdiff(seq_len(n), i) else seq_len(i)))
-    fits <- lapply(subsets, function(subset) {
-        ratio.fit(subset, suppressed, method)
-    })
-    if (loo) fits <- c(list(ratio.fit(data, suppressed, method)), fits)
+    fit <- function(subset) ratio.fit(subset, suppressed, method)
+    fits <- .rcmetar.sequential.fits(data, loo, fit, fit(data))
     labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, loo)
     model.title <- paste(pretty.metric.name(data@metric),
         if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")

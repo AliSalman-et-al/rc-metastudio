@@ -102,7 +102,8 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
             "rc-metastudio", "--automation-startup-project-smoke",
             "--automation-startup-completion-marker", str(marker), str(sample),
         ]):
-            assert launch.start() == 0
+            from rc_metastudio.__main__ import main
+            assert main() == 0
         assert json.loads(marker.read_text())["post_close"]
         assert observations
         (output / "observations.json").write_text(json.dumps(observations, indent=2))

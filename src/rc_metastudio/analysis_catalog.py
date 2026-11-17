@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Stable data-family IDs, supported metrics and default arm names."""
 
+from typing import Literal
 
+AnalysisFamily = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 
 BINARY_TWO_ARM_METRICS = ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
 
@@ -67,22 +69,9 @@ DIAGNOSTIC_METRIC_LABELS = {
 }
 
 
-ALL_METRIC_NAMES = {}
-
-
-ALL_METRIC_NAMES.update(BINARY_METRIC_NAMES)
-
-
-ALL_METRIC_NAMES.update(CONTINUOUS_METRIC_NAMES)
-
-
-ALL_METRIC_NAMES.update(DIAGNOSTIC_METRIC_LABELS)
-
-
 RATIO_METRIC_NAMES = {"HR": "Hazard ratio", "IRR": "Incidence rate ratio"}
 
-
-ALL_METRIC_NAMES.update(RATIO_METRIC_NAMES)
+ALL_METRIC_NAMES = BINARY_METRIC_NAMES | CONTINUOUS_METRIC_NAMES | DIAGNOSTIC_METRIC_LABELS | RATIO_METRIC_NAMES
 
 
 TWO_ARM_METRICS += ["HR", "IRR"]
@@ -118,6 +107,22 @@ TYPE_TO_STR_DICT = {
     DIAGNOSTIC: "diagnostic",
     OTHER: "OTHER",
     FACTOR: "factor",
+}
+
+FAMILY_METRICS = {
+    "binary": tuple(BINARY_TWO_ARM_METRICS + BINARY_ONE_ARM_METRICS),
+    "continuous": tuple(CONTINUOUS_TWO_ARM_METRICS + CONTINUOUS_ONE_ARM_METRICS),
+    "diagnostic": tuple(DIAGNOSTIC_METRICS),
+    "time_to_event": ("HR",),
+    "event_rates": ("IRR",),
+}
+
+RAW_FIELDS_PER_ARM = {
+    BINARY: 2,
+    CONTINUOUS: 3,
+    DIAGNOSTIC: 4,
+    TIME_TO_EVENT: 0,
+    EVENT_RATES: 2,
 }
 
 

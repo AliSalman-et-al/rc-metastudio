@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
-from typing import NewType, TypeAlias, cast
+from typing import TypeAlias, cast
+
+from rc_metastudio.analysis_catalog import (
+    FAMILY_METRICS, ONE_ARM_METRICS, RAW_FIELDS_PER_ARM, STR_TO_TYPE_DICT,
+)
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
@@ -13,18 +17,6 @@ class ProjectSemanticError(ValueError):
     """Schema-valid project content violates a domain relationship."""
 
 
-_FAMILY_DATA_TYPES = {"binary": 0, "continuous": 1, "diagnostic": 2, "time_to_event": 5, "event_rates": 6}
-_FAMILY_RAW_ARITY = {"binary": 2, "continuous": 3, "diagnostic": 4, "time_to_event": 0, "event_rates": 2}
-_FAMILY_METRICS = {
-    "time_to_event": frozenset({"HR"}),
-    "event_rates": frozenset({"IRR"}),
-    "binary": frozenset(
-        {"OR", "RD", "RR", "AS", "YUQ", "YUY", "PR", "PLN", "PLO", "PAS", "PFT"}
-    ),
-    "continuous": frozenset({"MD", "SMD", "Mean"}),
-    "diagnostic": frozenset({"Sens", "Spec", "PLR", "NLR", "DOR"}),
-}
-_ONE_ARM_METRICS = frozenset({"PR", "PLN", "PLO", "PAS", "PFT", "Mean"})
 _FAMILY_SUBTYPES = {
     "time_to_event": frozenset({None, "hazard_ratio"}),
     "event_rates": frozenset({None, "incidence_rate_ratio"}),
@@ -66,7 +58,7 @@ def _integer_valued(value: float | None, location: str) -> None:
 
 
 def _validate_raw(family: str, values: list[object], location: str) -> None:
-    arity = _FAMILY_RAW_ARITY[family]
+    arity = RAW_FIELDS_PER_ARM[STR_TO_TYPE_DICT[family]]
     if len(values) != arity:
         raise ProjectSemanticError(
             f"{location}: raw-data arity for {family} must be {arity}"
@@ -159,9 +151,9 @@ def _validate_summary_identity(summary: Mapping[str, object], family: str) -> No
 def _validate_summary_metrics(summary: Mapping[str, object], family: str) -> None:
     effect = summary["effect"]
     metrics = cast(list[str], summary["metric_choices"])
-    if effect is not None and effect not in _FAMILY_METRICS[family]:
+    if effect is not None and effect not in FAMILY_METRICS[family]:
         raise ProjectSemanticError("project summary metric conflicts with family")
-    if not set(metrics) <= _FAMILY_METRICS[family]:
+    if not set(metrics).issubset(FAMILY_METRICS[family]):
         raise ProjectSemanticError("project summary metric conflicts with family")
 
 
@@ -176,7 +168,7 @@ def _validated_outcomes(
     if len(names) != len(set(names)):
         raise ProjectSemanticError("duplicate outcome identifier")
     outcome_by_name = dict(zip(names, outcomes, strict=True))
-    expected_data_type = _FAMILY_DATA_TYPES[family]
+    expected_data_type = STR_TO_TYPE_DICT[family]
     for name, outcome in outcome_by_name.items():
         _validate_outcome(name, outcome, family, expected_data_type)
     return outcome_by_name
@@ -397,7 +389,7 @@ def _validate_group_count(
 
 
 def _valid_comparisons(family: str, metric: str, group_names: list[str]) -> set[str]:
-    if metric in _ONE_ARM_METRICS or family == "diagnostic":
+    if metric in ONE_ARM_METRICS or family == "diagnostic":
         return set(group_names)
     return {
         f"{left}-{right}"
@@ -416,7 +408,7 @@ def _validate_entered_effects(
 ) -> None:
     effects = _object(unit["entered_effects"], "entered_effects")
     for metric, comparisons_value in effects.items():
-        if metric not in _FAMILY_METRICS[family]:
+        if metric not in FAMILY_METRICS[family]:
             raise ProjectSemanticError(
                 f"study {study_id} unit {unit_index}: metric conflicts with family"
             )
@@ -470,7 +462,7 @@ def _validate_active_follow_up(
 
 
 def _validate_active_effect(active_effect: str | None, family: str) -> None:
-    if active_effect is not None and active_effect not in _FAMILY_METRICS[family]:
+    if active_effect is not None and active_effect not in FAMILY_METRICS[family]:
         raise ProjectSemanticError("active effect conflicts with analysis family")
 
 
@@ -484,11 +476,6 @@ def validate_legacy_project_semantics(
     covariates = _validated_covariates(dataset)
     available_groups = _validate_studies(dataset, family, outcomes, covariates)
     _validate_active_state(state, family, outcomes, available_groups)
-
-
-SheetId = NewType("SheetId", str)
-RowId = NewType("RowId", str)
-ArmId = NewType("ArmId", str)
 
 
 def _unique_sheet_items(items, location):
@@ -511,7 +498,7 @@ def _validate_sheet_ratio(value):
 
 def _validate_sheet_comparisons(sheet, row, arms):
     effect_keys = [(record["metric"], tuple(record["arms"])) for record in row["entered_effects"]]
-    ratio_keys = ["|".join(record["arms"]) for record in row["ratio_inputs"]]
+    ratio_keys = [tuple(record["arms"]) for record in row["ratio_inputs"]]
     if len(effect_keys) != len(set(effect_keys)) or len(ratio_keys) != len(set(ratio_keys)):
         raise ProjectSemanticError("duplicate persisted comparison key")
     for record in row["ratio_inputs"]:
@@ -520,7 +507,7 @@ def _validate_sheet_comparisons(sheet, row, arms):
         if not record["arms"] or not set(record["arms"]) <= arms:
             raise ProjectSemanticError("comparison references undeclared arm")
     for record in row["entered_effects"]:
-        if record["metric"] not in _FAMILY_METRICS[sheet["family"]]:
+        if record["metric"] not in FAMILY_METRICS[sheet["family"]]:
             raise ProjectSemanticError("metric conflicts with family")
         values = {key: value for key, value in record["values"].items() if value is not None}
         _validate_effect(values, row["id"])
@@ -557,7 +544,7 @@ def _validate_sheet_covariates(covariates):
 
 def _validate_sheet(sheet):
     family = sheet["family"]
-    if sheet["data_type"] != _FAMILY_DATA_TYPES[family]:
+    if sheet["data_type"] != STR_TO_TYPE_DICT[family]:
         raise ProjectSemanticError("data_type conflicts with family")
     if sheet["sub_type"] not in _FAMILY_SUBTYPES[family]:
         raise ProjectSemanticError("sub_type conflicts with family")

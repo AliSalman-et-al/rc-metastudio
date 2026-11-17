@@ -122,7 +122,6 @@ def test_csv_selection_cancel_dialect_invalidation_and_recovery(
         assert page.import_status.text()
         assert not page.isComplete()
         assert wizard.get_csv_data() is None
-        assert wizard.get_results()["csv_data"] is None
 
         getattr(page, control).setText(valid)
         assert page.isComplete()

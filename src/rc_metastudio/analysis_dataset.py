@@ -1,6 +1,6 @@
 """Project-owned sheets with independent study rows."""
 from dataclasses import dataclass, field
-from rc_metastudio.project_domain import SheetId, RowId, ArmId
+from rc_metastudio.domain_ids import SheetId, RowId, ArmId
 from rc_metastudio.analysis_unit import AnalysisUnit
 
 @dataclass

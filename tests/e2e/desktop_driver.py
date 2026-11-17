@@ -34,6 +34,7 @@ from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click,
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path(sys.argv[2])
+sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
 
 # Keep preferences and working artifacts out of the user's normal workspace.
 QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
@@ -57,6 +58,7 @@ if os.environ.get('RCMS_REPORT_AUDIT_DIR'):
 from tests.analysis_regression.golden.support.golden_analysis import (
     parsed_numeric_sections,
 )
+from tests.e2e.plot_observations import load_saved_analysis
 
 EVIDENCE = (
     Path(os.environ["RCMS_E2E_EVIDENCE_DIR"])
@@ -239,8 +241,17 @@ def doctor(app, window):
     font_families = QtGui.QFontDatabase.families()
     font = QtGui.QRawFont.fromFont(app.font())
     assert font_families and font.isValid(), ("Qt has no usable fonts", app.font().toString())
-    assert all(font.supportsCharacter(ord(char)) for char in "Aa012τ…"), (
-        "Qt's default font lacks required glyphs", font.familyName(), app.font().toString()
+    required_glyphs = "Aa012τ…"
+    text_layout = QtGui.QTextLayout(required_glyphs, app.font())
+    text_layout.beginLayout()
+    line = text_layout.createLine()
+    assert line.isValid()
+    line.setLineWidth(1000)
+    text_layout.endLayout()
+    glyph_runs = text_layout.glyphRuns()
+    glyphs = [glyph for run in glyph_runs for glyph in run.glyphIndexes()]
+    assert len(glyphs) == len(required_glyphs) and all(glyphs), (
+        "Qt could not render the required glyphs", glyphs, app.font().toString()
     )
     identity = {
         "r": r_version,
@@ -259,7 +270,8 @@ def doctor(app, window):
             "family": font.familyName(),
             "style": font.styleName(),
             "family_count": len(font_families),
-            "required_glyphs": "Aa012τ…",
+            "required_glyphs": required_glyphs,
+            "glyph_families": [run.rawFont().familyName() for run in glyph_runs],
             "directory": os.environ.get("QT_QPA_FONTDIR"),
         },
         "application": app.applicationName(),
@@ -629,11 +641,7 @@ def sample_analysis(app, window, sample):
     )
     assert view.results.display_images, "analysis produced no plot"
     title = next(iter(view.results.display_images))
-    artifact = view.create_plot_artifact(
-        title,
-        view.results.display_images[title],
-        params_path=view.results.image_params_paths[title],
-    )
+    artifact = view.plot_artifact(title)
     exported = WORK / "forest.pdf"
     with patch.object(
         QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(exported), "")
@@ -809,7 +817,7 @@ def sheets_swap(app, window):
             view = analyze(app, window, model.get_current_data_type() + ".random")
             if metric in ("OR", "RD", "MD"):
                 from rc_metastudio import r_bridge
-                r_bridge.load_vars_for_plot(next(iter(view.results.image_params_paths.values())))
+                load_saved_analysis(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
@@ -1275,7 +1283,7 @@ def editing(app, window):
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"
     )
-    assert window.out_path == str(destination)
+    assert window.workspace.path == destination
     record_step(
         "edit-reopened",
         window,
@@ -1408,7 +1416,7 @@ def xlsx_import(app, window):
     assert not page.csv_options_btn.isVisible()
     assert page.preview_table.isVisible()
     assert not required(page.pageScrollArea.verticalScrollBar()).isVisible()
-    payload = page.csv_data()
+    payload = required(page.csv_data(), "import preview")
     import csv as csv_module
     csv_path = WORK / "equivalent.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as stream:
@@ -1467,7 +1475,7 @@ def xlsx_import(app, window):
     select(cached_path)
     assert page.isComplete(), page.import_status.text()
     assert "1 formula cells use their saved values" in page.import_status.text()
-    assert page.csv_data()["data"][0][2] == "2"
+    assert required(page.csv_data(), "import preview")["data"][0][2] == "2"
     select(path)
 
     assert payload["data"][0][:6] == ["Alpha", "2020", "1", "10", "2", "12"]
@@ -1486,11 +1494,10 @@ def xlsx_import(app, window):
     view = analyze(app, window, "binary.random")
     xlsx_results = dict(view.texts)
     view.close()
-    window.out_path = str(WORK / "xlsx.rcms")
-    assert window.save()
-    assert window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=WORK / "xlsx.rcms")
+    assert window.open(window.workspace.path, raise_on_error=True)
     assert window.model.get_studies(False)[0].label == "Alpha"
-    record_step("xlsx-reopened", window, project=window.out_path)
+    record_step("xlsx-reopened", window, project=str(window.workspace.path))
     select(csv_path)
     assert page.isComplete(), page.import_status.text()
     window._handle_wizard_results(wizard.get_results())
@@ -1532,7 +1539,7 @@ def xlsx_import(app, window):
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(precision_path), "")):
         mouse_click(precision_page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert precision_page.isComplete(), precision_page.import_status.text()
-    assert precision_page.csv_data()["data"][0][1:5] == ["2022", "12", "0.1", repr(1/3)]
+    assert required(precision_page.csv_data(), "import preview")["data"][0][1:5] == ["2022", "12", "0.1", repr(1/3)]
     assert "Continuous!C3" in precision_page.import_status.text()
     record_step("xlsx-precision", precision_wizard, data=precision_page.csv_data())
     precision_wizard.close()
@@ -1583,13 +1590,13 @@ def csv_import(app, window):
     record_step("csv-unmapped-preview", wizard, message=page.import_status.text())
     page.mapping_controls[2].setCurrentIndex(page.mapping_controls[2].findData(2))
     assert page.isComplete(), page.import_status.text()
-    assert len(page.csv_data()["data"]) == 3
+    assert len(required(page.csv_data(), "import preview")["data"]) == 3
     headerless = WORK / "headerless-counts.csv"
     headerless.write_text("Alpha,2020,1,10,2,12\nBeta,2021,3,11,4,13\n")
     page.file_path = str(headerless)
     page.has_headers_chkbx.setChecked(False)
     assert page.isComplete(), page.import_status.text()
-    assert len(page.csv_data()["data"]) == 2
+    assert len(required(page.csv_data(), "import preview")["data"]) == 2
     record_step("csv-headerless-counts", wizard, data=page.csv_data())
     page.file_path = str(csv)
     page.has_headers_chkbx.setChecked(True)
@@ -1608,9 +1615,8 @@ def csv_import(app, window):
     view = analyze(app, window, "binary.random")
     assert "Alpha" in view.texts.get("Weights", "")
     view.close()
-    window.out_path = str(WORK / "imported.rcms")
-    assert window.save()
-    assert window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=WORK / "imported.rcms")
+    assert window.open(window.workspace.path, raise_on_error=True)
     assert window.model.get_studies(False)[0].label == "Alpha, München"
     reopened = window.model.get_studies(False)[1]
     assert reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
@@ -1619,7 +1625,7 @@ def csv_import(app, window):
     record_step(
         "csv-reopened",
         window,
-        project=window.out_path,
+        project=str(window.workspace.path),
         study="Alpha, München",
         dose=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")],
         region=reopened.covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Region")],
@@ -1641,7 +1647,7 @@ def csv_import(app, window):
     effects_page.load_file(str(effects_path))
     assert all(control.currentData() is None for control in effects_page.mapping_controls[2:6])
     assert effects_page.isComplete(), effects_page.import_status.text()
-    assert effects_page.csv_data()["data"][0][2:9] == ["", "", "", "", "0.5", "0.2", "1.25"]
+    assert required(effects_page.csv_data(), "import preview")["data"][0][2:9] == ["", "", "", "", "0.5", "0.2", "1.25"]
     record_step("csv-effects-only-preview", effects_wizard, file=str(effects_path))
     window._handle_wizard_results(effects_wizard.get_results())
     effects_wizard.close()
@@ -1659,13 +1665,9 @@ def plot_edit(app, window):
     title = next(iter(view.results.display_images))
     path = Path(view.results.display_images[title])
     before = path.read_bytes()
-    artifact = view.create_plot_artifact(
-        title,
-        view.results.images[title],
-        params_path=view.results.image_params_paths[title],
-    )
+    artifact = view.plot_artifact(title)
     from rc_metastudio import r_bridge
-    r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+    load_saved_analysis(artifact.params_path, include_plot_data=True)
     r_bridge.execute_r_string('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
     callback_errors = []
 
@@ -1736,7 +1738,7 @@ def plot_edit(app, window):
         view.plot_service.load_params(artifact.params_path)["fp_xlabel"]
         == "Edited effect axis"
     )
-    r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+    load_saved_analysis(artifact.params_path, include_plot_data=True)
     assert bool(r_bridge.execute_r_string('identical(batch3.fit.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric))')[0])
     assert QSvgRenderer(str(path)).isValid()
     record_step(
@@ -2060,10 +2062,9 @@ def calculator(app, window, family):
     assert not window.workspace.is_dirty
     window.action_redo.trigger()
     assert raw() == expected
-    window.out_path = str(WORK / "calculator.rcms")
-    assert window.save()
+    assert window.save(destination=WORK / "calculator.rcms")
     import zipfile
-    saved_row = json.loads(zipfile.ZipFile(window.out_path).read("project.json"))["sheets"][0]["rows"][0]
+    saved_row = json.loads(zipfile.ZipFile(window.workspace.path).read("project.json"))["sheets"][0]["rows"][0]
     baseline = json.loads((ROOT / "tests/e2e/calculator-accepted-baseline.json").read_text())["rows"][family]
     def float_bits(value):
         if isinstance(value, float):
@@ -2079,7 +2080,7 @@ def calculator(app, window, family):
             # Visiting a previously unused metric creates an empty effect slot.
             actual = [effect for effect in actual if any(value is not None for value in effect["values"].values())]
         assert float_bits(actual) == float_bits(baseline[key]), key
-    assert window.open(window.out_path, raise_on_error=True)
+    assert window.open(window.workspace.path, raise_on_error=True)
     assert raw() == expected
     method = {
         "binary": "binary.random",
@@ -2087,7 +2088,7 @@ def calculator(app, window, family):
         "diagnostic": "diagnostic.random",
     }[family]
     record_step(
-        "calculator-reopened", window, family=family, raw=raw(), project=window.out_path
+        "calculator-reopened", window, family=family, raw=raw(), project=str(window.workspace.path)
     )
     analyze(app, window, method).close()
 
@@ -2302,8 +2303,7 @@ def hillclimb(app, window):
     assert all(s.include for s in window.model.get_studies(False))
     basic = run_analysis(window.action_go)
     end(basic)
-    window.out_path = str(WORK / "hillclimb-t1.rcms")
-    assert window.save()
+    assert window.save(destination=WORK / "hillclimb-t1.rcms")
     basic.close()
 
     begin("T2")
@@ -2388,6 +2388,77 @@ def hillclimb(app, window):
     basic.close()
 
 
+def subgroup_image(app, window, scenario):
+    if scenario.endswith("dark-large"):
+        app.setStyle("Fusion")
+        palette = QtGui.QPalette()
+        for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Base, QtGui.QPalette.ColorRole.Button):
+            palette.setColor(role, QtGui.QColor("#202020"))
+        for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
+            palette.setColor(role, QtGui.QColor("#eeeeee"))
+        app.setPalette(palette)
+        font = app.font()
+        font.setPointSize(font.pointSize() + 6)
+        app.setFont(font)
+    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from unittest.mock import patch
+    assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
+    def visible_result(kind):
+        return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    group = visible_result(SubgroupAnalysisDialog)
+    index = group.covariate_combo_box.findText("treatment group")
+    assert index >= 0
+    group.covariate_combo_box.setCurrentIndex(index)
+    group.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    setup = visible_result(analysis_setup_dialog.AnalysisSetupDialog)
+    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    view = visible_result(results_window.ResultsWindow)
+    assert view._svg_plot_items
+    assert view.manuscript_text.toPlainText()
+    record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
+    artifact = next(iter(view._nav_plot_artifacts.values()))
+    preview = QtGui.QImage(artifact.image_path)
+    assert not preview.isNull(), artifact.image_path
+    assert preview.width() * preview.height() * 4 <= 256 * 1024**2
+    record_step("meantime-preview-raster", view, path=artifact.image_path,
+                width=preview.width(), height=preview.height())
+    export_path = WORK / "meantime-export.png"
+    view.plot_service.export(regenerator="forest", params_path=required(artifact.params_path),
+                             output_path=str(export_path))
+    import struct
+    with export_path.open("rb") as exported:
+        header = exported.read(24)
+    assert header[:8] == b"\x89PNG\r\n\x1a\n"
+    width, height = struct.unpack(">II", header[16:24])
+    # Validate 600 pixels per SVG inch without decoding this huge bitmap.
+    # SVG physical extents are rounded to 0.01 pt; raster extents round up.
+    from xml.etree import ElementTree as ET
+    svg = ET.parse(artifact.display_path()).getroot()
+    assert all(svg.attrib[key].endswith("pt") for key in ("width", "height"))
+    expected_pixels = [float(svg.attrib[key].removesuffix("pt")) * 600 / 72
+                       for key in ("width", "height")]
+    assert all(abs(actual - expected) < 1.05 for actual, expected in
+               zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
+    assert width * height * 4 > 256 * 1024**2
+    assert all((figure.display_image or figure.value).endswith(".svg") for figure in view.manuscript.figures)
+    record_step("meantime-raster-export", view, width=width, height=height)
+    results = view.results
+    view.close()
+    app.processEvents()
+    with patch.object(results_window.ResultsWindow, "create_plot_item", side_effect=OSError("forced plot-load failure")):
+        window.analysis(results)
+    failed = visible_result(results_window.ResultsWindow)
+    assert failed.manuscript_text.toPlainText()
+    assert any("Could not load plot" in item.toPlainText()
+               for item in failed.scene.items() if hasattr(item, "toPlainText"))
+    record_step("meantime-subgroup-load-failure", failed)
+    failed.close()
+
+
 base_path_patch = patch(
     "rc_metastudio.settings.get_base_path", return_value=WORK.as_posix()
 )
@@ -2451,186 +2522,9 @@ try:
     scenario = sys.argv[1]
     if EVIDENCE is not None or scenario == "doctor":
         doctor(app, window)
-    if scenario == "doctor":
-        pass
-    elif scenario == "ui-crawl":
-        from tests.e2e.ui_crawl import run
-        run(sys.modules[__name__])
-    elif scenario == "grid-entry":
-        grid_entry(app, window)
-    elif scenario in {"subgroup-image", "subgroup-image-dark-large"}:
-        if scenario.endswith("dark-large"):
-            app.setStyle("Fusion")
-            palette = QtGui.QPalette()
-            for role in (QtGui.QPalette.ColorRole.Window, QtGui.QPalette.ColorRole.Base, QtGui.QPalette.ColorRole.Button):
-                palette.setColor(role, QtGui.QColor("#202020"))
-            for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
-                palette.setColor(role, QtGui.QColor("#eeeeee"))
-            app.setPalette(palette)
-            font = app.font()
-            font.setPointSize(font.pointSize() + 6)
-            app.setFont(font)
-        from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-        from unittest.mock import patch
-        assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
-        def visible_result(kind):
-            return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
-        window.action_subgroup_ma.trigger()
-        app.processEvents()
-        group = visible_result(SubgroupAnalysisDialog)
-        index = group.covariate_combo_box.findText("treatment group")
-        assert index >= 0
-        group.covariate_combo_box.setCurrentIndex(index)
-        group.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
-        setup = visible_result(analysis_setup_dialog.AnalysisSetupDialog)
-        setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
-        view = visible_result(results_window.ResultsWindow)
-        assert view._svg_plot_items
-        assert view.manuscript_text.toPlainText()
-        record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
-        artifact = next(iter(view._nav_plot_artifacts.values()))
-        preview = QtGui.QImage(artifact.image_path)
-        assert not preview.isNull(), artifact.image_path
-        assert preview.width() * preview.height() * 4 <= 256 * 1024**2
-        record_step("meantime-preview-raster", view, path=artifact.image_path,
-                    width=preview.width(), height=preview.height())
-        export_path = WORK / "meantime-export.png"
-        view.plot_service.export(regenerator="forest", params_path=required(artifact.params_path),
-                                 output_path=str(export_path))
-        import struct
-        with export_path.open("rb") as exported:
-            header = exported.read(24)
-        assert header[:8] == b"\x89PNG\r\n\x1a\n"
-        width, height = struct.unpack(">II", header[16:24])
-        # Validate 600 pixels per SVG inch without decoding this huge bitmap.
-        # SVG physical extents are rounded to 0.01 pt; raster extents round up.
-        from xml.etree import ElementTree as ET
-        svg = ET.parse(artifact.display_path()).getroot()
-        assert all(svg.attrib[key].endswith("pt") for key in ("width", "height"))
-        expected_pixels = [float(svg.attrib[key].removesuffix("pt")) * 600 / 72
-                           for key in ("width", "height")]
-        assert all(abs(actual - expected) < 1.05 for actual, expected in
-                   zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
-        assert width * height * 4 > 256 * 1024**2
-        assert all(str(path).endswith(".svg") for _, path in view.manuscript.figures)
-        record_step("meantime-raster-export", view, width=width, height=height)
-        results = view.results
-        view.close()
-        app.processEvents()
-        with patch.object(results_window.ResultsWindow, "create_plot_item", side_effect=OSError("forced plot-load failure")):
-            window.analysis(results)
-        failed = visible_result(results_window.ResultsWindow)
-        assert failed.manuscript_text.toPlainText()
-        assert any("Could not load plot" in item.toPlainText()
-                   for item in failed.scene.items() if hasattr(item, "toPlainText"))
-        record_step("meantime-subgroup-load-failure", failed)
-        failed.close()
-    elif scenario == "hillclimb":
-        hillclimb(app, window)
-    elif scenario.startswith("audit-round3-"):
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.analysis_presentation_workflows import run
+    from tests.e2e.desktop_scenarios import SCENARIOS
 
-        run(app, window, WORK, record_step, scenario)
-    elif scenario == "analysis-dialog":
-        analysis_dialog(app, window)
-    elif scenario == "ui-fine-tuning":
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.ui_fine_tuning import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "ui-fable-polish":
-        from tests.e2e.ui_fable_polish import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "ui-design-direction":
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.ui_design_direction import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "review1-design":
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.desktop_navigation_workflows import run
-
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "review-workflows":
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from tests.e2e.analysis_settings_workflows import run
-
-        run(app, window, ROOT, record_step, analyze)
-    elif scenario == 'ui-refresh':
-        from tests.e2e.ui_refresh import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario in ("ux-improvements", "results-window"):
-        from tests.e2e.ux_workflows import run
-
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario in ("manuscript-export", "manuscript-export-direct"):
-        from tests.e2e.manuscript_export import run
-        run(app, window, WORK, ROOT, record_step, analyze,
-            direct_write=scenario == "manuscript-export-direct")
-    elif scenario == "manuscript-split-figure":
-        from tests.e2e.manuscript_split_figure import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == "results-presentation":
-        from tests.e2e.results_presentation import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario == 'results-values':
-        from tests.e2e.results_values import run
-        run(app, window, WORK, ROOT, record_step, analyze)
-    elif scenario in ("amino", "continuous", "lymph"):
-        sample_analysis(app, window, scenario)
-    elif scenario == "rm5-import":
-        from tests.e2e.rm5_import import run
-        run(app, window, ROOT, WORK, record_step)
-    elif scenario == "sheets-persist":
-        sheets_persist(app, window)
-    elif scenario == "sheets-edges":
-        sheets_edges(app, window)
-    elif scenario == "sheets-swap":
-        sheets_swap(app, window)
-    elif scenario == "sheets-legacy":
-        sheets_legacy(app, window)
-    elif scenario in ("sheets", "project-structure"):
-        sheets(app, window)
-    elif scenario == "editing":
-        editing(app, window)
-    elif scenario == "plot-edit":
-        plot_edit(app, window)
-    elif scenario == "small-study-effects":
-        small_study_effects(app, window)
-    elif scenario.startswith(
-        (
-            "options-",
-            "plot-workflow-",
-            "calculator-mode-",
-            "calculator-grid-precision",
-            "calculator-ratio-precision",
-            "project-",
-            "analysis-sequential-",
-        )
-    ):
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from advanced_workflows import run
-
-        run(app, window, scenario, record_step)
-    elif scenario.startswith("calculator-"):
-        calculator(app, window, scenario.removeprefix("calculator-"))
-    elif scenario == "xlsx-import":
-        xlsx_import(app, window)
-    elif scenario == "csv":
-        csv_import(app, window)
-    elif scenario.startswith("ratios-"):
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from ratio_workflows import run
-
-        run(app, window, scenario, record_step)
-    elif scenario.startswith(("analysis-", "small-study-")):
-        sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-        from analysis_matrix import run
-
-        run(app, window, scenario, record_step)
-    else:
-        raise ValueError(f"Unknown desktop scenario: {scenario}")
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
     assert not errors, errors
     record_step("workflow-passed", window, scenario=scenario)
 except BaseException:

@@ -70,7 +70,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
     functions = {
         "get_confidence_multiplier_from_r": _confidence,
-        "set_confidence_level": lambda level: float(level),
         "get_r_library_paths": lambda: [],
         "get_r_version_string": lambda: None,
         "get_r_package_version": lambda _name: None,
@@ -105,8 +104,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "get_available_methods": _unavailable,
         "get_params": _unavailable,
         "run_small_study_effects": _unavailable,
-        "regenerate_small_study_effects_funnel": _unavailable,
-        "generate_small_study_effects_funnel": _unavailable,
         "run_model_analysis": lambda _model, _request, **_kwargs: {
             "version": 1,
             "texts": {},

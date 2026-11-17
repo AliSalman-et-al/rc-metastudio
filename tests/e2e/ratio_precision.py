@@ -64,8 +64,7 @@ def run(app, window, work, record):
                 assert expected['lower'] == 1.2345678901234567e-8 if mode == 'ratio' else expected['se'] == 1.2345678901234567e-8
             window.action_undo.trigger()
             window.action_redo.trigger()
-            window.out_path = str(work/(metric+'-'+mode+'.rcms'))
-            assert window.save() and window.open(window.out_path, raise_on_error=True)
+            assert window.save(destination=work/(metric+'-'+mode+'.rcms')) and window.open(window.workspace.path, raise_on_error=True)
             unit = window.model.get_current_analysis_unit_for_study(0)
             assert asdict(unit.ratio_input(window.model.arm_names)) == expected
             assert unit.get_raw_data_for_arms(window.model.arm_names) == raw

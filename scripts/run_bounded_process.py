@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 import os
 from pathlib import Path
 import signal
@@ -64,17 +65,18 @@ def run_bounded(
         raise ValueError("a child command is required")
     if timeout_seconds < 1:
         raise ValueError("timeout must be positive")
-    for path in (stdout_path, stderr_path):
-        if path is not None:
+    with ExitStack() as streams:
+        def open_log(path: Path | None):
+            if path is None:
+                return None
             path.parent.mkdir(parents=True, exist_ok=True)
-    stdout_stream = stdout_path.open("ab") if stdout_path is not None else None
-    stderr_stream = stderr_path.open("ab") if stderr_path is not None else None
-    try:
+            return streams.enter_context(path.open("ab"))
+
         process = subprocess.Popen(
             command,
             stdin=subprocess.DEVNULL,
-            stdout=stdout_stream,
-            stderr=stderr_stream,
+            stdout=open_log(stdout_path),
+            stderr=open_log(stderr_path),
             start_new_session=os.name == "posix",
         )
         try:
@@ -84,26 +86,25 @@ def run_bounded(
                 f"package process exceeded its {timeout_seconds}-second watchdog: {command!r}",
                 file=sys.stderr,
             )
-            if os.name == "posix":
-                try:
-                    process_groups.terminate_process_group(process, grace_seconds=1)
-                    if not process_groups.wait_for_process_group_exit(process.pid, timeout_seconds=5):
-                        raise RuntimeError("package process group remained alive after SIGKILL")
-                finally:
-                    _terminate_owned_pid(owned_pid_path)
-            else:
-                process.terminate()
-                try:
-                    process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                    process.wait(timeout=5)
+            _terminate_package_process(process, owned_pid_path)
             return 124
-    finally:
-        if stdout_stream is not None:
-            stdout_stream.close()
-        if stderr_stream is not None:
-            stderr_stream.close()
+
+
+def _terminate_package_process(process: subprocess.Popen[bytes], owned_pid_path: Path | None) -> None:
+    if os.name == "posix":
+        try:
+            process_groups.terminate_process_group(process, grace_seconds=1)
+            if not process_groups.wait_for_process_group_exit(process.pid, timeout_seconds=5):
+                raise RuntimeError("package process group remained alive after SIGKILL")
+        finally:
+            _terminate_owned_pid(owned_pid_path)
+    else:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
 
 
 def record_completion(path: Path, result: int) -> None:

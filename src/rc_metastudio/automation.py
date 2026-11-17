@@ -113,8 +113,7 @@ def start_package_edit_save(
             index = model.index(0, _model_column(model, column))
             edited = bool(model.setData(index, value))
             destination.parent.mkdir(parents=True, exist_ok=True)
-            window.out_path = str(destination)
-            saved = bool(edited and window.save() is True)
+            saved = bool(edited and window.save(destination=destination) is True)
             display_value = str(model.data(index))
         _write_json(output_path, {
             "project": os.path.abspath(project_path), "destination": str(destination),

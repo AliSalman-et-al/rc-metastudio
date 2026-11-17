@@ -67,7 +67,7 @@ NULL
 #' \code{rcmetar.method.references("rma.peto")} for the statistical method
 #' citations used in result payloads.
 #'
-#' @aliases binary.fixed.inv.var binary.fixed.inv.var.is.feasible.for.funnel binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.is.feasible.for.funnel binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.is.feasible.for.funnel binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.is.feasible.for.funnel binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
+#' @aliases binary.fixed.inv.var binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
 #' @name RCMetaR-binary-methods
 NULL
 
@@ -89,7 +89,7 @@ NULL
 #'
 #' @section Method metadata:
 #' Functions ending in \code{.parameters}, \code{.pretty.names},
-#' \code{.value.info}, \code{.overall}, or \code{.is.feasible.for.funnel}
+#' \code{.value.info}, or \code{.overall}
 #' expose UI-facing method metadata.
 #'
 #' @section References:
@@ -97,7 +97,7 @@ NULL
 #' \code{rcmetar.method.references("rma.uni.random")} for the statistical
 #' method citations used in result payloads.
 #'
-#' @aliases continuous.fixed continuous.fixed.is.feasible.for.funnel continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.is.feasible.for.funnel continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study
+#' @aliases continuous.fixed continuous.fixed.overall continuous.fixed.parameters continuous.fixed.pretty.names continuous.fixed.value.info continuous.random continuous.random.overall continuous.random.parameters continuous.random.pretty.names continuous.random.value.info continuous.transform.f compute.for.one.cont.study
 #' @name RCMetaR-continuous-methods
 NULL
 
@@ -126,9 +126,8 @@ NULL
 #' \code{multiple.diagnostic()} runs a sequence of diagnostic analyses and
 #' \code{append.image.order()} preserves plot ordering in result payloads.
 #'
-#' @section Plot and predictive-value helpers:
-#' \code{compute.ppv()}, \code{compute.npv()}, and
-#' \code{plot.ppv.npv.by.prev()} build diagnostic displays.
+#' @section Plot drawing:
+#' \code{rcmetar.draw.sroc.plot()} renders the Reitsma SROC curve.
 #'
 #' @section References:
 #' See \code{rcmetar.method.references("rma.uni.fixed")},
@@ -138,7 +137,7 @@ NULL
 #' \code{rcmetar.method.references("reitsma")} for the
 #' statistical method citations used in result payloads.
 #'
-#' @aliases adjust.raw.data append.image.order compute.diag.point.estimates compute.diagnostic.terms compute.npv compute.ppv diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f multiple.diagnostic plot.ppv.npv.by.prev
+#' @aliases adjust.raw.data append.image.order compute.diag.point.estimates compute.diagnostic.terms diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f multiple.diagnostic
 #' @name RCMetaR-diagnostic-methods
 NULL
 
@@ -161,14 +160,12 @@ NULL
 #'
 #' @section Subgroup analyses:
 #' \code{subgroup.ma.binary()}, \code{subgroup.ma.continuous()},
-#' \code{subgroup.ma.diagnostic()}, \code{multiple.subgroup.diagnostic()},
-#' \code{get.subgroup.data.binary()}, \code{get.subgroup.data.cont()},
-#' \code{get.subgroup.data.diagnostic()} split data by covariate levels and
+#' \code{subgroup.ma.diagnostic()}, and \code{multiple.subgroup.diagnostic()}
+#' split data by covariate levels and
 #' format subgroup results.
 #'
 #' @section Bootstrap analyses:
-#' \code{bootstrap()}, \code{bootstrap.binary()},
-#' \code{bootstrap.continuous()}, \code{boot.ma.output.results()},
+#' \code{bootstrap()}, \code{boot.ma.output.results()},
 #' \code{boot.meta.reg.output.results()},
 #' \code{boot.meta.reg.cond.means.output.results()},
 #' \code{construct.boot.res.and.value.info.for.results()},
@@ -179,7 +176,7 @@ NULL
 #' See \code{rcmetar.method.references("bootstrap")} for the bootstrap
 #' method citations used in result payloads.
 #'
-#' @aliases boot.ma.output.results boot.meta.reg.cond.means.output.results boot.meta.reg.output.results bootstrap bootstrap.binary bootstrap.continuous calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic get.subgroup.data.binary get.subgroup.data.cont get.subgroup.data.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic multiple.cum.ma.diagnostic multiple.loo.diagnostic multiple.subgroup.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic update.plot.data.multiple
+#' @aliases boot.ma.output.results boot.meta.reg.cond.means.output.results boot.meta.reg.output.results bootstrap calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic multiple.cum.ma.diagnostic multiple.loo.diagnostic multiple.subgroup.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic
 #' @name RCMetaR-repeated-analyses
 NULL
 
@@ -228,16 +225,11 @@ NULL
 #' @section Plot data:
 #' \code{create.plot.data.generic()}, \code{create.plot.data.binary()},
 #' \code{create.plot.data.continuous()}, \code{create.plot.data.diagnostic()},
-#' \code{create.plot.data.overall()}, \code{create.plot.data.cum()},
-#' \code{create.plot.data.loo()}, \code{create.plot.data.reg()},
-#' \code{create.subgroup.plot.data.generic()},
-#' \code{create.subgroup.plot.data.binary()},
-#' \code{create.subgroup.plot.data.cont()}, and
-#' \code{create.subgroup.plot.data.diagnostic()} build data structures consumed
+#' \code{create.plot.data.reg()} build data structures consumed
 #' by plotting functions and the metafor forest renderer.
 #'
 #' @section Forest plot drawing:
-#' \code{rcmetar.draw.forest.plot()} and \code{sroc.plot()} draw analysis figures.
+#' \code{rcmetar.draw.forest.plot()} and \code{rcmetar.draw.sroc.plot()} draw analysis figures.
 #'
 #' @section Layout and labels:
 #' \code{calc.plot.range()}, \code{calculate.radii()}, \code{check.label()},
@@ -246,7 +238,7 @@ NULL
 #' \code{set.plot.options()}, and
 #' \code{update.changed.plot.params()} control display formatting.
 #'
-#' @aliases calc.plot.range calculate.radii check.label create.effect.size.label create.plot.data.binary create.plot.data.continuous create.plot.data.cum create.plot.data.diagnostic create.plot.data.generic create.plot.data.loo create.plot.data.overall create.plot.data.reg create.subgroup.plot.data.binary create.subgroup.plot.data.cont create.subgroup.plot.data.diagnostic create.subgroup.plot.data.generic format.data.cols format.effect.sizes format.raw.data.col create.overall.display create.subgroup.display create.summary.disp pretty.metric.name set.plot.options sroc.plot update.changed.plot.params
+#' @aliases calc.plot.range calculate.radii check.label create.effect.size.label create.plot.data.binary create.plot.data.continuous create.plot.data.diagnostic create.plot.data.generic create.plot.data.reg format.data.cols format.effect.sizes format.raw.data.col create.overall.display create.subgroup.display create.summary.disp pretty.metric.name set.plot.options update.changed.plot.params
 #' @name RCMetaR-plotting
 NULL
 
@@ -287,16 +279,15 @@ NULL
 #' \code{format.summary.display()} and \code{format.summary.data()} return text
 #' without native console encoding. Their S3 print methods write that text.
 #' \code{create.repeat.string()},
-#' \code{pad.with.spaces()}, \code{round.display()},
-#' \code{capture.output.and.collapse()}, \code{results.short.list()}, and the
+#' \code{pad.with.spaces()}, \code{round.display()}, and the
 #' \code{*.value.info()} helpers format display rows and labels.
 #'
 #' @section Persistence:
-#' \code{save.plot.data()}, \code{save.plot.data.and.params()},
+#' \code{save.plot.data()},
 #' \code{save.data()}, and \code{write.results.to.file()} write generated data,
 #' analysis parameters, and formatted summaries to disk.
 #'
-#' @aliases capture.output.and.collapse create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display results.short.list rma.uni.value.info round.display save.data save.plot.data save.plot.data.and.params write.results.to.file
+#' @aliases create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display rma.uni.value.info round.display save.data save.plot.data write.results.to.file
 #' @name RCMetaR-output-helpers
 NULL
 

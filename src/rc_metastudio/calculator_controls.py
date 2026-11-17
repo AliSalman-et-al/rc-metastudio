@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
     QStyledItemDelegate,
     QWIDGETSIZE_MAX,
 )
-from rc_metastudio.analysis_validation import EMPTY_VALS
+from rc_metastudio.analysis_validation import EMPTY_VALS, validate_confidence_interval_order
 from rc_metastudio import qt_text
 
 
@@ -84,34 +84,6 @@ def numeric_value(value):
     return number
 
 
-
-
-def validate_confidence_interval_order(est=None, low=None, high=None):
-    def less_than_if_numeric(left, right):
-        try:
-            return numeric_value(left) < numeric_value(right)
-        except ValueError:
-            return None
-
-    comparison_result = less_than_if_numeric(low, est)
-    comparison_is_available = True if comparison_result is not None else False
-    if comparison_is_available and not comparison_result:
-        error_message = "The lower limit must be below the estimate."
-        return False, error_message
-
-    comparison_result = less_than_if_numeric(est, high)
-    comparison_is_available = True if comparison_result is not None else False
-    if comparison_is_available and not comparison_result:
-        error_message = "The upper limit must be above the estimate."
-        return False, error_message
-
-    comparison_result = less_than_if_numeric(low, high)
-    comparison_is_available = True if comparison_result is not None else False
-    if comparison_is_available and not comparison_result:
-        error_message = "The lower limit must be below the upper limit."
-        return False, error_message
-
-    return True, None
 
 
 def compute_2x2_table_from_inner_counts(params):
@@ -353,7 +325,8 @@ def validate_calculator_input(
         to_display_scale(x) for x in (est, lower, upper)
     ]
     validate_updated_interval = partial(
-        validate_confidence_interval_order, est=display_estimate, low=display_lower, high=display_upper
+        validate_confidence_interval_order,
+        est=display_estimate, low=display_lower, high=display_upper,
     )
     try:
         parsed_value = numeric_value(new_text)

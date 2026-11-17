@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.verify_rcms import QUALIFICATION_SCENARIOS
+from tests.e2e.desktop_scenarios import QUALIFICATION_SCENARIOS
 
 ROOT = Path(__file__).resolve().parents[2]
 

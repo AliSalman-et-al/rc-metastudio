@@ -12,6 +12,14 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "artifacts/verification/rcms/cache"
+R_PATH_VARIABLES = ("R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH")
+EVIDENCE_ENVIRONMENT = (
+    "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "QT_QPA_PLATFORM",
+    "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "FONTCONFIG_FILE", "FONTCONFIG_PATH",
+    "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "LANG", "LANGUAGE",
+    "RCMS_AXIS_BASELINE", "RCMS_REVIEWER_BASELINE", "RCMS_UI_DESIGN_PHASE",
+    "RCMS_UI_CRAWL_SECTIONS", "RCMS_PROFILE_STARTUP", "RCMS_REPORT_AUDIT_DIR",
+)
 
 
 def file_digest(path: Path) -> str:
@@ -19,7 +27,7 @@ def file_digest(path: Path) -> str:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def source_digest() -> str:
+def source_digest(build_root: Path) -> str:
     paths = subprocess.check_output(
         ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
         cwd=ROOT,
@@ -31,10 +39,11 @@ def source_digest() -> str:
             continue
         digest.update(name.encode())
         digest.update(file_digest(path).encode())
-    generated = Path(os.environ.get("RCMS_QT6_BUILD_ROOT", ROOT / "build/qt6-verification")) / "generated"
-    for path in sorted(generated.rglob("*.py")):
-        digest.update(path.relative_to(generated).as_posix().encode())
-        digest.update(file_digest(path).encode())
+    resource = build_root / "resources/icons.rcc"
+    for path in sorted([*(build_root / "generated").rglob("*.py"), resource]):
+        if path.is_file():
+            digest.update(path.relative_to(build_root).as_posix().encode())
+            digest.update(file_digest(path).encode())
     return digest.hexdigest()
 
 
@@ -53,27 +62,89 @@ def tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
-def verification_context() -> dict[str, object]:
-    runtime_roots = _runtime_roots()
+def desktop_environment(*, native: bool = False) -> dict[str, str]:
+    env = os.environ | {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
+        "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
+        "RCMS_QT6_BUILD_ROOT": str(Path(os.environ.get(
+            "RCMS_QT6_BUILD_ROOT", ROOT / "build/qt6-verification"
+        )).resolve()),
+    }
+    for variable in ("RCMS_R_HOME", "RCMS_R_LIBS", "QT_QPA_FONTDIR"):
+        if env.get(variable):
+            env[variable] = str(Path(env[variable]).resolve())
+    if native:
+        env.pop("QT_QPA_PLATFORM", None)
+    else:
+        env["QT_QPA_PLATFORM"] = "offscreen"
+        if sys.platform == "win32":
+            env.setdefault("QT_QPA_FONTDIR", str(Path(env["WINDIR"]) / "Fonts"))
+    return env
+
+
+def verified_typing(path: object, build_root: Path, source: str) -> bool:
+    if not isinstance(path, str):
+        return False
+    try:
+        receipt = Path(path).resolve()
+        if receipt.name != "command.json" or receipt.parent.parent != ROOT / "artifacts/verification/typing":
+            return False
+        record = json.loads(receipt.read_text(encoding="utf-8"))
+        return (
+            record["exit_code"] == 0 and record["python_platform"] == "win32"
+            and record["build_root"] == str(build_root)
+            and record["command"][:4] == [sys.executable, "-m", "ty", "check"]
+            and record["source_sha256"] == source and record["source_unchanged"] is True
+            and (receipt.parent / "stdout.log").is_file() and (receipt.parent / "stderr.log").is_file()
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def evidence_environment(env: dict[str, str]) -> dict[str, str | None]:
+    return {name: env.get(name) for name in EVIDENCE_ENVIRONMENT} | {
+        name: value for name, value in env.items() if name.startswith("LC_")
+    }
+
+
+def verification_launch_inputs(env: dict[str, str]) -> dict[str, str | None]:
+    return evidence_environment(env) | {name: env.get(name) for name in (
+        *R_PATH_VARIABLES, "RCMS_R_HOME", "RCMS_R_LIBS", "RCMS_QT6_BUILD_ROOT", "PATH",
+    )}
+
+
+def verification_context(env: dict[str, str]) -> dict[str, object]:
+    runtime = json.loads(subprocess.check_output(
+        [sys.executable, "-c", """
+import json, os
+from rc_metastudio.r_runtime import configure_bundled_r_environment
+
+configure_bundled_r_environment()
+names = (
+    "R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH",
+    "R_ENVIRON", "R_ENVIRON_USER", "R_PROFILE", "R_PROFILE_USER",
+    "RPY2_CFFI_MODE", "LANG", "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_NUMERIC",
+)
+print(json.dumps({name: os.environ.get(name) for name in names}))
+"""],
+        cwd=ROOT, env=env, text=True, encoding="utf-8",
+    ))
+    startup = {name: runtime.pop(name) for name in ("R_ENVIRON", "R_ENVIRON_USER", "R_PROFILE", "R_PROFILE_USER")}
+    runtime_roots = _runtime_roots(env, runtime)
     record = {
-        "source_sha256": source_digest(),
+        "source_sha256": source_digest(Path(env["RCMS_QT6_BUILD_ROOT"])),
         "python": sys.version,
         "platform": platform.platform(),
         "libc": platform.libc_ver(),
-        "effective_cffi_mode": "API",  # Production r_runtime forces this mode.
+        "r_environment": {key: value for key, value in runtime.items() if key not in R_PATH_VARIABLES},
         "r_startup_files": {
-            name: file_digest(path) if path.is_file() else None
-            for name, path in {
-                "profile": Path(os.environ.get("R_PROFILE_USER", Path.home() / ".Rprofile")),
-                "environ": Path(os.environ.get("R_ENVIRON_USER", Path.home() / ".Renviron")),
-            }.items()
+            name: file_digest(Path(value)) if value and Path(value).is_file() else None
+            for name, value in startup.items()
         },
         "runtime_trees": [tree_digest(path) for path in runtime_roots],
         "distributions": sorted((d.metadata["Name"], d.version) for d in importlib.metadata.distributions()),
-        "environment": {name: os.environ.get(name) for name in (
-            "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "LANG", "LC_ALL",
-            "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
-        )},
+        "environment": evidence_environment(env),
     }
     record["sha256"] = hashlib.sha256(json.dumps(record, sort_keys=True).encode()).hexdigest()
     return record
@@ -95,7 +166,7 @@ def passed_evidence(context: dict[str, object], scenario: str) -> Path | None:
             if file_digest(path) != artifact["sha256"]:
                 return None
         return evidence
-    except (OSError, ValueError, KeyError):
+    except (OSError, ValueError, KeyError, TypeError):
         return None
 
 
@@ -111,20 +182,18 @@ def remember_evidence(context: dict[str, object], scenario: str, evidence: Path)
     temporary.replace(index)
 
 
-def _runtime_roots() -> list[Path]:
-    libraries = dict.fromkeys(
-        name for variable in ("RCMS_R_LIBS", "R_LIBS", "R_LIBS_USER")
-        for name in os.environ.get(variable, "").split(os.pathsep) if name
-    )
-    runtime_roots = [Path(sys.prefix), Path(os.environ["RCMS_R_HOME"])]
-    runtime_roots.extend(Path(name) for name in libraries)
-    runtime_roots.extend(Path(name) for name in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep) if name)
+def _runtime_roots(env: dict[str, str], runtime: dict[str, str | None]) -> list[Path]:
+    runtime_roots = [
+        Path(sys.prefix),
+        *(Path(name) for variable in R_PATH_VARIABLES
+          for name in (runtime.get(variable) or "").split(os.pathsep) if name),
+    ]
     font_roots = [Path("/usr/share/fonts"), Path.home() / ".local/share/fonts", Path.home() / ".fonts"]
     if sys.platform == "win32":
-        font_roots = [Path(os.environ["WINDIR"]) / "Fonts"]
+        font_roots = [Path(env["WINDIR"]) / "Fonts"]
     elif sys.platform == "darwin":
         font_roots = [Path("/System/Library/Fonts"), Path("/Library/Fonts"), Path.home() / "Library/Fonts"]
-    if configured_fonts := os.environ.get("QT_QPA_FONTDIR"):
+    if configured_fonts := env.get("QT_QPA_FONTDIR"):
         font_roots.append(Path(configured_fonts))
     runtime_roots.extend(path for path in font_roots if path.is_dir())
-    return runtime_roots
+    return list(dict.fromkeys(path.resolve() for path in runtime_roots if path.is_dir()))

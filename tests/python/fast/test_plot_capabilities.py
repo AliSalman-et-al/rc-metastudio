@@ -113,3 +113,21 @@ def test_editable_plot_kind_requires_a_compatible_regenerator():
                 },
             }
         )
+
+
+def test_coefficient_forest_has_its_own_controls_and_uses_the_forest_renderer():
+    capabilities = plot_capabilities.validate_result(
+        {
+            "images": {"Coefficients": "coefficients.svg"},
+            "image_params_paths": {"Coefficients": "coefficient-data"},
+            "plot_capabilities": {
+                "Coefficients": descriptor(plot_kind="reitsma_coefficient")
+            },
+        }
+    )
+
+    coefficient = capabilities["Coefficients"]
+    assert coefficient.regenerator == "forest"
+    assert plot_capabilities.option_groups(coefficient.plot_kind) == {
+        "style", "appearance", "axis",
+    }

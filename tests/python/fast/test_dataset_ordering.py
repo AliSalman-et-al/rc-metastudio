@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import ArmId, RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 import json
 import os
 import subprocess

@@ -6,8 +6,6 @@
 \alias{boot.meta.reg.cond.means.output.results}
 \alias{boot.meta.reg.output.results}
 \alias{bootstrap}
-\alias{bootstrap.binary}
-\alias{bootstrap.continuous}
 \alias{calc.meta.reg.coeffs.and.cis}
 \alias{construct.boot.res.and.value.info.for.results}
 \alias{construct.sequential.res.output}
@@ -16,9 +14,6 @@
 \alias{cum.ma.binary}
 \alias{cum.ma.continuous}
 \alias{cum.ma.diagnostic}
-\alias{get.subgroup.data.binary}
-\alias{get.subgroup.data.cont}
-\alias{get.subgroup.data.diagnostic}
 \alias{loo.ma.binary}
 \alias{loo.ma.continuous}
 \alias{loo.ma.diagnostic}
@@ -29,7 +24,6 @@
 \alias{subgroup.ma.binary}
 \alias{subgroup.ma.continuous}
 \alias{subgroup.ma.diagnostic}
-\alias{update.plot.data.multiple}
 \title{Sequential, subgroup, leave-one-out, and bootstrap analyses}
 \description{
 Higher-level analysis wrappers that repeat a base meta-analysis over study
@@ -54,16 +48,14 @@ influence-style workflows.
 \section{Subgroup analyses}{
 
 \code{subgroup.ma.binary()}, \code{subgroup.ma.continuous()},
-\code{subgroup.ma.diagnostic()}, \code{multiple.subgroup.diagnostic()},
-\code{get.subgroup.data.binary()}, \code{get.subgroup.data.cont()},
-\code{get.subgroup.data.diagnostic()} split data by covariate levels and
+\code{subgroup.ma.diagnostic()}, and \code{multiple.subgroup.diagnostic()}
+split data by covariate levels and
 format subgroup results.
 }
 
 \section{Bootstrap analyses}{
 
-\code{bootstrap()}, \code{bootstrap.binary()},
-\code{bootstrap.continuous()}, \code{boot.ma.output.results()},
+\code{bootstrap()}, \code{boot.ma.output.results()},
 \code{boot.meta.reg.output.results()},
 \code{boot.meta.reg.cond.means.output.results()},
 \code{construct.boot.res.and.value.info.for.results()},

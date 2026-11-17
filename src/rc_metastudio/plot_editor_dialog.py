@@ -25,10 +25,13 @@ from PyQt6.QtWidgets import (
 
 from rc_metastudio import adaptive_window, analysis_identity, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
+from rc_metastudio.plot_style_controls import (
+    configure_plot_style, load_plot_style, selected_plot_style,
+)
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
-    plot_parameter_text_value,
+    plot_axis_label_params,
     plot_text_value,
     set_plot_text_value,
 )
@@ -37,19 +40,6 @@ if TYPE_CHECKING:
     from ui_edit_plot_dialog import Ui_EditPlotDialog
 else:
     from rc_metastudio.forms.ui_edit_plot_dialog import Ui_EditPlotDialog
-
-
-FOREST_STYLE_LABELS = {
-    "default": "Default",
-    "revman": "RevMan",
-    "bmj": "BMJ",
-}
-FOREST_STYLE_VALUES = {label: value for value, label in FOREST_STYLE_LABELS.items()}
-FOREST_STYLE_DEFAULT_COLORS = {
-    "default": "#2f5597",
-    "revman": "#000000",
-    "bmj": "#6b58a6",
-}
 
 
 class EditPlotDialog(QDialog, Ui_EditPlotDialog):
@@ -64,20 +54,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_outcome = None
         self._configure_accessibility()
         configure_plot_text_inputs(self)
-        self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
         if plot_type == "subgroup_forest":
             note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
-        self._is_reitsma_coefficient = bool(
-            self._params.get("reitsma.coefficient.scale")
-        )
-        option_kind = (
-            "reitsma_coefficient" if self._is_reitsma_coefficient else plot_type
-        )
-        self._option_groups = plot_capabilities.option_groups(option_kind)
+        self._is_reitsma_coefficient = plot_type == "reitsma_coefficient"
+        self._option_groups = plot_capabilities.option_groups(plot_type)
         self._setup_study_order()
         self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
@@ -105,12 +89,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
-        self.color_btn.clicked.connect(
-            app_error_handler.safe_slot(self._choose_color, parent=self)
-        )
-        self.style_cbo.currentTextChanged.connect(
-            app_error_handler.safe_slot(self._style_changed, parent=self)
-        )
+        configure_plot_style(self.style_cbo, self.accent_color, self.color_btn)
         # The generated form connects accepted() directly to accept(). Route
         # both Apply and OK through the transactional commit boundary first.
         try:
@@ -469,114 +448,109 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             edit.setText(color.name())
 
     def _load_params(self, image_path):
-        self._loading_style = True
-        try:
-            style = self._normalized_style(
-                self._params.get(self._param_name("style"), "default")
+        load_plot_style(
+            self.style_cbo,
+            self.accent_color,
+            self._params.get(self._param_name("style")),
+            self._params.get(self._param_name("accent_color")),
+        )
+        self._set_text(
+            self.col1_str_edit, self._params.get("fp_col1_str", "Study")
+        )
+        self._set_text(
+            self.col2_str_edit, self._params.get("fp_col2_str", "[default]")
+        )
+        self._set_text(
+            self.col3_str_edit,
+            self._params.get("fp_col3_str", FOREST_ARM_LABELS[0]),
+        )
+        self._set_text(
+            self.col4_str_edit,
+            self._params.get("fp_col4_str", FOREST_ARM_LABELS[1]),
+        )
+        self.show_1.setChecked(self._bool_param("fp_show_col1", True))
+        self.show_2.setChecked(self._bool_param("fp_show_col2", True))
+        self.show_3.setChecked(self._bool_param("fp_show_col3", True))
+        self.show_4.setChecked(self._bool_param("fp_show_col4", True))
+        self.show_raw_counts.setChecked(
+            self._bool_param("fp_show_raw_counts", True)
+        )
+        self.show_headers.setChecked(self._bool_param("fp_show_headers", True))
+        self.show_annotation.setChecked(
+            self._bool_param("fp_show_annotation", True)
+        )
+        xlabel = self._params.get(self._param_name("xlabel"))
+        if self._bool_param(self._param_name("xlabel_literal"), False):
+            set_plot_text_value(self.x_lbl_le, self._scalar(xlabel), literal=True)
+        else:
+            self._set_text(self.x_lbl_le, xlabel)
+        self._set_text(
+            self.plot_lb_le,
+            self._params.get(self._param_name("plot_lb"), "[default]"),
+        )
+        self._set_text(
+            self.plot_ub_le,
+            self._params.get(self._param_name("plot_ub"), "[default]"),
+        )
+        ticks_name = "bp_xticks" if self.plot_type == "regression" else "fp_xticks"
+        self._set_text(self.x_ticks_le, self._params.get(ticks_name, "[default]"))
+        self.show_summary_line.setChecked(
+            self._bool_param("fp_show_summary_line", True)
+        )
+        self._image_path = qt_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
+        self.point_size_multiplier.setValue(
+            self._float_param(self._param_name("point_size_multiplier"), 1.0)
+        )
+        self.show_regression_line.setChecked(
+            self._bool_param("bp_show_regression_line", True)
+        )
+        self.show_confidence_band.setChecked(
+            self._bool_param("bp_show_confidence_band", True)
+        )
+        self.show_prediction_interval.setChecked(
+            self._bool_param(
+                "bp_show_prediction_interval", self.plot_type == "sroc"
             )
-            self.style_cbo.setCurrentText(FOREST_STYLE_LABELS[style])
+        )
+        self.show_legend.setChecked(self._bool_param("bp_show_legend", False))
+        if self.plot_type == "sroc":
+            self._set_text(self.sroc_ylabel, self._params.get("fp_ylabel", "Sensitivity"))
             self._set_text(
-                self.col1_str_edit, self._params.get("fp_col1_str", "Study")
+                self.sroc_y_lower,
+                self._params.get("fp_sroc_plot_lb", "[default]"),
             )
             self._set_text(
-                self.col2_str_edit, self._params.get("fp_col2_str", "[default]")
+                self.sroc_y_upper,
+                self._params.get("fp_sroc_plot_ub", "[default]"),
             )
             self._set_text(
-                self.col3_str_edit,
-                self._params.get("fp_col3_str", FOREST_ARM_LABELS[0]),
+                self.sroc_y_ticks,
+                self._params.get("fp_sroc_yticks", "[default]"),
             )
-            self._set_text(
-                self.col4_str_edit,
-                self._params.get("fp_col4_str", FOREST_ARM_LABELS[1]),
+            marker = self._params.get("fp_marker_area", "uniform")
+            self.sroc_marker_area.setCurrentIndex(1 if marker == "sample-size" else 0)
+            self.sroc_show_labels.setChecked(self._bool_param("fp_show_labels", False))
+            self.sroc_extrapolate.setChecked(self._bool_param("fp_extrapolate", False))
+            self._set_text(self.sroc_curve_color, self._params.get("fp_curve_color") or self._params.get("fp_accent_color") or "#2f5597")
+            self._set_text(self.sroc_confidence_color, self._params.get("fp_confidence_color", "#2f5597"))
+            self._set_text(self.sroc_prediction_color, self._params.get("fp_prediction_color", "#b45f06"))
+            self.sroc_curve_lty.setCurrentIndex(max(0, self._int_param("fp_curve_lty", 1) - 1))
+            self.sroc_confidence_lty.setCurrentIndex(max(0, self._int_param("fp_confidence_lty", 2) - 1))
+            self.sroc_prediction_lty.setCurrentIndex(max(0, self._int_param("fp_prediction_lty", 3) - 1))
+            self.sroc_text_cex.setValue(self._float_param("fp_text_cex", .8))
+            self.sroc_show_confidence.setChecked(self._bool_param("fp_show_confidence", True))
+            self.sroc_show_prediction.setChecked(self._bool_param("fp_show_prediction", True))
+            self.sroc_show_summary.setChecked(self._bool_param("fp_show_summary", True))
+            self.sroc_show_auc.setChecked(self._bool_param("fp_show_auc", True))
+            self.sroc_show_curve_legend.setChecked(
+                self._bool_param("fp_show_legend", True)
             )
-            self.show_1.setChecked(self._bool_param("fp_show_col1", True))
-            self.show_2.setChecked(self._bool_param("fp_show_col2", True))
-            self.show_3.setChecked(self._bool_param("fp_show_col3", True))
-            self.show_4.setChecked(self._bool_param("fp_show_col4", True))
-            self.show_raw_counts.setChecked(
-                self._bool_param("fp_show_raw_counts", True)
-            )
-            self.show_headers.setChecked(self._bool_param("fp_show_headers", True))
-            self.show_annotation.setChecked(
-                self._bool_param("fp_show_annotation", True)
-            )
-            self._set_text(
-                self.x_lbl_le, self._axis_label_input()
-            )
-            self._set_text(
-                self.plot_lb_le,
-                self._params.get(self._param_name("plot_lb"), "[default]"),
-            )
-            self._set_text(
-                self.plot_ub_le,
-                self._params.get(self._param_name("plot_ub"), "[default]"),
-            )
-            ticks_name = "bp_xticks" if self.plot_type == "regression" else "fp_xticks"
-            self._set_text(self.x_ticks_le, self._params.get(ticks_name, "[default]"))
-            self.show_summary_line.setChecked(
-                self._bool_param("fp_show_summary_line", True)
-            )
-            self._image_path = qt_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
-            color = (
-                self._params.get(self._param_name("accent_color"))
-                or FOREST_STYLE_DEFAULT_COLORS[style]
-            )
-            self._set_accent_color(color)
-            self.point_size_multiplier.setValue(
-                self._float_param(self._param_name("point_size_multiplier"), 1.0)
-            )
-            self.show_regression_line.setChecked(
-                self._bool_param("bp_show_regression_line", True)
-            )
-            self.show_confidence_band.setChecked(
-                self._bool_param("bp_show_confidence_band", True)
-            )
-            self.show_prediction_interval.setChecked(
+            self.sroc_show_marker_legend.setChecked(
                 self._bool_param(
-                    "bp_show_prediction_interval", self.plot_type == "sroc"
+                    "fp_show_marker_legend", marker == "sample-size"
                 )
             )
-            self.show_legend.setChecked(self._bool_param("bp_show_legend", False))
-            if self.plot_type == "sroc":
-                self._set_text(self.sroc_ylabel, self._params.get("fp_ylabel", "Sensitivity"))
-                self._set_text(
-                    self.sroc_y_lower,
-                    self._params.get("fp_sroc_plot_lb", "[default]"),
-                )
-                self._set_text(
-                    self.sroc_y_upper,
-                    self._params.get("fp_sroc_plot_ub", "[default]"),
-                )
-                self._set_text(
-                    self.sroc_y_ticks,
-                    self._params.get("fp_sroc_yticks", "[default]"),
-                )
-                marker = self._params.get("fp_marker_area", "uniform")
-                self.sroc_marker_area.setCurrentIndex(1 if marker == "sample-size" else 0)
-                self.sroc_show_labels.setChecked(self._bool_param("fp_show_labels", False))
-                self.sroc_extrapolate.setChecked(self._bool_param("fp_extrapolate", False))
-                self._set_text(self.sroc_curve_color, self._params.get("fp_curve_color") or self._params.get("fp_accent_color") or "#2f5597")
-                self._set_text(self.sroc_confidence_color, self._params.get("fp_confidence_color", "#2f5597"))
-                self._set_text(self.sroc_prediction_color, self._params.get("fp_prediction_color", "#b45f06"))
-                self.sroc_curve_lty.setCurrentIndex(max(0, self._int_param("fp_curve_lty", 1) - 1))
-                self.sroc_confidence_lty.setCurrentIndex(max(0, self._int_param("fp_confidence_lty", 2) - 1))
-                self.sroc_prediction_lty.setCurrentIndex(max(0, self._int_param("fp_prediction_lty", 3) - 1))
-                self.sroc_text_cex.setValue(self._float_param("fp_text_cex", .8))
-                self.sroc_show_confidence.setChecked(self._bool_param("fp_show_confidence", True))
-                self.sroc_show_prediction.setChecked(self._bool_param("fp_show_prediction", True))
-                self.sroc_show_summary.setChecked(self._bool_param("fp_show_summary", True))
-                self.sroc_show_auc.setChecked(self._bool_param("fp_show_auc", True))
-                self.sroc_show_curve_legend.setChecked(
-                    self._bool_param("fp_show_legend", True)
-                )
-                self.sroc_show_marker_legend.setChecked(
-                    self._bool_param(
-                        "fp_show_marker_legend", marker == "sample-size"
-                    )
-                )
-                self._sync_sroc_marker_legend()
-        finally:
-            self._loading_style = False
+            self._sync_sroc_marker_legend()
 
     def _sync_sroc_marker_legend(self, *_args):
         """Expose marker-size legend only when marker size conveys sample size."""
@@ -593,23 +567,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.sroc_show_marker_legend.setToolTip(
                 "Show the study sample-size examples used to scale markers."
             )
-
-    def _style_changed(self, label):
-        if self._loading_style:
-            return
-        style = FOREST_STYLE_VALUES.get(str(label), "default")
-        self._set_accent_color(FOREST_STYLE_DEFAULT_COLORS[style])
-
-    def _choose_color(self):
-        current = QColor(self.accent_color.text())
-        color = QColorDialog.getColor(current, self, "Plot accent color")
-        if color.isValid():
-            self._set_accent_color(color.name())
-
-
-    def _set_accent_color(self, color):
-        text = str(color or FOREST_STYLE_DEFAULT_COLORS["default"])
-        self.accent_color.setText(text)
 
     def _set_text(self, widget, value):
         value = self._scalar(value)
@@ -630,14 +587,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     @staticmethod
     def _automatic_value(widget):
         return qt_text.to_native_text(widget.text()) or "[default]"
-
-    def _axis_label_input(self):
-        value = self._scalar(self._params.get(self._param_name("xlabel")))
-        return "" if value in (None, "[default]") else value
-
-    def _axis_label_value(self):
-        value = plot_parameter_text_value(self.x_lbl_le)
-        return None if value is None else qt_text.to_native_text(value)
 
     def _scalar(self, value):
         if isinstance(value, (list, tuple)) and value:
@@ -662,15 +611,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         except (TypeError, ValueError):
             return default
 
-    def _normalized_style(self, style):
-        style = str(self._scalar(style) or "default").strip().lower()
-        return style if style in FOREST_STYLE_LABELS else "default"
-
     def _param_name(self, suffix):
         return "%s_%s" % ("bp" if self.plot_type == "regression" else "fp", suffix)
 
     def plot_params(self):
-        style = FOREST_STYLE_VALUES.get(str(self.style_cbo.currentText()), "default")
+        style = selected_plot_style(self.style_cbo)
         params = {
             "fp_style": style,
             "fp_axis_scale": self.axis_scale.currentData(),
@@ -691,7 +636,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_annotation": self.show_annotation.isChecked(),
             "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
-            "fp_xlabel": self._axis_label_value(),
+            **plot_axis_label_params(self.x_lbl_le, "fp"),
             "fp_plot_lb": self._automatic_value(self.plot_lb_le),
             "fp_plot_ub": self._automatic_value(self.plot_ub_le),
             "fp_xticks": self._automatic_value(self.x_ticks_le),
@@ -706,7 +651,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 "bp_style": style,
                 "bp_accent_color": qt_text.to_native_text(self.accent_color.text()),
                 "bp_point_size_multiplier": self.point_size_multiplier.value(),
-                "bp_xlabel": self._axis_label_value(),
+                **plot_axis_label_params(self.x_lbl_le, "bp"),
                 "bp_plot_lb": self._automatic_value(self.plot_lb_le),
                 "bp_plot_ub": self._automatic_value(self.plot_ub_le),
                 "bp_xticks": self._automatic_value(self.x_ticks_le),

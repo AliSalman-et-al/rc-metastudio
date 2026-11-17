@@ -111,7 +111,7 @@ def run(app, window, work, root, record, analyze):
     mouse_click(present_button, QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
     assert window.tableView.isVisible() and not window.start_page.isVisible()
-    assert window.out_path == str(present)
+    assert window.workspace.path == present
     assert window.confidence_button.text() == '95% CI…'
     assert window.confidence_button.isVisible()
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog

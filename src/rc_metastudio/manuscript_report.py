@@ -178,7 +178,7 @@ def _study_inputs(result):
 def _study_result_rows(result):
     rows = []
     for section, table in _study_inputs(result):
-        analysis = section.title.removesuffix(' summary')
+        analysis = table.metric_label or section.title.removesuffix(' summary')
         if section.source_key == 'Weights':
             analysis = result.manuscript_metric or section.title
         for i, row in enumerate(table.rows):
@@ -189,7 +189,7 @@ def _study_result_rows(result):
 
 def _study_results(result, template, level):
     rows = _study_result_rows(result)
-    row_label = 'Fit' if any('leave-one-out' in s.title.casefold() for s in result.sections) else 'Study'
+    row_label = 'Fit' if any(t.role == 'leave_one_out' for s in result.sections for t in s.tables) else 'Study'
     headers = ('Analysis', row_label, 'Effect', level, 'Weight')
     if rows and all(row[2][0] == row[3][0] == '—' for row in rows):
         headers = ('Analysis', row_label, 'Weight')
@@ -223,7 +223,7 @@ def _references(result):
 
 def _held_section_content(section):
     tables = tuple(replace(table, title=table.title if section.title == table.title else section.title + ' — ' + table.title) for table in section.tables)
-    paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs if 'prediction' not in paragraph.casefold())
+    paragraphs = tuple(re.sub(r'\bPooled ([A-Z])(?=[a-z])', lambda match: 'Pooled ' + match[1].lower(), paragraph) for paragraph in section.paragraphs if paragraph not in section.prediction_notes)
     if not tables and section.value:
         paragraphs = (section.title + ':', *section.value.splitlines(), *paragraphs)
     return tables, paragraphs
@@ -569,7 +569,7 @@ def _report_sections(result, summary, methods):
     primary = _primary_sections(result, text_sections, pooled, fit, level, statistic)
     sequential = _sequential_sections(result, text_sections)
     if sequential:
-        primary = sequential + [section for section in primary if section.title == 'Model fit']
+        primary = sequential + primary
     supplementary = _supplementary_sections(result, primary)
     return primary, supplementary
 
@@ -679,8 +679,9 @@ def _table_html(table, table_number):
 class ManuscriptReport:
     title: str
     methods: str
-    sections: tuple
-    figures: tuple
+    primary_sections: tuple[ResultSection, ...]
+    supplementary_sections: tuple[ResultSection, ...]
+    figures: tuple[ResultSection, ...]
     summary: tuple[str, ...]
     comparison: str = ''
     configuration: str = ''
@@ -689,14 +690,33 @@ class ManuscriptReport:
     def results(self):
         return ' '.join(self.summary)
 
+    @property
+    def sections(self) -> tuple[ResultSection, ...]:
+        return self.primary_sections + self.supplementary_sections
+
     @classmethod
     def from_result(cls, result):
         summary = [result.manuscript_context] if result.manuscript_context else []
         pooled_methods = []
         sections, supplementary = _report_sections(result, summary, pooled_methods)
         methods = _report_methods(result, pooled_methods)
-        figures = tuple((s.title, result.display_images.get(s.source_key, s.value)) for s in result.sections if s.kind == 'image')
-        return cls(result.manuscript_title or 'Meta-analysis', methods, tuple(sections + supplementary), figures, tuple(summary), result.manuscript_comparison, result.details)
+        return cls(
+            title=result.manuscript_title or 'Meta-analysis',
+            methods=methods,
+            primary_sections=tuple(sections),
+            supplementary_sections=tuple(supplementary),
+            figures=tuple(s for s in result.sections if s.kind == 'image'),
+            summary=tuple(summary),
+            comparison=result.manuscript_comparison,
+            configuration=result.details,
+        )
+
+    def numbered_sections(self, supplementary: bool):
+        sections = self.supplementary_sections if supplementary else self.primary_sections
+        number = sum(len(section.tables) for section in self.primary_sections) if supplementary else 0
+        for section in sections:
+            yield section, enumerate(section.tables, number + 1)
+            number += len(section.tables)
 
     def plain_text(self):
         parts = [self.title, self.comparison]
@@ -731,17 +751,12 @@ class ManuscriptReport:
 
     def tables_html(self, supplementary=False):
         parts = ['<a name="report-tables"></a>'] if not supplementary else []
-        table_number = sum(len(section.tables) for section in self.sections
-                           if section.title != "Supplementary details") if supplementary else 0
-        for number, section in enumerate(self.sections, 1):
-            if (section.title == "Supplementary details") != supplementary:
-                continue
-            if section.title == 'Supplementary details' and (number == 1 or self.sections[number-2].title != section.title):
-                parts.append('<h2>Supplementary details</h2>')
+        if supplementary and self.supplementary_sections:
+            parts.append('<h2>Supplementary details</h2>')
+        for section, tables in self.numbered_sections(supplementary):
             if section.source_key == 'References':
                 parts.append('<a name="references"></a><h2>References</h2>')
-            for table in section.tables:
-                table_number += 1
+            for table_number, table in tables:
                 parts.append(_table_html(table, table_number))
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
@@ -809,23 +824,19 @@ def _docx_table(document, table):
             _style_docx_cell(cell, value, widths[column], numeric[column], index == 0)
 
 
-def _docx_sections(document, report, supplementary, table_number):
-    for number, section in enumerate(report.sections, 1):
-        if (section.title == "Supplementary details") != supplementary:
-            continue
-        if section.title == 'Supplementary details' and (number == 1 or report.sections[number-2].title != section.title):
-            document.add_heading('Supplementary details', 1)
+def _docx_sections(document, report, supplementary):
+    if supplementary and report.supplementary_sections:
+        document.add_heading('Supplementary details', 1)
+    for section, tables in report.numbered_sections(supplementary):
         if section.source_key == 'References':
             document.add_heading('References', 1)
-        for table in section.tables:
-            table_number += 1
+        for table_number, table in tables:
             caption = document.add_paragraph(f'Table {table_number}. {table.title}', style='Caption')
             caption.paragraph_format.keep_with_next = True
             _docx_table(document, table)
             document.add_paragraph()
         for paragraph in section.paragraphs:
             document.add_paragraph(paragraph)
-    return table_number
 
 
 def _docx_styles(document):
@@ -845,9 +856,9 @@ def _docx_styles(document):
 
 def _docx_figures(document, figures):
     from PyQt6.QtCore import QBuffer, QIODevice
-    for number, (title, path_) in enumerate(figures, 1):
-        source, ratio = figure_source(path_)
-        width = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
+    for number, figure in enumerate(figures, 1):
+        source, ratio = figure_source(figure.display_image or figure.value)
+        width = _figure_width(figure, ratio)
         pixel_width = round(width / 25.4 * 300)
         pixel_height = round(pixel_width / ratio)
         page_height = round(230 / 25.4 * 300)
@@ -863,7 +874,7 @@ def _docx_figures(document, figures):
             image.save(buffer, 'PNG')
             document.add_page_break()
             document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
-            document.add_paragraph(f'Figure {number}. {title}' + (' (continued)' if top else ''))
+            document.add_paragraph(f'Figure {number}. {figure.title}' + (' (continued)' if top else ''))
 
 
 
@@ -881,10 +892,9 @@ def write_docx(report, path):
             paragraph = document.add_paragraph()
             for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((text, False),)):
                 paragraph.add_run(part).italic = italic
-    table_number = 0
-    table_number = _docx_sections(document, report, False, table_number)
+    _docx_sections(document, report, False)
     _docx_figures(document, report.figures)
-    _docx_sections(document, report, True, table_number)
+    _docx_sections(document, report, True)
     if report.configuration:
         document.add_heading('Model configuration', 1)
         for line in report.configuration.splitlines():
@@ -919,10 +929,12 @@ def write_pdf(report, path):
     document.setPageSize(QSizeF(width, height))
     painter = QPainter(writer)
     _print_pdf_pages(document, writer, painter, width, height, scale)
-    for number, (title, path_) in enumerate(report.figures, 1):
+    for number, figure in enumerate(report.figures, 1):
+        title = figure.title
+        path_ = figure.display_image or figure.value
         writer.newPage()
         source, ratio = figure_source(path_)
-        mm = 180 if ratio > 1.4 or 'forest' in title.lower() else 85
+        mm = _figure_width(figure, ratio)
         w = mm / 25.4 * writer.resolution()
         h = w / ratio
         caption = _print_document()
@@ -955,10 +967,16 @@ def write_pdf(report, path):
             painter.translate(0, caption_y)
             caption.drawContents(painter)
             painter.restore()
-    if report.configuration or any(section.title == 'Supplementary details' for section in report.sections):
+    if report.configuration or report.supplementary_sections:
         document.setHtml(report.html(supplementary=True))
         _print_pdf_pages(document, writer, painter, width, height, scale, first_page=True)
     painter.end()
+
+
+def _figure_width(figure: ResultSection, ratio: float) -> int:
+    return 180 if ratio > 1.4 or figure.plot_kind in {
+        "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
+    } else 85
 
 
 def _table_roles(table):
@@ -985,9 +1003,8 @@ def _pooled_effect_label(values, table, vertical, effect_metric, coefficient, mu
 def _prediction_notes(text_sections):
     prediction_notes = {}
     for section in text_sections:
-        for note in section.paragraphs:
-            if 'prediction' in note.casefold():
-                prediction_notes.setdefault(note, []).append(section.title)
+        for note in section.prediction_notes:
+            prediction_notes.setdefault(note, []).append(section.title)
     notes = tuple((' / '.join(dict.fromkeys(titles)) + ': ' + note) if len(prediction_notes) > 1 else note
                   for note, titles in prediction_notes.items())
     return notes

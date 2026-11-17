@@ -420,10 +420,9 @@ def test_default_r_RCMetaR_install_preserves_dependency_libraries(
     reason="The native archive installer covers Windows and macOS; Linux has a separate PPM binary installer.",
 )
 def test_native_r_binary_policy_fails_closed_without_source_fallback(tmp_path):
-    rscript = shutil.which("Rscript")
-    if rscript is None and sys.platform == "win32":
-        candidate = Path("C:/Program Files/R/R-4.6.2/bin/Rscript.exe")
-        rscript = str(candidate) if candidate.is_file() else None
+    from scripts.r_verification_support import resolve_rscript, verification_base_env
+
+    rscript = resolve_rscript("Rscript")
     assert rscript is not None, (
         "Rscript 4.6.2 is required by the Fast verification environment"
     )
@@ -577,7 +576,7 @@ if (file.exists(evidence) && file.info(evidence)$size > 0) {{
 }}
 Sys.unsetenv("RCMS_R_BINARY_EVIDENCE")
 """
-    env = dict(os.environ)
+    env = verification_base_env(dict(os.environ))
     env["RCMS_POLICY_PYTHON"] = sys.executable
     env["RCMS_CRAN_REPO"] = "https://packagemanager.posit.co/cran/2026-11-13"
     policy_test = tmp_path / "native-binary-policy-test.R"

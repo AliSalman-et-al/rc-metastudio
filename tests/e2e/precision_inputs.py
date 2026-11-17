@@ -49,8 +49,7 @@ def run(app, window, record):
         assert float(app.clipboard().text()) == expected[row]
         record('grid-precision-keyboard', window, input=text, editor=edit(row, column), stored=actual)
     destination = work / 'precision-grid.rcms'
-    window.out_path = str(destination)
-    assert window.save() and window.open(str(destination), raise_on_error=True)
+    assert window.save(destination=destination) and window.open(str(destination), raise_on_error=True)
     for row, value in enumerate(expected):
         assert window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)[2] == value
     from tests.e2e.analysis_presentation_workflows import analyze_existing
@@ -82,8 +81,7 @@ def run(app, window, record):
     record('csv-precision-preview', wizard, inputs=expected)
     window._handle_wizard_results(wizard.get_results())
     wizard.close()
-    window.out_path = str(work / 'precision-csv.rcms')
-    assert window.save() and window.open(window.out_path, raise_on_error=True)
+    assert window.save(destination=work / 'precision-csv.rcms') and window.open(window.workspace.path, raise_on_error=True)
     for row, value in enumerate(expected):
         raw = window.model.get_current_analysis_unit_for_study(row).get_raw_data_for_arms(window.model.arm_names)
         assert raw[:3] == [100, .12345678901234566, value], raw
@@ -99,8 +97,7 @@ def run(app, window, record):
                 edit(row, window.model.OUTCOMES[2], "1e14")
             edit(row, column, text)
             assert float(edit(row, column)) == expected[row]
-        window.out_path = str(work / (family + '-precision.rcms'))
-        assert window.save() and window.open(window.out_path, raise_on_error=True)
+        assert window.save(destination=work / (family + '-precision.rcms')) and window.open(window.workspace.path, raise_on_error=True)
         for row, value in enumerate(expected):
             assert float(window.model.data(window.model.index(row, window.model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.EditRole)) == value
         record('effect-precision-reopened', window, family=family, inputs=expected)

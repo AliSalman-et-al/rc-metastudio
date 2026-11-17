@@ -219,10 +219,3 @@ continuous.random.pretty.names <- function() {
 continuous.random.overall <- function(results){
   res <- results$res
 }
-
-continuous.fixed.is.feasible.for.funnel <- function () {
-	TRUE
-}
-continuous.random.is.feasible.for.funnel <- function () {
-	TRUE
-}

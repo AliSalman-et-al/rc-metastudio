@@ -8,9 +8,6 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-SCENARIOS = ("ratios-hr", "ratios-irr", "ratios-samples")
-
-
 def run(app, window, scenario, record):
     if scenario == "ratios-samples":
         for hazard in (True, False):
@@ -151,8 +148,7 @@ def run(app, window, scenario, record):
     assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == before
 
     project_path = work / f"{metric}.rcms"
-    window.out_path = str(project_path)
-    assert window.save()
+    assert window.save(destination=project_path)
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
     reopened = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
@@ -274,8 +270,7 @@ def run(app, window, scenario, record):
         assert record_input.unit == "person-years" and model.current_sheet.rows[i].include
     record("ratio-simple-csv-imported", window, csv=str(simple_csv), required_columns=len(basic_columns), defaults="ratio, 95% source CI, person-years")
     simple_project = work / f"{metric}-simple.rcms"
-    window.out_path = str(simple_project)
-    assert window.save()
+    assert window.save(destination=simple_project)
     assert window.open(str(simple_project), raise_on_error=True)
     assert window.open(str(project_path), raise_on_error=True)
     model = window.model
@@ -511,8 +506,7 @@ def run(app, window, scenario, record):
         # Restore mixed sources before saving the durable inspection fixture.
         for i in range(8,12):
             assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
-    window.out_path = str(project_path)
-    assert window.save()
+    assert window.save(destination=project_path)
     record("ratio-proof-complete", window, repeat_command=f"uv run python scripts/verify_rcms.py {scenario}", project=str(project_path))
 
 
@@ -640,8 +634,7 @@ def verify_bundled_sample(app, window, hazard, record):
         record("bundled-irr-descriptive-funnels", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
         view.close(); app.processEvents()
     copy_path = Path(sys.argv[2]) / filename
-    window.out_path = str(copy_path)
-    assert window.save() and window.open(str(copy_path), raise_on_error=True)
+    assert window.save(destination=copy_path) and window.open(str(copy_path), raise_on_error=True)
     check_inputs()
     assert load_project(copy_path).project == original.project
     record("bundled-ratio-sample-reopened", window, sample=filename, copy=str(copy_path))

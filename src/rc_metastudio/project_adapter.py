@@ -2,22 +2,23 @@
 from dataclasses import dataclass, asdict
 import copy
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow, Arm
+from rc_metastudio.analysis_catalog import RAW_FIELDS_PER_ARM
 from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.project_domain import SheetId, RowId, ArmId
-from rc_metastudio.project_format import ProjectDocument, is_empty_entry_row, migrate_to_latest
+from rc_metastudio.domain_ids import SheetId, RowId, ArmId
+from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, ProjectDocument, is_empty_entry_row, migrate_to_latest
+from rc_metastudio.ratio_data import RatioInput
 
-class ProjectAdapterError(ValueError):
-    pass
-
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class RuntimeProject:
     dataset: Dataset
-    model_state: dict
-    restored_active_sheet: bool
+    current_sheet_id: SheetId | None = None
 
 
 def project_to_dataset(project):
-    project, _ = migrate_to_latest(3, project, {"schema_version": 3, "current_sheet_id": None})
+    project, _ = migrate_to_latest(
+        CURRENT_FORMAT_VERSION, project,
+        {"schema_version": CURRENT_FORMAT_VERSION, "current_sheet_id": None},
+    )
     return _dataset_from_canonical_project(project)
 
 
@@ -29,12 +30,22 @@ def _dataset_from_canonical_project(project):
             # Older files persisted the grid's empty entry row as a study.
             if is_empty_entry_row(row):
                 continue
-            unit = AnalysisUnit(sheet, raw_data=[copy.deepcopy(row['raw_data'].get(a.id, [''] * {0:2,1:3,2:4,5:0,6:2}[sheet.data_type])) for a in sheet.arms], arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])
+            unit = AnalysisUnit(
+                sheet,
+                raw_data=[
+                    copy.deepcopy(row["raw_data"].get(arm.id, [""] * RAW_FIELDS_PER_ARM[sheet.data_type]))
+                    for arm in sheet.arms
+                ],
+                arm_names=[arm.name for arm in sheet.arms],
+                arm_stable_ids=[arm.id for arm in sheet.arms],
+            )
             unit.entered_effects = {}
             for entry in row['entered_effects']:
                 unit.entered_effects.setdefault(entry['metric'], {})[tuple(entry['arms'])] = copy.deepcopy(entry['values'])
-            from rc_metastudio.ratio_data import RatioInput
-            unit.ratio_inputs = {'|'.join(entry['arms']): RatioInput(**entry['input']) for entry in row['ratio_inputs']}
+            unit.ratio_inputs = {
+                tuple(ArmId(arm) for arm in entry['arms']): RatioInput(**entry['input'])
+                for entry in row['ratio_inputs']
+            }
             # Missing raw arms remain absent on disk, rather than becoming fabricated measurements.
             unit.present_raw_arms = set(row['raw_data'])
             sheet.rows.append(StudyRow(RowId(row['id']), row['label'], unit, row['year'], row['sample_size'], row['include'], row['manually_excluded'], copy.deepcopy(row['covariates']), row['notes']))
@@ -48,22 +59,43 @@ def dataset_to_project(dataset):
         rows = []
         for row in sheet.rows:
             unit = row.analysis_unit
-            rows.append(dict(id=row.id, label=row.label, year=row.year, sample_size=row.sample_size, include=row.include, manually_excluded=row.manually_excluded, notes=row.notes, covariates=copy.deepcopy(row.covariate_values), raw_data={a.stable_id:["" if v is None else copy.deepcopy(v) for v in a.raw_data] for a in unit.arms_by_id.values() if a.stable_id in getattr(unit, 'present_raw_arms', unit.arms_by_id) or any(v not in ('', None) for v in a.raw_data)}, entered_effects=[dict(metric=m, arms=list(key), values=copy.deepcopy(value)) for m,entries in unit.entered_effects.items() for key,value in entries.items()], ratio_inputs=[dict(arms=key.split('|'), input=asdict(value)) for key,value in unit.ratio_inputs.items()]))
+            rows.append(dict(
+                id=row.id, label=row.label, year=row.year, sample_size=row.sample_size,
+                include=row.include, manually_excluded=row.manually_excluded, notes=row.notes,
+                covariates=copy.deepcopy(row.covariate_values),
+                raw_data={
+                    arm.stable_id: ["" if value is None else copy.deepcopy(value) for value in arm.raw_data]
+                    for arm in unit.arms_by_id.values()
+                    if arm.stable_id in getattr(unit, "present_raw_arms", unit.arms_by_id)
+                    or any(value not in ("", None) for value in arm.raw_data)
+                },
+                entered_effects=[
+                    dict(metric=metric, arms=list(key), values=copy.deepcopy(value))
+                    for metric, entries in unit.entered_effects.items() for key, value in entries.items()
+                ],
+                ratio_inputs=[dict(arms=list(key), input=asdict(value)) for key, value in unit.ratio_inputs.items()],
+            ))
         sheets.append(dict(id=sheet.id, name=sheet.name, data_type=sheet.data_type, sub_type=sheet.sub_type, family=sheet.family, arms=[asdict(a) for a in sheet.arms], covariates=copy.deepcopy(sheet.covariates), settings=copy.deepcopy(sheet.settings), rows=rows))
-    return dict(schema_version=3, title=dataset.title, notes=dataset.notes, sheets=sheets)
+    return dict(schema_version=CURRENT_FORMAT_VERSION, title=dataset.title, notes=dataset.notes, sheets=sheets)
 
 
+def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
+    return ProjectDocument(
+        CURRENT_FORMAT_VERSION, dataset_to_project(runtime.dataset),
+        {"schema_version": CURRENT_FORMAT_VERSION, "current_sheet_id": runtime.current_sheet_id},
+    )
 
 
-def state_to_model_state(dataset, state):
-    return {'current_sheet_id': state['current_sheet_id']}
-
-
-def runtime_project_to_document(runtime):
-    return ProjectDocument(3, dataset_to_project(runtime.dataset), dict(schema_version=3, current_sheet_id=runtime.model_state.get('current_sheet_id')))
-
-
-def document_to_runtime_project(document):
+def document_to_runtime_project(document: ProjectDocument) -> RuntimeProject:
     project, state = migrate_to_latest(document.format_version, document.project, document.state)
-    dataset = _dataset_from_canonical_project(project)
-    return RuntimeProject(dataset, state_to_model_state(dataset, state), state['current_sheet_id'] is not None)
+    return runtime_from_loaded_project(ProjectDocument(CURRENT_FORMAT_VERSION, project, state))
+
+
+def runtime_from_loaded_project(document: ProjectDocument) -> RuntimeProject:
+    """Adapt a validated document from the archive or migration boundary."""
+    selection = document.state["current_sheet_id"]
+    assert selection is None or isinstance(selection, str)
+    return RuntimeProject(
+        _dataset_from_canonical_project(document.project),
+        SheetId(selection) if selection is not None else None,
+    )

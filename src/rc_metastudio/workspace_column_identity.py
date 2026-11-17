@@ -3,6 +3,7 @@
 """Stable semantic identities and serialization for workspace columns."""
 
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 WORKSPACE_COLUMN_IDENTITY_ROLE = 0x0100 + 73
@@ -54,6 +55,9 @@ class WorkspaceColumnWidthState:
 
     def __getitem__(self, identity):
         return self._widths[WorkspaceColumnIdentity.coerce(identity)]
+
+    def __iter__(self) -> Iterator[WorkspaceColumnIdentity]:
+        return iter(self._widths)
 
     def __setitem__(self, identity, width):
         try:

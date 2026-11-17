@@ -37,11 +37,18 @@ def test_reverse_preserves_source_ci_and_log_se(scale):
     assert (reverse.estimate, reverse.lower, reverse.upper) == pytest.approx(expected)
 
 
-def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path, inject_python_boundary):
+@pytest.mark.parametrize("arm_id", ["arm-reference", "arm|reference"])
+def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path, inject_python_boundary, arm_id):
     project = _multi_arm_project("binary")
     project["schema_version"] = CURRENT_FORMAT_VERSION
     sheet_doc = project["sheets"][0]
     sheet_doc.update(family="event_rates", data_type=6, sub_type="incidence_rate_ratio")
+    original_arm_id = sheet_doc["arms"][0]["id"]
+    sheet_doc["arms"][0]["id"] = arm_id
+    for row in sheet_doc["rows"]:
+        raw = row["raw_data"]
+        if original_arm_id in raw:
+            raw[arm_id] = raw.pop(original_arm_id)
     dataset = project_adapter.project_to_dataset(project)
     unit = dataset.sheets[0].rows[0].analysis_unit
     record = RatioInput(estimate=.8, lower=.6, upper=1.1, confidence=90, source="reported", unit="person-months")
@@ -52,7 +59,7 @@ def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path,
     assert unit.ratio_input(["Arm 2", "Active"]).estimate == 1 / .8
     assert len(unit.ratio_inputs) == 1
     path = tmp_path / "ratios.rcms"
-    document = project_adapter.runtime_project_to_document(project_adapter.RuntimeProject(dataset, {}, False))
+    document = project_adapter.runtime_project_to_document(project_adapter.RuntimeProject(dataset))
     save_project(path, document.project, document.state)
     rebuilt = project_adapter.project_to_dataset(load_project(path).project)
     reopened = rebuilt.sheets[0].rows[0].analysis_unit
@@ -74,7 +81,7 @@ def test_invalid_reported_input_is_rejected(changes):
 
 def test_clearing_entered_effect_invalidates_display_cache():
     from rc_metastudio import analysis_dataset, analysis_catalog
-    from rc_metastudio.project_domain import SheetId
+    from rc_metastudio.domain_ids import SheetId
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.CONTINUOUS), arm_names=['A', 'B'])
     unit.set_effect_for_source('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1, 0, 3)
     unit.calculate_display_effect_and_ci('MD', tuple(arm.stable_id for arm in unit.arms.values()), lambda x: x, 95, 1.96, source='entered')
@@ -87,7 +94,7 @@ def test_clearing_entered_effect_invalidates_display_cache():
 @pytest.mark.parametrize('selected', ['raw', 'reported'])
 def test_ratio_dialog_accepts_only_active_source_and_retains_other_record(qapp, monkeypatch, selected):
     from rc_metastudio import analysis_dataset, analysis_catalog
-    from rc_metastudio.project_domain import SheetId
+    from rc_metastudio.domain_ids import SheetId
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
     from PyQt6.QtWidgets import QMessageBox, QDialog
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.EVENT_RATES), raw_data=[[2, 30], [3, 40]], arm_names=['A', 'B'])
@@ -110,7 +117,7 @@ def test_ratio_dialog_accepts_only_active_source_and_retains_other_record(qapp, 
 
 def test_ratio_format_round_trip_preserves_interval_and_reversal(qapp):
     from rc_metastudio import analysis_dataset, analysis_catalog
-    from rc_metastudio.project_domain import SheetId
+    from rc_metastudio.domain_ids import SheetId
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.TIME_TO_EVENT), arm_names=['A', 'B'])
     unit.set_ratio_input(['A', 'B'], RatioInput(estimate=2, lower=.5, upper=3, se=.4, source='reported'))

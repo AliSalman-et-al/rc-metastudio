@@ -1,4 +1,4 @@
-from rc_metastudio.project_domain import SheetId
+from rc_metastudio.domain_ids import SheetId
 import hashlib
 import importlib.util
 import json
@@ -432,34 +432,37 @@ def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
             calculator_controls.numeric_value(text)
 
 
-def test_field_edit_command_replays_captured_states_once(qapp):
-    from rc_metastudio import calculator_controls, calculator_controls, calculator_edit_history, calculator_effect_readout
+def test_calculator_history_replays_edits_and_discards_divergent_redo():
+    from rc_metastudio.calculator_edit_history import TransientEditHistory
 
     restored = []
-    refreshes = []
-
-    class Owner:
-        def update_back_calculation_button(self, engage=False):
-            refreshes.append(engage)
 
     def restore_state(*state):
         restored.append(state)
 
-    history = calculator_edit_history.TransientEditHistory()
-    calculator_edit_history.push_field_edit(
-        history,
-        owner=Owner(),
+    history = TransientEditHistory()
+    history.record(
         restore_state=restore_state,
         old_state=("old", 1),
         new_state=("new", 2),
     )
 
     assert restored == []
-    assert refreshes == [False]
     history.undo()
     assert restored == [("old", 1)]
     history.redo()
     assert restored == [("old", 1), ("new", 2)]
+    history.undo()
+    history.record(
+        restore_state=restore_state,
+        old_state=("old", 1),
+        new_state=("replacement", 3),
+    )
+    history.redo()
+    assert restored[-1] == ("old", 1)
+    history.undo()
+    history.redo()
+    assert restored[-1] == ("replacement", 3)
 
 
 def test_continuous_imputation_accepts_r_input_pattern_metadata(monkeypatch):
@@ -553,38 +556,6 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def __init__(self, *args, **kwargs):
             raise CalculatorOpenError("boom")
 
-    class FakeModel(QtCore.QAbstractTableModel):
-        dataset = [object()]
-        arm_names = ["Group 1", "Group 2"]
-        current_effect = "MD"
-
-        def get_studies(self, only_if_included=True):
-            return self.dataset
-
-        def get_current_data_subtype(self):
-            return None
-
-        def rowCount(self, parent=QtCore.QModelIndex()):
-            return 1
-
-        def columnCount(self, parent=QtCore.QModelIndex()):
-            return 1
-
-        def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
-            return None
-
-        def get_current_analysis_unit_for_study(self, study_index):
-            return FakeAnalysisUnit()
-
-        def get_current_arm_key(self):
-            return "Group 1-Group 2"
-
-        def get_current_data_type(self):
-            return "continuous"
-
-        def get_confidence_level(self):
-            return 95.0
-
     monkeypatch.setattr(
         dataset_table_view.continuous_data_dialog,
         "ContinuousDataDialog",
@@ -592,7 +563,9 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
     )
 
     view = dataset_table_view.DatasetTableView()
-    view.setModel(FakeModel())
+    from tests.analysis_regression.golden.support.headless_analysis import load_dataset_model
+
+    view.setModel(load_dataset_model(ROOT / "sample_projects/continuous.rcms"))
 
     with pytest.raises(CalculatorOpenError):
         view.row_header_clicked(0)

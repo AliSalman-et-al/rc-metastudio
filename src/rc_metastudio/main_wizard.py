@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import Collection, Sequence
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from typing import cast, TYPE_CHECKING, TypedDict
+from functools import partial
+from typing import cast, Literal, TYPE_CHECKING, TypedDict
 import csv
 import re
 from pathlib import Path
@@ -52,6 +55,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 from rc_metastudio import analysis_catalog
+from rc_metastudio.analysis_dataset import Dataset
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
@@ -59,7 +63,9 @@ from rc_metastudio import qt_text
 from rc_metastudio import csv_import
 from rc_metastudio import name_validation
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.dataset_table_model import DatasetTableModel
+from rc_metastudio.sheet_columns import (
+    IMPORT_IDENTITY_COLUMNS, IMPORT_YEAR_COLUMN, SheetColumns, sheet_columns,
+)
 from rc_metastudio.settings import (
     get_default_open_directory,
     normalize_recent_files,
@@ -75,6 +81,90 @@ class DatasetInfo(TypedDict, total=False):
     metric_choices: list[str]
     name: str | None
     groups: list[str]
+
+
+type WizardPath = Literal["open", "rm5_import", "csv_import", "new_dataset"]
+
+
+class OpenProject(TypedDict):
+    path: Literal["open"]
+    selected_dataset: str
+
+
+class ImportReview(TypedDict):
+    path: Literal["rm5_import"]
+    rm5_dataset: Dataset
+
+
+class ImportSheet(TypedDict):
+    path: Literal["csv_import"]
+    outcome_info: DatasetInfo
+    csv_data: csv_import.CsvImportPayload
+
+
+class NewSheet(TypedDict):
+    path: Literal["new_dataset"]
+    outcome_info: DatasetInfo
+
+
+type WizardResult = OpenProject | ImportReview | ImportSheet | NewSheet
+
+
+@dataclass(frozen=True, slots=True)
+class DatasetKind:
+    label: str
+    data_type: str
+    sub_type: str | None
+    arms: str | None
+    effect: str | None
+    metric_choices: tuple[str, ...]
+    button_name: str | None = None
+    icon: str | None = None
+
+    def info(self, *, name: str | None = None) -> DatasetInfo:
+        return {
+            "arms": self.arms,
+            "data_type": self.data_type,
+            "sub_type": self.sub_type,
+            "effect": self.effect,
+            "metric_choices": list(self.metric_choices),
+            "name": name,
+        }
+
+
+_CONTINUOUS_ONE_ARM_METRICS = tuple(analysis_catalog.CONTINUOUS_ONE_ARM_METRICS)
+_CONTINUOUS_TWO_ARM_METRICS = tuple(analysis_catalog.CONTINUOUS_TWO_ARM_METRICS)
+_RATIO_METRICS = ("HR", "IRR")
+_TWO_ARM_PROPORTIONS = DatasetKind(
+    "Two-arm proportions", "binary", "proportions", "two", "OR",
+    tuple(analysis_catalog.BINARY_TWO_ARM_METRICS), "twoarm_proportions_Button", "two-arm-proportions.svg",
+)
+_HAZARD_RATIO = DatasetKind(
+    "Hazard ratio", "time_to_event", "hazard_ratio", "two", "HR",
+    _RATIO_METRICS, "time_rates_Button", "time-event-rates.svg",
+)
+_INCIDENCE_RATE_RATIO = DatasetKind(
+    "Incidence rate ratio", "event_rates", "incidence_rate_ratio", "two", "IRR", _RATIO_METRICS,
+)
+_DATASET_KINDS = (
+    DatasetKind("Single-arm proportion", "binary", "proportion", "one", "PR",
+                tuple(analysis_catalog.BINARY_ONE_ARM_METRICS), "onearm_proportion_Button", "one-arm-proportion.svg"),
+    DatasetKind("Single-arm mean", "continuous", "mean", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
+                _CONTINUOUS_ONE_ARM_METRICS, "onearm_mean_Button", "one-arm-mean.svg"),
+    DatasetKind("Regression coefficient", "continuous", "reg_coef", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
+                _CONTINUOUS_ONE_ARM_METRICS, "onearm_single_reg_coef_Button", "single-regression-coefficient.svg"),
+    DatasetKind("Entered effect", "continuous", "generic_effect", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
+                _CONTINUOUS_ONE_ARM_METRICS, "onearm_generic_effect_size_Button", "generic-effect-size.svg"),
+    _TWO_ARM_PROPORTIONS,
+    DatasetKind("Two-arm means", "continuous", "means", "two", "MD",
+                _CONTINUOUS_TWO_ARM_METRICS, "twoarm_means_Button", "two-arm-means.svg"),
+    DatasetKind("Standardized mean difference", "continuous", "smd", "two", "SMD",
+                _CONTINUOUS_TWO_ARM_METRICS, "twoarm_smds_Button", "standardized-mean-difference.svg"),
+    DatasetKind("Diagnostic accuracy", "diagnostic", None, None, None, (), "diagnostic_Button", "diagnostic-data.svg"),
+    _HAZARD_RATIO,
+    _INCIDENCE_RATE_RATIO,
+)
+_RATIO_KINDS = {kind.effect: kind for kind in (_HAZARD_RATIO, _INCIDENCE_RATE_RATIO)}
 
 
 class MainWizardPage(QWizardPage):
@@ -124,7 +214,6 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
                 label.setText(label.text().replace("<a ", f'<a style="color: {colour}" '))
 
         self.recent_datasets = normalize_recent_files(recent_datasets)
-        self.selected_dataset = None
         qt_layout.configure_primary_action_buttons(
             (
                 self.create_new_btn,
@@ -190,35 +279,20 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             self.open_recent_btn.setStatusTip("No recent projects.")
 
     def dataset_selected(self, action_item=None):
-        self.wizard().set_wizard_path("open")
-
-        # we use the sender method to see which menu item was
-        # triggered
         action = action_item or self.sender()
         if not isinstance(action, QAction):
             raise RuntimeError("recent-project selection requires a QAction sender")
-        dataset_path = action.data() or action.text()
-        dataset_path = qt_text.to_native_text(dataset_path)
-        self.selected_dataset = dataset_path
-        self.wizard().set_selected_dataset(self.selected_dataset)
-        self.wizard().accept()
+        self.wizard().open_project(qt_text.to_native_text(action.data() or action.text()))
 
     def open_dataset(self):
-        self.wizard().set_wizard_path("open")
-
-        self.selected_dataset = QFileDialog.getOpenFileName(
+        path, _ = QFileDialog.getOpenFileName(
             parent=self,
             caption="Open project",
             directory=get_default_open_directory(self.recent_datasets),
             filter="RC MetaStudio projects (*.rcms)",
         )
-        if isinstance(self.selected_dataset, tuple):
-            self.selected_dataset = self.selected_dataset[0]
-        self.selected_dataset = qt_text.to_native_text(self.selected_dataset)
-
-        if self.selected_dataset != "":
-            self.wizard().set_selected_dataset(self.selected_dataset)
-            self.wizard().accept()
+        if path:
+            self.wizard().open_project(path)
 
     def import_data(self):
         path, _ = QFileDialog.getOpenFileName(self, "Import data", "", IMPORT_FILE_FILTER)
@@ -231,30 +305,15 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
 
 
 class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
-    _ICON_NAMES = {
-        "onearm_proportion_Button": "one-arm-proportion.svg",
-        "onearm_mean_Button": "one-arm-mean.svg",
-        "onearm_single_reg_coef_Button": "single-regression-coefficient.svg",
-        "onearm_generic_effect_size_Button": "generic-effect-size.svg",
-        "twoarm_proportions_Button": "two-arm-proportions.svg",
-        "twoarm_means_Button": "two-arm-means.svg",
-        "twoarm_smds_Button": "standardized-mean-difference.svg",
-        "diagnostic_Button": "diagnostic-data.svg",
-        "time_rates_Button": "time-event-rates.svg",
-    }
-
     def __init__(self, parent=None):
         super(DataTypePage, self).__init__(parent)
         self.setupUi(self)
 
-        self.summary: DatasetInfo = dict(
-            arms=None,
-            data_type=None,
-            sub_type=None,
-            effect=None,
-            metric_choices=[],
-            name=None,
-        )  # ProjectInfo()
+        self._button_kinds: dict[QAbstractButton, DatasetKind] = {
+            getattr(self, kind.button_name): kind
+            for kind in _DATASET_KINDS
+            if kind.button_name is not None
+        }
 
         self.buttonGroup.buttonClicked[QAbstractButton].connect(
             app_error_handler.safe_slot(self._button_selected, parent=self)
@@ -267,17 +326,7 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
         self.setFocus()
 
     def _data_type_buttons(self):
-        return [
-            self.onearm_proportion_Button,
-            self.onearm_mean_Button,
-            self.onearm_single_reg_coef_Button,
-            self.onearm_generic_effect_size_Button,
-            self.twoarm_proportions_Button,
-            self.twoarm_means_Button,
-            self.twoarm_smds_Button,
-            self.diagnostic_Button,
-            self.time_rates_Button,
-        ]
+        return list(self._button_kinds)
 
     def _configure_data_type_buttons(self):
         buttons = self._data_type_buttons()
@@ -344,83 +393,24 @@ class DataTypePage(MainWizardPage, _ui_data_type_page.Ui_DataTypePage):
     def _apply_theme_icon(self, button):
         foreground = button.palette().color(QPalette.ColorRole.ButtonText)
         theme = "dark" if foreground.lightness() >= 128 else "light"
-        icon_name = self._ICON_NAMES.get(button.objectName())
-        if not icon_name:
-            return
+        icon_name = required(self._button_kinds[button].icon, "dataset kind icon")
         self._data_type_icon_themes[button.objectName()] = theme
         button.setIcon(QIcon(f":/icons/dataset-types/{theme}/{icon_name}"))
 
-    def _button_selected(self, button):
-
-        if button == self.onearm_proportion_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "binary"
-            self.summary["sub_type"] = "proportion"
-            self.summary["effect"] = "PR"  # default effect
-            self.summary["metric_choices"] = analysis_catalog.BINARY_ONE_ARM_METRICS
-        elif button == self.onearm_mean_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "mean"
-            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
-        elif button == self.onearm_single_reg_coef_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "reg_coef"
-            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
-        elif button == self.onearm_generic_effect_size_Button:
-            self.summary["arms"] = "one"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "generic_effect"
-            self.summary["effect"] = analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM
-            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_ONE_ARM_METRICS
-        # twoarm
-        elif button == self.twoarm_proportions_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "binary"
-            self.summary["sub_type"] = "proportions"
-            self.summary["effect"] = "OR"
-            self.summary["metric_choices"] = analysis_catalog.BINARY_TWO_ARM_METRICS
-        elif button == self.twoarm_means_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "means"
-            self.summary["effect"] = "MD"
-            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
-        elif button == self.twoarm_smds_Button:
-            self.summary["arms"] = "two"
-            self.summary["data_type"] = "continuous"
-            self.summary["sub_type"] = "smd"
-            self.summary["effect"] = "SMD"
-            self.summary["metric_choices"] = analysis_catalog.CONTINUOUS_TWO_ARM_METRICS
-        elif button == self.time_rates_Button:
-            self.summary.update(arms="two", data_type="time_to_event",
-                sub_type="hazard_ratio", effect="HR", metric_choices=["HR", "IRR"])
-        # diagnostic
-        elif button == self.diagnostic_Button:
-            self.summary.update(arms=None, data_type="diagnostic", sub_type=None, effect=None, metric_choices=[])
-
-        # Put information from pressing the button into the wizard storage area
-        self.wizard().set_dataset_info(self.summary)
+    def _button_selected(self, button: QAbstractButton) -> None:
+        self.wizard().set_dataset_info(self._button_kinds[button].info())
         self.completeChanged.emit()
 
     def isComplete(self):
-
-        if self.buttonGroup.checkedButton():
-            return True
-        else:
-            return False
+        return self.buttonGroup.checkedButton() is not None
 
     def nextId(self):
-        if self.buttonGroup.checkedButton() is None:
-            return Page_ChooseMetric
         dataset_info = self.wizard().get_dataset_info()
-        if dataset_info is not None and (dataset_info["data_type"] == "diagnostic" or len(dataset_info["metric_choices"]) == 1):
+        if self.isComplete() and dataset_info is not None and (
+            dataset_info["data_type"] == "diagnostic" or len(dataset_info["metric_choices"]) == 1
+        ):
             return Page_OutcomeName
-        else:  # normal case
-            return Page_ChooseMetric
+        return Page_ChooseMetric
 
 
 class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
@@ -446,7 +436,6 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
         self.setSubTitle(self.wizard().task_label + " · " + {"binary": "Two-arm binary" if dataset_info["arms"] == "two" else "Single-arm proportion", "continuous": "Continuous", "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[data_type])
-        # Add metric choices to combo box
         self.metric_cbo_box.blockSignals(True)
         self.metric_cbo_box.clear()
         self.metric_cbo_box.blockSignals(False)
@@ -516,6 +505,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         super(CsvImportPage, self).__init__(parent)
         self.setupUi(self)
         self.file_path: str | None = None
+        self._import_result: csv_import.CsvImportResult | None = None
         self.mapping_controls = []
         self._mapping_key = None
         self.worksheet_combo = QComboBox(self)
@@ -603,15 +593,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.verticalLayout_2.addWidget(widget)
         self._update_dialect_controls()
 
-    def _change_data_type(self, index):
-        page = cast(DataTypePage, required(self.wizard().page(Page_DataType), "data type page"))
-        old = dict(self.wizard().require_dataset_info())
-        page._button_selected(page._data_type_buttons()[min(index, 8)])
-        if index == 9:
-            self.wizard().set_effect("IRR")
-        info = dict(self.wizard().require_dataset_info())
-        info["name"] = old.get("name") or "Imported data"
-        self.wizard().set_dataset_info(cast(DatasetInfo, info))
+    def _change_data_type(self, _index):
+        kind = self.data_type_combo.currentData()
+        if not isinstance(kind, DatasetKind):
+            return
+        old = self.wizard().require_dataset_info()
+        info = kind.info(name=old.get("name") or "Imported data")
+        if old.get("arms") == kind.arms and "groups" in old:
+            info["groups"] = old["groups"]
+        self.wizard().set_dataset_info(info)
         self.required_header_labels = self._get_required_header_labels()
         self._mapping_key = None
         self._rebuild_display()
@@ -619,13 +609,13 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
     def initializePage(self):
         self.data_type_combo.blockSignals(True)
         self.data_type_combo.clear()
-        self.data_type_combo.addItems(["Single-arm proportion", "Single-arm mean", "Regression coefficient", "Entered effect", "Two-arm proportions", "Two-arm means", "Standardized mean difference", "Diagnostic accuracy", "Hazard ratio"])
-        self.data_type_combo.setItemText(8, "Hazard ratio")
-        self.data_type_combo.addItem("Incidence rate ratio")
         info = self.wizard().require_dataset_info()
-        keys: list[tuple[str | None, str | None]] = [("binary", "proportion"), ("continuous", "mean"), ("continuous", "reg_coef"), ("continuous", "generic_effect"), ("binary", "proportions"), ("continuous", "means"), ("continuous", "smd"), ("diagnostic", None), ("time_to_event", "hazard_ratio"), ("event_rates", "incidence_rate_ratio")]
-        key = (info["data_type"], info["sub_type"])
-        self.data_type_combo.setCurrentIndex(keys.index(key) if key in keys else 8)
+        selected = _HAZARD_RATIO
+        for kind in _DATASET_KINDS:
+            self.data_type_combo.addItem(kind.label, kind)
+            if (kind.data_type, kind.sub_type) == (info["data_type"], info["sub_type"]):
+                selected = kind
+        self.data_type_combo.setCurrentIndex(self.data_type_combo.findText(selected.label))
         self.data_type_combo.blockSignals(False)
         self.worksheet_label.hide()
         self.file_path = None
@@ -641,29 +631,21 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         required(self.pageScrollArea.verticalScrollBar(), "CSV page scrollbar").setValue(0)
 
     def isComplete(self):
-        # We must have a file selected
-        if not self.file_path:
-            return False
+        return self._import_result is not None
 
-        if self.imported_data_ok:
-            self.wizard().set_csv_data(self.csv_data())  # stick csv data into wizard
-            return True
-        else:
-            return False
+    @property
+    def imported_data_ok(self) -> bool:
+        return self.isComplete()
+
+    @property
+    def headers(self) -> list[str]:
+        return list(self._import_result.headers) if self._import_result is not None else []
 
     def _reset_data(self):
         self.preview_table.clear()
         self.preview_table.setRowCount(0)
         self.preview_table.setColumnCount(0)
         self._import_result = None
-        self.headers = []
-        self.covariate_names = []
-        self.covariate_types = []
-        self.imported_data = []
-        self.imported_data_ok = False
-        wizard = QWizardPage.wizard(self)
-        if isinstance(wizard, MainWizard):
-            wizard.set_csv_data(None)
         self.completeChanged.emit()
 
     def _select_file(self):
@@ -697,6 +679,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.worksheet_combo.blockSignals(True)
         self.worksheet_combo.clear()
         self.worksheet_combo.hide()
+        self.worksheet_label.hide()
         if Path(self.file_path).suffix.lower() == ".xlsx":
             try:
                 names, selected = csv_import.xlsx_worksheets(self.file_path)
@@ -704,7 +687,9 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
                 self.worksheet_label.setVisible(len(names) > 1)
                 self.worksheet_combo.setCurrentText(selected)
                 self.worksheet_combo.setVisible(len(names) > 1)
+                self.has_headers_chkbx.blockSignals(True)
                 self.has_headers_chkbx.setChecked(True)
+                self.has_headers_chkbx.blockSignals(False)
             except csv_import.CsvImportError as error:
                 self._reset_data()
                 style_inline_error(self.import_status)
@@ -729,129 +714,122 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._reset_data()
         self.import_status.clear()
         style_inline_error(self.import_status)
+        if not self.file_path:
+            return False
         try:
-            file_path = self.file_path
-            if not isinstance(file_path, str) or not file_path:
-                return False
-            self._update_column_mapping()
-            self._show_raw_preview()
+            headers, rows = self._preview_source()
             info = self.wizard().require_dataset_info()
-            raw, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
-            mapping = tuple(control.currentData() for control in self.mapping_controls)
-            column_mapping = None
-            if mapping:
-                raw_end = 2 + len(raw)
-                # The model retains both arms' slots even for a one-arm dataset.
-                raw_count = len(raw) // 2 if info["arms"] == "one" else len(raw)
-                raw_complete = bool(raw_count) and all(index is not None for index in mapping[2:2 + raw_count])
-                effects_complete = all(index is not None for index in mapping[raw_end:])
-                if any(index is None for index in mapping[:2]) or not (raw_complete or effects_complete):
-                    def missing(indices):
-                        return ", ".join(self.required_header_labels[i] for i in indices if mapping[i] is None)
-                    identity = missing(range(2))
-                    alternatives = [text for text in (
-                        missing(range(2, 2 + raw_count)), missing(range(raw_end, len(mapping)))
-                    ) if text]
-                    detail = "; ".join(text for text in (identity, " or ".join(alternatives)) if text)
-                    count = sum(index is None for index in mapping)
-                    noun = "column" if count == 1 else "columns"
-                    raise csv_import.CsvImportError(f"Missing {noun}: {detail}.")
-                column_mapping = tuple(-1 if index is None else index for index in mapping)
-            notices = []
-            self._import_result = csv_import.parse_csv(
-                file_path,
-                expected_headers=self.required_header_labels,
-                has_headers=self._has_headers(),
-                from_excel=self._is_from_excel(),
-                delimiter=self._get_delimter(),
-                quotechar=self._get_quotechar(),
-                year_column=DatasetTableModel.YEAR - 1,
-                optional_headers=self._optional_ratio_headers(),
-                column_mapping=column_mapping,
-                positional_width=2 + len(raw) if raw else None,
-                header_aliases=self._legacy_header_aliases(),
-                worksheet=self.worksheet_combo.currentText(),
-                notices=notices,
-            )
-            payload = self._import_result.to_payload()
-            self.headers = payload["headers"]
-            self.imported_data = payload["data"]
-            self.covariate_names = payload["covariate_names"]
-            self.covariate_types = payload["covariate_types"]
-            if len(self.imported_data) == 0:
+            data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
+            columns = sheet_columns(data_type, info["sub_type"])
+            mapping = self._selected_mapping(columns, single_arm=info["arms"] == "one")
+            notices: list[str] = []
+            result = self._normalize_preview(headers, rows, mapping, columns, notices)
+            if not result.rows:
                 self.import_status.setText("No study rows found. Add rows beneath the CSV header, then select the file again.")
-                self.imported_data_ok = False
                 return False
-
-            num_rows = len(self.imported_data)
-            num_cols = len(self.imported_data[0])
-
-            # set up table
-            self.preview_table.setRowCount(num_rows)
-            self.preview_table.setColumnCount(num_cols)
-            if self.headers != []:
-                self.preview_table.setHorizontalHeaderLabels(self.headers)
-            else:
-                preview_header_labels = self.required_header_labels[:]
-                preview_header_labels.extend(self.covariate_names)
-                self.preview_table.setHorizontalHeaderLabels(preview_header_labels)
-
-            info = self.wizard().require_dataset_info()
-            raw_columns, _ = DatasetTableModel.get_column_indices(info["data_type"], info["sub_type"])
-            count_columns = {
-                index + 2 for index in range(len(raw_columns))
-                if info["data_type"] in {"binary", "diagnostic"}
-                or info["data_type"] == "continuous" and index % 3 == 0
-                or info["data_type"] == "event_rates" and index % 2 == 0
-            }
-            # Preview formatting must not alter the imported values.
-            for row in range(num_rows):
-                for col in range(num_cols):
-                    value = self.imported_data[row][col]
-                    if col in count_columns and value:
-                        try:
-                            number = Decimal(value)
-                            if number.is_finite() and number == number.to_integral_value():
-                                value = str(int(number))
-                        except InvalidOperation:
-                            pass
-                    item = QTableWidgetItem(value)
-                    item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-                    self.preview_table.setItem(row, col, item)
-            self.preview_table.resizeColumnsToContents()
-            for column in range(num_cols):
-                self.preview_table.setColumnHidden(column, len(self.required_header_labels) <= column < len(payload["expected_headers"]))
-            self.preview_table.resizeRowsToContents()
-            # Keep imported headers readable. Native table scrolling handles
-            # columns wider than the page viewport.
-            self.preview_table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-            self.imported_data_ok = True
-            self.import_tabs.setCurrentWidget(self.preview_grp_box)
-            clear_inline_error(self.import_status)
-            noun = "study" if num_rows == 1 else "studies"
-            self.import_status.setText(f"Ready to import {num_rows} {noun}." + (" " + " ".join(notices) if notices else ""))
-            self.completeChanged.emit()
+            self._show_ready_preview(result, columns, notices)
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
             self.import_tabs.setCurrentWidget(self.mapping_table)
-            self.imported_data_ok = False
             return False
-        except Exception as e:
-            self.import_status.setText("Could not preview the file: %s" % e)
-            self.imported_data_ok = False
+        except Exception as error:
+            self.import_status.setText(f"Could not preview the file: {error}")
             return False
 
-    def _read_rows(self):
-        return csv_import.read_rows(
-            required(self.file_path, "selected import path"),
-            has_headers=self._has_headers(), from_excel=self._is_from_excel(),
-            delimiter=self._get_delimter(), quotechar=self._get_quotechar(),
-            worksheet=self.worksheet_combo.currentText(),
+    def _preview_source(self):
+        try:
+            headers, rows = csv_import.read_rows(
+                required(self.file_path, "selected import path"),
+                has_headers=self._has_headers(), from_excel=self._is_from_excel(),
+                delimiter=self._get_delimter(), quotechar=self._get_quotechar(),
+                worksheet=self.worksheet_combo.currentText(),
+            )
+        except Exception:
+            self._update_column_mapping([])
+            raise
+        self._update_column_mapping(headers)
+        self._show_preview(headers, rows)
+        return headers, rows
+
+    def _selected_mapping(self, columns: SheetColumns, *, single_arm: bool) -> tuple[int, ...] | None:
+        mapping = tuple(control.currentData() for control in self.mapping_controls)
+        if not mapping:
+            return None
+        raw_columns = columns.import_raw_columns(single_arm)
+        effect_columns = range(columns.first_import_effect, len(mapping))
+        raw_complete = bool(raw_columns) and all(mapping[i] is not None for i in raw_columns)
+        effects_complete = all(mapping[i] is not None for i in effect_columns)
+        if any(mapping[i] is None for i in IMPORT_IDENTITY_COLUMNS) or not (raw_complete or effects_complete):
+            raise csv_import.CsvImportError(self._missing_mapping_message(mapping, raw_columns, effect_columns))
+        return tuple(-1 if index is None else index for index in mapping)
+
+    def _missing_mapping_message(
+        self, mapping: tuple[int | None, ...], raw_columns: Sequence[int], effect_columns: range,
+    ) -> str:
+        def missing(indices: Sequence[int]) -> str:
+            return ", ".join(self.required_header_labels[i] for i in indices if mapping[i] is None)
+
+        identity = missing(IMPORT_IDENTITY_COLUMNS)
+        alternatives = " or ".join(text for text in (missing(raw_columns), missing(effect_columns)) if text)
+        detail = "; ".join(text for text in (identity, alternatives) if text)
+        noun = "column" if mapping.count(None) == 1 else "columns"
+        return f"Missing {noun}: {detail}."
+
+    def _normalize_preview(
+        self, headers: list[str], rows: list[list[str]],
+        mapping: tuple[int, ...] | None, columns: SheetColumns, notices: list[str],
+    ) -> csv_import.CsvImportResult:
+        file_path = required(self.file_path, "selected import path")
+        if Path(file_path).suffix.lower() == ".xlsx":
+            # A mapped workbook year may be a date, and mapped numeric cells
+            # forbid Excel error values. The raw preview has no column roles.
+            parse = partial(
+                csv_import.parse_csv, file_path,
+                from_excel=self._is_from_excel(), delimiter=self._get_delimter(),
+                quotechar=self._get_quotechar(), worksheet=self.worksheet_combo.currentText(),
+                notices=notices,
+            )
+        else:
+            parse = partial(csv_import.normalize_csv_input, headers, rows)
+        return parse(
+            expected_headers=self.required_header_labels,
+            has_headers=self._has_headers(),
+            year_column=IMPORT_YEAR_COLUMN,
+            optional_headers=columns.optional_import_headers(),
+            column_mapping=mapping,
+            positional_width=columns.first_import_effect if columns.raw else None,
+            header_aliases=self._legacy_header_aliases(),
         )
 
-    def _show_raw_preview(self):
-        headers, rows = self._read_rows()
+    def _show_ready_preview(
+        self, result: csv_import.CsvImportResult, columns: SheetColumns, notices: list[str],
+    ) -> None:
+        headers = list(result.headers or (*self.required_header_labels, *result.covariate_names))
+        self._show_preview(headers, result.rows, count_columns=columns.import_count_columns())
+        for column in range(len(self.required_header_labels), len(result.expected_headers)):
+            self.preview_table.setColumnHidden(column, True)
+        self.preview_table.resizeRowsToContents()
+        self.preview_table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        self._import_result = result
+        self.import_tabs.setCurrentWidget(self.preview_grp_box)
+        clear_inline_error(self.import_status)
+        num_rows = len(result.rows)
+        noun = "study" if num_rows == 1 else "studies"
+        self.import_status.setText(f"Ready to import {num_rows} {noun}." + (" " + " ".join(notices) if notices else ""))
+        self.completeChanged.emit()
+
+    @staticmethod
+    def _preview_count(value: str) -> str:
+        try:
+            number = Decimal(value)
+        except InvalidOperation:
+            return value
+        return str(int(number)) if number.is_finite() and number == number.to_integral_value() else value
+
+    def _show_preview(
+        self, headers: list[str], rows: Sequence[Sequence[str]], *, count_columns: Collection[int] = (),
+    ) -> None:
         width = max([len(headers)] + [len(row) for row in rows])
         self.preview_table.setColumnCount(width)
         self.preview_table.setRowCount(len(rows))
@@ -860,14 +838,19 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self.preview_table.setColumnHidden(column, False)
         for number, row in enumerate(rows):
             for column, value in enumerate(row):
+                if value and column in count_columns:
+                    value = self._preview_count(value)
                 item = QTableWidgetItem(value)
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                 self.preview_table.setItem(number, column, item)
         self.preview_table.resizeColumnsToContents()
 
-    def _update_column_mapping(self):
+    def _update_column_mapping(self, headers: list[str]) -> None:
         self.mapping_table.setHorizontalHeaderLabels(["Field", "File column"])
-        key = (self.worksheet_combo.currentText(), self.file_path, self._has_headers(), self._is_from_excel(), self._get_delimter(), self._get_quotechar())
+        key = (
+            self.worksheet_combo.currentText(), self.file_path, self._has_headers(),
+            self._is_from_excel(), self._get_delimter(), self._get_quotechar(), tuple(headers),
+        )
         if key == self._mapping_key:
             return
         self._mapping_key = key
@@ -876,7 +859,6 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.import_tabs.setTabEnabled(1, self._has_headers())
         if not self._has_headers():
             return
-        headers, _ = self._read_rows()
         if not headers:
             return
         aliases = self._legacy_header_aliases()
@@ -927,55 +909,18 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         return aliases
 
     def _get_required_header_labels(self, legacy=False):
-        """Provides column header labels based on chosen datatype and subtype
-        ** Must be updated if header_data() is dataset_table_model is changed
-        """
         dataset_info = self.wizard().require_dataset_info()
-        data_type = required(dataset_info["data_type"], "import data type")
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "import data type")]
         data_subtype = dataset_info["sub_type"]
-        effect = dataset_info["effect"]
-        raw_cols, outcome_cols = DatasetTableModel.get_column_indices(
-            data_type, data_subtype
+        arms = ["Tx A", "Tx B"] if legacy else (
+            dataset_info.get("groups") or analysis_catalog.default_arm_names(data_type, data_subtype)
+        )
+        return sheet_columns(data_type, data_subtype).import_labels(
+            arms, dataset_info["effect"], legacy=legacy,
         )
 
-        header_labels = []
-
-        model_cols = [DatasetTableModel.NAME, DatasetTableModel.YEAR]
-        model_cols.extend(raw_cols)
-        model_cols.extend(outcome_cols[:3] if data_type in ("time_to_event", "event_rates") else outcome_cols)
-
-        for col in model_cols:
-            col_name = DatasetTableModel._basic_horizontal_header_data(
-                section=col,
-                data_type=analysis_catalog.STR_TO_TYPE_DICT[data_type],
-                sub_type=data_subtype,
-                raw_columns=raw_cols,
-                outcome_columns=outcome_cols,
-                current_effect=effect,
-                groups=(["Tx A", "Tx B"] if legacy else dataset_info.get("groups") or
-                        analysis_catalog.default_arm_names(analysis_catalog.STR_TO_TYPE_DICT[data_type], data_subtype)),
-                csv_schema=legacy,
-            )
-            col_name = qt_text.to_native_text(col_name)
-            header_labels.append(col_name)
-        return header_labels
-
-    def _optional_ratio_headers(self):
-        from rc_metastudio.ratio_data import RATIO_HEADERS
-        data_type = self.wizard().require_dataset_info()["data_type"]
-        if data_type not in ("time_to_event", "event_rates"):
-            return None
-        defaults = ("", "ratio", "95", "", "person-years")
-        count = 3 if data_type == "time_to_event" else 5
-        return dict(zip(RATIO_HEADERS[3:3+count], defaults[:count]))
-
-    def csv_data(self):
-        """Imported data is a list of rows. A row is a list of
-        cell contents (as strings)
-        """
-        if not self.imported_data_ok or self._import_result is None:
-            return None
-        return self._import_result.to_payload()
+    def csv_data(self) -> csv_import.CsvImportPayload | None:
+        return self._import_result.to_payload() if self._import_result is not None else None
 
     def _is_from_excel(self):
         return self.from_excel_chkbx.isChecked()
@@ -1088,8 +1033,7 @@ Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport
 
 
 class MainWizard(QWizard):
-    rm5_dataset: object
-    def __init__(self, parent=None, path=None, recent_datasets=None, existing_outcome_names=()):
+    def __init__(self, parent=None, path: WizardPath | None = None, recent_datasets=None, existing_outcome_names=()):
         super(MainWizard, self).__init__(parent)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setSizeGripEnabled(True)
@@ -1106,9 +1050,10 @@ class MainWizard(QWizard):
         )
 
         self.existing_outcome_names = existing_outcome_names
-        self.info_d: dict[str, object] = {}
+        self._path = path
         self._outcome_info: DatasetInfo | None = None
-        self.info_d["path"] = path
+        self._selected_project: str | None = None
+        self._imported_review: Dataset | None = None
         self.setPage(Page_Welcome, WelcomePage(recent_datasets=recent_datasets))
         self.setPage(Page_DataType, DataTypePage())
         self.setPage(Page_ChooseMetric, ChooseMetricPage())
@@ -1156,7 +1101,7 @@ class MainWizard(QWizard):
                 return False
             if dataset is None:
                 return False
-            self.rm5_dataset = dataset
+            self._imported_review = dataset
             self.set_wizard_path("rm5_import")
             self.accept()
             return True
@@ -1165,7 +1110,7 @@ class MainWizard(QWizard):
             return False
         self.set_wizard_path("csv_import")
         if self.get_dataset_info() is None:
-            self.set_dataset_info(dict(arms="two", data_type="binary", sub_type="proportions", effect="OR", metric_choices=[], name="Imported data"))
+            self.set_dataset_info(_TWO_ARM_PROPORTIONS.info(name="Imported data"))
         if self.currentId() != Page_CsvImport:
             self.setStartId(Page_CsvImport)
             self.restart()
@@ -1261,8 +1206,8 @@ class MainWizard(QWizard):
         ):
             overflow.ensureWidgetVisible(current)
 
-    def set_wizard_path(self, path):
-        self.info_d["path"] = path
+    def set_wizard_path(self, path: WizardPath) -> None:
+        self._path = path
 
     @property
     def task_label(self) -> str:
@@ -1270,11 +1215,8 @@ class MainWizard(QWizard):
             return "Add outcome"
         return "Import data" if self.get_wizard_path() == "csv_import" else "New project"
 
-    def get_wizard_path(self):
-        if "path" in self.info_d:
-            return self.info_d["path"]
-        else:
-            return None
+    def get_wizard_path(self) -> WizardPath | None:
+        return self._path
 
     def set_dataset_info(self, outcome_info: DatasetInfo) -> None:
         self._outcome_info = outcome_info
@@ -1287,57 +1229,42 @@ class MainWizard(QWizard):
             raise RuntimeError("dataset information has not been selected")
         return self._outcome_info
 
-    def set_selected_dataset(self, dataset):
-        self.info_d["selected_dataset"] = dataset
-
-    def get_selected_dataset(self):
-        if "selected_dataset" in self.info_d:
-            return self.info_d["selected_dataset"]
-        else:
-            return None
+    def open_project(self, path: str) -> None:
+        self._selected_project = path
+        self.set_wizard_path("open")
+        self.accept()
 
     def set_effect(self, effect_name):
         info = self.require_dataset_info()
         info["effect"] = effect_name
-        if effect_name in ("HR", "IRR"):
-            info["data_type"] = "time_to_event" if effect_name == "HR" else "event_rates"
-            info["sub_type"] = "hazard_ratio" if effect_name == "HR" else "incidence_rate_ratio"
+        if (kind := _RATIO_KINDS.get(effect_name)) is not None:
+            info["data_type"] = kind.data_type
+            info["sub_type"] = kind.sub_type
 
-    def set_csv_data(self, csv_data):
-        if csv_data is None:
-            self.info_d.pop("csv_data", None)
-        else:
-            self.info_d["csv_data"] = csv_data
+    def get_csv_data(self) -> csv_import.CsvImportPayload | None:
+        page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
+        return page.csv_data()
 
-    def get_csv_data(self):
-        if "csv_data" in self.info_d:
-            return self.info_d["csv_data"]
-        else:
-            return None
-
-    def get_results(self):
-        information: dict[str, object] = {}
+    def get_results(self) -> WizardResult:
         path = self.get_wizard_path()
-        outcome_info = self.get_dataset_info()
-        if outcome_info is not None and outcome_info["effect"] in ("HR", "IRR"):
-            effect = required(outcome_info["effect"], "ratio effect")
-            outcome_info = outcome_info.copy()
-            outcome_info["metric_choices"] = [effect]
-        if path in {"new_dataset", "csv_import"} and outcome_info is None:
-            raise RuntimeError(
-                f"dataset information is required for the {path!r} wizard path"
-            )
+        if path == "open":
+            return {"path": path, "selected_dataset": required(self._selected_project, "selected project")}
         if path == "rm5_import":
-            information["rm5_dataset"] = self.rm5_dataset
-        information["path"] = path
-        information["outcome_info"] = outcome_info
-        # set outcome name
-        if outcome_info is not None:
-            outcome_info["name"] = name_validation.normalize_name(self.field("outcomeName"))
-            if path == "csv_import" and not outcome_info["name"]:
-                page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
-                outcome_info["name"] = Path(required(page.file_path, "import path")).stem
-        information["selected_dataset"] = self.get_selected_dataset()
-        information["csv_data"] = self.get_csv_data()
-
-        return information
+            return {"path": path, "rm5_dataset": required(self._imported_review, "imported review")}
+        if path is None:
+            raise RuntimeError("no wizard route has been selected")
+        outcome_info = self.require_dataset_info().copy()
+        effect = outcome_info["effect"]
+        if effect is not None and effect in _RATIO_KINDS:
+            outcome_info["metric_choices"] = [effect]
+        outcome_info["name"] = name_validation.normalize_name(self.field("outcomeName"))
+        if path == "new_dataset":
+            return {"path": path, "outcome_info": outcome_info}
+        if not outcome_info["name"]:
+            page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
+            outcome_info["name"] = Path(required(page.file_path, "import path")).stem
+        return {
+            "path": path,
+            "outcome_info": outcome_info,
+            "csv_data": required(self.get_csv_data(), "validated import preview"),
+        }

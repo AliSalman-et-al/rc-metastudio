@@ -103,26 +103,41 @@ def parse_csv(
         numeric_columns=column_mapping[1:] if column_mapping else range(1, len(expected_headers)),
         notices=notices,
     )
-    if has_headers and headers:
-        for row_number, row in enumerate(rows, start=2):
-            if len(row) > len(headers):
-                raise CsvImportError(
-                    f"CSV row {row_number}: expected {len(headers)} columns, found {len(row)}."
-                )
+    return normalize_csv_input(
+        headers,
+        rows,
+        expected_headers=expected_headers,
+        has_headers=has_headers,
+        year_column=year_column,
+        optional_headers=optional_headers,
+        column_mapping=column_mapping,
+        positional_width=positional_width,
+        header_aliases=header_aliases,
+    )
+
+
+def normalize_csv_input(
+    headers: list[str],
+    rows: list[list[str]],
+    *,
+    expected_headers: list[str] | tuple[str, ...],
+    has_headers: bool,
+    year_column: int = 1,
+    optional_headers: Mapping[str, str] | None = None,
+    column_mapping: tuple[int, ...] | None = None,
+    positional_width: int | None = None,
+    header_aliases: Mapping[str, str] | None = None,
+) -> CsvImportResult:
+    """Validate and map parsed cells without changing their source snapshot."""
+    if has_headers:
+        _validate_header_width(headers, rows)
     if header_aliases:
         headers = [header_aliases.get(header.casefold(), header) for header in headers]
 
     if column_mapping is not None:
         if not has_headers:
             raise CsvImportError("Column mapping requires a header row.")
-        mapped = [index for index in column_mapping if index >= 0]
-        if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
-            raise CsvImportError("Map each required field to a different CSV column.")
-        if any(index < -1 or index >= len(headers) for index in column_mapping):
-            raise CsvImportError("Select a CSV column for every required field.")
-        indices = list(column_mapping) + [index for index in range(len(headers)) if index not in column_mapping]
-        rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
-        headers = list(expected_headers) + [headers[index] for index in indices[len(expected_headers):]]
+        headers, rows = _map_columns(headers, rows, expected_headers, column_mapping)
 
     if has_headers:
         if headers:
@@ -138,26 +153,10 @@ def parse_csv(
         headers = headers + [""] * (width - len(headers))
 
     if optional_headers:
-        base_width = len(expected_headers)
-        width = len(normalized_rows[0]) if normalized_rows else len(headers)
-        optional_indices = {}
-        for name in optional_headers:
-            matches = [i for i, header in enumerate(headers) if header == name]
-            if len(matches) > 1:
-                raise CsvImportError(f"CSV contains duplicate input column: {name}.")
-            optional_indices[name] = matches[0] if matches else None
-        covariate_indices = [i for i in range(base_width, width) if i not in optional_indices.values()]
-        expanded_rows = []
-        for row in normalized_rows:
-            values = row[:base_width]
-            for name, default in optional_headers.items():
-                index = optional_indices[name]
-                values.append(default if index is None else row[index])
-            expanded_rows.append(values + [row[i] for i in covariate_indices])
-        normalized_rows = expanded_rows
-        if has_headers:
-            headers = list(expected_headers) + list(optional_headers) + [headers[i] for i in covariate_indices]
-        expected_headers = list(expected_headers) + list(optional_headers)
+        headers, normalized_rows = _add_optional_columns(
+            headers, normalized_rows, expected_headers, optional_headers, has_headers=has_headers,
+        )
+        expected_headers = [*expected_headers, *optional_headers]
 
     _validate_years(normalized_rows, year_column)
     covariate_names, covariate_types = _infer_covariates(
@@ -173,6 +172,57 @@ def parse_csv(
         covariate_names=tuple(covariate_names),
         covariate_types=tuple(covariate_types),
     )
+
+
+def _validate_header_width(headers: list[str], rows: list[list[str]]) -> None:
+    if not headers:
+        return
+    for row_number, row in enumerate(rows, start=2):
+        if len(row) > len(headers):
+            raise CsvImportError(
+                f"CSV row {row_number}: expected {len(headers)} columns, found {len(row)}."
+            )
+
+
+def _map_columns(
+    headers: list[str], rows: list[list[str]],
+    expected_headers: list[str] | tuple[str, ...], column_mapping: tuple[int, ...],
+) -> tuple[list[str], list[list[str]]]:
+    mapped = [index for index in column_mapping if index >= 0]
+    if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
+        raise CsvImportError("Map each required field to a different CSV column.")
+    if any(index < -1 or index >= len(headers) for index in column_mapping):
+        raise CsvImportError("Select a CSV column for every required field.")
+    unmapped = [index for index in range(len(headers)) if index not in column_mapping]
+    indices = [*column_mapping, *unmapped]
+    mapped_rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
+    return [*expected_headers, *(headers[index] for index in unmapped)], mapped_rows
+
+
+def _add_optional_columns(
+    headers: list[str], rows: list[list[str]],
+    expected_headers: list[str] | tuple[str, ...],
+    optional_headers: Mapping[str, str], *, has_headers: bool,
+) -> tuple[list[str], list[list[str]]]:
+    base_width = len(expected_headers)
+    width = len(rows[0]) if rows else len(headers)
+    optional_indices = {}
+    for name in optional_headers:
+        matches = [i for i, header in enumerate(headers) if header == name]
+        if len(matches) > 1:
+            raise CsvImportError(f"CSV contains duplicate input column: {name}.")
+        optional_indices[name] = matches[0] if matches else None
+    covariate_indices = [i for i in range(base_width, width) if i not in optional_indices.values()]
+    expanded_rows = []
+    for row in rows:
+        values = row[:base_width]
+        for name, default in optional_headers.items():
+            index = optional_indices[name]
+            values.append(default if index is None else row[index])
+        expanded_rows.append(values + [row[i] for i in covariate_indices])
+    if has_headers:
+        headers = [*expected_headers, *optional_headers, *(headers[i] for i in covariate_indices)]
+    return headers, expanded_rows
 
 
 def _validate_headers(

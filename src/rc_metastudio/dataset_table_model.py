@@ -1,17 +1,17 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Qt table model for the current sheet."""
-from rc_metastudio.project_domain import RowId
+from rc_metastudio.domain_ids import RowId
 
-from dataclasses import dataclass
+import copy
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio import analysis_identity, name_validation, qt_text, workspace_editing
-from rc_metastudio.analysis_catalog import TIME_TO_EVENT, EVENT_RATES, RATIO_DATA_TYPES
-from rc_metastudio.ratio_data import RATIO_FIELDS, RATIO_HEADERS
+from rc_metastudio.analysis_catalog import TIME_TO_EVENT, RATIO_DATA_TYPES
+from rc_metastudio.ratio_data import RATIO_FIELDS
 
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
@@ -22,9 +22,12 @@ from rc_metastudio.dataset_analysis_domain import (
     included_studies_have_raw_data,
     raw_data_is_complete,
     )
-from rc_metastudio.analysis_catalog import ALL_METRIC_NAMES, BINARY, BINARY_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC, DIAGNOSTIC_METRIC_LABELS, ONE_ARM_METRICS, OTHER
-from rc_metastudio.analysis_validation import DEFAULT_CONFIDENCE_LEVEL, EMPTY_VALS, validate_confidence_level
+from rc_metastudio.analysis_catalog import BINARY, CONTINUOUS, DIAGNOSTIC, ONE_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis_validation import DEFAULT_CONFIDENCE_LEVEL, EMPTY_VALS
 from rc_metastudio.result_formatting import NUM_DIGITS
+from rc_metastudio.sheet_columns import (
+    FIRST_RAW_COLUMN, INCLUDE_COLUMN, STUDY_COLUMN, YEAR_COLUMN, sheet_columns,
+)
 from rc_metastudio.workspace_column_identity import (
     WORKSPACE_COLUMN_IDENTITY_ROLE,
     WorkspaceColumnIdentity,
@@ -33,43 +36,6 @@ from rc_metastudio.workspace_column_identity import (
 # number of (empty) rows in the spreadsheet to show
 # following the last study.
 TRAILING_EMPTY_ROW_COUNT = 20
-DISPLAY_LABEL_ACRONYMS = {
-    "sd": "SD",
-    "se": "SE",
-    "tp": "TP",
-    "fn": "FN",
-    "fp": "FP",
-    "tn": "TN",
-}
-DISPLAY_LABEL_ACRONYMS.update(
-    {metric.lower(): metric for metric in ALL_METRIC_NAMES.keys()}
-)
-
-
-def _display_label_token(token):
-    if token == "":
-        return token
-    label = DISPLAY_LABEL_ACRONYMS.get(token.lower())
-    if label is not None:
-        return label
-    if token.startswith("#"):
-        return token
-    if len(token) == 1:
-        return token.upper()
-    return token[0].upper() + token[1:]
-
-
-def _display_label(value):
-    if value is None:
-        return value
-    return " ".join(_display_label_token(token) for token in str(value).split(" "))
-
-
-def _raw_data_display_label(arm_name, suffix):
-    field = {"n": "N", "sd": "SD", "se": "SE"}.get(suffix.lower(), suffix.lower())
-    return f"{arm_name} {field}"
-
-
 def _editable_data(value=None):
     if value is None:
         return ""
@@ -95,43 +61,16 @@ def _parse_inclusion(value):
     return False, False
 
 
-@dataclass(frozen=True)
-class StudyInclusionState:
-    include: bool
-    manually_excluded: bool
-
-
-@dataclass(frozen=True)
-class WorkspaceEdit:
-    index: QModelIndex
-    old_value: object
-    new_value: object
-    added_study_id: str | None
-    changed_top_left: QModelIndex
-    changed_bottom_right: QModelIndex
-    roles: tuple[int, ...]
-
-
-@dataclass(frozen=True)
-class _EditTarget:
-    study: StudyRow
-    column: int
-    old_value: object
-    data_type: str | None
-    outcome_subtype: str | None
-
-
 class DatasetTableModel(QAbstractTableModel):
     """Expose dataset studies and analysis units through Qt's table model API."""
 
-    workspaceEditCommitted = pyqtSignal(WorkspaceEdit)
+    workspaceEditCommitted = pyqtSignal()
     dataError = pyqtSignal(str)
-    editFocusRequested = pyqtSignal(QModelIndex)
     confLevelChanged = pyqtSignal()
-    INCLUDE_STUDY = 0
-    NAME, YEAR = [col + 1 for col in range(2)]
+    INCLUDE_STUDY = INCLUDE_COLUMN
+    NAME = STUDY_COLUMN
+    YEAR = YEAR_COLUMN
 
-    headers = ["include", "study name", "year"]
 
     @property
     def current_sheet_id(self):
@@ -154,7 +93,11 @@ class DatasetTableModel(QAbstractTableModel):
         saved_metric = (self.current_sheet.settings.get("metric") or self.current_sheet.settings.get("active_effect")) if self.current_sheet else None
         self._set_default_effect_metric()
         if self.current_sheet:
-            self.set_confidence_level(self.current_sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL))
+            self._set_display_confidence(
+                self.editing_service.confidence_settings(
+                    self.current_sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL)
+                )
+            )
             self.current_effect = saved_metric or self.current_effect
         self.endResetModel()
 
@@ -202,16 +145,15 @@ class DatasetTableModel(QAbstractTableModel):
         self.view_state = workspace_editing.WorkspaceViewState()
 
         self.editing_service = workspace_editing.WorkspaceEditingService()
-        self.confidence_level = self.set_confidence_level(DEFAULT_CONFIDENCE_LEVEL)
+        self._set_display_confidence(self.editing_service.confidence_settings(DEFAULT_CONFIDENCE_LEVEL))
 
         self.dataset = dataset if dataset is not None else Dataset()
         self.current_sheet_id = self.dataset.sheets[0].id if self.dataset.sheets else None
-        self.analysis_source_path: str | None = None
 
         self._blank_study: StudyRow | None = None
         self._display_studies = list(self.current_sheet.rows) if self.current_sheet else []
         if add_blank_study and self.current_sheet:
-            self._blank_study = StudyRow(RowId(uuid.uuid4().hex), "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
+            self._blank_study = self._empty_entry_row()
             self._display_studies.append(self._blank_study)
 
 
@@ -222,7 +164,6 @@ class DatasetTableModel(QAbstractTableModel):
 
 
         self.NUM_DIGITS = NUM_DIGITS
-        self.dirty = False
 
     def reset_model(self):
         self.beginResetModel()
@@ -244,6 +185,11 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _is_blank_study(self, study):
         return study is self._blank_study
+
+    def _empty_entry_row(self) -> StudyRow:
+        sheet = self.current_sheet
+        unit = AnalysisUnit(sheet, arm_names=self.arm_names, arm_stable_ids=[arm.id for arm in sheet.arms])
+        return StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False)
 
     def _sync_display_studies(self, *, notify=False):
         canonical = list(self.current_sheet.rows) if self.current_sheet else []
@@ -273,39 +219,9 @@ class DatasetTableModel(QAbstractTableModel):
 
 
     def update_column_indices(self):
-        current_data_type = self.get_current_data_type()
-        outcome_subtype = self.get_current_data_subtype()
-
-        self.RAW_DATA, self.OUTCOMES = self.get_column_indices(
-            current_data_type, outcome_subtype
-        )
-
-    @staticmethod
-    def get_column_indices(data_type, sub_type):
-        """Return column indices without constructing a table model."""
-        raws, outcomes = [], []
-
-        # The first three columns are include, study name, and year.
-        offset = 3
-        if data_type == "binary":
-            raws = [col + offset for col in range(4)]
-            outcomes = [7, 8, 9]
-        elif data_type == "continuous":
-            raws = [col + offset for col in range(6)]
-            outcomes = [9, 10, 11]
-            if sub_type == "generic_effect":  # generic effect and se
-                raws = []
-                outcomes = [offset, offset + 1]  # effect and se
-        elif data_type == "time_to_event":
-            outcomes = list(range(3, 9))
-        elif data_type == "event_rates":
-            raws = list(range(3, 7))
-            outcomes = list(range(7, 15))
-        else:  # diagnostic
-            raws = [col + offset for col in range(4)]
-            outcomes = [7, 8, 9, 10, 11, 12]  # sensitivity & specificity
-
-        return raws, outcomes
+        self.columns = sheet_columns(self.get_current_data_type(False), self.get_current_data_subtype())
+        self.RAW_DATA = list(self.columns.raw_sections)
+        self.OUTCOMES = list(self.columns.effect_sections)
 
     def format_float(self, float_var, num_digits=None):
         """This method assumes the input can be cast to a float!"""
@@ -347,16 +263,13 @@ class DatasetTableModel(QAbstractTableModel):
         return None
 
     def _is_covariate_column(self, column):
-        return bool(self.OUTCOMES) and column != self.INCLUDE_STUDY and column > max(self.OUTCOMES)
+        return self.columns.first_covariate <= column < self.columnCount()
 
     def _raw_cell_data(self, index, role, study):
         if self._is_blank_study(study) or self.current_outcome_name is None:
             return ""
-        study = self._study_for_row(index.row())
-        raw_data = self.get_current_analysis_unit_for_study(
-            study_index=index.row()
-        ).get_raw_data_for_arms(self.arm_names)
-        adjusted_index = index.column() - 3
+        raw_data = study.analysis_unit.get_raw_data_for_arms(self.arm_names)
+        adjusted_index = index.column() - FIRST_RAW_COLUMN
         if len(raw_data) <= adjusted_index:
             return ""
         value = raw_data[adjusted_index]
@@ -364,21 +277,11 @@ class DatasetTableModel(QAbstractTableModel):
             return ""
         if role == Qt.ItemDataRole.EditRole:
             return str(value)
-        if self.get_current_data_type(get_str=False) == CONTINUOUS:
-            return self._continuous_raw_cell_data(index, role, value)
         try:
+            raw = self.columns.raw[adjusted_index]
+            if self.get_current_data_type(False) == CONTINUOUS and not raw.field.count:
+                return str(self.format_float(value))
             return round(value, self.NUM_DIGITS)
-        except (TypeError, ValueError):
-            return qt_text.to_native_text(value)
-
-    def _continuous_raw_cell_data(self, index, role, value):
-        if index.column() in (self.RAW_DATA[0], self.RAW_DATA[3]):
-            try:
-                return round(value, self.NUM_DIGITS)
-            except (TypeError, ValueError):
-                return qt_text.to_native_text(value)
-        try:
-            return str(self.format_float(value))
         except (TypeError, ValueError):
             return qt_text.to_native_text(value)
 
@@ -535,10 +438,8 @@ class DatasetTableModel(QAbstractTableModel):
             return None
         if index.column() in self.OUTCOMES:
             return QColor(214, 169, 58, 80)  # Keep gold subtle enough for text in the native dark palette.
-        if (
-            index.column() in self.RAW_DATA[len(self.RAW_DATA) // 2 :]
-            and self.current_effect in ONE_ARM_METRICS
-        ):
+        raw = self.columns.raw_column(index.column())
+        if raw is not None and raw.arm_index == 1 and self.current_effect in ONE_ARM_METRICS:
             return QColor(Qt.GlobalColor.gray)
         return None
 
@@ -581,39 +482,16 @@ class DatasetTableModel(QAbstractTableModel):
         raw_data = analysis_unit.get_raw_data_for_arms(self.arm_names)
         return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
 
-    def _inclusion_value_for_edit(self, index, value, role):
-        if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
-            self._reject_edit("That data role cannot edit a workspace cell.")
-            return None, False
-        if role == Qt.ItemDataRole.CheckStateRole and (
-            not index.isValid()
-            or index.model() is not self
-            or index.column() != self.INCLUDE_STUDY
-        ):
-            self._reject_edit("Check state applies only to study inclusion.")
-            return None, False
-
-        inclusion_value = None
-        if (
-            index.isValid()
-            and index.model() is self
-            and index.column() == self.INCLUDE_STUDY
-        ):
-            inclusion_value, inclusion_valid = _parse_inclusion(value)
-            if not inclusion_valid:
-                self._reject_edit("Study inclusion must be checked or unchecked.")
-                return None, False
-        return inclusion_value, True
-
-    def _publish_workspace_edit(self, index, target, added_study_id):
-        changed_first_column = target.column
-        changed_last_column = target.column
+    def _publish_workspace_edit(self, index):
+        column = index.column()
+        changed_first_column = column
+        changed_last_column = column
         roles = [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole]
-        if target.column == self.INCLUDE_STUDY:
+        if column == self.INCLUDE_STUDY:
             roles = [Qt.ItemDataRole.CheckStateRole]
-        elif target.column in self.RAW_DATA or target.column in self.OUTCOMES:
+        elif column in self.RAW_DATA or column in self.OUTCOMES:
             changed_first_column = self.INCLUDE_STUDY
-            changed_last_column = max(self.OUTCOMES or [target.column])
+            changed_last_column = max(self.OUTCOMES or [column])
             roles = [
                 Qt.ItemDataRole.DisplayRole,
                 Qt.ItemDataRole.EditRole,
@@ -623,100 +501,96 @@ class DatasetTableModel(QAbstractTableModel):
         changed_top_left = self.index(index.row(), changed_first_column)
         changed_bottom_right = self.index(index.row(), changed_last_column)
         role_values = [int(item) for item in roles]
-        new_value = (
-            StudyInclusionState(
-                include=bool(target.study.include),
-                manually_excluded=bool(target.study.manually_excluded),
-            )
-            if target.column == self.INCLUDE_STUDY
-            else self.data(index, Qt.ItemDataRole.EditRole)
-        )
-        edit = WorkspaceEdit(
-            index=QModelIndex(index),
-            old_value=target.old_value,
-            new_value=new_value,
-            added_study_id=added_study_id,
-            changed_top_left=QModelIndex(changed_top_left),
-            changed_bottom_right=QModelIndex(changed_bottom_right),
-            roles=tuple(role_values),
-        )
-        # Record the durable workspace change before publishing the visual
-        # update. The session is then authoritative if a UI observer fails.
-        self.workspaceEditCommitted.emit(edit)
+        # Publish durable history before a visual observer can reenter the model.
+        self.workspaceEditCommitted.emit()
         self.dataChanged.emit(changed_top_left, changed_bottom_right, role_values)
 
-    def setData(
-        self,
-        index,
-        value,
-        role=Qt.ItemDataRole.EditRole,
-        import_csv=False,
-        allow_empty_names=False,
-    ):
-        """Apply one workspace edit requested through Qt's table-model interface."""
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         self.last_data_error = None
-        inclusion_value, valid = self._inclusion_value_for_edit(index, value, role)
-        if not valid:
+        rejection = self._apply_cell(index, value, role)
+        if rejection is not None:
+            self._reject_edit(rejection.message)
             return False
-        target = self._edit_target(index)
-        if target is None:
-            return False
-        context, old_value, canonical_row, is_blank_study = target
-        edit_target = workspace_editing.WorkspaceEditTarget(
-            row=canonical_row, column=index.column(), old_value=old_value,
-            row_id=None if is_blank_study else self._study_for_row(index.row()).id
-        )
-        result = self.editing_service.apply_edit(
-            self.dataset,
-            edit_target,
-            context,
-            inclusion_value if index.column() == self.INCLUDE_STUDY else value,
-            allow_empty_names=allow_empty_names,
-            import_csv=import_csv,
-            append_blank_study=False,
-            recalculate=getattr(self, "update_effect_previews_if_possible", None),
-        )
-        if not result.applied:
-            self._reject_edit(result.error or "The entered value could not be used.")
-            return False
-        added_study_id = result.added_study_id
-        if is_blank_study:
-            added_study_id = self.current_sheet.rows[canonical_row].id
-            self._blank_study = StudyRow(RowId(uuid.uuid4().hex), "", AnalysisUnit(self.current_sheet, arm_names=self.arm_names, arm_stable_ids=[a.id for a in self.current_sheet.arms]), include=False)
-        self._sync_display_studies(notify=True)
-        edit = _EditTarget(
-            study=(
-                self._study_for_row(index.row())
-                if index.row() < len(self._display_studies)
-                else self.current_sheet.rows[canonical_row]
-            ),
-            column=index.column(),
-            old_value=old_value,
-            data_type=context.data_type,
-            outcome_subtype=context.outcome_subtype,
-        )
-        self._publish_workspace_edit(index, edit, added_study_id)
         return True
 
-    def _edit_target(self, index):
+    def _apply_cell(self, index, value, role=Qt.ItemDataRole.EditRole):
+        if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
+            return workspace_editing.CellRejection("That data role cannot edit a workspace cell.")
+        column = index.column()
+        if role == Qt.ItemDataRole.CheckStateRole and (
+            not index.isValid() or index.model() is not self or column != self.INCLUDE_STUDY
+        ):
+            return workspace_editing.CellRejection("Check state applies only to study inclusion.")
         if not self._valid_edit_index(index):
-            self._reject_edit("Cannot edit that cell.")
-            return None
-        visible_study = (
-            self._study_for_row(index.row())
-            if index.row() < len(self._display_studies)
-            else None
+            return workspace_editing.CellRejection("Cannot edit that cell.")
+        if column == self.INCLUDE_STUDY:
+            value, valid = _parse_inclusion(value)
+            if not valid:
+                return workspace_editing.CellRejection("Study inclusion must be checked or unchecked.")
+
+        study = self._study_for_row(index.row()) if index.row() < len(self._display_studies) else None
+        new_study = study is None or self._is_blank_study(study)
+        canonical_row = index.row() if new_study else self.current_sheet.rows.index(study)
+        rejection = self.editing_service.apply_edit(
+            self.dataset, workspace_editing.WorkspaceEditTarget(canonical_row, column),
+            self._editing_context(column), value,
+            recalculate=self.update_effect_previews_if_possible,
         )
-        is_blank_study = visible_study is None or self._is_blank_study(visible_study)
-        study = None if is_blank_study else visible_study
-        old_value = self.data(index, Qt.ItemDataRole.EditRole)
-        if index.column() == self.INCLUDE_STUDY and study is not None:
-            old_value = StudyInclusionState(
-                include=bool(study.include),
-                manually_excluded=bool(study.manually_excluded),
-            )
-        canonical_row = self.current_sheet.rows.index(study) if study is not None else index.row()
-        return self._editing_context(index.column()), old_value, canonical_row, is_blank_study
+        if rejection is not None:
+            return rejection
+        if new_study:
+            self._blank_study = self._empty_entry_row()
+        self._sync_display_studies(notify=True)
+        self._publish_workspace_edit(index)
+        return None
+
+    def paste_cells(self, first_row, columns, values) -> int:
+        """Stage clipboard edits against the visible row order and publish them together."""
+        candidate = type(self)(dataset=copy.deepcopy(self.dataset), add_blank_study=False)
+        candidate.set_current_sheet(self.current_sheet_id)
+        by_id = {study.id: study for study in candidate.current_sheet.rows}
+        candidate._display_studies = [by_id[study_id] for study_id in self.get_ordered_study_ids()]
+        skipped = 0
+        for row, cells in enumerate(values, start=first_row):
+            for column, value in zip(columns, cells):
+                index = candidate.index(row, column)
+                if candidate.get_current_data_type(False) in RATIO_DATA_TYPES and column in candidate.OUTCOMES[:3]:
+                    if not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
+                        raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
+                rejection = candidate._apply_cell(index, value)
+                if rejection is None:
+                    continue
+                if rejection.kind != "number":
+                    raise ValueError(rejection.message)
+                skipped += 1
+        self.dataset = candidate.dataset
+        self.set_current_sheet(candidate.current_sheet_id)
+        self._display_studies = candidate._display_studies
+        self._blank_study = candidate._blank_study
+        self.reset_model()
+        self.workspaceEditCommitted.emit()
+        return skipped
+
+    def load_import_rows(self, rows, on_row_loaded) -> list[str]:
+        """Fill a detached model from normalized CSV or workbook rows."""
+        columns = range(self.NAME, self.columnCount())
+        contexts = {column: self._editing_context(column) for column in columns}
+        warnings = []
+        for row, values in enumerate(rows):
+            for column, value in zip(columns, values):
+                target = workspace_editing.WorkspaceEditTarget(row, column)
+                rejection = self.editing_service.apply_edit(
+                    self.dataset, target, contexts[column], value, import_csv=True,
+                )
+                if rejection is None:
+                    continue
+                message = f"Study row {row + 1}, column {column}: {rejection.message}"
+                if column == self.NAME or rejection.kind == "backend":
+                    raise ValueError(message)
+                warnings.append(message)
+            on_row_loaded(row + 1)
+        self._sync_display_studies()
+        return warnings
 
     def _valid_edit_index(self, index):
         return (
@@ -726,124 +600,10 @@ class DatasetTableModel(QAbstractTableModel):
             and 0 <= index.column() < self.columnCount()
         )
 
-    @staticmethod
-    def _basic_horizontal_header_data(
-        section,
-        data_type,
-        sub_type,
-        raw_columns,
-        outcome_columns,
-        current_effect,
-        groups,
-        outcome_is_present=True,
-        csv_schema=False,
-    ):
-        """Return basic header data without constructing a table model."""
-        if section in (DatasetTableModel.INCLUDE_STUDY, DatasetTableModel.NAME, DatasetTableModel.YEAR):
-            if section == DatasetTableModel.NAME and not csv_schema:
-                return "Study name"
-            return _display_label(DatasetTableModel.headers[section])
-        if outcome_is_present and section in raw_columns:
-            label = DatasetTableModel._raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema)
-            return (label) if label is not None else None
-        if section in outcome_columns:
-            position = outcome_columns.index(section)
-            headers = DatasetTableModel._effect_headers(data_type, sub_type, current_effect, csv_schema)
-            return (headers[position]) if position < len(headers) else None
-        return None
-
-    @staticmethod
-    def _effect_headers(data_type, sub_type, current_effect, csv_schema):
-        if data_type == CONTINUOUS and current_effect == "Mean" and not csv_schema:
-            current_effect = {"reg_coef": "Coefficient", "generic_effect": "Estimate"}.get(sub_type, "Mean")
-        if data_type == DIAGNOSTIC:
-            return (("Sens.", "Lower", "Upper", "Spec.", "Lower", "Upper") if csv_schema else ("Sensitivity", "Lower", "Upper", "Specificity", "Lower", "Upper"))
-        if data_type in RATIO_DATA_TYPES:
-            headers = (current_effect, "Lower", "Upper", *RATIO_HEADERS[3:])
-        elif data_type == CONTINUOUS and sub_type == "generic_effect":
-            headers = (current_effect, "SE")
-        else:
-            headers = (current_effect, "Lower", "Upper")
-        return headers
-
-    @staticmethod
-    def _raw_header_label(section, data_type, sub_type, raw_columns, groups, csv_schema=False):
-        position = raw_columns.index(section)
-        if data_type == DIAGNOSTIC:
-            return ("TP", "FN", "FP", "TN")[position]
-        if data_type == CONTINUOUS:
-            if sub_type == "generic_effect" or len(raw_columns) < 6:
-                return ""
-            fields = ("N", "mean", "SD")
-        elif data_type == EVENT_RATES:
-            fields = ("Events", "Person-time")
-        elif data_type == BINARY:
-            fields = ("#evts", "#total") if csv_schema else ("Events", "Total")
-        else:
-            return None
-        arm_index = position // len(fields)
-        # Qt asks for reserved second-arm headers before the view hides them.
-        if arm_index >= len(groups):
-            return ""
-        group = groups[arm_index]
-        return _raw_data_display_label(group, fields[position % len(fields)])
-
-    def _raw_header_tooltip(self, section, outcome_type, outcome_subtype):
-        if outcome_type == CONTINUOUS and outcome_subtype == "generic_effect":
-            return ""
-        position = self.RAW_DATA.index(section)
-        if outcome_type == EVENT_RATES:
-            return "Nonnegative integer events (recurrent events allowed)" if position % 2 == 0 else "Positive person-time, in the declared shared unit; not sample size"
-        suffix = "\nRight-click the header to sort studies by this column."
-        if outcome_type == DIAGNOSTIC:
-            return ("True positives (TP)", "False negatives (FN)", "False positives (FP)", "True negatives (TN)")[position] + suffix
-        arm_index = position // (2 if outcome_type == BINARY else 3)
-        if arm_index >= len(self.arm_names):
-            return ""
-        group = self.arm_names[arm_index]
-        if outcome_type == BINARY:
-            label = ("Events in {0} (numerator)", "Total participants in {0} (denominator)")[position % 2]
-        else:
-            label = ("Participants in {0}", "Mean for {0}", "Standard deviation for {0}")[position % 3]
-        rename = "\nRight-click the header to rename this arm."
-        return label.format(group) + rename + suffix
-
-    def _outcome_header_tooltip(self, section, outcome_type, outcome_subtype):
-        position = self.OUTCOMES.index(section)
-        if outcome_type in RATIO_DATA_TYPES:
-            return RATIO_HEADERS[position] + ". Source confidence describes the original interval; output confidence does not change this input."
-        confidence = self.confidence_level
-        lower = f"Lower bound of {confidence:g}% confidence interval"
-        upper = f"Upper bound of {confidence:g}% confidence interval"
-        if outcome_type == BINARY:
-            return (BINARY_METRIC_NAMES[self.current_effect], lower, upper)[position]
-        if outcome_type == CONTINUOUS:
-            if outcome_subtype == "generic_effect":
-                return (analysis_identity.metric_label(self), "Standard error")[position]
-            return (analysis_identity.metric_label(self), lower, upper)[position]
-        if position in (1, 4):
-            return lower
-        if position in (2, 5):
-            return upper
-        return DIAGNOSTIC_METRIC_LABELS["Sens" if position == 0 else "Spec"]
-
     def _horizontal_header_tooltip(self, section):
-        fixed = {
-            self.INCLUDE_STUDY: "Include this study in analyses",
-            self.NAME: "Name to identify the study",
-            self.YEAR: "Year of publication",
-        }
-        if section in fixed:
-            return fixed[section]
-        if self.current_outcome_name is None:
-            return None
-        outcome_type = self.get_current_data_type(get_str=False)
-        subtype = self.get_current_data_subtype()
-        if section in self.RAW_DATA:
-            return self._raw_header_tooltip(section, outcome_type, subtype)
-        if section in self.OUTCOMES:
-            return self._outcome_header_tooltip(section, outcome_type, subtype)
-        return None
+        return self.columns.tooltip(
+            section, self.arm_names, analysis_identity.metric_label(self) or "", self.confidence_level,
+        )
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         limit = self.columnCount() if orientation == Qt.Orientation.Horizontal else self.rowCount()
@@ -893,27 +653,12 @@ class DatasetTableModel(QAbstractTableModel):
         return int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     def _horizontal_header_display(self, section):
-        result = self._basic_horizontal_header_data(
-            section,
-            data_type=self.get_current_data_type(get_str=False),
-            sub_type=self.get_current_data_subtype(),
-            raw_columns=self.RAW_DATA,
-            outcome_columns=self.OUTCOMES,
-            current_effect=self.current_effect,
-            groups=self.arm_names,
-            outcome_is_present=self.current_outcome_name is not None,
-        )
-        if result:
-            return result
-        covariate = self._header_covariate(section)
-        if covariate is None:
-            return ""
-        return f"{covariate['name']} ({'Numeric' if ('continuous' if covariate['data_type'] == CONTINUOUS else 'factor') == 'continuous' else 'Category'})"
+        covariate = self.get_covariate_for_column(section)
+        if covariate is not None:
+            kind = "Numeric" if covariate["data_type"] == CONTINUOUS else "Category"
+            return f"{covariate['name']} ({kind})"
 
-    def _header_covariate(self, section):
-        if self.current_outcome_name is None or section <= max(self.OUTCOMES):
-            return None
-        return self.get_covariate_for_column(section)
+        return self.columns.label(section, self.arm_names, self.current_effect)
 
     def workspace_column_identity(self, section):
         """Return identity independent of mutable labels and column position."""
@@ -986,20 +731,15 @@ class DatasetTableModel(QAbstractTableModel):
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         if parent.isValid():
             return 0
-        return self._get_col_count()
+        sheet = self.current_sheet
+        return self.columns.first_covariate + (len(sheet.covariates) if sheet else 0)
 
     def get_covariate_for_column(self, table_col_index: int) -> dict | None:
-        # Map the table column to a covariate index. Without an outcome, skip
-        # the include, study-name, and year columns.
-        covariate_index = (
-            table_col_index - (self.OUTCOMES[-1] + 1)
-            if self.current_outcome_name is not None
-            else table_col_index - 3
-        )
-        try:
-            return (self.current_sheet.covariates if self.current_sheet else [])[covariate_index]
-        except IndexError:
+        covariate_index = table_col_index - self.columns.first_covariate
+        sheet = self.current_sheet
+        if sheet is None or not 0 <= covariate_index < len(sheet.covariates):
             return None
+        return sheet.covariates[covariate_index]
 
     def get_covariate_names(self):
         return [cov['name'] for cov in (self.current_sheet.covariates if self.current_sheet else [])]
@@ -1008,29 +748,6 @@ class DatasetTableModel(QAbstractTableModel):
         cov = next(c for c in self.current_sheet.covariates if c["name"] == old_cov_name)
         cov["name"] = new_cov_name
         self.reset_model()
-
-    def _get_col_count(self):
-        """Calculate how many columns to display; this is contingent on the data type,
-        amongst other things (e.g., number of covariates).
-        """
-        num_cols = 3  # we always show study name and year (and include studies)
-        if len([s.name for s in self.dataset.sheets]) > 0:
-            num_effect_size_fields = 3  # point estimate, low, high
-            outcome_type = self.get_current_data_type(False)
-            outcome_subtype = self.get_current_data_subtype()
-            if outcome_type in RATIO_DATA_TYPES:
-                num_effect_size_fields = 6 if outcome_type == TIME_TO_EVENT else 8
-            if outcome_subtype == "generic_effect":
-                num_effect_size_fields = 2  # point estimate, se
-            if outcome_type == DIAGNOSTIC:
-                # we have two for diagnostic; sensitivity and specifity.
-                # we will display the est, lower, and upper for both of these.
-                num_effect_size_fields = 6
-
-            num_cols += num_effect_size_fields + self.num_data_cols_for_current_unit()
-        # now add the covariates (if any)
-        num_cols += len((self.current_sheet.covariates if self.current_sheet else []))
-        return num_cols
 
     def get_ordered_study_ids(self):
         return [
@@ -1136,10 +853,8 @@ class DatasetTableModel(QAbstractTableModel):
             self._sort_outcomes_with_display_source(col, reverse)
             self.reset_model()
             return
-        if col > self.OUTCOMES[-1]:
-            # Columns to the right of outcomes are covariates.
-            cov = self.get_covariate_for_column(col)
-            assert cov is not None
+        cov = self.get_covariate_for_column(col)
+        if cov is not None:
             self._sort_studies_by_field(cov['name'], reverse)
         self.reset_model()
 
@@ -1158,44 +873,15 @@ class DatasetTableModel(QAbstractTableModel):
             self.current_effect = None
 
 
-    def num_data_cols_for_current_unit(self):
-        """Returns the number of columns needed to display the raw data
-        given the current data type (binary, etc.)
-
-        Note again that outcome names are necessarily unique!
-        """
-        data_type = self.get_current_data_type(False)
-        sub_type = self.get_current_data_subtype()
-        if data_type == TIME_TO_EVENT:
-            return 0
-        if data_type == EVENT_RATES:
-            return 4
-        if data_type is None:
-            return 0
-        elif data_type in [BINARY, DIAGNOSTIC, OTHER]:
-            return 4
-        elif data_type == CONTINUOUS:
-            if sub_type == "generic_effect":
-                return 0  # no raw data for generic effect
-            else:
-                return 6
-
     def get_current_data_type(self, get_str=True):
         value = self.current_sheet.data_type if self.current_sheet else None
-        return {0:'binary',1:'continuous',2:'diagnostic',5:'time_to_event',6:'event_rates'}.get(value) if get_str else value
+        return TYPE_TO_STR_DICT.get(value) if get_str and value is not None else value
 
     def get_current_data_subtype(self):
         return self.current_sheet.sub_type if self.current_sheet else None
 
-    def get_state(self):
-        return {'current_sheet_id': self.current_sheet_id}
-
     def is_diagnostic(self):
         return self.get_current_data_type(False) == DIAGNOSTIC
-
-    def set_state(self, state_dict):
-        self.set_current_sheet(state_dict.get("current_sheet_id") or (self.dataset.sheets[0].id if self.dataset.sheets else None))
-
 
     def _get_raw_data_according_to_arms(self, study_index, first_arm_only=False):
         if self.current_outcome_name is None or self.current_sheet_id is None:
@@ -1233,22 +919,22 @@ class DatasetTableModel(QAbstractTableModel):
                 self.dataset, self.current_sheet.rows[study_index].id, context, update_inclusion=False
             )
 
-    def _set_all_studies_included(self, included):
-        # Keep the auto-added blank row excluded from include-all changes.
-        for study in (self.current_sheet.rows if self.current_sheet else []):
-            study.include = included
-
-    def include_all_studies(self):
-        self._set_all_studies_included(True)
-
-    def exclude_all_studies(self):
-        self._set_all_studies_included(False)
+    def set_all_studies_included(self, included: bool) -> None:
+        if self.current_sheet:
+            for study in self._studies_with_data():
+                self.editing_service.set_inclusion(study, included)
+            self.workspaceEditCommitted.emit()
+            self.reset_model()
 
     def all_studies_are_included(self):
-        return all([study.include for study in self.current_sheet.rows])
+        return all(study.include for study in self._studies_with_data())
 
     def all_studies_are_excluded(self):
-        return all([not study.include for study in self.current_sheet.rows])
+        return all(not study.include for study in self._studies_with_data())
+
+    def _studies_with_data(self):
+        rows = self.current_sheet.rows if self.current_sheet else ()
+        return (study for study in rows if has_study_entered_data(study))
 
     def update_effect_previews_if_possible(self, study_index):
         self.editing_service.update_effect_previews_if_possible(
@@ -1424,21 +1110,15 @@ class DatasetTableModel(QAbstractTableModel):
         return self.editing_service.display_scale_converter(data_type, effect, n1)
 
     def set_confidence_level(self, confidence_level):
-        """Sets multiplier as well (~1.96 for 95% conf level)"""
-        confidence_level = validate_confidence_level(confidence_level)
-
-        self.confidence_level = confidence_level
-
         settings = self.editing_service.confidence_settings(confidence_level)
-        self.confidence_level = settings.level
         if self.current_sheet:
             self.current_sheet.settings["confidence_level"] = settings.level
+        self._set_display_confidence(settings)
+
+    def _set_display_confidence(self, settings: workspace_editing.ConfidenceSettings) -> None:
+        self.confidence_level = settings.level
         self.confidence_multiplier = settings.multiplier
-        self.editing_service.set_backend_confidence_level(settings.level)
-
         self.confLevelChanged.emit()
-
-        return confidence_level
 
     def get_confidence_level(self):
         return self.confidence_level

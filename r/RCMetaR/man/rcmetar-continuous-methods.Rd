@@ -3,13 +3,11 @@
 \name{RCMetaR-continuous-methods}
 \alias{RCMetaR-continuous-methods}
 \alias{continuous.fixed}
-\alias{continuous.fixed.is.feasible.for.funnel}
 \alias{continuous.fixed.overall}
 \alias{continuous.fixed.parameters}
 \alias{continuous.fixed.pretty.names}
 \alias{continuous.fixed.value.info}
 \alias{continuous.random}
-\alias{continuous.random.is.feasible.for.funnel}
 \alias{continuous.random.overall}
 \alias{continuous.random.parameters}
 \alias{continuous.random.pretty.names}
@@ -39,7 +37,7 @@ prepare per-study estimates and variances.
 \section{Method metadata}{
 
 Functions ending in \code{.parameters}, \code{.pretty.names},
-\code{.value.info}, \code{.overall}, or \code{.is.feasible.for.funnel}
+\code{.value.info}, or \code{.overall}
 expose UI-facing method metadata.
 }
 
@@ -49,4 +47,3 @@ See \code{rcmetar.method.references("rma.uni.fixed")} and
 \code{rcmetar.method.references("rma.uni.random")} for the statistical
 method citations used in result payloads.
 }
-

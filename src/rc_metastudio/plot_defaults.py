@@ -1,6 +1,16 @@
 """Generated user-facing forest-plot defaults. Do not edit directly."""
 
 FOREST_ARM_LABELS = ("Intervention", "Control")
+PLOT_STYLE_LABELS = {
+    "default": "Default",
+    "revman": "RevMan",
+    "bmj": "BMJ"
+}
+PLOT_STYLE_ACCENTS = {
+    "default": "#2f5597",
+    "revman": "#000000",
+    "bmj": "#6b58a6"
+}
 
 
 def apply_default_forest_arm_labels(surface):

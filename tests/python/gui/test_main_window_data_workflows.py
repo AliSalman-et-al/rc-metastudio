@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath("src"))
 import pytest
 from rc_metastudio import automation
 from PyQt6.QtWidgets import QApplication
-from qt_test_support import key_click, required
+from qt_test_support import key_click, metric_action, required
 
 
 REPO_ROOT = os.getcwd()
@@ -428,65 +428,6 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         _close_without_prompt(app, window)
 
 
-def test_csv_import_progress_dialog_closes_when_model_write_raises(monkeypatch):
-    from rc_metastudio import dataset_table_model
-    from rc_metastudio import main_window
-
-    app, window = automation.start_automation()
-    progress_events = []
-
-    class ProgressSpy(object):
-        def __init__(self, parent=None, min_=0, max_=10):
-            self.parent = parent
-            self.min_ = min_
-            self.max_ = max_
-            self.current = min_
-
-        def setValue(self, value):
-            self.current = value
-
-        def show(self):
-            progress_events.append("show")
-
-        def hide(self):
-            progress_events.append("hide")
-
-        def deleteLater(self):
-            progress_events.append("delete")
-
-        def minimum(self):
-            return self.min_
-
-        def maximum(self):
-            return self.max_
-
-        def value(self):
-            return self.current
-
-    def raise_on_set_data(self, *args, **kwargs):
-        raise RuntimeError("simulated CSV model write failure")
-
-    try:
-        _create_binary_dataset(window)
-        command = main_window.ImportCsvCommand(
-            imported_data=[["Alpha", "2020", "1", "10", "2", "12"]],
-            main_form=window,
-            covariate_names=[],
-            covariate_types=[],
-        )
-        monkeypatch.setattr(main_window, "ImportProgressDialog", ProgressSpy)
-        monkeypatch.setattr(
-            dataset_table_model.DatasetTableModel, "setData", raise_on_set_data
-        )
-
-        with pytest.raises(RuntimeError, match="simulated CSV model write failure"):
-            command._import_data_into_new_dataset()
-
-        assert progress_events == ["show", "hide", "delete"]
-    finally:
-        _close_without_prompt(app, window)
-
-
 def test_paste_contents_pads_short_rows_and_clears_trailing_cells():
 
     app, window = automation.start_automation()
@@ -574,22 +515,22 @@ def test_metric_selection_and_confidence_level_are_preserved_in_model_state():
     try:
         _create_binary_dataset(window)
 
-        rr_action = _metric_action(window, "RR")
-        rr_action.setChecked(True)
+        rr_action = metric_action(window.menuMetric, "RR")
+        rr_action.trigger()
         window.model.set_confidence_level(90.0)
         window._update_confidence_level_label()
-        state = window.model.get_state()
+        sheet_id = window.model.current_sheet_id
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.confidence_button.text() == "90% CI…"
 
-        window.set_model(copy.deepcopy(window.model.dataset), state)
+        window.set_model(copy.deepcopy(window.model.dataset), sheet_id)
 
         assert window.model.current_effect == "RR"
         assert window.model.get_confidence_level() == 90.0
         assert window.confidence_button.text() == "90% CI…"
-        assert _metric_action(window, "RR").isChecked()
+        assert metric_action(window.menuMetric, "RR").isChecked()
     finally:
         _close_without_prompt(app, window)
 
@@ -656,8 +597,6 @@ def _create_binary_dataset(window):
                 "metric_choices": [],
                 "name": "Mortality",
             },
-            "csv_data": None,
-            "selected_dataset": None,
         }
     )
 
@@ -675,8 +614,6 @@ def _create_diagnostic_dataset(window):
                 "metric_choices": [],
                 "name": "Accuracy",
             },
-            "csv_data": None,
-            "selected_dataset": None,
         }
     )
 
@@ -743,21 +680,6 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
         window.workspace.mark_saved()
         window.close()
         app.processEvents()
-
-
-def _metric_action(window, metric):
-    from rc_metastudio import qt_text
-
-    for menu_action in window.menuMetric.actions():
-        menu = menu_action.menu()
-        if menu is None:
-            continue
-        for action in menu.actions():
-            action_data = action.data()
-            action_metric = qt_text.to_native_text(action_data)
-            if action_metric == metric:
-                return action
-    raise AssertionError("Metric action not found: %s" % metric)
 
 
 def _variant(value):

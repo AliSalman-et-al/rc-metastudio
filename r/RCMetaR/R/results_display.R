@@ -65,6 +65,40 @@ display.standard.error.label <- function(params) {
   paste0("SE (", scale, " scale)")
 }
 
+rcmetar.study.result.values <- function(data, params, fit, grouped.indices=NULL) {
+  n <- length(data@study.names)
+  if (!n || length(data@y) != n || length(data@SE) != n) return(NULL)
+  sample.sizes <- rcmetar.pft.sample.sizes(data, params)
+  if (is.null(grouped.indices)) {
+    effects <- rcmetar.fitted.study.effects(data, params, fit)
+    indices <- seq_len(n)
+  } else {
+    # Subgroup study rows show the prepared effects. The overall fit supplies
+    # weights, while each subgroup's independently fitted result has its own row.
+    yi <- as.numeric(data@y)
+    half.width <- as.numeric(data@SE) * get.mult.from.conf.level(params$conf.level)
+    effects <- list(yi=yi, ci.lb=yi - half.width, ci.ub=yi + half.width)
+    indices <- unlist(grouped.indices, use.names=FALSE)
+  }
+  weights <- rcmetar.metafor.weights(fit)
+  if (length(weights) != n && inherits(fit, "rma")) {
+    old.options <- options(na.action="na.pass")
+    on.exit(options(old.options), add=TRUE)
+    weights <- rcmetar.metafor.weights(fit)
+  }
+  if (length(weights) != n) weights <- rep(NA_real_, n)
+  transform <- rcmetar.transform.by.name(get.transform.name(data), params$measure)
+  display <- rcmetar.study.display.effects(transform, effects$yi, effects$ci.lb,
+    effects$ci.ub, sample.sizes)
+  list(
+    study=as.character(data@study.names[indices]),
+    estimate=display$y.disp[indices], lower=display$lb.disp[indices],
+    upper=display$ub.disp[indices], weight=weights[indices],
+    level=display.confidence.level(params), digits=params$digits %||% 4L,
+    metric=as.character(params$measure), metric_label=rcmetar.display.metric.name(params)
+  )
+}
+
 create.summary.disp <- function(om.data, params, res, model.title) {
   result.digits <- display.digits(params)
   se.digits <- display.digits(params, minimum=if (is(om.data, "DiagnosticData")) 0L else 3L)
@@ -167,7 +201,9 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "table.titles" = table.titles,
     "arrays" = arrays,
     "notes" = notes,
+    "prediction.notes" = prediction$note,
     "MAResults" = res,
+    "study.results" = rcmetar.study.result.values(om.data, params, res),
     "summary.sentence" = paste0("Pooled ", rcmetar.display.metric.name(params),
                                 ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
     "calculation.table" = calculation.table,
@@ -201,43 +237,26 @@ save.plot.data <- function(plot.data, out.path=NULL) {
   if (is.null(out.path)){
     out.path <- rcmetar.scratch.path(as.character(as.numeric(Sys.time())))
   }
-  save(plot.data, file=paste(out.path, ".plotdata", sep=""))
+  save(plot.data, file=.rcmetar.plot.bundle.paths(out.path, "plot.data"))
   out.path
 }
-
-save.plot.data.and.params <- function(data, params, res, level, out.path=NULL) {
-  if (is.null(out.path)){
-    out.path <- rcmetar.scratch.path(as.character(as.numeric(Sys.time())))
-  }
-
-  save(data, file=paste(out.path, ".data", sep=""))
-
-  save(params, file=paste(out.path, ".params", sep=""))
-
-  save(res, file=paste(out.path, ".res", sep=""))
-
-  save(level, file=paste(out.path, ".level", sep=""))
-
-  out.path
-}
-
 
 save.data <- function(om.data, res, params, plot.data, out.path=NULL) {
   if (is.null(out.path)){
     out.path <- rcmetar.scratch.path(as.character(as.numeric(Sys.time())))
   }
 
-  save(om.data, file=paste(out.path, ".data", sep=""))
+  save(om.data, file=.rcmetar.plot.bundle.paths(out.path, "om.data"))
   if (inherits(plot.data$regeneration_state, "rcmetar_forest_regeneration_state")) {
     res <- plot.data$regeneration_state
     for (param.name in names(res$param_overrides)) {
       params[[param.name]] <- res$param_overrides[[param.name]]
     }
   }
-  save(res, file=paste(out.path, ".res", sep=""))
+  save(res, file=.rcmetar.plot.bundle.paths(out.path, "res"))
 
-  save(plot.data, file=paste(out.path, ".plotdata", sep=""))
-  save(params, file=paste(out.path, ".params", sep=""))
+  save.plot.data(plot.data, out.path)
+  save(params, file=.rcmetar.plot.bundle.paths(out.path, "params"))
   out.path
 }
 
@@ -808,6 +827,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   }
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
              "notes" = unique(prediction.notes),
+             "prediction.notes" = unique(prediction.notes),
              "MAResults" = res )
   class(subgroup.disp) <- "summary.display"
   subgroup.disp

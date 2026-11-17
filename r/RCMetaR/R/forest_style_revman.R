@@ -290,9 +290,8 @@ rcmetar.revman.not_estimable <- function(bundle) {
 }
 
 rcmetar.revman.xlab <- function(bundle) {
-    if (!rcmetar.is.plot.default.text(bundle$params$fp_xlabel)) {
-        return(as.character(bundle$params$fp_xlabel))
-    }
+    xlabel <- rcmetar.plot.axis.label(bundle$params, "fp")
+    if (!is.null(xlabel)) return(xlabel)
     rcmetar.forest.axis.title(bundle)
 }
 
@@ -319,7 +318,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         return(rcmetar.draw.revman.sequential.forest(bundle, outpath))
     }
     if (!inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
-        return(rcmetar.draw.default.metafor.forest(within(bundle, fp_style <- "default"), outpath))
+        return(rcmetar.draw.default.forest(within(bundle, fp_style <- "default"), outpath))
     }
 
     plan <- rcmetar.forest.layout.preflight(bundle, style="revman")

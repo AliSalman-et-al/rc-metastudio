@@ -91,10 +91,10 @@ def test_redo_restores_committed_sheet_after_unrelated_navigation(committed_shee
     session.checkpoint()
     session.select_sheet(runtime.dataset.sheets[1 - committed_sheet].id)
     assert session.undo()
-    assert required(session.runtime, "workspace runtime").model_state["current_sheet_id"] == selected
+    assert required(session.runtime, "workspace runtime").current_sheet_id == selected
     session.select_sheet(runtime.dataset.sheets[1 - committed_sheet].id)
     assert session.redo()
-    assert required(session.runtime, "workspace runtime").model_state["current_sheet_id"] == selected
+    assert required(session.runtime, "workspace runtime").current_sheet_id == selected
 
 
 def test_nested_transactions_publish_one_history_entry() -> None:
@@ -122,13 +122,8 @@ def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> N
     document = load_project(ROOT / "sample_projects" / "amino.rcms")
     source = ROOT / "sample_projects" / "amino.rcms"
     session = WorkspaceSession(document, source)
-    project = session.project
-    state = session.state
-    assert project is not None and state is not None
-    dataset = project
-    assert isinstance(dataset, dict)
-    dataset["title"] = "Edited before failed install"
-    session.commit(project, state)
+    required(session.runtime, "workspace runtime").dataset.title = "Edited before failed install"
+    session.checkpoint()
     before = session.document
     previous_runtime = session.runtime
 
@@ -153,15 +148,10 @@ def test_durability_failure_commits_the_installed_document(
     document = load_project(ROOT / "sample_projects" / "continuous.rcms")
     session = WorkspaceSession(document)
     destination = tmp_path / "durability.rcms"
-    project = session.project
-    state = session.state
-    assert project is not None and state is not None
-    dataset = project
-    assert isinstance(dataset, dict)
-    dataset["title"] = "Installed despite uncertainty"
     runtime = session.runtime
     assert runtime is not None
     runtime.dataset.title = "Installed despite uncertainty"
+    expected = required(session.document, "workspace document").project
 
     def uncertain(_destination: Path) -> None:
         raise project_format.ProjectDurabilityError(
@@ -174,20 +164,14 @@ def test_durability_failure_commits_the_installed_document(
 
     assert session.path == destination
     assert not session.is_dirty
-    assert session.project == project
-    assert load_project(destination).project == project
+    assert load_project(destination).project == expected
 
 
 def test_save_marks_only_successfully_written_snapshot_clean(tmp_path: Path) -> None:
     document = load_project(ROOT / "sample_projects" / "continuous.rcms")
     session = WorkspaceSession(document)
-    project = session.project
-    state = session.state
-    assert project is not None and state is not None
-    dataset = project
-    assert isinstance(dataset, dict)
-    dataset["title"] = "Saved"
-    session.commit(project, state)
+    required(session.runtime, "workspace runtime").dataset.title = "Saved"
+    session.checkpoint()
     destination = tmp_path / "saved.rcms"
 
     assert session.save(destination) == destination

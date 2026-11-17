@@ -22,7 +22,8 @@ def load_dataset_model(dataset_path):
     model = dataset_table_model.DatasetTableModel(
         dataset=runtime_project.dataset, add_blank_study=False
     )
-    model.set_state(runtime_project.model_state)
+    if runtime_project.current_sheet_id is not None:
+        model.set_current_sheet(runtime_project.current_sheet_id)
     return model
 
 

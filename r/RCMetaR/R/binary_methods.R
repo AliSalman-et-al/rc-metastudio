@@ -163,10 +163,6 @@ binary.fixed.inv.var.value.info <- function() {
     rma.uni.value.info()
 }
 
-binary.fixed.inv.var.is.feasible.for.funnel <- function() {
-    TRUE
-}
-
 binary.fixed.inv.var.parameters <- function(){
     apply_adjustment_to = c("only0", "all")
 
@@ -315,10 +311,6 @@ binary.fixed.mh.is.feasible <- function(binary.data, metric){
          length(binary.data@g1O1) > 0
 }
 
-binary.fixed.mh.is.feasible.for.funnel <- function() {
-    FALSE
-}
-
 binary.fixed.mh.overall <- function(results) {
     res <- results$res
 }
@@ -433,10 +425,6 @@ binary.fixed.peto.is.feasible <- function(binary.data, metric){
          length(binary.data@g1O1) > 0
 }
 
-binary.fixed.peto.is.feasible.for.funnel <- function() {
-    FALSE
-}
-
 binary.fixed.peto.overall <- function(results) {
     res <- results$res
 }
@@ -496,11 +484,6 @@ binary.random <- function(binary.data, params) {
 binary.random.value.info <- function() {
     rma.uni.value.info()
 }
-
-binary.random.is.feasible.for.funnel <- function () {
-    TRUE
-}
-
 
 binary.random.parameters <- function(){
     apply_adjustment_to = c("only0", "all")

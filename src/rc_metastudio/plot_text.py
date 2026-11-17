@@ -1,5 +1,7 @@
 """Lossless plot text and automatic-heading placeholders."""
 
+from rc_metastudio import qt_text
+
 # These values are emitted by the generated Qt forms for an untouched plot
 # option.  Keep the list at the presentation boundary so renderers receive a
 # real unset value rather than having to know about a GUI placeholder.
@@ -29,12 +31,12 @@ def configure_plot_text_inputs(surface):
         )
 
 
-def set_plot_text_value(widget, value):
+def set_plot_text_value(widget, value, *, literal=False):
     """Load complete generated or saved text."""
     text = str(value)
-    automatic = text in ("", "[default]")
+    automatic = not literal and text in ("", "[default]")
     widget.setPlaceholderText("")
-    if text == "[default]":
+    if automatic and text == "[default]":
         text = ""
         widget.setPlaceholderText("Automatic")
         widget.setToolTip(widget.toolTip() + " Automatic: determined by the plotted data.")
@@ -65,10 +67,20 @@ def normalize_plot_text_value(value, *, was_edited=False):
 
 def plot_parameter_text_value(widget):
     """Return a plot text control's value with default placeholders unset."""
+    was_edited = bool(widget.property("plotTextWasEdited"))
     return normalize_plot_text_value(
-        plot_text_value(widget),
-        was_edited=bool(widget.property("plotTextWasEdited")),
+        widget.text() if was_edited else plot_text_value(widget),
+        was_edited=was_edited,
     )
+
+
+def plot_axis_label_params(widget, prefix: str) -> dict[str, str | bool | None]:
+    value = plot_parameter_text_value(widget)
+    text = qt_text.to_native_text(value) if value is not None else ""
+    return {
+        f"{prefix}_xlabel": text or None,
+        f"{prefix}_xlabel_literal": bool(text.strip()) and text.strip().casefold() in PLOT_DEFAULT_TEXT_SENTINELS,
+    }
 
 
 def size_plot_text_editor(surface):

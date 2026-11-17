@@ -4,7 +4,8 @@ from qt_test_support import key_click, key_clicks, required
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtSvg, QtWidgets
-from rc_metastudio.analysis_results import PlotCapability, parse_analysis_result
+from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.plot_capabilities import PlotCapability
 from rc_metastudio.plot_text import normalize_plot_text_value
 
 pytestmark = pytest.mark.qsettings
@@ -75,7 +76,6 @@ def _plot_capability_model(
         editable=editable,
         styleable=styleable,
         regenerator=regenerator,
-        composition="single",
     )
 
 
@@ -403,7 +403,7 @@ def test_results_regeneration_burst_runs_one_scheduled_expensive_reflow(
             for item in window._raster_plot_items
             if isinstance(item, results_window.ResponsivePixmapItem)
         )
-        artifact = window.create_plot_artifact("Plot", str(plot_path))
+        artifact = window.plot_artifact('Plot')
         calls = []
         monkeypatch.setattr(
             window, "_refit_viewport_items", lambda: calls.append("reflow")
@@ -521,6 +521,7 @@ def test_reitsma_coefficient_editor_hides_inapplicable_forest_controls(qapp):
             "fp_xticks": "0.5, 1, 2, 3",
         },
         "coefficients.svg",
+        plot_type="reitsma_coefficient",
     )
     try:
         assert dialog.groupBox.isHidden()
@@ -652,15 +653,8 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
     calls = []
     monkeypatch.setattr(
         plot_service.r_bridge,
-        "load_vars_for_plot",
-        lambda path: calls.append(("load", path)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_small_study_effects_funnel",
-        lambda path: calls.append(("generate", path)),
-        raising=False,
+        "render_plot_bundle",
+        lambda *args: calls.append(args),
     )
     monkeypatch.setattr(
         results_window.QFileDialog,

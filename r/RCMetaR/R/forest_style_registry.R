@@ -1,60 +1,38 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.style.default <- function(params) {
+rcmetar.forest.style <- function(params) {
     style <- params$fp_style
     if (is.null(style) || length(style) == 0 || is.na(style) || style == "[default]") {
         return("revman")
     }
     style <- tolower(trimws(as.character(style[1])))
-    switch(
-        style,
-        "default" = "default",
-        "default (metafor)" = "default",
-        "default forest style" = "default",
-        "revman" = "revman",
-        "revman forest style" = "revman",
-        "bmj" = "bmj",
-        "bmj forest style" = "bmj",
-        style
+    legacy <- list(
+        "default (metafor)"="default", "default forest style"="default",
+        "revman forest style"="revman", "bmj forest style"="bmj"
     )
+    style <- legacy[[style]] %||% style
+    if (style %in% names(RCMETAR_PLOT_STYLE_ACCENTS$forest)) style else "default"
 }
 
-rcmetar.forest.style <- function(params) {
-    style <- rcmetar.forest.style.default(params)
-    if (style %in% c("default", "revman", "bmj")) {
-        return(style)
-    }
-    "default"
-}
-
-rcmetar.metafor.style.helper <- function(style, suffix) {
+rcmetar.metafor.style <- function(style) {
     style <- gsub("[^[:alnum:]_]+", "_", as.character(style))
     registry <- list(
         default = list(
             ilab.for.data = rcmetar.default.ilab.for.data,
-            decorate.bundle = identity
+            decorate.bundle = identity,
+            draw = rcmetar.draw.default.forest
         ),
         revman = list(
             ilab.for.data = rcmetar.revman.ilab.for.data,
-            decorate.bundle = rcmetar.revman.decorate.bundle
+            decorate.bundle = rcmetar.revman.decorate.bundle,
+            draw = rcmetar.draw.revman.forest
         ),
         bmj = list(
             ilab.for.data = rcmetar.bmj.ilab.for.data,
-            decorate.bundle = rcmetar.bmj.decorate.bundle
+            decorate.bundle = rcmetar.bmj.decorate.bundle,
+            draw = rcmetar.draw.bmj.forest
         )
-    )
-    style_registry <- registry[[style]]
-    if (is.null(style_registry)) return(NULL)
-    style_registry[[suffix]]
-}
-
-rcmetar.metafor.style.renderer <- function(style) {
-    style <- gsub("[^[:alnum:]_]+", "_", as.character(style))
-    registry <- list(
-        default = rcmetar.draw.default.forest,
-        revman = rcmetar.draw.revman.forest,
-        bmj = rcmetar.draw.bmj.forest
     )
     registry[[style]]
 }
@@ -75,12 +53,13 @@ rcmetar.forest.accent.color <- function(params) {
     if (!is.null(color) && length(color) > 0 && !is.na(color[1]) && nzchar(as.character(color[1]))) {
         return(as.character(color[1]))
     }
-    switch(
-        rcmetar.forest.style(params),
-        revman="#000000",
-        bmj="#6b58a6",
-        "#2f5597"
-    )
+    rcmetar.default.plot.accent(rcmetar.forest.style(params), "forest")
+}
+
+rcmetar.default.plot.accent <- function(style, plot) {
+    colors <- RCMETAR_PLOT_STYLE_ACCENTS[[plot]]
+    key <- if (style %in% names(colors)) style else "default"
+    colors[[key]]
 }
 
 rcmetar.point.size.multiplier <- function(params) {
@@ -98,19 +77,15 @@ rcmetar.is.metafor.forest.bundle <- function(plot.data) {
 }
 
 rcmetar.ilab.for.data <- function(om.data, params, res=NULL) {
-    style <- rcmetar.forest.style(params)
-    helper <- rcmetar.metafor.style.helper(style, "ilab.for.data")
-    if (!is.null(helper)) {
-        return(helper(om.data, params, res))
-    }
-    rcmetar.default.ilab.for.data(om.data, params)
+    style <- rcmetar.metafor.style(rcmetar.forest.style(params))
+    style$ilab.for.data(om.data, params, res)
 }
 
 rcmetar.decorate.metafor.bundle <- function(bundle) {
     bundle <- rcmetar.forest.display.order(bundle)
-    helper <- rcmetar.metafor.style.helper(bundle$fp_style, "decorate.bundle")
-    if (!is.null(helper)) {
-        return(helper(bundle))
+    style <- rcmetar.metafor.style(bundle$fp_style)
+    if (!is.null(style)) {
+        return(style$decorate.bundle(bundle))
     }
     bundle$style_blocks <- list()
     bundle

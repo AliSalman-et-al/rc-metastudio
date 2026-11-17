@@ -6,6 +6,7 @@ from xml.etree import ElementTree as ET
 from PyQt6 import QtCore
 from tests.python.gui.qt_test_support import mouse_click
 from tests.e2e.plot_workflow_support import check_table_surface, close, labels
+from tests.e2e.plot_observations import load_saved_analysis
 
 
 def run_predictions(app, window, work, record):
@@ -27,7 +28,7 @@ def run_predictions(app, window, work, record):
                           metric_override=measure, workflow_override=workflow, prepare=prepare,
                           parameters={'fp_style':style, 'digits':3})
             artifact = next(iter(view._nav_plot_artifacts.values()))
-            r_bridge.load_vars_for_plot(artifact.params_path, return_params_dict=True)
+            load_saved_analysis(artifact.params_path, include_plot_data=True)
             # Independent package fit from the exact entered counts, never the app inverse.
             reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
                 subsets <- if (identical(plot.data$forest_variant, "subgroup")) list(c(1,3,5),c(2,4,6),1:6) else list(1:6)

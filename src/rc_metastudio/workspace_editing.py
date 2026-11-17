@@ -9,16 +9,17 @@ calculate the same raw-data preview as the table.
 """
 
 from __future__ import annotations
-from rc_metastudio.project_domain import RowId, SheetId
+from rc_metastudio.domain_ids import RowId, SheetId
 
 import math
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+import uuid
 from statistics import NormalDist
-from typing import Callable, Protocol
+from typing import Callable, Literal, Protocol
 
-from rc_metastudio import calculator_controls, name_validation, qt_text
+from rc_metastudio import name_validation, qt_text
 from rc_metastudio import r_runtime, r_bridge
 from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES, EVENT_RATES
 from rc_metastudio.ratio_data import RATIO_FIELDS
@@ -26,6 +27,7 @@ from rc_metastudio.ratio_data import RATIO_FIELDS
 from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit, EffectEstimate
 from rc_metastudio.dataset_analysis_domain import (
+    has_study_entered_data,
     BINARY,
     CONTINUOUS,
     DIAGNOSTIC,
@@ -37,7 +39,10 @@ from rc_metastudio.dataset_analysis_domain import (
     to_calculation_scale,
 )
 from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC_METRICS, FACTOR
-from rc_metastudio.analysis_validation import is_float_convertible, is_an_int, is_empty, validate_confidence_level
+from rc_metastudio.analysis_validation import (
+    is_float_convertible, is_an_int, is_empty,
+    validate_confidence_interval_order, validate_confidence_level,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,18 +105,12 @@ class WorkspaceViewState:
 class WorkspaceEditTarget:
     row: int
     column: int
-    old_value: object
-    row_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
-class AppliedWorkspaceEdit:
-    added_study_id: str | None = None
-    error: str | None = None
-
-    @property
-    def applied(self) -> bool:
-        return self.error is None
+class CellRejection:
+    message: str
+    kind: Literal["value", "number", "backend"] = "value"
 
 
 class WorkspaceEditingService:
@@ -168,10 +167,6 @@ class WorkspaceEditingService:
             multiplier = NormalDist().inv_cdf(tail)
         return ConfidenceSettings(float(validated), float(multiplier))
 
-    def set_backend_confidence_level(self, level: float) -> None:
-        if r_runtime.is_ready():
-            self.bridge.set_confidence_level(level)
-
     def preview_raw_effects(
         self,
         data_type: object,
@@ -210,36 +205,31 @@ class WorkspaceEditingService:
         context: WorkspaceEditingContext,
         value: object,
         *,
-        allow_empty_names: bool = False,
         import_csv: bool = False,
-        append_blank_study: bool = False,
         recalculate: Callable[[int], None] | None = None,
-    ) -> AppliedWorkspaceEdit:
-        """Validate and apply one edit to the durable dataset graph."""
-        if target.row < 0 or target.column < 0:
-            return AppliedWorkspaceEdit(error="Cannot edit that cell.")
-
-        study = self._study_for_edit(dataset, target, context, value, allow_empty_names)
-        if study is None:
-            return AppliedWorkspaceEdit(error=self._last_error)
-
+    ) -> CellRejection | None:
+        if context.sheet_id is None or target.row < 0 or target.column < 0:
+            return CellRejection("Cannot edit that cell.")
+        sheet = dataset.sheet(context.sheet_id)
         if target.column == context.name_column:
-            return self._edit_study_name(
-                dataset, study, target, context, value, allow_empty_names, append_blank_study
-            )
+            return self._edit_study_name(sheet, target.row, value)
+        if target.row >= len(sheet.rows):
+            return CellRejection("Enter a study name first.")
+        study = sheet.rows[target.row]
         if target.column == context.year_column:
             return self._edit_year(study, value)
-        result = self._apply_analysis_edit(
+        if not study.label.strip() and not qt_text.is_blank(value):
+            return CellRejection("Enter a study name first.")
+        rejection = self._apply_analysis_edit(
             dataset, study, target, context, value, import_csv, recalculate
         )
-        self._update_inclusion(
-            dataset, study, target, context, result, import_csv=import_csv
-        )
-        return result
+        if rejection is None:
+            self._update_inclusion(dataset, study, target, context, import_csv=import_csv)
+        return rejection
 
     def _apply_analysis_edit(
         self, dataset, study, target, context, value, import_csv, recalculate
-    ) -> AppliedWorkspaceEdit:
+    ) -> CellRejection | None:
         if context.data_type in RATIO_DATA_TYPES and target.column in context.outcome_columns:
             return self._edit_ratio_input(dataset, study, target, context, value)
         if context.sheet_id is not None and target.column in context.raw_columns:
@@ -247,12 +237,15 @@ class WorkspaceEditingService:
         if target.column in context.outcome_columns:
             return self._edit_outcome(dataset, study, target, context, value, import_csv)
         if target.column == context.include_column:
-            return self._edit_inclusion(study, value)
+            if type(value) is not bool:
+                return CellRejection("Study inclusion must be checked or unchecked.")
+            self.set_inclusion(study, value)
+            return None
         return self._edit_covariate(study, context, value)
 
     def _edit_ratio_input(self, dataset, study, target, context, value):
         from dataclasses import replace
-        unit = self._analysis_unit(dataset, study, context)
+        unit = study.analysis_unit
         field = RATIO_FIELDS[context.outcome_columns.index(target.column)]
         text = qt_text.to_native_text(value).strip()
         try:
@@ -262,20 +255,14 @@ class WorkspaceEditingService:
             candidate = replace(unit.ratio_input(context.arm_names), **{field: parsed})
             candidate.validate()
         except (TypeError, ValueError) as error:
-            return AppliedWorkspaceEdit(error=str(error))
+            return CellRejection(str(error))
         unit.set_ratio_input(context.arm_names, candidate)
-        return AppliedWorkspaceEdit()
+        return None
 
     @staticmethod
-    def _edit_inclusion(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
-        included, valid = WorkspaceEditingService._parse_inclusion(value)
-        if not valid:
-            return AppliedWorkspaceEdit(
-                error="Study inclusion must be checked or unchecked."
-            )
+    def set_inclusion(study: StudyRow, included: bool) -> None:
         study.include = included
         study.manually_excluded = not included
-        return AppliedWorkspaceEdit()
 
     def _update_inclusion(
         self,
@@ -283,24 +270,22 @@ class WorkspaceEditingService:
         study,
         target,
         context,
-        result: AppliedWorkspaceEdit,
         *,
         import_csv: bool = False,
     ) -> None:
         if (
-            not result.applied
-            or context.sheet_id is None
+            context.sheet_id is None
             or context.data_type == DIAGNOSTIC
             or target.column not in context.raw_columns + context.outcome_columns
-            or (import_csv and not raw_data_is_empty(self._raw_data(dataset, study, context)))
+            or (import_csv and not raw_data_is_empty(self._raw_data(study, context)))
         ):
             return
-        unit = self._analysis_unit(dataset, study, context)
+        unit = study.analysis_unit
         if context.data_type in RATIO_DATA_TYPES:
             raw = unit.get_raw_data_for_arms(context.arm_names)
             study.include = not study.manually_excluded and unit.ratio_input(context.arm_names).ready(raw, metric=context.current_effect)
             return
-        if self._raw_data_is_complete_for_context(self._raw_data(dataset, study, context), context):
+        if self._raw_data_is_complete_for_context(self._raw_data(study, context), context):
             study.include = not study.manually_excluded
             return
         effect = unit.get_effect_for_source(
@@ -316,165 +301,85 @@ class WorkspaceEditingService:
             outcome_subtype=context.outcome_subtype,
         )
 
-    _last_error: str | None = None
-
     @staticmethod
-    def _parse_inclusion(value: object) -> tuple[bool, bool]:
-        if type(value) is bool:
-            return value, True
-        if type(value) is int and value in (0, 2):
-            return value == 2, True
-        return False, False
-
-    def _study_for_edit(
-        self,
-        dataset: Dataset,
-        target: WorkspaceEditTarget,
-        context: WorkspaceEditingContext,
-        value: object,
-        allow_empty_names: bool,
-    ) -> StudyRow | None:
-        self._last_error = None
-        assert context.sheet_id is not None
-        if target.row >= len(dataset.sheet(context.sheet_id).rows):
-            return self._new_study_for_edit(
-                dataset, target, context, value, allow_empty_names
+    def _edit_study_name(sheet, row: int, value: object) -> CellRejection | None:
+        try:
+            name = name_validation.validate_required_name("study", value)
+        except ValueError as error:
+            return CellRejection(str(error))
+        if any(index != row and name_validation.normalize_name(study.label) == name
+               for index, study in enumerate(sheet.rows)):
+            return CellRejection(f"Study name ‘{name}’ already exists. Use a unique name before pasting.")
+        while len(sheet.rows) <= row:
+            unit = AnalysisUnit(
+                sheet,
+                arm_names=[arm.name for arm in sheet.arms],
+                arm_stable_ids=[arm.id for arm in sheet.arms],
             )
-        study = (next(row for row in dataset.sheet(context.sheet_id).rows if row.id == target.row_id) if target.row_id else dataset.sheet(context.sheet_id).rows[target.row])
-        if self._edit_requires_name(study, target, context, value, allow_empty_names):
-            self._last_error = "Enter a study name first."
-            return None
-        return study
-
-    def _new_study_for_edit(self, dataset, target, context, value, allow_empty_names):
-        import uuid
-        sheet = dataset.sheet(context.sheet_id)
-        if target.column != context.name_column:
-            self._last_error = 'Enter a study name first.'
-            return None
-        if not allow_empty_names:
-            try:
-                name_validation.validate_required_name("study", value)
-            except ValueError as error:
-                self._last_error = str(error)
-                return None
-        name = name_validation.normalize_name(value)
-        if any(name_validation.normalize_name(row.label) == name for row in sheet.rows):
-            self._last_error = f"Study name ‘{name}’ already exists. Use a unique name before pasting."
-            return None
-        while len(sheet.rows) <= target.row:
-            sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), '', AnalysisUnit(sheet, arm_names=[a.name for a in sheet.arms], arm_stable_ids=[a.id for a in sheet.arms])))
-        return sheet.rows[target.row]
-
-    @staticmethod
-    def _edit_requires_name(study, target, context, value, allow_empty_names):
-        return (
-            not allow_empty_names
-            and not study.label.strip()
-            and WorkspaceEditingService._requires_named_study(target, context, value)
-        )
-
-    @staticmethod
-    def _requires_named_study(
-        target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
-    ) -> bool:
-        if target.column in (context.name_column, context.year_column):
-            return False
-        if context.sheet_id is not None and target.column in context.raw_columns:
-            return not qt_text.is_blank(value)
-        if target.column in context.outcome_columns:
-            return not qt_text.is_blank(value)
-        return not qt_text.is_blank(value)
-
-    def _edit_study_name(
-        self,
-        dataset: Dataset,
-        study: StudyRow,
-        target: WorkspaceEditTarget,
-        context: WorkspaceEditingContext,
-        value: object,
-        allow_empty_names: bool,
-        append_blank_study: bool,
-    ) -> AppliedWorkspaceEdit:
-        if allow_empty_names:
-            name = name_validation.normalize_name(value)
-        else:
-            try:
-                name = name_validation.validate_required_name("study", value)
-            except ValueError as error:
-                return AppliedWorkspaceEdit(error=str(error))
-        assert context.sheet_id is not None
-        existing_names = [
-            name_validation.normalize_name(existing.label)
-            for existing in dataset.sheet(context.sheet_id).rows
-            if existing is not study
-        ]
-        if name in existing_names:
-            return AppliedWorkspaceEdit(error=f"Study name ‘{name}’ already exists. Use a unique name before pasting.")
-        added_study_id = None
+            sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False))
+        study = sheet.rows[row]
+        if not study.manually_excluded and not has_study_entered_data(study):
+            study.include = True
         study.label = name
-        return AppliedWorkspaceEdit(added_study_id=added_study_id)
+        return None
 
     @staticmethod
-    def _edit_year(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
+    def _edit_year(study: StudyRow, value: object) -> CellRejection | None:
         text = qt_text.to_native_text(value)
         if not qt_text.is_blank(text) and not is_an_int(text):
-            return AppliedWorkspaceEdit(error="Enter the year as a whole number, for example 2019.")
+            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number")
         try:
             study.year = int(float(text)) if not qt_text.is_blank(text) else 0
         except (TypeError, ValueError):
-            return AppliedWorkspaceEdit(error="Enter the year as a whole number, for example 2019.")
-        return AppliedWorkspaceEdit()
+            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number")
+        return None
 
-    def _analysis_unit(self, dataset, study, context):
-        return study.analysis_unit
-
-    def _raw_data(self, dataset: Dataset, study: StudyRow, context: WorkspaceEditingContext):
-        return self._analysis_unit(dataset, study, context).get_raw_data_for_arms(
+    def _raw_data(self, study: StudyRow, context: WorkspaceEditingContext):
+        return study.analysis_unit.get_raw_data_for_arms(
             context.arm_names
         )
 
     def _verify_raw_data(
         self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object
-    ) -> str | None:
+    ) -> CellRejection | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
-            return "Enter a number."
+            return CellRejection("Enter a number.", kind="number")
         if qt_text.is_blank(text):
             return None
         if not is_float_convertible(text):
-            return "Enter a number."
+            return CellRejection("Enter a number.", kind="number")
         position = context.raw_columns.index(target.column)
         if context.data_type == EVENT_RATES:
             number = float(text)
             if not math.isfinite(number):
-                return "Raw inputs must be finite."
+                return CellRejection("Raw inputs must be finite.")
             if position % 2 == 0 and (number < 0 or not number.is_integer()):
-                return "Events must be nonnegative integers."
+                return CellRejection("Events must be nonnegative integers.", kind="number")
             if position % 2 == 1 and number <= 0:
-                return "Person-time must be positive."
+                return CellRejection("Person-time must be positive.")
             return None
         error = self._verify_raw_number(text, context.data_type)
         if error:
             return error
-        raw_data = self._raw_data(dataset, study, context)
+        raw_data = self._raw_data(study, context)
         position = context.raw_columns.index(target.column)
         return self._verify_raw_bounds(text, raw_data, position, context.data_type)
 
     @staticmethod
-    def _verify_raw_number(text: str, data_type: object) -> str | None:
+    def _verify_raw_number(text: str, data_type: object) -> CellRejection | None:
         if data_type not in (BINARY, DIAGNOSTIC):
             return None
         if not is_an_int(text):
-            return "Counts must be whole numbers."
+            return CellRejection("Counts must be whole numbers.", kind="number")
         if int(float(text)) < 0:
-            return "Counts cannot be negative."
+            return CellRejection("Counts cannot be negative.")
         return None
 
     @staticmethod
     def _verify_raw_bounds(
         text: str, raw_data, position: int, data_type: object
-    ) -> str | None:
+    ) -> CellRejection | None:
         if data_type == BINARY:
             return WorkspaceEditingService._verify_binary_bounds(text, raw_data, position)
         if data_type == CONTINUOUS:
@@ -486,29 +391,29 @@ class WorkspaceEditingService:
         return None
 
     @staticmethod
-    def _verify_binary_bounds(text, raw_data, position: int) -> str | None:
+    def _verify_binary_bounds(text, raw_data, position: int) -> CellRejection | None:
         if position in (0, 2):
             sample = raw_data[position + 1]
             if is_an_int(sample) and int(float(text)) > int(float(sample)):
-                return "Events cannot exceed the arm total."
+                return CellRejection("Events cannot exceed the arm total.")
         if position in (1, 3):
             event = raw_data[position - 1]
             if is_an_int(event) and int(float(text)) < int(float(event)):
-                return "Events cannot exceed the arm total."
+                return CellRejection("Events cannot exceed the arm total.")
         return None
 
     @staticmethod
-    def _verify_continuous_bounds(text, position: int) -> str | None:
+    def _verify_continuous_bounds(text, position: int) -> CellRejection | None:
         if float(text) > 0:
             return None
         if position in (0, 3):
-            return "Participants must be a positive whole number."
+            return CellRejection("Participants must be a positive whole number.", kind="number")
         if position in (2, 5):
-            return "Standard deviation must be greater than zero."
+            return CellRejection("Standard deviation must be greater than zero.")
         return None
 
     @staticmethod
-    def _verify_diagnostic_bounds(text, raw_data, position: int) -> str | None:
+    def _verify_diagnostic_bounds(text, raw_data, position: int) -> CellRejection | None:
         """Reject an empty diagnostic study while allowing individual zero cells."""
         candidate = list(raw_data)
         if position >= len(candidate):
@@ -521,7 +426,7 @@ class WorkspaceEditingService:
         except (TypeError, ValueError):
             return None
         if all_zero:
-            return (
+            return CellRejection(
                 "Diagnostic 2x2 table must contain at least one participant; "
                 "enter at least one count greater than zero."
             )
@@ -529,19 +434,19 @@ class WorkspaceEditingService:
 
     def _verify_outcome_data(
         self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
-    ) -> str | None:
+    ) -> CellRejection | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
-            return "Enter a number."
+            return CellRejection("Enter a number.", kind="number")
         if qt_text.is_blank(text):
             return None
         if not is_float_convertible(text):
-            return "Enter a number."
-        unit = self._analysis_unit(dataset, study, context)
+            return CellRejection("Enter a number.", kind="number")
+        unit = study.analysis_unit
         previous_display = self._previous_display_outcome(
             dataset, study, target, context, unit
         )
-        raw_data = self._raw_data(dataset, study, context)
+        raw_data = self._raw_data(study, context)
         if not import_csv and not all(is_empty(item) for item in raw_data):
             error = self._verify_raw_override(text, previous_display, target, context)
             if error:
@@ -558,7 +463,7 @@ class WorkspaceEditingService:
             )
             converter = self.display_scale_converter(DIAGNOSTIC, metric)
         else:
-            n1 = self._raw_data(dataset, study, context)[1] if context.current_effect == "PFT" else None
+            n1 = self._raw_data(study, context)[1] if context.current_effect == "PFT" else None
             effect = unit.get_effect_and_ci_for_source(
                 "entered", context.current_effect or "", context.arm_key, context.confidence_multiplier
             )
@@ -566,31 +471,31 @@ class WorkspaceEditingService:
         return tuple(converter(item) for item in effect)
 
     @staticmethod
-    def _verify_raw_override(text, previous_display, target, context) -> str | None:
+    def _verify_raw_override(text, previous_display, target, context) -> CellRejection | None:
         outcome_index = context.outcome_columns.index(target.column) % 3
         previous = previous_display[outcome_index]
         delta = abs(float(text) - previous) if previous is not None else float("-inf")
         if delta > 10e-6:
-            return "You have already entered raw data for this study. If you want to enter the outcome directly, delete the raw data first."
+            return CellRejection("You have already entered raw data for this study. If you want to enter the outcome directly, delete the raw data first.")
         return None
 
     @staticmethod
-    def _verify_outcome_value(text, previous_display, target, context) -> str | None:
+    def _verify_outcome_value(text, previous_display, target, context) -> CellRejection | None:
         number = float(text)
         if context.current_effect in ("OR", "RR") and number < 0:
-            return "Ratios cannot be negative."
+            return CellRejection("Ratios cannot be negative.")
         outcome_index = context.outcome_columns.index(target.column) % 3
         if context.outcome_subtype == "generic_effect":
             generic_index = context.outcome_columns.index(target.column) % 2
             if context.data_type == CONTINUOUS and generic_index == 1 and number < 0:
-                return "Standard error cannot be negative."
+                return CellRejection("Standard error cannot be negative.")
             return None
         candidate = list(previous_display)
         candidate[outcome_index] = number
-        ok, message = calculator_controls.validate_confidence_interval_order(
+        ok, message = validate_confidence_interval_order(
             est=candidate[0], low=candidate[1], high=candidate[2]
         )
-        return None if ok else message
+        return None if ok else CellRejection(message or "Invalid confidence interval.")
 
     def _edit_raw_data(
         self,
@@ -600,11 +505,11 @@ class WorkspaceEditingService:
         context: WorkspaceEditingContext,
         value: object,
         recalculate: Callable[[int], None] | None,
-    ) -> AppliedWorkspaceEdit:
+    ) -> CellRejection | None:
         error = self._verify_raw_data(dataset, study, target, context, value)
         if error:
-            return AppliedWorkspaceEdit(error=error)
-        unit = self._analysis_unit(dataset, study, context)
+            return error
+        unit = study.analysis_unit
         snapshot = unit.copy_for_edit()
         included_before_edit = study.include
         try:
@@ -621,21 +526,24 @@ class WorkspaceEditingService:
         except Exception as exc:
             unit.adopt_calculated_state(snapshot)
             study.include = included_before_edit
-            return AppliedWorkspaceEdit(error=f"Could not compute study effects from the edited raw data: {exc}")
-        return AppliedWorkspaceEdit()
+            return CellRejection(
+                f"Could not compute study effects from the edited raw data: {exc}",
+                kind="backend",
+            )
+        return None
 
     def _edit_outcome(
         self, dataset: Dataset, study: StudyRow, target: WorkspaceEditTarget, context: WorkspaceEditingContext, value: object, import_csv: bool
-    ) -> AppliedWorkspaceEdit:
+    ) -> CellRejection | None:
         error = self._verify_outcome_data(dataset, study, target, context, value, import_csv)
         if error:
-            return AppliedWorkspaceEdit(error=error)
-        unit = self._analysis_unit(dataset, study, context)
+            return error
+        unit = study.analysis_unit
         normalized_value, _ = qt_text.normalize_decimal_text(value)
         display_value = None if qt_text.is_blank(value) else float(normalized_value)
         metric, outcome_index = self._outcome_metric(target, context)
         if metric is None:
-            return AppliedWorkspaceEdit(error="Choose an effect measure first.")
+            return CellRejection("Choose an effect measure first.")
         n1 = self._outcome_sample_size(dataset, study, context)
         calculation_value = self.to_calculation_scale(
             display_value, context.data_type, metric, n1
@@ -652,7 +560,7 @@ class WorkspaceEditingService:
             confidence_multiplier=context.confidence_multiplier,
             source="entered",
         )
-        return AppliedWorkspaceEdit()
+        return None
 
     @staticmethod
     def _outcome_metric(
@@ -666,7 +574,7 @@ class WorkspaceEditingService:
     def _outcome_sample_size(self, dataset, study, context):
         if context.current_effect != "PFT":
             return None
-        return self._raw_data(dataset, study, context)[1]
+        return self._raw_data(study, context)[1]
 
     @staticmethod
     def _set_entered_outcome(
@@ -706,9 +614,9 @@ class WorkspaceEditingService:
             entered.estimate, entered.lower, entered.upper, se,
         )
 
-    def _edit_covariate(self, study: StudyRow, context: WorkspaceEditingContext, value: object) -> AppliedWorkspaceEdit:
+    def _edit_covariate(self, study: StudyRow, context: WorkspaceEditingContext, value: object) -> CellRejection | None:
         if context.covariate_name is None:
-            return AppliedWorkspaceEdit(error="Cannot edit that cell.")
+            return CellRejection("Cannot edit that cell.")
         if context.covariate_type == FACTOR:
             converted = qt_text.to_native_text(value)
         elif qt_text.is_blank(value):
@@ -716,11 +624,11 @@ class WorkspaceEditingService:
         else:
             converted, valid = self._number(value)
             if not valid:
-                return AppliedWorkspaceEdit(error="Numeric covariates require numbers.")
+                return CellRejection("Numeric covariates require numbers.", kind="number")
         if context.covariate is None:
-            return AppliedWorkspaceEdit(error="Cannot edit that cell.")
+            return CellRejection("Cannot edit that cell.")
         study.covariate_values[context.covariate['id']] = converted
-        return AppliedWorkspaceEdit()
+        return None
 
     @staticmethod
     def _number(value: object) -> tuple[float | None, bool]:
@@ -743,8 +651,8 @@ class WorkspaceEditingService:
         if context.sheet_id is None:
             return
         study = next(row for row in dataset.sheet(context.sheet_id).rows if row.id == row_id)
-        unit = self._analysis_unit(dataset, study, context)
-        raw_data = self._raw_data(dataset, study, context)
+        unit = study.analysis_unit
+        raw_data = self._raw_data(study, context)
         if context.data_type in RATIO_DATA_TYPES:
             self._update_ratio_outcome(study, unit, raw_data, context, update_inclusion)
             return

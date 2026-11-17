@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import mouse_click
 from tests.e2e.plot_workflow_support import close, labels
+from tests.e2e.plot_observations import load_serialized_object
 
 
 def run_groups(app, window, work, record):
@@ -42,7 +43,7 @@ def run_groups(app, window, work, record):
     legacy = Path(__file__).resolve().parents[2] / 'tests/fixtures/legacy-forest-default'
     window.workspace.mark_saved()
     assert window.open(str(legacy / 'project-0.4.2.rcms'), raise_on_error=True)
-    r_bridge.load_in_r(str(legacy / 'default-0.4.2.params'))
+    load_serialized_object(str(legacy / 'default-0.4.2.params'))
     old_style = str(r_bridge.execute_r_string('as.character(params$fp_style)')[0])
     assert old_style == 'default'
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
@@ -73,8 +74,7 @@ def run_groups(app, window, work, record):
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Close))
     modal(app, AboutLegalDialog, about, window.action_about_legal.trigger)
     project = work / f'release-{__version__}.rcms'
-    window.out_path = str(project)
-    assert window.save()
+    assert window.save(destination=project)
     with ZipFile(project) as archive:
         manifest = json.loads(archive.read('manifest.json'))
     assert manifest['application']['version'] == __version__, manifest

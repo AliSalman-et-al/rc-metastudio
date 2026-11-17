@@ -24,7 +24,7 @@ def run(app, window, work, root, record, analyze):
             window.model.current_sheet.rows.append(row)
     for index, row in enumerate(window.model.current_sheet.rows):
         row.label = f'Row{index:03}'
-    window.model.set_state(window.model.get_state())
+    window.model.set_current_sheet(window.model.current_sheet_id)
     fixture = work / 'tall-forest.rcms'
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(fixture), '')):
         assert window.save_as()
@@ -61,7 +61,8 @@ def run(app, window, work, root, record, analyze):
     record('split-forest-pdf', view, pdf=str(path), pages=checked, raster_images=0)
 
     # Empty plot viewports must hide their contents, including in Qt.
-    source = Path(view.manuscript.figures[0][1])
+    figure = view.manuscript.figures[0]
+    source = Path(figure.display_image or figure.value)
     tree = ET.parse(source)
     for clip in tree.iter('{http://www.w3.org/2000/svg}clipPath'):
         for rectangle in clip:

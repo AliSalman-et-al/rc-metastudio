@@ -17,8 +17,10 @@ from uuid import uuid4
 
 if __package__:
     from scripts import r_verification_support as r_support
+    from scripts.verification_evidence import source_digest
 else:
     import r_verification_support as r_support
+    from verification_evidence import source_digest
 
 
 class VerificationError(RuntimeError):
@@ -220,7 +222,8 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
     run(command, env=env)
 
 
-def run_typing(build_root: Path) -> None:
+def run_typing(build_root: Path) -> Path:
+    source_before = source_digest(build_root)
     command = [
         sys.executable,
         "-m",
@@ -249,12 +252,24 @@ def run_typing(build_root: Path) -> None:
     result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
     (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
     (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
-    (evidence / "command.json").write_text(json.dumps({"command": command, "python_platform": "win32", "exit_code": result.returncode}, indent=2), encoding="utf-8")
+    receipt = evidence / "command.json"
+    source_after = source_digest(build_root)
+    receipt.write_text(json.dumps({
+        "command": command,
+        "python_platform": "win32",
+        "exit_code": result.returncode,
+        "build_root": str(build_root.resolve()),
+        "source_sha256": source_before,
+        "source_unchanged": source_before == source_after,
+    }, indent=2), encoding="utf-8")
     print(result.stdout, end="")
     print(result.stderr, end="", file=sys.stderr)
     print(f"Typing evidence: {evidence}", flush=True)
     if result.returncode:
         raise VerificationError(f"strict typing failed; inspect {evidence}")
+    if source_before != source_after:
+        raise VerificationError(f"verification inputs changed during strict typing; inspect {evidence}")
+    return receipt
 
 
 def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:

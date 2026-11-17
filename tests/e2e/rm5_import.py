@@ -220,7 +220,7 @@ def run(app, window, ROOT, WORK, record_step):
         assert window.open(str(ROOT / 'sample_projects/amino.rcms'), raise_on_error=True)
     window.model.setData(window.model.index(0, window.model.NAME), 'Dirty study', QtCore.Qt.ItemDataRole.EditRole)
     before = dataset_to_project(window.model.dataset)
-    state = (window.out_path, window.workspace.is_dirty, tuple(window.workspace._history))
+    state = (window.workspace.path, window.workspace.is_dirty, tuple(window.workspace._history))
     action = window.action_import_csv
     def review(accept):
         dialog = app.activeModalWidget()
@@ -239,7 +239,7 @@ def run(app, window, ROOT, WORK, record_step):
         QtCore.QTimer.singleShot(0, lambda: review(False))
         action.trigger()
         assert dataset_to_project(window.model.dataset) == before
-        assert (window.out_path, window.workspace.is_dirty, tuple(window.workspace._history)) == state
+        assert (window.workspace.path, window.workspace.is_dirty, tuple(window.workspace._history)) == state
         QtCore.QTimer.singleShot(0, lambda: review(True))
         with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Cancel) as prompt:
             action.trigger()

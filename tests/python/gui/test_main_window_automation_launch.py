@@ -64,6 +64,24 @@ def _fail_instead_of_blocking_on_unexpected_critical_dialog(monkeypatch):
     assert messages == []
 
 
+def _stage_plot_edit(prefix, regenerator, params, output, directory, height):
+    prefix_key = "bp" if regenerator == "regression" else "fp"
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="{height}">'
+        f'<rect width="400" height="{height}" fill="white"/></svg>'
+    )
+    files = {f"{prefix}.params": "params", f"{prefix}.plotdata": "plotdata", output: svg}
+    display = params.get(f"{prefix_key}_display_path")
+    if display:
+        files[display] = svg
+    replacements = {}
+    for index, (destination, contents) in enumerate(files.items()):
+        temporary = Path(directory) / f"file-{index}"
+        temporary.write_text(contents, encoding="utf-8")
+        replacements[destination] = str(temporary)
+    return replacements
+
+
 def _plot_capability(
     plot_kind="forest",
     editable=True,
@@ -81,14 +99,13 @@ def _plot_capability(
 
 
 def _plot_capability_model(**overrides):
-    from rc_metastudio.analysis_results import PlotCapability
+    from rc_metastudio.plot_capabilities import PlotCapability
 
     values = _plot_capability(**overrides)
     return PlotCapability(
         plot_kind=values["plot_kind"],
         editable=values["editable"],
         styleable=values["styleable"],
-        composition=values["composition"],
         regenerator=values["regenerator"],
     )
 
@@ -273,7 +290,7 @@ def test_frozen_startup_argv_resolves_project_argument(has_project_argument):
 
     sample_project = _sample_project_path("amino.rcms")
     other_project = _sample_project_path("continuous.rcms")
-    argv = launch._resolve_startup_argv(
+    argv = launch.resolve_startup_argv(
         argv=["RCMetaStudio.exe", sample_project]
         if has_project_argument else ["RCMetaStudio.exe"],
         native_argv=[
@@ -352,7 +369,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
             closed.append(True)
 
     monkeypatch.setattr(
-        launch, "_resolve_startup_argv",
+        launch, "resolve_startup_argv",
         lambda: ["RCMetaStudio.app", "--automation-startup-project-smoke",
                  "--automation-startup-completion-marker", str(completion_marker),
                  "relative.rcms"],
@@ -367,7 +384,8 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         "dispatch",
         lambda *_: pytest.fail("startup project smoke must not dispatch"),
     )
-    assert launch.start() == 0
+    from rc_metastudio.__main__ import main
+    assert main() == 0
     assert opened == [sample_project]
     assert started == []
     assert closed == [True]
@@ -1231,7 +1249,7 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         assert initial_width <= viewport_width
 
         write_svg(800, 400)
-        artifact = window.create_plot_artifact("Forest Plot", str(plot_path))
+        artifact = window.plot_artifact('Forest Plot')
         window._refresh_plot_item(plot_item, artifact, str(plot_path))
         app.processEvents()
         app.processEvents()
@@ -1324,47 +1342,15 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             }
         )
     )
-    def load_selected_params(path, return_params_dict=False):
+    def load_selected_params(path):
         assert path == params_path
-        return {"fp_col1_str": "Study"} if return_params_dict else True
+        return {"fp_col1_str": "Study"}
 
-    monkeypatch.setattr(
-        plot_service.r_bridge, "load_vars_for_plot", load_selected_params, raising=False
-    )
-    def update_plot_params(_params, *, outpath=None, **_kwargs):
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
-
+    monkeypatch.setattr(plot_service.r_bridge, "load_plot_parameters", load_selected_params)
     monkeypatch.setattr(
         plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_plot_data",
-        lambda: None,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        lambda path: Path(path).write_text(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="800">'
-            '<rect width="400" height="800" fill="white"/>'
-            "</svg>",
-            encoding="utf-8",
-        ),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: Path(str(path) + ".plotdata").write_text(
-            "plotdata", encoding="utf-8"
-        ),
-        raising=False,
+        "prepare_plot_edit",
+        lambda *args: _stage_plot_edit(*args, height=800),
     )
     monkeypatch.setattr(results_window, "EditPlotDialog", FakeDialog)
 
@@ -1378,9 +1364,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        artifact = window.create_plot_artifact(
-            title, str(image_path), params_path=params_path
-        )
+        artifact = window.plot_artifact(title)
 
         window.edit_plot(artifact, plot_item)
         app.processEvents()
@@ -1642,6 +1626,7 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
             "bp_accent_color": "#123456",
             "bp_point_size_multiplier": 1.5,
             "bp_xlabel": "Latitude",
+            "bp_xlabel_literal": False,
             "bp_plot_lb": "0.25",
             "bp_plot_ub": "4",
             "bp_xticks": "0.5, 1, 2",
@@ -1659,7 +1644,6 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
 def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     tmp_path, monkeypatch
 ):
-    monkeypatch.setattr(plot_service.r_bridge, "load_vars_for_plot", lambda path: True)
     from rc_metastudio import r_bridge
 
     r_bridge.initialize_r()
@@ -1692,51 +1676,12 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         def mark_commit_failed(self, _message):
             pass
 
-    def update_plot_params(params, write_them_out=False, outpath=None):
-        calls.append(("update", params, write_them_out, outpath))
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
+    def prepare(prefix, regenerator, params, output, directory):
+        assert regenerator == "regression"
+        calls.append(params)
+        return _stage_plot_edit(prefix, regenerator, params, output, directory, 300 + 100 * len(calls))
 
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_regression_plot_data",
-        lambda: calls.append(("regenerate",)),
-        raising=False,
-    )
-
-    def generate_reg_plot(path):
-        calls.append(("draw", path))
-        height = 300 + 100 * sum(call[0] == "draw" for call in calls)
-        params = next(call[1] for call in reversed(calls) if call[0] == "update")
-        svg = (
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
-            '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height)
-        )
-        Path(path).write_text(svg, encoding="utf-8")
-        Path(params["bp_display_path"]).write_text(svg, encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_reg_plot",
-        generate_reg_plot,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: (
-            calls.append(("write", path)),
-            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
-        )[0],
-        raising=False,
-    )
+    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
 
     window = results_window.ResultsWindow(
         _analysis_result(
@@ -1764,24 +1709,16 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        artifact = window.create_plot_artifact(
-            "Regression Plot", image_path, params_path=params_path
-        )
+        artifact = window.plot_artifact('Regression Plot')
 
-        window._apply_regression_plot_edits(FakeDialog(), artifact, plot_item)
-        window._apply_regression_plot_edits(FakeDialog(), artifact, plot_item)
+        window._apply_plot_edits(FakeDialog(), artifact, plot_item)
+        window._apply_plot_edits(FakeDialog(), artifact, plot_item)
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        updates = [call for call in calls if call[0] == "update"]
-        assert len(updates) == 4
-        assert sum(call[0] == "draw" for call in calls) == 2
-        assert all(
-            call[1]["bp_display_path"] != display_path for call in updates[::2]
-        )
-        assert all(
-            call[1]["bp_display_path"] == display_path for call in updates[1::2]
-        )
+        assert len(calls) == 2
+        assert all(params["bp_display_path"] == display_path for params in calls)
+        assert all(params["bp_show_confidence_band"] is False for params in calls)
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
         window.fit_width_action.trigger()
@@ -1957,56 +1894,16 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             pass
 
     monkeypatch.setattr(
-        plot_service.r_bridge,
-        "load_vars_for_plot",
-        lambda path, return_params_dict=False: {"fp_col1_str": "Study"},
-        raising=False,
-    )
-    def update_plot_params(updated_params, write_them_out=False, outpath=None):
-        calls.append(("update", updated_params, write_them_out, outpath))
-        assert outpath is not None
-        Path(outpath).write_text("params", encoding="utf-8")
-
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "update_plot_params",
-        update_plot_params,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "regenerate_plot_data",
-        lambda: calls.append(("regenerate",)),
-        raising=False,
+        plot_service.r_bridge, "load_plot_parameters", lambda _path: {"fp_col1_str": "Study"},
     )
 
-    def generate_forest_plot(outpath):
-        calls.append(("generate", outpath))
-        height = 300 + 100 * sum(call[0] == "generate" for call in calls)
-        params = next(call[1] for call in reversed(calls) if call[0] == "update")
-        svg = (
-            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="%d">'
-            '<rect width="400" height="%d" fill="white"/>'
-            "</svg>" % (height, height)
-        )
-        Path(outpath).write_text(svg, encoding="utf-8")
-        Path(params["fp_display_path"]).write_text(svg, encoding="utf-8")
+    def prepare(prefix, regenerator, params, output, directory):
+        assert regenerator == "forest"
+        calls.append(("prepare", params))
+        height = 300 + 100 * sum(call[0] == "prepare" for call in calls)
+        return _stage_plot_edit(prefix, regenerator, params, output, directory, height)
 
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "generate_forest_plot",
-        generate_forest_plot,
-        raising=False,
-    )
-    monkeypatch.setattr(
-        plot_service.r_bridge,
-        "write_out_plot_data",
-        lambda path: (
-            calls.append(("write", path)),
-            Path(str(path) + ".plotdata").write_text("plotdata", encoding="utf-8"),
-        )[0],
-        raising=False,
-    )
+    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
     monkeypatch.setattr(
         results_window,
         "EditPlotDialog",
@@ -2041,23 +1938,16 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             if isinstance(item, results_window._svg_item_class())
         )
 
-        artifact = window.create_plot_artifact(
-            "Forest Plot", png_path, params_path=params_path
-        )
+        artifact = window.plot_artifact('Forest Plot')
         window.edit_plot(artifact, plot_item=plot_item)
         window.edit_plot(artifact, plot_item=plot_item)
         app.processEvents()
 
         assert artifact.display_image_path == display_path
-        updates = [call for call in calls if call[0] == "update"]
-        assert len(updates) == 4
-        assert sum(call[0] == "generate" for call in calls) == 2
-        assert all(
-            call[1]["fp_display_path"] != display_path for call in updates[::2]
-        )
-        assert all(
-            call[1]["fp_display_path"] == display_path for call in updates[1::2]
-        )
+        updates = [params for kind, params, *_ in calls if kind == "prepare"]
+        assert len(updates) == 2
+        assert all(params["fp_display_path"] == display_path for params in updates)
+        assert all(params["fp_col1_str"] == "EDIT TEST HEADING" for params in updates)
         assert plot_item.boundingRect().height() == pytest.approx(500)
 
         window.fit_width_action.trigger()
@@ -2179,11 +2069,7 @@ def test_welcome_wizard_recent_action_selects_project(monkeypatch):
 
         page.dataset_selected(action)
 
-        assert wizard.get_wizard_path() == "open"
-        assert wizard.get_selected_dataset() == "second.rcms"
-        results = wizard.get_results()
-        assert results["outcome_info"] is None
-        window._handle_wizard_results(results)
+        window._handle_wizard_results(wizard.get_results())
         assert opened == ["second.rcms"]
     finally:
         wizard.close()
@@ -2213,18 +2099,14 @@ def test_welcome_wizard_open_existing_selects_project(monkeypatch):
 
         page.open_dataset()
 
-        assert wizard.get_wizard_path() == "open"
-        assert wizard.get_selected_dataset() == "chosen.rcms"
-        results = wizard.get_results()
-        assert results["outcome_info"] is None
-        window._handle_wizard_results(results)
+        window._handle_wizard_results(wizard.get_results())
         assert opened == ["chosen.rcms"]
 
         incomplete_new_dataset = main_wizard.MainWizard(
             parent=window, path="new_dataset"
         )
         try:
-            with pytest.raises(RuntimeError, match="dataset information is required"):
+            with pytest.raises(RuntimeError, match="dataset information has not been selected"):
                 incomplete_new_dataset.get_results()
         finally:
             incomplete_new_dataset.close()
@@ -2607,7 +2489,7 @@ def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview
     csv_path = tmp_path / "empty.csv"
     csv_path.write_text(
         "Study Name,Year,Intervention events,Intervention total,Control events,Control total,OR,Lower,Upper\n"
-        "Alpha,2020,1,10,2,12,,,\n" if preview_failure else ""
+        "Alpha,invalid-year,1,10,2,12,,,\n" if preview_failure else ""
     )
     shown = []
     wizard = main_wizard.MainWizard(path="csv_import")
@@ -2636,20 +2518,11 @@ def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview
         lambda *args, **kwargs: shown.append(args),
     )
 
-    if preview_failure:
-        monkeypatch.setattr(
-            main_wizard.csv_import,
-            "parse_csv",
-            lambda *_args, **_kwargs: (_ for _ in ()).throw(
-                ValueError("Year column is missing")
-            ),
-        )
-
     page._select_file()
 
     assert not shown
     if preview_failure:
-        assert "Year column is missing" in page.import_status.text()
+        assert "The year at row 1 is not an integer number." in page.import_status.text()
         assert "Try again" not in page.import_status.text()
     else:
         assert "No study rows found" in page.import_status.text()
