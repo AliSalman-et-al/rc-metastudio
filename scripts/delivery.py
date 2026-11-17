@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -36,6 +37,8 @@ POLICY_INPUTS = (
     "scripts/package-macos.sh",
     "scripts/package-linux.sh",
     "scripts/build-linux-package.sh",
+    "scripts/finalize-linux-package.sh",
+    "scripts/finalize-macos-package.sh",
     "scripts/install-r-deps-linux.R",
     "scripts/r_binary_policy.R",
     "scripts/r_dependency_policy.py",
@@ -341,17 +344,17 @@ def attach(args: argparse.Namespace) -> None:
     write(path, manifest)
 
 
-def verify(args: argparse.Namespace) -> None:
-    manifest = load(Path(args.manifest))
+def verify_manifest(manifest: dict, repository: str | None = None) -> dict[str, dict]:
     assert_commit(manifest["source"]["commit"])
     configured = targets()
     selected = manifest.get("release_targets")
-    if not isinstance(selected, list) or set(selected) != set(configured):
+    if not isinstance(selected, list) or len(selected) != len(configured) or set(selected) != set(configured):
         raise ValueError(
             "release set must contain exactly the supported future targets"
         )
     if set(manifest["targets"]) != set(selected):
         raise ValueError("release set does not contain exactly its selected targets")
+    attested = {}
     for name in selected:
         stages = manifest["targets"][name].get("stages", [])
         if [item["stage"] for item in stages] != required_stages(manifest, name):
@@ -364,23 +367,29 @@ def verify(args: argparse.Namespace) -> None:
         for record in stages:
             validate_record(record, name, manifest["source"]["commit"], previous)
             previous = canonical_digest(record)
-        if getattr(args, "artifact_root", None):
-            target = configured[name]
-            artifact = (
-                target["artifact"]
-                if manifest["trust_profile"] in target.get("final_artifact_profiles", ())
-                else candidate_artifact(target)
-            )
-            check_output(
-                stages[-1],
-                Path(args.artifact_root) / artifact,
-            )
-            check_output(stages[-1], Path(args.artifact_root) / f"{name}.cdx.json")
-    if (
-        getattr(args, "repository", None)
-        and manifest["source"]["repository"] != args.repository
-    ):
+        attested[name] = stages[-1]
+    if repository and manifest["source"]["repository"] != repository:
         raise ValueError("release source repository mismatch")
+    return attested
+
+
+def target_asset_names(name: str, target: dict, trust_profile: str) -> tuple[str, str]:
+    archive = (
+        target["artifact"]
+        if trust_profile in target.get("final_artifact_profiles", ())
+        else candidate_artifact(target)
+    )
+    return archive, f"{name}.cdx.json"
+
+
+def verify(args: argparse.Namespace) -> None:
+    manifest = load(Path(args.manifest))
+    attested = verify_manifest(manifest, getattr(args, "repository", None))
+    if getattr(args, "artifact_root", None):
+        configured = targets()
+        for name, record in attested.items():
+            for member in target_asset_names(name, configured[name], manifest["trust_profile"]):
+                check_output(record, Path(args.artifact_root) / member)
     print(canonical_digest(manifest))
 
 
@@ -417,11 +426,54 @@ def promote(args: argparse.Namespace) -> None:
     write(Path(args.output), source)
 
 
-def checksums(args: argparse.Namespace) -> None:
-    paths = sorted(Path(value) for value in args.files)
-    Path(args.output).write_text(
-        "".join(f"{digest(path)}  {path.name}\n" for path in paths), encoding="utf-8"
-    )
+def verified_publication_files(
+    manifest: dict, root: Path, target_prefix: str = "",
+) -> tuple[list[Path], dict[Path, str]]:
+    attested = verify_manifest(manifest)
+    configured = targets()
+    archives = []
+    files = {}
+    for target, record in attested.items():
+        archive, sbom = target_asset_names(target, configured[target], manifest["trust_profile"])
+        outputs = {item["name"]: item["sha256"] for item in record["outputs"]}
+        if outputs.keys() != {archive, sbom}:
+            raise ValueError(f"{target} must attest exactly its archive and SBOM")
+        directory = root / f"{target_prefix}-{target}" if target_prefix else root
+        for name in (archive, sbom):
+            path = directory / name
+            if not path.is_file() or path.is_symlink():
+                raise ValueError(f"missing regular publication asset: {path}")
+            check_output(record, path)
+            files[path] = outputs[name]
+        archives.append(directory / archive)
+    if len({path.name for path in files}) != 2 * len(attested):
+        raise ValueError("publication names must be distinct across release targets")
+    return archives, files
+
+
+def checksum_lines(files: dict[Path, str]) -> str:
+    by_name = sorted((path.name, sha) for path, sha in files.items())
+    return "".join(f"{sha}  {name}\n" for name, sha in by_name)
+
+
+def stage_publication(args: argparse.Namespace) -> None:
+    manifest = Path(args.manifest)
+    _, files = verified_publication_files(load(manifest), Path(args.target_root), args.target_prefix)
+    for path in files:
+        shutil.copyfile(path, manifest.parent / path.name)
+    (manifest.parent / "SHA256SUMS").write_text(checksum_lines(files), encoding="utf-8")
+
+
+def publication_assets(args: argparse.Namespace) -> None:
+    manifest = Path(args.manifest)
+    archives, files = verified_publication_files(load(manifest), manifest.parent)
+    sums = manifest.parent / "SHA256SUMS"
+    if sorted(sums.read_text(encoding="utf-8").splitlines()) != sorted(checksum_lines(files).splitlines()):
+        raise ValueError("publication checksum file does not match the attested outputs")
+    print(json.dumps({
+        "archives": [str(path) for path in archives],
+        "files": [*(str(path) for path in files), str(sums), str(manifest)],
+    }))
 
 
 def print_digest(args: argparse.Namespace) -> None:
@@ -491,10 +543,14 @@ def parser() -> argparse.ArgumentParser:
     promote_parser.add_argument("--version")
     promote_parser.add_argument("--output", required=True)
     promote_parser.set_defaults(func=promote)
-    sums = commands.add_parser("checksums")
-    sums.add_argument("--files", action="append", required=True)
-    sums.add_argument("--output", required=True)
-    sums.set_defaults(func=checksums)
+    stage_publication_parser = commands.add_parser("stage-publication")
+    stage_publication_parser.add_argument("--manifest", required=True)
+    stage_publication_parser.add_argument("--target-root", required=True)
+    stage_publication_parser.add_argument("--target-prefix", required=True)
+    stage_publication_parser.set_defaults(func=stage_publication)
+    publication_parser = commands.add_parser("publication-assets")
+    publication_parser.add_argument("--manifest", required=True)
+    publication_parser.set_defaults(func=publication_assets)
     digest_parser = commands.add_parser("digest")
     digest_parser.add_argument("--json", required=True)
     digest_parser.add_argument("--release-identity", action="store_true")

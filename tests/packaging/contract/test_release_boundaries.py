@@ -282,6 +282,47 @@ def test_verify_rechecks_downloaded_chain(pipeline, damage):
     cli("verify", "--manifest", path, ok=False)
 
 
+def test_publication_selects_only_verified_downloaded_files(pipeline, tmp_path):
+    _, candidate = pipeline
+    staging = tmp_path / "publication"
+    staging.mkdir()
+    manifest = staging / "release-set-rc.json"
+    cli("promote", "--manifest", candidate, "--from-channel", "candidate",
+        "--channel", "rc", "--output", manifest)
+    targets = {
+        "windows-x64": "RCMetaStudio-windows-x64.zip",
+        "macos-arm64": "RCMetaStudio-macos-arm64.dmg",
+        "linux-x64": "RCMetaStudio-linux-x64.tar.gz",
+    }
+    downloads = staging / "targets"
+    for target, filename in targets.items():
+        download = downloads / f"macos-trusted-{target}"
+        download.mkdir(parents=True)
+        for name in (filename, f"{target}.cdx.json"):
+            shutil.copyfile(tmp_path / name, download / name)
+    archive = downloads / "macos-trusted-macos-arm64" / targets["macos-arm64"]
+    original = archive.read_bytes()
+    archive.write_bytes(b"changed after attestation")
+    stage = ("stage-publication", "--manifest", manifest,
+             "--target-root", downloads, "--target-prefix", "macos-trusted")
+    assert "does not match stage output" in cli(*stage, ok=False).stderr
+    assert {item.name for item in staging.iterdir()} == {manifest.name, downloads.name}
+    archive.write_bytes(original)
+    cli(*stage)
+
+    (staging / "unselected.cdx.json").write_text("{}")
+    sums = staging / "SHA256SUMS"
+    sums.write_text("".join(reversed(sums.read_text().splitlines(keepends=True))))
+    selection = json.loads(cli("publication-assets", "--manifest", manifest).stdout)
+    assert {Path(file).name for file in selection["archives"]} == set(targets.values())
+    assert {Path(file).name for file in selection["files"]} == {
+        manifest.name, "SHA256SUMS", *targets.values(), *(f"{target}.cdx.json" for target in targets),
+    }
+    assert (staging / archive.name).read_bytes() == original
+    sums.write_text("")
+    assert "checksum file does not match" in cli("publication-assets", "--manifest", manifest, ok=False).stderr
+
+
 def test_promoted_chain_and_archive_binding(pipeline, tmp_path):
     d, path = pipeline
     rc = tmp_path / "rc.json"
