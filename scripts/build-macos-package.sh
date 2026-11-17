@@ -877,7 +877,8 @@ import sys
 print(json.load(open(sys.argv[1], encoding="utf-8"))["qt"]["baseline_device_pixel_ratio"])
 PY
 )"
-  for scale in "1.25" "1.50" "1.75"; do
+  surface_scales="$("$python_exe" "$repo_root/scripts/packaged_smoke_contract.py")"
+  while IFS= read -r scale; do
     step "Running packaged Cocoa surface smoke at scale $scale"
     surface_start_marker="$qualification_root/packaged-surface-${scale/./}.started"
     touch "$surface_start_marker"
@@ -939,7 +940,7 @@ PY
       fi
       exit "$surface_status"
     fi
-  done
+  done <<< "$surface_scales"
 
   step "Assembling packaged qualification evidence outside the application"
   mkdir -p "$surface_records_path"
@@ -1159,11 +1160,12 @@ if [ "$skip_smoke" -eq 0 ]; then
   }
   : > "$extracted_hang_trace"
   run_extracted "$extracted_app/Contents/MacOS/RCMetaStudio" --automation-package-runtime-probe "$extracted_probe"
-  for scale in "1.25" "1.50" "1.75"; do
+  surface_scales="$("$python_exe" "$repo_root/scripts/packaged_smoke_contract.py")"
+  while IFS= read -r scale; do
     QT_SCALE_FACTOR="$scale" RCMS_PACKAGE_BASELINE_DPR="$("$python_exe" -c 'import json,sys; print(json.load(open(sys.argv[1]))["qt"]["baseline_device_pixel_ratio"])' "$extracted_probe")" \
       RCMS_AUTOMATION_SMOKE_LOG="$extracted_smoke_log" RCMS_PACKAGED_PROCESS_TIMEOUT_SECONDS=60 \
       run_extracted "$extracted_app/Contents/MacOS/RCMetaStudio" --automation-package-surface-smoke "$extracted_surfaces/surface-$scale.json" "$scale"
-  done
+  done <<< "$surface_scales"
   mkdir -p "$extracted_surfaces"
   env -u QT_QPA_PLATFORM \
     RCMS_REQUIRE_IN_PROCESS_RPY2=1 \

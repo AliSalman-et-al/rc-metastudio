@@ -13,7 +13,7 @@ import time
 import pytest
 
 from scripts import qt6_build_impl as qt6_build
-from scripts import qt6_macos_feasibility_impl as macos_feasibility
+from scripts.macos_rcc import validate_macos_rcc
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -50,10 +50,8 @@ def verified_qt6_output(tmp_path_factory) -> Path:
 
 
 @pytest.fixture(scope="module")
-def official_rcc(verified_qt6_output) -> Path:
-    official = ROOT / "build/qt-rcc/6.12.0/msvc2022_64/bin/rcc.exe"
-    assert official.is_file()
-    return official
+def official_rcc() -> Path:
+    return qt6_build._resolve_rcc()
 
 
 WINDOWS_RCC_TEST = pytest.mark.skipif(
@@ -126,35 +124,35 @@ def test_macos_official_rcc_requires_pinned_version_and_host_slice(tmp_path):
         )
         return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
 
-    macos_feasibility.validate_macos_rcc(
+    validate_macos_rcc(
         rcc, command_runner=completed, host_machine=lambda: "arm64"
     )
 
     responses["architectures"] = "x86_64 arm64"
-    assert macos_feasibility.validate_macos_rcc(
+    assert validate_macos_rcc(
         rcc, command_runner=completed, host_machine=lambda: "arm64"
     ) == ["arm64", "x86_64"]
 
     with pytest.raises(RuntimeError, match="architecture mismatch"):
-        macos_feasibility.validate_macos_rcc(
+        validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "x86_64"
         )
 
     responses["architectures"] = "x86_64"
     with pytest.raises(RuntimeError, match="architecture mismatch"):
-        macos_feasibility.validate_macos_rcc(
+        validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
     responses["version"] = "rcc 6.11.0"
     with pytest.raises(RuntimeError, match="version mismatch"):
-        macos_feasibility.validate_macos_rcc(
+        validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
 
     responses["version"] = "rcc 6.12.0"
     responses["architectures"] = "i386"
     with pytest.raises(RuntimeError, match="invalid architecture slices"):
-        macos_feasibility.validate_macos_rcc(
+        validate_macos_rcc(
             rcc, command_runner=completed, host_machine=lambda: "arm64"
         )
 

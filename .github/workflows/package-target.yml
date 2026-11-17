@@ -67,7 +67,7 @@ jobs:
 
       - name: Resolve official Qt rcc
         shell: bash
-        run: PYTHONPATH="$PWD/src" uv run --no-project --python 3.14.10 python scripts/qt6_macos_feasibility.py resolve-rcc --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
+        run: uv run --no-project --python 3.14.10 python scripts/macos_rcc.py --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
 
       - name: Build and run the first-green packaged workflow
         shell: bash

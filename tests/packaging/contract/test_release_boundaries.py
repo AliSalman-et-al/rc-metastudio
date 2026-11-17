@@ -18,19 +18,22 @@ ROOT = Path(__file__).resolve().parents[3]
 BASH = shutil.which("bash") or "C:/Program Files/Git/bin/bash.exe"
 
 
-def workflow(name):
+def release_proof_source(path):
     # Also permits replay against the pre-fix definitions without touching Git.
     revision = os.environ.get("RELEASE_PROOF_REVISION")
-    text = (
+    return (
         subprocess.check_output(
-            ["git", "show", f"{revision}:.github/workflows/{name}.yml"],
+            ["git", "show", f"{revision}:{path}"],
             cwd=ROOT,
             text=True,
         )
         if revision
-        else (ROOT / f".github/workflows/{name}.yml").read_text()
+        else (ROOT / path).read_text(encoding="utf-8")
     )
-    return yaml.safe_load(text)
+
+
+def workflow(name):
+    return yaml.safe_load(release_proof_source(f".github/workflows/{name}.yml"))
 
 
 def shell_step(step, tmp_path, values, prelude=""):
@@ -70,14 +73,22 @@ def shell_step(step, tmp_path, values, prelude=""):
 
 
 @pytest.mark.parametrize(
-    "old,new",
+    "old,new,source_required,package_required",
     [
-        ("src/removed.py", "docs/moved.txt"),
-        ("docs/old.txt", "src/new.py"),
-        ("packaging/old.spec", "docs/old.spec"),
+        ("src/removed.py", "docs/moved.txt", True, True),
+        ("docs/old.txt", "src/new.py", True, True),
+        ("packaging/old.spec", "docs/old.spec", True, True),
+        ("", ".agents/skills/verify-rcms/scripts/analysis_matrix.py", True, True),
+        ("", "scripts/qt6_build_impl.py", True, True),
+        ("scripts/r-bundle-closure.R", "scripts/new-r-bundle-closure.R", True, True),
+        ("", "scripts/prune_staged_r.py", True, True),
+        ("", "scripts/configure_linux_r_launchers.py", True, True),
+        ("", ".github/workflows/code-health.yml", True, False),
+        ("", "config/desktop-durations.json", True, False),
+        ("", "docs/maintaining.md", False, False),
     ],
 )
-def test_rename_classification_executes_workflow(tmp_path, old, new):
+def test_input_classification_executes_workflow(tmp_path, old, new, source_required, package_required):
     step = workflow("fast-verification")["jobs"]["change-classifier"]["steps"][1]
     files = [{"filename": new, "previous_filename": old}]
     (tmp_path / "files.json").write_text(json.dumps(files))
@@ -86,7 +97,8 @@ def test_rename_classification_executes_workflow(tmp_path, old, new):
         'import json,sys\nfor f in json.load(open("files.json")):\n print(f["filename"])\n if "previous_filename" in sys.argv[-1]: print(f["previous_filename"])\n'
     )
     (tmp_path / "scripts").mkdir()
-    shutil.copy(ROOT / "scripts/package_input_policy.py", tmp_path / "scripts")
+    policy_path = "scripts/package_input_policy.py"
+    (tmp_path / policy_path).write_text(release_proof_source(policy_path), encoding="utf-8")
     python = Path(sys.executable).as_posix()
     result = shell_step(
         step,
@@ -100,9 +112,10 @@ def test_rename_classification_executes_workflow(tmp_path, old, new):
     )
     assert result.returncode == 0, result.stderr
     outputs = (tmp_path / "outputs").read_text()
-    assert "run-windows=true" in outputs and "run-linux=true" in outputs
-    if old.startswith("packaging/"):
-        assert "run-windows-package=true" in outputs
+    fields = dict(line.split("=", 1) for line in outputs.splitlines())
+    assert fields["run-windows"] == str(source_required).lower()
+    assert fields["run-linux"] == str(source_required).lower()
+    assert fields["run-windows-package"] == str(package_required).lower()
 
 
 def test_historical_master_ancestor_executes_workflow(tmp_path):

@@ -28,6 +28,11 @@ from rc_metastudio.macos_r_profile_schema import (
 )
 from rc_metastudio.r_runtime import macos_r_framework_version
 
+if __name__ == "__main__":
+    import packaged_smoke_contract as smoke_contract
+else:
+    from scripts import packaged_smoke_contract as smoke_contract
+
 EXPECTED_VERSIONS = {
     "python": "3.14.10",
     "pyqt6": "6.12.0",
@@ -94,12 +99,11 @@ DIRECT_BUILD_INPUT_MEMBERS = {
     "launchservices_stderr": "qualification/launchservices.stderr.log",
     "runner_environment": "qualification/runner-environment.json",
     "official_r_signature": "qualification/official-r-signature.json",
-    "surface_125_stdout": "qualification/packaged-surface-125.stdout.log",
-    "surface_125_stderr": "qualification/packaged-surface-125.stderr.log",
-    "surface_150_stdout": "qualification/packaged-surface-150.stdout.log",
-    "surface_150_stderr": "qualification/packaged-surface-150.stderr.log",
-    "surface_175_stdout": "qualification/packaged-surface-175.stdout.log",
-    "surface_175_stderr": "qualification/packaged-surface-175.stderr.log",
+    **{
+        f"surface_{scale_key}_{stream}": f"qualification/packaged-surface-{scale_key}.{stream}.log"
+        for scale_key in (scale.replace(".", "") for scale in smoke_contract.SURFACE_SCALES)
+        for stream in ("stdout", "stderr")
+    },
 }
 
 
@@ -1720,7 +1724,7 @@ def _validate_smoke_basics(evidence: dict, log_text: str) -> None:
         raise MacOSDeploymentInspectionError(
             "packaged automation contains failed native observations"
         )
-    if "packaged-workflow:post-close" not in log_text:
+    if smoke_contract.POST_CLOSE not in log_text:
         raise MacOSDeploymentInspectionError(
             "packaged automation did not emit its post-close marker"
         )
@@ -1746,17 +1750,7 @@ def _validate_launchservices_marker(marker_path: Path | None) -> None:
 def _validate_atomic_completion_trace(log_text: str, required: bool) -> None:
     if not required:
         return
-    markers = (
-        "packaged-runtime-probe:passed",
-        "packaged-surface:scale-1.25-passed",
-        "packaged-surface:scale-1.50-passed",
-        "packaged-surface:scale-1.75-passed",
-        "packaged-workflow:project-exercise:complete",
-        "packaged-workflow:evidence-written",
-        "packaged-workflow:post-close",
-        "packaged-workflow:process-exit:0",
-    )
-    positions = [log_text.find(marker) for marker in markers]
+    positions = [log_text.find(marker) for marker in smoke_contract.ATOMIC_COMPLETION_MARKERS]
     if any(position < 0 for position in positions) or positions != sorted(positions):
         raise MacOSDeploymentInspectionError(
             "packaged automation lacks an ordered atomic-completion trace"
@@ -1767,7 +1761,7 @@ def _validate_surface_gate(
     executed_scales: list[str], marker_path: Path | None, required: bool
 ) -> None:
     if required and (
-        executed_scales != ["1.25", "1.50", "1.75"] or marker_path is None
+        tuple(executed_scales) != smoke_contract.SURFACE_SCALES or marker_path is None
     ):
         raise MacOSDeploymentInspectionError(
             "direct packaged automation lacks the required surface or LaunchServices gates"
@@ -2596,7 +2590,7 @@ def validate_macos_surface_records(scales: object) -> None:
     ):
         raise MacOSDeploymentInspectionError("macOS surface scales are incomplete")
     typed_scales = cast(list[dict[str, object]], scales)
-    if [item.get("requested") for item in typed_scales] != ["1.25", "1.50", "1.75"]:
+    if tuple(item.get("requested") for item in typed_scales) != smoke_contract.SURFACE_SCALES:
         raise MacOSDeploymentInspectionError("macOS surface scales are incomplete")
     for item in typed_scales:
         if not _surface_item_valid(item):

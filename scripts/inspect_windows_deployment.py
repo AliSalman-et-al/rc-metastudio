@@ -15,6 +15,11 @@ from collections import defaultdict
 from pathlib import Path, PurePosixPath
 from typing import TypeGuard, cast
 
+if __name__ == "__main__":
+    import packaged_smoke_contract as smoke_contract
+else:
+    from scripts import packaged_smoke_contract as smoke_contract
+
 PE_X64_MACHINE = 0x8664
 NATIVE_SUFFIXES = {".dll", ".exe", ".pyd"}
 REQUIRED_PLUGINS = {
@@ -979,8 +984,7 @@ def _validate_windows_smoke(smoke: dict, log_text: str) -> None:
     )
     if not (
         _windows_workflow_valid(smoke, workflows, expected_summary)
-        and [item.get("requested") for item in scales]
-        == ["1.25", "1.50", "1.75"]
+        and tuple(item.get("requested") for item in scales) == smoke_contract.SURFACE_SCALES
         and all(_windows_scale_valid(item) for item in scales)
         and _windows_log_markers_valid(log_text)
     ):
@@ -1015,7 +1019,7 @@ def _windows_workflow_valid(
         smoke.get("execution") == {
             "automation_exit_code": 0,
             "positional_user_entry_exit_code": 0,
-            "scale_exit_codes": {"1.25": 0, "1.50": 0, "1.75": 0},
+            "scale_exit_codes": dict.fromkeys(smoke_contract.SURFACE_SCALES, 0),
             "post_close_marker": True,
             "clean_exit": True,
         },
@@ -1043,18 +1047,7 @@ def _windows_scale_valid(item: dict) -> bool:
 
 
 def _windows_log_markers_valid(log_text: str) -> bool:
-    markers = {
-        "packaged-runtime-probe:passed",
-        "packaged-workflow:project-exercise:complete",
-        "packaged-workflow:evidence-written",
-        "packaged-workflow:post-close",
-        "packaged-workflow:process-exit:0",
-        "packaged-surface:scale-1.25-passed",
-        "packaged-surface:scale-1.50-passed",
-        "packaged-surface:scale-1.75-passed",
-        "startup-project:normal-entry-point-passed",
-    }
-    return all(marker in log_text for marker in markers)
+    return all(marker in log_text for marker in smoke_contract.ASSEMBLED_COMPLETION_MARKERS)
 
 
 def _validate_windows_extracted_smoke(extracted: dict, log_text: str) -> None:
@@ -1063,8 +1056,8 @@ def _validate_windows_extracted_smoke(extracted: dict, log_text: str) -> None:
         or not _valid_sample_projects(extracted.get("workflows", {}).get("sample_projects"))
         or extracted.get("execution", {}).get("positional_user_entry_exit_code") != 0
         or extracted.get("execution", {}).get("clean_exit") is not True
-        or "startup-project:normal-entry-point-passed" not in log_text
-        or "packaged-workflow:post-close" not in log_text
+        or smoke_contract.STARTUP_PROJECT_PASSED not in log_text
+        or smoke_contract.POST_CLOSE not in log_text
     ):
         raise DeploymentInspectionError(
             "exact-extracted packaged smoke evidence is incomplete"
@@ -1153,14 +1146,14 @@ def _valid_sample_projects(value: object) -> bool:
 def finalize_smoke_evidence(path: Path, log_path: Path) -> dict:
     evidence = json.loads(path.read_text(encoding="utf-8"))
     log_text = log_path.read_text(encoding="utf-8")
-    if "packaged-workflow:post-close" not in log_text:
+    if smoke_contract.POST_CLOSE not in log_text:
         raise DeploymentInspectionError(
             "packaged automation did not emit its post-close marker"
         )
     evidence["execution"] = {
         "automation_exit_code": 0,
         "positional_user_entry_exit_code": 0,
-        "scale_exit_codes": {"1.25": 0, "1.50": 0, "1.75": 0},
+        "scale_exit_codes": dict.fromkeys(smoke_contract.SURFACE_SCALES, 0),
         "post_close_marker": True,
         "clean_exit": True,
     }
@@ -1257,7 +1250,7 @@ def inspect_archive(
             raise DeploymentInspectionError(
                 "embedded runtime/smoke evidence is incomplete"
             )
-        if "startup-project:normal-entry-point-passed" not in log_text:
+        if smoke_contract.STARTUP_PROJECT_PASSED not in log_text:
             raise DeploymentInspectionError("embedded smoke log is incomplete")
 
     return {

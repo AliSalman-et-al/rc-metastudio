@@ -26,7 +26,7 @@ import urllib.request
 
 import py7zr
 from PyQt6 import QtCore, QtGui, QtWidgets
-from scripts import qt6_macos_feasibility_impl
+from scripts.macos_rcc import QT_RCC_VERSION, validate_macos_rcc
 from rc_metastudio.ui_form_manifest import CANONICAL_FORMS
 
 
@@ -36,7 +36,6 @@ DEFAULT_BUILD_ROOT = ROOT / "build" / "qt6"
 
 # The PyQt6-Qt6 wheel intentionally contains the runtime and not the Qt SDK
 # command-line tools. This immutable official Qt package supplies matching rcc.
-QT_RCC_VERSION = "6.12.0"
 QT_RCC_PACKAGE = (
     "6.12.0-0-202609280346qtbase-Windows-Windows_11_24H2-MSVC2022-"
     "Windows-Windows_11_24H2-X86_64.7z"
@@ -309,7 +308,7 @@ def _resolve_rcc() -> Path:
         if not rcc.is_file():
             raise RuntimeError(f"RCMS_QT6_RCC does not name a file: {rcc}")
         if sys.platform == "darwin":
-            qt6_macos_feasibility_impl.validate_macos_rcc(rcc)
+            validate_macos_rcc(rcc)
         elif sys.platform == "linux":
             _validate_linux_rcc_provenance(rcc)
             validate_linux_rcc(rcc)

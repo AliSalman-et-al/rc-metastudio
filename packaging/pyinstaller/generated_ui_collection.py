@@ -1,9 +1,40 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Collect generated Qt modules into PyInstaller's canonical package archive."""
+"""Collect the application files and imports shared by all release targets."""
 
 from pathlib import Path
+
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
+
+
+APPLICATION_HIDDEN_IMPORTS = [
+    "openpyxl",
+    "docx",
+    "lxml.etree",
+    "rpy2.robjects",
+    "rpy2.rinterface",
+    "_rinterface_cffi_api",
+    "PyQt6.QtNetwork",
+    "PyQt6.QtSvg",
+    "PyQt6.QtSvgWidgets",
+]
+APPLICATION_EXCLUDES = ["PyQt5", "PySide2", "PySide6", "qtpy", "_rinterface_cffi_abi"]
+
+
+def application_data(app_source: Path, qt6_build_root: Path) -> list[tuple[str, str]]:
+    project_schema_dir = Path("rc_metastudio") / "project_schemas"
+    project_schemas = (app_source / "project_schemas").glob("v*/*.schema.json")
+    data = [
+        *copy_metadata("rpy2"),
+        *collect_data_files("docx", includes=["templates/*"]),
+        (str(qt6_build_root / "resources" / "icons.rcc"), "resources"),
+    ]
+    data.extend(
+        (str(path), str(project_schema_dir / path.parent.name))
+        for path in sorted(project_schemas)
+    )
+    return data
 
 
 def pyinstaller_module_entries(

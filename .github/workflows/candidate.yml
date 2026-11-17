@@ -31,6 +31,8 @@ jobs:
   initialize:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -52,7 +54,16 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
           REPOSITORY: ${{ github.repository }}
           TRUST_PROFILE: ${{ inputs.trust_profile }}
-        run: python scripts/delivery.py init --version "$VERSION" --commit "$SOURCE_SHA" --repository "$REPOSITORY" --trust-profile "$TRUST_PROFILE" --target windows-x64 --target macos-arm64 --target linux-x64 --output candidate/release-set.json
+        run: python scripts/delivery.py init --version "$VERSION" --commit "$SOURCE_SHA" --repository "$REPOSITORY" --trust-profile "$TRUST_PROFILE" --output candidate/release-set.json
+      - name: Resolve candidate build targets
+        id: targets
+        # Historical protected-master revisions also supply this registry.
+        run: |
+          matrix="$(jq -c '{include: [.targets | to_entries[] | {
+            target: .key, runner: .value.runner, architecture: .value.architecture,
+            artifact: (.value.candidate_artifact // .value.artifact)
+          }]}' delivery/targets.json)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-set-initial
@@ -63,20 +74,7 @@ jobs:
     needs: initialize
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - target: windows-x64
-            runner: windows-2025
-            artifact: RCMetaStudio-windows-x64.zip
-            architecture: ""
-          - target: macos-arm64
-            runner: macos-15
-            artifact: RCMetaStudio-macos-arm64.zip
-            architecture: arm64
-          - target: linux-x64
-            runner: ubuntu-24.04
-            artifact: RCMetaStudio-linux-x64.tar.gz
-            architecture: x86_64
+      matrix: ${{ fromJSON(needs.initialize.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     steps:
@@ -108,7 +106,17 @@ jobs:
       - name: Resolve official Qt rcc for macOS
         if: startsWith(matrix.target, 'macos-')
         shell: bash
-        run: PYTHONPATH="$PWD/src" uv run --no-project --python 3.14.10 python scripts/qt6_macos_feasibility.py resolve-rcc --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
+        run: |
+          # Candidate builds can select a protected-master revision before this tool moved.
+          if [ -f scripts/macos_rcc.py ]; then
+            resolver=(scripts/macos_rcc.py)
+          else
+            resolver=(scripts/qt6_macos_feasibility.py resolve-rcc)
+          fi
+          PYTHONPATH="$PWD/src" uv run --no-project --python 3.14.10 python "${resolver[@]}" \
+            --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" \
+            --github-env "$GITHUB_ENV" \
+            --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
       - name: Build Windows unsigned candidate
         if: matrix.target == 'windows-x64'
         shell: powershell
@@ -118,7 +126,8 @@ jobs:
         shell: bash
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
-        run: bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" --artifact-name "RCMetaStudio-${{ matrix.target }}"
+          ARTIFACT: ${{ matrix.artifact }}
+        run: bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" --artifact-name "${ARTIFACT%.zip}"
       - name: Build native Linux unsigned candidate
         if: matrix.target == 'linux-x64'
         shell: bash

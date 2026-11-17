@@ -4,90 +4,18 @@
 from __future__ import annotations
 
 import argparse
-import errno
 import os
 from pathlib import Path
 import signal
 import subprocess
 import sys
 import time
-from collections.abc import Callable
 
-
-_killpg: Callable[[int, int | signal.Signals], None] | None = getattr(
-    os, "killpg", None
-)
-_getpgid: Callable[[int], int] | None = getattr(os, "getpgid", None)
-_sigkill: int = getattr(signal, "SIGKILL", signal.SIGTERM)
-
-
-def _process_group_exists(process_group_id: int) -> bool:
-    if _killpg is None:
-        raise RuntimeError("process groups are unavailable on this platform")
-    try:
-        _killpg(process_group_id, 0)
-        return True
-    except OSError as exc:
-        if exc.errno == errno.ESRCH:
-            return False
-        if exc.errno == errno.EPERM:
-            return True
-        raise
-
-
-def _wait_for_group_exit(process_group_id: int, timeout_seconds: float) -> bool:
-    deadline = time.monotonic() + timeout_seconds
-    while time.monotonic() < deadline:
-        if not _process_group_exists(process_group_id):
-            return True
-        time.sleep(0.05)
-    return not _process_group_exists(process_group_id)
-
-
-def _terminate_process_group(
-    process: subprocess.Popen[bytes],
-    process_group_id: int,
-    killpg: Callable[[int, int | signal.Signals], None],
-) -> bool:
-    try:
-        killpg(process_group_id, signal.SIGTERM)
-    except ProcessLookupError:
-        process.wait(timeout=1)
-        return False
-    try:
-        process.wait(timeout=1)
-    except subprocess.TimeoutExpired:
-        pass
-    return True
-
-
-def _kill_surviving_group(
-    process: subprocess.Popen[bytes],
-    process_group_id: int,
-    killpg: Callable[[int, int | signal.Signals], None],
-) -> None:
-    if _process_group_exists(process_group_id):
-        try:
-            killpg(process_group_id, _sigkill)
-        except ProcessLookupError:
-            return
-    try:
-        process.wait(timeout=5)
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError("package process-group leader survived SIGKILL") from exc
-
-
-def _terminate_posix_group(process: subprocess.Popen[bytes]) -> None:
-    if _getpgid is None or _killpg is None:
-        raise RuntimeError("process groups are unavailable on this platform")
-    assert _killpg is not None
-    process_group_id = _getpgid(process.pid)
-    killpg = _killpg
-    if not _terminate_process_group(process, process_group_id, killpg):
-        return
-    _kill_surviving_group(process, process_group_id, killpg)
-    if not _wait_for_group_exit(process_group_id, 5):
-        raise RuntimeError("package process group remained alive after SIGKILL")
+if __name__ == "__main__":
+    import packaged_smoke_contract as smoke_contract
+    import process_groups
+else:
+    from scripts import packaged_smoke_contract as smoke_contract, process_groups
 
 
 def _terminate_owned_pid(path: Path | None) -> None:
@@ -158,7 +86,9 @@ def run_bounded(
             )
             if os.name == "posix":
                 try:
-                    _terminate_posix_group(process)
+                    process_groups.terminate_process_group(process, grace_seconds=1)
+                    if not process_groups.wait_for_process_group_exit(process.pid, timeout_seconds=5):
+                        raise RuntimeError("package process group remained alive after SIGKILL")
                 finally:
                     _terminate_owned_pid(owned_pid_path)
             else:
@@ -179,7 +109,7 @@ def run_bounded(
 def record_completion(path: Path, result: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as stream:
-        stream.write(f"packaged-workflow:process-exit:{result}\n")
+        stream.write(smoke_contract.process_exit_marker(result) + "\n")
 
 
 def main() -> int:

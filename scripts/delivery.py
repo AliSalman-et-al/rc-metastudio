@@ -14,7 +14,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS_PATH = ROOT / "delivery" / "targets.json"
-SUPPORTED_RELEASE_TARGETS = ("windows-x64", "macos-arm64", "linux-x64")
 POLICY_INPUTS = (
     ".github/workflows/candidate.yml",
     ".github/workflows/community-release-candidate.yml",
@@ -46,7 +45,9 @@ POLICY_INPUTS = (
     "scripts/sign-notarize-macos-artifact.sh",
     "config/macos-package-targets.json",
     "scripts/resolve_macos_package_target.py",
-    "scripts/qt6_macos_feasibility.py",
+    "scripts/macos_rcc.py",
+    "scripts/packaged_smoke_contract.py",
+    "scripts/process_groups.py",
     "scripts/run_bounded_process.py",
     "scripts/package_input_policy.py",
     "packaging/pyinstaller/rc-metastudio-macos.spec",
@@ -141,8 +142,8 @@ def verify_archive(args: argparse.Namespace) -> None:
             raise ValueError(
                 "candidate manifest does not match selected release identity"
             )
-    extension = "tar.gz" if args.target == "linux-x64" else "zip"
-    if Path(args.archive).name != f"RCMetaStudio-{args.target}.{extension}":
+    configured = targets().get(args.target)
+    if configured is None or Path(args.archive).name != candidate_artifact(configured):
         raise ValueError("candidate archive name does not match target")
     if record["stage"] != "assembled":
         raise ValueError("candidate archive requires assembled record")
@@ -172,6 +173,10 @@ def now() -> str:
 
 def targets() -> dict:
     return load(TARGETS_PATH)["targets"]
+
+
+def candidate_artifact(target: dict) -> str:
+    return target.get("candidate_artifact", target["artifact"])
 
 
 def required_stages(manifest: dict, target: str) -> list[str]:
@@ -208,16 +213,13 @@ def init_release(args: argparse.Namespace) -> None:
         raise ValueError(
             f"requested version {args.version} does not match repository version {current_version}"
         )
-    selected_targets = list(dict.fromkeys(getattr(args, "target", None) or targets()))
-    unsupported = sorted(set(selected_targets) - set(targets()))
+    configured = targets()
+    selected_targets = list(dict.fromkeys(getattr(args, "target", None) or configured))
+    unsupported = sorted(set(selected_targets) - set(configured))
     if unsupported:
         raise ValueError(f"unsupported release targets: {', '.join(unsupported)}")
-    if not selected_targets:
-        raise ValueError("release set must contain at least one target")
-    if set(selected_targets) != set(SUPPORTED_RELEASE_TARGETS):
-        raise ValueError(
-            "future release sets must contain exactly Windows x64, Apple silicon macOS, and Linux x64"
-        )
+    if not selected_targets or set(selected_targets) != set(configured):
+        raise ValueError("release set must contain exactly the supported future targets")
     manifest = {
         "schema_version": 1,
         "product": "RC MetaStudio",
@@ -344,11 +346,7 @@ def verify(args: argparse.Namespace) -> None:
     assert_commit(manifest["source"]["commit"])
     configured = targets()
     selected = manifest.get("release_targets")
-    if (
-        not isinstance(selected, list)
-        or set(selected) != set(SUPPORTED_RELEASE_TARGETS)
-        or set(selected) != set(configured)
-    ):
+    if not isinstance(selected, list) or set(selected) != set(configured):
         raise ValueError(
             "release set must contain exactly the supported future targets"
         )
@@ -367,15 +365,15 @@ def verify(args: argparse.Namespace) -> None:
             validate_record(record, name, manifest["source"]["commit"], previous)
             previous = canonical_digest(record)
         if getattr(args, "artifact_root", None):
-            extension = (
-                "dmg"
-                if name == "macos-arm64"
-                and manifest["trust_profile"] == "macos-trusted"
-                else ("tar.gz" if name == "linux-x64" else "zip")
+            target = configured[name]
+            artifact = (
+                target["artifact"]
+                if manifest["trust_profile"] in target.get("final_artifact_profiles", ())
+                else candidate_artifact(target)
             )
             check_output(
                 stages[-1],
-                Path(args.artifact_root) / f"RCMetaStudio-{name}.{extension}",
+                Path(args.artifact_root) / artifact,
             )
             check_output(stages[-1], Path(args.artifact_root) / f"{name}.cdx.json")
     if (
@@ -444,7 +442,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--repository", required=True)
     init.add_argument(
         "--trust-profile",
-        choices=("unsigned-community", "macos-trusted", "trusted-signed"),
+        choices=tuple(load(TARGETS_PATH)["trust_profiles"]),
         default="unsigned-community",
     )
     init.add_argument(

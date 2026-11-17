@@ -1,96 +1,59 @@
 #!/usr/bin/env python3
-"""Classify direct Windows, macOS, and Linux release-package inputs."""
-
-from __future__ import annotations
+"""Classify changed paths for source and packaged verification."""
 
 import argparse
-import fnmatch
 import sys
 
-PACKAGE_INPUT_PATTERNS = (
+
+PACKAGE_DIRECTORIES = (
+    ".agents/skills/verify-rcms/scripts/",
+    "delivery/",
+    "packaging/",
+    "r/",
+    "sample_projects/",
+    "scripts/",
+    "src/",
+    "tests/e2e/",
+    "tests/packaging/",
+)
+PACKAGE_FILES = {
+    ".github/workflows/candidate.yml",
+    ".github/workflows/community-release-candidate.yml",
     ".github/workflows/fast-verification.yml",
-    ".github/workflows/package-windows.yml",
+    ".github/workflows/macos-trusted-release-candidate.yml",
+    ".github/workflows/notarization-status.yml",
     ".github/workflows/package-linux.yml",
     ".github/workflows/package-target.yml",
     ".github/workflows/package-verification.yml",
-    ".github/workflows/candidate.yml",
-    ".github/workflows/community-release-candidate.yml",
-    ".github/workflows/macos-trusted-release-candidate.yml",
-    ".github/workflows/notarization-status.yml",
+    ".github/workflows/package-windows.yml",
     ".github/workflows/promote.yml",
-    "packaging/*",
-    "delivery/*",
-    "pyproject.toml",
-    "uv.lock",
-    "sample_projects/*",
-    "r/*",
-    "src/*",
-    "tests/packaging/*",
-    "tests/python/fast/test_qt6_build_slice.py",
-    "tests/python/fast/test_project_format.py",
-    "tests/e2e/*",
-    "tests/python/gui/test_main_window_automation_launch.py",
-    "scripts/build-windows-package.ps1",
-    "scripts/test-bounded-package-process.ps1",
-    "scripts/package-windows.ps1",
-    "scripts/package-linux.sh",
-    "scripts/inspect_windows_deployment.py",
-    "scripts/build-macos-package.sh",
-    "scripts/build_macos_direct_provenance.py",
-    "scripts/configure_macos_r_launchers.py",
+    ".python-version",
     "config/macos-package-targets.json",
-    "scripts/macos_pkg_signature.py",
-    "scripts/profile_macos_embedded_r_runtime.py",
-    "scripts/relocate_macos_r_runtime.sh",
-    "scripts/resolve_macos_r_framework_component.py",
-    "scripts/resolve_macos_package_target.py",
-    "scripts/macos_embedded_r_adapter.py",
-    "scripts/macos_host_r_isolation.sh",
-    "scripts/verify_macos_r_pyinstaller_toc.py",
-    "scripts/package-macos.sh",
-    "scripts/build-linux-package.sh",
-    "scripts/install-r-deps-linux.R",
-    "scripts/inspect_macos_deployment.py",
-    "scripts/normalize_macos_macho.py",
-    "scripts/sign_macos_app.py",
-    "scripts/sign-notarize-macos-artifact.sh",
-    "scripts/qt6_macos_feasibility.py",
-    "scripts/run_bounded_process.py",
-    "scripts/package_input_policy.py",
-    "scripts/install-r-deps.R",
-    "scripts/install-rcmetar-source.R",
-    "scripts/r_binary_policy.R",
-    "scripts/r_dependency_policy.py",
-    "scripts/build_qt6.py",
-    "scripts/verify_rcmetar_r_stack.py",
-    "scripts/verify_reitsma_visual_qa.R",
-    "scripts/r_verification_support.py",
-    "scripts/validate_rcmetar_r_manifests.py",
-    "scripts/verify_golden_compatibility.py",
-    "scripts/assemble_packaged_smoke_evidence.py",
-    "scripts/resolve_package_ci_metadata.py",
-    "scripts/source_provenance.py",
-    "scripts/test-package-download-retry.ps1",
-    "scripts/validate_adaptive_layout_evidence.py",
-    "scripts/delivery.py",
     "config/r-dependencies.json",
-    "delivery/targets.json",
-)
-
-
-def requires_package_qualification(paths: list[str]) -> bool:
-    return any(
-        fnmatch.fnmatchcase(path.replace("\\", "/"), pattern)
-        for path in paths
-        for pattern in PACKAGE_INPUT_PATTERNS
-    )
+    "pyproject.toml",
+    "tests/python/fast/test_project_format.py",
+    "tests/python/fast/test_qt6_build_slice.py",
+    "tests/python/gui/test_main_window_automation_launch.py",
+    "uv.lock",
+}
+SOURCE_DIRECTORIES = (".github/workflows/", "config/", "tests/")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.parse_args()
-    paths = [line.strip() for line in sys.stdin if line.strip()]
-    print("true" if requires_package_qualification(paths) else "false")
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    paths = [line.rstrip("\r\n").replace("\\", "/") for line in sys.stdin]
+    package_inputs = [
+        path for path in paths
+        if path.startswith(PACKAGE_DIRECTORIES) or path in PACKAGE_FILES
+    ]
+    source_inputs = [path for path in paths if path.startswith(SOURCE_DIRECTORIES)]
+    matches = package_inputs or source_inputs
+    source_required = str(bool(matches)).lower()
+    print(f"run-windows={source_required}")
+    print(f"run-linux={source_required}")
+    print(f"run-windows-package={str(bool(package_inputs)).lower()}")
+    reason = f"matched {matches[0]}" if matches else "no Qt6 integration verification inputs changed"
+    print(f"reason={reason}")
     return 0
 
 

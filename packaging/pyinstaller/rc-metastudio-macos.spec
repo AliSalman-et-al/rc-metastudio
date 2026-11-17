@@ -7,9 +7,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_data_files, copy_metadata
-
-
 repo_root = Path(SPECPATH).resolve().parents[1]
 collection_spec = importlib.util.spec_from_file_location(
     "rcms_generated_ui_collection",
@@ -24,12 +21,6 @@ adapter_module = importlib.util.module_from_spec(adapter_spec)
 adapter_spec.loader.exec_module(adapter_module)
 app_source = repo_root / "src" / "rc_metastudio"
 qt6_build_root = Path(os.environ["RCMS_QT6_BUILD_ROOT"]).resolve()
-binary_resource = qt6_build_root / "resources" / "icons.rcc"
-project_schema_root = app_source / "project_schemas"
-project_schema_data = [
-    (str(path), str(Path("rc_metastudio") / "project_schemas" / path.parent.name))
-    for path in sorted(project_schema_root.glob("v*/*.schema.json"))
-]
 generated_ui_modules = collection_module.pyinstaller_module_entries(qt6_build_root)
 direct_r_toc_path = os.environ.get("RCMS_PYINSTALLER_R_TOC")
 direct_r_map_path = os.environ.get("RCMS_PYINSTALLER_R_MAP")
@@ -57,34 +48,12 @@ a = Analysis(
         str(app_source / "forms"),
     ],
     binaries=[],
-    datas=[
-        *copy_metadata("rpy2"),
-        *collect_data_files("docx", includes=["templates/*"]),
-        (str(binary_resource), "resources"),
-        *project_schema_data,
-        *direct_r_datas,
-    ],
-    hiddenimports=[
-        "openpyxl",
-        "docx",
-        "lxml.etree",
-        "rpy2.robjects",
-        "rpy2.rinterface",
-        "_rinterface_cffi_api",
-        "PyQt6.QtNetwork",
-        "PyQt6.QtSvg",
-        "PyQt6.QtSvgWidgets",
-    ],
+    datas=[*collection_module.application_data(app_source, qt6_build_root), *direct_r_datas],
+    hiddenimports=collection_module.APPLICATION_HIDDEN_IMPORTS,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[
-        "PyQt5",
-        "PySide2",
-        "PySide6",
-        "qtpy",
-        "_rinterface_cffi_abi",
-    ],
+    excludes=collection_module.APPLICATION_EXCLUDES,
     noarchive=False,
     optimize=0,
 )
