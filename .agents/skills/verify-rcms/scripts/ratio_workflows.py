@@ -173,8 +173,8 @@ def run(app, window, scenario, record):
         assert isinstance(menu, QtWidgets.QMenu)
         delete = next(action for action in menu.actions() if action.text().startswith("Delete study"))
         assert delete.text() == "Delete study “Study 13”…"
-        from rc_metastudio import project_adapter
-        deletion_before = project_adapter.runtime_project_to_document(window.workspace.snapshot())
+        deletion_before = window.workspace.document
+        assert deletion_before is not None
         (work / "delete-before.json").write_text(json.dumps(dict(project=deletion_before.project, state=deletion_before.state), indent=2))
         record("ratio-delete-study-menu", window, target_id=added_id, target_row=row, sorted_rows=sorted_rows)
         def confirm_delete(dialog):
@@ -190,7 +190,8 @@ def run(app, window, scenario, record):
         model = window.model
         assert added_id in [study.id for study in model.current_sheet.rows]
         assert "Study 13" in [model.data(model.index(i, model.NAME)) for i in range(model.rowCount())]
-        deletion_undone = project_adapter.runtime_project_to_document(window.workspace.snapshot())
+        deletion_undone = window.workspace.document
+        assert deletion_undone is not None
         (work / "delete-undone.json").write_text(json.dumps(dict(project=deletion_undone.project, state=deletion_undone.state), indent=2))
         record("ratio-delete-undone", window, can_redo=window.workspace.can_redo)
         assert window.workspace.can_redo

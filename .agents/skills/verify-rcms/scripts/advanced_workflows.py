@@ -391,7 +391,7 @@ def plots(app, window, family, record, *, view=None):
     if view is None:
         view = matrix(app, window, producer, record, keep_results=True)
     kind = {
-        "coefficient": "forest",
+        "coefficient": "reitsma_coefficient",
         "contour": "contour_funnel",
         "trimfill": "trimfill_funnel",
         "deeks": "deeks_funnel",
@@ -399,33 +399,20 @@ def plots(app, window, family, record, *, view=None):
         "leave-one-out": "leave_one_out_forest",
         "subgroup": "subgroup_forest",
     }.get(family, family)
-    artifacts = [
-        view.plot_artifact(title)
-        for title, path in view.results.images.items()
-    ]
-    artifact = next(
-        a
-        for a in artifacts
-        if a.plot_kind == kind
-        and a.params_path
-        and (
-            family != "coefficient"
-            or view.plot_service.load_params(a.params_path).get(
-                "reitsma.coefficient.scale"
-            )
-        )
+    section = next(
+        section for section in view.results.sections
+        if section.kind == "image" and section.plot_kind == kind and section.plot_data
     )
-    item = None
-    # Results attaches its artifact to the context callback closure.
-    for candidate in (*view._svg_plot_items, *view._raster_plot_items):
-        callback = candidate.contextMenuEvent
-        cells = [
-            c.cell_contents for c in (getattr(callback, "__closure__", None) or ())
-        ]
-        if any(getattr(c, "title", None) == artifact.title for c in cells):
-            item = candidate
-            break
-    assert item is not None, artifact.title
+    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+    assert len(navigation) == 1, (family, section.title)
+    view.nav_tree.setCurrentItem(navigation[0])
+    view.report_action.setChecked(False)
+    view._show_report(False)
+    app.processEvents()
+    selected = view._selected_plot()
+    assert selected is not None, (family, section.title)
+    artifact, item = selected
+    assert artifact.title == section.source_key and item is not None, section.title
     texts = dict(view.texts)
     path = Path(artifact.display_path())
     before = path.read_bytes()
@@ -445,14 +432,6 @@ def plots(app, window, family, record, *, view=None):
         assert "Standard error of log " + metric_label(window.model).casefold() in labels, labels
         assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
 
-    section = next(section for section in view.results.sections if section.source_key == artifact.title)
-    navigation = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
-    assert len(navigation) == 1, (family, section.title)
-    view.nav_tree.setCurrentItem(navigation[0])
-    view.report_action.setChecked(False)
-    view._show_report(False)
-    app.processEvents()
-    assert view._selected_plot()[0].title == artifact.title
     record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)}, exports={"svg": str(initial_svg)})
     from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
     from rc_metastudio.plot_editor_dialog import EditPlotDialog

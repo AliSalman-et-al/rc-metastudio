@@ -24,19 +24,26 @@ def main() -> int:
         Path(pid_path).write_text(f"{os.getpid()}\n", encoding="utf-8")
 
     command = arguments[1] if len(arguments) > 1 else ""
-    if command.startswith("--automation-") and command != "--automation-startup-project-smoke":
-        from rc_metastudio import automation
+    if not command.startswith("--automation-") or command == "--automation-startup-project-smoke":
+        return launch.start(arguments) or 0
 
-        try:
-            return automation.dispatch(arguments)
-        except Exception as error:
-            try:
-                app_error_handler.log_exception(type(error), error, error.__traceback__)
-            except OSError:
-                if sys.stderr is not None:
-                    traceback.print_exc()
-            return 1
-    return launch.start(arguments) or 0
+    from rc_metastudio import automation
+
+    try:
+        return automation.dispatch(arguments)
+    except Exception as error:
+        _log_automation_error(error)
+        return 1
+
+
+def _log_automation_error(error: Exception) -> None:
+    from rc_metastudio import app_error_handler
+
+    try:
+        app_error_handler.log_exception(type(error), error, error.__traceback__)
+    except OSError:
+        if sys.stderr is not None:
+            traceback.print_exc()
 
 
 if __name__ == "__main__":

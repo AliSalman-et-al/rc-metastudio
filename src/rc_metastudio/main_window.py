@@ -144,6 +144,17 @@ class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
         self.progress_bar.show()
 
 
+class SheetNameEditor(QtWidgets.QLineEdit):
+    cancelled = QtCore.pyqtSignal()
+
+    def keyPressEvent(self, event: QKeyEvent | None) -> None:
+        if event is not None and event.key() == Qt.Key.Key_Escape:
+            event.accept()
+            self.cancelled.emit()
+            return
+        super().keyPressEvent(event)
+
+
 class SheetTabBar(QtWidgets.QTabBar):
     stripPaletteChanged = QtCore.pyqtSignal(QtGui.QPalette, str)
     resized = QtCore.pyqtSignal()
@@ -1434,7 +1445,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_tabs.setCurrentIndex(index)
         self._scroll_to_sheet_tab()
         sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
-        edit = QtWidgets.QLineEdit(sheet.name, self.sheet_tabs)
+        edit = SheetNameEditor(sheet.name, self.sheet_tabs)
         self.sheet_name_edit = edit
         edit.setObjectName("sheet_name_edit")
         edit.setProperty("sheet_id", sheet.id)
@@ -1442,9 +1453,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         edit.setGeometry(rect)
         edit.returnPressed.connect(self._finish_sheet_rename)
         edit.editingFinished.connect(self._finish_sheet_rename)
-        cancel = QtGui.QShortcut(QKeySequence(Qt.Key.Key_Escape), edit)
-        cancel.setContext(Qt.ShortcutContext.WidgetShortcut)
-        cancel.activated.connect(lambda: self._finish_sheet_rename(cancel=True))
+        edit.cancelled.connect(lambda: self._finish_sheet_rename(cancel=True))
         edit.show()
         edit.setFocus()
         edit.selectAll()
