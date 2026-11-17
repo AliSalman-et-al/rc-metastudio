@@ -68,9 +68,8 @@ def test_diagnostic_raw_header_tooltips_keep_single_group_safe():
     assert model.headerData(
         model.RAW_DATA[3], Qt.Orientation.Horizontal, Qt.ItemDataRole.ToolTipRole
     ) == (
-        "# True Negatives\n"
-        "Sort on this column by right-clicking the column header and selecting "
-        "'sort studies by <column>'"
+        "True negatives (TN)\n"
+        "Right-click the header to sort studies by this column."
     )
 
 
@@ -218,7 +217,7 @@ def test_raw_data_edit_on_placeholder_row_emits_study_name_error():
 
     assert model.setData(model.index(1, model.RAW_DATA[0]), "90") is False
 
-    assert errors == ["Please enter a study name before entering study data."]
+    assert errors == ["Enter a study name first."]
 
 
 def test_failed_raw_preview_restores_values_and_keeps_sheet_ownership(monkeypatch):
@@ -265,7 +264,7 @@ def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch)
 
     study = model.current_sheet.rows[0]
     analysis_unit = model.get_current_analysis_unit_for_study(0)
-    assert errors == ["Please enter a study name before entering study data."]
+    assert errors == ["Enter a study name first."]
     assert study.include is False
     assert analysis_unit.get_entered_effect_and_ci(
         "OR", model.get_current_arm_key()
@@ -307,7 +306,7 @@ def test_unnamed_study_cannot_be_manually_included():
 
     assert model.setData(model.index(0, model.INCLUDE_STUDY), True) is False
 
-    assert errors == ["Please enter a study name before entering study data."]
+    assert errors == ["Enter a study name first."]
     assert model.current_sheet.rows[0].include is False
 
 

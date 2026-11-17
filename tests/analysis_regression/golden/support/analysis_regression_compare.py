@@ -433,6 +433,32 @@ def _apply_scoped_exceptions(rows, exceptions, reference_by_id, current_by_id):
             if classifications and row["classification"] not in classifications:
                 continue
             detail = row["detail"]
+            if detail.startswith("Artifact ") and row["classification"] == TEXT_ARTIFACT_DRIFT:
+                reference = reference_by_id[row["id"]]
+                current = current_by_id[row["id"]]
+                for label, binding in exception.get("accepted_artifacts", {}).items():
+                    if detail != f"Artifact {label} descriptor or content changed under the same-platform exact artifact policy ({_capture_os(reference)}).":
+                        continue
+                    before = next((item for item in reference.get("artifacts", []) if item.get("label") == label), None)
+                    after = next((item for item in current.get("artifacts", []) if item.get("label") == label), None)
+                    if before is None or after is None or _capture_os(reference) != _capture_os(current):
+                        continue
+                    descriptors = {"before": _artifact_descriptor(before), "after": _artifact_descriptor(after)}
+                    if binding == descriptors and all(_valid_sha256(value["sha256"]) for value in descriptors.values()):
+                        row["classification"] = ACCEPTED_EXCEPTION
+                        row["exception"] = exception.get("reason", "")
+                continue
+            if row["classification"] == UNEXPECTED_OUTPUT:
+                for section, metrics in exception.get("accepted_outputs", {}).items():
+                    for metric, value in metrics.items():
+                        if (detail == f"{section}.{metric} is an unexpected numeric metric."
+                                and metric not in reference_by_id[row["id"]].get("outputs", {}).get(section, {})
+                                and _is_finite_real_number(value)
+                                and _is_finite_real_number(current_by_id[row["id"]].get("outputs", {}).get(section, {}).get(metric))
+                                and current_by_id[row["id"]]["outputs"][section][metric] == value):
+                            row["classification"] = ACCEPTED_EXCEPTION
+                            row["exception"] = exception.get("reason", "")
+                continue
             if detail.startswith("Text section ") and detail.endswith(" changed."):
                 section = detail[len("Text section "):-len(" changed.")]
             elif detail.startswith("Unexpected text section ") and detail.endswith(" was produced."):

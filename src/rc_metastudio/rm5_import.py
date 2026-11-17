@@ -39,7 +39,7 @@ def _configure_analysis(sheet, outcome, metric, differences):
     else:
         differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
     if metric == 'SMD':
-        differences.append("SMD: RCMS uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
+        differences.append("SMD: RC MetaStudio uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
 
 
 def _raw_arm(record, i, fields, family, name):
@@ -117,12 +117,15 @@ def _append_diagnostic_row(sheet, record, studies, name):
     study = studies.get(record.get('STUDY_ID'))
     if study is None:
         raise ValueError(f'{name}: unknown study {record.get("STUDY_ID")}.')
+    missing = [key for key in ('TP', 'FN', 'FP', 'TN') if not record.get(key, '').strip()]
+    if missing:
+        raise ValueError(f'{name}: missing diagnostic counts: {", ".join(missing)}.')
     values = [float(record.attrib[key]) for key in ('TP', 'FN', 'FP', 'TN')]
     if any(not math.isfinite(v) or v < 0 or v % 1 != 0 for v in values):
         raise ValueError(f'{name}: diagnostic counts must be non-negative integers.')
     unit = AnalysisUnit(sheet, raw_data=[values], arm_names=[sheet.arms[0].name], arm_stable_ids=[sheet.arms[0].id])
     sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), study.get('NAME') or record.get('STUDY_ID'), unit,
-        year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
+        include=any(values), year=int(study.get('YEAR')) if (study.get('YEAR') or '').isdigit() else None))
 
 
 def _outcome_format(outcome, metric):
@@ -228,7 +231,7 @@ def read_rm5(path: str | Path) -> Rm5Import:
         if list(root.iter(tag)):
             not_imported.append(f'{tag}: data are not imported.')
     if root.find('ANALYSES_AND_DATA/TESTS') is not None:
-        differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RCMS defaults.')
+        differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RC MetaStudio defaults.')
     if not dataset.sheets:
         raise ValueError('This review has no outcomes RC MetaStudio can import\nNot imported\n' + '\n'.join(not_imported))
     from rc_metastudio.project_adapter import dataset_to_project

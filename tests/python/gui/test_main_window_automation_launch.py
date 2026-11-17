@@ -562,7 +562,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     monkeypatch.setattr(
         r_bridge,
         "get_available_methods",
-        lambda **kwargs: {"Binary Random-Effects": "binary.random"},
+        lambda **kwargs: {"Random-effects": "binary.random"},
         raising=False,
     )
     monkeypatch.setattr(
@@ -596,9 +596,9 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
             str(label.text())
             for label in specs[0].findChildren(QtWidgets.QLabel)
         }
-        assert "Confidence Level" in labels
+        assert "Confidence level" in labels
         assert "Continuity correction" in labels
-        assert "Decimal Places" in labels
+        assert "Decimal places" in labels
     finally:
         window.close()
         app.processEvents()
@@ -708,17 +708,17 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
         stable_height = specs.height()
 
         long_method_index = specs.method_cbo_box.findText(
-            "Binary Fixed-Effect Mantel-Haenszel"
+            "Fixed-effect Mantel–Haenszel"
         )
         assert long_method_index >= 0
         specs.method_cbo_box.setCurrentIndex(long_method_index)
         app.processEvents()
-        assert specs.method_cbo_box.currentText() == "Binary Fixed-Effect Mantel-Haenszel"
+        assert specs.method_cbo_box.currentText() == "Fixed-effect Mantel–Haenszel"
         assert specs.parameter_grp_box.title() != "binary.fixed.mh"
-        short_method_index = specs.method_cbo_box.findText("Binary Random-Effects")
+        short_method_index = specs.method_cbo_box.findText("Random-effects")
         specs.method_cbo_box.setCurrentIndex(short_method_index)
         app.processEvents()
-        assert specs.method_cbo_box.currentText() == "Binary Random-Effects"
+        assert specs.method_cbo_box.currentText() == "Random-effects"
         assert specs.parameter_grp_box.title() != "binary.random"
 
         assert specs.width() == stable_width
@@ -847,8 +847,8 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         assert calls == []
         assert warnings
         assert warnings[0][1:3] == (
-            "No Covariate Selected",
-            "Select a Category covariate before running subgroup analysis.",
+            "No covariate selected",
+            "Select a categorical covariate before running subgroup analysis.",
         )
     finally:
         _mark_workspace_saved(window)
@@ -1294,9 +1294,12 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             required(self.callback, "fake signal callback")()
 
     class FakeDialog(object):
-        def __init__(self, plot_params, dialog_image_path, parent=None):
+        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest"):
+            assert plot_type == plot_kind
             calls.append(("dialog", plot_params, dialog_image_path))
             self.applied = FakeSignal()
+            self.sequence_rerun = QtWidgets.QPushButton()
+            self.rerun_requested = FakeSignal()
 
         def plot_params(self):
             return {"fp_outpath": str(image_path)}
@@ -1822,7 +1825,7 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
         cast(analysis_setup_dialog.AnalysisSetupDialog, form)
     )
     assert not form.plot_tab.isEnabled()
-    assert "exactly one Numeric covariate" in form.plot_tab.toolTip()
+    assert "exactly one numeric covariate" in form.plot_tab.toolTip()
 
 
 @pytest.mark.parametrize(
@@ -1928,8 +1931,11 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 callback()
 
     class FakeEditPlotDialog(object):
-        def __init__(self, plot_params, image_path, parent=None):
+        def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
+            assert plot_type == "forest"
             self.applied = FakeSignal()
+            self.sequence_rerun = QtWidgets.QPushButton()
+            self.rerun_requested = FakeSignal()
             self._params = {
                 "fp_col1_str": "EDIT TEST HEADING",
                 "fp_outpath": out_path,
@@ -2092,7 +2098,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Manuscript", "Text report", "Tables"]
+        assert nav_titles == ["Text report", "Tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -2509,7 +2515,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About"
+        assert window.action_about_legal.text() == "About RCMS…"
 
         from rc_metastudio import about_legal_dialog
 
@@ -2531,7 +2537,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "GPL-3.0-or-later" in about_text
         assert "Credits and licenses" in about_text
         dialog = about_dialogs[0]
-        assert dialog.windowTitle() == "About"
+        assert dialog.windowTitle() == "About RCMS"
         assert dialog.content_scroll_area.frameShape() == QtWidgets.QFrame.Shape.NoFrame
         assert not QtGui.QImage(":/misc/about-logo.png").isNull()
         assert dialog.content_scroll_area.openExternalLinks()
@@ -2554,8 +2560,8 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         )
         assert "github.com/AliSalman-et-al/rc-metastudio" in link_text
         assert welcome.how_to_citeLabel.isEnabled()
-        assert welcome.how_to_citeLabel.openExternalLinks()
-        assert "github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff" in welcome.how_to_citeLabel.text()
+        assert not welcome.how_to_citeLabel.openExternalLinks()
+        assert 'href="rcms:cite"' in welcome.how_to_citeLabel.text()
     finally:
         if "wizard" in locals():
             wizard.close()
@@ -2705,18 +2711,25 @@ def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypat
     try:
         assert window.open(_sample_project_path("amino.rcms"))
         rows = window.model.current_sheet.rows
-        for index, row in enumerate(rows):
-            row.manually_excluded = index >= included
-        window.tableView.cell_content_changed(None)
+        for index in range(len(rows)):
+            assert window.model.setData(window.model.index(index, window.model.INCLUDE_STUDY),
+                                        QtCore.Qt.CheckState.Checked if index < included else QtCore.Qt.CheckState.Unchecked,
+                                        QtCore.Qt.ItemDataRole.CheckStateRole)
         app.processEvents()
         assert r_runtime.is_ready()
-        assert window.action_go.isEnabled() is (included >= 2)
-        for index, row in enumerate(rows):
-            row.manually_excluded = index >= 2
-        window.tableView.cell_content_changed(None)
+        assert window.action_go.isEnabled() is (included >= 1)
+        assert window.action_loo_ma.isEnabled() is (included >= 2)
+        for index in range(len(rows)):
+            assert window.model.setData(window.model.index(index, window.model.INCLUDE_STUDY),
+                                        QtCore.Qt.CheckState.Checked if index < 2 else QtCore.Qt.CheckState.Unchecked,
+                                        QtCore.Qt.ItemDataRole.CheckStateRole)
         assert window.action_go.isEnabled()
-        window.model.current_sheet.rows[1].manually_excluded = True
-        window.tableView.cell_content_changed(None)
+        assert window.model.setData(window.model.index(1, window.model.INCLUDE_STUDY),
+                                    QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
+        assert window.action_go.isEnabled() and window.action_cum_ma.isEnabled()
+        assert not window.action_loo_ma.isEnabled()
+        assert window.model.setData(window.model.index(0, window.model.INCLUDE_STUDY),
+                                    QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
         assert not window.action_go.isEnabled()
     finally:
         _mark_workspace_saved(window)

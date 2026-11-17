@@ -143,7 +143,7 @@ def test_funnel_editor_prefers_persisted_output_path_on_reopen(qapp, tmp_path):
         plot_type="funnel",
     )
     try:
-        assert dialog.path_edit.text() == str(persisted)
+        assert dialog.plot_params()["funnel.outpath"] == str(persisted)
     finally:
         dialog.close()
 

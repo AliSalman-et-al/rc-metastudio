@@ -386,9 +386,9 @@ def zero_cells(app, window, record):
             view, authority(window, "binary", "DL", "z", 95, policy), "binary", record
         )
         note = "A continuity correction of 0.5 was applied to " + {
-            "only0": "studies with any zero cell.", "all": "all studies."
+            "only0": "studies with at least one zero cell.", "all": "all studies."
         }[policy]
-        assert note in view.report_text.toPlainText(), (policy, view.report_text.toPlainText())
+        assert note in view.manuscript_text.toPlainText(), (policy, view.manuscript_text.toPlainText())
         assert note in view.manuscript.methods
         assert len(view.texts["Weights"].strip().splitlines()) == 20
         view.close()
@@ -399,12 +399,14 @@ def zero_cells(app, window, record):
                   parameters={"to": "only0", "adjust": .5, "digits": 6, "rm.method": "DL"})
     assert window.model.current_effect == "PFT", window.model.current_effect
     compare_authority(view, authority(window, "binary", "DL", "z", 95, "only0"), "binary", record, metric="PFT")
-    note = "A continuity correction of 0.5 was applied to studies with any zero cell."
-    assert note in view.report_text.toPlainText()
+    note = "A continuity correction of 0.5 was applied to studies with at least one zero cell."
+    assert note in view.manuscript_text.toPlainText()
     assert note in view.manuscript.methods
     record("pft-correction-report", view, correction_note=note, texts=dict(view.texts))
-    report = view.report_text.toPlainText()
-    manuscript = view.manuscript_text.toPlainText()
+    report = view.manuscript_text.toPlainText()
+    manuscript = view.manuscript.plain_text()
+    assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
+    assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
     assert "1097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
@@ -557,7 +559,6 @@ def plots(app, window, family, record, *, view=None):
 
     def edit(dialog):
         if funnel:
-            assert all(not control.isVisible() for control in (dialog.path_label, dialog.path_edit, dialog.browse_button)), 'Internal render path is exposed as an export control'
             from tests.python.gui.qt_test_support import wheel_scroll
             spinner = dialog.sampling_confidence_spin
             original_confidence = spinner.value()
@@ -666,7 +667,7 @@ def plots(app, window, family, record, *, view=None):
         assert dialog.figure_caption.isVisible(), "figure caption cannot be edited"
         assert dialog.figure_caption.text(), "standalone figure lacks context"
         assert " · None" not in dialog.figure_caption.text(), dialog.figure_caption.text()
-        assert " · Comparison:" in dialog.figure_caption.text() or " · Arm:" in dialog.figure_caption.text(), dialog.figure_caption.text()
+        assert any(label in dialog.figure_caption.text() for label in (" · Comparison:", " · Arm:", " · Index test:", " · Diagnostic")), dialog.figure_caption.text()
         dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
         if funnel:
             dialog.point_size_spin.setValue(1.8)
@@ -680,6 +681,15 @@ def plots(app, window, family, record, *, view=None):
                 dialog.show_confidence_band.setChecked(False)
                 dialog.style_cbo.setCurrentText("BMJ")
             elif family == "sroc":
+                previous_ticks = dialog.sroc_y_ticks.text()
+                for invalid_ticks in ("0.2, abc", "0.2, 1.5"):
+                    dialog.sroc_y_ticks.setText(invalid_ticks)
+                    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    record("sroc-invalid-y-ticks", dialog, ticks=invalid_ticks,
+                           error=dialog._commit_error.text())
+                    assert dialog._commit_error.isVisible()
+                    assert "Y-axis" in dialog._commit_error.text()
+                dialog.sroc_y_ticks.setText(previous_ticks)
                 dialog.sroc_show_prediction.setChecked(False)
             else:
                 dialog.style_cbo.setCurrentText("RevMan")
@@ -887,9 +897,10 @@ def plots(app, window, family, record, *, view=None):
     app.processEvents()
     record("family-plot-reopened", view, family=family)
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
-                           lambda extension, action_label: context("Export " + action_label + "…"))
+                           lambda extension, action_label: context("Export plot…"))
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
-        context("Export SVG…")
+        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        modal(app, PlotExportDialog, lambda dialog: dialog.accept(), lambda: context("Export plot…"))
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
     assert view.texts == texts
@@ -985,8 +996,12 @@ def plots(app, window, family, record, *, view=None):
 def export_formats(app, view, directory, family, record, invoke=None):
     directory.mkdir(parents=True, exist_ok=True)
     if invoke is None:
+        if view._selected_plot() is None:
+            assert view._last_plot_item is not None
+            view.nav_tree.setCurrentItem(view._last_plot_item)
+            app.processEvents()
+        assert view.export_plot_action.isEnabled()
         def invoke(extension, _label):
-            view.export_format_control.setCurrentIndex(view.export_format_control.findData(extension))
             view.export_plot_action.trigger()
             app.processEvents()
     files = {}
@@ -1002,7 +1017,12 @@ def export_formats(app, view, directory, family, record, invoke=None):
             "getSaveFileName",
             return_value=(str(destination), ""),
         ) as picker:
-            invoke(extension, action_label)
+            from rc_metastudio.plot_export_dialog import PlotExportDialog
+            def accept_export(dialog):
+                dialog.format_control.setCurrentIndex(dialog.format_control.findData(extension))
+                record('export-options', dialog, format=extension, dimensions=dialog.dimensions())
+                dialog.accept()
+            modal(app, PlotExportDialog, accept_export, lambda: invoke(extension, action_label))
         assert picker.call_args is not None
         name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
         assert f"*.{extension}" in name_filter, (extension, name_filter)
@@ -1519,7 +1539,7 @@ def calculators(app, window, mode, record):
         if entered:
             before_invalid = list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key))
             def invalid_ci_warning(message):
-                assert "higher CI must be greater than the point estimate" in message.text()
+                assert "upper limit must be above the estimate" in message.text()
                 record("calculator-invalid-ci-warning", message, mode=mode, message=message.text())
                 click(app, message.button(QtWidgets.QMessageBox.StandardButton.Ok))
 
@@ -1627,6 +1647,10 @@ def calculators(app, window, mode, record):
             header.sectionViewportPosition(0) + header.sectionSize(0) // 2,
         )
         mouse_click(header.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=point)
+
+    if mode == "diagnostic-metrics":
+        from tests.e2e.dta_audit import check_partial_count_previews
+        modal(app, kind, lambda dialog: check_partial_count_previews(app, dialog, cell, record), launch)
 
     acceptance_notifications = []
 
@@ -2196,7 +2220,7 @@ def shell(app, window, record):
     def cancel(message):
         assert message.standardButtons() == (QtWidgets.QMessageBox.StandardButton.Save | QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel)
         assert message.defaultButton() == message.button(QtWidgets.QMessageBox.StandardButton.Save)
-        assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Discard"
+        assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Don’t save"
         assert message.escapeButton() == message.button(QtWidgets.QMessageBox.StandardButton.Cancel)
         record("dirty-open-prompt", message, message=message.text())
         key_click(message, QtCore.Qt.Key.Key_Escape)
@@ -2226,8 +2250,8 @@ def shell(app, window, record):
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
-        assert dialog.windowTitle() == "About"
-        assert window.action_about_legal.text() == "About"
+        assert dialog.windowTitle() == "About RCMS"
+        assert window.action_about_legal.text() == "About RCMS…"
         assert "Credits and licenses" in text
         app.processEvents()
         if dialog.screen().availableGeometry().height() >= 700:

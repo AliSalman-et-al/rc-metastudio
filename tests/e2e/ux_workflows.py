@@ -297,7 +297,7 @@ def _run(app, window, work, root, record, analyze):
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
         app.setPalette(palette)
         for page in ("forest", "manuscript", "tables"):
-            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Manuscript", "tables": "Tables"}[page])
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Tables"}[page])
             view.nav_tree.setCurrentItem(item)
             app.processEvents()
             app.processEvents()
@@ -331,36 +331,34 @@ def _run(app, window, work, root, record, analyze):
         assert view.nav_tree.fontMetrics().horizontalAdvance(item.text(0)) + 30 < view.nav_tree.width(), item.text(0)
     view.report_action.trigger()
     app.processEvents()
-    assert view.report_text.isVisible()
+    assert view.manuscript_text.isVisible()
     view.activateWindow()
-    view.report_text.setFocus()
+    view.manuscript_text.setFocus()
     app.processEvents()
     assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowActive)(view, 2000)
-    assert view.report_text.hasFocus()
-    assert view.report_text.find("Model:")
-    record("ux-copy-selection-before", view, selection=view.report_text.textCursor().selectedText(), focus=app.focusWidget().objectName(), active=view.isActiveWindow())
-    key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
+    assert view.manuscript_text.hasFocus()
+    assert view.manuscript_text.find("Model:")
+    record("ux-copy-selection-before", view, selection=view.manuscript_text.textCursor().selectedText(), focus=app.focusWidget().objectName(), active=view.isActiveWindow())
+    key_click(view.manuscript_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
-    record("ux-copy-selection-after", view, selection=view.report_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())
+    record("ux-copy-selection-after", view, selection=view.manuscript_text.textCursor().selectedText(), clipboard=app.clipboard().text(), owns=app.clipboard().ownsClipboard())
     assert app.clipboard().text() == "Model:", repr(app.clipboard().text())
-    key_click(view.report_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
+    view.manuscript_text.selectAll()
+    key_click(view.manuscript_text, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     copied_report = app.clipboard().text()
-    assert copied_report.startswith(view.manuscript.title + "\n")
+    assert copied_report.startswith("Methods\n"), copied_report
     from tests.e2e.report_retention import assert_report
     assert_report(view)
-    view.copy_report_action.trigger()
-    assert app.clipboard().text() == copied_report
     report_path = work / "analysis.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(report_path), "")):
         view.export_report_action.trigger()
     assert report_path.read_bytes().startswith(b"%PDF")
-    assert app.clipboard().mimeData().hasHtml()
     assert str(report_path) in view.statusbar.currentMessage()
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
     assert view.table_selector.count() >= 2
-    key_click(view.report_text, QtCore.Qt.Key.Key_T, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
+    key_click(view.manuscript_text, QtCore.Qt.Key.Key_T, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     app.processEvents()
     app.processEvents()
     table = view._report_tables[0]
@@ -379,7 +377,7 @@ def _run(app, window, work, root, record, analyze):
     view.report_action.trigger()
     view.zoom_control.setValue(200)
     app.processEvents()
-    assert view.report_text.font().pointSizeF() >= 22
+    assert view.manuscript_text.font().pointSizeF() >= 22
     assert not view.fit_width_action.isEnabled()
     text_zoom = view.zoom_control.value()
     view.report_action.trigger()
@@ -389,17 +387,17 @@ def _run(app, window, work, root, record, analyze):
     view.report_action.trigger()
     app.processEvents()
     assert view.zoom_control.value() == text_zoom
-    assert view.report_text.font().pointSizeF() >= 22
+    assert view.manuscript_text.font().pointSizeF() >= 22
     assert view.graphics_view.transform().m11() == 1.25
     record("ux-independent-view-zoom", view, report_zoom=text_zoom,
-           report_font=view.report_text.font().pointSizeF(), figure_zoom=125)
+           report_font=view.manuscript_text.font().pointSizeF(), figure_zoom=125)
     view.zoom_control.setValue(100)
     plot_item = next(item for item in view._svg_plot_items)
     nav = next(item for item in view.nav_tree.findItems("Forest plot", QtCore.Qt.MatchFlag.MatchExactly))
     mouse_click(view.nav_tree.viewport(), QtCore.Qt.MouseButton.LeftButton, pos=view.nav_tree.visualItemRect(nav).center())
     app.processEvents()
     assert view.export_plot_action.isEnabled()
-    assert not view.report_text.isVisible()
+    assert not view.manuscript_text.isVisible()
     artifact = view._selected_plot()[0]
     saved_params = view.plot_service.load_params(artifact.params_path)
     assert saved_params["fp_col1_str"] == "Study", saved_params
@@ -408,9 +406,16 @@ def _run(app, window, work, root, record, analyze):
     assert plot_item.sceneBoundingRect().width() <= view.graphics_view.viewport().width()
     plot_path = work / "toolbar-forest.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):
+        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        def accept_export():
+            dialog = next(widget for widget in app.topLevelWidgets() if isinstance(widget, PlotExportDialog))
+            dialog.format_control.setCurrentIndex(dialog.format_control.findData('pdf'))
+            record('plot-export-options', dialog, dimensions=dialog.dimensions())
+            dialog.accept()
         view.activateWindow()
         view.nav_tree.setFocus()
         app.processEvents()
+        QtCore.QTimer.singleShot(0, accept_export)
         key_click(view.nav_tree, QtCore.Qt.Key.Key_E, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     assert plot_path.read_bytes().startswith(b"%PDF")
     assert str(plot_path) in view.statusbar.currentMessage()

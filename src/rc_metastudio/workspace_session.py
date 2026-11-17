@@ -378,14 +378,3 @@ class WorkspaceSession:
         self._runtime = _copy_runtime(self._checkpoint)
         self._forced_dirty = False
         return True
-
-    def mutate(self, edit: Callable[[JsonObject, JsonObject], None]) -> None:
-        """Apply a pure boundary edit and publish it as one coherent change."""
-        if self._runtime is None:
-            raise ValueError("cannot edit an empty workspace")
-        document = self.document
-        assert document is not None
-        project = copy.deepcopy(document.project)
-        state = copy.deepcopy(document.state)
-        edit(project, state)
-        self.commit(project, state)

@@ -119,21 +119,6 @@ def test_plot_editor_preserves_saved_literal_default_label(qapp, label):
         _dispose(dialog, qapp)
 
 
-def test_manuscript_navigation_resets_text_report_action(qapp):
-    window = results_window.ResultsWindow(_empty_results())
-    try:
-        text = window.nav_tree.findItems("Text report", QtCore.Qt.MatchFlag.MatchExactly)[0]
-        manuscript = window.nav_tree.findItems("Manuscript", QtCore.Qt.MatchFlag.MatchExactly)[0]
-        window.nav_tree.setCurrentItem(text)
-        assert window.report_action.isChecked()
-        window.nav_tree.setCurrentItem(manuscript)
-        assert window.content_stack.currentWidget() is window.manuscript_page
-        assert not window.report_action.isChecked()
-        window.report_action.trigger()
-        assert window.content_stack.currentWidget() is window.report_text
-    finally:
-        _dispose(window, qapp)
-
 
 def test_qtsvg_renders_materialized_default_black_plot_stroke():
     svg = b"""<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' viewBox='0 0 100 40'>
@@ -279,7 +264,7 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         fresh.showNormal()
         fresh.setGeometry(90, 70, 620, 410)
         qapp.processEvents()
-        fresh.results_nav_splitter.setSizes([180, 540])
+        fresh.results_nav_splitter.moveSplitter(180, 1)
     finally:
         _dispose(fresh, qapp)
 
@@ -570,21 +555,6 @@ def test_plot_editor_omits_unedited_default_axis_label_sentinel(
         _dispose(dialog, qapp)
 
 
-def test_sroc_plot_editor_uses_acronym_safe_browse_title(qapp, tmp_path, monkeypatch):
-    _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog({}, "sroc.svg", plot_type="sroc")
-    titles = []
-
-    monkeypatch.setattr(
-        plot_editor_dialog.QFileDialog,
-        "getSaveFileName",
-        lambda _parent, title, *_args: titles.append(title) or ("", ""),
-    )
-    try:
-        dialog.save_btn.click()
-        assert titles == ["Save SROC Plot Image"]
-    finally:
-        _dispose(dialog, qapp)
 
 
 @pytest.mark.parametrize(
@@ -632,11 +602,11 @@ def test_plot_context_menu_follows_capabilities_and_available_data(
     )
     try:
         window._make_context_menu(artifact, None)(Event())
-        expected = ["Export PDF…", "Export PNG…", "Export TIFF…", "Export SVG…"]
+        expected = ["Export plot…"]
         if editable:
             expected.insert(0, "Edit plot…")
         if not has_params:
-            expected = ["Export PNG…"]
+            expected = ["Export plot…"]
         assert captured == [expected]
     finally:
         _dispose(window, qapp)
@@ -828,10 +798,6 @@ def test_plot_editor_keeps_scratch_plot_path_internal(qapp, tmp_path):
             {f"{prefix}_outpath": initial}, "", plot_type=plot_type
         )
         try:
-            assert dialog.image_path.text() == initial
-            assert dialog.label_3.isHidden()
-            assert dialog.image_path.isHidden()
-            assert dialog.save_btn.isHidden()
             assert dialog.plot_params()[f"{prefix}_outpath"] == initial
         finally:
             _dispose(dialog, qapp)

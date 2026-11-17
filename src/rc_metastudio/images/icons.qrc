@@ -7,6 +7,8 @@
     <file alias="meta.png">rc-metastudio-app-icon-rounded.png</file>
   </qresource>
   <qresource prefix="icons/actions">
+    <file alias="cite.svg">icons/actions/cite.svg</file>
+    <file alias="swap.svg">icons/actions/swap.svg</file>
     <file alias="about-legal.svg">icons/actions/about-legal.svg</file>
     <file alias="add-covariate.svg">icons/actions/add-covariate.svg</file>
     <file alias="add.svg">icons/actions/add.svg</file>

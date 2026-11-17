@@ -35,7 +35,6 @@ ACTION_CONTRACTS = {
     "main-wizard": "wizard-next-cancel",
     "confidence-level": "accept-cancel",
     "add-covariate": "accept-cancel",
-    "add-study": "accept-cancel",
     "import-progress": "none",
     "shared-progress": "none",
     "startup-splash": "none",
@@ -247,7 +246,7 @@ def _validate_surface_fields(surface_id: str, surface: dict[str, object]) -> Non
     _validate_focus_observation(surface_id, surface["focus"])
     _validate_action_observation(surface_id, surface["actions"])
     close = surface["close_semantics"]
-    if surface_id == "import-progress":
+    if surface_id in {"import-progress", "shared-progress"}:
         closed_correctly = (
             isinstance(close, dict)
             and set(close) == {"close_blocked", "escape_blocked", "owner_completed"}
@@ -739,7 +738,6 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
             confidence_level_dialog.ConfidenceLevelDialog, "confidence-level"
         ),
         "add-covariate": checked_factory(add_new_dialogs.AddCovariateDialog, "add-covariate"),
-        "add-study": checked_factory(add_new_dialogs.AddStudyDialog, "add-study"),
         "import-progress": checked_factory(main_window.ImportProgressDialog, "import-progress"),
         "shared-progress": checked_factory(progress_dialog.AnalysisProgressDialog, "shared-progress"),
         "startup-splash": checked_factory(launch.create_startup_splash, "startup-splash"),
@@ -1257,10 +1255,10 @@ def _observe_capture_close(
 ) -> bool | dict[str, bool]:
     window.close()
     app.processEvents()
-    if surface_id != "import-progress":
+    if surface_id not in {"import-progress", "shared-progress"}:
         return not window.isVisible()
     from rc_metastudio import progress_dialog
-    # Import owns completion; user gestures must not release its modality.
+    # The operation owns completion; gestures must not release its modality.
     close_blocked = window.isVisible() and app.activeModalWidget() is window
     for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
         QtCore.QCoreApplication.sendEvent(window, QtGui.QKeyEvent(

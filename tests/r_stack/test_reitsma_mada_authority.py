@@ -209,10 +209,10 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     # values are derived independently from the public fit, not from any
     # RCMetaR helper or copied model equations.
     model = headless_analysis.load_dataset_model(sample)
-    r_bridge.dataset_to_simple_diagnostic_r_object(model, metric="Sens")
+    r_bridge.ro.globalenv["authority_input"] = r_bridge.dataset_to_simple_diagnostic_r_object(model, metric="Sens")
     with r_transaction():
         public_data = r_bridge.ro.r(
-            "data.frame(TP=tmp_obj@TP, FN=tmp_obj@FN, FP=tmp_obj@FP, TN=tmp_obj@TN)"
+            "data.frame(TP=authority_input@TP, FN=authority_input@FN, FP=authority_input@FP, TN=authority_input@TN)"
         )
         public_fit = r_bridge.ro.r("mada::reitsma")(
             public_data, correction=0.5, **{"correction.control": "all"}, method="reml"
@@ -294,7 +294,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
         )
         public_reg_data = r_bridge.ro.r(r'''
           data.frame(
-            TP=tmp_obj@TP, FN=tmp_obj@FN, FP=tmp_obj@FP, TN=tmp_obj@TN,
+            TP=authority_input@TP, FN=authority_input@FN, FP=authority_input@FP, TN=authority_input@TN,
             quality=factor(quality_values, levels=c("A", "B")),
             threshold=threshold_values
           )

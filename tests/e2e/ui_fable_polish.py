@@ -32,8 +32,8 @@ def run(app, window, work, root, record, analyze):
                 longest = max(longest, run_length)
         observations['about-' + name] = dict(white_run=longest, width=image.width())
         record('fable-about-' + name, about, **observations['about-' + name])
-        if name == 'dark' and longest > image.width() * .5:
-            failures.append('About wordmark has a white panel in dark mode')
+        if longest <= image.width() * .5:
+            failures.append('About wordmark is missing its white background in ' + name + ' mode')
     about.close()
     app.styleHints().setColorScheme(original_scheme)
 
@@ -152,10 +152,9 @@ def run(app, window, work, root, record, analyze):
     app.styleHints().setColorScheme(original_scheme)
     combined.reject()
     view = analyze(app, window, 'diagnostic.reitsma')
-    strip = view.result_identity.text()
-    if strip.count('Reitsma bivariate model') != 1 or not strip.endswith('95% CI'):
+    strip = view.result_facts.accessibleDescription()
+    if strip.count('Reitsma bivariate model') != 1 or '95% CI' not in strip:
         failures.append('Diagnostic identity repeats a shared fit or omits the CI label')
-    assert view.result_identity.toolTip().count('Reitsma bivariate model') >= 2
     title = view.results.manuscript_title
     methods = view.results.manuscript_methods
     observations['diagnostic'] = dict(title=title, methods=methods)

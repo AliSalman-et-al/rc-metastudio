@@ -18,10 +18,11 @@ def run(app, window, work, root, record, analyze):
     edge = r_bridge.ro.r('''local({
       x <- rbind(c("Estimate", "Lower", "Upper", "P", "Unavailable"),
                  c("0.000", "0.000", "Inf", "< 0.001", "Not estimable"))
-      RCMetaR:::rcmetar.numeric.fields(x, 1:5,
+      x <- RCMetaR:::rcmetar.numeric.fields(x, 1:5,
         c("estimate", "ci_lower", "ci_upper", "p", "value"),
         c(2.2e-17, 1e-19, Inf, 1e-8, NA_real_),
         c("display", "display", "display", "", ""), c(NA, 90, 90, NA, NA))
+      RCMetaR:::rcmetar.table(x, "supporting")
     })''')
     from rc_metastudio.analysis_results import _report_content
     _, parsed = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
@@ -52,18 +53,36 @@ def run(app, window, work, root, record, analyze):
         source = [t for s in view.results.sections for t in s.tables]
         primary = view.manuscript.sections[0].tables[0]
         assert primary.quantities and primary.rows, label
+        supporting = [table for section in view.manuscript.sections if section.title == 'Supplementary details' for table in section.tables]
+        if label in ('adjusted-means', 'subgroup', 'subgroup-t', 'Reitsma'):
+            context_tables = [t for t in source if t.role == 'pooled' and (t.vertical or t.workflow in ('meta-regression', 'subgroup'))]
+            for held in context_tables:
+                assert any(table.rows == held.rows and table.headers == held.headers for table in supporting), (label, held.title, 'source context lost')
+        if label == 'adjusted-means':
+            means = next(t for t in source if t.role == 'pooled')
+            expected_levels = {row[0] for row in means.rows}
+            assert expected_levels == {'Group: A (reference: B)', 'Group: B (reference: B)'}, means.rows
+            assert expected_levels <= {row[0] for row in primary.rows}, primary.rows
+            assert 'Studies' in means.headers, means.headers
         if label == 'Reitsma':
             assert view.results.analysis_method == 'diagnostic.reitsma', view.results.analysis_method
             assert {'Sensitivity', 'Specificity', 'False-positive rate'} <= {t.title for t in source}
             assert primary.title == 'Diagnostic summary'
+            assert {t.title for t in source if t.role == 'pooled' and t.vertical} <= {row[0] for row in primary.rows}, primary.rows
+            for held in (t for t in source if t.role == 'prediction' and t.vertical):
+                assert any(table.rows == held.rows for table in supporting), held.title
             assert 'The summary sensitivity was' in view.manuscript.results
-            assert 'Diagnostic odds ratio estimates were pooled using the Diagnostic Random-Effects method' in view.manuscript.methods
+            assert 'Diagnostic odds ratio estimates were pooled using the Random-effects method' in view.manuscript.methods
         if label == 'subgroup-t':
+            assert 'used the Knapp–Hartung adjustment' in view.manuscript.methods, view.manuscript.methods
             assert 't' in primary.headers and not any('df =' in h for h in primary.headers), primary.headers
             assert 'The overall effect was tested using t with' not in view.manuscript.methods
             test = next(t for t in source if t.title == 'Test of subgroup differences')
             statistic = 'F' if '(F)' in test.rows[0][0] else 'Q'
             assert f'Test for subgroup differences: {statistic} =' in view.manuscript.results
+        if label == 'SMD':
+            assert 'SE scale' in primary.headers, primary.headers
+            assert {row[primary.headers.index('SE scale')] for row in primary.rows} == {'standardized'}, primary.rows
         quantities = [q for t in source for row in t.quantities for cell in row for q in cell]
         intervals = [q for q in quantities if q.role in ('ci_lower', 'ci_upper', 'pi_lower', 'pi_upper')]
         assert intervals and all(q.level == 90.0 for q in intervals), (label, intervals)
@@ -76,12 +95,15 @@ def run(app, window, work, root, record, analyze):
             assert any(q.role == 'estimate' and q.scale == 'display' for q in quantities)
             assert any(q.role == 'se' and q.scale == 'log' for q in quantities)
             assert all(q.scale == '' for q in quantities if q.role == 'statistic')
+        if label in ('adjusted-means', 'subgroup', 'subgroup-t', 'Reitsma', 'SMD'):
+            from tests.e2e.report_retention import assert_report
+            assert_report(view)
         bundle = work / label
         bundle.mkdir()
         (bundle / 'tables.json').write_text(json.dumps([asdict(t) for t in source], indent=2), encoding='utf-8')
         if label == 'adjusted-means':
             r_bridge.ro.r['saveRDS'](r_bridge.ro.globalenv['result'], file=str(bundle/'result.rds'))
-            r_bridge.ro.r['saveRDS'](r_bridge.ro.globalenv['tmp_obj'], file=str(bundle/'input.rds'))
+            r_bridge.ro.r['saveRDS'](r_bridge.dataset_to_simple_binary_r_object(window.model), file=str(bundle/'input.rds'))
         for index, prefix in enumerate(view.params_paths.values()):
             for suffix in ('.data', '.params', '.res', '.plotdata'):
                 path = Path(str(prefix)+suffix)
@@ -94,12 +116,15 @@ def run(app, window, work, root, record, analyze):
     for sample, method, label in (
         ('amino', 'binary.random', 'binary'),
         ('continuous', 'continuous.random', 'continuous'),
+        ('continuous', 'continuous.random', 'SMD'),
         ('Pignon2000-HR', 'time_to_event.random', 'HR'),
         ('NielWeise2008-IRR', 'event_rates.random', 'IRR'),
         ('lymph', 'diagnostic.reitsma', 'Reitsma'),
     ):
         window.workspace.mark_saved()
         assert window.open(str(root / 'sample_projects' / (sample+'.rcms')), raise_on_error=True)
+        if label == 'SMD':
+            window.model.set_current_metric('SMD')
         inspect(analyze(app, window, method, confidence=90), label)
 
     for workflow in ('cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'meta-regression', 'adjusted-means'):
@@ -125,7 +150,7 @@ def run(app, window, work, root, record, analyze):
     references = json.loads((work / 'public-values-reference.json').read_text(encoding='utf-8'))
     from collections import Counter
     counts = Counter(row['analysis'] for row in references)
-    assert all(counts[label] > 0 for label in ('binary', 'continuous', 'HR', 'IRR', 'meta-regression',
+    assert all(counts[label] > 0 for label in ('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression',
                'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'adjusted-means')), counts
     assert counts['Reitsma'] >= 18, counts
     for observation in references:

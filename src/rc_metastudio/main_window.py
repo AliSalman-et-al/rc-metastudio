@@ -26,12 +26,13 @@ from PyQt6.QtWidgets import (
 import copy
 
 if TYPE_CHECKING:
+    from rc_metastudio.manuscript_report import ManuscriptReport
     import ui_main_window as _ui_main_window
 else:
     from rc_metastudio import ui_main_window as _ui_main_window
 from rc_metastudio import dataset_table_view
 from rc_metastudio import dataset_table_model
-from rc_metastudio import analysis_catalog, analysis_validation
+from rc_metastudio import analysis_catalog
 
 from rc_metastudio import analysis_dataset
 from rc_metastudio import analysis_adapter
@@ -108,8 +109,6 @@ def _resolve_open_file_path(file_path):
 
 
 def _format_open_project_error(file_path, exception):
-    if isinstance(exception, project_format.ProjectFormatError) and str(exception) == "project is not a valid ZIP container":
-        return "This file is not a valid RC MetaStudio project. Open another .rcms file or restore a backup."
     if isinstance(
         exception,
         (
@@ -117,7 +116,14 @@ def _format_open_project_error(file_path, exception):
             project_format.ProjectFormatError,
         ),
     ):
-        return "Could not open %s.\n\n%s" % (file_path, exception)
+        reason = str(exception)
+        if reason.startswith('unsupported project format version'):
+            message = 'This project’s file format is not supported. Update RC MetaStudio, then try again.'
+        elif reason.startswith('cannot read project'):
+            message = 'RC MetaStudio could not read this file. Check that it exists and that you can open it.'
+        else:
+            message = 'This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.'
+        return message + '\n\nDetails: ' + reason
     return "Could not open %s.\n\nDetails: %s: %s" % (
         file_path,
         exception.__class__.__name__,
@@ -138,18 +144,11 @@ def _connect_action(action, callback):
 
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, min_=0, max_=10):
-        super().__init__(parent, operation="Importing study data…")
+        super().__init__(parent, operation="Importing study data…", blocking=False)
 
         self.setWindowTitle("Import CSV")
         self.progress_bar.setRange(min_, max_)
-
-    def reject(self):
-        # Import has no cancellation/rollback gesture while the write loop runs.
-        pass
-
-    def closeEvent(self, a0):
-        if a0 is not None:
-            a0.ignore()
+        self.progress_bar.show()
 
     def setValue(self, value):
         if self.progress_bar.minimum() <= value <= self.progress_bar.maximum():
@@ -329,7 +328,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.confidence_button)
         self.confidence_button.hide()
 
-        self.frame.hide()
         self._setup_sheet_strip()
         self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
         self.sheet_tabs.tabMoved.connect(self._move_sheet_tab)
@@ -344,7 +342,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action.setToolTip(label + " (" + sequence + ")")
             action.triggered.connect(lambda checked=False, delta=delta: self.sheet_tabs.setCurrentIndex((self.sheet_tabs.currentIndex() + delta) % max(1, self.sheet_tabs.count())))
             self.addAction(action)
-            self.menuView.addAction(action)
             self.outcome_navigation_actions.append(action)
         self.add_outcome_action = QAction("Add outcome…", self)
         self.add_outcome_action.triggered.connect(self._add_sheet)
@@ -355,16 +352,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.rename_outcome_action.triggered.connect(lambda: self._rename_sheet(self.sheet_tabs.currentIndex()))
         self.menuDataset.addSeparator()
         self.menuDataset.addActions((self.add_outcome_action, self.rename_outcome_action))
-        for label, url in (("Project site", "https://github.com/AliSalman-et-al/rc-metastudio"),
-                           ("How to cite", "https://github.com/AliSalman-et-al/rc-metastudio/blob/master/CITATION.cff")):
-            action = QAction(label, self)
-            action.triggered.connect(lambda _checked=False, url=url: QtGui.QDesktopServices.openUrl(QtCore.QUrl(url)))
-            self.menuHelp.addAction(action)
+        from rc_metastudio.citation_dialog import CitationDialog
+        cite_action = QAction(QtGui.QIcon(':/icons/actions/cite.svg'), 'Cite…', self)
+        cite_action.triggered.connect(lambda: CitationDialog(self).exec())
+        self.menuHelp.addAction(cite_action)
+        self.action_about_legal.setText('About RCMS…')
+        self.add_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/add.svg'))
+        self.rename_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/edit-dataset.svg'))
+        theme_menu = self.menuView.addMenu('Theme')
+        theme_group = QtGui.QActionGroup(self)
+        theme_group.setExclusive(True)
+        schemes = {'System': Qt.ColorScheme.Unknown, 'Light': Qt.ColorScheme.Light, 'Dark': Qt.ColorScheme.Dark}
+        selected_theme = str(QtCore.QSettings().value('appearance/theme', 'System'))
+        def set_theme(name):
+            QtCore.QSettings().setValue('appearance/theme', name)
+            required(QApplication.styleHints(), 'style hints').setColorScheme(schemes[name])
+        for name in schemes:
+            theme_action = QAction(name, self)
+            theme_action.setCheckable(True)
+            theme_action.setChecked(name == selected_theme)
+            theme_group.addAction(theme_action)
+            required(theme_menu, 'Theme menu').addAction(theme_action)
+            theme_action.triggered.connect(lambda checked=False, name=name: set_theme(name))
+        set_theme(selected_theme if selected_theme in schemes else 'System')
         self.menuHelp.removeAction(self.action_about_legal)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.action_about_legal)
         self.menuDataset.addSeparator()
-        self.action_swap_arms = QAction("Swap intervention and control", self)
+        self.action_swap_arms = QAction(QtGui.QIcon(":/icons/actions/swap.svg"), "Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
@@ -445,9 +460,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             try:
                 QMessageBox.warning(
                     self,
-                    "Recent Projects Not Updated",
+                    "Recent projects not updated",
                     "The project was %s successfully, but RC MetaStudio could not "
-                    "update the machine-local recent-project list.\n\nDetails: %s: %s"
+                    "update Open recent.\n\nDetails: %s: %s"
                     % (operation, exc.__class__.__name__, exc),
                 )
             except Exception:
@@ -463,11 +478,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         try:
             QMessageBox.warning(
                 self,
-                "Project Saved; Durability Uncertain",
-                "RC MetaStudio installed the saved project at %s, but the operating "
-                "system could not confirm final directory durability. The document "
-                "is treated as saved so later actions do not discard work by retrying "
-                "a replacement.\n\nDetails: %s" % (destination, exception),
+                "Project saved, but not confirmed",
+                "RC MetaStudio saved the project to %s, but the operating "
+                "system could not confirm the save is complete on disk. Keep a backup "
+                "copy until you save again.\n\nDetails: %s" % (destination, exception),
             )
         except Exception:
             pass
@@ -527,18 +541,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         enable = enable and r_runtime.is_ready()
         self.action_go.setEnabled(enable)
         self.action_cum_ma.setEnabled(enable)
-        self.action_loo_ma.setEnabled(enable)
+        self.action_loo_ma.setEnabled(enable and len(self.model.get_studies()) >= 2)
         self._enable_action_meta_regression(enable)
         self._enable_action_subgroup_ma(enable)
         self.action_publication_bias.setEnabled(enable)
-        blocked = "requires at least 2 included studies" if len(self.model.get_studies()) < 2 else "waiting for R"
+        blocked = "requires at least 1 included study" if not self.model.get_studies() else "R is not ready"
         for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
                               (self.action_loo_ma, "Leave-one-out meta-analysis")):
-            reason = label if enable else blocked
+            reason = label if action.isEnabled() else ("requires at least 2 included studies" if enable else blocked)
             if action is self.action_go:
                 reason += " (Ctrl+R)"
             action.setToolTip(reason)
-            action.setStatusTip(reason)
         self._update_workspace_guidance()
 
     def _update_workspace_guidance(self):
@@ -546,7 +559,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_save.setEnabled(enable)
         self.action_save_as.setEnabled(enable)
         self.action_save.setToolTip("Save project (Ctrl+S)" if enable else "Create or open a project to save it")
-        self.action_save.setStatusTip(self.action_save.toolTip())
         self.start_page.setVisible(not enable)
         self.nav_frame.setVisible(enable)
         self.confidence_button.setVisible(enable)
@@ -564,7 +576,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
         )
         self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
-        self.action_meta_regression.setStatusTip(self.action_meta_regression.toolTip())
 
     def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
         """Enables action_subgroup_ma if there are suitable covariate(s)
@@ -583,7 +594,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
         )
         self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
-        self.action_subgroup_ma.setStatusTip(self.action_subgroup_ma.toolTip())
 
     def disable_menu_options_that_require_dataset(self):
         self.toggle_menu_options_that_require_dataset(False)
@@ -633,7 +643,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 action_item.setEnabled(False)
             action_item.setData(str(dataset))
             action_item.setToolTip(str(dataset))
-            action_item.setStatusTip(str(dataset))
             self.action_open_recent_2.addAction(action_item)
             _connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
@@ -874,7 +883,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.show()
 
     def show_about_legal(self):
-        return about_legal_dialog.AboutLegalDialog(self).exec()
+        from rc_metastudio import r_bridge
+        r_version = r_bridge.get_r_version_string() if r_runtime.is_ready() else None
+        return about_legal_dialog.AboutLegalDialog(self, r_version=r_version).exec()
 
     def meta_subgroup(self, selected_covariate):
         form = None
@@ -929,24 +940,23 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _show_analysis_backend_error(self, exception, *, startup=False):
         if startup:
             message = (
-                "The analysis backend (R) could not start. "
-                "Install or repair the pinned R/RCMetaR runtime, then restart RC MetaStudio."
+                "RC MetaStudio could not start its built-in R runtime, so analyses are unavailable. "
+                "Reinstall RC MetaStudio, then try again."
             )
         else:
             message = (
-                "The analysis backend could not be reached, so "
-                "RC MetaStudio cannot build the Method & Parameters dialog."
+                "R is not available, so the analysis settings cannot be opened."
             )
         message += "\n\nDetails: %s: %s" % (exception.__class__.__name__, exception)
-        QMessageBox.critical(self, "Analysis Backend Unavailable", message)
+        QMessageBox.critical(self, "Analysis unavailable", message)
 
     def _show_analysis_preparation_error(self, exception):
         message = (
-            "RC MetaStudio could not prepare the Method & Parameters dialog "
+            "RC MetaStudio could not prepare the analysis settings "
             "for this analysis.\n\n"
             "Details: %s: %s" % (exception.__class__.__name__, exception)
         )
-        QMessageBox.critical(self, "Could Not Prepare Analysis", message)
+        QMessageBox.critical(self, "Could not prepare analysis", message)
 
     def undo(self):
         if self.workspace.undo():
@@ -1051,9 +1061,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def add_sub_metric_menu(self, name):
         sub_menu = QtWidgets.QMenu(str(name), self.menuMetric)
         sub_menu.setToolTip(
-            "Choose a %s effect-size measure or calculator metric." % str(name).lower()
+            "Choose a %s effect measure." % str(name).lower().removesuffix(' metrics')
         )
-        sub_menu.setStatusTip(sub_menu.toolTip())
         self.menuMetric.addAction(sub_menu.menuAction())
         return sub_menu
 
@@ -1062,7 +1071,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         text = label if metric == "Mean" else f"{label} ({metric})"
         metric_action = QAction(text, self)
         metric_action.setToolTip(label)
-        metric_action.setStatusTip(label)
         metric_action.setData(metric)
         metric_action.setCheckable(True)
         metric_action.toggled.connect(
@@ -1108,14 +1116,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
-    def analysis(self, results: AnalysisResult, *, change_settings=None):
+    def analysis(self, results: AnalysisResult, *, change_settings=None, manuscript: ManuscriptReport | None = None):
         try:
-            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings)
+            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings, manuscript=manuscript)
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
                 self,
-                "Could Not Display Analysis Results",
+                "Could not display analysis results",
                 "The analysis completed, but RC MetaStudio could not display "
                 "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
             )
@@ -1185,9 +1193,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if file_path is None:
             file_path, _selected_filter = QFileDialog.getOpenFileName(
                 parent=self,
-                caption="RCMetaStudio - Open Project",
+                caption="Open project",
                 directory=get_default_open_directory(),
-                filter="RC MetaStudio Project (*.rcms)",
+                filter="RC MetaStudio projects (*.rcms)",
             )
 
             # if the user didn't select anything, we return false.
@@ -1202,7 +1210,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             msg = _format_open_project_error(file_path, e)
             if raise_on_error:
                 raise RuntimeError(msg) from e
-            QMessageBox.critical(self, "Could Not Open Project", msg)
+            QMessageBox.critical(self, "Could not open project", msg)
             return None
 
         self.out_path = file_path
@@ -1231,7 +1239,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._set_model_adapter(
                 runtime.dataset,
                 runtime.model_state,
-                check_for_appropriate_metric=not runtime.restored_active_sheet,
                 recalculate_effect_previews=True,
             )
         except Exception:
@@ -1320,13 +1327,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self,
         data_model,
         state_dict=None,
-        check_for_appropriate_metric=False,
         recalculate_effect_previews=True,
     ):
         self._set_model_adapter(
             data_model,
             state_dict=state_dict,
-            check_for_appropriate_metric=check_for_appropriate_metric,
             recalculate_effect_previews=recalculate_effect_previews,
         )
         self.data_dirtied()
@@ -1335,7 +1340,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self,
         data_model,
         state_dict=None,
-        check_for_appropriate_metric=False,
         recalculate_effect_previews=True,
     ):
         # An empty dataset starts with one editable blank row.
@@ -1353,9 +1357,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self.tableView.model().update_column_indices()
         self.tableView.synchronize_column_widths()
-
-        if check_for_appropriate_metric:
-            self.tableView.change_metric_if_appropriate()
 
         self.model_updated(
             recalculate_effect_previews=recalculate_effect_previews,
@@ -1625,7 +1626,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
         if len(self.model.dataset.sheets) == 1:
             return
-        if sheet.rows and QMessageBox.question(self, "Delete sheet", f'Delete “{sheet.name}” and its rows?') != QMessageBox.StandardButton.Yes:
+        if sheet.rows and QMessageBox.question(self, "Delete outcome", f'Delete “{sheet.name}” and its studies?') != QMessageBox.StandardButton.Yes:
             return
         def delete():
             remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
@@ -1652,8 +1653,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def prompt_to_save_unsaved_data(self):
         prompt = QMessageBox(self)
         prompt.setIcon(QMessageBox.Icon.Warning)
-        prompt.setWindowTitle("Warning")
-        prompt.setText("You've made unsaved changes to your data. Do you want to save your changes?")
+        prompt.setWindowTitle("Unsaved changes")
+        project = os.path.basename(self.out_path) if self.out_path else "Untitled project"
+        prompt.setText(f"Save changes to “{project}”?")
         prompt.setStandardButtons(
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
@@ -1661,7 +1663,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         discard = prompt.button(QMessageBox.StandardButton.Discard)
         assert discard is not None
-        discard.setText("Discard")
+        discard.setText("Don’t save")
         prompt.setDefaultButton(QMessageBox.StandardButton.Save)
         prompt.setEscapeButton(QMessageBox.StandardButton.Cancel)
         return prompt.exec()
@@ -1682,9 +1684,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             out_f, _selected_filter = QFileDialog.getSaveFileName(
                 parent=self,
-                caption="RCMetaStudio - Save Project",
+                caption="Save project",
                 directory=out_f,
-                filter="RC MetaStudio Project (*.rcms)",
+                filter="RC MetaStudio projects (*.rcms)",
             )
             if out_f == "" or out_f is None:
                 return None
@@ -1704,7 +1706,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
                 self,
-                "Could Not Save Project",
+                "Could not save project",
                 "RC MetaStudio could not save %s.\n\nDetails: %s: %s"
                 % (destination, e.__class__.__name__, e),
             )
@@ -1819,4 +1821,4 @@ class ImportCsvCommand:
                     )
 
         finally:
-            progress_dialog.hide_once(import_progress)
+            progress_dialog.dispose(import_progress)

@@ -222,12 +222,12 @@ def run_sequential(app, window, work, record):
         expected = reference['natural']
         path = Path(artifact.display_path())
         if workflow == 'cumulative':
-            assert 'Order: dataset row order' in view.results.details
+            assert 'Sequence: Table order; each step adds a study to the preceding studies.' in view.results.details
             labels = ' '.join(''.join(node.itertext()) for node in ET.parse(path).iter('{http://www.w3.org/2000/svg}text'))
-            assert labels.count('Order: dataset row order') == 1, labels
+            assert labels.count('Sequence: current table order') == 1, labels
         axis_ticks = check_axis(path, 'natural')
         if workflow != 'subgroup':
-            row_labels = ([f'Fixture {i} (k = {i})' for i in range(1, 7)]
+            row_labels = ([f'Fixture {i}' for i in range(1, 7)]
                           if workflow == 'cumulative' else ['All studies', *[f'Fixture {i}' for i in range(1, 7)]])
             geometry = {'labels':row_labels,
                         'natural':dict(lower=[row[1] for row in expected],upper=[row[2] for row in expected],pooled=None)}

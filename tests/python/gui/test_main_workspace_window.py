@@ -126,7 +126,8 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
             pass
 
     owner = BoundaryOwner()
-    model.order_studies(["2", "1"])
+    model.current_sheet.rows.reverse()
+    model.reset_model()
     main_window.MainWindow.data_dirtied(cast(main_window.MainWindow, owner))
     assert [study.label for study in model.current_sheet.rows] == ["Alpha", "Beta"]
     assert owner.workspace.undo() is True

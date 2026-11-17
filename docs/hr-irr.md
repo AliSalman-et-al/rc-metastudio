@@ -1,6 +1,6 @@
 # Hazard ratios and incidence rate ratios
 
-Choose **Time-to-event and event rates** under studies with two or more groups in New Dataset, then select **HR** or **IRR** on the existing metric page. HR, IRR, and binary risk ratios are distinct measures; keep one outcome family per project.
+Choose **New project**, select **Time-to-event and event rates** for two-arm studies, then choose **HR** or **IRR** on the effect-measure page. HR, IRR and binary risk ratios are distinct measures. Each outcome sheet has its own data type and study rows; a project can contain several sheets.
 
 Ready-to-open [metafor example projects](../sample_projects/README.md) are bundled in `sample_projects/`: Pignon 2000 (HR, 65 trial results) and Niel-Weise 2008 (IRR, 9 studies), with original inputs and source citations.
 

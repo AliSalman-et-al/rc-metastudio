@@ -39,6 +39,7 @@ SCENARIOS = (
     "hillclimb",
     "analysis-dialog",
     "grid-entry",
+    "ui-refresh",
     "ux-improvements",
     "results-window",
     "manuscript-export-direct",

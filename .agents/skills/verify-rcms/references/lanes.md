@@ -65,9 +65,9 @@ uv run python scripts/verify_golden_compatibility.py --root . --output-root buil
 
 The golden CLI needs that R environment explicitly; the desktop helper configures its bootstrap itself. Verify the saved `compatibility-report.json`, all 416 numerical fields and plot contracts, and identify the selected library/source provenance. Text comparison canonicalizes a line-leading heterogeneity `t²`/`τ²` header before Q. Scoped exceptions also bind exact before/after text or the documented scale and Greek-label corrections; they preserve scientific tokens and numbers. Changed numbers, unrelated narrative and other text still fail. Frozen contracts and tolerances remain unchanged. A focused recovery pass does not retroactively make the original failed full-run command successful; report its failed stage and the corrected gate's evidence.
 
-Read `docs/maintaining.md` for runner options and `docs/release.md` for package qualification. R dependency identity comes from `config/r-dependencies.json`, not remembered latest versions. ADR-0007 delegates statistical decisions to the authority packages. Golden tolerance changes require justification independent of current output.
+Read `docs/maintaining.md` for runner options and `docs/release.md` for package qualification. R dependency identity comes from `config/r-dependencies.json`, not remembered latest versions. ADR-0001 delegates statistical decisions to the authority packages. Golden tolerance changes require justification independent of current output.
 
-Release targets are Windows x64, Apple silicon macOS, and Ubuntu 24.04 x86_64 (ADR-0013 supersedes ADR-0012). A local Windows proof cannot qualify the other targets. Exact artifact hashes, relocatability, runtime provenance, platform trust and release-set evidence come from package qualification. This skill does not authorize publishing, promotion, signing, workflow dispatch, or messaging others.
+Release targets are Windows x64, Apple silicon macOS, and Ubuntu 24.04 x86_64 (ADR-0009). A local Windows proof cannot qualify the other targets. Exact artifact hashes, relocatability, runtime provenance, platform trust and release-set evidence come from package qualification. This skill does not authorize publishing, promotion, signing, workflow dispatch, or messaging others.
 
 ## Reporting
 

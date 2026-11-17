@@ -43,8 +43,8 @@ class SubgroupAnalysisDialog(
         if not selected_covariate:
             QMessageBox.warning(
                 self,
-                "No Covariate Selected",
-                "Select a Category covariate before running subgroup analysis.",
+                "No covariate selected",
+                "Select a categorical covariate before running subgroup analysis.",
             )
             return
         parent = self.parentWidget()

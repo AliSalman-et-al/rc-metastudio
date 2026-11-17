@@ -5,7 +5,7 @@ description: Verify RC MetaStudio desktop workflows with real Qt and R, capture 
 
 # Verify RC MetaStudio
 
-Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0008 owns the release oracle; ADR-0010 requires a real R runtime. A green basic analysis is insufficient after a shared analysis change.
+Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0005 owns the release oracle; ADR-0007 requires a real R runtime. A green basic analysis is insufficient after a shared analysis change.
 
 ## Launch
 

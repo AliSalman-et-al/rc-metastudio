@@ -48,7 +48,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Import Options</string>
+      <string>Import options</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -152,17 +152,6 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="file_path_lbl">
-         <property name="text">
-          <string>No file has been chosen.</string>
-         </property>
-         <property name="wordWrap"><bool>true</bool></property>
-          <property name="buddy">
-           <cstring>select_file_btn</cstring>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QPushButton" name="select_file_btn">
           <property name="text">

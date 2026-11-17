@@ -133,8 +133,8 @@ _Avoid_: Regression limit estimate, bias-adjusted estimate
 The diagnostic small-study-effects plot of log diagnostic odds ratio against inverse square-root effective sample size, with the Deeks weighted regression line. It is distinct from an ordinary effect-versus-standard-error funnel and has no triangular pseudo-confidence region.
 _Avoid_: Diagnostic funnel plot, contour-enhanced DOR funnel
 
-**Deeks test (`meta` implementation)**:
-The diagnostic primary asymmetry test supplied by the pinned `meta` package. Results disclose the package version and actual regression predictor because this implementation differs from the equation in the primary paper.
+**Deeks test**:
+The diagnostic primary asymmetry test supplied by the pinned `meta` package. Methods and technical details disclose the package version and actual regression predictor because this implementation differs from the equation in the primary paper. Compact result headers use the test name without a package or version suffix.
 _Avoid_: Exact Deeks-paper reproduction, generic diagnostic Egger test
 
 **Studies with any zero cell**:
@@ -200,3 +200,24 @@ _Avoid_: Adjusted I², meta-regression I²
 **Moderator coefficient plot**:
 An editable forest plot of moderator coefficients for one modeled side of a Reitsma bivariate meta-regression. Sensitivity and specificity use separate plots.
 _Avoid_: Meta-regression bubble plot, two-panel coefficient plot
+
+**Text report**:
+The formatted written account of an analysis, including Methods, Results,
+numerical tables, references and model configuration.
+_Avoid_: Manuscript as a separate results page, Settings as a duplicate report
+
+**Leave-one-out pooled effect**:
+The pooled effect fitted to the included studies after omitting one study. Each
+omission has its own estimate and confidence interval.
+_Avoid_: The omitted study's individual effect
+
+**Heterogeneity after omission**:
+The heterogeneity reported by the fitted model after omitting one study. Sorting
+by remaining I² places the lowest I² first; it does not change which studies are
+included in the full analysis.
+_Avoid_: The omitted study's I²
+
+**Cumulative analysis sequence**:
+The order in which studies enter successive pooled fits. Changing this sequence
+changes the intermediate study subsets and their results.
+_Avoid_: Display order as a synonym for analysis sequence

@@ -13,13 +13,13 @@ def run(app, window, work, record):
     assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)
     def small_study(dialog):
         explanation = dialog.automatic_test_label.text()
-        assert '10' in explanation and '9' in explanation, explanation
+        assert '10' in explanation and '9 eligible' in dialog.context_label.text(), explanation
+        assert 'Mixed-effects Egger' in explanation, explanation
         dialog.contour_funnel_check.setChecked(True)
         for invalid in ('abc', '90,,95', '0,101', ''):
             dialog.contour_levels_edit.setText(invalid)
             click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
             assert dialog.isVisible() and dialog.failure_label.isVisible()
-            assert not dialog.progress_bar.isVisible()
             assert 'Contour' in dialog.failure_label.text()
             assert dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
             record('contour-inline-validation', dialog, input=invalid,

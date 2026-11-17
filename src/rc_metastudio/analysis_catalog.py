@@ -21,7 +21,7 @@ BINARY_METRIC_NAMES = {
     "PLN": "Natural logarithm transformed proportion",
     "PLO": "Logit transformed proportion",
     "PAS": "Arcsine transformed proportion",
-    "PFT": "Freeman-Tukey transformed proportion",
+    "PFT": "Freeman–Tukey transformed proportion",
 }
 
 

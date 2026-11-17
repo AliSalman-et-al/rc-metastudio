@@ -390,8 +390,8 @@ def run(app, window, work, record, scenario):
             else:
                 check_sequential(view, workflow, record)
                 if workflow == "leave-one-out":
-                    assert "Omission-only fits" in view.report_text.toPlainText()
-                    assert "All studies" not in next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0][0]
+                    assert "With all studies" in view.manuscript.results
+                    assert next(t for s in view.results.sections for t in s.tables if t.title == "Leave-one-out results").rows[0][0] == "All studies"
             view.close()
         if family == "event_rates":
             # Only one included study has treated events. Omitting it leaves a
@@ -401,7 +401,7 @@ def run(app, window, work, record, scenario):
             view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)
             check_report(app, view, work, record)
             check_sequential(view, "leave-one-out", record)
-            assert "Non-estimable" in view.report_text.toPlainText()
+            assert "Non-estimable" in view.manuscript_text.toPlainText()
             view.close()
         window.workspace.mark_saved()
         assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
@@ -568,7 +568,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         target.model.reset_model()
         target.enable_menu_options_that_require_dataset()
     def check_bubble_panel_bounds(view, family, metric):
-        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.report_text.toPlainText()), view.report_text.toPlainText()
+        assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.manuscript_text.toPlainText()), view.manuscript_text.toPlainText()
         paths = list(view.results.display_images.items())
         exported = {}
         for title, _path in paths.copy():

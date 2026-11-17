@@ -1039,11 +1039,14 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
         def __init__(self):
             self.conversions = []
             self.runs = []
+            self.data = object()
 
         def convert(self, model, **kwargs):
             self.conversions.append((model, kwargs))
+            return self.data
 
-        def run(self, requests):
+        def run(self, requests, data):
+            assert data is self.data
             method_names = [request["method"] for request in requests]
             parameter_values = [request["params"] for request in requests]
             self.runs.append((method_names, parameter_values))
@@ -1147,17 +1150,16 @@ def test_headless_analysis_dispatches_meta_regression_with_selected_covariates(
 
     model = Model()
     monkeypatch.setattr(headless_analysis, "load_dataset_model", lambda path: model)
+    def run_model(selected_model, request, **kwargs):
+        assert selected_model is model
+        calls.append(("data", kwargs))
+        backend_requests.append(request)
+        return _text_result("Summary", request["metric"])
+
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
-        "dataset_to_simple_binary_r_object",
-        lambda model, **kwargs: calls.append(("data", kwargs)),
-        raising=False,
-    )
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "run_versioned_analysis_request",
-        lambda request: backend_requests.append(request)
-        or _text_result("Summary", request["metric"]),
+        "run_model_analysis",
+        run_model,
         raising=False,
     )
 
@@ -1510,6 +1512,40 @@ def test_scoped_text_exception_rejects_arbitrary_replacement(text):
     assert not compare_golden_baseline(reference, current, [exception])["passed"]
 
 
+@pytest.mark.parametrize("change", ["before_hash", "after_hash", "name", "type", "metadata", "label", "missing", "numeric", "other_case", "invalid_hash"])
+def test_scoped_plot_redesign_requires_exact_artifact_and_preserves_other_checks(change):
+    reference, current = _baseline(), _current()
+    expected, actual = reference["curated_golden_set"][0], current["curated_golden_set"][0]
+    expected["tool_versions"] = actual["tool_versions"] = {"os": "Windows"}
+    actual["artifacts"][0]["sha256"] = "b" * 64
+    before = {"label": "Forest Plot", "name": "reference.png", "type": "png", "sha256": "a" * 64, "metadata": {"kind": "plot"}}
+    after = {**before, "sha256": "b" * 64}
+    exception = {"id": "reviewed-plot", "ids": [expected["id"]],
+        "accepted_classifications": [TEXT_ARTIFACT_DRIFT],
+        "accepted_details": ["Artifact Forest Plot descriptor or content changed under the same-platform exact artifact policy (Windows)."],
+        "accepted_artifacts": {"Forest Plot": {"before": before, "after": after}}}
+    assert compare_golden_baseline(reference, current, [exception])["passed"]
+    if change == "before_hash":
+        expected["artifacts"][0]["sha256"] = "c" * 64
+    elif change == "after_hash":
+        actual["artifacts"][0]["sha256"] = "c" * 64
+    elif change in {"name", "type"}:
+        actual["artifacts"][0]["path"] = "changed.png" if change == "name" else "reference.svg"
+    elif change == "metadata":
+        actual["artifacts"][0]["kind"] = "changed"
+    elif change == "label":
+        actual["artifacts"][0]["label"] = "Other Plot"
+    elif change == "missing":
+        actual["artifacts"] = []
+    elif change == "numeric":
+        actual["outputs"]["Summary"]["estimate"] = 999
+    elif change == "other_case":
+        expected["id"] = actual["id"] = "unreviewed-case"
+    elif change == "invalid_hash":
+        actual["artifacts"][0]["sha256"] = after["sha256"] = "invalid"
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]
+
+
 
 def test_standalone_extended_cases_require_frozen_numbers(monkeypatch):
     from tests.analysis_regression.golden.support import golden_analysis as golden
@@ -1569,3 +1605,19 @@ def test_reviewed_scale_labels_preserve_all_scientific_values():
     for text in (approved.replace("0.77", "999"), approved + "\nNew scientific claim", ""):
         damaged = {"results": [{"id": "amino-binary-meta-regression", "texts": {"Summary": text}}]}
         assert not compare_golden_baseline(reference, damaged, exceptions)["passed"]
+
+
+@pytest.mark.parametrize("replacement", [0.604, 0.606, None, "0.605"])
+def test_reviewed_numeric_addition_accepts_only_exact_missing_field(replacement):
+    reference, current = _baseline(), _current()
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = 0.605
+    exception = {"id": "amino-binary-random",
+                 "accepted_details": ["Summary.singleton_p is an unexpected numeric metric."],
+                 "accepted_classifications": [UNEXPECTED_OUTPUT],
+                 "accepted_outputs": {"Summary": {"singleton_p": 0.605}}}
+    assert compare_golden_baseline(reference, current, [exception])["passed"]
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = replacement
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]
+    current["curated_golden_set"][0]["outputs"]["Summary"]["singleton_p"] = 0.605
+    current["curated_golden_set"][0]["outputs"]["Summary"]["estimate"] = 999
+    assert not compare_golden_baseline(reference, current, [exception])["passed"]

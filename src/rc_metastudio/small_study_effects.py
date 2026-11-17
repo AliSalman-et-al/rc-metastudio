@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -367,8 +368,11 @@ class SmallStudyEffectsRequest:
     sensitivity_specs: tuple[SensitivitySpec, ...] = ()
     pooled_display: PooledDisplaySpec = PooledDisplaySpec()
     version: int = 1
+    k_min: int | None = None
 
     def __post_init__(self) -> None:
+        if self.k_min is not None and (type(self.k_min) is not int or self.k_min < 0):
+            raise ValueError("k_min must be a non-negative integer")
         if type(self.version) is not int or self.version != 1:
             raise ValueError(
                 "unsupported small-study effects request version: %s" % self.version
@@ -422,6 +426,7 @@ class SmallStudyEffectsRequest:
         data_type: str,
         metric: str,
         confidence_level: float = 95.0,
+        k_min: int | None = None,
         correction_policy: CorrectionPolicy | str | None = None,
         selected_tests: Sequence[str | AsymmetryTestMethod] = (),
         selected_funnels: Sequence[str | FunnelKind] = (FunnelKind.ORDINARY.value,),
@@ -486,6 +491,7 @@ class SmallStudyEffectsRequest:
             data_type=_analysis_family(data_type),
             metric=_text(metric, "metric"),
             confidence_level=float(confidence_level),
+            k_min=k_min,
             correction_policy=policy,
             plot_specs=funnels,
             test_specs=tests,
@@ -503,6 +509,8 @@ class SmallStudyEffectsRequest:
             "tests": [spec.method.value for spec in self.test_specs],
         }
         result.update(_plot_wire_mapping(self.plot_specs))
+        if self.k_min is not None:
+            result["k.min"] = self.k_min
         result.update(_sensitivity_wire_mapping(self.sensitivity_specs))
         result["pooled.display.model"] = self.pooled_display.model.value
         result["pooled.display.tau"] = self.pooled_display.method_tau
@@ -601,6 +609,7 @@ class EligibilityReport:
     raw_data_available: bool = False
     standard_error_range: tuple[float, float] | None = None
     package_versions: tuple[tuple[str, str], ...] = ()
+    k_min: int | None = None
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, object]) -> EligibilityReport:
@@ -619,39 +628,8 @@ class EligibilityReport:
             raise ValueError(
                 "eligibility report is missing fields: " + ", ".join(missing)
             )
-        method_values = value["methods"]
-        # rpy2 scalarizes a length-one list of named records to its record
-        # mapping.  Normalize that wire representation before validating the
-        # otherwise stable sequence contract.
-        if isinstance(method_values, Mapping):
-            method_values = (method_values,)
-        if isinstance(method_values, (str, bytes)) or not isinstance(
-            method_values, Sequence
-        ):
-            raise ValueError("eligibility methods must be a sequence")
-        methods = tuple(
-            EligibilityMethod.from_mapping(
-                _string_key_mapping(item, "eligibility method")
-            )
-            for item in method_values
-            if isinstance(item, Mapping)
-        )
-        if len(methods) != len(method_values):
-            raise ValueError("eligibility methods must contain mappings")
-        standard_error = value["standard.error.range"]
-        standard_error_range = None
-        if not isinstance(standard_error, (list, tuple)) or len(standard_error) not in (
-            0,
-            2,
-        ):
-            raise ValueError(
-                "eligibility standard.error.range must have zero or two values"
-            )
-        if len(standard_error) == 2:
-            standard_error_range = (
-                _float(standard_error[0], "eligibility standard.error.range"),
-                _float(standard_error[1], "eligibility standard.error.range"),
-            )
+        methods = _eligibility_methods(value["methods"])
+        standard_error_range = _eligibility_standard_error_range(value["standard.error.range"])
         versions = value["package.versions"]
         if not isinstance(versions, Mapping):
             raise ValueError("eligibility package.versions must be a mapping")
@@ -672,10 +650,12 @@ class EligibilityReport:
         if not isinstance(value["raw.data.available"], bool):
             raise ValueError("eligibility raw.data.available must be boolean")
         warnings = _text_values(value["warnings"], "eligibility warnings")
+        k_min = _eligibility_minimum(value.get("k.min"))
         return cls(
             data_type=value["data.type"],
             metric=value["metric"],
             usable_studies=int(count),
+            k_min=None if k_min is None else int(k_min),
             methods=methods,
             warnings=tuple(str(item) for item in warnings if item is not None),
             raw_data_available=value["raw.data.available"],
@@ -776,3 +756,49 @@ __all__ = [
     "regenerate_small_study_effects_funnel",
     "unavailable_reason",
 ]
+
+
+def _eligibility_methods(method_values: object) -> tuple[EligibilityMethod, ...]:
+    # rpy2 scalarizes a length-one list of named records to its record
+    # mapping.  Normalize that wire representation before validating the
+    # otherwise stable sequence contract.
+    if isinstance(method_values, Mapping):
+        method_values = (method_values,)
+    if isinstance(method_values, (str, bytes)) or not isinstance(
+        method_values, Sequence
+    ):
+        raise ValueError("eligibility methods must be a sequence")
+    methods = tuple(
+        EligibilityMethod.from_mapping(
+            _string_key_mapping(item, "eligibility method")
+        )
+        for item in method_values
+        if isinstance(item, Mapping)
+    )
+    if len(methods) != len(method_values):
+        raise ValueError("eligibility methods must contain mappings")
+    return methods
+
+
+def _eligibility_standard_error_range(standard_error: object) -> tuple[float, float] | None:
+    standard_error_range = None
+    if not isinstance(standard_error, (list, tuple)) or len(standard_error) not in (
+        0,
+        2,
+    ):
+        raise ValueError(
+            "eligibility standard.error.range must have zero or two values"
+        )
+    if len(standard_error) == 2:
+        standard_error_range = (
+            _float(standard_error[0], "eligibility standard.error.range"),
+            _float(standard_error[1], "eligibility standard.error.range"),
+        )
+    return standard_error_range
+
+
+def _eligibility_minimum(k_min: object) -> int | None:
+    if k_min is not None and (not isinstance(k_min, (int, float)) or isinstance(k_min, bool)
+                              or not math.isfinite(k_min) or k_min < 0 or int(k_min) != k_min):
+        raise ValueError("eligibility k.min must be a non-negative integer")
+    return None if k_min is None else int(k_min)

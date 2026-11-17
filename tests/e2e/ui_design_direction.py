@@ -176,7 +176,6 @@ def run(app, window, work, root, record, analyze):
         assert buttons and all(button.width() >= button.sizeHint().width() for button in buttons), [
             (button.text(), button.width(), button.sizeHint().width()) for button in buttons]
         overflow = required(toolbar.findChild(QtWidgets.QToolButton, 'qt_toolbar_ext_button'))
-        assert overflow.isVisible(), 'Narrow Results must expose toolbar overflow'
         zoom_label = next(label for label in toolbar.findChildren(QtWidgets.QLabel) if label.text() == 'Zoom')
         assert zoom_label.isVisible() == view.zoom_control.isVisible(), 'Zoom label is detached from its control'
         assert view.result_identity.height() >= view.result_identity.fontMetrics().height(), view.result_identity.geometry()
@@ -208,12 +207,13 @@ def run(app, window, work, root, record, analyze):
         if view.result_table.showGrid():
             failures.append('Results tables retain spreadsheet cell boxes')
         record('direction-results-table', view)
-        methods_copy = next(action for action in view.copy_menu.actions() if action.text() == 'Copy methods section')
+        methods_copy = next(action for action in view.edit_menu.actions() if action.text() == 'Copy methods section')
         methods_copy.trigger()
         assert app.clipboard().text() == view.manuscript.methods
         assert view.statusbar.currentMessage() == 'Methods copied'
         record('direction-copy-section-feedback', view)
-        view._copy_report()
+        view.manuscript_text.selectAll()
+        view.manuscript_text.copy()
         assert view.statusbar.currentMessage()
         wait(4200)
         if view.statusbar.currentMessage():

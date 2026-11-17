@@ -11,7 +11,6 @@ calculate the same raw-data preview as the table.
 from __future__ import annotations
 from rc_metastudio.project_domain import RowId, SheetId
 
-import copy
 import math
 
 from collections.abc import Mapping
@@ -343,7 +342,7 @@ class WorkspaceEditingService:
             )
         study = (next(row for row in dataset.sheet(context.sheet_id).rows if row.id == target.row_id) if target.row_id else dataset.sheet(context.sheet_id).rows[target.row])
         if self._edit_requires_name(study, target, context, value, allow_empty_names):
-            self._last_error = "Please enter a study name before entering study data."
+            self._last_error = "Enter a study name first."
             return None
         return study
 
@@ -351,7 +350,7 @@ class WorkspaceEditingService:
         import uuid
         sheet = dataset.sheet(context.sheet_id)
         if target.column != context.name_column:
-            self._last_error = 'Please enter a study name before entering study data.'
+            self._last_error = 'Enter a study name first.'
             return None
         if not allow_empty_names:
             try:
@@ -420,11 +419,11 @@ class WorkspaceEditingService:
     def _edit_year(study: StudyRow, value: object) -> AppliedWorkspaceEdit:
         text = qt_text.to_native_text(value)
         if not qt_text.is_blank(text) and not is_an_int(text):
-            return AppliedWorkspaceEdit(error="Years need to be integers.")
+            return AppliedWorkspaceEdit(error="Enter the year as a whole number, for example 2019.")
         try:
             study.year = int(float(text)) if not qt_text.is_blank(text) else 0
         except (TypeError, ValueError):
-            return AppliedWorkspaceEdit(error="Years need to be integers.")
+            return AppliedWorkspaceEdit(error="Enter the year as a whole number, for example 2019.")
         return AppliedWorkspaceEdit()
 
     def _analysis_unit(self, dataset, study, context):
@@ -440,11 +439,11 @@ class WorkspaceEditingService:
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
-            return "Raw data needs to be numeric."
+            return "Enter a number."
         if qt_text.is_blank(text):
             return None
         if not is_float_convertible(text):
-            return "Raw data needs to be numeric."
+            return "Enter a number."
         position = context.raw_columns.index(target.column)
         if context.data_type == EVENT_RATES:
             number = float(text)
@@ -467,7 +466,7 @@ class WorkspaceEditingService:
         if data_type not in (BINARY, DIAGNOSTIC):
             return None
         if not is_an_int(text):
-            return "Expected a whole number (count), but a decimal value was entered."
+            return "Counts must be whole numbers."
         if int(float(text)) < 0:
             return "Counts cannot be negative."
         return None
@@ -491,11 +490,11 @@ class WorkspaceEditingService:
         if position in (0, 2):
             sample = raw_data[position + 1]
             if is_an_int(sample) and int(float(text)) > int(float(sample)):
-                return "Number of events cannot be greater than number of samples."
+                return "Events cannot exceed the arm total."
         if position in (1, 3):
             event = raw_data[position - 1]
             if is_an_int(event) and int(float(text)) < int(float(event)):
-                return "Number of events cannot be greater than number of samples."
+                return "Events cannot exceed the arm total."
         return None
 
     @staticmethod
@@ -503,7 +502,7 @@ class WorkspaceEditingService:
         if float(text) > 0:
             return None
         if position in (0, 3):
-            return "Count cannot be zero or negative"
+            return "Participants must be a positive whole number."
         if position in (2, 5):
             return "Standard deviation must be greater than zero."
         return None
@@ -533,11 +532,11 @@ class WorkspaceEditingService:
     ) -> str | None:
         text, numeric_valid = qt_text.normalize_decimal_text(value)
         if not numeric_valid:
-            return "Outcomes must be numeric."
+            return "Enter a number."
         if qt_text.is_blank(text):
             return None
         if not is_float_convertible(text):
-            return "Outcomes must be numeric."
+            return "Enter a number."
         unit = self._analysis_unit(dataset, study, context)
         previous_display = self._previous_display_outcome(
             dataset, study, target, context, unit
@@ -636,7 +635,7 @@ class WorkspaceEditingService:
         display_value = None if qt_text.is_blank(value) else float(normalized_value)
         metric, outcome_index = self._outcome_metric(target, context)
         if metric is None:
-            return AppliedWorkspaceEdit(error="No effect metric is selected.")
+            return AppliedWorkspaceEdit(error="Choose an effect measure first.")
         n1 = self._outcome_sample_size(dataset, study, context)
         calculation_value = self.to_calculation_scale(
             display_value, context.data_type, metric, n1

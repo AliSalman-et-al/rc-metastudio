@@ -34,7 +34,7 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
 from rc_metastudio import row_padding
-from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, TWO_ARM_METRICS
+from rc_metastudio.analysis_catalog import CONTINUOUS, TWO_ARM_METRICS
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
 
@@ -68,16 +68,11 @@ class MainWindowProtocol(Protocol):
     def redo(self) -> None: ...
 
 
-
-
-
 def _connect_action(action, callback):
     parent = getattr(callback, "__self__", None)
     action.triggered.connect(
         app_error_handler.safe_slot(lambda checked=False: callback(), parent=parent)
     )
-
-
 
 
 class DatasetTableView(QtWidgets.QTableView):
@@ -101,7 +96,7 @@ class DatasetTableView(QtWidgets.QTableView):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Gold marks the effect size and confidence interval columns. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
         # the main gui is assumed to be the form
         # that owns this table view, i.e., the 'main'
@@ -258,7 +253,7 @@ class DatasetTableView(QtWidgets.QTableView):
             def delete_study():
                 answer = QMessageBox.question(
                     self,
-                    "Delete Study",
+                    "Delete study",
                     "Delete study %s?" % study.label,
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No,
@@ -611,36 +606,6 @@ class DatasetTableView(QtWidgets.QTableView):
         self._enable_analysis_menus_if_appropriate()
 
 
-    def change_metric_if_appropriate(self):
-        """if:
-            1) there are at least 2 studies, and
-            2) none of them have data for two-arms, and,
-            3) the current metric is a two-arm metric
-        then:
-            we automatically change the metric to single-arm
-
-        returns a tuple, wherein the first element is a boolean
-        indicating whether or not the metric was indeed changed,
-        and the second is the original metric
-        """
-        original_metric = self.model().current_effect
-
-        if len(self.model().get_studies(False)) > 2:
-            data_type = self.model().get_current_data_type()
-            if data_type == "binary" or data_type == "continuous":
-                default_metric = {
-                    "binary": BINARY_ONE_ARM_METRICS[0],
-                    "continuous": CONTINUOUS_ONE_ARM_METRICS[0],
-                }[data_type]
-
-                if (
-                    default_metric != original_metric
-                    and self.model().data_for_only_one_arm()
-                ):
-                    self.set_metric_in_ui(default_metric)
-                    return (True, original_metric)
-        return (False, original_metric)
-
     def get_covariate_columns(self):
         return list(range(self.model().OUTCOMES[-1] + 1, self.model().columnCount()))
 
@@ -789,17 +754,6 @@ class DatasetTableView(QtWidgets.QTableView):
         return [column for column in range(origin, self.model().columnCount())
                 if not self.isColumnHidden(column)]
 
-    def set_data_in_model(self, index, val):
-        if not self.model().setData(index, val):
-            self._report_model_data_error(self._model_data_error_message())
-        self.model().reset_model()
-        self.setCurrentIndex(index)
-
-    def _model_data_error_message(self):
-        return (
-            getattr(self.model(), "last_data_error", None)
-            or "The entered value could not be used."
-        )
 
     def _report_model_data_error(self, msg):
         if self.main_gui is not None and hasattr(self.main_gui, "data_error"):
@@ -828,10 +782,7 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def _enable_analysis_menus_if_appropriate(self):
 
-        if (
-            len(self.model().get_studies(False)) >= 2
-            and self._get_number_of_included_studies() >= 2
-        ):
+        if self._get_number_of_included_studies() >= 1:
             self._main_gui().enable_menu_options_that_require_dataset()
         else:
             self._main_gui().disable_menu_options_that_require_dataset()

@@ -182,26 +182,12 @@ rcmetar.bmj.not_estimable <- function(bundle) {
 
 rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)
 
-rcmetar.bmj.xlab <- function(bundle) {
-    rcmetar.revman.xlab(bundle)
-}
 
 rcmetar.bmj.study.header <- function(bundle) {
     rcmetar.revman.study.header(bundle)
 }
 
-rcmetar.bmj.effect.header <- function(bundle) {
-    rcmetar.bmj.metric.label(bundle)
-}
 
-rcmetar.bmj.group.headers <- function(bundle) {
-    if (length(bundle$ilab$groups) == 0) {
-        return(character(0))
-    }
-    headers <- vapply(bundle$ilab$groups, rcmetar.revman.wrap.header, character(1))
-    names(headers) <- bundle$ilab$groups
-    headers
-}
 
 rcmetar.bmj.metric.label <- function(bundle) {
     label <- rcmetar.revman.metric.label(bundle)
@@ -220,9 +206,6 @@ rcmetar.bmj.method.label <- function(bundle) {
     rcmetar.revman.method.label(bundle)
 }
 
-rcmetar.bmj.layout <- function(bundle) {
-    rcmetar.forest.bmj.layout.coordinates(bundle)
-}
 
 rcmetar.bmj.axis.ticks <- function(bundle, alim) {
     if (!metric.is.log.scale(as.character(bundle$params$measure)) &&
@@ -268,9 +251,6 @@ rcmetar.bmj.test.overall.label <- function(bundle) {
     rcmetar.revman.test.overall.label(bundle)
 }
 
-rcmetar.measure.bmj.forest.device <- function(bundle) {
-    rcmetar.forest.bmj.device.metrics(bundle)
-}
 
 rcmetar.bmj.effect.values <- function(bundle) {
     effect <- NULL
@@ -491,10 +471,6 @@ rcmetar.forest.bmj.alim <- function(bundle) {
     c(alim[[1]] - padding, alim[[2]] + padding)
 }
 
-rcmetar.forest.bmj.layout.coordinates <- function(bundle) {
-    size <- rcmetar.forest.bmj.device.metrics(bundle)
-    rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
-}
 
 rcmetar.forest.bmj.layout.coordinates.from_size <- function(bundle, size) {
     alim <- rcmetar.forest.axis.alim(bundle, rcmetar.forest.bmj.alim(bundle))

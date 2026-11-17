@@ -58,7 +58,7 @@ create.plot.data.generic <- function(om.data, params, res, selected.cov=NULL){
     }
 
     tau2 <- sprintf(digits.str, res$tau2)
-    degf <- res$k - 1
+    degf <- (res$k.yi %||% res$k) - 1
     QLabel =  paste("Q(df=", degf, ")", sep="")
     if (!is.null(res$QE)) {
       QE <- sprintf(digits.str, res$QE)
@@ -617,6 +617,7 @@ set.plot.options <- function(params) {
 }
 
 calc.plot.range <- function(effects, plot.options) {
+    effects <- lapply(effects, function(values) values[is.finite(values)])
     effect.size.min <- min(effects$ES)
     effect.size.max <- max(effects$ES)
     user.lb <- plot.options$plot.lb

@@ -162,7 +162,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Generic effect size</string>
+        <string>Entered effect estimate</string>
        </property>
        <property name="icon">
         <iconset resource="../images/icons.qrc">

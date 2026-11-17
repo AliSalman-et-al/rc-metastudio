@@ -11,7 +11,7 @@ Users reach guided small-study effects analysis through the Publication Bias UI 
 
 ## How to get to it (user POV)
 
-- After opening a project with at least two included studies, choose Analysis > Publication Bias or the matching toolbar button.
+- After opening a project with included study data, choose Analysis > Publication Bias or the matching toolbar button.
 
 ## Driving it with Qt E2E
 
@@ -23,7 +23,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 - **Vector clipping.** Ordinary, contour, both trim-and-fill scenarios and Deeks
   must use SVG Results artifacts. `ui-fine-tuning` checks their rendered clipping
   through both production Qt loaders at two scales. The dedicated
-  [SVG evidence](../../../../docs/funnel-svg-rendering-2026-11-15.md) also covers
+  [SVG evidence](../../../../docs/plot-rendering.md) also covers
   narrow axes, nonwhite backgrounds and vector-only high-resolution PDF painting.
 - **Extended procedures.** Run `small-study-binary-extended`, `small-study-continuous-extended`, and `small-study-diagnostic`. The continuous fixture duplicates the six sample studies into a controlled 12-study dataset to reach the >=10-study asymmetry threshold; it is not a clinical dataset. These drives require contour/trim-and-fill/extrapolation result sections or Deeks output and hidden or disabled inapplicable diagnostic controls. Supplement with the R numerical/eligibility lane; these UI assertions are not full independent asymmetry numerical proof.
 
@@ -37,27 +37,28 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 
 ## Procedures and eligibility routes
 
+The Package default checkbox reads meta’s k.min default from its method formal. Unchecking it exposes an explicit minimum of 3 or more; meta itself requires at least 3. No RCMS ten-study gate applies to metafor mixed-effects Egger or extrapolation.
+
 Source owners: `small_study_effects_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/small_study_effects.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
 
 | Data/metric | Required automatic route |
 | --- | --- |
-| Two-arm raw OR, >=10, low REML tau² <=0.1 | Harbord primary; Rücker/Peters additional |
-| Two-arm raw OR, >=10, high tau² | Rücker primary; Harbord unavailable with reason; Peters additional |
-| Raw two-group SMD, >=10 | Pustejovsky–Rodgers primary; ordinary Egger sensitivity |
-| MD/generic compatible effects, >=10 and varied standard errors | Classical/mixed-effects Egger and Begg |
-| RR/RD/one-arm or otherwise unsupported primary measure | Descriptive output and explicit unavailable primary; no silent OR substitution |
-| Diagnostic complete counts, >=10 and varied ESS | DOR-context Deeks; ordinary/contour/extrapolation disabled; trim-and-fill sensitivity group hidden |
+| Two-arm raw OR, at least meta k.min (default 10) | Harbord primary; Rücker/Peters exploratory; no RCMS tau² gate |
+| Raw two-group SMD, at least meta k.min | Classical Egger primary; Pustejovsky–Rodgers exploratory |
+| MD/generic compatible effects, varied standard errors | Classical Egger and Begg follow meta k.min; mixed-effects Egger follows metafor |
+| RR/RD/one-arm compatible effects | Package-supported Egger/Begg with effect–SE caveats; no silent OR substitution |
+| Diagnostic complete counts, at least meta k.min and varied ESS | DOR-context Deeks; ordinary/contour/extrapolation disabled; trim-and-fill sensitivity group hidden |
 | k=4, k=2, constant SE, missing raw SMD or diagnostic counts | Explicit unavailable reasons; supported descriptive behavior remains usable |
 
-Use `context_label` and `automatic_test_label` to capture family/metric/included/eligible counts and primary/additional identity. Exclusion changes must update eligibility; do not silently drop eligible studies.
+Use `context_label` and `automatic_test_label` to capture family/metric/included/eligible counts and primary/exploratory identity. Exclusion changes must update eligibility; do not silently drop eligible studies.
 
 ## Configuration and recovery recipe
 
 Trigger `action_publication_bias`. Set `ordinary_funnel_check`, `contour_funnel_check`, `contour_levels_edit` (e.g. `85,95,99`), or diagnostic `deeks_funnel_check`. Exercise `sampling_confidence_combo`, `include_tau2_check`, `correction_policy_combo`, `style_combo`, `point_size_spin`, `pooled_overlay_check`, `reference_line_check`, and `label_policy_combo` after corresponding changes.
 
-Trim-and-fill uses `trim_fill_check`, `trim_fill_estimator_combo` (L0/R0), `trim_fill_side_combo` (auto/left/right), `trim_fill_model_combo` (random/common). OR/SMD automatic side produces separate left/right sensitivity scenarios; MD package-auto is a single scenario. Verify imputed counts, augmented effects and warnings, not merely a funnel filename. `extrapolation_check` adds the separate extrapolation report.
+Trim-and-fill uses `trim_fill_check`, `trim_fill_estimator_combo` (L0/R0), `trim_fill_side_combo` (auto/left/right), `trim_fill_model_combo` (random/common). Automatic side uses meta's single selected scenario for every metric; the report names the selected side. ma.common follows meta's TRUE default independently of the display model. Verify imputed counts, augmented effects and warnings, not merely a funnel filename. `extrapolation_check` adds the separate extrapolation report.
 
-Capture configuration and click `button_box` OK. Require hidden `failure_label` and the expected semantic sections: `small-study.data-eligibility`, `small-study.tests`, `small-study.method-details`, `small-study.methods-not-applicable`, `small-study.extrapolation`, and `small-study.trim-and-fill` or `.left`/`.right` as applicable. Require real retained `small-study.funnel.*`, `small-study.contour_funnel.*`, `small-study.deeks_funnel.*`, and trim-and-fill images. Copy `.data/.res/.params` and temporary funnels before R quits.
+Capture configuration and click `button_box` OK. Require hidden `failure_label` and the expected semantic sections: `small-study.data-eligibility`, `small-study.tests`, `small-study.method-details`, `small-study.methods-not-applicable`, `small-study.extrapolation`, and `small-study.trim-and-fill`. Require real retained `small-study.funnel.*`, `small-study.contour_funnel.*`, `small-study.deeks_funnel.*`, and trim-and-fill images. Copy `.data/.res/.params` and temporary funnels before R quits.
 
 Invalid contour levels must keep the modal recoverable, show `failure_label`, re-enable OK, preserve the project, and succeed after correction. Observe and dismiss the expected error specifically; other dialogs still fail the drive. Diagnostic label policies only offer None/All; no pseudo-confidence/tau²/pooled overlays. Funnel presentation edits must preserve fitted statistics, Deeks ESS geometry and trim-and-fill augmentation.
 
@@ -70,6 +71,8 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
 
-The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. The current error presentation uses the generic unexpected-error dialog and leaves the busy indicator visible until retry; record this presentation limitation separately from successful recovery. This native evidence does not turn that recipe into an automated test.
+The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. Execution failures use the generic unexpected-error dialog after the shared running popup closes and its wait cursor is restored. Contour request-validation errors remain inline and do not open the running popup. This native evidence does not turn that recipe into an automated test.
 
 The extended small-study drives assert that the confidence selector, pseudo-confidence-region checkbox and contour-level editor do not overlap.
+
+The `small-study-effects` drive observes the shared analysis popup while the real service executes, records `small-study-running`, and requires it to be hidden before Results. The popup uses the outcome and effect measure as context; CSV import retains its separate determinate-progress semantics.

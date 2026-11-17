@@ -49,7 +49,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
   script; compare exact CSV doubles and public references within one floating
   point step. A missing numeric attribute fails the drive. Text-only tables
   disable numeric export. Separate Microsoft Word consumer evidence is linked
-  from `docs/results-implementation-2026-11-15.md`.
+  in historical Git revisions; use `docs/testing.md` for current replay guidance.
 
 - `results-render`: actual summary text and valid rendered analysis plots. The sample analysis driver also asserts that Run analysis activates Results before screenshot capture, manual zoom restores the horizontal origin, and the text report has no duplicate Supplementary details or References headings.
 - `plot-apply`: changed axis label regenerates the real R plot and saved parameters.
@@ -141,7 +141,7 @@ Drive the changed producer family with real R, then click its navigation-tree en
 
 For each affected editable family: preserve input/params/rendered bytes; change one shared and one family-specific option; Apply; require changed valid rendering and persisted parameters; reopen the editor; Cancel a later draft; verify last-good artifacts. Exercise meaningful failed regeneration/rollback with retained transaction tests or an actual recoverable error, then retry. A fabricated R result is not live proof.
 
-Drive each offered **Save PDF/PNG/TIFF/SVG Image As** context action after an export change. Decode images and inspect dimensions/white background; validate SVG with QSvgRenderer and PDF pages. Cancel save must create nothing. Parameterized artifacts offer four formats; parameterless plots offer PNG only. Funnel regeneration rejects `.svgz`; inspect per-family capability before testing aliases.
+Drive **Export plot…** from the plot context menu and toolbar, then select each PDF/PNG/TIFF/SVG format in the shared dialog after an export change. Decode images and inspect dimensions/white background; validate SVG with QSvgRenderer and PDF pages. Cancel save must create nothing. Parameterized artifacts offer four formats; parameterless plots offer PNG only. Funnel regeneration rejects `.svgz`; inspect per-family capability before testing aliases.
 
 Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/editor tests, R renderer tests, and the native Results lane. Fixture-based native layout cannot substitute for real R regeneration.
 
@@ -151,7 +151,7 @@ Supplement with `tests/python/fast/test_plot_service.py`, affected GUI layout/ed
 
 Require every selected family-specific parameter and point size to persist and reappear in the editor. Capture display and parameter/data/result bytes immediately after Apply, then require both Cancel paths to preserve that snapshot. A label-only change cannot prove another control worked.
 
-Each offered PDF/PNG/TIFF/SVG context action exports a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
+The shared Export as dialog exports each offered PDF/PNG/TIFF/SVG format to a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
 `ui-fine-tuning` requires all five funnel variants to be vector Results items and
 renders them through both Results and manuscript loaders at 1× and 2×. It checks
@@ -160,7 +160,7 @@ plus the automatic 9 pt floor and explicit Fit width. `trimfill_geometry` compar
 the preview and exported SVG geometry before checking observed/imputed marker
 counts against a separately constructed metafor fit. Pixel identity between Qt
 and librsvg is not required: font rasterization and antialiasing differ. See the
-[SVG clipping report](../../../../docs/funnel-svg-rendering-2026-11-15.md) for
+[SVG clipping report](../../../../docs/plot-rendering.md) for
 narrow-axis, nonwhite-background and high-resolution vector PDF evidence.
 
 `manuscript-split-figure` derives a 95-study project from the sample, fits it
@@ -256,7 +256,7 @@ and removal. Calculator-mode drives traverse the effective form controls.
 Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspect
 retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
 all file-picker/failure states and all parameter combinations remain unqualified.
-See [round-five evidence](../../../../docs/ux-audit/2026-10-16-round5/README.md).
+See [current verification guidance](../../../../docs/testing.md).
 
 Round-five review follow-up: `audit-round3-irr-context` checks all three styles,
 caption separation/readable size, exposure-header descender/rule clearance, normal
@@ -286,7 +286,7 @@ and SVG header-rule clearance for three styles × three arm-name pairs. The long
 HR style matrix and short report checks measure cap height against row spacing.
 `plot-workflow-regression` checks twelve band/line visibility and legend combinations.
 Native captures require inspection; raw per-step inventories and independent values
-are retained. See [round six](../../../../docs/ux-audit/2026-10-16-round6/README.md).
+are retained. See [current verification guidance](../../../../docs/testing.md).
 
 Round-six reviewer follow-up: `project-reviewer-predictions` checks PFT/PLO/PAS
 prediction intervals in three styles, PFT sequential/subgroup footers and report/
@@ -303,7 +303,7 @@ HR/IRR families, including the unchanged persisted `default` key in Edit plot.
 and its effective viewport transform at 1280×800 (96 DPI equivalent), requiring
 at least 9 pt and 85% drawn-text width coverage. It rejects toolbar actions that
 duplicate sidebar navigation. Six light/dark forest, manuscript and table captures
-are retained. See `docs/ux-hill-climb/SLICE8B.md` for the measurements and limits.
+are retained. See `docs/testing.md` for current commands and limits; historical measurements remain in Git.
 
 The shared `ux-improvements` / `results-window` drive waits for the visible
 `EditPlotDialog` before editing direction labels. It deliberately dispatches a
@@ -335,8 +335,8 @@ equivalent to the previous disposal helper; it is not by itself a Windows fix.
 Windows decision evidence cleared all 28 direct writes and their resources; a
 later small-study modal race is guarded by waiting for the visible dialog. The
 dialog case crashed in non-native QFileDialog exec during stress cycling despite
-released writers and deleted prior dialogs. See `docs/ux-hill-climb/WINDOWS.md`
-for the evidence and boundary. No production source forces DontUseNativeDialog.
+released writers and deleted prior dialogs. See `docs/testing.md`
+for current replay guidance and platform boundaries; historical records remain in Git. No production source forces DontUseNativeDialog.
 The native Windows picker remains untested by automation and needs a person
 to check it. Linux passes do not qualify Windows; both CI cases remain enabled.
 
@@ -382,12 +382,23 @@ Default-style unavailable intervals have neither caps nor clipping arrows;
 infinite bounds still have directional arrows. The zero-display path in
 `audit-round3-references` exercises the unavailable Default intervals. Style-order
 checks compare canonical study indexes, including Default non-table ordering;
-printed weight-column checks explicitly select RevMan. The 15 November
-[implementation evidence](../../../../docs/ui-ux-implementation-2026-11-15.md)
-retains the current-source R checks and affected desktop reruns.
+printed weight-column checks explicitly select RevMan. Use the [verification guidance](../../../../docs/testing.md) for current-source
+R checks and affected desktop replay requirements.
 
 Batch 7 direction labels retain the axis tick font size and extend outward from
 its null; preflight reserves extra device space for long labels. HR/IRR drives
 retain the existing footer bounds, gap and overlap assertions. Native continuous
 SMD (dark) and amino OR (light, large font) captures are in
 `artifacts/batch7/`; the 9 pt body floor and forest fit settling remain unchanged.
+
+## November desktop refresh
+
+Text report is the single manuscript-formatted report page. Its section links
+include Methods, Results, tables, References and Model configuration. The former
+Manuscript and Settings pages and Copy report action were removed. Copy proof
+uses selection in QTextBrowser and compares ordered content, independent of
+whitespace introduced between table cells. `ux-improvements` also drives the
+persistent appearance menu, Zenodo citation copy and three exports, and About
+with debug copy. `export_formats` drives the shared dialog before decoding all
+four file formats. Its `export-options` evidence records physical dimensions
+and resolution. Native OS picker presentation remains a separate manual check.

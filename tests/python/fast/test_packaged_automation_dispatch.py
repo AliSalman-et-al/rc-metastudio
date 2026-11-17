@@ -251,6 +251,9 @@ def test_assembler_analyzes_equivalent_locale_edits(monkeypatch, tmp_path):
         ("en_US", "locale-en.rcms"),
         ("de_DE", "locale-de.rcms"),
     ]
+    analyses = [arguments for arguments, _locale in calls if arguments[0] == "--automation-package-analyze"]
+    assert len(analyses) == 4
+    assert all(arguments[3:] == ["binary.random", "DL"] for arguments in analyses)
 
 
 def test_assembler_runtime_probe_is_neutral_under_scale_smoke(monkeypatch, tmp_path):

@@ -1831,7 +1831,7 @@ def _assert_standard_binary_summary_is_formatted(meta):
     captured = {}
     original_analysis = meta.analysis
 
-    def capture_analysis(result, *, change_settings=None):
+    def capture_analysis(result, *, change_settings=None, manuscript=None):
         captured["result"] = result
 
     specs = main_window.analysis_setup_dialog.AnalysisSetupDialog(

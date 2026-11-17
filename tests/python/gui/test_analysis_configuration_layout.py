@@ -1136,7 +1136,7 @@ app = app_error_handler.get_or_create_application([])
 observed = []
 backend_calls = []
 execution_data_calls = []
-backend.run_versioned_analysis_request = lambda request: backend_calls.append(
+backend.run_model_analysis = lambda model, request, **kwargs: backend_calls.append(
     [request["method"], request["params"]["conf.level"]]
 ) or {"version": 1, "texts": {}, "sections": []}
 for locale, text in (
@@ -1186,7 +1186,7 @@ print("LOCALE_ANALYSIS_REQUESTS=" + json.dumps({
     assert json.loads(marker.split("=", 1)[1]) == {
         "requests": [90.5, 90.5],
         "backend_calls": [["binary.random", 90.5], ["binary.random", 90.5]],
-        "data_calls": ["binary", "binary"],
+        "data_calls": [],
     }
 
 
@@ -1232,7 +1232,7 @@ def test_backend_execution_uses_only_frozen_analysis_requests(monkeypatch):
         runner = (
             "run_versioned_analysis_requests"
             if data_type == "diagnostic"
-            else "run_versioned_analysis_request"
+            else "run_model_analysis"
         )
         monkeypatch.setattr(backend, runner, capture)
         metric = {
@@ -1284,7 +1284,7 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
     )
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
-        "run_versioned_analysis_request",
+        "run_model_analysis",
         lambda *args, **kwargs: calls.append(("backend", args, kwargs))
         or {"version": 1, "texts": {}, "sections": []},
     )
@@ -1302,8 +1302,8 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
     assert "90.5" in rendered
     assert "1.0" not in rendered
     assert "SMD" in rendered
-    assert isinstance(calls[0][1]["studies"][0], analysis_dataset.StudyRow)
-    assert calls[0][1]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
+    assert isinstance(calls[0][2]["studies"][0], analysis_dataset.StudyRow)
+    assert calls[0][2]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
 
 
 @pytest.mark.parametrize(
@@ -1383,7 +1383,7 @@ def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, mon
         dialog._executed_studies = (kept,)
         assert dict(dialog._manuscript_model_info()) == {"Studies (k)": "1", "Participants in A": "20", "Participants in B": "30"}
         context = dialog._result_context({"adjust": .5, "to": "only0"})
-        assert "1 studies were included (1 studies were excluded)" in context
+        assert "1 study was included (20 participants in A, 30 in B); 1 study was excluded" in context
         assert "100" not in context and "correction" not in context
     finally:
         dialog.close()

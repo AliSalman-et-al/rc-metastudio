@@ -402,39 +402,6 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Save image to</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="image_path">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="save_btn">
-       <property name="toolTip">
-        <string>Browse for the plot image save path</string>
-       </property>
-       <property name="accessibleName">
-        <string>Browse save image path</string>
-       </property>
-       <property name="accessibleDescription">
-        <string>Opens a file chooser for the plot image save path.</string>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::StrongFocus</enum>
-       </property>
-       <property name="text">
-        <string>Browse...</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
       </layout>

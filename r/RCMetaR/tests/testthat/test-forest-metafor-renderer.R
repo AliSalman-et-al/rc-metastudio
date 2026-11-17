@@ -243,14 +243,14 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
 
   expect_true(file.exists(png_path))
   expect_gt(file.info(png_path)$size, 5000)
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(png_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", png_path)))
   png_size <- read_png_dimensions(png_path)
   expect_gte(png_size[["width"]], 900)
   expect_gte(png_size[["height"]], 500)
 
   expect_true(file.exists(pdf_path))
   expect_gt(file.info(pdf_path)$size, 1000)
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(pdf_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", pdf_path)))
   pdf.contract <- read_pdf_contract(pdf_path)
   expect_equal(pdf.contract$signature, "%PDF-")
   expect_equal(pdf.contract$pages, 1)
@@ -268,7 +268,7 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
   expect_true(file.exists(tiff_path))
   expect_gt(file.info(tiff_path)$size, 1000)
   expect_equal(rcmetar.plot.file.extension(tiff_path), "tiff")
-  expect_false(file.exists(rcmetar.plot.canonical_svg_path(tiff_path)))
+  expect_false(file.exists(sub("[.][^.]*$", ".svg", tiff_path)))
   expect_length(dim(tiff::readTIFF(tiff_path)), 3)
 
   expect_equal(rcmetar.plot.file.extension(contains_png_pdf_path), "pdf")
@@ -699,7 +699,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
     digits = fixture$params$digits
   )
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  layout <- rcmetar.revman.layout(bundle)
+  layout <- rcmetar.forest.revman.layout.coordinates(bundle)
   footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
 
   expect_equal(footer$left.x, 0, tolerance = 1e-8)
@@ -723,7 +723,7 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
     digits = diagnostic.fixture$params$digits
   )
   diagnostic.bundle <- rcmetar.regenerate.plot.data(diagnostic.fixture$data, diagnostic.res, diagnostic.fixture$params)
-  diagnostic.layout <- rcmetar.revman.layout(diagnostic.bundle)
+  diagnostic.layout <- rcmetar.forest.revman.layout.coordinates(diagnostic.bundle)
   diagnostic.footer <- rcmetar.revman.axis.footer.layout(diagnostic.bundle, diagnostic.layout)
 
   expect_equal(diagnostic.footer$axis.x, mean(diagnostic.layout$alim), tolerance = 1e-8)
@@ -1007,7 +1007,7 @@ test_that("Default Forest Style panel toggles raw counts headers and annotation"
 
   expect_equal(ncol(bundle$ilab$matrix), 0)
   expect_equal(rcmetar.metafor.effect.header(bundle), "")
-  size <- rcmetar.measure.metafor.forest.device(bundle)
+  size <- rcmetar.forest.default.device.metrics(bundle)
   expect_equal(size$left_width, size$study_width + size$block_gap)
 
   png_path <- tempfile(fileext = ".png")
@@ -1071,7 +1071,7 @@ test_that("entered-effect-only RevMan plots degrade to weight columns", {
     expect_equal(bundle$ilab$headers, "Weight")
     expect_equal(bundle$ilab$groups, character(0))
     expect_equal(bundle$style_blocks$totals$weight, "100.0%")
-    layout <- rcmetar.revman.layout(bundle)
+    layout <- rcmetar.forest.revman.layout.coordinates(bundle)
     expect_gt(as.numeric(layout$ilab.xpos[[1]]), layout$xlim[[1]] + 0.45 * (layout$annotation.xpos - layout$xlim[[1]]))
 
     png_path <- tempfile(fileext = ".png")
@@ -1169,7 +1169,7 @@ test_that("Default Forest Style sizing reserves space for long group headers", {
   )
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  size <- rcmetar.measure.metafor.forest.device(bundle)
+  size <- rcmetar.forest.default.device.metrics(bundle)
   experimental.columns <- vapply(bundle$ilab$columns, function(column) column$group, character(1)) ==
     "Intervention With Long Header"
   experimental.width <- sum(size$column_widths[experimental.columns]) +
@@ -1237,7 +1237,7 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
     digits = short.fixture$params$digits
   )
   short.bundle <- rcmetar.regenerate.plot.data(short.fixture$data, short.res, short.fixture$params)
-  short.layout <- rcmetar.revman.layout(short.bundle)
+  short.layout <- rcmetar.forest.revman.layout.coordinates(short.bundle)
 
   long.fixture <- metafor_continuous_fixture()
   long.fixture$data@study.names <- paste(
@@ -1254,7 +1254,7 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
     digits = long.fixture$params$digits
   )
   long.bundle <- rcmetar.regenerate.plot.data(long.fixture$data, long.res, long.fixture$params)
-  long.layout <- rcmetar.revman.layout(long.bundle)
+  long.layout <- rcmetar.forest.revman.layout.coordinates(long.bundle)
 
   short.gap <- as.numeric(short.layout$ilab.xpos[[1]]) - short.layout$xlim[[1]]
   long.gap <- as.numeric(long.layout$ilab.xpos[[1]]) - long.layout$xlim[[1]]
@@ -1268,12 +1268,11 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
 
 test_that("single-study binary Default Forest Style uses normalized vectors", {
   fixture <- metafor_binary_fixture(studies = 1)
-  res <- get.res.for.one.binary.study(fixture$data, fixture$params)
+  res <- metafor::rma.uni(yi=fixture$data@y, sei=fixture$data@SE, method="FE", level=fixture$params$conf.level)
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
   expect_equal(bundle$render_engine, "metafor")
-  expect_true(bundle$single_study)
   expect_equal(unname(bundle$effect$yi), unname(as.numeric(fixture$data@y)))
   expect_equal(unname(bundle$effect$sei), unname(as.numeric(fixture$data@SE)))
   expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
@@ -1690,16 +1689,15 @@ test_that("single-study entered diagnostic Default Forest Style omits count ilab
     years = 0L
   )
   params <- metafor_diagnostic_params(tempfile(fileext = ".png"), "Sens")
-  res <- get.res.for.one.diag.study(data, params)
+  res <- metafor::rma.uni(yi=data@y, sei=data@SE, method="FE", level=params$conf.level)
 
   bundle <- rcmetar.regenerate.plot.data(data, res, params)
 
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
-  expect_true(bundle$single_study)
   expect_equal(ncol(bundle$ilab$matrix), 0)
-  expect_equal(unname(bundle$effect$yi), unname(as.numeric(data@y)))
-  expect_equal(unname(bundle$effect$sei), unname(as.numeric(data@SE)))
+  expect_equal(unname(as.numeric(bundle$res$yi)), unname(as.numeric(data@y)))
+  expect_equal(unname(sqrt(bundle$res$vi)), unname(as.numeric(data@SE)))
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)
@@ -1745,9 +1743,9 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_true(file.exists(unname(case$result$images[[1]])), info=variant)
     expect_gt(file.info(unname(case$result$images[[1]]))$size, 5000)
     if (identical(variant, "cumulative")) {
-      expect_equal(original$slab, c("Aaronson, 1991 (k = 1)", "Ferguson, 1992 (k = 2)",
-                                    "Rosenthal, 1993 (k = 3)", "Hart, 1994 (k = 4)",
-                                    "Frimodt-Moller, 1995 (k = 5)", "Stein, 1996 (k = 6)"))
+      expect_equal(original$slab, c("Aaronson, 1991", "Ferguson, 1992",
+                                    "Rosenthal, 1993", "Hart, 1994",
+                                    "Frimodt-Moller, 1995", "Stein, 1996"))
     } else if (identical(variant, "leave-one-out")) {
       expect_equal(original$slab, c("All studies", "Allen, 2001", "Baker, 2002",
                                     "Cole, 2003", "Diaz, 2004", "Evans, 2005"))
@@ -1756,7 +1754,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     load(paste0(params.path, ".params"))
     load(paste0(params.path, ".res"))
     if (identical(variant, "cumulative")) {
-      expect_equal(params$fp_col1_str, "Study added (k)")
+      expect_equal(params$fp_col1_str, "Study added")
       expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
     expect_identical(params$fp_plot_lb, "[default]")
@@ -1770,7 +1768,7 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_equal(regenerated$forest_variant, variant)
     expect_equal(regenerated$fp_style, "bmj")
     if (identical(variant, "cumulative")) {
-      expect_equal(regenerated$params$fp_col1_str, "Study added (k)")
+      expect_equal(regenerated$params$fp_col1_str, "Study added")
       expect_equal(regenerated$params$fp_col2_str, "Cumulative Estimate")
     }
     expect_true(rcmetar.is.metafor.forest.bundle(regenerated))

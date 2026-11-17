@@ -33,7 +33,6 @@
 \alias{binary.transform.f}
 \alias{compute.bin.point.estimates}
 \alias{compute.for.one.bin.study}
-\alias{get.res.for.one.binary.study}
 \alias{arcsine.sqrt}
 \alias{invarcsine.sqrt}
 \alias{freeman_tukey}
@@ -61,7 +60,7 @@ proportions.
 \section{Study-level calculations}{
 
 \code{compute.for.one.bin.study()}, \code{compute.bin.point.estimates()},
-and \code{get.res.for.one.binary.study()} prepare per-study estimates and variances.
+prepare per-study estimates and variances.
 }
 
 \section{Method metadata}{

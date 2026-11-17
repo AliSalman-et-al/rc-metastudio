@@ -3,9 +3,9 @@
 """Method-selection dialog and analysis specification builder."""
 
 from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent
+from PyQt6.QtGui import QResizeEvent, QCloseEvent, QColor, QHideEvent, QShowEvent, QPalette
 from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox,
@@ -86,7 +86,6 @@ SHARED_DIAGNOSTIC_PARAMS = (
     "digits",
     "adjust",
     "correction.policy",
-    "estimator",
 )
 
 ParameterKind = Literal["enum", "float", "int", "string"]
@@ -128,9 +127,6 @@ def _shared_diagnostic_specs(confidence_level):
             "All studies if any zero exists",
             None,
         ),
-        "estimator": _normalize_parameter_definition(
-            "estimator", ["REML", "ML"], "REML", None
-        ),
     }
 
 
@@ -147,9 +143,8 @@ def _plot_parameter_values(values):
 class _DiagnosticMethodPanel(object):
     """A group-specific method editor used by the unified diagnostic dialog."""
 
-    def __init__(self, owner, label, metric, label_widget, combo, param_box):
+    def __init__(self, owner, label, label_widget, combo, param_box):
         self.owner = owner
-        self.metric = metric
         self.params = {}
         self.widgets = []
         self.label = label_widget
@@ -169,23 +164,15 @@ class _DiagnosticMethodPanel(object):
         return self.methods[str(self.combo.currentText())]
 
     def populate(self):
-        self.owner.analysis_service.prepare_method_dataset(
-            self.owner.model, "diagnostic", var_name="tmp_obj"
-        )
-        self.methods = normalize_available_method_labels(
-            self.owner.analysis_service.available_methods(
-                for_data_type="diagnostic",
-                data_obj_name="tmp_obj",
-                metric=self.metric,
-            )
-        )
+        data = self.owner.analysis_service.prepare_method_dataset(self.owner.model, "diagnostic")
+        metrics = [metric for group in self.owner.diagnostic_metrics if group in ('lr', 'dor')
+                   for metric in DIAGNOSTIC_METRIC_GROUPS[group]]
+        self.methods = self.owner._methods_for_metrics(metrics, data)
         names = [
             name
             for name in self.methods
             if self.methods[name] not in COUNT_BASED_DIAGNOSTIC_METHODS
         ]
-        if "Diagnostic Fixed-Effect Peto" in names:
-            names.remove("Diagnostic Fixed-Effect Peto")
         names.sort(reverse=True)
         blocked = self.combo.blockSignals(True)
         try:
@@ -206,6 +193,7 @@ class _DiagnosticMethodPanel(object):
         definitions, defaults, order, metadata = self.owner.analysis_service.parameters(
             method
         )
+        self.definitions = definitions
         if saved is not None:
             defaults.update(saved)
         self.param_box.setTitle("")
@@ -225,6 +213,8 @@ class _DiagnosticMethodPanel(object):
             self.owner._configure_parameter_accessibility(label, control)
             row = self.owner._place_parameter(self.param_box.layout(), row, spec, label, control, self.params, defaults.get(name))
             self.widgets.extend((label, control))
+        if self.owner.shared_diagnostic_params_box.layout() is not None:
+            self.owner._rebuild_shared_diagnostic_params()
         self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
 
@@ -358,7 +348,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _restore_plot_settings(self, parameters):
         self._load_plot_params()
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("fp_study_order", "table"))))
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(parameters.get("cum_sequence" if self.analysis_type == "cumulative" else "fp_study_order", "table"))))
         prefix = "bp" if self.is_meta_regression else "fp"
         for field, name in ((self.col1_str_edit, "fp_col1_str"), (self.col2_str_edit, "fp_col2_str"),
                             (self.col3_str_edit, "fp_col3_str"), (self.col4_str_edit, "fp_col4_str"),
@@ -369,6 +359,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                     set_plot_text_value(field, parameters[name])
                 else:
                     field.setText(str(parameters[name]))
+        self.show_i2.setChecked(_bool_plot_param(parameters.get("fp_show_i2"), True))
         for checkbox, name in ((self.show_1, "fp_show_col1"), (self.show_2, "fp_show_col2"),
                                (self.show_3, "fp_show_col3"), (self.show_4, "fp_show_col4"),
                                (self.show_summary_line, "fp_show_summary_line")):
@@ -392,12 +383,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
         project_path = self._project_path
 
-        def reopen(axis_scale=None):
+        def reopen(plot_params=None):
             import uuid
             restored = copy.deepcopy(saved)
             parameters = copy.deepcopy(saved_parameters)
-            if axis_scale is not None:
-                parameters["fp_axis_scale"] = axis_scale
+            if plot_params:
+                parameters.update({key: value for key, value in plot_params.items()
+                                   if key.startswith("fp_") and key not in {"fp_outpath", "fp_display_path"}})
             restored["parameters"] = parameters
             form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
@@ -719,7 +711,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.plot_tab.setToolTip(
             ""
             if bubble_available
-            else "Bubble plot options require exactly one Numeric covariate."
+            else "Bubble plot options require exactly one numeric covariate."
         )
 
     def _set_accepted_handler(self, handler):
@@ -734,9 +726,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         out_f = "."
         out_f, _selected_filter = QFileDialog.getSaveFileName(
             self,
-            "RCMetaStudio - Plot Path",
+            "Choose plot image location",
             out_f,
-            "png image files: (.png)",
+            "PNG images (*.png)",
         )
         if out_f == "" or out_f is None:
             return None
@@ -745,22 +737,40 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _setup_plot_controls(self):
         if self.analysis_type == "subgroup":
-            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self.study_order = QComboBox(self)
         self.study_order.setAccessibleName("Forest study order")
-        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
-                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
+        cumulative = self.analysis_type == "cumulative"
+        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if self.analysis_type == "leave-one-out" else analysis_identity.FOREST_STUDY_ORDERS
+        for label, key in options:
             self.study_order.addItem(label, key)
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self.current_param_vals.get("fp_study_order", "table"))))
-        self.study_order.setEnabled(self.analysis_type != "cumulative")
-        self.study_order.setToolTip("Changes forest display order only. Cumulative analysis follows the current table order; sort the table before running to change that sequence.")
-        self.study_order_label = QLabel("Study order", self)
+        key = "cum_sequence" if cumulative else "fp_study_order"
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self.current_param_vals.get(key, "table"))))
+        self.study_order.setToolTip("Sets which studies each cumulative fit includes. A different sequence gives different intermediate results." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
+        self.study_order_label = QLabel("Add studies in" if cumulative else "Row order" if self.analysis_type == "leave-one-out" else "Study order", self)
         self.study_order_label.setBuddy(self.study_order)
-        row = self.style_layout.rowCount()
-        self.style_layout.addWidget(self.study_order_label, row, 0)
-        self.style_layout.addWidget(self.study_order, row, 1)
+        self.study_order.setAccessibleName(self.study_order_label.text())
+        layout = self.style_layout
+        if cumulative:
+            self._sequence_row = QtWidgets.QWidget(self)
+            self._sequence_layout = QGridLayout(self._sequence_row)
+            layout = self._sequence_layout
+            self.gridLayout.addWidget(self._sequence_row, self.gridLayout.rowCount(), 0, 1, 4)
+        row = layout.rowCount()
+        layout.addWidget(self.study_order_label, row, 0)
+        layout.addWidget(self.study_order, row, 1)
+        if cumulative:
+            note = QLabel(self.study_order.toolTip(), self)
+            note.setWordWrap(True)
+            note.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+            layout.addWidget(note, row + 1, 1)
+        self.show_i2 = QCheckBox("Show I² column", self)
+        self.show_i2.setChecked(_bool_plot_param(self.current_param_vals.get("fp_show_i2"), True))
+        self.show_i2.setToolTip("Show heterogeneity from each fitted subset. Tables and reports always retain I².")
+        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
+        self.show_i2.setVisible(self.analysis_type in {"cumulative", "leave-one-out"})
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_plot_color, parent=self)
@@ -787,8 +797,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.regression_group.setVisible("regression" in groups)
         self.label_11.setVisible("summary" in groups)
         self.show_summary_line.setVisible("summary" in groups)
-        self.study_order.setVisible("forest" in groups)
-        self.study_order_label.setVisible("forest" in groups)
+        self.study_order.setVisible(self.analysis_type == "cumulative" or "forest" in groups)
+        self.study_order_label.setVisible(self.analysis_type == "cumulative" or "forest" in groups)
         self.plot_tab.setEnabled(
             any(capability["styleable"] for capability in capabilities)
         )
@@ -799,7 +809,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if not selected_covariates:
             QMessageBox.warning(
                 self,
-                "No Covariates Selected",
+                "No covariates selected",
                 "Select at least one covariate before running meta-regression.",
             )
             return
@@ -833,7 +843,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             excluded_text = f"\nThe following studies will be excluded: {excluded}"
         choice = QMessageBox.warning(
             self,
-            "Missing Covariate Values",
+            "Missing covariate values",
             "Some studies do not have values for the selected covariates. "
             f"{excluded_text}\nRun the regression without those studies?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -928,7 +938,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _choose_plot_color(self):
         current = QColor(self.accent_color.text())
-        color = QtWidgets.QColorDialog.getColor(current, self, "Plot Accent Color")
+        color = QtWidgets.QColorDialog.getColor(current, self, "Plot accent color")
         if color.isValid():
             self._set_plot_accent_color(color.name())
 
@@ -945,19 +955,29 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
-        bar = progress_dialog.AnalysisProgressDialog(self)
+        bar = progress_dialog.AnalysisProgressDialog(self, context=self.windowTitle())
         bar.show()
+        bar.repaint()
         result = None
         succeeded = False
         try:
             result = operation()
             if string_result_is_failure and isinstance(result, str):
                 raise RuntimeError(result)
+            from rc_metastudio.analysis_results import AnalysisResult, normalize_analysis_result
+            if isinstance(result, AnalysisResult):
+                result = normalize_analysis_result(self._with_result_identity(result))
+                from rc_metastudio.manuscript_report import ManuscriptReport
+                manuscript = ManuscriptReport.from_result(result)
+            callback = getattr(self.parentWidget(), "analysis", None)
+            if not callable(callback):
+                raise RuntimeError("analysis configuration has no results owner")
+            change_settings = self._change_settings_callback() if isinstance(result, AnalysisResult) else None
             succeeded = True
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.analysis_error_label.setText(
-                "No studies are included. Tick Include for at least one study with complete data."
+                "No studies are included. Select Include for at least one study with complete data."
                 if not self.model.get_studies()
                 else re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
                 + "\nChange the method or study values identified above."
@@ -967,15 +987,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.analysis_error_label.show()
             self._reset_working_dir_safely()
         finally:
-            _dispose_progress(bar)
+            progress_dialog.dispose(bar)
         if not succeeded:
             self._resize_on_reflow = True
             self._schedule_local_reflow()
             self.activateWindow()
             self.analysis_error_toggle.setFocus()
         if succeeded:
+            assert callable(callback)
             self.done(QDialog.DialogCode.Accepted.value)
-            self._deliver_result(result)
+            if change_settings is not None:
+                callback(result, change_settings=change_settings, manuscript=manuscript)
+            else:
+                callback(result)
 
     def _expand_error_details(self, expanded):
         self.analysis_error_details.setVisible(expanded)
@@ -1003,19 +1027,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except (TypeError, RuntimeError):
             pass
 
-    def _deliver_result(self, result):
-        parent = self.parentWidget()
-        callback = getattr(parent, "analysis", None)
-        if not callable(callback):
-            raise RuntimeError("analysis configuration has no results owner")
-        from rc_metastudio.analysis_results import AnalysisResult
-        if isinstance(result, AnalysisResult):
-            result = self._with_result_identity(result)
-        if isinstance(result, AnalysisResult):
-            callback(result, change_settings=self._change_settings_callback())
-        else:
-            callback(result)
-
     def _with_result_identity(self, result):
         model_label = self.method_cbo_box.currentText()
         if self.is_meta_regression and self.data_type != "diagnostic":
@@ -1028,34 +1039,52 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
             fits=fits,
         )
-        from rc_metastudio import r_bridge
-        packages = r_bridge.execute_r_string('intersect(c("RCMetaR", "metafor", "meta", "mada"), loadedNamespaces())')
-        software = ", ".join(f"{name} {r_bridge.get_r_package_version(str(name))}" for name in packages)
         context = self._result_context(applied_parameters)
         from rc_metastudio.manuscript_report import methods_prose
-        metric = self._result_metric_label().lower()
-        model = "random-effects" if "random" in model_label.lower() else "fixed-effect" if "fixed" in model_label.lower() else model_label
+        metric = self._result_metric_label()
+        if self.model.current_effect not in {"PFT", "YUQ", "YUY"}:
+            metric = metric[:1].lower() + metric[1:]
+        model = self._manuscript_model_label(model_label)
         outcome = self.model.current_sheet.name
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits)
+                                self.analysis_type, details, fits, result.inference_methods,
+                                missing_years=any(not study.year for study in self._manuscript_studies()))
         correction = context.partition(". ")[2]
         if correction:
             methods += " " + correction
             details += "\n" + correction
         model_info = self._manuscript_model_info()
         arms = self._manuscript_arms()
-        return replace(result, identity=identity, details=details, software=software,
+        return replace(result, identity=identity, details=details,
                        analysis_method=self.current_method,
                        manuscript_context=context.split(". ")[0].rstrip(".") + ".",
                        manuscript_digits=int(applied_parameters.get("digits", 3)),
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(arms),
-                       manuscript_favours=tuple(label.removeprefix("Favours ").strip() for label in
-                           self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])[:len(arms)]),
+                       manuscript_favours=self._manuscript_favours(arms),
                        manuscript_model_info=tuple(model_info),
-                       manuscript_comparison=("Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: ") + " / ".join(arms))
+                       manuscript_comparison=self._manuscript_comparison(arms))
+
+    def _manuscript_model_label(self, model_label):
+        if "random" in model_label.lower():
+            return "random-effects"
+        if "fixed" in model_label.lower():
+            return "fixed-effect"
+        return model_label
+
+    def _manuscript_favours(self, arms):
+        if self.data_type == "diagnostic":
+            return ()
+        labels = self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])
+        return tuple(label.removeprefix("Favours ").strip() for label in labels[:len(arms)])
+
+    def _manuscript_comparison(self, arms):
+        if self.data_type == "diagnostic":
+            return "" if arms == ["Index test"] else "Index test: " + " / ".join(arms)
+        prefix = "Arm: " if self.model.current_effect in ONE_ARM_METRICS else "Comparison: "
+        return prefix + " / ".join(arms)
 
     def _manuscript_arms(self) -> list[str]:
         names = self.model.arm_names
@@ -1099,10 +1128,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         )]
         return [("Participants", f"{sum(sum(row) for row in complete):g}")] if complete and len(complete) == len(raw) else []
 
+
     def _applied_parameters(self):
         definitions, _, _, _ = self.analysis_service.parameters(self.current_method)
         applied_parameters = {key: value for key, value in self.current_param_vals.items()
-                              if key in definitions or key == "cov_name"}
+                              if key in definitions or key in {"cov_name", "cum_sequence"}}
         if self.is_meta_regression and self.data_type != "diagnostic" and self.fixed_effects_radio.isChecked():
             applied_parameters.pop("rm.method", None)
         return applied_parameters
@@ -1110,14 +1140,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _result_context(self, applied_parameters):
         included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"In total, {included} studies were included"
-        if excluded:
-            context += f" ({excluded} studies were excluded)"
+        context = f"In total, {included} " + ("study was included" if included == 1 else "studies were included")
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
             context += f" ({total:g} participants in {name}"
             context += "".join(f", {total:g} in {name}" for name, total in others) + ")"
+        if excluded:
+            context += f"; {excluded} " + ("study was excluded" if excluded == 1 else "studies were excluded")
         context += "."
         return context + self._correction_context(applied_parameters)
 
@@ -1142,8 +1172,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         zero = self._has_zero_cell(raw)
         if policy in ("none", "None") or not (zero or policy in ("all", "All studies")):
             return ""
-        label = {"only0": "studies with any zero cell", "all": "all studies",
-                 "if0all": "all studies if any zero exists"}.get(policy, policy[:1].lower() + policy[1:])
+        label = {"only0": "studies with at least one zero cell", "all": "all studies",
+                 "if0all": "all studies because at least one study had a zero cell"}.get(policy, policy[:1].lower() + policy[1:])
         if self.data_type == "binary":
             from rc_metastudio.manuscript_report import binary_correction_prose
             double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
@@ -1250,24 +1280,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             cbo_box = self.method_cbo_box
             param_box = self.parameter_grp_box
 
-        tmp_obj_name = "tmp_obj"
-        self.analysis_service.prepare_method_dataset(
-            self.model, self.data_type, var_name=tmp_obj_name
-        )
-        metric = self._method_query_metric()
-        method_query = {
-            "for_data_type": self.data_type,
-            "data_obj_name": tmp_obj_name,
-            "metric": metric,
-        }
-        if self.analysis_type is not None:
-            method_query["workflow"] = self.analysis_type
-        self.available_method_d = self.analysis_service.available_methods(
-            **method_query
-        )
-        self.available_method_d = normalize_available_method_labels(
-            self.available_method_d
-        )
+        data = self.analysis_service.prepare_method_dataset(self.model, self.data_type)
+        metrics = self._method_query_metrics()
+        metric = metrics[0]
+        self.available_method_d = self._methods_for_metrics(metrics, data)
         if self.data_type == "continuous" and metric == "Mean":
             family = analysis_identity.metric_label(self.model)
             self.available_method_d = {label.replace("Continuous", family, 1): key
@@ -1284,12 +1300,24 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             excluded = SHARED_DIAGNOSTIC_PARAMS if self._combined_diagnostic else ()
             self.ui_for_params(excluded_names=excluded)
 
-    def _method_query_metric(self):
+    def _methods_for_metrics(self, metrics, data):
+        method_query = {
+            "for_data_type": self.data_type,
+            "data": data,
+        }
+        if self.analysis_type is not None:
+            method_query["workflow"] = self.analysis_type
+        choices = [normalize_available_method_labels(self.analysis_service.available_methods(
+            **method_query, metric=metric)) for metric in metrics]
+        return {label: method for label, method in choices[0].items()
+                if all(method in choice.values() for choice in choices[1:])}
+
+    def _method_query_metrics(self):
         if self.data_type != "diagnostic":
-            return self.model.current_effect
-        if self.analysis_type is not None or self.sens_spec:
-            return "Sens"
-        return "DOR"
+            return (self.model.current_effect,)
+        groups = [group for group in self.diagnostic_metrics
+                  if not self._combined_diagnostic or group in ('sens', 'spec')]
+        return tuple(metric for group in groups for metric in DIAGNOSTIC_METRIC_GROUPS[group])
 
     def _available_method_names(self, metric):
         method_names = list(self.available_method_d.keys())
@@ -1309,12 +1337,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     ):
         if self._hide_reitsma(metric) and reitsma_name in method_names:
             method_names.remove(reitsma_name)
-        peto_method = "Diagnostic Fixed-Effect Peto"
-        has_required_metrics = all(
-            name in self.diagnostic_metrics for name in ("lr", "dor")
-        )
-        if has_required_metrics and peto_method in method_names:
-            method_names.remove(peto_method)
 
     def _reitsma_is_available(self, method_names, reitsma_name):
         return (
@@ -1358,6 +1380,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._add_parameter_controls(
             parameter_layout, self._ordered_parameter_definitions(), excluded_names
         )
+        if self.data_type == "diagnostic" and self.sens_spec:
+            reason = ""
+            if self.analysis_type in {"cumulative", "leave-one-out", "subgroup"}:
+                reason = "The joint Reitsma model is unavailable for this workflow; sensitivity and specificity are fitted separately."
+            elif not {"sens", "spec"}.issubset(self.diagnostic_metrics):
+                reason = "The joint Reitsma model requires both sensitivity and specificity."
+            elif not self.model.included_studies_have_raw_data():
+                reason = "The joint Reitsma model requires complete TP/FN/FP/TN counts for every included study. Entered estimates use separate univariate fits."
+            if reason:
+                note = QLabel(reason)
+                note.setWordWrap(True)
+                note.setAccessibleName("Joint model availability")
+                parameter_layout.addWidget(note, parameter_layout.rowCount(), 0, 1, 2)
+                self.current_widgets.append(note)
         self._set_analysis_tab_order()
         self._schedule_local_reflow()
 
@@ -1467,7 +1503,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.advanced_panel.setVisible(expanded)
         effect_label = QLabel("Effect measure")
         layout.addWidget(effect_label, 0, 0)
-        metric_label = QLabel(self._result_metric_label().capitalize())
+        metric_label = QLabel(", ".join({"sens": "Sensitivity", "spec": "specificity"}[group]
+                                       for group in self.diagnostic_metrics if group in ("sens", "spec")).capitalize()
+                              if self._combined_diagnostic else self._result_metric_label().capitalize())
         metric_label.setWordWrap(True)
         metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(metric_label, 0, 1)
@@ -1499,10 +1537,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         label = QLabel(parameter_display_label(spec.name, spec.metadata))
         label.setWordWrap(True)
         description = parameter_description(spec.name, spec.metadata)
-        if spec.name == "rm.method":
-            description = "Between-study variance (heterogeneity) estimator"
-        if spec.name == "estimator" and description == "No description provided.":
-            description = "REML: restricted maximum likelihood; ML: maximum likelihood."
         label.setToolTip(description)
         return label
 
@@ -1702,6 +1736,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _fit_method_text(self):
         rows = [(self._method_row, self._method_layout, self.method_lbl, self.method_cbo_box)]
+        if self.analysis_type == 'cumulative':
+            rows.append((self._sequence_row, self._sequence_layout, self.study_order_label, self.study_order))
         if hasattr(self, "_lr_dor_method_row"):
             rows.append((self._lr_dor_method_row, self._lr_dor_method_layout,
                          self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
@@ -1709,9 +1745,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if hasattr(self, "_lr_dor_method_row"):
             panels.extend((self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box))
         grids = [(panel, grid) for panel in panels if isinstance(grid := panel.layout(), QGridLayout)]
-        labels = [field for _, grid in grids for index in range(grid.count())
-                  if (item := grid.itemAt(index)) is not None and grid.getItemPosition(index)[1] == 0
-                  and isinstance(field := item.widget(), QLabel)]
+        labels = _grid_field_labels(grids)
         label_cap = self.fontMetrics().height() * 18
         label_width = min(label_cap, max([field.sizeHint().width() for field in labels]
                                         + [label.minimumSizeHint().width() for _, _, label, _ in rows]))
@@ -1723,6 +1757,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             left = leading - panel.mapTo(self.methods_tab, QtCore.QPoint()).x() - panel.contentsMargins().left()
             grid.setContentsMargins(left, margins.top(), margins.right(), margins.bottom())
             grid.setColumnMinimumWidth(0, label_width)
+            grid.setColumnStretch(1, 1)
         for field in labels:
             field.setMaximumWidth(label_cap)
         self._fit_method_rows(rows, leading, label_width)
@@ -1842,7 +1877,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.shared_diagnostic_params_box.show()
         self.shared_diagnostic_params_box.setLayout(QGridLayout())
 
-        lr_label = diagnostic_metric_group_display_label("lr_dor")
+        lr_label = ("Likelihood ratios and DOR" if {"lr", "dor"}.issubset(self.diagnostic_metrics)
+                    else "Positive and negative likelihood ratios" if "lr" in self.diagnostic_metrics
+                    else "Diagnostic odds ratio")
         self.lr_dor_method_lbl.setWordWrap(True)
         self.lr_dor_method_lbl.show()
         self.lr_dor_method_cbo_box.show()
@@ -1850,7 +1887,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.lr_dor_panel = _DiagnosticMethodPanel(
             self,
             lr_label,
-            "DOR",
             self.lr_dor_method_lbl,
             self.lr_dor_method_cbo_box,
             self.lr_dor_parameter_grp_box,
@@ -1870,7 +1906,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             widget.deleteLater()
         self._shared_diagnostic_widgets = []
 
+        active = set(self.current_params)
+        if hasattr(self, "lr_dor_panel"):
+            active.update(getattr(self.lr_dor_panel, "definitions", {}))
         for row, name in enumerate(SHARED_DIAGNOSTIC_PARAMS):
+            if name not in active:
+                continue
             spec = self._shared_diagnostic_param_specs.get(name)
             if spec is None:
                 continue
@@ -1934,8 +1975,9 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         # Subgroup selection is workflow state, not a method parameter. Keep it
         # on each filtered request so combined diagnostic panels use the same
         # subgroup while retaining per-method parameter filtering above.
-        if "cov_name" in self.current_param_vals:
-            params["cov_name"] = self.current_param_vals["cov_name"]
+        for key in ("cov_name", "cum_sequence"):
+            if key in self.current_param_vals:
+                params[key] = self.current_param_vals[key]
         return params
 
     def setup_diagnostic_ui(self):
@@ -1966,12 +2008,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle(QtCore.QCoreApplication.translate("Dialog", window_title))
         self.method_lbl.setText("Analysis method")
         self.method_lbl.setWordWrap(False)
-
-
-def _dispose_progress(progress):
-    progress_dialog.hide_once(progress)
-    progress.close()
-    progress.deleteLater()
 
 
 def _coerce_integer_default(name: str, value: object) -> int:
@@ -2026,6 +2062,9 @@ def add_plot_params(specs_form):
             labels = ["Favours " + name for name in specs_form.model.arm_names]
         for side, label in zip(("left", "right"), labels):
             specs_form.current_param_vals.setdefault("fp_favours_" + side, label)
+    if specs_form.analysis_type == "cumulative":
+        specs_form.current_param_vals["cum_sequence"] = specs_form.study_order.currentData()
+    specs_form.current_param_vals["fp_show_i2"] = specs_form.show_i2.isChecked()
     specs_form.current_param_vals["fp_study_order"] = specs_form.study_order.currentData() if specs_form.analysis_type != "cumulative" else "table"
     specs_form.current_param_vals["fp_style"] = PLOT_STYLE_VALUES.get(
         str(specs_form.style_cbo.currentText()), "default"
@@ -2045,20 +2084,9 @@ def add_plot_params(specs_form):
     specs_form.current_param_vals["fp_outpath"] = forest_outpath
     specs_form.current_param_vals["fp_display_path"] = _display_svg_path(forest_outpath)
 
-    plot_lb = _text_value(specs_form.plot_lb_le)
-    specs_form.current_param_vals["fp_plot_lb"] = "[default]"
-    if plot_lb != "[default]" and parse_plot_bound(plot_lb) is not False:
-        specs_form.current_param_vals["fp_plot_lb"] = plot_lb
-
-    plot_ub = _text_value(specs_form.plot_ub_le)
-    specs_form.current_param_vals["fp_plot_ub"] = "[default]"
-    if plot_ub != "[default]" and parse_plot_bound(plot_ub) is not False:
-        specs_form.current_param_vals["fp_plot_ub"] = plot_ub
-
-    xticks = _text_value(specs_form.x_ticks_le)
-    specs_form.current_param_vals["fp_xticks"] = "[default]"
-    if xticks != "[default]" and is_valid_plot_tick_list(xticks):
-        specs_form.current_param_vals["fp_xticks"] = xticks
+    specs_form.current_param_vals["fp_plot_lb"] = _validated_plot_bound(specs_form.plot_lb_le)
+    specs_form.current_param_vals["fp_plot_ub"] = _validated_plot_bound(specs_form.plot_ub_le)
+    specs_form.current_param_vals["fp_xticks"] = _validated_plot_ticks(specs_form.x_ticks_le)
 
     specs_form.current_param_vals["fp_show_summary_line"] = (
         specs_form.show_summary_line.isChecked()
@@ -2203,3 +2231,17 @@ def _diagnostic_pending_requests(specs_form):
     return joint, pending
 
 
+
+
+def _grid_field_labels(grids):
+    labels = []
+    for _, grid in grids:
+        for index in range(grid.count()):
+            item = grid.itemAt(index)
+            _, column, _, span = grid.getItemPosition(index)
+            if item is None or column != 0 or span != 1:
+                continue
+            field = item.widget()
+            if isinstance(field, QLabel):
+                labels.append(field)
+    return labels

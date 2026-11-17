@@ -1,6 +1,7 @@
-# E2E oracle qualification
+# Desktop oracle contracts
 
-The bounded e2e-oracles-01 batch strengthens evidence, without changing product or R behavior or frozen numerical references.
+A passing drive needs an independent expectation and retained output. These
+checks protect the observed desktop boundaries:
 
 | ID | Observable contract | Mapped drive |
 | --- | --- | --- |
@@ -14,8 +15,24 @@ The bounded e2e-oracles-01 batch strengthens evidence, without changing product 
 | G6B-011 | Header boxes stay inside SVG horizontal viewBox bounds | project-round6-polish |
 | G6B-012 | Orders equal independent stable sorts of fixture years, fitted effects and weights; ties retain table order and missing years go last | review-workflows |
 
-G6B-013 is separate maintenance: current `advanced_workflows.py` calls `round6_polish.run`, contrary to the historical no-caller claim. Preserve that entry point and `run_headers`; remove only the misleading sequential precision block that treated rounded display values as its own authority. This removal adds no numerical coverage claim.
+Run generated forms and the repository-wide strict win32 typing gate before
+GUI work, following the [verification skill](../../.agents/skills/verify-rcms/SKILL.md).
+Then run the affected named scenario, for example:
 
-Start with generated forms and the strict win32 typing gate, then use `uv run --locked python scripts/verify_rcms.py SCENARIO`. The helper retains exact commands, runtime, plots, persisted projects, steps, screenshots and hashed manifests. Select runtime-04 read-only as instructed by the parent batch; never install into it. Geometry controls are `uv run --locked python -m pytest tests/e2e/test_oracle_geometry_controls.py -q --basetemp artifacts/fixes/e2e-oracles-01/geometry-work-UNIQUE`.
+```powershell
+uv run python scripts/verify_rcms.py rm5-import
+uv run python -m pytest tests/e2e/test_oracle_geometry_controls.py -q
+```
 
-Synthetic SVG controls isolate the rendered-output boundary; they do not establish statistical accuracy. Live drives use real Qt/R. The batch's ignored `artifacts/fixes/e2e-oracles-01/` contains malformed-output controls, baseline rejection failures, fault driver, exact environment/replay commands, failed attempts and final handoff. Faults modify owned child observations immediately before the real oracle: exported effect, reopened label, imported year/identity, ordering, precision or screenshot write status. Count a control only when its defect marker and specific assertion are both present; startup/typing/wrapper failures are not proof. PDF text inclusion supplements exact DOCX cell comparisons and does not prove PDF cell geometry. Offscreen Windows source qualification does not qualify native shell, other platforms or release packages. Parent owns the aggregate full profile.
+The helper retains inputs, commands, runtime, plots, saved projects, action
+records, screenshots and hashed manifests. Geometry controls isolate malformed
+rendered output; live drives use real Qt/R. Count a fault control only when its
+specific defect marker and intended assertion are both observed; startup,
+typing or wrapper failures do not prove defect detection.
+
+PDF text inclusion supplements exact DOCX-cell comparisons and does not prove
+PDF geometry. Offscreen source checks do not qualify native shell behavior,
+other platforms or release packages. Rounded display values cannot serve as
+an independent numerical oracle. See [testing](../testing.md) for the maintained
+coverage decisions and [sequential analysis](../sequential-analysis-design.md)
+for its current ordering/report obligations.

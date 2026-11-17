@@ -40,7 +40,7 @@ def check_interval_caps(path):
 
 
 def check_annotation_spacing(view, *, style="default"):
-    assert "Overall-effect null:" not in view.report_text.toPlainText(), view.report_text.toPlainText()
+    assert "Overall-effect null:" not in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
     for path in view.results.display_images.values():
         if style != "bmj":
             check_interval_caps(path)
@@ -141,7 +141,7 @@ def check_annotation_spacing(view, *, style="default"):
 def check_sequential(view, workflow, record):
     from rc_metastudio import r_bridge
 
-    tables = [t for s in view.results.sections for t in s.tables if t.title == "Model Results"]
+    tables = [t for s in view.results.sections for t in s.tables if t.title in {"Cumulative results", "Leave-one-out results"}]
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
         r_bridge.load_in_r(str(params) + ".plotdata")
@@ -151,13 +151,17 @@ def check_sequential(view, workflow, record):
                  for node in svg.iter("{http://www.w3.org/2000/svg}text")]
         table = tables[index]
         assert len(table.rows) == len(data["slab"]), (title, table, data)
-        assert table.headers[0] == ("Study added (k)" if workflow == "cumulative" else "Study omitted"), table
+        study_header = "Study added" if workflow == "cumulative" else "Study omitted"
+        assert {study_header, "k", "I²"} <= set(table.headers), table
         for row, name in zip(table.rows, data["slab"], strict=True):
-            effect = row[1] if row[1] == "Not estimable" else f"{row[1]} [{row[2]}, {row[3]}]"
+            values = dict(zip(table.headers, row))
+            bounds = [value for header, value in values.items() if header.startswith(("Lower bound", "Upper bound"))]
+            estimate = values["Estimate"]
+            effect = estimate if estimate == "Not estimable" else f"{estimate} [{bounds[0]}, {bounds[1]}]"
             label_y = [y for text, y in nodes if text == name]
             effect_y = [y for text, y in nodes if text == effect]
             assert label_y and any(abs(a-b) < .01 for a in label_y for b in effect_y), (title, name, effect, nodes)
-            assert row[0] == name, (title, row, name)
+            assert values[study_header] == name, (title, row, name)
         if workflow == "leave-one-out":
             assert isinstance(data.get("has_overall"), bool), data
             assert (data["slab"][0] == "All studies") == data["has_overall"], data

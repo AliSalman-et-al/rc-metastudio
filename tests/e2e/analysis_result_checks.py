@@ -9,15 +9,16 @@ from xml.etree import ElementTree as ET
 def check_report(app, view, work, record):
     from rc_metastudio import results_window
 
-    assert "Model configuration\n" in view.report_text.toPlainText()
+    assert "Model configuration\n" in view.manuscript_text.toPlainText()
     scene_text = [item.toPlainText() for item in view.scene.items() if hasattr(item, "toPlainText")]
     for section in view.results.sections:
         if section.source_key == "Weights":
             assert section.value not in scene_text, "legacy scene weights remain"
 
-    view.copy_report_action.trigger()
+    view.manuscript_text.selectAll()
+    view.manuscript_text.copy()
     copied = app.clipboard().text()
-    assert copied.startswith(view.manuscript.title + "\n"), copied
+    assert copied.startswith("Methods\n"), copied
     assert view.manuscript.methods in copied and view.manuscript.results in copied
     from tests.e2e.manuscript_export import assert_manuscript_tables
     assert_manuscript_tables(view)
@@ -25,13 +26,16 @@ def check_report(app, view, work, record):
     if "Omission-only fits:" in view.results.details:
         assert copied.count("Omission-only fits:") == 1, copied
     for line in view.results.details.splitlines():
-        if line.startswith(("Order:", "Each row", "Subgroups by", "Moderators:")):
+        if line.startswith(("Order:", "Each row", "Subgroups defined by", "Moderators:")):
             assert line in copied, (line, copied)
     output = work / "round3-report.pdf"
     with patch.object(results_window.QFileDialog, "getSaveFileName", return_value=(str(output), "PDF (*.pdf)")):
         view.export_report_action.trigger()
     assert output.read_bytes().startswith(b"%PDF")
     assert app.clipboard().mimeData().hasHtml()
+    cursor = view.manuscript_text.textCursor()
+    cursor.clearSelection()
+    view.manuscript_text.setTextCursor(cursor)
     view.report_action.setChecked(True)
     app.processEvents()
     record("round3-report-copy-export", view, identity=view.results.identity,
@@ -40,17 +44,17 @@ def check_report(app, view, work, record):
 
 
 def check_fixed_references(view, record, method="IV"):
-    report = view.report_text.toPlainText()
+    report = view.manuscript_text.toPlainText()
     assert "Random-effects meta-analysis:" not in report, report
     assert "Random-effects meta-regression:" not in report, report
-    expected = {"IV": "Fixed-effect inverse-variance meta-analysis:",
-                "MH": "Mantel-Haenszel meta-analysis:", "PETO": "Peto one-step odds-ratio method:"}[method]
+    expected = {"IV": "Cochran, W. G. (1954).",
+                "MH": "Mantel, N., & Haenszel, W. (1959).", "PETO": "Yusuf, S., Peto, R., Lewis, J., Collins, R., & Sleight, P. (1985)."}[method]
     assert expected in report, report
     previous = view.report_action.isChecked()
     view.report_action.setChecked(True)
-    view.report_text.verticalScrollBar().setValue(view.report_text.verticalScrollBar().maximum())
+    view.manuscript_text.verticalScrollBar().setValue(view.manuscript_text.verticalScrollBar().maximum())
     record("round3-fixed-references", view, method=method, identity=view.results.identity, text=report)
-    view.report_text.verticalScrollBar().setValue(0)
+    view.manuscript_text.verticalScrollBar().setValue(0)
     view.report_action.setChecked(previous)
 
 
@@ -76,8 +80,8 @@ def check_standard_heterogeneity(view, record):
             assert weights.headers == ("Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"), weights
             assert weights.rows and all(len(row) == 5 and row[0] and row[4].endswith("%") for row in weights.rows), weights
             assert all(float(row[2]) <= float(row[1]) <= float(row[3]) for row in weights.rows), weights
-        assert "Pooled " in view.report_text.toPlainText(), view.report_text.toPlainText()
-        assert "Calculation scale: log - estimate" not in view.report_text.toPlainText()
+        assert "Pooled " in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
+        assert "Calculation scale: log - estimate" not in view.manuscript_text.toPlainText()
         record("round3-standard-heterogeneity-public-reference", view, expected=expected,
                headers=table.headers, rows=table.rows, plots={title: path})
 

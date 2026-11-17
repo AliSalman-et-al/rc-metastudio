@@ -166,6 +166,7 @@ def curated_golden_bundles(root_dir=None):
     regression_path = _analysis_output_path("reg.png")
     regression_display_path = _analysis_output_path("reg.display.svg")
     binary_regression_params = {
+        "rm.method": "DL",
         "conf.level": 95.0,
         "bp_outpath": regression_path,
         "bp_display_path": regression_display_path,
@@ -579,6 +580,29 @@ def parsed_numeric_sections(result: AnalysisResult):
         values.update(_parse_weights(text))
         if values:
             parsed[name] = values
+    # Sequential tables now expose Step/k/I² explicitly. Keep comparing the
+    # frozen effect/interval/SE/P fields by study identity, independent of layout.
+    roles = {'estimate': 'estimate', 'ci_lower': 'lower_bound', 'ci_upper': 'upper_bound',
+             'se': 'standard_error', 'p': 'p_value'}
+    for section in result.sections:
+        for table in section.tables:
+            if table.title not in {'Cumulative results', 'Leave-one-out results'}:
+                continue
+            cumulative = table.title == 'Cumulative results'
+            label_column = table.headers.index('Study added' if cumulative else 'Study omitted')
+            values = {}
+            for index, row in enumerate(table.rows):
+                label = row[label_column]
+                prefix = _result_row_key(label)
+                if cumulative and index:
+                    prefix = 'through_' + prefix
+                elif not cumulative and label != 'All studies':
+                    prefix = 'without_' + prefix
+                for text, quantities in zip(row, table.quantities[index], strict=True):
+                    for quantity in quantities:
+                        if quantity.role in roles and quantity.value is not None:
+                            values[f'model.{prefix}.{roles[quantity.role]}'] = _to_float(text)
+            parsed[section.title] = values
     return parsed
 
 

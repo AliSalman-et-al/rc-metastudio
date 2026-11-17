@@ -22,16 +22,18 @@ refit <- function(data, original) {
   if (!is.null(moderators)) args$mods <- moderators
   do.call(metafor::rma.uni, args)
 }
-for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t')) {
+for (label in c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression', 'cumulative', 'leave-one-out', 'subgroup', 'subgroup-t')) {
   directory <- file.path(root, label)
   env <- new.env()
   load(file.path(directory, '0.data'), env)
   load(file.path(directory, '0.res'), env)
   load(file.path(directory, '0.params'), env)
   tables <- jsonlite::read_json(file.path(directory, 'tables.json'), simplifyVector=FALSE)
-  table <- Filter(function(t) t$title %in% c('Model Results', 'Regression coefficients'), tables)[[1]]
-  transform <- if (label == 'continuous' || label == 'meta-regression') identity else exp
-  if (label %in% c('binary', 'continuous', 'HR', 'IRR', 'meta-regression')) {
+  table.title <- switch(label, cumulative='Cumulative results',
+    `leave-one-out`='Leave-one-out results', `meta-regression`='Regression coefficients', 'Model Results')
+  table <- Filter(function(t) t$title == table.title, tables)[[1]]
+  transform <- if (label %in% c('continuous', 'SMD', 'meta-regression')) identity else exp
+  if (label %in% c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression')) {
     reference <- refit(env$om.data, env$res)
     for (i in seq_along(table$quantities)) check(table$quantities[[i]], reference, transform, i)
     if (label != 'meta-regression') {
@@ -49,12 +51,6 @@ for (label in c('binary', 'continuous', 'HR', 'IRR', 'meta-regression', 'cumulat
       reference <- metafor::rma.uni(yi=env$om.data@y[indexes], sei=env$om.data@SE[indexes],
         method=if (is.null(fit$method)) env$params$rm.method else fit$method,
         test=if (is.null(fit$test)) 'z' else fit$test, level=90)
-      if (length(indexes) == 1L) {
-        # A cumulative first row is one observed study, not a pooled fit.
-        margin <- abs(stats::qnorm((1-90/100)/2)) * env$om.data@SE[indexes]
-        reference$ci.lb <- env$om.data@y[indexes] - margin
-        reference$ci.ub <- env$om.data@y[indexes] + margin
-      }
       check(table$quantities[[i]], reference, transform)
     }
   }

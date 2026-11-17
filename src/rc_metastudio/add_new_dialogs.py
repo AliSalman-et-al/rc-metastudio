@@ -8,20 +8,8 @@ from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
     import ui_new_covariate_dialog as _ui_new_covariate_dialog
-    import ui_new_study_dialog as _ui_new_study_dialog
 else:
     from rc_metastudio.forms import ui_new_covariate_dialog as _ui_new_covariate_dialog
-    from rc_metastudio.forms import ui_new_study_dialog as _ui_new_study_dialog
-
-
-class AddStudyDialog(QDialog, _ui_new_study_dialog.Ui_new_study_dialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setupUi(self)
-        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "add study button").setText("Add study")
-        adaptive_window.register_adaptive_window(
-            self, adaptive_window.WindowRole.TRANSACTIONAL
-        )
 
 
 class AddCovariateDialog(QDialog, _ui_new_covariate_dialog.Ui_new_covariate_dialog):

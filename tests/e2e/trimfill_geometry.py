@@ -17,7 +17,7 @@ def check_trimfill(view, record):
         checked += 1
         directory = Path(sys.argv[2]) / 'trimfill-geometry'
         directory.mkdir(exist_ok=True)
-        path = directory / ('right.svg' if 'right' in title.lower() else 'left.svg')
+        path = directory / 'automatic.svg'
         view.plot_service.export(regenerator='funnel', params_path=view.results.image_params_paths[title], output_path=str(path))
         params = view.plot_service.load_params(view.results.image_params_paths[title])
         filled = list(params['trimfill.imputed'])
@@ -25,10 +25,9 @@ def check_trimfill(view, record):
         se = list(params['prepared.standard.errors'])
         observed = [i for i, fill in enumerate(filled) if not fill]
         trimfill = cast(SignatureTranslatedFunction, ro.r(
-            'function(y,se,side) metafor::trimfill(metafor::rma(yi=y,sei=se,method="REML"),side=side)'))
+            'function(y,se) meta::trimfill(meta::metagen(y,se,sm="OR",method.tau="REML"))'))
         fit = trimfill(
-            ro.FloatVector([y[i] for i in observed]), ro.FloatVector([se[i] for i in observed]),
-            'right' if 'right' in title.lower() else 'left')
+            ro.FloatVector([y[i] for i in observed]), ro.FloatVector([se[i] for i in observed]))
         k0 = int(fit.rx2('k0')[0])
         payload = path.read_bytes()
         root = ET.fromstring(gzip.decompress(payload) if payload.startswith(b'\x1f\x8b') else payload)
@@ -44,4 +43,4 @@ def check_trimfill(view, record):
         record('trimfill-marker-count', view, title=title, observed=len(observed), k0=k0,
                markers=len(circles), hollow=len(hollow), geometry_svg=str(path), preview_geometry_matches=True)
 
-    assert checked == 2, checked
+    assert checked == 1, checked

@@ -33,7 +33,6 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio.calculator_service import (
     CalculatorService,
-    ContinuousValues,
 )
 from rc_metastudio.analysis_catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
 from rc_metastudio.analysis_validation import EMPTY_VALS, is_nan, is_empty
@@ -113,9 +112,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         if confidence_level is None:
             QMessageBox.critical(
-                self, "Insufficient Arguments", "Confidence interval must be specified"
+                self, "Missing confidence level", "Confidence level is missing."
             )
-            raise ValueError("Confidence interval must be specified")
+            raise ValueError("Confidence level is missing.")
         self.confidence_level = confidence_level
         self.calculator = calculator or CalculatorService()
         self.confidence_multiplier = self.calculator.get_confidence_multiplier(
@@ -569,7 +568,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 if is_correlation:
                     options = {
                         "additional_validator": lambda x: -1 <= calculator_controls.numeric_value(x) <= 1,
-                        "validation_message": "Correlation must be between -1 and +1",
+                        "validation_message": "Correlation must be between −1 and 1.",
                     }
                 display_scale_val = calculator_controls.validate_calculator_input(
                     new_text=new_text,
@@ -771,7 +770,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         try:
             value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
-            return "Raw data needs to be numeric."
+            return "Enter a number."
 
         field_name = continuous_imputation_field_name(cell_header)
         if field_name == "n" and (value <= 0 or not value.is_integer()):
@@ -1493,9 +1492,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
             if is_list(value):
                 info = (
-                    "The back calculation has resulted in multiple results for "
+                    "More than one "
                     + keys_to_names[key]
-                    + "\n\nPlease choose one of the following:"
+                    + " matches the entered values. Choose one:"
                 )
                 option0_txt = keys_to_names[key] + " = " + str(value[0])
                 option1_txt = keys_to_names[key] + " = " + str(value[1])

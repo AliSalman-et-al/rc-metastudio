@@ -206,24 +206,28 @@ class _ControlStyle(QProxyStyle):
 def configure_application_controls(app):
     if app.property("rcms_controls_configured"):
         return
+    font = app.font()
+    app.setStyle(_ControlStyle(app.style().objectName()))
+    app.setFont(font)
+    refresh_application_palette(app)
+    app.styleHints().colorSchemeChanged.connect(lambda: QTimer.singleShot(0, lambda: refresh_application_palette(app)))
+    app._rcms_error_palette = _InlineErrorPaletteFilter(app)
+    app.setProperty("rcms_controls_configured", True)
+
+
+def refresh_application_palette(app):
+    """Derive contrast roles afresh after the platform changes its color scheme."""
+    app.setPalette(QPalette())
     palette = app.palette()
     role = QPalette.ColorRole
     if palette.color(role.Window).lightness() < 128:
         for text_role in (role.WindowText, role.Text, role.ButtonText):
-            palette.setColor(QPalette.ColorGroup.Disabled, text_role, QColor("#999999"))
+            palette.setColor(QPalette.ColorGroup.Disabled, text_role, QColor('#999999'))
         palette.setColor(QPalette.ColorGroup.Disabled, role.Button, palette.color(role.Window))
         for border_role in (role.Mid, role.Dark, role.Light):
-            palette.setColor(border_role, QColor("#999999"))
-        app.setPalette(palette)
-    font = app.font()
-    app.setStyle(_ControlStyle(app.style().objectName()))
-    # Style polish installs class-specific system fonts unless the app font is reapplied.
-    app.setFont(font)
-    palette = app.palette()
-    palette.setColor(QPalette.ColorRole.Link, readable_link_color(palette))
+            palette.setColor(border_role, QColor('#999999'))
+    palette.setColor(role.Link, readable_link_color(palette))
     app.setPalette(palette)
-    app._rcms_error_palette = _InlineErrorPaletteFilter(app)
-    app.setProperty("rcms_controls_configured", True)
 
 
 def configure_heading(label, scale=1.15):

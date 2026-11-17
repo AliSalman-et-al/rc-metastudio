@@ -39,7 +39,7 @@ def run_groups(app, window, work, record):
                 close(app, view)
     if baseline:
         return
-    legacy = Path(__file__).resolve().parents[2] / 'docs/ux-audit/2026-10-16-round6/legacy-default'
+    legacy = Path(__file__).resolve().parents[2] / 'tests/fixtures/legacy-forest-default'
     window.workspace.mark_saved()
     assert window.open(str(legacy / 'project-0.4.2.rcms'), raise_on_error=True)
     r_bridge.load_in_r(str(legacy / 'default-0.4.2.params'))

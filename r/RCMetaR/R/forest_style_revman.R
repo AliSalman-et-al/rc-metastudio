@@ -210,17 +210,6 @@ rcmetar.revman.wrap.header <- function(label, width=18) {
     paste(wrapped, collapse="\n")
 }
 
-rcmetar.revman.wrap.direction <- function(label, width=22) {
-    if (is.null(label) || !nzchar(label)) {
-        return("")
-    }
-    if (grepl("^Favours\\s+", label)) {
-        arm.label <- sub("^Favours\\s+", "", label)
-        arm.lines <- strwrap(arm.label, width=max(18, width - 6))
-        return(paste(c("Favours", arm.lines), collapse="\n"))
-    }
-    rcmetar.revman.wrap.header(label, width=width)
-}
 
 rcmetar.revman.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
     if (display.value.is.missing(p.value)) {
@@ -539,9 +528,6 @@ rcmetar.revman.axis.ticks <- function(bundle, alim) {
     ticks[ticks >= alim[1] & ticks <= alim[2]]
 }
 
-rcmetar.revman.layout <- function(bundle) {
-    rcmetar.forest.revman.layout.coordinates(bundle)
-}
 
 rcmetar.revman.study.effects <- function(bundle) {
     if (!is.null(bundle$effect)) return(bundle$effect)
@@ -666,16 +652,7 @@ rcmetar.revman.axis.footer.layout <- function(bundle, layout) {
     rcmetar.forest.revman.axis.footer(bundle, layout)
 }
 
-rcmetar.revman.line.count <- function(label) {
-    if (is.null(label) || !nzchar(label)) {
-        return(0)
-    }
-    length(strsplit(label, "\n", fixed=TRUE)[[1]])
-}
 
-rcmetar.measure.revman.forest.device <- function(bundle) {
-    rcmetar.forest.revman.device.metrics(bundle)
-}
 
 rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout=NULL) {
     graphics::par(xpd=NA)

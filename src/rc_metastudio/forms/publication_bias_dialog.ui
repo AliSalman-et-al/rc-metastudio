@@ -2,7 +2,7 @@
 <ui version="4.0">
  <class>PublicationBiasDialog</class>
  <widget class="QDialog" name="PublicationBiasDialog">
-  <property name="windowTitle"><string>Publication Bias - RC MetaStudio</string></property>
+  <property name="windowTitle"><string>Publication bias — RC MetaStudio</string></property>
   <property name="modal"><bool>true</bool></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item><widget class="QLabel" name="context_label"><property name="text"><string>Current analysis</string></property></widget></item>
@@ -18,6 +18,15 @@
          <property name="widgetResizable"><bool>true</bool></property>
          <widget class="QWidget" name="methods_scroll_content">
           <layout class="QVBoxLayout" name="methods_scroll_layout">
+           <item>
+            <layout class="QFormLayout" name="asymmetry_options_layout">
+             <item row="0" column="0"><widget class="QLabel" name="minimum_studies_label"><property name="text"><string>Minimum studies for asymmetry tests</string></property><property name="buddy"><cstring>minimum_studies_spin</cstring></property></widget></item>
+             <item row="0" column="1"><layout class="QHBoxLayout" name="minimum_studies_layout">
+              <item><widget class="QCheckBox" name="use_package_minimum_check"><property name="text"><string>Package default</string></property><property name="checked"><bool>true</bool></property><property name="toolTip"><string>Use meta’s default minimum study count. Mixed-effects Egger uses metafor and does not use this setting.</string></property></widget></item>
+              <item><widget class="QSpinBox" name="minimum_studies_spin"><property name="enabled"><bool>false</bool></property><property name="minimum"><number>3</number></property><property name="maximum"><number>2147483647</number></property><property name="toolTip"><string>Choose the minimum study count for meta’s asymmetry tests. The package requires at least 3 usable studies.</string></property><property name="accessibleName"><string>Minimum studies for asymmetry tests</string></property></widget></item>
+             </layout></item>
+            </layout>
+           </item>
            <item><widget class="QLabel" name="automatic_test_label"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Tests are selected automatically for the current effect measure.</string></property></widget></item>
            <item>
             <widget class="QGroupBox" name="plot_selection_group">
@@ -109,7 +118,6 @@
      </widget>
     </widget>
    </item>
-   <item><widget class="QProgressBar" name="progress_bar"><property name="visible"><bool>false</bool></property></widget></item>
    <item><widget class="QLabel" name="failure_label"><property name="visible"><bool>false</bool></property><property name="wordWrap"><bool>true</bool></property></widget></item>
    <item><widget class="QDialogButtonBox" name="button_box"><property name="standardButtons"><set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set></property></widget></item>
   </layout>

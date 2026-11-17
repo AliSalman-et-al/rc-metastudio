@@ -4,6 +4,12 @@ import pytest
 from rc_metastudio.analysis_results import Quantity, ResultTable
 
 
+@pytest.mark.parametrize('role', ['', 'unknown', None])
+def test_unknown_table_role_rejected(role):
+    with pytest.raises(ValueError, match='table role'):
+        ResultTable('Pooled effect', ('Estimate',), (('1',),), role=role)
+
+
 @pytest.mark.parametrize('fields', [
     {'role': 'unknown', 'value': 1.0},
     {'role': 'estimate', 'value': True},
@@ -24,7 +30,7 @@ def test_raw_states_and_combined_interval_are_preserved():
     upper = Quantity('ci_upper', math.inf, 'display', 90.0)
     missing = Quantity('estimate', None)
     table = ResultTable('Raw', ('CI', 'Estimate'), (('0.000 to —', 'Not estimable'),),
-                        (((lower, upper), (missing,)),))
+                        (((lower, upper), (missing,)),), role="supporting")
     assert table.quantities[0][0] == (lower, upper)
     assert table.quantities[0][1][0].value is None
     assert table.quantities[0][0][0].value == 1e-19
@@ -34,4 +40,4 @@ def test_raw_states_and_combined_interval_are_preserved():
                                        ((), ()), ((("fake",), ()),)])
 def test_misaligned_or_untyped_quantity_rejected(quantities):
     with pytest.raises(ValueError):
-        ResultTable('Bad', ('A', 'B'), (('a', 'b'),), quantities)
+        ResultTable('Bad', ('A', 'B'), (('a', 'b'),), quantities, role='supporting')

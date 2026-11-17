@@ -34,7 +34,6 @@
 \alias{diagnostic.reitsma.parameters}
 \alias{diagnostic.reitsma.pretty.names}
 \alias{diagnostic.transform.f}
-\alias{get.res.for.one.diag.study}
 \alias{multiple.diagnostic}
 \alias{plot.ppv.npv.by.prev}
 \title{Diagnostic test accuracy analysis functions}
@@ -57,7 +56,7 @@ bivariate model, SROC plotting, and predictive-value calculations.
 \section{Study-level calculations}{
 
 \code{adjust.raw.data()}, \code{compute.diag.point.estimates()},
-\code{compute.diagnostic.terms()}, \code{get.res.for.one.diag.study()},
+\code{compute.diagnostic.terms()},
 and \code{diagnostic.transform.f()} normalize count data and derive
 diagnostic metrics.
 }

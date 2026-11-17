@@ -127,7 +127,7 @@ def start_package_edit_save(
         _close_automation_window(app, window)
 
 
-def start_package_analyze(output_path: str, project_path: str, analysis_method: str) -> int:
+def start_package_analyze(output_path: str, project_path: str, analysis_method: str, estimator: str | None = None) -> int:
     """Open one explicit project and run one explicit analysis method."""
     _reject_output_aliases([output_path], [project_path])
     _configure_package_locale()
@@ -145,11 +145,12 @@ def start_package_analyze(output_path: str, project_path: str, analysis_method: 
             return 0
         from rc_metastudio import main_window
 
-        result = _run_analysis(window, main_window, analysis_method)
+        result = _run_analysis(window, main_window, analysis_method, estimator=estimator)
         if result is None:
             raise RuntimeError("analysis produced no result")
         _write_json(output_path, {
             "project": os.path.abspath(project_path), "analysis_method": analysis_method,
+            "requested_estimator": estimator,
             "opened": True,
             "texts": dict(result.texts), "display_images": dict(result.display_images),
         })
@@ -199,7 +200,7 @@ def _configure_package_locale() -> None:
         QtCore.QLocale.setDefault(QtCore.QLocale(configured_locale))
 
 
-def _run_analysis(window, main_window, analysis_method: str):
+def _run_analysis(window, main_window, analysis_method: str, *, estimator: str | None = None):
     captured = {}
     dialog = main_window.analysis_setup_dialog.AnalysisSetupDialog(window.model, parent=window, confidence_level=window.model.get_confidence_level())
     original = window.analysis
@@ -208,6 +209,10 @@ def _run_analysis(window, main_window, analysis_method: str):
         dialog.current_param_vals = {}
         dialog.setup_params()
         dialog.current_param_vals.update(dialog.current_defaults)
+        if estimator is not None:
+            if "rm.method" not in dialog.current_defaults:
+                raise ValueError(f"{analysis_method} has no random-effects estimator parameter")
+            dialog.current_param_vals["rm.method"] = estimator
         window.analysis = lambda result, *, change_settings=None: captured.setdefault("result", result)
         dialog.run_ma()
     finally:
@@ -390,8 +395,8 @@ def dispatch(startup_argv: list[str]) -> int:
             raise SystemExit("--automation-package-edit-save requires output, project, destination, column, and value.")
         return start_package_edit_save(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-analyze":
-        if len(startup_argv) != 5:
-            raise SystemExit("--automation-package-analyze requires output, project, and method.")
+        if len(startup_argv) not in (5, 6):
+            raise SystemExit("--automation-package-analyze requires output, project, method, and an optional estimator.")
         return start_package_analyze(*startup_argv[2:])
     if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-surface-smoke":
         if len(startup_argv) != 4:

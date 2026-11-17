@@ -9,7 +9,7 @@ from dataclasses import replace
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
 
-from rc_metastudio import adaptive_window, app_error_handler
+from rc_metastudio import adaptive_window, app_error_handler, progress_dialog
 from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.analysis_catalog import ONE_ARM_METRICS
 from rc_metastudio.qt_object_guard import required
@@ -59,16 +59,16 @@ def _available_method_text(methods) -> str:
     for item in methods:
         label = _TEST_LABELS.get(item.method, item.method)
         if item.role == "primary":
-            facts = ([f"{item.usable_studies} eligible studies"] if item.usable_studies is not None else [])
+            facts = ([f"{item.usable_studies} eligible " + ("study" if item.usable_studies == 1 else "studies")] if item.usable_studies is not None else [])
             facts.extend(item.required_inputs)
             primary.append(label + (" (" + "; ".join(facts) + ")" if facts else ""))
         else:
             additional.append(label)
     clauses = []
     if primary:
-        clauses.append(("Primary test " if len(primary) == 1 else "Primary tests ") + ", ".join(primary))
+        clauses.append(("Primary test: " if len(primary) == 1 else "Primary tests: ") + ", ".join(primary))
     if additional:
-        clauses.append(("Exploratory test " if len(additional) == 1 else "Exploratory tests ") + ", ".join(additional))
+        clauses.append(("Exploratory test: " if len(additional) == 1 else "Exploratory tests: ") + ", ".join(additional))
     return " · ".join(clauses)
 
 
@@ -107,7 +107,7 @@ class SmallStudyEffectsDialog(
             ),
             self.contour_funnel_check: (
                 "Contour-enhanced funnel plot",
-                "Show significance contours that help distinguish publication bias from other asymmetry.",
+                "Add significance contours to show where studies fall relative to conventional significance thresholds.",
             ),
             self.deeks_funnel_check: (
                 "Deeks funnel plot",
@@ -119,11 +119,11 @@ class SmallStudyEffectsDialog(
             ),
             self.include_tau2_check: (
                 "Include between-study variance in pseudo-confidence region",
-                "Include tau-squared, the estimated between-study variance, when drawing the region.",
+                "Include τ², the estimated between-study variance, when drawing the region.",
             ),
             self.contour_levels_edit: (
                 "Null contour levels",
-                "Enter comma-separated significance levels, such as 90, 95, 99.",
+                "Enter contour confidence levels (%) separated by commas, for example 90, 95, 99.",
             ),
             self.correction_policy_combo: (
                 "Continuity correction policy",
@@ -131,11 +131,11 @@ class SmallStudyEffectsDialog(
             ),
             self.trim_fill_check: (
                 "Trim-and-fill sensitivity analysis",
-                "Estimate potentially missing studies and show how the pooled result changes.",
+                "Impute studies under an assumed asymmetry scenario and show the augmented estimate. This is not a corrected effect.",
             ),
             self.trim_fill_estimator_combo: (
                 "Trim-and-fill estimator",
-                "Choose the estimator for the number of potentially missing studies. L0 and R0 are established trim-and-fill estimators.",
+                "Choose the estimator for the number of potentially missing studies.",
             ),
             self.trim_fill_side_combo: (
                 "Trim-and-fill side",
@@ -191,6 +191,7 @@ class SmallStudyEffectsDialog(
     def _configure_initial_values(self):
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setModal(True)
+        required(self.button_box.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button").setText("Run analysis")
         self.correction_policy_combo.addItems(
             [policy.value for policy in CorrectionPolicy]
         )
@@ -200,8 +201,10 @@ class SmallStudyEffectsDialog(
         self.trim_fill_estimator_combo.addItems(
             [item.value for item in TrimAndFillEstimator]
         )
-        self.trim_fill_side_combo.addItems([item.value for item in TrimAndFillSide])
-        self.trim_fill_model_combo.addItems([item.value for item in TrimAndFillModel])
+        for item in TrimAndFillSide:
+            self.trim_fill_side_combo.addItem({'auto': 'Automatic', 'left': 'Left', 'right': 'Right'}[item.value], item.value)
+        for item in TrimAndFillModel:
+            self.trim_fill_model_combo.addItem({'random': 'Random effects', 'common': 'Common effect'}[item.value], item.value)
         confidence_level = getattr(self.model, "get_confidence_level", lambda: 95.0)()
         confidence_text = str(int(round(float(confidence_level))))
         self.sampling_confidence_combo.setCurrentText(
@@ -210,12 +213,10 @@ class SmallStudyEffectsDialog(
             else "95"
         )
         self._eligibility_report = None
-        if str(self.model.get_current_data_type()) == "diagnostic":
-            self.correction_policy_combo.setCurrentText(
-                CorrectionPolicy.ALL_STUDIES_IF_ANY_ZERO_EXISTS.value
-            )
 
     def _connect_controls(self):
+        self.use_package_minimum_check.toggled.connect(self._refresh_eligibility)
+        self.minimum_studies_spin.valueChanged.connect(self._refresh_eligibility)
         for control in (
             self.ordinary_funnel_check,
             self.contour_funnel_check,
@@ -281,6 +282,7 @@ class SmallStudyEffectsDialog(
                 else None
             ),
             confidence_level=float(self.model.get_confidence_level()),
+            k_min=None if self.use_package_minimum_check.isChecked() else self.minimum_studies_spin.value(),
             selected_tests=(),
         )
 
@@ -296,15 +298,24 @@ class SmallStudyEffectsDialog(
             )
             return
         self._eligibility_report = report
+        if self.use_package_minimum_check.isChecked() and report.k_min is not None:
+            blocked = self.minimum_studies_spin.blockSignals(True)
+            self.minimum_studies_spin.setValue(report.k_min)
+            self.minimum_studies_spin.blockSignals(blocked)
         self.context_label.setText(self._context_summary(report))
         available = [item for item in report.methods if item.available]
+        unavailable = {}
+        for item in report.methods:
+            if not item.available:
+                unavailable.setdefault(unavailable_reason(item), []).append(_TEST_LABELS.get(item.method, item.method))
+        reasons = '\n'.join(f'{", ".join(names)}: {reason}' for reason, names in unavailable.items())
         if not available:
             self.automatic_test_label.setText(
-                f"No formal asymmetry test is available ({report.usable_studies} usable studies).\n" + "\n".join(dict.fromkeys(
-                    unavailable_reason(item) for item in report.methods if not item.available))
+                f"No formal asymmetry test is available ({report.usable_studies} usable " + ("study" if report.usable_studies == 1 else "studies") + ").\n" + reasons
             )
             return
-        self.automatic_test_label.setText(_available_method_text(available))
+        explanation = "\nDiagnostic accuracy data use Deeks analysis; ordinary and contour-enhanced funnels and their confidence-region settings do not apply." if request.data_type == "diagnostic" else ""
+        self.automatic_test_label.setText('\n'.join(filter(None, (_available_method_text(available), reasons, explanation.strip()))))
 
     def _context_summary(self, report=None) -> str:
         data_type = str(self.model.get_current_data_type())
@@ -322,13 +333,14 @@ class SmallStudyEffectsDialog(
                 for row in self.model.get_current_raw_data()
             )
             if double_zero and included - report.usable_studies == double_zero:
-                explanation = f"\n{double_zero} studies with no events in either arm are ineligible for odds-ratio asymmetry tests."
+                explanation = f"\n{double_zero} " + ("study with no events in either arm is ineligible" if double_zero == 1 else "studies with no events in either arm are ineligible") + " for odds-ratio asymmetry tests."
         return (
             f"{outcome_label}  ·  {metric_label}  ·  "
             f"{included} included  ·  {eligible} eligible{explanation}"
         )
 
     def _refresh_eligibility(self):
+        self.minimum_studies_spin.setEnabled(not self.use_package_minimum_check.isChecked())
         self._populate_context()
         self._update_controls()
 
@@ -386,7 +398,7 @@ class SmallStudyEffectsDialog(
         if self._eligibility_report is None:
             self._refresh_eligibility()
         if self._eligibility_report is None:
-            raise ValueError("Test availability could not be checked. Try running again when preview is available.")
+            raise ValueError("Test availability could not be checked. Availability will be checked again when the analysis runs.")
         funnels = [
             kind.value
             for kind, control in (
@@ -420,6 +432,7 @@ class SmallStudyEffectsDialog(
                 else None
             ),
             confidence_level=float(self.model.get_confidence_level()),
+            k_min=None if self.use_package_minimum_check.isChecked() else self.minimum_studies_spin.value(),
             selected_tests=selected_tests,
             selected_funnels=funnels,
             label_policy=labels[self.label_policy_combo.currentText()],
@@ -438,8 +451,8 @@ class SmallStudyEffectsDialog(
             }[self.style_combo.currentText()],
             trim_and_fill=self.trim_fill_check.isChecked(),
             trim_and_fill_estimator=self.trim_fill_estimator_combo.currentText(),
-            trim_and_fill_side=self.trim_fill_side_combo.currentText(),
-            trim_and_fill_model=self.trim_fill_model_combo.currentText(),
+            trim_and_fill_side=self.trim_fill_side_combo.currentData(),
+            trim_and_fill_model=self.trim_fill_model_combo.currentData(),
             extrapolation=self.extrapolation_check.isChecked(),
         )
 
@@ -460,28 +473,34 @@ class SmallStudyEffectsDialog(
         except ValueError as error:
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
-            self.progress_bar.setVisible(False)
             self.contour_levels_edit.setFocus()
             return
         run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
         if run_button is not None:
             run_button.setEnabled(False)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setRange(0, 0)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
+        from rc_metastudio.analysis_identity import metric_label
+        metric = "Diagnostic odds ratio" if request.data_type == "diagnostic" else metric_label(self.model)
+        progress = progress_dialog.AnalysisProgressDialog(
+            self, operation="Running small-study effects analysis…",
+            context=f"{self.model.current_outcome_name} · {metric}"
+        )
+        progress.show()
+        progress.repaint()
         try:
-            result = self.analysis_service.execute(self.model, request)
-            result = self._with_report_identity(result)
+            try:
+                result = self.analysis_service.execute(self.model, request)
+                result = self._with_report_identity(result)
+            finally:
+                progress_dialog.dispose(progress)
             owner = self.parentWidget()
             callback = getattr(owner, "analysis", None)
             if not callable(callback):
                 raise TypeError("small-study effects dialog has no results owner")
             callback(result)
-            self.progress_bar.setVisible(False)
             self.accept()
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
-            self.progress_bar.setVisible(False)
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
             app_error_handler.handle_exception(
@@ -491,18 +510,22 @@ class SmallStudyEffectsDialog(
                 run_button.setEnabled(True)
 
     def _with_report_identity(self, result):
-        from rc_metastudio.analysis_identity import dataset_identity
+        from rc_metastudio.analysis_identity import dataset_identity, metric_label
+        metric = "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else metric_label(self.model)
+        context = dataset_identity(self.model, metric)
         facts = [f"k = {len(self.model.get_studies())}"]
         report = self._eligibility_report
         if report is not None:
             facts.extend(_eligibility_identity(report))
         facts.append(f"{self.model.get_confidence_level():g}% CI")
-        result = replace(result, identity="Small-study effects — " + dataset_identity(self.model, "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else None) + '\n' + ' · '.join(facts))
+        result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]
         procedures.extend(section.title for section in result.sections if section.kind == "image")
-        result = replace(result, manuscript_title="Small-study effects", manuscript_methods=(
+        outcome = self.model.current_sheet.name
+        result = replace(result, manuscript_title=f"{outcome[:1].upper() + outcome[1:]}: small-study effects ({metric.lower()})",
+                         manuscript_comparison=context.partition('\n')[2], manuscript_methods=(
             "Small-study effects procedures run: " + "; ".join(procedures) + "." if procedures else "No formal small-study effects procedure was run."))
         return result
 
@@ -513,9 +536,5 @@ def _eligibility_identity(report):
     for method in report.methods:
         if method.available and method.role == 'primary':
             label = _TEST_LABELS.get(method.method, method.method)
-            if method.method == 'deeks':
-                version = dict(report.package_versions).get('meta')
-                if version:
-                    label += f' (meta {version})'
-            facts.append('Primary test ' + label)
+            facts.append('Primary test: ' + label)
     return facts

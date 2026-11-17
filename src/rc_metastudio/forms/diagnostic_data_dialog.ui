@@ -3,7 +3,7 @@
  <class>DiagnosticDataDialog</class>
  <widget class="QDialog" name="DiagnosticDataDialog">
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Diagnostic Data</string></property>
+  <property name="windowTitle"><string>Diagnostic data</string></property>
   <property name="windowIcon"><iconset><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <layout class="QVBoxLayout" name="dialog_layout">
    <item>

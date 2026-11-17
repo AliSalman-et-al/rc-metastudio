@@ -18,3 +18,22 @@ ORGANIZATION_DOMAIN = "rcmetastudio.org"
 
 
 VERSION = __version__
+
+CITATION_TITLE = "RC MetaStudio: open-source desktop software for meta-analysis"
+CITATION_DOI = "10.5281/zenodo.23118556"
+CITATION_AUTHORS = (
+    "Salman, Ali", "Fatima, Kaneez", "Khan, Muhammad Shahzeb",
+    "Siddiqi, Tariq Jamal", "Usman, Muhammad Shariq",
+)
+
+CITATION_YEAR = '2026'
+CITATION_URL = 'https://doi.org/' + CITATION_DOI
+
+
+def citation_text() -> str:
+    authors = []
+    for name in CITATION_AUTHORS:
+        family, given = name.split(', ', 1)
+        authors.append(family + ', ' + ' '.join(part[0] + '.' for part in given.split()))
+    names = ', '.join(authors[:-1]) + ', & ' + authors[-1]
+    return f"{names} ({CITATION_YEAR}). {CITATION_TITLE} (Version {VERSION}). Zenodo. {CITATION_URL}"

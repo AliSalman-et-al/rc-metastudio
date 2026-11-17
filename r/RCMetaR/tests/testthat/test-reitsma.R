@@ -54,8 +54,8 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   testthat::expect_true(all(grepl("\\.[0-9]{2}%$", result$Summary[["Summary operating point"]][["Summary sensitivity"]])))
   testthat::expect_identical(result$Summary[["SROC AUC"]][["full.FPR.bounds"]], c(.01, .99))
   testthat::expect_true(all(result$Summary[["SROC AUC"]][["partial.FPR.bounds"]] >= c(.01, 0)))
-  testthat::expect_match(result$Summary[["SROC AUC"]][["note"]], "equivalent parameterizations")
-  testthat::expect_true(all(c("Zhou-Dendukuri", "Holling unadjusted range", "Holling adjusted range") %in%
+  testthat::expect_match(result$Summary[["Clinical interpretation"]], "equivalent parameterizations")
+  testthat::expect_true(all(c("Zhou\u2013Dendukuri", "Holling unadjusted range", "Holling adjusted range") %in%
     names(result$Summary[["Diagnostic I-squared"]][["I-squared summary"]])))
   testthat::expect_length(result$Summary[["Diagnostic I-squared"]][["I-squared estimates"]][["Measure"]], 7)
   ratios <- result$Summary[["Sampling-based summary ratios"]]

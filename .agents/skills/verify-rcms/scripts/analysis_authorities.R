@@ -72,7 +72,7 @@ for (metric in c("OR","RD","RR","AS","YUQ","YUY","PR","PLN","PLO","PAS","PFT")) 
     check(data,"binary.fixed.mh",p,ref,paste(metric,"MH"))
   }
   if (metric == "OR") {
-    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,0), to=c("only0","none"), drop00=FALSE, level=95)
+    ref <- metafor::rma.peto(ai=a, bi=b, ci=c, di=d, add=c(.5,0), to=c("only0","none"), level=95)
     check(data,"binary.fixed.peto",p,ref,"OR Peto")
   }
 }
@@ -173,12 +173,6 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   result <- RCMetaR:::subgroup.ma.binary(method, data, p)
   e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e)
   actual <- e$plot.data$subgroups$difference_test
-  if (method == "binary.fixed.mh") {
-    if (!is.null(actual)) stop("MH subgroup difference test must be omitted")
-    rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE,
-      type="inference availability", actual="omitted", expected="omitted")
-    next
-  }
   authority <- meta::metabin(a,a+b,c,c+d, subgroup=group, sm="OR",
     method=switch(method, binary.fixed.mh="MH", binary.fixed.peto="Peto", "Inverse"),
     method.tau="DL", tau.common=FALSE)
@@ -278,14 +272,14 @@ for (metric in c("OR","RR")) {
   actual <- RCMetaR:::binary.fixed.mh.overall(result)
   for (field in c("b","se","ci.lb","ci.ub")) close(actual[[field]],ref[[field]],paste("zero MH",metric,field))
 }
-p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
+p1 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"))
 p0 <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=0)
 cat("PETO raw pooling with individual correction",as.numeric(p1$b),p1$ci.lb,p1$ci.ub,"add 0",as.numeric(p0$b),p0$ci.lb,p0$ci.ub,"\n")
 p <- params("OR")
 ef <- metafor::escalc("OR",ai=a,bi=n1-a,ci=c,di=n2-c,drop00=FALSE)
 data <- methods::new("BinaryData",g1O1=a,g1O2=n1-a,g2O1=c,g2O2=n2-c,
   y=ef$yi,SE=sqrt(ef$vi),study.names=paste0("Zero",1:5))
-ref <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"),drop00=FALSE)
+ref <- metafor::rma.peto(ai=a,bi=n1-a,ci=c,di=n2-c,add=c(.5,0),to=c("only0","none"))
 m <- meta::metabin(a,n1,c,n2,method="Peto",allstudies=TRUE)
 hand <- sum(a-n1*(a+c)/(n1+n2))/sum(n1*n2*(a+c)*(n1+n2-a-c)/((n1+n2)^2*(n1+n2-1)))
 cat("PETO raw metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"k",ref$k,"meta",m$TE.common,m$lower.common,m$upper.common,"hand",hand,"\n")

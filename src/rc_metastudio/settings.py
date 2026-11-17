@@ -556,10 +556,11 @@ def save_plot_export_format(extension):
 def save_results_window_state(window):
     """Persist Results geometry and meaningful splitter proportions."""
     settings = save_workspace_placement(RESULTS_WORKSPACE_GROUP, window)
-    settings.setValue(
-        RESULTS_WORKSPACE_GROUP + "/splitter_proportions",
-        _encode_float_list(_splitter_proportions(window.results_nav_splitter.sizes())),
-    )
+    if window._splitter_user_sized:
+        settings.setValue(
+            RESULTS_WORKSPACE_GROUP + "/splitter_proportions",
+            _encode_float_list(_splitter_proportions(window.results_nav_splitter.sizes())),
+        )
     settings.sync()
 
 

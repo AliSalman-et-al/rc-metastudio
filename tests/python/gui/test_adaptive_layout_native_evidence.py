@@ -444,23 +444,25 @@ def test_covariate_cancel_probe_detects_live_sheet_mutation(qapp, monkeypatch):
 
 
 @pytest.mark.parametrize("defect", [None, "escape", "close", "completion"])
-def test_import_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, monkeypatch, defect):
+@pytest.mark.parametrize("surface", ["import-progress", "shared-progress"])
+def test_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, monkeypatch, defect, surface):
     import sys
     from scripts import native_remaining_surfaces_smoke as smoke
     from rc_metastudio import main_window, progress_dialog
+    dialog_type = main_window.ImportProgressDialog if surface == "import-progress" else progress_dialog.AnalysisProgressDialog
     callback_errors = []
     monkeypatch.setattr(sys, "excepthook", lambda _kind, error, _trace: callback_errors.append(error))
     if defect == "escape":
-        monkeypatch.setattr(main_window.ImportProgressDialog, "reject", lambda self: self.hide())
+        monkeypatch.setattr(dialog_type, "reject", lambda self: self.hide())
     elif defect == "close":
-        monkeypatch.setattr(main_window.ImportProgressDialog, "closeEvent", lambda self, event: event.accept())
+        monkeypatch.setattr(dialog_type, "closeEvent", lambda self, event: event.accept())
     elif defect == "completion":
         monkeypatch.setattr(progress_dialog, "hide_once", lambda _window: None)
-    window = main_window.ImportProgressDialog()
+    window = dialog_type()
     try:
         window.show()
         qapp.processEvents()
-        observation = smoke._observe_capture_close(qapp, window, "import-progress")
+        observation = smoke._observe_capture_close(qapp, window, surface)
         assert callback_errors == []
         expected = {"close_blocked": True, "escape_blocked": True, "owner_completed": True}
         if defect is None:

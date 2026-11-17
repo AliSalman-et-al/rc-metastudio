@@ -12,8 +12,8 @@ from rc_metastudio import settings
 
 UNEXPECTED_ERROR_TITLE = "Unexpected error"
 UNEXPECTED_ERROR_MESSAGE = (
-    "Sorry, an unexpected error occurred. RC MetaStudio is still running, "
-    "but the action could not be completed.\n\nDetails: {details}"
+    "This action could not be completed. RC MetaStudio is still running."
+    "\n\nDetails: {details}"
 )
 
 _previous_excepthook = None

@@ -32,15 +32,21 @@
         "amino-binary-subgroup",
         "continuous-subgroup"
       ],
-      "affected_workflows": ["all curated golden analysis workflows"],
+      "affected_workflows": [
+        "all curated golden analysis workflows"
+      ],
       "reason": "PR #349 intentionally exposes the selected inference method in result output.",
       "approved_by": "Ali Salman",
       "approved_at": "2026-07-19",
       "before_behavior": "Result output did not identify the selected inference method.",
       "after_behavior": "Result output includes a dedicated Inference Method section.",
       "follow_up": "Retain as a permanent, reviewed post-port analysis-output addition.",
-      "accepted_classifications": ["text_artifact_drift"],
-      "accepted_details": ["Unexpected text section Inference method was produced."]
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Unexpected text section Inference method was produced."
+      ]
     },
     {
       "id": "meta-regression-output-improvements",
@@ -49,18 +55,498 @@
         "amino-binary-meta-regression",
         "continuous-meta-regression"
       ],
-      "affected_workflows": ["binary meta-regression", "continuous meta-regression"],
+      "affected_workflows": [
+        "binary meta-regression",
+        "continuous meta-regression"
+      ],
       "reason": "PR #349 intentionally improves meta-regression summary and reference text.",
       "approved_by": "Ali Salman",
       "approved_at": "2026-07-19",
       "before_behavior": "The frozen baseline used the earlier meta-regression summary and reference wording.",
       "after_behavior": "Meta-regression reports the reviewed improved summary and references.",
       "follow_up": "Retain this reviewed analysis-output improvement.",
-      "accepted_classifications": ["text_artifact_drift"],
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
       "accepted_details": [
         "Text section References changed.",
         "Text section Summary changed."
       ]
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-amino-binary-cumulative",
+      "ids": [
+        "amino-binary-cumulative"
+      ],
+      "affected_workflows": [
+        "amino-binary-cumulative"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n3. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-amino-binary-leave-one-out",
+      "ids": [
+        "amino-binary-leave-one-out"
+      ],
+      "affected_workflows": [
+        "amino-binary-leave-one-out"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-amino-binary-random",
+      "ids": [
+        "amino-binary-random"
+      ],
+      "affected_workflows": [
+        "amino-binary-random"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-amino-binary-subgroup",
+      "ids": [
+        "amino-binary-subgroup"
+      ],
+      "affected_workflows": [
+        "amino-binary-subgroup"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-continuous-cumulative",
+      "ids": [
+        "continuous-cumulative"
+      ],
+      "affected_workflows": [
+        "continuous-cumulative"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n3. Cumulative Meta-Analysis: Lau, Joseph, et al. \"Cumulative meta-analysis of therapeutic trials for myocardial infarction.\" New England Journal of Medicine 327.4 (1992): 248-254.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-continuous-leave-one-out",
+      "ids": [
+        "continuous-leave-one-out"
+      ],
+      "affected_workflows": [
+        "continuous-leave-one-out"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Leave-one-out Meta-Analysis: estimates are recomputed after omitting each study in turn to assess influence on the selected base meta-analysis method.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-continuous-random",
+      "ids": [
+        "continuous-random"
+      ],
+      "affected_workflows": [
+        "continuous-random"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-continuous-subgroup",
+      "ids": [
+        "continuous-subgroup"
+      ],
+      "affected_workflows": [
+        "continuous-subgroup"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n4. Subgroup Meta-Analysis: estimates are recomputed within covariate-defined study groups using the selected base meta-analysis method.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "executed-method-references-lymph-diagnostic-random-dor",
+      "ids": [
+        "lymph-diagnostic-random-dor"
+      ],
+      "affected_workflows": [
+        "lymph-diagnostic-random-dor"
+      ],
+      "reason": "Cite the executed DL estimator rather than Hedges; omit workflow descriptions that are not bibliographic references.",
+      "before_behavior": "DL fits cited Hedges; repeated workflows listed a prose description as a reference.",
+      "after_behavior": "Keep the executed estimator and implementation references, and renumber the remaining citations.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section References changed."
+      ],
+      "accepted_texts": {
+        "References": {
+          "before": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Random-effects meta-analysis: Hedges, L. V. (1983). A random effects model for effect sizes. Psychological Bulletin, 93(2), 388-395. doi:10.1037/0033-2909.93.2.388.\n3. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n",
+          "after": "1. Random-effects meta-analysis: DerSimonian, R., & Laird, N. (1986). Meta-analysis in clinical trials. Controlled Clinical Trials, 7(3), 177-188. doi:10.1016/0197-2456(86)90046-2.\n2. Implementation reference: Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1-48. doi:10.18637/jss.v036.i03.\n"
+        }
+      }
+    },
+    {
+      "status": "accepted",
+      "approved_by": "Ali Salman: apply Opus recommendations and defer statistical policy to R packages",
+      "approved_at": "2026-11-17",
+      "follow_up": "Permanent exact before/after binding, independently checked against the package; numerical tolerances remain unchanged.",
+      "id": "continuous-cumulative-singleton-package-p",
+      "ids": [
+        "continuous-cumulative"
+      ],
+      "affected_workflows": [
+        "continuous cumulative singleton row"
+      ],
+      "reason": "Singleton fitting now delegates to metafor, which returns a P value rather than an RCMS-created blank.",
+      "before_behavior": "The first cumulative study had a blank P value despite a finite package estimate and standard error.",
+      "after_behavior": "Display the rounded metafor P value 0.605 for Carroll; every existing numeric field remains frozen.",
+      "accepted_classifications": [
+        "text_artifact_drift",
+        "unexpected_output"
+      ],
+      "accepted_details": [
+        "Text section Cumulative summary changed.",
+        "Cumulative summary.model.carroll.p_value is an unexpected numeric metric."
+      ],
+      "accepted_texts": {
+        "Cumulative summary": {
+          "before": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nModel Results\n Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n Carroll, 1997 (k = 1)     0.095                -0.264                 0.453                    0.183         \n Grant, 1981 (k = 2)       0.189                -0.059                 0.438                    0.127    0.136\n Peck, 1987 (k = 3)        0.232                 0.015                 0.449                    0.111    0.036\n Donat, 2003 (k = 4)       0.376                 0.091                 0.660                    0.145    0.010\n Stewart, 1990 (k = 5)     0.397                 0.169                 0.626                    0.116  < 0.001\n Young, 1995 (k = 6)       0.358                 0.152                 0.565                    0.105  < 0.001",
+          "after": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nModel Results\n Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n Carroll, 1997 (k = 1)     0.095                -0.264                 0.453                    0.183    0.605\n Grant, 1981 (k = 2)       0.189                -0.059                 0.438                    0.127    0.136\n Peck, 1987 (k = 3)        0.232                 0.015                 0.449                    0.111    0.036\n Donat, 2003 (k = 4)       0.376                 0.091                 0.660                    0.145    0.010\n Stewart, 1990 (k = 5)     0.397                 0.169                 0.626                    0.116  < 0.001\n Young, 1995 (k = 6)       0.358                 0.152                 0.565                    0.105  < 0.001"
+        }
+      },
+      "accepted_outputs": {
+        "Cumulative summary": {
+          "model.carroll.p_value": 0.605
+        }
+      }
+    },
+    {
+      "id": "sequential-presentation-amino-binary-cumulative",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-cumulative"
+      ],
+      "affected_workflows": [
+        "amino-binary-cumulative"
+      ],
+      "reason": "User-requested sequential table and forest redesign: explicit study/step, package k and I² columns, with labelled omission/reference rows. Historical estimates, intervals, SE and P remain independently compared.",
+      "approved_by": "Ali Salman: requested cumulative and leave-one-out functionality and presentation redesign, reviewed by Opus 5.5",
+      "approved_at": "2026-11-17",
+      "before_behavior": "Sequential text and plots omitted per-fit k/I² columns and embedded cumulative k in study labels.",
+      "after_behavior": "Reviewed sequential tables and forests show explicit package k/I² columns and distinct added/omitted study labels.",
+      "follow_up": "Retain exact before/after text and artifact descriptor/SHA-256 bindings. Frozen archives, numerical contract and tolerances remain unchanged.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section Cumulative summary changed.",
+        "Artifact Cumulative forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_texts": {
+        "Cumulative summary": {
+          "before": "Binary Random-Effects Model\n\nMetric: Odds ratio\n\nModel Results\n Study added (k)                Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value\n Gonzalez, 1993 (k = 1)            0.571                 0.170                 1.916           0.617    0.365\n Prins, 1993 (k = 2)               0.509                 0.204                 1.273           0.467    0.149\n Giamarellou, 1991 (k = 3)         0.430                 0.180                 1.032           0.446    0.059\n Maller, 1993 (k = 4)              0.657                 0.268                 1.609           0.457    0.358\n Sturm, 1989 (k = 5)               0.614                 0.265                 1.422           0.428    0.255\n Marik, 1991 (k = 6)               0.540                 0.275                 1.060           0.344    0.073\n Muijsken, 1988 (k = 7)            0.634                 0.334                 1.205           0.328    0.164\n Vigano, 1992 (k = 8)              0.668                 0.358                 1.246           0.318    0.205\n Hansen, 1988 (k = 9)              0.572                 0.305                 1.073           0.321    0.082\n De Vries, 1990 (k = 10)           0.646                 0.352                 1.188           0.310    0.160\n Mauracher, 1989 (k = 11)          0.594                 0.323                 1.095           0.312    0.095\n Nordstrom, 1990 (k = 12)          0.606                 0.345                 1.062           0.287    0.080\n Rozdzinski, 1993 (k = 13)         0.655                 0.398                 1.078           0.255    0.096\n Ter Braak, 1990 (k = 14)          0.706                 0.442                 1.127           0.239    0.145\n Tulkens, 1988 (k = 15)            0.712                 0.453                 1.121           0.231    0.143\n Van der Auwera, 1991 (k = 16)     0.696                 0.446                 1.086           0.227    0.110\n Klastersky, 1977 (k = 17)         0.775                 0.477                 1.258           0.247    0.302\n Vanhaeverbeek, 1993 (k = 18)      0.780                 0.486                 1.253           0.241    0.304\n Hollender, 1989 (k = 19)          0.770                 0.485                 1.222           0.236    0.267",
+          "after": "Binary Random-Effects Model\n\nMetric: Odds ratio\n\nCumulative results\n Step  Study added            k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value     I²\n 1     Gonzalez, 1993         1     0.571                 0.170                 1.916           0.617    0.365   0.0%\n 2     Prins, 1993            2     0.509                 0.204                 1.273           0.467    0.149   0.0%\n 3     Giamarellou, 1991      3     0.430                 0.180                 1.032           0.446    0.059   0.0%\n 4     Maller, 1993           4     0.657                 0.268                 1.609           0.457    0.358  46.5%\n 5     Sturm, 1989            5     0.614                 0.265                 1.422           0.428    0.255  38.5%\n 6     Marik, 1991            6     0.540                 0.275                 1.060           0.344    0.073  49.0%\n 7     Muijsken, 1988         7     0.634                 0.334                 1.205           0.328    0.164  52.1%\n 8     Vigano, 1992           8     0.668                 0.358                 1.246           0.318    0.205  47.7%\n 9     Hansen, 1988           9     0.572                 0.305                 1.073           0.321    0.082  51.8%\n 10    De Vries, 1990        10     0.646                 0.352                 1.188           0.310    0.160  53.1%\n 11    Mauracher, 1989       11     0.594                 0.323                 1.095           0.312    0.095  53.1%\n 12    Nordstrom, 1990       12     0.606                 0.345                 1.062           0.287    0.080  48.4%\n 13    Rozdzinski, 1993      13     0.655                 0.398                 1.078           0.255    0.096  47.0%\n 14    Ter Braak, 1990       14     0.706                 0.442                 1.127           0.239    0.145  46.8%\n 15    Tulkens, 1988         15     0.712                 0.453                 1.121           0.231    0.143  42.8%\n 16    Van der Auwera, 1991  16     0.696                 0.446                 1.086           0.227    0.110  40.4%\n 17    Klastersky, 1977      17     0.775                 0.477                 1.258           0.247    0.302  51.6%\n 18    Vanhaeverbeek, 1993   18     0.780                 0.486                 1.253           0.241    0.304  48.6%\n 19    Hollender, 1989       19     0.770                 0.485                 1.222           0.236    0.267  46.0%"
+        }
+      },
+      "accepted_artifacts": {
+        "Cumulative forest plot": {
+          "before": {
+            "label": "Cumulative forest plot",
+            "name": "golden_amino_cumulative_forest.png",
+            "type": "png",
+            "sha256": "b5e54eeb288bfb18a7bfcee9a065faad1f5450c8dfa1d3018aee168f2ba8da6d",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Cumulative forest plot",
+            "name": "golden_amino_cumulative_forest.png",
+            "type": "png",
+            "sha256": "301d3c8991e36fbd751241160c2f7d8bf48d7269e605f237bae9dd7f77106c86",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "sequential-presentation-amino-binary-leave-one-out",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-leave-one-out"
+      ],
+      "affected_workflows": [
+        "amino-binary-leave-one-out"
+      ],
+      "reason": "User-requested leave-one-out table and forest redesign adds package k and I² columns. Historical estimates, intervals, SE and P remain independently compared.",
+      "approved_by": "Ali Salman: requested cumulative and leave-one-out functionality and presentation redesign, reviewed by Opus 5.5",
+      "approved_at": "2026-11-17",
+      "before_behavior": "Leave-one-out text and plots omitted per-fit k/I² columns.",
+      "after_behavior": "Reviewed leave-one-out tables and forests retain the all-studies reference and show explicit package k/I² columns.",
+      "follow_up": "Retain exact before/after text and artifact descriptor/SHA-256 bindings. Frozen archives, numerical contract and tolerances remain unchanged.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section Leave-one-out summary changed.",
+        "Artifact Leave-one-out forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_texts": {
+        "Leave-one-out summary": {
+          "before": "Binary Random-Effects Model\n\nMetric: Odds ratio\n\nModel Results\n Study omitted         Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value\n All studies              0.770                 0.485                 1.222           0.236    0.267\n Gonzalez, 1993           0.783                 0.477                 1.285           0.253    0.332\n Prins, 1993              0.796                 0.489                 1.296           0.249    0.359\n Giamarellou, 1991        0.811                 0.513                 1.281           0.233    0.369\n Maller, 1993             0.715                 0.437                 1.172           0.252    0.184\n Sturm, 1989              0.791                 0.494                 1.265           0.240    0.327\n Marik, 1991              0.864                 0.543                 1.375           0.237    0.538\n Muijsken, 1988           0.724                 0.446                 1.175           0.247    0.191\n Vigano, 1992             0.750                 0.468                 1.200           0.240    0.230\n Hansen, 1988             0.851                 0.542                 1.336           0.230    0.484\n De Vries, 1990           0.724                 0.449                 1.166           0.243    0.184\n Mauracher, 1989          0.813                 0.515                 1.283           0.233    0.375\n Nordstrom, 1990          0.772                 0.474                 1.257           0.249    0.298\n Rozdzinski, 1993         0.738                 0.442                 1.231           0.261    0.244\n Ter Braak, 1990          0.726                 0.443                 1.189           0.252    0.204\n Tulkens, 1988            0.764                 0.476                 1.227           0.242    0.266\n Van der Auwera, 1991     0.791                 0.494                 1.265           0.240    0.327\n Klastersky, 1977         0.696                 0.458                 1.059           0.214    0.091\n Vanhaeverbeek, 1993      0.764                 0.476                 1.226           0.242    0.265\n Hollender, 1989          0.780                 0.486                 1.253           0.241    0.304",
+          "after": "Binary Random-Effects Model\n\nMetric: Odds ratio\n\nLeave-one-out results\n Study omitted          k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (log scale)  p-value     I²\n All studies           19     0.770                 0.485                 1.222           0.236    0.267  46.0%\n Gonzalez, 1993        18     0.783                 0.477                 1.285           0.253    0.332  48.7%\n Prins, 1993           18     0.796                 0.489                 1.296           0.249    0.359  48.1%\n Giamarellou, 1991     18     0.811                 0.513                 1.281           0.233    0.369  45.1%\n Maller, 1993          18     0.715                 0.437                 1.172           0.252    0.184  43.9%\n Sturm, 1989           18     0.791                 0.494                 1.265           0.240    0.327  47.8%\n Marik, 1991           18     0.864                 0.543                 1.375           0.237    0.538  33.8%\n Muijsken, 1988        18     0.724                 0.446                 1.175           0.247    0.191  46.4%\n Vigano, 1992          18     0.750                 0.468                 1.200           0.240    0.230  48.0%\n Hansen, 1988          18     0.851                 0.542                 1.336           0.230    0.484  41.4%\n De Vries, 1990        18     0.724                 0.449                 1.166           0.243    0.184  46.1%\n Mauracher, 1989       18     0.813                 0.515                 1.283           0.233    0.375  44.8%\n Nordstrom, 1990       18     0.772                 0.474                 1.257           0.249    0.298  49.0%\n Rozdzinski, 1993      18     0.738                 0.442                 1.231           0.261    0.244  48.1%\n Ter Braak, 1990       18     0.726                 0.443                 1.189           0.252    0.204  46.8%\n Tulkens, 1988         18     0.764                 0.476                 1.227           0.242    0.266  49.0%\n Van der Auwera, 1991  18     0.791                 0.494                 1.265           0.240    0.327  47.8%\n Klastersky, 1977      18     0.696                 0.458                 1.059           0.214    0.091  33.2%\n Vanhaeverbeek, 1993   18     0.764                 0.476                 1.226           0.242    0.265  49.0%\n Hollender, 1989       18     0.780                 0.486                 1.253           0.241    0.304  48.6%"
+        }
+      },
+      "accepted_artifacts": {
+        "Leave-one-out forest plot": {
+          "before": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_amino_loo_forest.png",
+            "type": "png",
+            "sha256": "9408a45cddb603e7a9cc8a0c462018cc0936e560e36d284e27a969b16022e3b2",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_amino_loo_forest.png",
+            "type": "png",
+            "sha256": "0fa4128616a9e64f51bfb22bd32e514cd80b505ddc87694ddc10ebb0e503a3e8",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "sequential-presentation-continuous-cumulative",
+      "status": "accepted",
+      "ids": [
+        "continuous-cumulative"
+      ],
+      "affected_workflows": [
+        "continuous-cumulative"
+      ],
+      "reason": "User-requested sequential table and forest redesign: explicit study/step, package k and I² columns, with labelled omission/reference rows. Historical estimates, intervals, SE and P remain independently compared.",
+      "approved_by": "Ali Salman: requested cumulative and leave-one-out functionality and presentation redesign, reviewed by Opus 5.5",
+      "approved_at": "2026-11-17",
+      "before_behavior": "Sequential text and plots omitted per-fit k/I² columns and embedded cumulative k in study labels.",
+      "after_behavior": "Reviewed sequential tables and forests show explicit package k/I² columns and distinct added/omitted study labels.",
+      "follow_up": "Retain exact before/after text and artifact descriptor/SHA-256 bindings. Frozen archives, numerical contract and tolerances remain unchanged.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section Cumulative summary changed.",
+        "Artifact Cumulative forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_texts": {
+        "Cumulative summary": {
+          "before": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nModel Results\n Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n Carroll, 1997 (k = 1)     0.095                -0.264                 0.453                    0.183         \n Grant, 1981 (k = 2)       0.189                -0.059                 0.438                    0.127    0.136\n Peck, 1987 (k = 3)        0.232                 0.015                 0.449                    0.111    0.036\n Donat, 2003 (k = 4)       0.376                 0.091                 0.660                    0.145    0.010\n Stewart, 1990 (k = 5)     0.397                 0.169                 0.626                    0.116  < 0.001\n Young, 1995 (k = 6)       0.358                 0.152                 0.565                    0.105  < 0.001",
+          "after": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nCumulative results\n Step  Study added    k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value     I²\n 1     Carroll, 1997  1     0.095                -0.264                 0.453                    0.183    0.605   0.0%\n 2     Grant, 1981    2     0.189                -0.059                 0.438                    0.127    0.136   0.0%\n 3     Peck, 1987     3     0.232                 0.015                 0.449                    0.111    0.036   0.0%\n 4     Donat, 2003    4     0.376                 0.091                 0.660                    0.145    0.010  67.4%\n 5     Stewart, 1990  5     0.397                 0.169                 0.626                    0.116  < 0.001  56.5%\n 6     Young, 1995    6     0.358                 0.152                 0.565                    0.105  < 0.001  58.0%"
+        }
+      },
+      "accepted_artifacts": {
+        "Cumulative forest plot": {
+          "before": {
+            "label": "Cumulative forest plot",
+            "name": "golden_continuous_cumulative_forest.png",
+            "type": "png",
+            "sha256": "d2be03425d8543ff77e9e51e4ab91fce3051165064850bcfea0a3d99190cf63e",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Cumulative forest plot",
+            "name": "golden_continuous_cumulative_forest.png",
+            "type": "png",
+            "sha256": "241c77288a437dfb3b18c37464751039fa4b456385a8b06373c642dbd9cf504d",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "sequential-presentation-continuous-leave-one-out",
+      "status": "accepted",
+      "ids": [
+        "continuous-leave-one-out"
+      ],
+      "affected_workflows": [
+        "continuous-leave-one-out"
+      ],
+      "reason": "User-requested leave-one-out table and forest redesign adds package k and I² columns. Historical estimates, intervals, SE and P remain independently compared.",
+      "approved_by": "Ali Salman: requested cumulative and leave-one-out functionality and presentation redesign, reviewed by Opus 5.5",
+      "approved_at": "2026-11-17",
+      "before_behavior": "Leave-one-out text and plots omitted per-fit k/I² columns.",
+      "after_behavior": "Reviewed leave-one-out tables and forests retain the all-studies reference and show explicit package k/I² columns.",
+      "follow_up": "Retain exact before/after text and artifact descriptor/SHA-256 bindings. Frozen archives, numerical contract and tolerances remain unchanged.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Text section Leave-one-out summary changed.",
+        "Artifact Leave-one-out forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_texts": {
+        "Leave-one-out summary": {
+          "before": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nModel Results\n Study omitted  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value\n All studies       0.358                 0.152                 0.565                    0.105  < 0.001\n Carroll, 1997     0.411                 0.202                 0.621                    0.107  < 0.001\n Grant, 1981       0.370                 0.126                 0.615                    0.125    0.003\n Peck, 1987        0.353                 0.113                 0.593                    0.122    0.004\n Donat, 2003       0.254                 0.093                 0.416                    0.082    0.002\n Stewart, 1990     0.337                 0.094                 0.580                    0.124    0.007\n Young, 1995       0.397                 0.169                 0.626                    0.116  < 0.001",
+          "after": "Continuous Random-Effects Model\n\nMetric: Standardized mean difference\n\nLeave-one-out results\n Study omitted  k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value     I²\n All studies    6     0.358                 0.152                 0.565                    0.105  < 0.001  58.0%\n Carroll, 1997  5     0.411                 0.202                 0.621                    0.107  < 0.001  52.4%\n Grant, 1981    5     0.370                 0.126                 0.615                    0.125    0.003  64.3%\n Peck, 1987     5     0.353                 0.113                 0.593                    0.122    0.004  66.3%\n Donat, 2003    5     0.254                 0.093                 0.416                    0.082    0.002   0.0%\n Stewart, 1990  5     0.337                 0.094                 0.580                    0.124    0.007  66.3%\n Young, 1995    5     0.397                 0.169                 0.626                    0.116  < 0.001  56.5%"
+        }
+      },
+      "accepted_artifacts": {
+        "Leave-one-out forest plot": {
+          "before": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_continuous_loo_forest.png",
+            "type": "png",
+            "sha256": "153d1a34561a8d8c43c9483c1dfd3e9a3dc0080d5d444bf3441ced362de4f2d0",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_continuous_loo_forest.png",
+            "type": "png",
+            "sha256": "7a6eab9a61de0bc19eefe8e9e43fac7c63dcedff86e34cb4b563804a8cb68347",
+            "metadata": {}
+          }
+        }
+      }
     }
   ]
 }

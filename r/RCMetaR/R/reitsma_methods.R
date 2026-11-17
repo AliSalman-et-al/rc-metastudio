@@ -55,7 +55,7 @@ rcmetar.reitsma.correction.control <- function(policy) {
                      policy, paste(rcmetar.reitsma.correction.policies(), collapse=", ")), call.=FALSE))
 }
 
-rcmetar.reitsma.validate.counts <- function(diagnostic.data, min.studies=5L) {
+rcmetar.reitsma.validate.counts <- function(diagnostic.data) {
     if (!is(diagnostic.data, "DiagnosticData")) stop("DiagnosticData object expected.", call.=FALSE)
     fields <- c("TP", "FN", "FP", "TN")
     vals <- lapply(fields, function(x) slot(diagnostic.data, x))
@@ -71,26 +71,10 @@ rcmetar.reitsma.validate.counts <- function(diagnostic.data, min.studies=5L) {
     if (any(vals$TP + vals$FN <= 0) || any(vals$FP + vals$TN <= 0)) {
         stop("Each Reitsma study must have positive diseased and non-diseased denominators.", call.=FALSE)
     }
-    if (n < min.studies) stop(sprintf("Reitsma requires at least %d eligible studies; %d supplied.", min.studies, n), call.=FALSE)
     invisible(vals)
 }
 
-rcmetar.reitsma.fpr.to.specificity <- function(x) {
-    if (is.null(x)) return(NULL)
-    x <- as.numeric(x)
-    if (length(x) == 0L) return(x)
-    1 - x
-}
 
-rcmetar.reitsma.interval.to.specificity <- function(interval) {
-    if (is.null(interval)) return(NULL)
-    interval <- as.matrix(interval)
-    if (ncol(interval) != 2L) return(interval)
-    out <- cbind(1 - interval[, 2], 1 - interval[, 1])
-    rownames(out) <- rownames(interval)
-    colnames(out) <- colnames(interval)
-    out
-}
 
 # Keep the FPR-to-specificity ordering in one place.  Both the operating
 # point and marginal prediction intervals are reported as estimate/lower/upper
@@ -192,7 +176,7 @@ rcmetar.reitsma.estimator <- function(params) {
     candidate <- params$estimator %||% params$method %||% params$rm.method %||% "REML"
     method <- tolower(as.character(candidate[[1L]]))
     if (method %in% c("reml", "ml")) return(method)
-    # Generic meta-regression parameters commonly carry rm.method="DL".
+    # Generic meta-regression can carry a univariate rm.method.
     # Reitsma has its own estimator contract, so an absent Reitsma-specific
     # estimator means the documented REML default rather than a hard failure.
     if (!explicit) return("reml")
@@ -252,9 +236,10 @@ rcmetar.reitsma.display.interval <- function(interval, level, kind="CI", digits=
     )
     values <- c(interval[["estimate"]], interval[["lower"]], interval[["upper"]])
     display <- stats::setNames(vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits), labels)
-    rcmetar.numeric.fields(display, 1:3,
+    display <- rcmetar.numeric.fields(display, 1:3,
       c("estimate", if (kind == "PI") c("pi_lower", "pi_upper") else c("ci_lower", "ci_upper")),
       values, "proportion", c(NA, 100*level, 100*level))
+    rcmetar.table(display, if (kind == "PI") "prediction" else "pooled", vertical=TRUE)
 }
 
 rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
@@ -280,13 +265,14 @@ rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
     upper.label <- paste0("Upper bound (", rcmetar.reitsma.display.level(level), "% interval)")
     display[[lower.label]] <- vapply(ratios[rows, 3L], rcmetar.reitsma.display.number, character(1), digits=digits)
     display[[upper.label]] <- vapply(ratios[rows, 4L], rcmetar.reitsma.display.number, character(1), digits=digits)
-    rcmetar.numeric.fields(display, 1:4, rep("value", 4), ratios[rows, 1:4], header.row=FALSE)
+    display <- rcmetar.numeric.fields(display, 1:4, rep("value", 4), ratios[rows, 1:4], header.row=FALSE)
+    rcmetar.table(display, "supporting")
 }
 
 rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
     if (is.null(i2)) return(NULL)
     values <- c(
-        "Zhou-Dendukuri"=if (is.data.frame(i2)) i2[["Zhou"]] else i2[["Zhou"]],
+        "Zhou\u2013Dendukuri"=if (is.data.frame(i2)) i2[["Zhou"]] else i2[["Zhou"]],
         "Holling (unadjusted), method 1"=if (is.data.frame(i2)) i2[["HollingUnadjusted1"]] else NA_real_,
         "Holling (unadjusted), method 2"=if (is.data.frame(i2)) i2[["HollingUnadjusted2"]] else NA_real_,
         "Holling (unadjusted), method 3"=if (is.data.frame(i2)) i2[["HollingUnadjusted3"]] else NA_real_,
@@ -300,7 +286,8 @@ rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
         check.names=FALSE,
         row.names=NULL
     )
-    rcmetar.numeric.fields(display, 2L, "value", values, "proportion", header.row=FALSE)
+    display <- rcmetar.numeric.fields(display, 2L, "value", values, "proportion", header.row=FALSE)
+    rcmetar.table(display, "supporting")
 }
 
 rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {
@@ -308,7 +295,7 @@ rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {
     values <- if (is.data.frame(i2)) unlist(i2[1L, c("Zhou", "HollingUnadjusted1", "HollingUnadjusted2", "HollingUnadjusted3", "HollingAdjusted1", "HollingAdjusted2", "HollingAdjusted3")], use.names=FALSE) else numeric()
     if (length(values) != 7L || any(!is.finite(values))) return(NULL)
     list(
-        `Zhou-Dendukuri`=rcmetar.reitsma.display.percent(values[[1L]], digits),
+        "Zhou\u2013Dendukuri"=rcmetar.reitsma.display.percent(values[[1L]], digits),
         `Holling unadjusted range`=paste(rcmetar.reitsma.display.percent(min(values[2:4]), digits), "to", rcmetar.reitsma.display.percent(max(values[2:4]), digits)),
         `Holling adjusted range`=paste(rcmetar.reitsma.display.percent(min(values[5:7]), digits), "to", rcmetar.reitsma.display.percent(max(values[5:7]), digits))
     )
@@ -831,6 +818,16 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         `Summary specificity`=rcmetar.reitsma.display.interval(point$specificity, level, "CI", digits),
         `False-positive rate`=rcmetar.reitsma.display.interval(point$false.positive.rate, level, "CI", digits)
     )
+    if (!is.null(summary.point.display)) {
+        metrics <- c("Sens", "Spec", "FPR")
+        labels <- c("Sensitivity", "Specificity", "False-positive rate")
+        for (i in seq_along(summary.point.display)) {
+            metadata <- attr(summary.point.display[[i]], "rcms.table")
+            metadata$metric <- metrics[[i]]
+            metadata$metric_label <- labels[[i]]
+            attr(summary.point.display[[i]], "rcms.table") <- metadata
+        }
+    }
     prediction.display <- if (is.null(extracted$prediction)) NULL else list(
         description="Underlying new-study operating characteristics",
         intervals=lapply(extracted$prediction, rcmetar.reitsma.display.interval,
@@ -838,6 +835,14 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
     )
     if (!is.null(prediction.display))
         names(prediction.display$intervals) <- c("Sensitivity", "Specificity", "False-positive rate")
+    if (!is.null(prediction.display)) {
+        for (i in seq_along(prediction.display$intervals)) {
+            metadata <- attr(prediction.display$intervals[[i]], "rcms.table")
+            metadata$metric <- c("Sens", "Spec", "FPR")[[i]]
+            metadata$metric_label <- names(prediction.display$intervals)[[i]]
+            attr(prediction.display$intervals[[i]], "rcms.table") <- metadata
+        }
+    }
     summary <- list(
         "Clinical interpretation"=clinical.interpretation,
         "Summary operating point"=summary.point.display,
@@ -847,7 +852,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         "Diagnostic I-squared"=list(
             `I-squared summary`=rcmetar.reitsma.display.i2.summary(extracted$i2, digits),
             `I-squared estimates`=rcmetar.reitsma.display.i2(extracted$i2, digits),
-            Interpretation="I-squared is shown as percent unexplained heterogeneity; Zhou-Dendukuri and Holling are distinct estimators."
+            Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; Zhou\u2013Dendukuri and Holling are distinct estimators."
         ),
         "Model information"=model.info
     )
@@ -855,8 +860,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         AUC=extracted$auc[["AUC"]] %||% NULL,
         normalized.partial.AUC=extracted$auc[["pAUC"]] %||% NULL,
         full.FPR.bounds=c(0.01, 0.99), partial.FPR.bounds=extracted$partial.auc.bounds,
-        note="The Reitsma bivariate and HSROC models are equivalent parameterizations of the same threshold-aware diagnostic model; this does not imply a common threshold.",
-        `AUC confidence interval`="Not provided by mada::AUC(); no invented AUC CI."
+        `AUC confidence interval`="No confidence interval is available for the AUC."
     )
     if (!is.null(extracted$auc)) {
         desired.order <- c("Clinical interpretation", "Summary operating point",
@@ -865,6 +869,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         summary <- summary[intersect(desired.order, names(summary))]
     }
     plot.names <- if (length(rendered$images)) setNames("sroc", names(rendered$images)) else character()
+    attr(summary, "rcms.authority") <- "mada"
     sections <- list(list(
         id="diagnostic.reitsma.summary", kind="text", order=0L,
         title="Clinical interpretation", source_key="Summary"
@@ -920,7 +925,7 @@ diagnostic.reitsma.pretty.names <- function() list(
     digits=list(pretty.name="Display digits", description="Decimal places used for presentation."))
 
 diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
-    is(diagnostic.data, "DiagnosticData") && length(diagnostic.data@TP) >= 5L &&
+    is(diagnostic.data, "DiagnosticData") && length(diagnostic.data@TP) > 0L &&
         length(diagnostic.data@TP) == length(diagnostic.data@FN) &&
         length(diagnostic.data@TP) == length(diagnostic.data@FP) &&
         length(diagnostic.data@TP) == length(diagnostic.data@TN)
@@ -960,7 +965,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     covariates <- reg.data@covariates
     if (length(covariates) < 1L)
         stop("Reitsma meta-regression requires at least one selected moderator.", call.=FALSE)
-    counts <- rcmetar.reitsma.validate.counts(reg.data, min.studies=1L)
+    counts <- rcmetar.reitsma.validate.counts(reg.data)
     data <- data.frame(TP=counts$TP, FN=counts$FN, FP=counts$FP, TN=counts$TN,
                        stringsAsFactors=FALSE)
     moderators <- lapply(covariates, .rcmetar.reitsma.moderator, nrow(data))
@@ -976,10 +981,6 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     columns <- ncol(design)
     if (qr(design)$rank < columns)
         stop("Reitsma moderator design matrix is rank deficient; remove redundant moderators or levels.", call.=FALSE)
-    minimum <- max(5L, columns + 2L)
-    if (nrow(data) < minimum) stop(sprintf(
-        "Reitsma meta-regression requires at least %d eligible studies for %d model-matrix columns; %d supplied.",
-        minimum, columns, nrow(data)), call.=FALSE)
     list(data=data, counts=counts, terms=terms, model.terms=model.terms,
          coding=coding, formula=formula)
 }
@@ -1002,10 +1003,9 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
 }
 
 .rcmetar.reitsma.likelihood.ratio <- function(full, reduced, label) {
-    degrees <- attr(full$logLik, "df") - attr(reduced$logLik, "df")
-    statistic <- max(0, 2 * (as.numeric(full$logLik) - as.numeric(reduced$logLik)))
-    list(moderator=label, statistic=statistic, df=degrees,
-         p.value=stats::pchisq(statistic, df=degrees, lower.tail=FALSE))
+    result <- stats::anova(full, reduced)$statistic
+    list(moderator=label, statistic=unname(result[[1]]), df=unname(result[[2]]),
+         p.value=unname(result[[3]]))
 }
 
 .rcmetar.reitsma.ml.fit <- function(data, formula, adjust, control, label, prefix) {
@@ -1141,6 +1141,12 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
     spec.coefficients <- rcmetar.reitsma.restore.coefficient.labels(spec.coefficients, coding)
     sens.coefficients <- rcmetar.reitsma.add.reference.rows(sens.coefficients, coding)
     spec.coefficients <- rcmetar.reitsma.add.reference.rows(spec.coefficients, coding)
+    sens.coefficients <- rcmetar.table(sens.coefficients, "supporting", params)
+    spec.coefficients <- rcmetar.table(spec.coefficients, "supporting", params)
+    attr(sens.coefficients, "rcms.table")$coefficient_display <- TRUE
+    attr(spec.coefficients, "rcms.table")$coefficient_display <- TRUE
+    attr(sens.coefficients, "rcms.table")$coefficient_level <- 100*level
+    attr(spec.coefficients, "rcms.table")$coefficient_level <- 100*level
     likelihood <- .rcmetar.reitsma.likelihood.tests(
         data, formula, terms, model.terms, adjust, control)
     block.tests <- likelihood$blocks
@@ -1187,7 +1193,7 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
                       "Sensitivity coefficients"=sens.coefficients, "Specificity coefficients"=spec.coefficients,
                       "Residual diagnostic I-squared"=list(
                           `I-squared estimates`=rcmetar.reitsma.display.i2(sm$i2, digits),
-                          Interpretation="I-squared is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
+                          Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
                       ), "Moderator coding"=public.coding,
                       "Model information"=model.info),
          References=rcmetar.unique.references(rcmetar.method.references("reitsma"))))

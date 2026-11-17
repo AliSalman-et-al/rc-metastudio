@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Edit the presentation and output path of a generated plot."""
+"""Edit the presentation of a generated plot."""
 
 import math
 from typing import TYPE_CHECKING
@@ -15,7 +15,6 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
-    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -24,7 +23,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from rc_metastudio import adaptive_window, app_error_handler, plot_capabilities, qt_text
+from rc_metastudio import adaptive_window, analysis_identity, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -40,7 +39,6 @@ else:
     from rc_metastudio.forms.ui_edit_plot_dialog import Ui_EditPlotDialog
 
 
-PLOT_EDITOR_SAVE_FILTER = "Plot images (*.pdf *.png *.tif *.tiff *.svg);;All files (*)"
 FOREST_STYLE_LABELS = {
     "default": "Default",
     "revman": "RevMan",
@@ -56,6 +54,7 @@ FOREST_STYLE_DEFAULT_COLORS = {
 
 class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     applied = pyqtSignal()
+    rerun_requested = pyqtSignal()
 
     def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
         super(EditPlotDialog, self).__init__(parent)
@@ -64,13 +63,12 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._allow_close = True
         self._commit_outcome = None
         self._configure_accessibility()
-        self._hide_internal_plot_path_controls()
         configure_plot_text_inputs(self)
         self._loading_style = False
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
         if plot_type == "subgroup_forest":
-            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colours; their standard-forest layouts are unavailable for subgroups.", self)
+            note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
             self.style_layout.addWidget(note, self.style_layout.rowCount(), 0, 1, 2)
         self._is_reitsma_coefficient = bool(
@@ -80,31 +78,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "reitsma_coefficient" if self._is_reitsma_coefficient else plot_type
         )
         self._option_groups = plot_capabilities.option_groups(option_kind)
-        self.study_order = QComboBox(self)
-        self.study_order.setAccessibleName("Forest study order")
-        for label, key in (("Current table order", "table"), ("Year (earliest first)", "year"),
-                           ("Effect size (smallest first)", "effect"), ("Weight (largest first)", "weight")):
-            self.study_order.addItem(label, key)
-        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._params.get("fp_study_order", "table"))))
-        self.study_order.setEnabled(plot_type != "cumulative_forest")
-        self.study_order.setToolTip("Display order only; pooled estimates are unchanged. Cumulative analysis follows the input table sequence.")
-        self.study_order_label = QLabel("Study order", self)
-        self.study_order_label.setBuddy(self.study_order)
-        self.style_layout.addWidget(self.study_order_label, self.style_layout.rowCount(), 0)
-        self.style_layout.addWidget(self.study_order, self.style_layout.rowCount() - 1, 1)
+        self._setup_study_order()
         self._setup_axis_scale()
         self.default_panel.setTitle("Forest options")
-        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
-        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
-        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
-            field.setAccessibleName(label)
-            field.setPlaceholderText("Optional: Favours …")
-            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
-            field.setMaxLength(120)
-            caption = QLabel(label, self)
-            caption.setBuddy(field)
-            self.default_layout.addWidget(caption, row, 0)
-            self.default_layout.addWidget(field, row, 1)
+        self._setup_direction_labels()
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
@@ -122,15 +99,14 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             configure_plot_text_inputs(self)
 
         self.x_ticks_le.textChanged.connect(self._ticks_changed)
+        if self.plot_type == "sroc":
+            self.sroc_y_ticks.textChanged.connect(self._ticks_changed)
 
         self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         self.color_btn.clicked.connect(
             app_error_handler.safe_slot(self._choose_color, parent=self)
-        )
-        self.save_btn.clicked.connect(
-            app_error_handler.safe_slot(self._browse_image_path, parent=self)
         )
         self.style_cbo.currentTextChanged.connect(
             app_error_handler.safe_slot(self._style_changed, parent=self)
@@ -157,6 +133,56 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
 
+    def _setup_study_order(self):
+        self.study_order = QComboBox(self)
+        self.study_order.setAccessibleName("Forest study order")
+        cumulative = self.plot_type == "cumulative_forest"
+        options = analysis_identity.CUMULATIVE_SEQUENCES if cumulative else analysis_identity.LOO_ROW_ORDERS if self.plot_type == "leave_one_out_forest" else analysis_identity.FOREST_STUDY_ORDERS
+        for label, key in options:
+            self.study_order.addItem(label, key)
+        order = self._params.get("cum_sequence" if cumulative else "fp_study_order", "table")
+        self.study_order.setCurrentIndex(max(0, self.study_order.findData(self._scalar(order))))
+        self.study_order.setEnabled(not cumulative)
+        self.study_order.setToolTip("Changing the addition sequence requires rerunning the analysis." if cumulative else "Reorders rows only. Every fit and its estimates stay the same.")
+        self.study_order_label = QLabel("Studies added in" if cumulative else "Row order" if self.plot_type == "leave_one_out_forest" else "Study order", self)
+        self.study_order_label.setBuddy(self.study_order)
+        self.study_order.setAccessibleName(self.study_order_label.text())
+        row = self.style_layout.rowCount()
+        self.style_layout.addWidget(self.study_order_label, row, 0)
+        self.style_layout.addWidget(self.study_order, row, 1)
+        self.sequence_rerun = QPushButton("Change sequence and rerun…", self)
+        self.sequence_rerun.setVisible(cumulative)
+        self.sequence_rerun.setEnabled(False)
+        self.sequence_rerun.clicked.connect(self._request_sequence_rerun)
+        if cumulative:
+            note = QLabel("Changing the addition sequence requires rerunning the analysis.", self)
+            note.setWordWrap(True)
+            self.style_layout.addWidget(note, row + 1, 0, 1, 2)
+            self.style_layout.addWidget(self.sequence_rerun, row + 2, 1)
+        self.show_i2 = QCheckBox("Show I² column", self)
+        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
+        self.show_i2.setVisible(self.plot_type in {"cumulative_forest", "leave_one_out_forest"})
+        self.show_i2.setToolTip("Tables and reports always retain I² from each fitted subset.")
+        self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
+
+    def _setup_direction_labels(self):
+        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
+        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
+        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
+            field.setAccessibleName(label)
+            field.setPlaceholderText("Optional: Favours …")
+            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
+            field.setMaxLength(120)
+            caption = QLabel(label, self)
+            caption.setBuddy(field)
+            self.default_layout.addWidget(caption, row, 0)
+            self.default_layout.addWidget(field, row, 1)
+
+    def _request_sequence_rerun(self):
+        # Draft appearance goes into the new setup; Cancel leaves this result intact.
+        self.reject()
+        self.rerun_requested.emit()
+
     def _setup_axis_scale(self):
         self.axis_scale = QComboBox(self)
         self.axis_scale.setAccessibleName("Effect axis scale")
@@ -182,9 +208,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.setObjectName("plot_commit_error")
         self._commit_error.setWordWrap(True)
         style_inline_error(self._commit_error)
-        self._commit_error.setAccessibleName("Plot edit error")
+        self._commit_error.setAccessibleName("Could not update plot")
         self._commit_error.setAccessibleDescription(
-            "A plot edit could not be rendered. The last successful plot remains active."
+            "The change could not be drawn. The previous plot is still shown."
         )
         self._commit_error.hide()
         self.verticalLayout.insertWidget(
@@ -267,28 +293,40 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._commit_error.hide()
 
     def _validate_ticks(self, *, focus=True):
-        ticks = self.x_ticks_le.text().strip()
-        if ticks and ticks != "[default]":
-            values = []
-            try:
-                values = [float(token.strip()) for token in ticks.split(",")]
-                valid = all(math.isfinite(value) for value in values)
-            except ValueError:
-                valid = False
-            if not valid:
-                self.mark_commit_failed(
-                    "X-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
-                )
+        fields = [(self.x_ticks_le, "X")]
+        if self.plot_type == "sroc":
+            fields.append((self.sroc_y_ticks, "Y"))
+        for field, axis in fields:
+            ticks = field.text().strip()
+            if not ticks or ticks == "[default]":
+                continue
+            message = self._tick_error(ticks, axis)
+            if message:
+                self.mark_commit_failed(message)
                 if focus:
-                    self.x_ticks_le.setFocus()
-                return False
-            measure = str(self._scalar(self._params.get("measure", "")))
-            if self.plot_type not in {"regression", "sroc"} and measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and self.axis_scale.currentData() != "natural" and any(value <= 0 for value in values):
-                self.mark_commit_failed("X-axis ticks must be positive for a logarithmic effect axis.")
-                if focus:
-                    self.x_ticks_le.setFocus()
+                    field.setFocus()
                 return False
         return True
+
+    def _tick_error(self, ticks, axis):
+        try:
+            values = [float(token.strip()) for token in ticks.split(",")]
+            valid = all(math.isfinite(value) for value in values)
+        except ValueError:
+            valid = False
+        if not valid:
+            return f"{axis}-axis ticks must be comma-separated finite numbers, or leave blank for automatic ticks."
+        if self.plot_type == "sroc":
+            if any(value < 0 or value > 1 for value in values):
+                return f"{axis}-axis SROC ticks must lie between 0 and 1."
+            return ""
+        measure = str(self._scalar(self._params.get("measure", "")))
+        logarithmic = (self.plot_type != "regression" and
+                       measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"} and
+                       self.axis_scale.currentData() != "natural")
+        if logarithmic and any(value <= 0 for value in values):
+            return "X-axis ticks must be positive for a logarithmic effect axis."
+        return ""
 
     def _button_clicked(self, button):
         button_type = self.buttonBox.standardButton(button)
@@ -307,10 +345,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             return
         super().accept()
 
-    def _hide_internal_plot_path_controls(self):
-        """Keep the generated artifact path as implementation state only."""
-        for widget in (self.label_3, self.image_path, self.save_btn):
-            widget.hide()
 
     def _configure_option_groups(self):
         self.study_order.setVisible("forest" in self._option_groups)
@@ -349,7 +383,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_show_confidence = QCheckBox("Show confidence region", self._sroc_group)
         self.sroc_show_prediction = QCheckBox("Show joint prediction region", self._sroc_group)
         self.sroc_show_summary = QCheckBox("Show summary point", self._sroc_group)
-        self.sroc_show_auc = QCheckBox("Show normalized pAUC annotation", self._sroc_group)
+        self.sroc_show_auc = QCheckBox("Show normalized partial AUC annotation", self._sroc_group)
         self.sroc_show_curve_legend = QCheckBox(
             "Show curve legend", self._sroc_group
         )
@@ -380,7 +414,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             (self.sroc_show_confidence, "Show SROC confidence region", "Show or hide the confidence region."),
             (self.sroc_show_prediction, "Show SROC prediction region", "Show or hide the joint prediction region."),
             (self.sroc_show_summary, "Show SROC summary point", "Show or hide the summary point."),
-            (self.sroc_show_auc, "Show normalized pAUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
+            (self.sroc_show_auc, "Show normalized partial AUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
             (self.sroc_show_curve_legend, "Show SROC curve legend", "Show or hide the curve legend."),
             (self.sroc_show_marker_legend, "Show SROC marker-size legend", "Show or hide the marker-size legend."),
         ):
@@ -482,10 +516,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.show_summary_line.setChecked(
                 self._bool_param("fp_show_summary_line", True)
             )
-            self._set_text(
-                self.image_path,
-                image_path or self._params.get(self._param_name("outpath"), ""),
-            )
+            self._image_path = qt_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
             color = (
                 self._params.get(self._param_name("accent_color"))
                 or FOREST_STYLE_DEFAULT_COLORS[style]
@@ -571,20 +602,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     def _choose_color(self):
         current = QColor(self.accent_color.text())
-        color = QColorDialog.getColor(current, self, "Plot Accent Color")
+        color = QColorDialog.getColor(current, self, "Plot accent color")
         if color.isValid():
             self._set_accent_color(color.name())
 
-    def _browse_image_path(self):
-        plot_label = "SROC" if self.plot_type == "sroc" else self.plot_type.title()
-        selected_path, _selected_filter = QFileDialog.getSaveFileName(
-            self,
-            "Save %s Plot Image" % plot_label,
-            qt_text.to_native_text(self.image_path.text()),
-            PLOT_EDITOR_SAVE_FILTER,
-        )
-        if selected_path:
-            self.image_path.setText(selected_path)
 
     def _set_accent_color(self, color):
         text = str(color or FOREST_STYLE_DEFAULT_COLORS["default"])
@@ -653,6 +674,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         params = {
             "fp_style": style,
             "fp_axis_scale": self.axis_scale.currentData(),
+            "fp_show_i2": self.show_i2.isChecked(),
             "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
             "fp_favours_left": self.favours_left.text().strip(),
             "fp_favours_right": self.favours_right.text().strip(),
@@ -674,7 +696,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_plot_ub": self._automatic_value(self.plot_ub_le),
             "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
-            "fp_outpath": qt_text.to_native_text(self.image_path.text()),
+            "fp_outpath": self._image_path,
         }
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:
@@ -692,7 +714,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 "bp_show_confidence_band": self.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": self.show_prediction_interval.isChecked(),
                 "bp_show_legend": self.show_legend.isChecked(),
-                "bp_outpath": qt_text.to_native_text(self.image_path.text()),
+                "bp_outpath": self._image_path,
             }
             regression_display_path = self._scalar(
                 self._params.get("bp_display_path", "")

@@ -79,7 +79,7 @@ def numeric_value(value):
     number, valid = qt_text.parse_decimal(value)
     if not valid:
         raise ValueError(
-            "Enter an unambiguous finite number using '.' or ',' as decimal separator."
+            "Enter a finite number using a decimal point or decimal comma."
         )
     return number
 
@@ -96,19 +96,19 @@ def validate_confidence_interval_order(est=None, low=None, high=None):
     comparison_result = less_than_if_numeric(low, est)
     comparison_is_available = True if comparison_result is not None else False
     if comparison_is_available and not comparison_result:
-        error_message = "The lower CI must be less than the point estimate!"
+        error_message = "The lower limit must be below the estimate."
         return False, error_message
 
     comparison_result = less_than_if_numeric(est, high)
     comparison_is_available = True if comparison_result is not None else False
     if comparison_is_available and not comparison_result:
-        error_message = "The higher CI must be greater than the point estimate!"
+        error_message = "The upper limit must be above the estimate."
         return False, error_message
 
     comparison_result = less_than_if_numeric(low, high)
     comparison_is_available = True if comparison_result is not None else False
     if comparison_is_available and not comparison_result:
-        error_message = "The lower CI must be less than the higher CI!"
+        error_message = "The lower limit must be below the upper limit."
         return False, error_message
 
     return True, None
@@ -358,7 +358,7 @@ def validate_calculator_input(
     try:
         parsed_value = numeric_value(new_text)
     except ValueError:
-        QMessageBox.warning(parent, "Warning", "Must be numeric!")
+        QMessageBox.warning(parent, "Warning", "Enter a number.")
         raise Exception("error")
     if not additional_validator:  # est, lower, upper
         if confidence_bound is None:

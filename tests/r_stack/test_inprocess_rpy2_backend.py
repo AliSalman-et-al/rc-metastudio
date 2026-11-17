@@ -67,7 +67,7 @@ _DRIVER = textwrap.dedent(
                 "metric": "Sens",
                 "params": {"measure": "Sens"},
             }],
-            diagnostic_data_name="workflow_data",
+            data=ro.globalenv["workflow_data"],
         )
     except r_bridge.DiagnosticExecutionError as exc:
         assert "workflow execution failed" in str(exc)
@@ -160,7 +160,7 @@ _DRIVER = textwrap.dedent(
         ]
 
     binary_model = FakeModel("binary", [[6, 27, 9, 27], [3, 59, 7, 64]])
-    r_bridge.dataset_to_simple_binary_r_object(binary_model, var_name="issue146_binary")
+    ro.globalenv["issue146_binary"] = r_bridge.dataset_to_simple_binary_r_object(binary_model)
     assert_text_survived("issue146_binary")
     assert list(ro.r("issue146_binary@g1O1")) == [6, 3]
     assert list(ro.r("issue146_binary@g1O2")) == [21, 56]
@@ -170,10 +170,7 @@ _DRIVER = textwrap.dedent(
         [[27, 5.1, 1.2, 27, 6.2, 1.5], [59, 3.4, 0.9, 64, 4.1, 1.1]],
         effect="MD",
     )
-    r_bridge.dataset_to_simple_continuous_r_object(
-        continuous_model,
-        var_name="issue146_continuous",
-    )
+    ro.globalenv["issue146_continuous"] = r_bridge.dataset_to_simple_continuous_r_object(continuous_model)
     assert_text_survived("issue146_continuous")
     assert list(ro.r("issue146_continuous@N1")) == [27, 59]
     # The production forest renderer cannot compose a study label from a
@@ -185,6 +182,8 @@ _DRIVER = textwrap.dedent(
     os.makedirs(analysis_dir)
     forest_path = os.path.join(analysis_dir, "forest.png")
     forest_display_path = os.path.join(analysis_dir, "forest.display.svg")
+    # Discovery owns its object and cannot replace the converted continuous input.
+    r_bridge.get_available_methods(for_data_type="binary", data=ro.globalenv["issue146_binary"], metric="OR")
     continuous_result = r_bridge.run_versioned_analysis_request(
         {
             "version": 1,
@@ -217,7 +216,7 @@ _DRIVER = textwrap.dedent(
                 "write.to.file": False,
             },
         },
-        data_name="issue146_continuous",
+        data=ro.globalenv["issue146_continuous"],
     )
     forest_section = next(
         section
@@ -332,7 +331,6 @@ _DRIVER = textwrap.dedent(
     try:
         r_bridge.dataset_to_simple_diagnostic_r_object(
             diagnostic_model,
-            var_name="failed_diagnostic",
         )
     except r_bridge.DiagnosticExecutionError as exc:
         assert "diagnostic conversion failed" in str(exc)
@@ -341,9 +339,8 @@ _DRIVER = textwrap.dedent(
     finally:
         r_bridge.execute_r_function = original_execute_r_function
 
-    r_bridge.dataset_to_simple_diagnostic_r_object(
+    ro.globalenv["issue146_diagnostic"] = r_bridge.dataset_to_simple_diagnostic_r_object(
         diagnostic_model,
-        var_name="issue146_diagnostic",
     )
     assert_text_survived("issue146_diagnostic")
 
@@ -454,18 +451,18 @@ _DRIVER = textwrap.dedent(
         if previous_scratch_dir is not None:
             os.environ["RCMS_ANALYSIS_SCRATCH_DIR"] = previous_scratch_dir
         assert "Sensitivity coefficients" in diagnostic_meta_result.texts
-    assert list(ro.r("tmp_obj@study.names")) == [
+    assert list(ro.r("result$input_data@study.names")) == [
         "Included 1",
         "Included 2",
         "Included 3",
         "Included 4",
         "Included 5",
     ]
-    assert list(ro.r("tmp_obj@TP")) == [10, 12, 8, 15, 11]
-    assert list(ro.r("tmp_obj@FN")) == [5, 4, 7, 3, 6]
-    assert list(ro.r("tmp_obj@FP")) == [4, 6, 5, 8, 7]
-    assert list(ro.r("tmp_obj@TN")) == [10, 10, 13, 9, 12]
-    assert list(ro.r("tmp_obj@covariates[[1]]@cov.vals")) == [1, 2, 3, 4, 5]
+    assert list(ro.r("result$input_data@TP")) == [10, 12, 8, 15, 11]
+    assert list(ro.r("result$input_data@FN")) == [5, 4, 7, 3, 6]
+    assert list(ro.r("result$input_data@FP")) == [4, 6, 5, 8, 7]
+    assert list(ro.r("result$input_data@TN")) == [10, 10, 13, 9, 12]
+    assert list(ro.r("result$input_data@covariates[[1]]@cov.vals")) == [1, 2, 3, 4, 5]
 
     invalid_confidence_level_checks = ro.r('''
       c(
@@ -712,6 +709,7 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
         notes=paste0("Interval ", intToUtf8(0x2264), " 1 ", intToUtf8(0x2013), " preserved")
       ), class="summary.display")
     ''')
+    unicode_summary = ro.r['get']('rcmetar.supporting.tables', envir=ro.r['asNamespace']('RCMetaR'))(unicode_summary)
     unicode_before = r_bridge.parse_out_results(ro.r.list(Summary=unicode_summary)).texts["Summary"]
     old_locale = str(ro.r('Sys.getlocale("LC_CTYPE")')[0])
     try:

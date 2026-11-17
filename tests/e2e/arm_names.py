@@ -1,5 +1,6 @@
 """Outcome/arm naming through the real wizard, model, calculators and output."""
 import csv
+import subprocess
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -47,11 +48,13 @@ def run(app, window, work, record):
             if family.startswith("twoarm") and style != "revman":
                 view = analyze_existing(app, window, "standard", DATA_TYPES[family][1]+".random", record, {"fp_style":style})
             check_report(app, view, work, record)
-            text = view.report_text.toPlainText()
+            text = view.manuscript_text.toPlainText()
             assert "[default]" not in text, text
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
-                assert comparison in app.clipboard().text(), app.clipboard().text()
+                assert " vs ".join(expected) in view.result_facts.accessibleDescription(), view.result_facts.accessibleDescription()
+                exported = subprocess.check_output(['pdftotext', '-enc', 'UTF-8', str(work / 'round3-report.pdf'), '-'], text=True, encoding='utf-8')
+                assert comparison in ' '.join(exported.split()), exported
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text
                 else:
@@ -62,9 +65,7 @@ def run(app, window, work, record):
                     export = work / f"arms-{case}-{style}.svg"
                     view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(export))
                     assert all(name in export.read_text(encoding="utf-8") for name in expected)
-            if expected[0] == "Group":
-                assert "Group: Group" not in view.results.identity, view.results.identity
-            else:
+            if expected[0] not in {"Group", "Index test"}:
                 assert expected[0] in view.results.identity, view.results.identity
             (work/f"arms-{case}-{style}-report.txt").write_text(app.clipboard().text(), encoding="utf-8")
             record("round5-arm-report", view, case=case, style=style, groups=expected, plots=dict(view.results.display_images))

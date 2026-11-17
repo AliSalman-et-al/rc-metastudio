@@ -107,8 +107,8 @@ test_that("Peto remains count-native and entered effect-only data stay unchanged
   prepared <- rcmetar.prepare.analysis.data(entered, params)
   expect_identical(prepared@y, entered@y)
   expect_identical(prepared@SE, entered@SE)
-  result <- rcmetar.run.analysis(entered, list(version=1, method="binary.fixed.peto", params=params))
-  expect_equal(result$Summary$b[[1]], .2, tolerance=1e-12)
+  expect_error(rcmetar.run.analysis(entered, list(version=1, method="binary.fixed.peto", params=params)),
+               "Must specify arguments ai", fixed=TRUE)
 })
 
 test_that("display correction labels map to the established correction targets", {

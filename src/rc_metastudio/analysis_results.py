@@ -7,10 +7,13 @@ from __future__ import annotations
 from rc_metastudio.result_formatting import sentence_case_title
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from types import MappingProxyType
-from typing import Literal, TypedDict, get_args
+from typing import Literal, TypedDict, get_args, cast
 import math
+
+
+NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 
 
 PlotKind = Literal[
@@ -58,6 +61,10 @@ class RawAnalysisResult(TypedDict, total=False):
 QuantityRole = Literal['estimate', 'ci_lower', 'ci_upper', 'pi_lower', 'pi_upper',
                        'se', 'statistic', 'df', 'df2', 'p', 'q', 'i2', 'tau2', 'k', 'weight', 'value']
 QuantityScale = Literal['display', 'log', 'logit', 'arcsine', 'freeman-tukey', 'percent', 'proportion', '']
+TableRole = Literal['pooled', 'coefficients', 'heterogeneity', 'residual_heterogeneity',
+                    'overall_test', 'subgroup_test', 'model_fit', 'model_tests',
+                    'model_specification', 'calculation', 'study_results',
+                    'cumulative', 'leave_one_out', 'prediction', 'supporting']
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,13 +93,38 @@ class ResultTable:
     headers: tuple[str, ...]
     rows: tuple[tuple[str, ...], ...]
     quantities: tuple[tuple[tuple[Quantity, ...], ...], ...] = ()
+    role: TableRole = field(kw_only=True)
+    metric: str = ''
+    metric_label: str = ''
+    workflow: str = ''
+    inference: str = ''
+    vertical: bool = False
+    label_column: int | None = None
 
     def __post_init__(self) -> None:
-        if self.quantities and (len(self.quantities) != len(self.rows) or any(
-                len(row) != len(self.headers) or any(
-                    not isinstance(cell, tuple) or any(not isinstance(q, Quantity) for q in cell)
-                    for cell in row) for row in self.quantities)):
+        if self.role not in get_args(TableRole):
+            raise ValueError('unknown or missing result table role')
+        if self.inference not in ('', 'z', 't', 'knha', 'adhoc'):
+            raise ValueError('unknown result table inference')
+        if any(not isinstance(value, str) for value in (self.metric, self.metric_label, self.workflow)):
+            raise ValueError('result table context must be text')
+        if type(self.vertical) is not bool or (self.label_column is not None and (
+                type(self.label_column) is not int or not 0 <= self.label_column < len(self.headers))):
+            raise ValueError('invalid result table layout')
+        _validate_table_quantities(self.quantities, len(self.rows), len(self.headers))
+
+
+def _validate_table_quantities(quantities, height, width):
+    if not quantities:
+        return
+    if len(quantities) != height:
+        raise ValueError('result quantity shape must match the displayed table')
+    for row in quantities:
+        if len(row) != width:
             raise ValueError('result quantity shape must match the displayed table')
+        for cell in row:
+            if not isinstance(cell, tuple) or any(not isinstance(q, Quantity) for q in cell):
+                raise ValueError('result quantity shape must match the displayed table')
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,6 +170,24 @@ class AnalysisResult:
     manuscript_arms: tuple[str, ...] = ()
     manuscript_favours: tuple[str, ...] = ()
     manuscript_model_info: tuple[tuple[str, str], ...] = ()
+    inference_methods: tuple[str, ...] = ()
+
+
+def normalize_analysis_result(result: AnalysisResult) -> AnalysisResult:
+    """Fold display metadata into configuration before preparing any report."""
+    details = result.details
+    inference = result.texts.get("Inference Method")
+    if inference:
+        lines = [line for line in details.splitlines() if not line.startswith("Inference:")]
+        lines.append("Inference: " + inference)
+        details = "\n".join(lines)
+    texts = {key: value for key, value in result.texts.items() if key != "Inference Method"}
+    sections = tuple(section for section in result.sections if section.source_key != "Inference Method")
+    if not texts and not result.images:
+        texts["No Results"] = NO_RESULTS_MESSAGE
+        sections += (ResultSection("result.none", "text", 0, "No results", NO_RESULTS_MESSAGE, "No Results"),)
+    return replace(result, details=details, texts=MappingProxyType(texts), sections=sections)
+
 
 def _sections(
     texts: Mapping[str, str],
@@ -263,7 +313,11 @@ def _report_table_entry(entry):
     quantities = table_fields.get('quantities', ())
     if not isinstance(quantities, (tuple, list)):
         raise ValueError('report quantities must be nested sequences')
-    return ResultTable(title, tuple(headers), parsed_rows, _report_quantities(quantities))
+    return ResultTable(title, tuple(headers), parsed_rows, _report_quantities(quantities),
+                       role=cast(TableRole, table_fields.get('role')),
+                       metric=cast(str, table_fields.get('metric', '')), metric_label=cast(str, table_fields.get('metric_label', '')),
+                       workflow=cast(str, table_fields.get('workflow', '')), inference=cast(str, table_fields.get('inference', '')),
+                       vertical=cast(bool, table_fields.get('vertical', False)), label_column=cast(int | None, table_fields.get('label_column')))
 
 
 def _section_fields(
@@ -364,7 +418,7 @@ def parse_analysis_result(value: object) -> AnalysisResult:
             "Display artifacts have no matching plot artifact: %s"
             % ", ".join(extra_display_images)
         )
-    return _freeze_result(
+    result = _freeze_result(
         raw["texts"],
         raw["images"],
         raw["display_images"],
@@ -374,6 +428,11 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         capabilities,
         raw["sections"],
     )
+    software = source.get('software', '')
+    inference = _optional_string_list(source.get('inference_methods', []), 'executed inference methods') or []
+    if not isinstance(software, str) or any(code not in ('z', 't', 'knha', 'adhoc') for code in inference):
+        raise ValueError('invalid executed analysis metadata')
+    return replace(result, software=software, inference_methods=tuple(inference))
 
 
 def _result_version(value: object) -> int:

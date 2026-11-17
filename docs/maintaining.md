@@ -29,6 +29,12 @@ uv run python scripts/verify.py fast
 uv run python scripts/verify.py r-stack
 ```
 
+Run the affected local checks before committing. Before pushing, run
+`uv run python scripts/verify.py pre-push` after committing so its code-health
+check measures the committed revision. Analysis and R-boundary changes also
+need the [full real-R and desktop qualification](../.agents/skills/verify-rcms/SKILL.md).
+The pre-push gate does not replace that lane.
+
 Use the pinned development tool to review unused Python code:
 
 ```powershell
@@ -146,8 +152,10 @@ bash scripts/package-linux.sh
 The command writes `artifacts/RCMetaStudio-linux-x64.tar.gz`. The archive
 contains the application, private R runtime, and `LaunchRCMetaStudio.sh`.
 Other Linux distributions are not part of the release qualification baseline.
+The [packaged smoke requirements](verification/linux-packaged-smoke-fix.md)
+describe the native startup and bundled-runtime checks.
 
-## Work with generated Qt code
+## Workspace and import limits
 
 Workspace history retains the latest 100 committed edits. An operation that raises
 restores its pre-operation snapshot; selecting a sheet does not create an edit or
@@ -158,12 +166,14 @@ XLSX import accepts worksheet extents up to 100,000 rows, 512 columns and
 extent. Trim unused worksheet rows/columns before importing a file above those
 limits. Formula imports use saved values and still require saving in Excel first.
 
+## Work with generated Qt code
+
 Files under `src/rc_metastudio/forms/*.ui` are the editable form sources. Generated Python modules belong under the selected build directory and must not be committed. `scripts/build_qt6.py generate` compiles forms and resources before tests, typing, or packaging.
 
 ## Repository layout
 
-See [file names and ownership](file-ownership.md) for responsibility boundaries,
-the internal rename ledger and the contracts retained during migration.
+See [file names and ownership](file-ownership.md) for detailed module
+responsibilities, relocation rules and public contracts.
 
 - `src/rc_metastudio`: application code and packaged resources
 - `r/RCMetaR`: bundled statistical package
@@ -175,15 +185,33 @@ the internal rename ledger and the contracts retained during migration.
 
 Keep machine-readable contracts beside their consumer. Keep frozen test data under `tests`, not under `docs`.
 
+## Where a change belongs
+
+Use the same map for human and agent work. Start at the boundary responsible for the behavior, then follow its callers. A large file is not by itself a reason to split it.
+
+| Responsibility | Main owners | Contract to preserve |
+| --- | --- | --- |
+| Workspace changes and undo/redo | `workspace_session.py`, `workspace_editing.py`, `dataset_table_model.py` | Stable sheet and row identities, atomic edits and rollback. |
+| Project persistence | `project_format.py`, `project_adapter.py`, project schemas | Safe archives, durable saves and supported older-project migration. |
+| Analysis configuration and execution | `analysis_setup_dialog.py`, `analysis_adapter.py`, `r_bridge.py`, `r/RCMetaR` | Included data, selected inputs and methods, real R execution and package authority. |
+| Results and written output | `analysis_results.py`, `result_formatting.py`, `manuscript_report.py` | Exact numerical quantities, interval levels, interpretation and complete report content. |
+| Plot editing and export | `plot_service.py`, plot editor dialogs and RCMetaR plot producers | Saved plot parameters, original output preservation on failure, readable decoded exports. |
+| Qt forms and shared behavior | `forms/*.ui`, `qt_layout.py`, form manifest and generator | Editable Designer sources, generated files outside source, keyboard and native layout behavior. |
+| Verification and releases | `scripts/verify.py`, verification feature maps, `packaging/`, workflows | Repeatable inputs and commands, pinned runtime identity and platform-specific qualification. |
+
+Python filenames above are under `src/rc_metastudio/`. Read [CONTEXT.md](../CONTEXT.md) and the relevant [architecture decisions](adr/) before changing a cross-boundary assumption. The [project-format reference](project-format.md), [testing guide](testing.md) and [verification feature map](../.agents/skills/verify-rcms/features/README.md) hold the detailed contracts.
+
+Do not move statistical policy into a widget or reconstruct exact numbers from displayed text. Before a behavior change, identify a real workflow or failure case that can distinguish the old and intended behavior. Migrate callers to the new owner and remove the superseded route in the same change.
+
 ## Change versions
 
 Use the version command so Python, RCMetaR, the lockfile, and changelog stay aligned:
 
 ```powershell
-uv run python scripts/bump_version.py 0.2.4
+uv run python scripts/bump_version.py VERSION
 ```
 
-Review the generated changelog heading and complete its release notes before publishing. See [Releasing RC MetaStudio](release.md) for the hosted build and promotion steps.
+Replace `VERSION` with the intended release version. Review the generated changelog heading and complete its release notes before publishing. See [Releasing RC MetaStudio](release.md) for the hosted build and promotion steps.
 
 ## License notices
 

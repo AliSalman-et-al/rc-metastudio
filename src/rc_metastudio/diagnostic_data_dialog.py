@@ -387,10 +387,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     int_val = int(calculator_controls.numeric_value(text))
                 return int_val
         except (ArithmeticError, TypeError, ValueError) as exc:
-            msg = "Could not convert %s to integer" % self.two_by_two_table.item(i, j)
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Invalid count", "Enter a whole number for each count.")
             raise ValueError(
-                "Could not convert %s to int" % self.two_by_two_table.item(i, j)
+                "Invalid diagnostic count: %r" % text
             ) from exc
 
     def cell_data_invalid(self, celldata_string):
@@ -401,10 +400,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         try:
             value = calculator_controls.numeric_value(celldata_string)
         except ValueError:
-            return "Raw data needs to be numeric."
+            return "Enter a number."
 
         if not value.is_integer():
-            return "Expected a whole number (count), but a decimal value was entered."
+            return "Counts must be whole numbers."
 
         if value < 0:
             return "Counts cannot be negative."
@@ -586,29 +585,26 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         counts = self.get_raw_diagnostic_data()
         tp, fn, fp, tn = counts["TP"], counts["FN"], counts["FP"], counts["TN"]
 
-        can_calculate_sens, can_calculate_spec = True, True
-        if None in [tp, fn]:
-            can_calculate_sens = False
-            tp, fn = 0, 0
-        if None in [tn, fp]:
-            can_calculate_spec = False
-            tn, fp = 0, 0
-
-        ests_and_cis = self.calculator.diagnostic_effects_for_study(
-            tp,
-            fn,
-            fp,
-            tn,
-            metrics=DIAGNOSTIC_METRICS,
-            confidence_level=self.confidence_level,
-        )
-
+        sens_ready = tp is not None and fn is not None and tp + fn > 0
+        spec_ready = fp is not None and tn is not None and fp + tn > 0
+        metrics = [metric for metric in DIAGNOSTIC_METRICS
+                   if _diagnostic_metric_ready(metric, sens_ready, spec_ready)]
         for metric in DIAGNOSTIC_METRICS:
-            if metric.lower() == "sens" and not can_calculate_sens:
-                continue
-            elif metric.lower() == "spec" and not can_calculate_spec:
-                continue
-
+            self.analysis_unit.set_derived_effect_preview(
+                metric, self.arm_key, None, None, None,
+                confidence_multiplier=self.confidence_multiplier,
+            )
+        if not metrics:
+            return
+        # Missing counts are never used for a requested metric. The unused side
+        # uses neutral positive placeholders so it cannot trigger a continuity
+        # correction in the available component. Stored missing counts stay blank.
+        ests_and_cis = self.calculator.diagnostic_effects_for_study(
+            tp if tp is not None else 1, fn if fn is not None else 1,
+            fp if fp is not None else 1, tn if tn is not None else 1,
+            metrics=metrics, confidence_level=self.confidence_level,
+        )
+        for metric in metrics:
             est, lower, upper = self.calculator.effect_triplet(
                 ests_and_cis[metric],
                 "calc_scale",
@@ -963,6 +959,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self.analysis_unit.set_effect_for_source(
                 "entered", metric, self.arm_key, None, None, None
             )
+        self.impute_effects_in_analysis_unit()
 
         # clear line edits
         self.set_current_effect()
@@ -1103,3 +1100,11 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def redo(self):
         self._field_history.redo()
+
+
+def _diagnostic_metric_ready(metric, sensitivity_ready, specificity_ready):
+    if metric == "Sens":
+        return sensitivity_ready
+    if metric == "Spec":
+        return specificity_ready
+    return sensitivity_ready and specificity_ready

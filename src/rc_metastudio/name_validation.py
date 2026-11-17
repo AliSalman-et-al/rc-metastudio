@@ -19,7 +19,7 @@ def required_message(entity):
 
 def duplicate_message(entity, name):
     article = "An" if entity[0].lower() in "aeiou" else "A"
-    return "%s %s named %s already exists. Please pick another name." % (
+    return "%s %s named “%s” already exists. Choose another name." % (
         article,
         entity,
         name,

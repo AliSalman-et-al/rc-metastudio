@@ -2,7 +2,39 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## 0.5.5 - Unreleased
+## 0.5.6 - Unreleased
+
+### Added
+
+- Added persistent System, Light and Dark appearance choices.
+- Added a shared plot-export dialog with format, proportional dimensions, units and raster resolution controls.
+- Added a native citation dialog with copying and BibTeX, RIS and EndNote exports.
+- Added cumulative sequencing by publication year or study effect, leave-one-out ordering by the pooled effect or I² after omission, and per-fit k/I² forest columns.
+
+### Changed
+
+- Consolidated the Results text pages into one formatted Text report with section navigation and model configuration.
+- Improved About with a legible logo, runtime versions, website link and copyable debug information.
+- Standardized application copy, report intervals, statistical headings and numbered citations; made the RC MetaStudio Zenodo citation the first reference.
+- Removed redundant report tables, obsolete controls, unreachable dialogs and unused Python and R helpers.
+- Replaced repetitive sequential Results prose with concise summaries and complete labelled tables; added all-studies reference fits to HR/IRR leave-one-out analyses.
+- Simplified Results headers with compact estimator names and test labels; kept package attribution in Methods and References.
+- Corrected theme-switch contrast, SVG namespaces and original-resolution handling for raster-only plots.
+
+### Fixed
+
+- Corrected diagnostic method availability, partial-count calculator previews, SROC axis validation and imported missing counts.
+- Removed application-specific statistical limits and restored package defaults, singleton inference and Mantel–Haenszel pooling.
+- Made small-study minimum studies configurable, retained package warnings and corrected report summaries and citations.
+- Kept Results navigation compact across repeated opens while preserving manual resizing.
+
+### Corrected results
+
+- Peto analyses now follow metafor's default exclusion of double-zero studies from individual effects and heterogeneity estimation. Pooled estimates and standard errors are unchanged, but heterogeneity degrees of freedom, P values and I² can change. Rerun affected Peto analyses and re-export their reports.
+- Mantel–Haenszel and Peto reports and forest plots now show the package's heterogeneity degrees of freedom when some study effects are not estimable.
+- New random-effects analyses default to REML. Diagnostic Mantel–Haenszel pooling now uses original counts, and inverse-variance IRR analyses retain double-zero studies with the configured correction. These changes can alter results; rerun affected analyses and re-export reports. Saved explicit estimator choices remain in effect.
+
+## 0.5.5 - 2026-11-16
 
 ### Added
 
@@ -14,7 +46,7 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Improved Results wording, preserved producer precision and clarified diagnostic summaries, subgroup comparisons and analysis scales.
 - Kept funnel plots as SVG with corrected Qt clipping and improved PDF and DOCX report layout.
 
-## 0.5.4 - Unreleased
+## 0.5.4 - 2026-11-14
 
 ### Corrected
 
