@@ -109,11 +109,6 @@ def _open_data_dialog(
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "diagnostic_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )

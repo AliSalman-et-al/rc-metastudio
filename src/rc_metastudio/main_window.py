@@ -309,7 +309,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.hide()
 
         self._setup_sheet_strip()
-        self.sheet_tabs.currentChanged.connect(self._select_sheet_tab)
+        self.sheet_tabs.currentChanged.connect(app_error_handler.safe_slot(self._select_sheet_tab, parent=self))
         self.sheet_tabs.orderChanged.connect(app_error_handler.safe_slot(self._save_sheet_order, parent=self))
         self.sheet_tabs.tabBarDoubleClicked.connect(self._rename_sheet)
         self.sheet_tabs.customContextMenuRequested.connect(self._sheet_menu)
@@ -940,10 +940,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         def apply_metric():
             self.model.set_current_metric(metric_name)
-            self.model.hydrate_derived_previews()
+            self.model.reset_model(refresh_previews=True)
 
         self._commit_model_operation(apply_metric)
-        self.model.reset_model()
         self.tableView.synchronize_column_widths()
         self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
@@ -986,7 +985,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form = add_new_dialogs.AddCovariateDialog(self, existing_names=self.model.get_covariate_names())
         form.covariate_name_le.setFocus()
         if form.exec():
-            # then the user clicked 'ok'.
             try:
                 new_covariate_name = dataset_table_model.validate_new_covariate_name(
                     self.model, form.covariate_name_le.text()
@@ -995,7 +993,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 QMessageBox.warning(self, "Warning", str(exc))
                 return
 
-            # Covariate names must remain unique.
             new_covariate_type = str(form.datatype_cbo_box.currentData())
             self._commit_model_operation(
                 lambda: self._add_new_covariate(new_covariate_name, new_covariate_type)
@@ -1077,9 +1074,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.model = model
         self.tableView.restore_model(model)
         self._setup_connections(menu_actions=False)
-        self.tableView._enable_analysis_menus_if_appropriate()
-        self._refresh_advanced_analysis_actions()
-        self.populate_metrics_menu(metric_to_check=model.current_effect)
+        self._refresh_projected_sheet_controls()
         selection_model = required(
             self.tableView.selectionModel(), "workspace selection model"
         )
@@ -1354,8 +1349,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet_id = self.sheet_tabs.tabData(index)
         if sheet_id == self.model.current_sheet_id:
             return
-        self.model_updated(sheet_id=sheet_id)
+        try:
+            self.model.set_current_sheet(sheet_id, refresh_previews=True)
+        except Exception:
+            self._refresh_sheet_tabs()
+            raise
         self.workspace.select_sheet(sheet_id)
+        self._refresh_projected_sheet_controls()
         self._update_workspace_guidance()
 
     def _sheet_change(self, sheet_id, operation):

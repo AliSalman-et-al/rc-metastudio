@@ -365,7 +365,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.add_result_sections()
         self._relayout_sections()
 
-        # reset the scene
         self.graphics_view.setScene(self.scene)
         self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
         # Establish a starting width; the first visible refit applies saved

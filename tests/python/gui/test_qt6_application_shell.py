@@ -336,6 +336,79 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
         _close_shell(app, window)
 
 
+@pytest.mark.parametrize("change", ["metric", "sheet"])
+def test_failed_effect_projection_keeps_workspace_selection_and_history(
+    qapp, tmp_path, monkeypatch, inject_python_boundary, change
+):
+    from rc_metastudio import app_error_handler, project_format, r_bridge
+
+    source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
+    project = _json_map(copy.deepcopy(source.project))
+    first, second = _json_maps(project["sheets"])
+    for sheet in (first, second):
+        for row in _json_maps(sheet["rows"]):
+            row["raw_data"] = {}
+    _json_map(second["settings"]).update(metric="RR", confidence_level=90.0)
+    path = tmp_path / "entered-effects.rcms"
+    project_format.save_project(
+        path, cast(project_format.JsonObject, project), source.state,
+    )
+
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "show_unexpected_error",
+        lambda error, **_kwargs: errors.append(str(error)),
+    )
+    app, window = automation.start_automation()
+    try:
+        assert window.open(str(path), raise_on_error=True)
+        initial_id = window.model.current_sheet_id
+        initial_tab = window.sheet_tabs.currentIndex()
+        initial_ci = window.confidence_button.text()
+
+        def select_requested():
+            if change == "metric":
+                next(action for action in window._metric_actions.actions()
+                     if action.data() == "RR").trigger()
+            else:
+                window.sheet_tabs.setCurrentIndex(1)
+
+        scale = r_bridge.binary_convert_scale
+
+        def fail_rr(value, metric, **kwargs):
+            if metric == "RR" and value is not None:
+                raise RuntimeError("RR display conversion failed")
+            return scale(value, metric, **kwargs)
+
+        with monkeypatch.context() as failure:
+            failure.setattr(r_bridge, "binary_convert_scale", fail_rr)
+            select_requested()
+
+        assert errors == ["RR display conversion failed"]
+        assert window.model.current_sheet_id == initial_id
+        assert window.sheet_tabs.currentIndex() == initial_tab
+        assert window.workspace.runtime.current_sheet_id == initial_id
+        assert window.model.current_effect == "OR"
+        assert window._metric_actions.checkedAction().data() == "OR"
+        assert window.confidence_button.text() == initial_ci
+        assert not window.workspace.is_dirty
+        assert not window.workspace.can_undo
+
+        select_requested()
+        assert window.model.current_effect == "RR"
+        assert window.workspace.runtime.current_sheet_id == window.model.current_sheet_id
+        if change == "sheet":
+            assert window.sheet_tabs.currentIndex() == 1
+            assert window.confidence_button.text() == "90% CI…"
+            assert not window.workspace.is_dirty
+            assert not window.workspace.can_undo
+        else:
+            assert window.workspace.is_dirty
+            assert window.workspace.can_undo
+    finally:
+        _close_shell(app, window)
+
+
 def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
     qapp, tmp_path, monkeypatch
 ):
@@ -794,13 +867,14 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
             context.setattr(window.tableView, "setModel", fail_after_rebind)
 
         def ui_failure(context):
-            context.setattr(
-                window,
-                "_refresh_projected_sheet_controls",
-                lambda *_args, **_kwargs: (_ for _ in ()).throw(
-                    RuntimeError("UI initialization failed")
-                ),
-            )
+            refresh_controls = window._refresh_projected_sheet_controls
+
+            def fail_candidate_refresh():
+                if window.model is not old_model:
+                    raise RuntimeError("UI initialization failed")
+                refresh_controls()
+
+            context.setattr(window, "_refresh_projected_sheet_controls", fail_candidate_refresh)
 
         sync_failures = []
 
@@ -842,12 +916,19 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         _close_shell(app, window)
 
 
-def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directions(
-    qapp, monkeypatch
+def test_late_cross_family_open_failure_restores_projected_controls_both_directions(
+    qapp, tmp_path, monkeypatch
 ):
+    from rc_metastudio import project_format
 
-    def metric_menu_signature(window):
+    def projected_controls(window):
         return (
+            window.confidence_button.text(),
+            window.sheet_tabs.currentIndex(),
+            tuple(
+                (window.sheet_tabs.tabText(index), window.sheet_tabs.tabData(index))
+                for index in range(window.sheet_tabs.count())
+            ),
             window.menuMetric.isEnabled(),
             tuple(
                 (
@@ -874,41 +955,42 @@ def test_late_cross_family_open_failure_restores_actual_metric_menu_both_directi
         lambda _parent, title, message: errors.append((title, message)),
     )
     binary = str(ROOT / "sample_projects" / "amino.rcms")
-    continuous = str(ROOT / "sample_projects" / "continuous.rcms")
+    original = project_format.load_project(ROOT / "sample_projects" / "continuous.rcms")
+    project = _json_map(copy.deepcopy(original.project))
+    active_sheet = next(
+        sheet for sheet in _json_maps(project["sheets"])
+        if sheet["id"] == original.state["current_sheet_id"]
+    )
+    _json_map(active_sheet["settings"])["confidence_level"] = 90.0
+    continuous = tmp_path / "continuous-90.rcms"
+    project_format.save_project(
+        continuous, cast(project_format.JsonObject, project), original.state,
+    )
     try:
-        assert window.open(binary) is True
-        binary_model = window.model
-        binary_menu = metric_menu_signature(window)
-        with monkeypatch.context() as context:
-            context.setattr(
-                window,
-                "_update_confidence_level_label",
-                lambda: (_ for _ in ()).throw(
-                    RuntimeError("late continuous installation failure")
-                ),
-            )
-            assert window.open(continuous) is None
-        assert "late continuous installation failure" in errors[-1][1]
-        assert window.model is binary_model
-        assert window.tableView.model() is binary_model
-        assert metric_menu_signature(window) == binary_menu
+        for source, candidate in ((binary, continuous), (continuous, binary)):
+            assert window.open(source) is True
+            previous_model = window.model
+            previous_controls = projected_controls(window)
+            enable_analysis = window.tableView._enable_analysis_menus_if_appropriate
 
-        assert window.open(continuous) is True
-        continuous_model = window.model
-        continuous_menu = metric_menu_signature(window)
-        with monkeypatch.context() as context:
-            context.setattr(
-                window,
-                "_update_confidence_level_label",
-                lambda: (_ for _ in ()).throw(
-                    RuntimeError("late binary installation failure")
-                ),
-            )
-            assert window.open(binary) is None
-        assert "late binary installation failure" in errors[-1][1]
-        assert window.model is continuous_model
-        assert window.tableView.model() is continuous_model
-        assert metric_menu_signature(window) == continuous_menu
+            def fail_after_projecting_candidate():
+                if window.model is not previous_model:
+                    controls = projected_controls(window)
+                    assert controls[0] != previous_controls[0]
+                    assert controls[2] != previous_controls[2]
+                    raise RuntimeError("late candidate installation failure")
+                enable_analysis()
+
+            with monkeypatch.context() as context:
+                context.setattr(
+                    window.tableView, "_enable_analysis_menus_if_appropriate",
+                    fail_after_projecting_candidate,
+                )
+                assert window.open(candidate) is None
+            assert "late candidate installation failure" in errors[-1][1]
+            assert window.model is previous_model
+            assert window.tableView.model() is previous_model
+            assert projected_controls(window) == previous_controls
     finally:
         _close_shell(app, window)
 

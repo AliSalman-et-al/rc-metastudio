@@ -129,6 +129,41 @@ def test_diagnostic_metric_conversion_failure_does_not_discard_other_metrics(
     }
 
 
+def test_single_diagnostic_fit_reports_failure_once(monkeypatch):
+    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis_errors import DiagnosticExecutionError
+
+    request = make_analysis_request(
+        data_type="diagnostic",
+        workflow="standard",
+        method="diagnostic.random",
+        metric="Sens",
+        parameters={},
+    )
+    model = type(
+        "Model",
+        (),
+        {
+            "included_studies_have_raw_data": lambda self: True,
+            "included_studies_have_point_estimates": lambda self, effect: False,
+        },
+    )()
+    attempts = []
+
+    def fail_fit(requests, _data):
+        attempts.append(requests[0]["metric"])
+        raise DiagnosticExecutionError("estimate is unavailable")
+
+    monkeypatch.setattr(
+        analysis_adapter.r_bridge, "dataset_to_simple_diagnostic_r_object", lambda _model: None
+    )
+    monkeypatch.setattr(analysis_adapter.r_bridge, "run_versioned_analysis_requests", fail_fit)
+
+    with pytest.raises(RuntimeError, match="Sens failed: estimate is unavailable"):
+        analysis_adapter.execute_analysis_requests(model, (request,))
+    assert attempts == ["Sens"]
+
+
 def test_diagnostic_fallback_merges_references_in_stable_order():
     from rc_metastudio import analysis_adapter
     from rc_metastudio.analysis_errors import DiagnosticExecutionError

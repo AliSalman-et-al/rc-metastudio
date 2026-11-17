@@ -555,31 +555,15 @@ def test_confidence_level_dialog_rejects_represented_100_percent():
         dialog.close()
 
 
-def test_dataset_model_rejects_invalid_confidence_levels_without_touching_r(
-    monkeypatch,
-):
-
+def test_dataset_model_preserves_confidence_level_when_edit_is_invalid():
     app, window = automation.start_automation()
     try:
         app.processEvents()
-        calls = []
-
-        def fail_if_called(confidence_level):
-            calls.append(confidence_level)
-            raise AssertionError("invalid confidence level reached R multiplier")
-
-        monkeypatch.setattr(
-            window.model.editing_service.bridge,
-            "get_confidence_multiplier_from_r",
-            fail_if_called,
-        )
-
+        original_confidence = window.model.get_confidence_level()
         for invalid_value in (0, 100, math.inf, math.nan, "not-a-number"):
             with pytest.raises(ValueError, match="greater than 0 and less than 100"):
                 window.model.set_confidence_level(invalid_value)
-
-        assert calls == []
-        assert window.model.get_confidence_level() == 95.0
+            assert window.model.get_confidence_level() == original_confidence
     finally:
         _close_without_prompt(app, window)
 

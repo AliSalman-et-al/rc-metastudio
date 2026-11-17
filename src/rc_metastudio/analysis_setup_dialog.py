@@ -489,7 +489,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if self.data_type == "diagnostic":
                 self.enable_diagnostic_fields()
 
-        # disable second arm display for one-arm analyses
         if self.model.current_effect in ONE_ARM_METRICS:
             self.setup_fields_for_one_arm()
 
@@ -574,7 +573,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return height
 
     def _fit_active_tab_contents(self, current):
-        # Hidden plot controls must not force the method page to scroll.
         for index in range(self.specs_tab.count()):
             page = self.specs_tab.widget(index)
             if page is not None:
@@ -816,7 +814,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         metric = self._meta_regression_metric()
         add_plot_params(self)
         parameters = copy.deepcopy(self.current_param_vals)
-        parameters["measure"] = metric
+        parameters.pop("measure", None)
         parameters["metric.label"] = self._result_metric_label()
         method = "meta.regression"
         if self.data_type == "diagnostic":
@@ -1841,8 +1839,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         we have multiple metrics. here the parameters/method for
         these metrics are added to a dictionary.
         """
-        # this was extracted earlier, ultimately from the checkboxes
-        # selected by the user
         metrics_to_run = list(self.diagnostic_analysis_details.keys())
 
         if self._combined_diagnostic:
@@ -1902,7 +1898,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 list(zip(metrics_to_run, [None for m in metrics_to_run]))
             )
 
-        # Reflect the selected method in the dialog labels.
         window_title = ""
         if self.is_meta_regression:
             # Reitsma estimates the joint random-effects model directly.

@@ -1250,7 +1250,7 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
 
     calls = []
     model = _AnalysisModel("continuous")
-    parameters = {"conf.level": 90.5, "measure": "SMD", "bp_xlabel": "Year"}
+    parameters = {"conf.level": 90.5, "bp_xlabel": "Year"}
     request = analysis_adapter.make_analysis_request(
         data_type="continuous",
         workflow="meta-regression",
@@ -1259,11 +1259,6 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
         parameters=parameters,
     )
     parameters["conf.level"] = 1.0
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "dataset_to_simple_continuous_r_object",
-        lambda model, **kwargs: calls.append(("data", kwargs)),
-    )
     monkeypatch.setattr(
         analysis_adapter.r_bridge,
         "run_model_analysis",
@@ -1280,10 +1275,10 @@ def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
         95.0,
     )
 
-    rendered = repr(calls)
-    assert "90.5" in rendered
-    assert "1.0" not in rendered
-    assert "SMD" in rendered
+    wire_request = calls[0][1][1]
+    assert wire_request["params"] == {
+        "conf.level": 90.5, "bp_xlabel": "Year", "measure": "SMD", "rm.method": "FE",
+    }
     assert isinstance(calls[0][2]["studies"][0], analysis_dataset.StudyRow)
     assert calls[0][2]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
 

@@ -10,9 +10,6 @@ from rc_metastudio.analysis_unit import AnalysisUnit
 
 
 class FakeBridge:
-    def get_confidence_multiplier_from_r(self, confidence_level):
-        return 1.96
-
     def effect_for_study(self, *args, **kwargs):
         return {"calc_scale": 0.5}
 

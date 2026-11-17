@@ -37,11 +37,6 @@ def _open_binary_dialog(monkeypatch):
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _level: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "binary_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )

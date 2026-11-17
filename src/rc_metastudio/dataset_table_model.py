@@ -85,12 +85,24 @@ class DatasetTableModel(QAbstractTableModel):
         return self.dataset.sheet(self.current_sheet_id) if self.current_sheet_id else None
 
     def set_current_sheet(self, sheet_id: SheetId, *, refresh_previews: bool = False) -> None:
+        candidate = type(self)(
+            dataset=self.dataset, add_blank_study=False, current_sheet_id=sheet_id,
+        )
+        candidate.editing_service = self.editing_service
+        candidate._refresh_effect_display(refresh_previews)
+        self._adopt_projection(candidate)
+        self.confLevelChanged.emit()
+
+    def _adopt_projection(self, candidate: "DatasetTableModel") -> None:
         self.beginResetModel()
-        try:
-            self._configure_sheet(sheet_id)
-            self._refresh_effect_display(refresh_previews)
-        finally:
-            self.endResetModel()
+        self.dataset = candidate.dataset
+        self.view_state = candidate.view_state
+        self.columns = candidate.columns
+        self.RAW_DATA = candidate.RAW_DATA
+        self.OUTCOMES = candidate.OUTCOMES
+        self._display_studies = candidate._display_studies
+        self._blank_study = candidate._blank_study
+        self.endResetModel()
 
     def _configure_sheet(self, sheet_id: SheetId | None, *, add_blank_study: bool = False) -> None:
         self.current_sheet_id = sheet_id
@@ -569,12 +581,7 @@ class DatasetTableModel(QAbstractTableModel):
                     raise ValueError(rejection.message)
                 skipped += 1
         candidate.recalculate_display_scale()
-        self.beginResetModel()
-        self.dataset = candidate.dataset
-        self.view_state = candidate.view_state
-        self._display_studies = candidate._display_studies
-        self._blank_study = candidate._blank_study
-        self.endResetModel()
+        self._adopt_projection(candidate)
         self.workspaceEditCommitted.emit()
         return skipped
 
@@ -867,8 +874,6 @@ class DatasetTableModel(QAbstractTableModel):
 
         raw_data = self._get_canonical_raw_data_for_study(study_index)
         data_type = self.get_current_data_type(get_str=False)
-        # if first_arm_only is true, we are only concerned with whether
-        # or not there is sufficient raw data for the first arm of the study
 
         if first_arm_only:
             if data_type == BINARY:

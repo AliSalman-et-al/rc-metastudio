@@ -643,11 +643,6 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _confidence_level: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "continuous_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
@@ -711,11 +706,6 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatch):
     from rc_metastudio import analysis_dataset, continuous_data_dialog, analysis_catalog, calculator_controls
 
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _confidence_level: 1.96,
-    )
     monkeypatch.setattr(
         calculator_service.r_bridge,
         "continuous_convert_scale",
@@ -902,11 +892,6 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -945,11 +930,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -960,11 +940,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "continuous_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -972,11 +947,6 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
         calculator_service.r_bridge,
         "impute_continuous_data",
         lambda data, alpha: {"succeeded": False, "comment": "stub"},
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
     )
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -1076,11 +1046,6 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
 def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypatch):
     from rc_metastudio import binary_data_dialog
 
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
     monkeypatch.setattr(
         calculator_service.r_bridge,
         "binary_convert_scale",
@@ -1238,11 +1203,6 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda conf: 1.96,
-    )
-    monkeypatch.setattr(
-        calculator_service.r_bridge,
         "diagnostic_convert_scale",
         lambda x, *args, **kwargs: x,
     )
@@ -1376,7 +1336,6 @@ def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
 
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
     from rc_metastudio import analysis_dataset, diagnostic_data_dialog
-    monkeypatch.setattr(calculator_service.r_bridge, 'get_confidence_multiplier_from_r', lambda conf: 1.96)
     monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
     monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])

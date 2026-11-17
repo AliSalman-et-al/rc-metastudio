@@ -371,10 +371,14 @@ def execute_meta_regression_request(
     parameters["rm.method"] = (
         "FE" if fixed_effects else parameters.get("rm.method", "REML")
     )
-    versioned = dict(request.to_mapping())
-    versioned["workflow"] = "meta-regression"
-    versioned["params"] = parameters
-    return _typed_result(r_bridge.run_model_analysis(model, versioned, **conversion_kwargs))
+    regression_request = replace(
+        request,
+        workflow="meta-regression",
+        parameters=tuple(AnalysisParameter(name, value) for name, value in parameters.items()),
+    )
+    return _typed_result(r_bridge.run_model_analysis(
+        model, regression_request.to_mapping(), **conversion_kwargs,
+    ))
 
 
 def _run_diagnostic_backend(requests: Sequence[AnalysisRequest], data: object):
@@ -422,7 +426,9 @@ def _run_diagnostic_analysis_isolating_metric_failures(
     data = r_bridge.dataset_to_simple_diagnostic_r_object(model)
     try:
         return _typed_result(_run_diagnostic_backend(requests, data))
-    except DiagnosticExecutionError:
+    except DiagnosticExecutionError as error:
+        if len(requests) == 1:
+            raise RuntimeError(_format_diagnostic_failures([(requests[0].metric, error)])) from error
         return _run_diagnostic_methods_per_metric(
             requests, lambda request: _run_diagnostic_backend((request,), data),
         )

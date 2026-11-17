@@ -269,7 +269,6 @@ def get_r_package_version(package_name):
 @serialized_r_call
 def reset_r_working_directory():
     """Reset R's working directory to the application data directory."""
-    # Fix paths issue in windows
     from rc_metastudio import settings
 
     base_path = settings.get_base_path()
@@ -572,7 +571,6 @@ def dataset_to_simple_continuous_r_object(
     if studies is None:
         # grab all studies. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies()
-    # the study_ids preserve the ordering
     study_ids = [study.id for study in studies]
 
     estimates, standard_errors = table_model.get_current_estimates_and_standard_errors(
@@ -643,7 +641,6 @@ def dataset_to_simple_binary_r_object(
         standard_errors=standard_errors,
     )
 
-    # first try and construct an object with raw data
     raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
     has_raw_data = len(raw_data) == len(studies) and all(
         all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
@@ -653,7 +650,6 @@ def dataset_to_simple_binary_r_object(
         for study in studies
     )
     if include_raw_data and has_raw_data:
-        # now figure out the raw data
         raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
 
         g1_events = _get_col(raw_data, 0)
@@ -664,8 +660,6 @@ def dataset_to_simple_binary_r_object(
             total - events for total, events in zip(g1_totals, g1_events)
         ]
 
-        # now, for group 2; we only set up the string
-        # for group two if we have a two-arm metric
         group2_events, group2_nonevents = [0], [0]
         if table_model.current_effect in TWO_ARM_METRICS:
             g2_events = _get_col(raw_data, 2)
@@ -733,7 +727,6 @@ def dataset_to_simple_diagnostic_r_object(
         standard_errors=standard_errors,
     )
 
-    # first try and construct an object with raw data
     raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
     has_raw_data = len(raw_data) == len(studies) and all(
         not any(value in EMPTY_VALS for value in row) for row in raw_data
@@ -2523,7 +2516,7 @@ def generic_convert_scale(
         return None
     islist = isinstance(x, list) or isinstance(
         x, tuple
-    )  # being loose with what qualifies as a 'list' here.
+    )
     if islist:
         x_arg = _r_numeric_vector(x)
         n1_arg = (
@@ -2541,7 +2534,6 @@ def generic_convert_scale(
     )
     transformed_ls = [x_i for x_i in transformed]
     if not islist:
-        # scalar
         return transformed_ls[0]
     return transformed_ls
 

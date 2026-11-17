@@ -349,8 +349,6 @@ class DatasetTableView(QtWidgets.QTableView):
                 self.selectAll()
                 event.accept()
             else:
-                # if the command hasn't anything to do with the table view
-                # in particular, we pass the event up to the main UI
                 self._main_gui().keyPressEvent(event)
         elif self._is_return_key(event):
             self._move_current_index_vertically(

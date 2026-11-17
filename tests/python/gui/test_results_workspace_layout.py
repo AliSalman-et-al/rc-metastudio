@@ -280,8 +280,6 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
         sizes = restored.results_nav_splitter.sizes()
         total_size = sum(sizes)
         assert total_size > 0
-        if total_size == 0:
-            pytest.fail("results splitter has no allocated space")
         assert sizes[0] >= restored.nav_tree.minimumWidth()
         proportions = placement.splitter_proportions
         assert proportions is not None
