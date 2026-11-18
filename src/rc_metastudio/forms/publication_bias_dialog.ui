@@ -20,6 +20,7 @@
           <layout class="QVBoxLayout" name="methods_scroll_layout">
            <item>
             <layout class="QFormLayout" name="asymmetry_options_layout">
+             <property name="rowWrapPolicy"><enum>QFormLayout::WrapLongRows</enum></property>
              <item row="0" column="0"><widget class="QLabel" name="minimum_studies_label"><property name="text"><string>Minimum studies for asymmetry tests</string></property><property name="buddy"><cstring>minimum_studies_spin</cstring></property></widget></item>
              <item row="0" column="1"><layout class="QHBoxLayout" name="minimum_studies_layout">
               <item><widget class="QCheckBox" name="use_package_minimum_check"><property name="text"><string>Package default</string></property><property name="checked"><bool>true</bool></property><property name="toolTip"><string>Use meta’s default minimum study count. Mixed-effects Egger uses metafor and does not use this setting.</string></property></widget></item>

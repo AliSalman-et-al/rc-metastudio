@@ -298,7 +298,7 @@ def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
     )
 
 
-def run_packaging_contracts(env: dict[str, str]) -> None:
+def run_packaging_contracts(env: dict[str, str] | None = None) -> None:
     run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
 
 
