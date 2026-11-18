@@ -8,14 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from rc_metastudio.csv_import import CsvImportError, normalize_import_rows, parse_csv
-
-
-def test_normalize_import_rows_pads_ragged_rows() -> None:
-    assert normalize_import_rows([["study", "2024"], ["study-2"]], minimum_width=3) == [
-        ["study", "2024", ""],
-        ["study-2", "", ""],
-    ]
+from rc_metastudio.csv_import import CsvImportError, parse_csv
 
 
 def test_parse_csv_assigns_names_to_blank_covariates(tmp_path: Path) -> None:

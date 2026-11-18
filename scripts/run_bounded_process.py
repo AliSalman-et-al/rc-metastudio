@@ -72,12 +72,11 @@ def run_bounded(
             path.parent.mkdir(parents=True, exist_ok=True)
             return streams.enter_context(path.open("ab"))
 
-        process = subprocess.Popen(
+        process = process_groups.start_process(
             command,
             stdin=subprocess.DEVNULL,
             stdout=open_log(stdout_path),
             stderr=open_log(stderr_path),
-            start_new_session=os.name == "posix",
         )
         try:
             return process.wait(timeout=timeout_seconds)
@@ -88,23 +87,20 @@ def run_bounded(
             )
             _terminate_package_process(process, owned_pid_path)
             return 124
+        except BaseException:
+            _terminate_package_process(process, owned_pid_path)
+            raise
 
 
 def _terminate_package_process(process: subprocess.Popen[bytes], owned_pid_path: Path | None) -> None:
-    if os.name == "posix":
-        try:
-            process_groups.terminate_process_group(process, grace_seconds=1)
-            if not process_groups.wait_for_process_group_exit(process.pid, timeout_seconds=5):
-                raise RuntimeError("package process group remained alive after SIGKILL")
-        finally:
-            _terminate_owned_pid(owned_pid_path)
-    else:
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=5)
+    try:
+        process_groups.terminate_process_tree(process, grace_seconds=1)
+        if os.name == "posix" and not process_groups.wait_for_process_group_exit(
+            process.pid, timeout_seconds=5
+        ):
+            raise RuntimeError("package process group remained alive after SIGKILL")
+    finally:
+        _terminate_owned_pid(owned_pid_path)
 
 
 def record_completion(path: Path, result: int) -> None:

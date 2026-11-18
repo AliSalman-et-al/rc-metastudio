@@ -266,9 +266,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         plot_service: PlotService | None = None,
         change_settings: Callable[[dict[str, object]], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
+        *,
+        source_sheet_name: str | None = None,
+        save_favours_labels: Callable[[str, str], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
+        self._save_favours_labels = save_favours_labels
         self._explicit_fit_width = False
         self._svg_plot_items = []
         self._raster_plot_items = []
@@ -370,10 +374,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # Establish a starting width; the first visible refit applies saved
         # proportions again after the native window receives its final geometry.
         self._apply_restored_splitter_proportions()
-        self._setup_report_controls()
+        self._setup_report_controls(source_sheet_name)
 
-    def _setup_report_controls(self):
-        self._setup_identity()
+    def _setup_report_controls(self, source_sheet_name: str | None):
+        self._setup_identity(source_sheet_name)
         self._setup_manuscript_page()
         self._setup_result_tables()
         self._setup_results_actions()
@@ -468,15 +472,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         details = list(dict.fromkeys(details))
         return details
 
-    def _setup_identity(self):
+    def _setup_identity(self, source_name: str | None):
         identity = self.results.identity or "Analysis results"
-        parent = self.parent()
-        self._source_sheet = model.current_sheet if (model := getattr(parent, "model", None)) is not None else None
         self.setWindowTitle(identity.splitlines()[0])
         workflow, _, context = identity.partition(" — ")
         first, *rest = context.splitlines() if context else identity.splitlines()
         name, separator, description = first.partition(" · ")
-        source_name = getattr(self._source_sheet, 'name', None)
         if source_name and (first == source_name or first.startswith(source_name + ' · ')):
             name = source_name
             separator = ' · ' if first != source_name else ''
@@ -1128,7 +1129,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             available = self.graphics_view.maximumViewportSize().height() - heading_height - SECTION_SPACING - 2 * padding
             target_scale = min(target_scale, max(1, available) / height)
         if body_pixels:
-            # Keep measured SVG body text at least 9 pt in automatic fitting.
             target_scale = max(target_scale, math.nextafter(12 / body_pixels, math.inf))
         return target_scale
 
@@ -1432,8 +1432,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         )
 
         self.y_coord += item.boundingRect().size().height() + SECTION_SPACING
-        #        item.setFlags(QGraphicsItem.ItemIsSelectable|
-        #                      QGraphicsItem.ItemIsMovable)
         item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
         # layout-audit: allow=intrinsic-ratio; reason=scene follows its intrinsic-ratio visual artifact
@@ -1451,8 +1449,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._layout_items.append(item)
         item.setPos(position)
 
-        # attach event handler for mouse-clicks, i.e., to handle
-        # user right-clicks
         item.contextMenuEvent = self._make_context_menu(artifact, item)
 
         return (item.boundingRect().size(), position, item)
@@ -1546,13 +1542,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if plot_params is None:
             return
 
+        def commit(parameters: dict[str, object]) -> None:
+            self._apply_plot_edits(parameters, artifact, plot_item)
+
         if regenerator == "funnel":
             dialog = FunnelPlotEditorDialog(
-                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
+                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind,
+                on_commit=commit,
             )
         else:
             dialog = EditPlotDialog(
-                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind
+                plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind,
+                on_commit=commit,
             )
             if regenerator == "forest":
                 reopen = self._change_settings
@@ -1560,44 +1561,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if reopen is not None:
                     dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params()))
 
-        dialog.applied.connect(
-            app_error_handler.safe_slot(
-                lambda: self._apply_plot_edits(dialog, artifact, plot_item), parent=self
-            )
-        )
         dialog.exec()
 
-    def _apply_plot_edits(self, dialog, artifact, plot_item):
+    def _apply_plot_edits(self, updated_params, artifact, plot_item):
         regenerator = artifact.capability.regenerator
-        updated_params = dialog.plot_params()
         output_parameter = {
             "forest": "fp_outpath", "regression": "bp_outpath",
             "sroc": "fp_outpath", "funnel": "funnel.outpath",
         }[regenerator]
         outpath = updated_params.get(output_parameter) or artifact.image_path
-        try:
-            self.plot_service.apply_edits(
-                regenerator=regenerator, params_path=artifact.params_path,
-                updated_params=updated_params, output_path=outpath,
-            )
-        except Exception as error:
-            if regenerator == "funnel":
-                dialog.mark_commit_failed()
-            else:
-                dialog.mark_commit_failed(error)
-            raise
+        self.plot_service.apply_edits(
+            regenerator=regenerator, params_path=artifact.params_path,
+            updated_params=updated_params, output_path=outpath,
+        )
 
-        if regenerator == "forest":
-            parent = self.parent()
-            model = getattr(parent, "model", None)
-            if self._source_sheet is not None and model is not None and self._source_sheet in model.dataset.sheets:
-                self._source_sheet.settings["favours_labels"] = [
-                    updated_params.get("fp_favours_left", ""),
-                    updated_params.get("fp_favours_right", ""),
-                ]
-                getattr(parent, "data_dirtied")()
+        if regenerator == "forest" and self._save_favours_labels is not None:
+            self._save_favours_labels(
+                updated_params.get("fp_favours_left", ""),
+                updated_params.get("fp_favours_right", ""),
+            )
         self._refresh_plot_item(plot_item, artifact, outpath)
-        dialog.mark_commit_succeeded()
 
     def _refresh_plot_item(self, plot_item, artifact, outpath):
 

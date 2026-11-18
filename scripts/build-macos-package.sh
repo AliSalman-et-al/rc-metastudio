@@ -152,7 +152,10 @@ fi
 case "$architecture" in arm64) ;; *) echo "--architecture arm64 is required." >&2; exit 1 ;; esac
 target_python="$(command -v python3 || true)"
 [ -n "$target_python" ] || { echo "macOS packaging requires python3 to resolve its target manifest." >&2; exit 1; }
-eval "$("$target_python" "$repo_root/scripts/resolve_macos_package_target.py" "$architecture" --format shell)"
+target_values="$("$target_python" "$repo_root/scripts/resolve_macos_package_target.py" "$architecture" --format shell)"
+eval "$target_values"
+direct_build_values="$("$target_python" "$repo_root/scripts/macos_direct_build_contract.py" "macos-$architecture")"
+eval "$direct_build_values"
 expected_machine="$machine"
 pyinstaller_target_architecture="$machine"
 default_artifact="$artifact"
@@ -199,7 +202,7 @@ quarantine_profile_path="$qualification_root/embedded-r-runtime-quarantine.json"
 r_substrate_probe_path="$qualification_root/r-substrate-probe.json"
 r_direct_build_manifest_path="$qualification_root/direct-r-build-manifest.json"
 ppm_archive_root="$qualification_root/ppm-archives"
-rcmetar_archive_path="$qualification_root/RCMetaR-0.2.0-source.tar.gz"
+rcmetar_archive_path="$qualification_root/$rcmetar_archive_name"
 runner_environment_path="$qualification_root/runner-environment.json"
 official_r_signature_path="$qualification_root/official-r-signature.json"
 adapter_audit_path="$qualification_root/direct-r-pre-normalization-audit.json"
@@ -210,7 +213,6 @@ pre_sign_graph_path="$qualification_root/pre-sign-native-graph.json"
 preflight_report_path="$qualification_root/macos-r-pyinstaller-toc-preflight.json"
 archive_inspection_path="$artifact_dir/$artifact_name-archive-inspection.json"
 qualification_evidence_path="$artifact_dir/$artifact_name-evidence.json"
-pinned_cran_repo="https://packagemanager.posit.co/cran/2026-11-13"
 cran_repo="${RCMS_CRAN_REPO:-$pinned_cran_repo}"
 if [ "$cran_repo" != "$pinned_cran_repo" ]; then
   echo "RCMS_CRAN_REPO must match the manifest snapshot: $pinned_cran_repo" >&2
@@ -276,13 +278,11 @@ if [ -z "$r_runtime_root" ]; then
   r_pkg="$r_download_cache/$(basename "$r_url")"
   r_pkg_tmp="$r_pkg.partial"
   mkdir -p "$r_download_cache"
-  if [ ! -f "$r_pkg" ] || { [ -n "$r_sha256" ] && [ "$(shasum -a 256 "$r_pkg" | awk '{print $1}')" != "$r_sha256" ]; }; then
+  if [ ! -f "$r_pkg" ] || [ "$(shasum -a 256 "$r_pkg" | awk '{print $1}')" != "$r_sha256" ]; then
     rm -f "$r_pkg" "$r_pkg_tmp"
     step "Downloading authenticated official $architecture R into the immutable cache"
     curl --fail --location --proto '=https' --tlsv1.2 "$r_url" --output "$r_pkg_tmp"
-    if [ -n "$r_sha256" ]; then
-      [ "$(shasum -a 256 "$r_pkg_tmp" | awk '{print $1}')" = "$r_sha256" ] || { rm -f "$r_pkg_tmp"; echo "Official R package SHA-256 mismatch." >&2; exit 1; }
-    fi
+    [ "$(shasum -a 256 "$r_pkg_tmp" | awk '{print $1}')" = "$r_sha256" ] || { rm -f "$r_pkg_tmp"; echo "Official R package SHA-256 mismatch." >&2; exit 1; }
     mv "$r_pkg_tmp" "$r_pkg"
   fi
   signature_stdout="$r_pkg.signature.stdout"; signature_stderr="$r_pkg.signature.stderr"
@@ -1011,8 +1011,6 @@ step "Recording canonical direct target-native production provenance"
 cp "$repo_root/scripts/macos_embedded_r_adapter.py" "$qualification_root/embedded-r-adapter.py"
 cp "$repo_root/scripts/macos_host_r_isolation.sh" "$qualification_root/macos-host-r-isolation.sh"
 cp "$repo_root/scripts/verify_macos_r_pyinstaller_toc.py" "$qualification_root/verify-macos-r-pyinstaller-toc.py"
-ppm_contrib_path="$("$python_exe" -c 'import json,sys; p=json.load(open(sys.argv[1])); print(p["binary_package_policy"]["platforms"][sys.argv[2]]["contrib_path"])' "$repo_root/config/r-dependencies.json" "macos-$architecture")"
-[ -n "$ppm_contrib_path" ] || { echo "Locked PPM contribution path is empty." >&2; exit 1; }
 "$python_exe" "$repo_root/scripts/build_macos_direct_provenance.py" \
   --qualification-root "$qualification_root" --ppm-root "$ppm_archive_root" \
   --target "macos-$architecture" --official-r-url "$r_url" \

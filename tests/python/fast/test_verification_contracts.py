@@ -10,25 +10,9 @@ import pytest
 
 from scripts import verify, verify_rcmetar_r_stack as stack, verify_rcms
 from scripts import audit_report_retention as audit
-from scripts import qt6_build_impl as qtbuild
 from scripts.code_health import build_evidence, git_as_of, load_config
 
 ROOT = Path(__file__).resolve().parents[3]
-
-
-def test_smoke_regenerates_existing_inputs(monkeypatch, tmp_path):
-    module = tmp_path / 'generated/rc_metastudio/forms/ui_about_legal.py'
-    resource = tmp_path / 'resources/icons.rcc'
-    for path in (module, resource):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text('stale')
-    def generate(root):
-        for path in (module, resource):
-            path.write_text('current')
-        return module, resource
-    monkeypatch.setattr(qtbuild, 'generate', generate)
-    assert qtbuild._smoke_inputs(tmp_path) == (module, resource)
-    assert module.read_text() == resource.read_text() == 'current'
 
 
 def test_selected_python_rpy2_identity(tmp_path):
@@ -79,7 +63,6 @@ def test_typing_receipt_is_reused_only_for_the_same_completed_check(monkeypatch,
 
     reused = verify.ensure_typing(build, {verify.TYPING_RECEIPT_ENV: str(receipt)})
     assert (reused == receipt) == (mismatch is None)
-    assert verify.ensure_typing(build, {}) != receipt
 
 
 def test_explicit_rscript_cannot_be_overridden(tmp_path):

@@ -273,7 +273,7 @@ def run(
     def covariate(name, kind, values):
         window.model.add_covariate(name, kind, values)
         window.model.reset_model()
-        window.enable_menu_options_that_require_dataset()
+        window.refresh_analysis_actions()
 
     if scenario.startswith("analysis-data-"):
         from rc_metastudio import main_wizard
@@ -694,6 +694,7 @@ def run(
         app.processEvents()
         if scenario == "analysis-diagnostic-combined":
             set_parameter(app, dialog, "rm.method", "DL")
+            set_parameter(app, dialog, "conf.level", 90)
             panel = dialog.lr_dor_panel
             label = next(
                 label
@@ -709,6 +710,13 @@ def run(
             app.processEvents()
             assert panel.params["rm.method"] == "REML"
             assert dialog.current_param_vals["rm.method"] == "DL"
+            shared_confidence = [
+                control for control in dialog.findChildren(QtWidgets.QDoubleSpinBox)
+                if control.accessibleName() == "Confidence level"
+            ]
+            assert len(shared_confidence) == 1
+            assert shared_confidence[0].value() == 90
+            set_parameter(app, dialog, "conf.level", 95)
     else:
         for _, checkbox in dialog.covs_and_check_boxes:
             checkbox.setChecked(False)

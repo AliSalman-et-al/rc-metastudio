@@ -6,7 +6,7 @@ import locale
 import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
 from scripts.verification_evidence import desktop_tool_executable
-from rc_metastudio import r_bridge
+from tests.fit_observations import observe_fit
 from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
 from rc_metastudio.results_window import ResultsWindow
 
@@ -35,15 +35,16 @@ def run(app, window, ROOT, WORK, record_step):
         app.processEvents()
         setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
         assert setup.current_method == method
-        setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
+        with observe_fit() as fit:
+            setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+            app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
         record_step('rm5-entered-only-probe', view, metric=metric, method=method,
                     stored_raw_counts=keep_raw, details=view.results.details,
                     manuscript_methods=view.manuscript.methods)
         assert 'A continuity correction' not in view.manuscript_text.toPlainText(), view.results.details
         assert 'A continuity correction' not in view.manuscript.methods
-        assert abs(float(r_bridge.execute_r_string('result$res$b[1]')[0]) + .1) < 1e-12
+        assert abs(float(fit.evaluate('result$res$b[1]')[0]) + .1) < 1e-12
         view.close()
     tree = ET.parse(ROOT / 'tests/fixtures/rm5/generic-derived.rm5')
     study = tree.find('.//STUDY')
@@ -81,7 +82,7 @@ def run(app, window, ROOT, WORK, record_step):
         assert any('München' in value for row in rows for value in row.values())
     finally:
         locale.setlocale(locale.LC_CTYPE, previous_locale)
-    from rc_metastudio.rm5_import import review_rm5
+    from rc_metastudio.rm5_review_dialog import review_rm5
     def review():
         dialog = app.activeModalWidget()
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
@@ -96,7 +97,7 @@ def run(app, window, ROOT, WORK, record_step):
         record_step('rm5-giv-review', dialog, summary=text)
         dialog.accept()
     QtCore.QTimer.singleShot(0, review)
-    assert review_rm5(source, window) is not None
+    assert review_rm5(imported, window)
     window.set_model(imported.dataset)
     for index, sheet in enumerate(imported.dataset.sheets):
         window.sheet_tabs.setCurrentIndex(index)
@@ -123,10 +124,11 @@ def run(app, window, ROOT, WORK, record_step):
         setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
         assert setup.current_method == ('time_to_event.fixed', 'binary.fixed.inv.var', 'continuous.fixed')[index]
         record_step('rm5-giv-default-setup', setup, metric=sheet.settings['metric'], method=setup.current_method)
-        setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
+        with observe_fit() as fit:
+            setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+            app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
-        actual = list(map(float, r_bridge.execute_r_string('c(result$res$b[1], result$res$ci.lb, result$res$ci.ub, result$res$I2)')))
+        actual = list(map(float, fit.evaluate('c(result$res$b[1], result$res$ci.lb, result$res$ci.ub, result$res$I2)')))
         ref = refs[index]
         expected = [float(ref[k]) for k in ('estimate', 'lower', 'upper')] + [100 * float(ref['I2'])]
         record_step('rm5-giv-results', view, metric=sheet.settings['metric'], actual=actual, expected=expected)

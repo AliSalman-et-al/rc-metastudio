@@ -9,9 +9,9 @@ import subprocess
 import sys
 
 if __name__ == "__main__":
-    import process_groups
+    from process_groups import start_process, terminate_process_tree
 else:
-    from scripts import process_groups
+    from scripts.process_groups import start_process, terminate_process_tree
 
 
 TIMEOUT_EXIT_CODE = 124
@@ -23,43 +23,8 @@ def _display_command(command: list[str]) -> str:
     return shlex.join(command)
 
 
-def _terminate_process_tree(process: subprocess.Popen[bytes]) -> None:
-    if os.name == "nt":
-        terminated = subprocess.run(
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=False,
-        )
-        if terminated.returncode != 0:
-            details = "\n".join(
-                part.strip()
-                for part in (terminated.stdout, terminated.stderr)
-                if part.strip()
-            )
-            raise RuntimeError(
-                f"taskkill /T /F failed for process tree {process.pid} "
-                f"with exit code {terminated.returncode}: {details or 'no diagnostics'}"
-            )
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired as error:
-            raise RuntimeError(
-                f"taskkill reported success but process {process.pid} remained alive"
-            ) from error
-        return
-
-    process_groups.terminate_process_group(process, grace_seconds=5)
-
-
 def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
-    creationflags = subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
-    process = subprocess.Popen(
-        command,
-        creationflags=creationflags,
-        start_new_session=os.name != "nt",
-    )
+    process = start_process(command)
     try:
         return process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
@@ -69,10 +34,10 @@ def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
             file=sys.stderr,
             flush=True,
         )
-        _terminate_process_tree(process)
+        terminate_process_tree(process)
         return TIMEOUT_EXIT_CODE
     except BaseException:
-        _terminate_process_tree(process)
+        terminate_process_tree(process)
         raise
 
 

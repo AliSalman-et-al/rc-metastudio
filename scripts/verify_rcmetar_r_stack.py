@@ -15,19 +15,16 @@ from pathlib import Path
 
 if __package__:
     from scripts import r_verification_support as r_support
+    from scripts.desktop_partition import DESKTOP_SHARDS
 else:
     import r_verification_support as r_support
+    from desktop_partition import DESKTOP_SHARDS
 
 
 RCMetaR_PACKAGE = Path("r") / "RCMetaR"
 R_DEP_INSTALLER = Path("scripts") / "install-r-deps.R"
-R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
-R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"
-R_VERIFICATION_SUPPORT = Path("scripts") / "r_verification_support.py"
 R_REITSMA_VISUAL_QA = Path("scripts") / "verify_reitsma_visual_qa.R"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
-R_STACK_TESTS = (Path("tests") / "r_stack",)
-BRIDGE_TESTS = R_STACK_TESTS
 REQUIRED_RPY2_IDENTITIES = {
     "rpy2": "3.6.9",
     "rpy2-rinterface": "3.6.7",
@@ -157,14 +154,7 @@ def dependency_cache_key(
             rscript,
             env,
             cran_repo,
-            (
-                R_DEP_INSTALLER,
-                R_BINARY_POLICY,
-                R_POLICY_LOADER,
-                R_VERIFICATION_SUPPORT,
-                r_support.DEPENDENCY_MANIFEST,
-                RCMetaR_PACKAGE / "DESCRIPTION",
-            ),
+            R_DEP_INSTALLER,
             "rdeps",
         )
     except r_support.RVerificationSupportError as exc:
@@ -525,7 +515,7 @@ def verify(args: argparse.Namespace) -> None:
             verify_manifest_versions(root, python, rscript, env)
             verify_reitsma_visual_evidence(root, rscript, env, work_dir)
 
-            run([python, "-m", "pytest", *BRIDGE_TESTS], cwd=root, env=env)
+            run([python, "-m", "pytest", "tests/r_stack"], cwd=root, env=env)
         # Fresh offscreen children can overlap within the measured memory budget.
         # The E2E hook reserves host capacity; native drives remain separate/serial.
         desktop_command = [
@@ -567,7 +557,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--desktop-workers", default="auto")
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--skip-desktop", action="store_true")
-    selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
+    selection.add_argument("--desktop-shard", type=int, choices=DESKTOP_SHARDS)
     parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--r-library-cache-root", type=Path, default=None)

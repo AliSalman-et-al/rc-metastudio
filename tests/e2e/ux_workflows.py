@@ -96,10 +96,10 @@ def table_editing_case(app, window, work, root, record, case):
         before = cells()
         dataset = window.model.dataset
         dirty = window.workspace.is_dirty
-        with patch.object(window, "data_error") as error:
+        with patch.object(QtWidgets.QMessageBox, "warning") as error:
             duplicate = window.model.current_sheet.rows[2].label
             assert not table.paste_contents(window.model.index(0, window.model.NAME), [["Changed", "2000"], [duplicate, "2001"]])
-        assert error.called
+        assert "already exists" in error.call_args.args[2]
         assert window.model.dataset is dataset
         assert window.workspace.is_dirty == dirty
         assert cells() == before
@@ -774,14 +774,14 @@ def workspace_safety_case(app, window, work, root, record, case):
     elif case in ('csv', 'csv-failure'):
         payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': {'data': [['Imported study', '2020', '1', '10', '2', '20']], 'covariate_names': [], 'covariate_types': []}}
         if case == 'csv-failure':
-            from rc_metastudio.workspace_editing import WorkspaceEditingService
+            from rc_metastudio.workspace_editing import RawCell, WorkspaceEditingService
             before = window.workspace.runtime_digest
             write = WorkspaceEditingService.apply_edit
-            def fail(self, dataset, target, context, value, **kwargs):
-                if target.column == context.raw_columns[0]:
+            def fail(self, dataset, row, field, context, value, **kwargs):
+                if field == RawCell(0):
                     assert isinstance(app.activeModalWidget(), main_window.ImportProgressDialog)
                     raise OSError('controlled write failure after name/year')
-                return write(self, dataset, target, context, value, **kwargs)
+                return write(self, dataset, row, field, context, value, **kwargs)
             with patch.object(WorkspaceEditingService, 'apply_edit', fail):
                 try:
                     window._handle_wizard_results(payload)

@@ -14,7 +14,6 @@ from rc_metastudio import plot_capabilities
 from rc_metastudio.plot_capabilities import PlotCapability, PlotKind
 from rc_metastudio.result_formatting import sentence_case_title
 
-
 NO_RESULTS_MESSAGE = "No results could be computed for this analysis."
 
 

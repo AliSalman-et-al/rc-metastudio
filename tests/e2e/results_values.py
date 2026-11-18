@@ -1,5 +1,6 @@
 """Exact values through real R, manuscript transformations and Qt CSV actions."""
 from dataclasses import asdict
+from contextlib import nullcontext
 import json
 import shutil
 import sys
@@ -8,6 +9,7 @@ import subprocess
 from scripts.verification_evidence import desktop_tool_executable
 from pathlib import Path
 from tests.e2e.results_presentation import check_values_export
+from tests.fit_observations import observe_fit
 
 
 def run(app, window, work, root, record, analyze):
@@ -48,7 +50,7 @@ def run(app, window, work, root, record, analyze):
     assert all(q.scale == 'freeman-tukey' and q.level == 90.0 for q in pft_quantities)
     record('numeric-pft-fallback-scale', values=asdict(parsed_pft[0]))
 
-    def inspect(view, label):
+    def inspect(view, label, fit=None):
         view.tables_action.trigger()
         check_values_export(view, work, record, label)
         source = [t for s in view.results.sections for t in s.tables]
@@ -103,7 +105,8 @@ def run(app, window, work, root, record, analyze):
         bundle.mkdir()
         (bundle / 'tables.json').write_text(json.dumps([asdict(t) for t in source], indent=2), encoding='utf-8')
         if label == 'adjusted-means':
-            r_bridge.ro.r['saveRDS'](r_bridge.ro.globalenv['result'], file=str(bundle/'result.rds'))
+            assert fit is not None
+            fit.save(bundle / 'result.rds')
             r_bridge.ro.r['saveRDS'](r_bridge.dataset_to_simple_binary_r_object(window.model), file=str(bundle/'input.rds'))
         for index, prefix in enumerate(view.params_paths.values()):
             for suffix in ('.data', '.params', '.res', '.plotdata'):
@@ -135,11 +138,13 @@ def run(app, window, work, root, record, analyze):
         window.model.add_covariate('Group', 'factor', {s.label: 'A' if i % 2 else 'B' for i, s in enumerate(studies)})
         window.model.add_covariate('Dose', 'continuous', {s.label: float(i+1) for i, s in enumerate(studies)})
         window.model.reset_model()
-        window.enable_menu_options_that_require_dataset()
+        window.refresh_analysis_actions()
         underlying = 'meta-regression' if workflow == 'adjusted-means' else 'subgroup' if workflow == 'subgroup-t' else workflow
-        inspect(analyze_existing(app, window, underlying, 'binary.random', record,
-                                 parameters={'digits': 3, 'conf.level': 90, **({'inference.method': 'knha'} if workflow == 'subgroup-t' else {})},
-                                 covariates=('Group',) if workflow == 'adjusted-means' else ('Dose',)), workflow)
+        with (observe_fit() if workflow == 'adjusted-means' else nullcontext()) as fit:
+            view = analyze_existing(app, window, underlying, 'binary.random', record,
+                                    parameters={'digits': 3, 'conf.level': 90, **({'inference.method': 'knha'} if workflow == 'subgroup-t' else {})},
+                                    covariates=('Group',) if workflow == 'adjusted-means' else ('Dose',))
+        inspect(view, workflow, fit)
     rscript = desktop_tool_executable('Rscript')
     command = [rscript, str(root / 'tests/e2e/results_values_reference.R'), str(work)]
     (work / 'public-reference-command.json').write_text(json.dumps(command), encoding='utf-8')

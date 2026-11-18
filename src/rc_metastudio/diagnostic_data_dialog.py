@@ -79,6 +79,10 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.arm_names = arm_names
         self.arm_key = arm_key
         self.current_effect = "Sens"
+        self._effect_fields = calculator_controls.CalculatorEffectFields(
+            self.effect_text_box, self.lower_text_box, self.upper_text_box,
+        )
+        self._validation_failed = False
         self.entry_widgets = [
             self.two_by_two_table,
             self.prevalence_text_box,
@@ -101,12 +105,12 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.setup_back_calculation_feedback()
         self._field_history = calculator_edit_history.TransientEditHistory()
 
-        self._update_raw_data()  # analysis_unit -> table
+        self._update_raw_data()
         for field in (self.lower_text_box, self.upper_text_box, self.effect_text_box, self.prevalence_text_box):
             self._size_line_edit_for_samples(field, (field.text(), "-12345.123456"))
-        self._populate_effect_cmbo_box()  # make cmbo box entries for effects
-        self.set_current_effect()  # fill in current effect data in line edits
-        self._update_data_table()  # fill in the rest of the data table
+        self._populate_effect_cmbo_box()
+        self.set_current_effect()
+        self._update_data_table()
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
         self._set_content_preferred_width()
@@ -417,7 +421,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         return val is None or val.text() == "" or val.text() is None
 
     def _set_val(self, row, col, val):
-        if is_nan(val):  # get out quick
+        if is_nan(val):
             return
 
         str_val = "" if val in EMPTY_VALS else str(int(val))
@@ -483,7 +487,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     "enter at least one count greater than zero."
                 )
 
-            self._update_data_table()  # calculate derived margins from raw counts
+            self._update_data_table()
             self._mark_table_consistent()
         except Exception as e:
             msg = e.args[0]
@@ -497,7 +501,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         try:
             self._update_analysis_unit()  # 2x2 table --> analysis_unit
             self.impute_effects_in_analysis_unit()  # effects   --> analysis_unit
-            self.set_current_effect()  # analysis_unit   --> effects
+            self.set_current_effect()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
             QMessageBox.warning(self, "Warning", msg)
@@ -725,27 +729,14 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             return False, False
         return True, "" if is_prevalence else display_scale_val
 
-    def _text_from_value(self, value):
-        if value == "est":
-            return str(self.effect_text_box.text())
-        elif value == "lower":
-            return str(self.lower_text_box.text())
-        elif value == "upper":
-            return str(self.upper_text_box.text())
-        elif value == "prevalence":
-            return str(self.prevalence_text_box.text())
-        return None  # Unknown value key.
-
     def accept(self):
-        if not getattr(self, "_validation_failed", False):
+        if not self._validation_failed:
             super().accept()
 
     def val_changed(self, val_str):
-        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
-        field = fields.get(val_str)
-        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+        field = self._effect_fields.editors.get(val_str)
+        if field is not None and not self._effect_fields.is_pending(val_str) and not self._validation_failed:
             return
-        # Backup form state
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
             analysis_unit=self.analysis_unit,
@@ -753,7 +744,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         )
         old_prevalence = self.current_prevalence
 
-        new_text = self._text_from_value(val_str)
+        new_text = field.text() if field is not None else self.prevalence_text_box.text()
 
         no_errors, display_scale_val = self._text_box_value_is_between_bounds(
             val_str, new_text
@@ -769,12 +760,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                     signal_blockers.enter_context(QSignalBlocker(widget))
                 if field is not None:
                     field.setText(new_text)
-                if val_str == "est":
-                    self.effect_text_box.setFocus()
-                elif val_str == "lower":
-                    self.lower_text_box.setFocus()
-                elif val_str == "upper":
-                    self.upper_text_box.setFocus()
+                    field.setFocus()
                 elif val_str == "prevalence":
                     self.prevalence_text_box.setFocus()
             self._mark_table_invalid(guidance)
@@ -791,7 +777,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
         self._validation_failed = False
         if field is not None:
-            field.setProperty("calculatorValue", field.text())
+            self._effect_fields.mark_committed(val_str)
 
         calculation_scale_value = self.calculator.diagnostic_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -809,8 +795,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self.analysis_unit.set_upper(
                 self.current_effect, self.arm_key, calculation_scale_value
             )
-        elif val_str == "prevalence":
-            pass
 
         new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
             table=self.two_by_two_table,
@@ -889,14 +873,9 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def set_current_effect(self):
         """Fill in effect text boxes with data from analysis_unit"""
-        txt_boxes = dict(
-            effect=self.effect_text_box,
-            lower=self.lower_text_box,
-            upper=self.upper_text_box,
-        )
         calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            effect_fields=txt_boxes,
+            effect_fields=self._effect_fields,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="diagnostic",
@@ -960,7 +939,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             )
         self.impute_effects_in_analysis_unit()
 
-        # clear line edits
         self.set_current_effect()
         with QSignalBlocker(self.prevalence_text_box):
             self.prevalence_text_box.setText("")
@@ -1019,7 +997,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             d["conf.level"] = self.confidence_level
 
-            # now grab the raw data, if available
             d.update(self.get_raw_diagnostic_data())
 
             return d
@@ -1053,7 +1030,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
         imputed = self.calculator.impute_diagnostic_data(diagnostic_data)
 
-        # Leave if nothing was imputed
+
         if not (imputed["TP"] or imputed["TN"] or imputed["FP"] or imputed["FN"]):
             self.back_calculate_button.setEnabled(False)
             return None

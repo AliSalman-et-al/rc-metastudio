@@ -20,6 +20,12 @@ from typing import cast
 from urllib.parse import urlparse
 
 
+if __name__ == "__main__":
+    from windows_system_imports import R_KIT_SYSTEM_DLLS, is_system_import
+else:
+    from scripts.windows_system_imports import R_KIT_SYSTEM_DLLS, is_system_import
+
+
 SCHEMA_VERSION = 1
 R_VERSION = "4.6.2"
 RPY2_VERSION = "3.6.9"
@@ -77,45 +83,6 @@ PPM_CONTRIB_PATHS = {
     "macos-arm64": "bin/macosx/sonoma-arm64/contrib/4.6",
 }
 PPM_REPOSITORY = "https://packagemanager.posit.co/cran/2026-11-13"
-WINDOWS_SYSTEM_DLLS = {
-    "advapi32.dll",
-    "bcrypt.dll",
-    "cfgmgr32.dll",
-    "comctl32.dll",
-    "comdlg32.dll",
-    "crypt32.dll",
-    "cryptbase.dll",
-    "dnsapi.dll",
-    "dwmapi.dll",
-    "gdi32.dll",
-    "imm32.dll",
-    "iphlpapi.dll",
-    "kernel32.dll",
-    "msvcrt.dll",
-    "ncrypt.dll",
-    "netapi32.dll",
-    "normaliz.dll",
-    "ntdll.dll",
-    "ole32.dll",
-    "oleaut32.dll",
-    "powrprof.dll",
-    "propsys.dll",
-    "psapi.dll",
-    "rpcrt4.dll",
-    "secur32.dll",
-    "setupapi.dll",
-    "shell32.dll",
-    "shlwapi.dll",
-    "ucrtbase.dll",
-    "user32.dll",
-    "userenv.dll",
-    "version.dll",
-    "winhttp.dll",
-    "wininet.dll",
-    "winmm.dll",
-    "wldap32.dll",
-    "ws2_32.dll",
-}
 FORBIDDEN_NATIVE_PREFIXES = (
     "/opt/x11/",
     "/opt/r/",
@@ -738,15 +705,6 @@ def _owner(relative: str) -> str:
     return relative.split("/", 1)[0]
 
 
-def _windows_system_import(name: str) -> bool:
-    lowered = name.casefold()
-    return (
-        lowered in WINDOWS_SYSTEM_DLLS
-        or lowered.startswith("api-ms-win-")
-        or lowered.startswith("ext-ms-win-")
-    )
-
-
 def _macos_metadata(path: Path) -> tuple[str | None, list[str], str | None, str]:
     install_id_output = subprocess.run(
         ["otool", "-D", str(path)], capture_output=True, text=True, check=False
@@ -795,7 +753,7 @@ def _resolve_windows_closure(records: list[dict[str, object]]) -> None:
         resolutions = []
         for import_record in _record_list(record, "_imports", "native record"):
             name = _record_string(import_record, "name", "native import")
-            if _windows_system_import(name):
+            if is_system_import(name, R_KIT_SYSTEM_DLLS):
                 resolutions.append({**import_record, "resolution": "system"})
                 continue
             matches = by_name.get(name.casefold(), [])

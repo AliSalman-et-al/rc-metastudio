@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from collections.abc import Callable
 
-import pytest
 from rc_metastudio import automation
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -71,9 +70,9 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
             staticmethod(lambda *args, **kwargs: shown.append(args)),
         )
 
-        form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-            window.model, parent=window
-        )
+        window._launch_analysis()
+        form = window.findChild(diagnostic_metrics_dialog.DiagnosticMetricsDialog)
+        assert form is not None
 
         # The bug: this used to raise out of the slot with no user feedback.
         form.ok()
@@ -82,6 +81,7 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
         assert shown[0][1] == "Could not prepare analysis"
         assert "simulated preparation failure" in shown[0][2]
         assert "backend is not available" not in shown[0][2]
+        assert form.isVisible()
     finally:
         analysis_setup_dialog.AnalysisSetupDialog = original_specs
         main_window.QMessageBox.critical = original_critical
@@ -170,8 +170,6 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
 
 
 def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
-    from rc_metastudio.analysis_errors import DiagnosticExecutionError
-
     app, window = automation.start_automation()
     from rc_metastudio import analysis_setup_dialog
 
@@ -218,50 +216,17 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
         def run_metric(requests, data):
-            param_vals = [request["params"] for request in requests]
-            if len(param_vals) > 1:
-                raise DiagnosticExecutionError("combined diagnostic failure")
-            metric = param_vals[0]["measure"]
-            if metric == "Sens":
-                raise DiagnosticExecutionError("Reitsma bivariate model failed to converge")
-            title = "%s Forest plot" % metric
-            summary = "%s Summary" % metric
+            assert [request["metric"] for request in requests] == ["Sens", "NLR", "PLR", "DOR"]
+            texts = {"Sens Error": "Reitsma bivariate model failed to converge"}
+            texts.update({f"{metric} Summary": f"{metric} ok" for metric in ("NLR", "PLR", "DOR")})
+            images = {f"{metric} Forest plot": f"{metric.lower()}.png" for metric in ("NLR", "PLR", "DOR")}
             return {
-                "version": 1,
-                "texts": {
-                    summary: "%s ok" % metric,
-                },
-                "images": {
-                    title: "%s.png" % metric.lower(),
-                },
-                "display_images": {},
-                "image_var_names": {},
-                "image_params_paths": {},
-                "image_order": [title],
-                "plot_capabilities": {
-                    title: {
-                        "plot_kind": "forest",
-                        "editable": False,
-                        "styleable": True,
-                        "composition": "single",
-                        "regenerator": "forest",
-                    }
-                },
+                "version": 1, "texts": texts, "images": images, "image_order": list(images),
+                "plot_capabilities": {title: {"plot_kind": "forest", "editable": False,
+                    "styleable": True, "composition": "single", "regenerator": "forest"} for title in images},
                 "sections": [
-                    {
-                        "id": "diagnostic.%s.summary" % metric.lower(),
-                        "kind": "text",
-                        "order": 0,
-                        "title": summary,
-                        "source_key": summary,
-                    },
-                    {
-                        "id": "diagnostic.%s.forest" % metric.lower(),
-                        "kind": "image",
-                        "order": 1,
-                        "title": title,
-                        "source_key": title,
-                    },
+                    {"id": f"diagnostic.{i}", "kind": kind, "order": i, "title": title, "source_key": title}
+                    for i, (kind, title) in enumerate([*(('text', t) for t in texts), *(('image', t) for t in images)])
                 ],
             }
 
@@ -307,124 +272,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         _close_without_prompt(app, window)
 
 
-def test_per_metric_diagnostic_merge_preserves_display_artifacts(monkeypatch):
-    from rc_metastudio import analysis_adapter
-    from rc_metastudio.analysis_errors import DiagnosticExecutionError
-
-    def run_backend(requests, _data):
-        if len(requests) > 1:
-            raise DiagnosticExecutionError(
-                "combined execution is intentionally unavailable"
-            )
-        metric = requests[0]["metric"]
-        title = "%s Forest Plot" % metric
-        summary = "%s Summary" % metric
-        return {
-            "version": 1,
-            "texts": {summary: "%s ok" % metric},
-            "images": {title: "%s.png" % metric.lower()},
-            "display_images": {title: "%s.display.svg" % metric.lower()},
-            "image_var_names": {},
-            "image_params_paths": {},
-            "plot_capabilities": {
-                title: {
-                    "plot_kind": "forest",
-                    "editable": False,
-                    "styleable": True,
-                    "composition": "single",
-                    "regenerator": "forest",
-                }
-            },
-            "image_order": [title],
-            "sections": [
-                {
-                    "id": "diagnostic.%s.summary" % metric.lower(),
-                    "kind": "text",
-                    "order": 0,
-                    "title": summary,
-                    "source_key": summary,
-                },
-                {
-                    "id": "diagnostic.%s.forest" % metric.lower(),
-                    "kind": "image",
-                    "order": 1,
-                    "title": title,
-                    "source_key": title,
-                },
-            ],
-        }
-
-    monkeypatch.setattr(analysis_adapter.r_bridge, "run_versioned_analysis_requests", run_backend)
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "dataset_to_simple_diagnostic_r_object",
-        lambda *_args, **_kwargs: None,
-    )
-    requests = tuple(
-        analysis_adapter.make_analysis_request(
-            data_type="diagnostic",
-            workflow="standard",
-            method="diagnostic.random",
-            metric=metric,
-            parameters={},
-        )
-        for metric in ("Sens", "Spec")
-    )
-    model = type(
-        "Model",
-        (),
-        {
-            "included_studies_have_raw_data": lambda self: True,
-            "included_studies_have_point_estimates": lambda self, effect: True,
-        },
-    )()
-    result = analysis_adapter.execute_analysis_requests(model, requests)
-
-    assert result.display_images == {
-        "Sens Forest Plot": "sens.display.svg",
-        "Spec Forest Plot": "spec.display.svg",
-    }
-
-
-def test_unexpected_combined_diagnostic_error_is_not_retried(monkeypatch):
-    from rc_metastudio import analysis_adapter
-
-    calls = []
-
-    def run_backend(_requests, _data):
-        calls.append("combined")
-        raise ValueError("programming error")
-
-    monkeypatch.setattr(analysis_adapter.r_bridge, "run_versioned_analysis_requests", run_backend)
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "dataset_to_simple_diagnostic_r_object",
-        lambda *_args, **_kwargs: None,
-    )
-    requests = tuple(
-        analysis_adapter.make_analysis_request(
-            data_type="diagnostic",
-            workflow="standard",
-            method="diagnostic.random",
-            metric=metric,
-            parameters={"measure": metric},
-        )
-        for metric in ("Sens", "Spec")
-    )
-
-    model = type(
-        "Model",
-        (),
-        {
-            "included_studies_have_raw_data": lambda self: True,
-            "included_studies_have_point_estimates": lambda self, effect: True,
-        },
-    )()
-    with pytest.raises(ValueError, match="programming error"):
-        analysis_adapter.execute_analysis_requests(model, requests)
-    assert calls == ["combined"]
-
-
 def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
 
     app, window = automation.start_automation()
@@ -436,6 +283,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         for name in (
             "get_available_methods",
             "get_params",
+            "diagnostic_data_arguments",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
         )
@@ -473,43 +321,24 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             raising=False,
         )
 
-        def build_metric(model, **kwargs):
-            built_metrics.append(kwargs.get("metric", "Sens"))
+        def build_metric(_model, *, metric):
+            built_metrics.append(metric)
+            return {"y": [-0.1] if metric == "Sens" else [0.7], "SE": [0.2]}
 
         def run_metric(requests, data):
-            method_names = [request["method"] for request in requests]
-            param_vals = [request["params"] for request in requests]
-            multi_calls.append((list(method_names), [dict(p) for p in param_vals]))
-            metric = param_vals[0]["measure"]
-            summary = "%s Summary" % metric
+            multi_calls.append([request["params"]["measure"] for request in requests])
+            assert [entry["y"] for entry in data] == [[-0.1], [0.7]]
+            texts = {f"{metric} Summary": "ok" for metric in multi_calls[-1]}
             return {
-                "version": 1,
-                "texts": {
-                    summary: "ok",
-                },
-                "images": {},
-                "display_images": {},
-                "image_var_names": {},
-                "image_params_paths": {},
-                "image_order": None,
-                "plot_capabilities": {},
+                "version": 1, "texts": texts, "images": {},
                 "sections": [
-                    {
-                        "id": "diagnostic.%s.summary" % metric.lower(),
-                        "kind": "text",
-                        "order": 0,
-                        "title": summary,
-                        "source_key": summary,
-                    }
+                    {"id": f"diagnostic.{i}", "kind": "text", "order": i, "title": title, "source_key": title}
+                    for i, title in enumerate(texts)
                 ],
             }
 
-        _set_backend(
-            monkeypatch,
-            backend,
-            "dataset_to_simple_diagnostic_r_object",
-            build_metric,
-        )
+        _set_backend(monkeypatch, backend, "dataset_to_simple_diagnostic_r_object", lambda *_args, **_kwargs: None)
+        _set_backend(monkeypatch, backend, "diagnostic_data_arguments", build_metric)
         _set_backend(
             monkeypatch, backend, "run_versioned_analysis_requests", run_metric
         )
@@ -524,7 +353,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         form.run_ma()
 
         assert built_metrics == ["Sens", "Spec"]
-        assert [call[1][0]["measure"] for call in multi_calls] == ["Sens", "Spec"]
+        assert multi_calls == [["Sens", "Spec"]]
         assert results and sorted(results[0].texts) == [
             "Sens Summary",
             "Spec Summary",
@@ -561,18 +390,17 @@ def test_diagnostic_metric_dialog_does_not_run_without_selected_metrics(monkeypa
             lambda effect=None: False,
         )
         monkeypatch.setattr(
-            window,
-            "_build_analysis_specs_dialog",
-            lambda **kwargs: captured.append(kwargs),
-        )
-        monkeypatch.setattr(
             diagnostic_metrics_dialog.QMessageBox,
             "warning",
             lambda *args: warnings.append(args),
         )
 
+        def open_settings(metrics):
+            captured.extend(metrics)
+            return True
+
         form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-            window.model, parent=window
+            window.model, open_settings, parent=window
         )
 
         assert form.get_selected_metrics() == []
@@ -720,15 +548,10 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         label = "Fixed-effect inverse-variance"
         label_index = form.method_cbo_box.findText(label)
         assert label_index >= 0
-        controller = adaptive_controls.configure_choice_control(
+        adaptive_controls.configure_choice_control(
             form.method_cbo_box, visible_characters=28
         )
         app.processEvents()
-        baseline = (
-            controller.measurement_applied_count,
-            controller.tooltip_scan_applied_count,
-            controller.popup_clamp_applied_count,
-        )
         form.method_cbo_box.showPopup()
         settle = QtCore.QEventLoop()
         QtCore.QTimer.singleShot(20, settle.quit)
@@ -738,12 +561,6 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         available = adaptive_controls.available_geometry_for_choice_control(
             form.method_cbo_box
         )
-        applied = (
-            controller.measurement_applied_count - baseline[0],
-            controller.tooltip_scan_applied_count - baseline[1],
-            controller.popup_clamp_applied_count - baseline[2],
-        )
-        assert applied == (1, 1, 1)
         assert available.contains(popup.frameGeometry())
         if (
             form.method_cbo_box.view().sizeHintForColumn(0)

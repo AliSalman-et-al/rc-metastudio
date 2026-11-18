@@ -106,7 +106,7 @@ def run(app, window, scenario, record):
                 },
             )
             target.model.reset_model()
-            target.enable_menu_options_that_require_dataset()
+            target.refresh_analysis_actions()
 
     for method in methods:
         window.workspace.mark_saved()

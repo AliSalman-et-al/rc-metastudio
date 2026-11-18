@@ -5,14 +5,15 @@ import json
 
 def run(app, window, work, record):
     from analysis_matrix import run as matrix
-    from rc_metastudio import r_bridge
     from tests.e2e.analysis_result_checks import check_report
+    from tests.fit_observations import observe_fit
     for shape in ('continuous', 'factor', 'multiple'):
         for digits in (2, 6):
             window.workspace.mark_saved()
-            view = matrix(app, window, 'analysis-diagnostic-regression-' + shape, record,
-                          keep_results=True, parameters={'digits': digits})
-            raw = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(lapply(result$Summary[c("Sensitivity coefficients", "Specificity coefficients")], function(x) unname(as.matrix(x))), digits=16, na="null")')[0]))
+            with observe_fit() as fit:
+                view = matrix(app, window, 'analysis-diagnostic-regression-' + shape, record,
+                              keep_results=True, parameters={'digits': digits})
+            raw = json.loads(str(fit.evaluate('jsonlite::toJSON(lapply(result$Summary[c("Sensitivity coefficients", "Specificity coefficients")], function(x) unname(as.matrix(x))), digits=16, na="null")')[0]))
             tables = {table.title: table for section in view.results.sections for table in section.tables}
             for name, rows in raw.items():
                 table = tables[name]

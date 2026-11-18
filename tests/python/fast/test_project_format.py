@@ -14,7 +14,7 @@ import pytest
 
 import rc_metastudio.project_format as project_format
 from rc_metastudio import project_adapter
-from rc_metastudio.project_domain import validate_project_semantics, ProjectSemanticError
+from rc_metastudio.project_domain import ProjectSemanticError, is_empty_entry_row, validate_project_semantics
 from rc_metastudio.project_format import (
     CURRENT_FORMAT_VERSION,
     ProjectArchiveLimits,
@@ -1006,7 +1006,7 @@ def _sheet_semantics(project):
     """Ignore entry rows and cache metadata; compare every stored measurement."""
     project = copy.deepcopy(project)
     for sheet in project["sheets"]:
-        sheet["rows"] = [row for row in sheet["rows"] if not project_format.is_empty_entry_row(row)]
+        sheet["rows"] = [row for row in sheet["rows"] if not is_empty_entry_row(row)]
         for row in sheet["rows"]:
             row["entered_effects"].sort(key=lambda entry: (entry["metric"], entry["arms"]))
             for entry in row["entered_effects"]:

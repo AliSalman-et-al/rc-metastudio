@@ -17,9 +17,6 @@
 \alias{loo.ma.binary}
 \alias{loo.ma.continuous}
 \alias{loo.ma.diagnostic}
-\alias{multiple.cum.ma.diagnostic}
-\alias{multiple.loo.diagnostic}
-\alias{multiple.subgroup.diagnostic}
 \alias{plot.custom.boot}
 \alias{subgroup.ma.binary}
 \alias{subgroup.ma.continuous}
@@ -33,7 +30,7 @@ multiple diagnostic analysis requests.
 \section{Cumulative analyses}{
 
 \code{cum.ma.binary()}, \code{cum.ma.continuous()},
-\code{cum.ma.diagnostic()}, and \code{multiple.cum.ma.diagnostic()} build
+and \code{cum.ma.diagnostic()} build
 cumulative result lists. \code{construct.sequential.res.output()} formats
 repeated-analysis output.
 }
@@ -41,14 +38,14 @@ repeated-analysis output.
 \section{Leave-one-out analyses}{
 
 \code{loo.ma.binary()}, \code{loo.ma.continuous()},
-\code{loo.ma.diagnostic()} and \code{multiple.loo.diagnostic()} support
+and \code{loo.ma.diagnostic()} support
 influence-style workflows.
 }
 
 \section{Subgroup analyses}{
 
 \code{subgroup.ma.binary()}, \code{subgroup.ma.continuous()},
-\code{subgroup.ma.diagnostic()}, and \code{multiple.subgroup.diagnostic()}
+and \code{subgroup.ma.diagnostic()}
 split data by covariate levels and
 format subgroup results.
 }

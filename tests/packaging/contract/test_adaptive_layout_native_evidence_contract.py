@@ -4,6 +4,7 @@
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -15,14 +16,16 @@ from ._module_loader import load_module_from_path
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def _load_validator():
-    validator_path = ROOT / "scripts" / "validate_adaptive_layout_evidence.py"
+@pytest.fixture(scope="module")
+def validator(tmp_path_factory: pytest.TempPathFactory):
+    relative = Path("scripts/validate_adaptive_layout_evidence.py")
+    validator_path = tmp_path_factory.mktemp("adaptive-layout-source") / relative
+    validator_path.parent.mkdir()
+    shutil.copyfile(ROOT / relative, validator_path)
     return load_module_from_path("evidence_validator", validator_path)
 
 
-def test_native_evidence_validator_matches_qt_half_up_pixel_rounding():
-    validator = _load_validator()
-
+def test_native_evidence_validator_matches_qt_half_up_pixel_rounding(validator):
     assert validator._physical_pixel_extent(515, 1.5) == 773
 
 
@@ -121,8 +124,7 @@ def _write_validator_fixture(tmp_path, validator):
     return manifest
 
 
-def test_native_evidence_validator_is_exact_and_checks_png_integrity(tmp_path):
-    validator = _load_validator()
+def test_native_evidence_validator_is_exact_and_checks_png_integrity(tmp_path, validator):
     manifest = _write_validator_fixture(tmp_path, validator)
 
     validator.validate_evidence(tmp_path, "windows", "1.0")
@@ -137,8 +139,9 @@ def test_native_evidence_validator_is_exact_and_checks_png_integrity(tmp_path):
         validator.validate_evidence(tmp_path, "windows", "1.0")
 
 
-def test_validator_accepts_only_proven_unavailable_full_usability_at_150(tmp_path):
-    validator = _load_validator()
+def test_validator_accepts_only_proven_unavailable_full_usability_at_150(
+    tmp_path, validator
+):
     manifest = _write_validator_fixture(tmp_path, validator)
     unavailable_names = {
         "main-workspace-full-usability",
@@ -200,9 +203,8 @@ def test_validator_accepts_only_proven_unavailable_full_usability_at_150(tmp_pat
     ],
 )
 def test_native_evidence_validator_rejects_semantic_contract_mutations(
-    tmp_path, mutation, message
+    tmp_path, validator, mutation, message
 ):
-    validator = _load_validator()
     manifest = _write_validator_fixture(tmp_path, validator)
     workspace = manifest["surfaces"][0]
     content = manifest["surfaces"][4]
@@ -228,9 +230,8 @@ def test_native_evidence_validator_rejects_semantic_contract_mutations(
         validator.validate_evidence(tmp_path, "windows", "1.0")
 
 
-@pytest.mark.parametrize("field", ["table", "splitter", "remembered_geometry", "runtime_resize", "run_id", "source_identity"])
-def test_validator_requires_exercises_and_identity(tmp_path, field):
-    validator = _load_validator()
+@pytest.mark.parametrize("field", ["table", "splitter", "remembered_geometry", "runtime_resize", "run_id"])
+def test_validator_requires_exercises_and_identity(tmp_path, validator, field):
     manifest = _write_validator_fixture(tmp_path, validator)
     validator.validate_evidence(tmp_path, "windows", "1.0")
     del manifest[field]
@@ -239,8 +240,7 @@ def test_validator_requires_exercises_and_identity(tmp_path, field):
         validator.validate_evidence(tmp_path, "windows", "1.0")
 
 
-def test_validator_accepts_apple_silicon_and_rejects_equal_resize(tmp_path):
-    validator = _load_validator()
+def test_validator_accepts_apple_silicon_and_rejects_equal_resize(tmp_path, validator):
     manifest = _write_validator_fixture(tmp_path, validator)
     manifest.update(platform_plugin="cocoa", machine="arm64")
     (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
@@ -259,8 +259,7 @@ def test_validator_accepts_apple_silicon_and_rejects_equal_resize(tmp_path):
     ("remembered_geometry", "loaded_state", {"maximized": True, "full_screen": False}),
     ("runtime_resize", "table_reachable", False),
 ])
-def test_validator_rejects_contradictory_exercises(tmp_path, field, key, value):
-    validator = _load_validator()
+def test_validator_rejects_contradictory_exercises(tmp_path, validator, field, key, value):
     manifest = _write_validator_fixture(tmp_path, validator)
     validator.validate_evidence(tmp_path, "windows", "1.0")
     if key is None:

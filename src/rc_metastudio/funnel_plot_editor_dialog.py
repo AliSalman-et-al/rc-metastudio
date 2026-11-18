@@ -5,14 +5,15 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
-from rc_metastudio import adaptive_window, qt_text
+from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -52,11 +53,13 @@ POINT_SYMBOL_LABELS = {value: label for label, value in POINT_SYMBOL_VALUES.item
 class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     """Keep funnel editing separate from forest and regression controls."""
 
-    applied = pyqtSignal()
-
-    def __init__(self, plot_params, image_path, parent=None, plot_type="funnel"):
+    def __init__(
+        self, plot_params, image_path, parent=None, plot_type="funnel",
+        *, on_commit: Callable[[dict[str, object]], None] | None = None,
+    ):
         super().__init__(parent)
         self.setupUi(self)
+        self._on_commit = on_commit
         self._configure_accessibility()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
@@ -72,8 +75,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.appearance_layout.addWidget(caption_label, caption_row, 0)
         self.appearance_layout.addWidget(self.figure_caption, caption_row, 1, 1, caption_columns - 1)
         self._dirty = False
-        self._pending_ok = False
-        self._allow_close = True
         try:
             self._funnel_index = max(
                 1, int(self._scalar(self._params.get("funnel.index", 1)))
@@ -116,7 +117,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                     self._choose_color(color_edit, color_button, dialog_title)
                 )
             )
-        self.button_box.clicked.connect(self._button_clicked)
+        apply_button = required(self.button_box.button(QDialogButtonBox.StandardButton.Apply), "funnel Apply button")
+        apply_button.clicked.connect(self._commit)
         self._connect_dirty_signals()
         align_field_columns((self.appearance_layout, self.confidence_layout, self.axis_layout))
         size_plot_text_editor(self)
@@ -209,38 +211,25 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     def _mark_dirty(self, *_args):
         self._dirty = True
 
-    def _button_clicked(self, button):
-        button_type = self.button_box.standardButton(button)
-        if button_type == QDialogButtonBox.StandardButton.Apply:
-            self._commit()
-        elif button_type == QDialogButtonBox.StandardButton.Ok and self._dirty:
-            self._pending_ok = True
-            self._allow_close = False
-            self._commit()
-
-    def _commit(self):
+    def _commit(self) -> bool:
         try:
-            self.plot_params()
+            params = self.plot_params()
         except ValueError as error:
-            self._allow_close = False
             QMessageBox.warning(self, "Invalid funnel settings", str(error))
-            return
-        self.applied.emit()
-
-    def mark_commit_succeeded(self):
-        """Clear dirty state after the synchronous Results regeneration succeeds."""
-        self._params = self.plot_params()
+            return False
+        try:
+            if self._on_commit is not None:
+                self._on_commit(params)
+        except Exception as error:
+            app_error_handler.handle_exception(type(error), error, error.__traceback__, parent=self)
+            return False
+        self._params = params
         self._dirty = False
-        self._allow_close = True
+        return True
 
-    def mark_commit_failed(self):
-        """Keep edits pending when Results regeneration fails."""
-        self._allow_close = False
-
-    def accept(self):
-        if self._pending_ok and not self._allow_close:
-            return
-        super().accept()
+    def accept(self) -> None:
+        if not self._dirty or self._commit():
+            super().accept()
 
     def _kind_from_params(self):
         kind = self._scalar(self._params.get("funnel.kind"))

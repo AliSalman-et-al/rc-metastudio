@@ -22,7 +22,7 @@ def run_predictions(app, window, work, record):
                     target.model.add_covariate('Region', 'factor',
                         {s.label: 'A' if i % 2 else 'B' for i,s in enumerate(target.model.get_studies(False))})
                     target.model.reset_model()
-                    target.enable_menu_options_that_require_dataset()
+                    target.refresh_analysis_actions()
             window.workspace.mark_saved()
             view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
                           metric_override=measure, workflow_override=workflow, prepare=prepare,

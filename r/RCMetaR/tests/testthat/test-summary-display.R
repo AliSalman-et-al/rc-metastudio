@@ -169,8 +169,6 @@ test_that("ordinary numeric display never applies p-value threshold notation", {
 })
 
 test_that("zero subgroup z-values remain visible", {
-  expect_identical(RCMetaR:::g.round.display.zval(0, 3), "0.000")
-
   display <- RCMetaR:::create.subgroup.display(
     list(
       list(

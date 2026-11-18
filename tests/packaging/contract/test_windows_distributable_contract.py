@@ -77,13 +77,12 @@ def _load_source_provenance():
     return module
 
 
-@pytest.mark.parametrize("options", [[], ["--version-only"]])
-def test_package_metadata_needs_no_ambient_rscript(tmp_path, options):
+def test_package_metadata_needs_no_ambient_rscript(tmp_path):
     output = tmp_path / "github-output.txt"
     env = {**os.environ, "GITHUB_OUTPUT": str(output), "PATH": ""}
     script = ROOT / "scripts" / "resolve_package_ci_metadata.py"
     result = subprocess.run(
-        [sys.executable, str(script), *options],
+        [sys.executable, str(script)],
         env=env,
         text=True,
         capture_output=True,
@@ -143,33 +142,6 @@ def test_frozen_windows_bootstrap_indexes_all_private_native_directories(tmp_pat
         Path(path) for path in r_runtime._private_windows_dll_directories(r_home)
     }
     assert observed == {path.resolve() for path in expected}
-
-
-def test_frozen_direct_runtime_probe_validates_private_r_without_a_kit(
-    monkeypatch, tmp_path
-):
-    from tests.python.gui.support import automation_scenarios as automation
-
-    app = tmp_path / "RCMetaStudio"
-    executable = app / "RCMetaStudio.exe"
-    executable.parent.mkdir(parents=True)
-    executable.write_bytes(b"exe")
-    api_bridge = app / "_internal" / "_rinterface_cffi_api.pyd"
-    api_bridge.parent.mkdir()
-    api_bridge.write_bytes(b"api")
-    r_home = app / "R"
-    r_dll = r_home / "bin" / "x64" / "R.dll"
-    r_dll.parent.mkdir(parents=True)
-    r_dll.write_bytes(b"R")
-
-    monkeypatch.setattr(automation.sys, "executable", str(executable))
-    shared_library, direct_spike = automation._verified_frozen_runtime_shared_library(
-        {"R_HOME": str(r_home), "derivation": {}, "direct_spike": False},
-        api_bridge.resolve(),
-    )
-
-    assert shared_library == r_dll.resolve()
-    assert direct_spike is False
 
 
 def test_frozen_windows_runtime_bootstraps_without_a_kit(monkeypatch, tmp_path):
@@ -451,18 +423,24 @@ def test_windows_deployment_inspector_resolves_wheel_private_libs_directory():
 
 def test_windows_deployment_inspector_recognizes_supported_os_imports():
     inspector = _load_windows_deployment_inspector()
-
-    assert all(
-        inspector._is_windows_system_import(name)
-        for name in (
-            "AUTHZ.dll",
-            "DWrite.dll",
-            "icuuc.dll",
-            "pdh.dll",
-            "UIAutomationCore.DLL",
-            "WTSAPI32.dll",
-        )
+    imports = (
+        "AUTHZ.dll",
+        "DWrite.dll",
+        "icuuc.dll",
+        "pdh.dll",
+        "UIAutomationCore.DLL",
+        "WTSAPI32.dll",
     )
+    records = [{
+        "path": "_internal/PyQt6/Qt6/bin/Qt6Core.dll",
+        "_imports": [{"name": name, "kind": "normal"} for name in imports],
+    }]
+
+    inspector._resolve_pe_closure(records)
+
+    assert records[0]["imports"] == [
+        {"name": name, "kind": "normal", "resolution": "system"} for name in imports
+    ]
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="requires Windows PE tooling")

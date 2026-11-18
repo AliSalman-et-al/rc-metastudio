@@ -50,7 +50,7 @@ Run `uv run python scripts/verify_rcms.py calculator-mode-<suffix>`:
 | `continuous-metrics` | MD/SMD selector and mean edit; exact Hedges correction |
 | `diagnostic-metrics` | Sens/Spec selector and count edit; proportions from counts |
 | `onearm-proportion`, `onearm-mean` | Actual one-arm wizard, PR/mean calculator, accepted data and missing second arm |
-| `entered-binary`, `entered-continuous`, `entered-diagnostic` | Clear, entered estimate and both CI bounds; independent log/identity/logit storage; entered triplet survives Cancel, undo/redo and reopen |
+| `entered-binary`, `entered-continuous`, `entered-diagnostic` | Clear, enter an estimate and both CI bounds, then check independent log/identity/logit storage after Cancel, undo/redo and reopen. The diagnostic case fits specificity with only its entered estimate available for the edited study. |
 | `pre-post` | Mode switching preserves existing arm summaries; Clear recovers invalid input; both groups' pre/post tables, correlation 0 then .5, independent mean/variance; deleting a required mean clears its derived arm and preview |
 | `back-binary` | Independently known OR/CI and totals reconstruct a valid ambiguous count candidate; nested Cancel before candidate 1 |
 | `back-continuous` | MD/CI and partial N/mean/SD reconstruct the missing mean; nested Cancel before equal-SD candidate 1 |
@@ -73,7 +73,7 @@ continue to compare the accepted data and pooled analysis with their references.
 
 Use targeted drives for RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS previews, and additional invalid partial inputs.
 
-Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.
+Entered diagnostic acceptance must retain study inclusion. Clear the counts and enter only specificity. Require Spec enabled and Sens, DOR and LR disabled. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again. Both unusable inputs must exclude the study, and Undo must restore the included entered-only data each time.
 
 
 ## Complete preview values

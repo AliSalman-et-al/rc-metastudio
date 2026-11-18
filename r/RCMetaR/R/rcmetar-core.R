@@ -15,6 +15,15 @@
 #' that validation, dispatch, and future compatibility changes are centralized
 #' in rcmetar.
 #'
+#' @section Diagnostic requests:
+#' \code{rcmetar.run.diagnostic.analyses()} accepts either a shared
+#' \code{DiagnosticData} object or \code{request.data}, one named list of
+#' \code{rcmetar.create.diagnostic.data()} arguments per entry in
+#' \code{request.list}. Omit \code{allow.partial} for strict failure on any
+#' request. With \code{allow.partial=TRUE}, a failed fit or input construction
+#' leaves a metric error alongside the successful results. If no request
+#' succeeds, the function raises an error containing each failed metric.
+#'
 #' @param om.data An RCMetaR data object: \code{BinaryData},
 #'   \code{ContinuousData}, or \code{DiagnosticData}.
 #' @param request Optional named list with entries \code{method},
@@ -620,112 +629,199 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     .rcmetar.attach.request(result, request)
 }
 
-.rcmetar.prepare.diagnostic.request.list <- function(diagnostic.data, request.list) {
-    if (!is.list(request.list) || !length(request.list)) {
-        stop("Diagnostic request list must contain at least one request.", call.=FALSE)
-    }
-    validated <- lapply(request.list, function(request) {
-        checked <- rcmetar.validate.analysis.request(diagnostic.data, request=request)
-        request$version <- 1L
-        request$data_type <- checked$data.type
-        request$method <- checked$method
-        request$metric <- as.character(request$metric %||% checked$params$measure %||% "")
-        request$params <- checked$params
-        request$workflow <- checked$workflow
-        request$selected.cov <- checked$selected.cov
-        request$cond.means.data <- checked$cond.means.data
-        request$stop.at.rma <- checked$stop.at.rma
-        request
-    })
-    workflows <- unique(vapply(validated, function(request) as.character(request$workflow), character(1)))
-    if (length(workflows) != 1L) {
-        stop("Diagnostic request list cannot mix analysis workflows.", call.=FALSE)
-    }
-    list(
-        requests=validated,
-        methods=vapply(validated, function(request) as.character(request$method), character(1)),
-        params.list=lapply(validated, function(request) request$params),
-        workflow=workflows[[1L]],
-        selected.cov=validated[[1L]]$selected.cov
-    )
+.rcmetar.diagnostic.attempt <- function(work, allow.partial) {
+    if (allow.partial) tryCatch(work, error=identity) else work
 }
 
-.rcmetar.finish.diagnostic.analysis <- function(result, methods, params.list,
-                                                workflow, validated.requests) {
+.rcmetar.fit.diagnostic.request <- function(data, request) {
+    params <- request$params
+    if (request$method == "diagnostic.reitsma") {
+        params$joint.metrics <- unique(c(
+            unlist(strsplit(paste(as.character(params$joint.metrics %||% character()), collapse=","), "[,[:space:]]+")),
+            params$measure
+        ))
+        return(diagnostic.reitsma(data, params))
+    }
+    prepared <- rcmetar.diagnostic.prepare(data, params)
+    if (request$workflow == "standard") {
+        return(rcmetar.diagnostic.fit(prepared, request$method, params))
+    }
+    request$data.type <- request$data_type
+    .rcmetar.dispatch.meta.workflow(prepared, request)
+}
+
+.rcmetar.diagnostic.report <- function(outcomes, requests, report.order, reference.order, artifact.request) {
+    failed <- vapply(outcomes, inherits, logical(1), "error")
+    if (length(outcomes) && all(failed)) {
+        details <- vapply(seq_along(outcomes), function(i)
+            paste0(requests[[i]]$metric, " failed: ", conditionMessage(outcomes[[i]])), character(1))
+        stop(paste(details, collapse="\n"), call.=FALSE)
+    }
+    result <- list()
+    images <- image.order <- plot.names <- plot.paths <- warnings <- NULL
+    sections <- capabilities <- error.sections <- list()
+    standard <- artifact.request$workflow == "standard"
+    for (i in report.order) {
+        if (failed[[i]]) {
+            metric <- requests[[i]]$metric
+            title <- paste(metric, "Error")
+            result[[title]] <- conditionMessage(outcomes[[i]])
+            error.sections <- c(error.sections, list(list(
+                id=paste0("diagnostic.", tolower(metric), ".error"), kind="text",
+                order=0L, title=title, source_key=title
+            )))
+        } else {
+            item <- outcomes[[i]]
+            result <- c(result, item$summary)
+            images <- c(images, item$images)
+            image.order <- c(image.order, item$image.order)
+            plot.names <- c(plot.names, item$plot.names)
+            plot.paths <- c(plot.paths, item$plot.paths)
+            capabilities <- c(capabilities, item$plot.capabilities)
+            sections <- c(sections, item$sections)
+            warnings <- c(warnings, item$warnings)
+        }
+    }
+    references <- rcmetar.unique.references(unlist(lapply(outcomes[reference.order], function(item) {
+        if (!inherits(item, "error")) item$references
+    }), use.names=FALSE))
+    if (standard) {
+        result <- c(result, list(images=images, image_order=image.order, plot_names=plot.names,
+                                plot_params_paths=plot.paths, plot_capabilities=capabilities,
+                                sections=sections, References=references))
+    } else {
+        result <- c(result, list(images=images, plot_names=plot.names,
+                                plot_params_paths=plot.paths, References=references))
+    }
+    if (length(warnings)) result[["Analysis warnings"]] <- paste(unique(warnings), collapse="\n")
     result <- .rcmetar.attach.inference.method(result)
-    artifact.request <- list(
-        version=1L,
-        data_type="diagnostic",
-        methods=as.character(methods),
-        params.list=params.list,
-        workflow=workflow
-    )
-    result.request <- if (is.null(validated.requests)) artifact.request else validated.requests
     result <- .rcmetar.attach.plot.display.artifacts(result, artifact.request)
     result <- .rcmetar.attach.plot.capabilities(result, artifact.request)
-    .rcmetar.attach.request(result, result.request)
+    if (length(error.sections)) result$sections <- c(result$sections, error.sections)
+    result
 }
 
-rcmetar.run.diagnostic.analyses <- function(diagnostic.data, methods=NULL, params.list=NULL, workflow="standard", selected.cov=NULL, request.version=1, request.list=NULL) {
-    if (length(request.version) != 1 || !identical(as.integer(request.version), 1L)) {
+.rcmetar.diagnostic.request.envelope <- function(request, workflow) {
+    if (!is.list(request) || is.null(names(request))) {
+        stop("Diagnostic request list must contain named requests.", call.=FALSE)
+    }
+    version <- request$version %||% 1L
+    if (length(version) != 1L || !identical(as.integer(version), 1L)) {
         stop("Unsupported analysis request version.", call.=FALSE)
     }
-    if (!("DiagnosticData" %in% class(diagnostic.data))) {
-        stop("DiagnosticData object expected.", call.=FALSE)
+    if (!identical(request$data_type %||% "diagnostic", "diagnostic")) {
+        stop("Analysis request data_type does not match the input data.", call.=FALSE)
     }
-    validated.requests <- NULL
-    if (!is.null(request.list)) {
-        prepared <- .rcmetar.prepare.diagnostic.request.list(diagnostic.data, request.list)
-        validated.requests <- prepared$requests
-        methods <- prepared$methods
-        params.list <- prepared$params.list
-        workflow <- prepared$workflow
-        selected.cov <- prepared$selected.cov
-    } else if (length(methods) != length(params.list)) {
-        stop("Diagnostic methods and parameter lists must have the same length.", call.=FALSE)
+    request$params <- .rcmetar.as.params.list(request$params)
+    metric <- as.character(request$metric %||% request$params$measure %||% "")
+    if (length(metric) != 1L || is.na(metric) || !nzchar(metric)) {
+        stop("Analysis request must include one metric.", call.=FALSE)
     }
+    request$metric <- metric
+    request$workflow <- .rcmetar.normalize.workflow(request$workflow %||% workflow)
+    request$method <- .rcmetar.validate.method.name(request$method)
+    request
+}
 
-    workflow <- .rcmetar.normalize.workflow(workflow)
+.rcmetar.diagnostic.batch <- function(request.list, methods, params.list, workflow, selected.cov) {
+    legacy <- is.null(request.list)
+    if (legacy) {
+        if (length(methods) != length(params.list)) {
+            stop("Diagnostic methods and parameter lists must have the same length.", call.=FALSE)
+        }
+        request.list <- lapply(seq_along(methods), function(i) {
+            params <- .rcmetar.as.params.list(params.list[[i]])
+            list(version=1L, data_type="diagnostic", metric=params$measure %||% "DOR",
+                 method=methods[[i]], params=params, workflow=workflow, selected.cov=selected.cov)
+        })
+    } else if (!is.list(request.list) || !length(request.list)) {
+        stop("Diagnostic request list must contain at least one request.", call.=FALSE)
+    }
+    requests <- lapply(request.list, .rcmetar.diagnostic.request.envelope, workflow=workflow)
+    workflows <- unique(vapply(requests, `[[`, character(1), "workflow"))
+    if (length(workflows) > 1L) stop("Diagnostic request list cannot mix analysis workflows.", call.=FALSE)
+    workflow <- if (length(workflows)) workflows[[1L]] else .rcmetar.normalize.workflow(workflow)
     if (!(workflow %in% c("standard", "cumulative", "leave-one-out", "subgroup"))) {
         stop(sprintf("Diagnostic multi-analysis does not support workflow '%s'.", workflow), call.=FALSE)
     }
-
-    params.list <- lapply(params.list, .rcmetar.as.params.list)
-    if (length(params.list) > 0 && !is.null(params.list[[1]]$measure) &&
-        !any(methods == "diagnostic.reitsma")) {
-        diagnostic.data <- rcmetar.prepare.analysis.data(diagnostic.data, params.list[[1]])
+    methods <- vapply(requests, `[[`, character(1), "method")
+    supported <- rcmetar.analysis.methods("diagnostic", workflow)
+    if (!all(methods %in% supported)) {
+        stop(sprintf("Diagnostic methods not supported for %s analysis: %s.",
+                     workflow, paste(setdiff(methods, supported), collapse=", ")), call.=FALSE)
     }
-    for (i in seq_along(methods)) {
-        rcmetar.validate.analysis.request(
-            diagnostic.data,
-            request=list(
-                version=1L,
-                data_type="diagnostic",
-                metric=as.character(params.list[[i]]$measure %||% "DOR"),
-                method=methods[[i]],
-                params=params.list[[i]],
-                workflow=workflow,
-                selected.cov=selected.cov
-            )
-        )
+    joint <- which(methods == "diagnostic.reitsma")
+    if (length(joint) > 1L) stop("Only one diagnostic.reitsma request is allowed; use joint.metrics for Sensitivity and Specificity.", call.=FALSE)
+    list(requests=requests, methods=methods, workflow=workflow, legacy=legacy,
+         fit.order=c(joint, setdiff(seq_along(requests), joint)))
+}
+
+.rcmetar.diagnostic.inputs <- function(shared, request.data, batch, allow.partial) {
+    if (is.null(request.data)) {
+        if (!is(shared, "DiagnosticData")) stop("DiagnosticData object expected.", call.=FALSE)
+        return(rep(list(shared), length(batch$requests)))
     }
+    if (!is.null(shared) || batch$legacy || !is.list(request.data) ||
+            length(request.data) != length(batch$requests)) {
+        stop("request.data must contain one input per request instead of shared diagnostic data.", call.=FALSE)
+    }
+    lapply(request.data, function(args)
+        .rcmetar.diagnostic.attempt(do.call(rcmetar.create.diagnostic.data, args), allow.partial))
+}
 
-    package.warnings <- character()
-    result <- withCallingHandlers(switch(
-        workflow,
-        standard=multiple.diagnostic(methods, params.list, diagnostic.data),
-        cumulative=multiple.cum.ma.diagnostic(methods, params.list, diagnostic.data),
-        "leave-one-out"=multiple.loo.diagnostic(methods, params.list, diagnostic.data),
-        subgroup=multiple.subgroup.diagnostic(methods, params.list, diagnostic.data)
-    ), warning=function(condition) {
-        package.warnings <<- unique(c(package.warnings, conditionMessage(condition)))
-    })
-    if (length(package.warnings))
-        result[["Analysis warnings"]] <- paste(package.warnings, collapse="\n")
+.rcmetar.diagnostic.check.request <- function(input, request, selected.cov) {
+    if (inherits(input, "error")) return(request)
+    checked <- rcmetar.validate.analysis.request(input, request=request, selected.cov=selected.cov)
+    request$version <- 1L
+    request$data_type <- checked$data.type
+    request$method <- checked$method
+    request$params <- checked$params
+    request$params$measure <- checked$params$measure %||% request$metric
+    request$workflow <- checked$workflow
+    request$selected.cov <- checked$selected.cov
+    request$cond.means.data <- checked$cond.means.data
+    request$stop.at.rma <- checked$stop.at.rma
+    request
+}
 
-    .rcmetar.finish.diagnostic.analysis(
-        result, methods, params.list, workflow, validated.requests
-    )
+.rcmetar.diagnostic.outcome <- function(data, request, allow.partial) {
+    if (inherits(data, "error")) return(data)
+    warnings <- character()
+    fit <- .rcmetar.diagnostic.attempt(withCallingHandlers(
+        .rcmetar.fit.diagnostic.request(data, request),
+        warning=function(condition) warnings <<- c(warnings, conditionMessage(condition))
+    ), allow.partial)
+    if (inherits(fit, "error")) return(fit)
+    contribution <- .rcmetar.diagnostic.contribution(fit, request)
+    contribution$warnings <- warnings
+    contribution
+}
+
+rcmetar.run.diagnostic.analyses <- function(diagnostic.data=NULL, methods=NULL, params.list=NULL,
+                                             workflow="standard", selected.cov=NULL, request.version=1,
+                                             request.list=NULL, request.data=NULL, allow.partial=FALSE) {
+    if (length(request.version) != 1 || !identical(as.integer(request.version), 1L)) {
+        stop("Unsupported analysis request version.", call.=FALSE)
+    }
+    if (!identical(allow.partial, FALSE) && !identical(allow.partial, TRUE)) {
+        stop("allow.partial must be TRUE or FALSE.", call.=FALSE)
+    }
+    batch <- .rcmetar.diagnostic.batch(request.list, methods, params.list, workflow, selected.cov)
+    data <- .rcmetar.diagnostic.inputs(diagnostic.data, request.data, batch, allow.partial)
+    requests <- Map(.rcmetar.diagnostic.check.request, data, batch$requests,
+                    MoreArgs=list(selected.cov=selected.cov))
+    outcomes <- vector("list", length(requests))
+    for (i in batch$fit.order) {
+        outcomes[[i]] <- .rcmetar.diagnostic.outcome(data[[i]], requests[[i]], allow.partial)
+    }
+    failed <- vapply(outcomes, inherits, logical(1), "error")
+    if (batch$workflow == "standard" && (length(outcomes) == 0L || !all(failed))) graphics.off()
+    artifact.request <- list(version=1L, data_type="diagnostic", methods=batch$methods,
+                             params.list=lapply(requests, `[[`, "params"), workflow=batch$workflow)
+    report.order <- if (any(failed)) seq_along(requests) else batch$fit.order
+    reference.order <- if (allow.partial) seq_along(requests) else batch$fit.order
+    result <- .rcmetar.diagnostic.report(outcomes, requests, report.order, reference.order, artifact.request)
+    .rcmetar.attach.request(result, if (batch$legacy) artifact.request else requests)
 }
 
 rcmetar.run.permutation <- function(data, method="REML", mods=NULL, level=95, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS, iter=1000,

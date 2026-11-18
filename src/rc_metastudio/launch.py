@@ -327,7 +327,6 @@ def compose_application(
         meta.destroyed.connect(lambda: os.chdir(previous_directory))
         _emit_automation_phase(phase_callback, "window:visible")
         if runtime_error is not None:
-            meta.toggle_menu_options_that_require_dataset(False)
             app.processEvents()
             meta._show_analysis_backend_error(runtime_error, startup=True)
         return app, meta

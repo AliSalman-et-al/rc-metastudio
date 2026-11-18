@@ -1,10 +1,10 @@
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QEvent, QObject, Qt
 from PyQt6.QtWidgets import QDialog, QMessageBox, QWidget
 
 from rc_metastudio import app_error_handler
-from rc_metastudio import analysis_setup_dialog
 from rc_metastudio import adaptive_window
 from rc_metastudio.analysis_catalog import DIAGNOSTIC_METRIC_GROUPS, ALL_METRIC_NAMES
 
@@ -21,7 +21,9 @@ class DiagnosticMetricsDialog(
 ):
     SELECTABLE_METRICS = ["sens", "spec", "dor", "lr"]
 
-    def __init__(self, model, parent=None, analysis_type=None, external_params=None):
+    def __init__(
+        self, model, open_settings: Callable[[list[str]], bool], parent=None
+    ):
         super(DiagnosticMetricsDialog, self).__init__(parent)
         self.setupUi(self)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
@@ -30,9 +32,7 @@ class DiagnosticMetricsDialog(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
         self.model = model
-        self.owner = parent
-        self.external_params = external_params
-        self.analysis_type = analysis_type
+        self._open_settings = open_settings
         self.btn_cancel.clicked.connect(self.reject)
         self.btn_ok.clicked.connect(app_error_handler.safe_slot(self.ok, parent=self))
         self._configure_metric_checkboxes()
@@ -73,30 +73,8 @@ class DiagnosticMetricsDialog(
             )
             return
 
-        # Use the parent's builder so dialog-construction failures reach the
-        # shared error handler instead of disappearing in the Qt event loop.
-        parent = self.parentWidget()
-        builder = getattr(parent, "_build_analysis_specs_dialog", None)
-        if builder is not None:
-            form = builder(
-                analysis_type=self.analysis_type,
-                external_params=self.external_params,
-                diagnostic_metrics=selected_metrics,
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = analysis_setup_dialog.AnalysisSetupDialog(
-                self.model,
-                parent=parent,
-                analysis_type=self.analysis_type,
-                external_params=self.external_params,
-                diagnostic_metrics=selected_metrics,
-                confidence_level=self.model.get_confidence_level(),
-            )
-        if form is None:
-            return
-        form.show()
-        self.accept()
+        if self._open_settings(selected_metrics):
+            self.accept()
 
     def get_selected_metrics(self):
         selected_metrics = []

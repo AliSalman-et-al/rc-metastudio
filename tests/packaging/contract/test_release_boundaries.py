@@ -113,8 +113,7 @@ def test_input_classification_executes_workflow(tmp_path, old, new, source_requi
     assert result.returncode == 0, result.stderr
     outputs = (tmp_path / "outputs").read_text()
     fields = dict(line.split("=", 1) for line in outputs.splitlines())
-    assert fields["run-windows"] == str(source_required).lower()
-    assert fields["run-linux"] == str(source_required).lower()
+    assert fields["run-source"] == str(source_required).lower()
     assert fields["run-windows-package"] == str(package_required).lower()
 
 

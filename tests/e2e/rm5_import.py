@@ -48,7 +48,7 @@ def run(app, window, ROOT, WORK, record_step):
                     [int(r.attrib[k]) for k in ('TP', 'FN', 'FP', 'TN')])
                     for r in t.findall('TEST_DATA/TEST_DATA_ENTRY')])
                     for t in dta_xml.findall('ANALYSES_AND_DATA/TESTS/TEST')]
-    from rc_metastudio.rm5_import import review_rm5
+    from rc_metastudio.rm5_review_dialog import review_rm5
     def dta_review():
         dialog = app.activeModalWidget()
         table = dialog.findChild(QtWidgets.QTableWidget)
@@ -56,7 +56,9 @@ def run(app, window, ROOT, WORK, record_step):
         record_step('rm5-dta-review', dialog)
         dialog.accept()
     QtCore.QTimer.singleShot(0, dta_review)
-    window.set_model(review_rm5(dta_source, window))
+    dta_import = read_rm5(dta_source)
+    assert review_rm5(dta_import, window)
+    window.set_model(dta_import.dataset)
     for sheet, (name, rows) in zip(window.model.dataset.sheets, expected_dta):
         assert sheet.name == name
         assert [(r.label, next(iter(r.analysis_unit.arms.values())).raw_data) for r in sheet.rows] == rows
@@ -109,7 +111,7 @@ def run(app, window, ROOT, WORK, record_step):
     window.set_model(subgroup_import.dataset)
     record_step('rm5-subgroup-covariate-imported', window, groups=groups,
                 reference=str(subgroup_reference))
-    from rc_metastudio import r_bridge
+    from tests.fit_observations import observe_fit
     from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
     from rc_metastudio.results_window import ResultsWindow
@@ -128,10 +130,11 @@ def run(app, window, ROOT, WORK, record_step):
     setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
     setup.method_cbo_box.setCurrentText(next(label for label, method in setup.available_method_d.items() if method == 'binary.fixed.inv.var'))
     assert setup.current_method == 'binary.fixed.inv.var'
-    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-    app.processEvents()
+    with observe_fit() as fit:
+        setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+        app.processEvents()
     view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
-    actual = list(map(float, r_bridge.execute_r_string('unlist(lapply(result$res[1:2], function(x) c(x$b[1], x$ci.lb, x$ci.ub)))')))
+    actual = list(map(float, fit.evaluate('unlist(lapply(result$res[1:2], function(x) c(x$b[1], x$ci.lb, x$ci.ub)))')))
     reference = WORK / 'subgroup-fit.csv'
     subprocess.run([rscript, '-e',
         "library(meta); x <- read.rm5(commandArgs(TRUE)[1]); m <- metacr(x, outcome.no=1, method='Inverse'); write.csv(data.frame(estimate=m$TE.common.w, lower=m$lower.common.w, upper=m$upper.common.w, Q=m$Q.b.common, p=m$pval.Q.b.common), commandArgs(TRUE)[2], row.names=FALSE, fileEncoding='UTF-8')",
@@ -139,7 +142,7 @@ def run(app, window, ROOT, WORK, record_step):
     with reference.open(encoding="utf-8", newline="") as stream:
         refs = list(csv.DictReader(stream))
     expected = [float(row[key]) for row in refs for key in ('estimate', 'lower', 'upper')]
-    test = list(map(float, r_bridge.execute_r_string('local({e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e); t <- e$plot.data$subgroups$difference_test; c(t$QM, t$QMp)})')))
+    test = list(map(float, fit.evaluate('local({e <- new.env(); load(paste0(result$plot_params_paths[[1]], ".plotdata"), envir=e); t <- e$plot.data$subgroups$difference_test; c(t$QM, t$QMp)})')))
     actual.extend(test)
     expected.extend(float(refs[0][key]) for key in ('Q', 'p'))
     differences = [a - b for a, b in zip(actual, expected)]
@@ -291,8 +294,9 @@ def run(app, window, ROOT, WORK, record_step):
         dialog = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
         assert dialog.current_method == method
         record_step('rm5-default-setup', dialog, method=dialog.current_method)
-        dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
-        app.processEvents()
+        with observe_fit() as fit:
+            dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+            app.processEvents()
         view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
         numbers = parsed_numeric_sections(view.results)
         record_step('rm5-pooled', view, numbers=numbers, texts=dict(view.texts))
@@ -306,9 +310,8 @@ def run(app, window, ROOT, WORK, record_step):
                 ref = next(row for row in csv.DictReader(stream) if int(row["outcome"]) == 2)
             expected = dict(estimate=float(ref['estimate']), lower_bound=float(ref['lower']), upper_bound=float(ref['upper']), i_squared=100 * float(ref['I2']))
         if index == 0:
-            from rc_metastudio import r_bridge
             import math
-            raw = list(r_bridge.execute_r_string('c(exp(result$res$b[1]), exp(result$res$ci.lb), exp(result$res$ci.ub), result$res$I2)'))
+            raw = list(fit.evaluate('c(exp(result$res$b[1]), exp(result$res$ci.lb), exp(result$res$ci.ub), result$res$I2)'))
             full_precision = dict(zip(('estimate', 'lower_bound', 'upper_bound', 'i_squared'), map(float, raw)))
             record_step('rm5-unrounded-aspirin', view, actual=full_precision, expected=expected)
             for key, value in expected.items():

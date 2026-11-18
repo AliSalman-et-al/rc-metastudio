@@ -598,7 +598,7 @@ def setup_directories():
     base_path = make_base_path()
     make_r_tmp()
 
-    os.chdir(os.path.normpath(base_path))  # set working directory on python side
+    os.chdir(os.path.normpath(base_path))
 
     clear_r_tmp()
 

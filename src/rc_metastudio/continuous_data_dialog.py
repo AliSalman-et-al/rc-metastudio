@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Continuous outcome data entry dialog."""
 
-# Continuous and binary data forms still share some interaction patterns; keep
-# refactoring opportunities small so imputation behavior stays explicit.
-#
 # This dialog edits the analysis unit directly because most displayed fields
 # are transient imputation inputs rather than stored raw data.
 from contextlib import ExitStack
@@ -126,6 +123,10 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.current_effect = current_effect
         self.arm_key = arm_key
         self.metric_parameter = None
+        self._effect_fields = calculator_controls.CalculatorEffectFields(
+            self.effect_text_box, self.lower_text_box, self.upper_text_box,
+        )
+        self._validation_failed = False
         self.entry_widgets = [
             self.simple_table,
             self.g1_pre_post_table,
@@ -162,7 +163,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
         self.setup_clear_button_palettes()  # Color for clear_button_pallette
-        self.initialize_form()  # initialize cells to empty items
+        self.initialize_form()
         self._field_history = calculator_edit_history.TransientEditHistory()
 
         self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} or self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "summary"
@@ -205,7 +206,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         mode_changed = mode != getattr(self, "_active_input_mode", None)
         previous_mode = getattr(self, "_active_input_mode", None)
         if mode_changed and previous_mode is not None:
-            if not calculator_controls.commit_calculator_edits(self):
+            self._effect_fields.commit_pending(self.val_changed)
+            if self._validation_failed:
                 with QSignalBlocker(self.input_mode_combo):
                     self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous_mode))
                 return
@@ -516,15 +518,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
 
     def _populate_effect_data(self):
-        available_effects = set(
-            str(effect_str) for effect_str in self.analysis_unit.get_effect_names()
-        )
         metric_family = (
             CONTINUOUS_ONE_ARM_METRICS
             if self.current_effect in CONTINUOUS_ONE_ARM_METRICS
             else CONTINUOUS_TWO_ARM_METRICS
         )
-        q_effects = [effect for effect in metric_family if effect in available_effects]
+        q_effects = list(metric_family)
         if self.current_effect not in q_effects:
             q_effects.append(str(self.current_effect))
         with QSignalBlocker(self.effect_combo_box):
@@ -590,27 +589,18 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             return False, False
         return True, "" if is_correlation else display_scale_val
 
-    def _text_from_value(self, value):
-        if value == "est":
-            return str(self.effect_text_box.text())
-        elif value == "lower":
-            return str(self.lower_text_box.text())
-        elif value == "upper":
-            return str(self.upper_text_box.text())
-        elif value == "correlation_pre_post":
-            return str(self.correlation_pre_post.text())
-        return None  # Unknown value key.
-
     def accept(self):
-        if not getattr(self, "_validation_failed", False) and calculator_controls.commit_calculator_edits(self):
+        if self._validation_failed:
+            return
+        self._effect_fields.commit_pending(self.val_changed)
+        if not self._validation_failed:
             self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self._active_input_mode == "estimate" else "derived_preview")
             self._refresh_active_inputs()
             super().accept()
 
     def val_changed(self, val_str):
-        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
-        field = fields.get(val_str)
-        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+        field = self._effect_fields.editors.get(val_str)
+        if field is not None and not self._effect_fields.is_pending(val_str) and not self._validation_failed:
             return
         old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
             tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
@@ -619,7 +609,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         old_correlation = self.current_correlation
 
-        new_text = self._text_from_value(val_str)
+        new_text = field.text() if field is not None else self.correlation_pre_post.text()
 
         no_errors, display_scale_val = self._text_box_value_is_between_bounds(
             val_str, new_text
@@ -634,12 +624,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     signal_blockers.enter_context(QSignalBlocker(widget))
                 if field is not None:
                     field.setText(new_text)
-                if val_str == "est":
-                    self.effect_text_box.setFocus()
-                elif val_str == "lower":
-                    self.lower_text_box.setFocus()
-                elif val_str == "upper":
-                    self.upper_text_box.setFocus()
+                    field.setFocus()
                 elif val_str == "correlation_pre_post":
                     self.correlation_pre_post.setFocus()
             return
@@ -655,7 +640,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         self._validation_failed = False
         if field is not None:
-            field.setProperty("calculatorValue", field.text())
+            self._effect_fields.mark_committed(val_str)
 
         calculation_scale_value = self.calculator.continuous_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -723,14 +708,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.clear_button.setPalette(self.orig_palette)
 
     def set_current_effect(self):
-        txt_boxes = dict(
-            effect=self.effect_text_box,
-            lower=self.lower_text_box,
-            upper=self.upper_text_box,
-        )
         calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            effect_fields=txt_boxes,
+            effect_fields=self._effect_fields,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="continuous",
@@ -884,7 +864,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 if item is not None and item.data(Qt.ItemDataRole.UserRole):
                     return
                 val = None
-        if is_nan(val):  # get out quick
+        if is_nan(val):
             return
 
         with QSignalBlocker(table):
@@ -915,7 +895,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         """Restores the analysis_unit data and resets the form"""
         self.analysis_unit = old_analysis_unit.copy_for_edit()
 
-        self.initialize_form()  # clear form first
+        self.initialize_form()
         self.update_raw_data()
         self.set_current_effect()
         self.impute_data()
@@ -973,7 +953,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     ):
         old_tables_data = self.save_tables_data()
         if use_old_value:
-            # From before most recently changed cell changed
             old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
             old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1], old_cell[2])
 
@@ -1462,7 +1441,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if not engage:
             return None
 
-        # Choose one of the values if multiple ones were returned in the output
         keys_to_names = {
             f"{field}{index}": f"{name} {label}"
             for index, name in enumerate(self.arm_names, start=1)
@@ -1578,10 +1556,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         )
         self.update_back_calculation_button()
 
-    def get_effect_names(self):
-        effects = self.analysis_unit.get_effect_names()
-        return effects
-
     def _effect_display_label(self, effect):
         if effect == "Mean":
             return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.sheet.sub_type, "Mean")
@@ -1664,7 +1638,6 @@ class ContinuousBackCalculationDialog(
             pass
 
     def get_choice(self):
-        # Choice data to be returned is index of data item
         if self.choice1_btn.isChecked():
             return 0
         else:

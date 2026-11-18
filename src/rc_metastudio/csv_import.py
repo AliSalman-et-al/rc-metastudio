@@ -146,8 +146,8 @@ def normalize_csv_input(
             raise CsvImportError("CSV file is missing the required header row.")
     else:
         _validate_minimum_width(rows, positional_width or len(expected_headers))
-        rows = normalize_import_rows(rows, minimum_width=len(expected_headers))
-    normalized_rows = normalize_import_rows(rows, minimum_width=len(headers))
+    minimum_width = len(headers) if has_headers else len(expected_headers)
+    normalized_rows = row_padding.normalize_rows(rows, minimum_width)
     if headers:
         width = len(normalized_rows[0]) if normalized_rows else len(headers)
         headers = headers + [""] * (width - len(headers))
@@ -246,15 +246,6 @@ def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:
                 f"CSV row {row_number} needs Study and Year columns before the data columns "
                 f"({minimum_width} columns in total). Use the CSV template."
             )
-
-
-def normalize_import_rows(
-    rows: list[list[str]] | tuple[tuple[str, ...], ...], *, minimum_width: int = 0
-) -> list[list[str]]:
-    """Return mutable, rectangular rows for insertion into the Qt model."""
-    return row_padding.normalize_rows(
-        [list(row) for row in rows], minimum_width=minimum_width
-    )
 
 
 def _validate_years(rows: list[list[str]], year_column: int) -> None:
@@ -406,40 +397,36 @@ def _xlsx_extent(sheet):
     return row_numbers, sorted(columns), formulas
 
 
-def xlsx_worksheets(path):
-    """Discover selectable sheets without validating the first sheet's cells."""
+def _open_workbook(cleanup: ExitStack, path: str | Path, *, data_only: bool):
     from openpyxl import load_workbook
     try:
-        book = load_workbook(path, read_only=True, data_only=False)
+        book = load_workbook(path, read_only=True, data_only=data_only)
     except Exception as exc:
         raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
-    try:
-        return _xlsx_select_sheet(book, None)
-    finally:
-        book.close()
+    cleanup.callback(book.close)
+    return book
+
+
+def xlsx_worksheets(path: str | Path) -> tuple[list[str], str]:
+    """Discover selectable sheets without interpreting their imported values."""
+    with ExitStack() as cleanup:
+        return _xlsx_select_sheet(_open_workbook(cleanup, path, data_only=False), None)
 
 
 def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numeric_columns=(), notices=None):
     """Read bounded worksheet rows, preserving coordinates for actionable errors."""
-    from openpyxl import load_workbook
-
     with ExitStack() as cleanup:
-        def open_book(data_only):
-            try:
-                book = load_workbook(path, read_only=True, data_only=data_only)
-            except Exception as exc:
-                raise CsvImportError("Could not read this workbook; use an unprotected .xlsx file.") from exc
-            cleanup.callback(book.close)
-            return book
-
-        book = open_book(False)
+        book = _open_workbook(cleanup, path, data_only=False)
         names, selected = _xlsx_select_sheet(book, worksheet)
         sheet = book[selected]
         row_numbers, columns, has_formulas = _xlsx_extent(sheet)
         if not row_numbers:
             return [], [], names, selected
         _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices)
-        cached_rows = iter(open_book(True)[selected].iter_rows()) if has_formulas else None
+        cached_rows = None
+        if has_formulas:
+            cached = _open_workbook(cleanup, path, data_only=True)[selected]
+            cached_rows = iter(cached.iter_rows())
         formulas, dates, result = 0, [], []
         for row in sheet.iter_rows():
             cached = next(cached_rows, ()) if cached_rows is not None else ()

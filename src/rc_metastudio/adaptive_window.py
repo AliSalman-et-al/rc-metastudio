@@ -14,7 +14,6 @@ from PyQt6.QtCore import (
     QSize,
     QTimer,
     Qt,
-    pyqtSignal,
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication, QLayout, QSizePolicy, QWIDGETSIZE_MAX
@@ -252,9 +251,6 @@ def adaptive_window_state(window):
 class AdaptiveWindowController(QObject):
     """Own local sizing and reachability work for one registered window."""
 
-    refitApplied = pyqtSignal()
-    runtimeClampApplied = pyqtSignal()
-
     def __init__(
         self,
         window,
@@ -414,7 +410,6 @@ class AdaptiveWindowController(QObject):
             self.window.setWindowState(
                 self.window.windowState() | Qt.WindowState.WindowMaximized
             )
-            self.refitApplied.emit()
             return
 
         available = self._available_geometry()
@@ -437,7 +432,6 @@ class AdaptiveWindowController(QObject):
             maximum_fraction=self.policy.maximum_screen_fraction,
         )
         self._set_outer_frame_geometry(target)
-        self.refitApplied.emit()
 
     def request_content_refit(self):
         """Coalesce content-driven first-use policy work to one event-loop turn."""
@@ -523,7 +517,6 @@ class AdaptiveWindowController(QObject):
         target = QRect(self.window.frameGeometry().topLeft(), bounded)
         target = clamp_frame_geometry(target, available)
         self._set_outer_frame_geometry(target)
-        self.refitApplied.emit()
 
     def _apply_runtime_clamp(self):
         available = self._available_geometry()
@@ -532,7 +525,6 @@ class AdaptiveWindowController(QObject):
             # hides their resize borders). Only the client must fit in that state.
             visible = self.window.geometry() if self.window.isMaximized() else self.window.frameGeometry()
             if available.contains(visible):
-                self.runtimeClampApplied.emit()
                 return
             if self.window.isMaximized():
                 self.window.showNormal()
@@ -544,7 +536,6 @@ class AdaptiveWindowController(QObject):
             target = clamp_frame_geometry(current, available)
             if target != current:
                 self._set_outer_frame_geometry(target)
-        self.runtimeClampApplied.emit()
 
     def _available_geometry(self):
         # The provider owns geometry. The cached screen only owns signal

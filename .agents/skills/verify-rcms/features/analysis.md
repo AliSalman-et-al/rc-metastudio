@@ -61,12 +61,14 @@ Invoke each scenario with `uv run python scripts/verify_rcms.py <scenario>`. `an
 | `analysis-amino-binary-subgroup`, `analysis-continuous-subgroup` | Factor fixture `golden_group`; `action_subgroup_ma`, `covariate_combo_box`, then setup | Frozen per-group and overall results |
 | `analysis-amino-binary-meta-regression`, `analysis-continuous-meta-regression` | Continuous fixture `golden_year`; `action_meta_regression`, covariate checkboxes | Frozen coefficients, uncertainty and model results |
 | `analysis-diagnostic-joint` | `action_go`, Sens/Spec, `diagnostic.reitsma` | Actual clinical interval columns, four complete ratio rows and I-squared text; valid SROC; pinned `mada` numerical tests and visual QA supplement |
-| `analysis-diagnostic-combined` | Select Sens/Spec/LR/DOR through metric checkboxes; combined method panels | UI result/report presence for five metrics; univariate authorities and joint R lane supplement |
+| `analysis-diagnostic-combined` | Select Sens/Spec/LR/DOR. Change the LR/DOR estimator and check that the single shared confidence control retains its value. | Results and report sections for five metrics, with the univariate authorities and joint R lane as numerical supplements |
 | `analysis-diagnostic-cumulative`, `analysis-diagnostic-leave-one-out`, `analysis-diagnostic-subgroup` | Corresponding action, DOR univariate random; factor for subgroup | UI execution/plot; R sequential/subgroup tests supplement |
 | `analysis-diagnostic-regression-continuous`, `analysis-diagnostic-regression-factor`, `analysis-diagnostic-regression-multiple` | Joint Reitsma regression; one numeric, one factor, both | UI model execution; R `mada` regression/21-case visual lane supplement |
 | `analysis-binary.fixed.inv.var`, `analysis-binary.fixed.mh`, `analysis-binary.fixed.peto`, `analysis-continuous.fixed`, `analysis-diagnostic.fixed.inv.var`, `analysis-diagnostic.fixed.mh`, `analysis-diagnostic.fixed.peto` | Actual method selector, OR/SMD/DOR compatible sample | UI selection/execution; independent public-package matrix below supplements |
 
 Covariate injection constructs a controlled fixture; these drives do not establish covariate CRUD UI. Regression explicitly unchecks every covariate to require disabled OK, then checks the intended covariates. Subgroup requires a complete factor covariate. Shared diagnostic confidence/digits/correction and the LR/DOR panel must not silently override each other.
+
+`test-diagnostic-partial-failure.R` separately checks that the desktop's partial-results mode keeps successful estimates and editable plots when another metric fails. Direct R calls remain strict by default. The combined desktop scenario exercises the all-success route.
 
 ## Dataset/metric matrix
 

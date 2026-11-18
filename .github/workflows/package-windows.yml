@@ -18,7 +18,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
-      - run: uv python install 3.14.10
+      - run: uv python install
       - name: Resolve authoritative package version
         id: package-metadata
         shell: powershell

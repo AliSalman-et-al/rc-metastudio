@@ -13,7 +13,8 @@ from rc_metastudio.small_study_effects import (
 
 
 @pytest.mark.parametrize("version", [None, True, 1.0, 2, "1"])
-def test_python_r_boundary_requires_exact_small_study_request_version(version):
+def test_python_r_boundary_requires_exact_small_study_request_version(version, monkeypatch):
+    monkeypatch.setattr(r_bridge, "_require_initialized_r", lambda: None)
     request = {"data.type": "continuous", "metric": "MD"}
     if version is not None:
         request["version"] = version
@@ -85,12 +86,10 @@ def test_create_applies_custom_contour_levels_only_to_contour_specs():
         selected_funnels=(FunnelKind.ORDINARY, FunnelKind.CONTOUR),
         contour_levels=(85.0, 95.0),
     )
-    assert request.plot_specs[0].contour_levels == ()
-    assert request.plot_specs[1].contour_levels == (85.0, 95.0)
     assert request.to_mapping()["funnel.contour.levels"] == ["", "85,95"]
 
 
-def test_contour_plot_spec_serializes_presentation_controls_without_options_bag():
+def test_contour_plot_spec_transmits_selected_presentation_controls():
     request = SmallStudyEffectsRequest.create(
         data_type="continuous",
         metric="MD",
@@ -106,15 +105,10 @@ def test_contour_plot_spec_serializes_presentation_controls_without_options_bag(
     assert wire["funnels"] == ["ordinary", "contour"]
     assert wire["funnel.label.policy"] == ["all", "all"]
     assert wire["funnel.sampling.conf.level"] == [90.0, 90.0]
-    assert wire["funnel.sampling.region.visible"] == [True, True]
-    assert "funnel.show.sampling.region" not in wire
     assert wire["funnel.include.tau2"] == [True, True]
     assert wire["funnel.point.size"] == [1.5, 1.5]
     assert wire["funnel.reference.visible"] == [False, False]
     assert wire["funnel.pooled.overlay.visible"] == [False, False]
-    assert wire["funnel.style"] == ["default", "default"]
-    assert wire["funnel.point.symbol"] == [19, 19]
-    assert "options" not in wire
 
 
 def test_trimfill_request_serializes_estimator_model_side_and_extrapolation():

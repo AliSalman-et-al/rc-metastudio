@@ -77,7 +77,7 @@ def run(app, window, work, record, scenario):
         target.model.add_covariate("Group", "factor",
                                           {s.label: "A" if i % 2 else "B" for i, s in enumerate(studies)})
         target.model.reset_model()
-        target.enable_menu_options_that_require_dataset()
+        target.refresh_analysis_actions()
 
     def prepare_duplicate_study_labels(target):
         studies = target.model.get_studies(only_if_included=True)
@@ -86,7 +86,7 @@ def run(app, window, work, record, scenario):
         for i, study in enumerate(studies):
             study.covariate_values[group["id"]] = "A" if i % 2 else "B"
         target.model.reset_model()
-        target.enable_menu_options_that_require_dataset()
+        target.refresh_analysis_actions()
 
     family_name = scenario.removeprefix("audit-round3-")
     if family_name == "arm-names":
@@ -342,7 +342,7 @@ def run(app, window, work, record, scenario):
                     target.model.add_covariate("Dose", "continuous",
                                                       {s.label: float(i) for i, s in enumerate(studies)})
                     target.model.reset_model()
-                    target.enable_menu_options_that_require_dataset()
+                    target.refresh_analysis_actions()
                     record("round3-proportion-input", target, metric=target.model.current_effect,
                            raw=target.model.get_current_raw_data(),
                            effects=target.model.get_current_estimates_and_standard_errors(),
@@ -567,7 +567,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         target.model.add_covariate("Dose", "continuous",
                                           {study.label: float(i) for i, study in enumerate(studies)})
         target.model.reset_model()
-        target.enable_menu_options_that_require_dataset()
+        target.refresh_analysis_actions()
     def check_bubble_panel_bounds(view, family, metric):
         assert not re.search(r"(?<![\d.eE])-0\.0+(?![\d.eE])", view.manuscript_text.toPlainText()), view.manuscript_text.toPlainText()
         paths = list(view.results.display_images.items())

@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import cast
 
-import pytest
 from rc_metastudio import automation
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -265,57 +264,6 @@ def test_binary_back_calculation_choices_are_scrollable_and_screen_bounded(monke
         )
     finally:
         dialog.close()
-
-
-@pytest.mark.parametrize("initially_blocked", [False, True])
-def test_binary_set_val_restores_table_signal_state(initially_blocked):
-    from rc_metastudio import binary_data_dialog
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    table = QtWidgets.QTableWidget(1, 1)
-
-    class StubDialog:
-        raw_data_table = table
-
-        @staticmethod
-        def _raw_count_cell_is_editable(_row, _col):
-            return True
-
-    table.blockSignals(initially_blocked)
-    binary_data_dialog.BinaryDataDialog._set_val(
-        cast(binary_data_dialog.BinaryDataDialog, StubDialog()), 0, 0, 3
-    )
-
-    assert table.signalsBlocked() is initially_blocked
-    table.deleteLater()
-    app.processEvents()
-
-
-def test_binary_set_val_restores_blocked_state_when_item_update_fails():
-    from rc_metastudio import binary_data_dialog
-
-    app = required(
-        QtWidgets.QApplication.instance() or QtWidgets.QApplication([]), "application"
-    )
-    table = QtWidgets.QTableWidget(1, 1)
-    table.setItem(0, 0, QtWidgets.QTableWidgetItem("old"))
-
-    class StubDialog:
-        raw_data_table = table
-
-        @staticmethod
-        def _raw_count_cell_is_editable(_row, _col):
-            raise RuntimeError("injected item update failure")
-
-    table.blockSignals(True)
-    with pytest.raises(RuntimeError, match="injected item update failure"):
-        binary_data_dialog.BinaryDataDialog._set_val(
-            cast(binary_data_dialog.BinaryDataDialog, StubDialog()), 0, 0, 3
-        )
-
-    assert table.signalsBlocked()
-    table.deleteLater()
-    app.processEvents()
 
 
 def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch):
@@ -618,7 +566,7 @@ def test_binary_validation_message_wraps_and_is_revealed(monkeypatch):
         _close(app, window, dialog)
 
 
-def test_binary_calculator_refits_are_local_and_coalesced(monkeypatch):
+def test_binary_calculator_metric_changes_keep_counts_and_geometry_stable(monkeypatch):
     app, window, dialog = _open_binary_dialog(monkeypatch)
     try:
         dialog.show()
@@ -634,16 +582,11 @@ def test_binary_calculator_refits_are_local_and_coalesced(monkeypatch):
             dialog.effect_combo_box.itemData(index): index
             for index in range(dialog.effect_combo_box.count())
         }
-        applied = []
-        dialog._layout_controller.refitApplied.connect(lambda: applied.append(True))
-
         for metric in ("RD", "RR", "AS"):
             index = indices_by_metric[metric]
             dialog.effect_combo_box.setCurrentIndex(index)
-        assert applied == []
 
         app.processEvents()
-        assert len(applied) == 1
         assert dialog.effect_combo_box.currentData() == "AS"
         assert not dialog.back_calculate_button.isVisible()
         assert AVAILABLE.contains(dialog.frameGeometry())
@@ -657,6 +600,5 @@ def test_binary_calculator_refits_are_local_and_coalesced(monkeypatch):
         app.processEvents()
         app.processEvents()
         assert dialog.frameGeometry() == settled_geometry
-        assert len(applied) == 1
     finally:
         _close(app, window, dialog)

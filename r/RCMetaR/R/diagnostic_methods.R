@@ -172,99 +172,17 @@ rcmetar.diagnostic.extract <- function(fit, params) {
          image.order=image.order)
 }
 
-rcmetar.diagnostic.report <- function(extracted, results, images, image.order,
-                                      plot.names, plot.paths, plot.capabilities,
-                                      references) {
-    list(results=c(results, extracted$summary),
-         images=c(images, extracted$images),
-         image.order=c(image.order, extracted$image.order),
-         plot.names=c(plot.names, extracted$plot.names),
-         plot.params.paths=c(plot.paths, extracted$plot.paths),
-         plot.capabilities=c(plot.capabilities, extracted$plot.capabilities),
-         references=c(references, extracted$references),
-         sections=extracted$sections)
-}
-
-multiple.diagnostic <- function(fnames, params.list, diagnostic.data) {
-
-    results <- list()
-    pretty.names <- diagnostic.fixed.inv.var.pretty.names()
-
-    images <- c()
-    image.order <- c()
-    plot.names <- c()
-    plot.params.paths <- c()
-    plot.capabilities <- list()
-	sections <- list()
-    plot.pdfs.paths <- c()
-    remove.indices <- c()
-	references <- c()
-
-    joint.index <- which(fnames == "diagnostic.reitsma")
-    if (length(joint.index) > 1L) stop("Only one diagnostic.reitsma request is allowed; use joint.metrics for Sensitivity and Specificity.", call.=FALSE)
-    if (length(joint.index) == 1L) {
-            joint.params <- params.list[[joint.index]]
-            joint.params$joint.metrics <- unique(c(
-                unlist(strsplit(paste(as.character(joint.params$joint.metrics %||% character()), collapse=","), "[,[:space:]]+")),
-                as.character(joint.params$measure %||% character())
-            ))
-            biv.results <- diagnostic.reitsma(diagnostic.data, joint.params)
-            results <- c(results, list(Summary=biv.results$Summary))
-            images <- c(images, biv.results$images)
-            plot.names <- c(plot.names, biv.results$plot_names)
-            plot.params.paths <- c(plot.params.paths, biv.results$plot_params_paths)
-            plot.capabilities <- c(plot.capabilities, biv.results$plot_capabilities)
-            sections <- c(sections, biv.results$sections %||% list())
-            image.order <- append.image.order(image.order, biv.results)
-            remove.indices <- joint.index
-			references <- c(references, biv.results$References)
+.rcmetar.diagnostic.contribution <- function(fit, request) {
+    if (request$workflow != "standard") {
+        return(.rcmetar.repeated.diagnostic.contribution(fit, request))
     }
-
-    fnames <- fnames[setdiff(1:length(fnames), remove.indices)]
-    params.list <- params.list[setdiff(1:length(params.list), remove.indices)]
-
-
-
-    if (length(params.list) > 0) {
-        for (count in 1:length(params.list)) {
-            prepared_diagnostic_data <- rcmetar.diagnostic.prepare(
-                diagnostic.data, params.list[[count]])
-            analysis_result <- rcmetar.diagnostic.fit(
-                prepared_diagnostic_data, fnames[count], params.list[[count]])
-            extracted <- rcmetar.diagnostic.extract(
-                analysis_result, params.list[[count]])
-            reported <- rcmetar.diagnostic.report(
-                extracted, results, images, image.order, plot.names,
-                plot.params.paths, plot.capabilities, references)
-            results <- reported$results
-            images <- reported$images
-            image.order <- reported$image.order
-            plot.names <- reported$plot.names
-            plot.params.paths <- reported$plot.params.paths
-            plot.capabilities <- reported$plot.capabilities
-            references <- reported$references
-			sections <- c(sections, reported$sections %||% list())
-        }
+    if (request$method != "diagnostic.reitsma") {
+        return(rcmetar.diagnostic.extract(fit, request$params))
     }
-
-    graphics.off()
-    results <- c(results, list("images"=images,
-					           "image_order"=image.order,
-                               "plot_names"=plot.names,
-                               "plot_params_paths"=plot.params.paths,
-                               "plot_capabilities"=plot.capabilities,
-							   "sections"=sections,
-							   "References"=rcmetar.unique.references(references)))
-    results
-}
-
-append.image.order <- function(image.order, results){
-    if ("image_order" %in% names(results)){
-        image.order <- c(image.order, results[["image_order"]])
-    } else{
-        image.order <- c(image.order, names(results$images))
-    }
-    image.order
+    list(summary=list(Summary=fit$Summary), images=fit$images,
+         plot.paths=fit$plot_params_paths, sections=fit$sections,
+         plot.names=fit$plot_names, plot.capabilities=fit$plot_capabilities,
+         references=fit$References, image.order=fit$image_order %||% names(fit$images))
 }
 
 diagnostic.fixed.inv.var <- function(diagnostic.data, params){

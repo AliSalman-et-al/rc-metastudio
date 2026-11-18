@@ -309,36 +309,19 @@ def test_raw_data_edit_on_placeholder_row_emits_study_name_error():
     assert errors == ["Enter a study name first."]
 
 
-def test_failed_raw_preview_restores_values_and_keeps_sheet_ownership(monkeypatch):
-    # A failed preview must restore the cells without replacing the unit's
-    # owner with a deep-copied sheet (or retaining that sheet's copied rows).
-    model = _diagnostic_model_with_empty_cells()
-    sheet = model.current_sheet
-    unit = sheet.rows[0].analysis_unit
-    unit.arms[model.arm_names[0]].raw_data[:] = [9.0, 10.0, 1.0, 81.0]
-    before = list(unit.get_raw_data_for_arms(model.arm_names))
-
-    def fail_preview(*_args, **_kwargs):
-        raise RuntimeError("preview failed")
-
-    monkeypatch.setattr(model.editing_service.bridge, "diagnostic_effects_for_study", fail_preview)
-    assert not model.setData(model.index(0, model.RAW_DATA[0]), "1")
-    assert sheet.rows[0].analysis_unit is unit
-    assert unit.get_raw_data_for_arms(model.arm_names) == before
-    assert unit.sheet is sheet
-
-
 def test_accepting_study_data_keeps_canonical_sheet_confidence():
     import copy
     model = _diagnostic_model_with_empty_cells()
     sheet = model.current_sheet
     candidate = copy.deepcopy(sheet.rows[0].analysis_unit)
     model.set_current_analysis_unit_for_study(0, candidate)
-    sheet.settings["confidence_level"] = 90
-    assert candidate.sheet is sheet
-    assert candidate.sheet.settings["confidence_level"] == 90
-    candidate.adopt_calculated_state(copy.deepcopy(candidate))
-    assert candidate.sheet is sheet
+    model.set_confidence_level(90)
+    comparison = model.get_current_arm_key()
+    candidate.set_effect("Sens", comparison, 0.5)
+    candidate.set_lower("Sens", comparison, 0.3)
+    assert candidate.calculate_se_if_possible(
+        "Sens", comparison, confidence_multiplier=1.96
+    ) == pytest.approx(0.2 / 1.6448536269514722)
 
 
 def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch):

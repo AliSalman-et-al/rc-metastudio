@@ -305,30 +305,7 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
         _dispose(window, qapp)
 
 
-def test_results_resize_burst_runs_one_expensive_reflow_per_event_loop_turn(
-    qapp, monkeypatch, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    calls = []
-    monkeypatch.setattr(window, "_refit_viewport_items", lambda: calls.append("reflow"))
-    try:
-        window.show()
-        qapp.processEvents()
-        calls.clear()
-        for _ in range(20):
-            window.resize(window.width() + 1, window.height())
-            window._schedule_viewport_refit()
-        assert calls == []
-        qapp.processEvents()
-        assert calls == ["reflow"]
-    finally:
-        _dispose(window, qapp)
-
-
-def test_results_refit_does_not_dispatch_unrelated_layout_requests(
-    qapp, monkeypatch, tmp_path
-):
+def test_results_refit_does_not_dispatch_unrelated_layout_requests(qapp, tmp_path):
     from rc_metastudio import results_window
 
     class LayoutRequestProbe(QtWidgets.QWidget):
@@ -347,74 +324,22 @@ def test_results_refit_does_not_dispatch_unrelated_layout_requests(
     window = results_window.ResultsWindow(_empty_results())
     probe = LayoutRequestProbe()
     probe_layout = QtWidgets.QVBoxLayout(probe)
-    calls = []
-    monkeypatch.setattr(window, "_refit_viewport_items", lambda: calls.append("reflow"))
     try:
         window.show()
         probe.show()
         qapp.processEvents()
-        calls.clear()
         probe.layout_requests = 0
 
         probe_layout.addWidget(QtWidgets.QLabel("pending unrelated layout", probe))
-        window._viewport_refit_pending = True
+        window._schedule_viewport_refit()
         window._run_scheduled_viewport_refit()
 
-        assert calls == ["reflow"]
         assert probe.layout_requests == 0
         qapp.processEvents()
         assert probe.layout_requests == 1
     finally:
         probe.close()
         probe.deleteLater()
-        _dispose(window, qapp)
-
-
-def test_results_regeneration_burst_runs_one_scheduled_expensive_reflow(
-    qapp, monkeypatch, tmp_path
-):
-    _use_isolated_settings(tmp_path)
-    plot_path = tmp_path / "plot.png"
-    image = results_window.QImage(600, 300, results_window.QImage.Format.Format_RGB32)
-    image.fill(results_window.Qt.GlobalColor.white)
-    assert image.save(str(plot_path), "PNG")
-    window = results_window.ResultsWindow(
-        _analysis_result(
-            {
-                "texts": {},
-                "images": {"Plot": str(plot_path)},
-                "plot_capabilities": {
-                    "Plot": {
-                        "plot_kind": "other",
-                        "editable": False,
-                        "styleable": False,
-                        "regenerator": "none",
-                        "composition": "single",
-                    }
-                },
-            }
-        )
-    )
-    try:
-        window.show()
-        qapp.processEvents()
-        item = next(
-            item
-            for item in window._raster_plot_items
-            if isinstance(item, results_window.ResponsivePixmapItem)
-        )
-        artifact = window.plot_artifact('Plot')
-        calls = []
-        monkeypatch.setattr(
-            window, "_refit_viewport_items", lambda: calls.append("reflow")
-        )
-
-        window._refresh_plot_item(item, artifact, str(plot_path))
-        window._refresh_plot_item(item, artifact, str(plot_path))
-        assert calls == []
-        qapp.processEvents()
-        assert calls == ["reflow"]
-    finally:
         _dispose(window, qapp)
 
 
@@ -703,15 +628,13 @@ def test_generated_plot_editor_dismissal_never_commits_or_regenerates(
 ):
 
     _use_isolated_settings(tmp_path)
+    committed = []
     dialog = plot_editor_dialog.EditPlotDialog(
         {parameter_name: "Committed label"},
         "plot.svg",
         plot_type=plot_type,
+        on_commit=committed.append,
     )
-    committed = []
-    regenerations = []
-    dialog.applied.connect(lambda: committed.append(dialog.plot_params()))
-    dialog.applied.connect(lambda: regenerations.append(plot_type))
     try:
         dialog.show()
         qapp.processEvents()
@@ -728,7 +651,6 @@ def test_generated_plot_editor_dismissal_never_commits_or_regenerates(
             dialog.close()
         qapp.processEvents()
         assert committed == []
-        assert regenerations == []
     finally:
         _dispose(dialog, qapp)
 
@@ -742,11 +664,10 @@ def test_generated_plot_editor_apply_then_cancel_preserves_only_committed_draft(
 ):
 
     _use_isolated_settings(tmp_path)
-    dialog = plot_editor_dialog.EditPlotDialog(
-        {parameter_name: "Original"}, "plot.svg", plot_type=plot_type
-    )
     committed = []
-    dialog.applied.connect(lambda: committed.append(dialog.plot_params()))
+    dialog = plot_editor_dialog.EditPlotDialog(
+        {parameter_name: "Original"}, "plot.svg", plot_type=plot_type, on_commit=committed.append
+    )
     try:
         dialog.show()
         qapp.processEvents()

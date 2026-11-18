@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
@@ -18,9 +19,10 @@ else:
 class SubgroupAnalysisDialog(
     QDialog, _ui_subgroup_analysis_dialog.Ui_SubgroupAnalysisDialog
 ):
-    def __init__(self, model, parent=None):
+    def __init__(self, model, on_selected: Callable[[str], None], parent=None):
         super(SubgroupAnalysisDialog, self).__init__(parent)
         self.model = model
+        self._on_selected = on_selected
         self.setupUi(self)
         self._populate_combo_box()
         adaptive_controls.configure_choice_control(self.covariate_combo_box)
@@ -28,15 +30,10 @@ class SubgroupAnalysisDialog(
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
-        self.buttonBox.rejected.connect(
-            app_error_handler.safe_slot(self.cancel, parent=self)
-        )
+        self.buttonBox.rejected.connect(self.reject)
         self.buttonBox.accepted.connect(
             app_error_handler.safe_slot(self.get_selected_cov, parent=self)
         )
-
-    def cancel(self):
-        self.reject()
 
     def get_selected_cov(self):
         selected_covariate = str(self.covariate_combo_box.currentText())
@@ -47,11 +44,7 @@ class SubgroupAnalysisDialog(
                 "Select a categorical covariate before running subgroup analysis.",
             )
             return
-        parent = self.parentWidget()
-        callback = getattr(parent, "meta_subgroup", None)
-        if not callable(callback):
-            raise RuntimeError("subgroup configuration has no workflow owner")
-        callback(selected_covariate)
+        self._on_selected(selected_covariate)
         self.accept()
 
     def _update_ok_button(self):

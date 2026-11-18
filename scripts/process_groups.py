@@ -1,16 +1,63 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Terminate verification children that started their own POSIX sessions."""
+"""Start and terminate owned verification process trees."""
 
 from collections.abc import Callable
 import os
 import signal
 import subprocess
 import time
+from typing import BinaryIO
 
 
 _killpg: Callable[[int, int], None] | None = getattr(os, "killpg", None)
 _sigkill: int = getattr(signal, "SIGKILL", signal.SIGTERM)
+
+
+def start_process(
+    command: list[str],
+    *,
+    stdin: int | None = None,
+    stdout: BinaryIO | None = None,
+    stderr: BinaryIO | None = None,
+) -> subprocess.Popen[bytes]:
+    return subprocess.Popen(
+        command,
+        stdin=stdin,
+        stdout=stdout,
+        stderr=stderr,
+        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+        start_new_session=os.name == "posix",
+    )
+
+
+def terminate_process_tree(
+    process: subprocess.Popen[bytes], *, grace_seconds: float = 5
+) -> None:
+    if os.name != "nt":
+        terminate_process_group(process, grace_seconds=grace_seconds)
+        return
+    terminated = subprocess.run(
+        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if terminated.returncode != 0:
+        details = "\n".join(
+            part.strip() for part in (terminated.stdout, terminated.stderr) if part.strip()
+        )
+        raise RuntimeError(
+            f"taskkill /T /F failed for process tree {process.pid} "
+            f"with exit code {terminated.returncode}: {details or 'no diagnostics'}"
+        )
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired as error:
+        raise RuntimeError(
+            f"taskkill reported success but process {process.pid} remained alive"
+        ) from error
 
 
 def _signal_group(group_id: int, signum: int) -> bool:

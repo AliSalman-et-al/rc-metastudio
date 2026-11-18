@@ -13,6 +13,7 @@ from pathlib import Path
 
 from rc_metastudio import project_format
 from rc_metastudio import project_adapter
+from rc_metastudio.analysis_dataset import Dataset
 from rc_metastudio.domain_ids import SheetId
 from rc_metastudio.project_format import (
     ProjectDocument,
@@ -70,23 +71,23 @@ class WorkspaceSession:
         """Return the canonical live runtime graph owned by this session."""
         return self._runtime
 
-    def update_live_state(self, runtime: RuntimeProject) -> None:
-        """Update the canonical live graph without creating history."""
+    def record_edit(self, dataset: Dataset, current_sheet_id: SheetId | None) -> None:
+        """Record a mutation or replacement of the dataset displayed by the adapter."""
         if self._runtime is None:
-            self._runtime = runtime
-            self._checkpoint = copy.deepcopy(runtime)
-            self._saved_digest = None
+            self._runtime = RuntimeProject(dataset, current_sheet_id)
+            self._checkpoint = copy.deepcopy(self._runtime)
             return
-        if self._runtime is not runtime:
-            self._runtime = runtime
+        if self._runtime.dataset is not dataset:
+            self._runtime = RuntimeProject(dataset, current_sheet_id)
+        else:
+            self._runtime.current_sheet_id = current_sheet_id
+        self.checkpoint()
 
-    def checkpoint(self, expected_digest: str | None = None) -> None:
+    def checkpoint(self) -> None:
         """Record one live mutation after its adapter boundary has completed."""
         if self._runtime is None or self._transaction is not None:
             return
         current_digest = self._runtime_digest()
-        if expected_digest is not None and expected_digest == self._saved_digest:
-            self._saved_digest = current_digest
         assert self._checkpoint is not None
         if current_digest == self._checkpoint_digest():
             return
@@ -233,11 +234,11 @@ class WorkspaceSession:
             )
         except ProjectDurabilityError:
             self._path = destination
-            self._saved_digest = self._runtime_digest()
+            self._saved_digest = _document_digest(serialized)
             self._checkpoint = copy.deepcopy(current)
             raise
         self._path = destination
-        self._saved_digest = self._runtime_digest()
+        self._saved_digest = _document_digest(serialized)
         return destination
 
     def mark_saved(self) -> None:

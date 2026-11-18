@@ -203,7 +203,7 @@ def run_sequential(app, window, work, record):
                 window.model.add_covariate('Group', 'factor',
                     {s.label: 'A' if index % 2 else 'B' for index,s in enumerate(studies)})
                 window.model.reset_model()
-                window.enable_menu_options_that_require_dataset()
+                window.refresh_analysis_actions()
         window.workspace.mark_saved()
         view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
                       metric_override='PFT', workflow_override=workflow, prepare=groups,

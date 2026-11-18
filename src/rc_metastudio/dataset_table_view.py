@@ -4,7 +4,8 @@
 
 import csv
 import io
-from typing import TYPE_CHECKING, Protocol, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
 from PyQt6 import QtCore, QtWidgets, QtGui
 from PyQt6.QtCore import (
@@ -12,6 +13,7 @@ from PyQt6.QtCore import (
     QObject,
     QSignalBlocker,
     Qt,
+    pyqtSignal,
 )
 from PyQt6.QtGui import QAction, QKeyEvent
 
@@ -40,28 +42,6 @@ from rc_metastudio.workspace_column_identity import WorkspaceColumnIdentity
 
 if TYPE_CHECKING:
     from rc_metastudio.dataset_table_model import DatasetTableModel
-    from rc_metastudio.workspace_session import WorkspaceSession
-
-
-class MainWindowProtocol(Protocol):
-    model: "DatasetTableModel"
-    workspace: "WorkspaceSession"
-
-    def statusBar(self) -> QtWidgets.QStatusBar: ...
-
-    def data_dirtied(self) -> None: ...
-    def _commit_model_operation(self, operation) -> None: ...
-    def data_error(self, message: str) -> None: ...
-    def delete_study(self, study, *, study_index: int) -> None: ...
-    def edit_arm_name(self, current_arm_name: str) -> None: ...
-    def rename_covariate(self, covariate) -> None: ...
-    def delete_covariate(self, covariate) -> None: ...
-    def change_covariate_type(self, covariate) -> None: ...
-    def keyPressEvent(self, event: QKeyEvent | None) -> None: ...
-    def enable_menu_options_that_require_dataset(self) -> None: ...
-    def disable_menu_options_that_require_dataset(self) -> None: ...
-    def undo(self) -> None: ...
-    def redo(self) -> None: ...
 
 
 def _connect_action(action, callback):
@@ -72,10 +52,20 @@ def _connect_action(action, callback):
 
 
 class DatasetTableView(QtWidgets.QTableView):
+    studyDeletionRequested = pyqtSignal(object)
+    armRenameRequested = pyqtSignal(str)
+    covariateRenameRequested = pyqtSignal(object)
+    covariateDeletionRequested = pyqtSignal(object)
+    covariateConversionRequested = pyqtSignal(object)
+    undoRequested = pyqtSignal()
+    redoRequested = pyqtSignal()
+    pasteNotice = pyqtSignal(str)
+    clipboardError = pyqtSignal(str)
 
     def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
         super().paintEvent(event)
-        if self.main_gui is None or self.main_gui.model.current_outcome_name is None or self.main_gui.model.get_studies():
+        model = super().model()
+        if model is None or self.model().current_outcome_name is None or self.model().get_studies():
             return
         viewport = required(self.viewport(), 'study grid viewport')
         rect = viewport.rect().adjusted(24, self.rowHeight(0) * 3, -24, -24)
@@ -93,11 +83,7 @@ class DatasetTableView(QtWidgets.QTableView):
         self.setAccessibleName("Study data")
         self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
-        # the main gui is assumed to be the form
-        # that owns this table view, i.e., the 'main'
-        # user interface/form. it is assumed that this
-        # is set elsewhere.
-        self.main_gui: MainWindowProtocol | None = None
+        self.edit_transaction: Callable[[Callable[[], None]], None] | None = None
 
         header = required(self.horizontalHeader(), "workspace column header")
         header_font = header.font()
@@ -118,8 +104,6 @@ class DatasetTableView(QtWidgets.QTableView):
             palette.setColor(group, QtGui.QPalette.ColorRole.HighlightedText, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        self.contextMenuEvent = self._make_context_menu()
-
         headers = required(self.horizontalHeader(), "workspace column header")
         headers.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         headers.customContextMenuRequested.connect(
@@ -137,9 +121,6 @@ class DatasetTableView(QtWidgets.QTableView):
         if model is None:
             raise RuntimeError("DatasetTableView requires a model")
         return cast(DatasetTableModel, model)
-
-    def _main_gui(self) -> MainWindowProtocol:
-        return required(self.main_gui, "workspace owner")
 
     def setModel(self, model):
         self._disconnect_column_model()
@@ -204,48 +185,45 @@ class DatasetTableView(QtWidgets.QTableView):
     def column_width_state(self):
         return self._column_widths.state()
 
-    def _make_context_menu(self):
-        def _context_menu(event):
-            context_menu = QMenu(self)
-            study_index = self.rowAt(event.y())
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent | None) -> None:
+        if event is None:
+            return
+        context_menu = QMenu(self)
+        study_index = self.rowAt(event.pos().y())
 
-            if not 0 <= study_index < len(self.model().current_sheet.rows):
-                return None
+        sheet = self.model().current_sheet
+        if sheet is None or not 0 <= study_index < len(sheet.rows):
+            return
 
-            study = self.model()._study_for_row(study_index)
-            study_index = self.model().current_sheet.rows.index(study)
-            delete_action = QAction('Delete study “%s”…' % study.label, self)
+        study = self.model()._study_for_row(study_index)
+        delete_action = QAction('Delete study “%s”…' % study.label, self)
 
-            def delete_study():
-                answer = QMessageBox.question(
-                    self,
-                    "Delete study",
-                    "Delete study %s?" % study.label,
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.No,
-                )
-                if answer == QMessageBox.StandardButton.Yes:
-                    self._main_gui().delete_study(
-                        study, study_index=study_index
-                    )
-
-            _connect_action(delete_action, delete_study)
-
-            action = QAction("Copy", self)
-            _connect_action(action, self.copy)
-            context_menu.addAction(action)
-
-            action = QAction("Paste", self)
-            _connect_action(action, self.paste)
-            context_menu.addAction(action)
-
-            context_menu.addSeparator()
-            context_menu.addAction(delete_action)
-            app_error_handler.popup_context_menu(
-                context_menu, event.globalPos(), parent=self, event=event
+        def delete_study():
+            answer = QMessageBox.question(
+                self,
+                "Delete study",
+                "Delete study %s?" % study.label,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
             )
+            if answer == QMessageBox.StandardButton.Yes:
+                self.studyDeletionRequested.emit(study)
 
-        return _context_menu
+        _connect_action(delete_action, delete_study)
+
+        action = QAction("Copy", self)
+        _connect_action(action, self.copy)
+        context_menu.addAction(action)
+
+        action = QAction("Paste", self)
+        _connect_action(action, self.paste)
+        context_menu.addAction(action)
+
+        context_menu.addSeparator()
+        context_menu.addAction(delete_action)
+        app_error_handler.popup_context_menu(
+            context_menu, event.globalPos(), parent=self, event=event
+        )
 
     def header_context_menu(self, pos):
         """Here is where the context menus for column header
@@ -286,7 +264,7 @@ class DatasetTableView(QtWidgets.QTableView):
             if arm_name is not None:
                 action_rename = QAction("Rename arm %s…" % arm_name, self)
                 _connect_action(
-                    action_rename, lambda: self._main_gui().edit_arm_name(arm_name),
+                    action_rename, lambda: self.armRenameRequested.emit(arm_name),
                 )
                 context_menu.addAction(action_rename)
             col_name = qt_text.to_native_text(
@@ -301,11 +279,11 @@ class DatasetTableView(QtWidgets.QTableView):
             context_menu.addAction(action_sort)
 
             action_ren = QAction("Rename covariate %s…" % cov["name"], self)
-            _connect_action(action_ren, lambda: self._main_gui().rename_covariate(cov))
+            _connect_action(action_ren, lambda: self.covariateRenameRequested.emit(cov))
             context_menu.addAction(action_ren)
 
             action_del = QAction("Delete covariate %s…" % cov["name"], self)
-            _connect_action(action_del, lambda: self._main_gui().delete_covariate(cov))
+            _connect_action(action_del, lambda: self.covariateDeletionRequested.emit(cov))
             context_menu.addAction(action_del)
 
             convert_to_str = "numeric"
@@ -316,7 +294,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 "Create %s copy of %s…" % (convert_to_str, cov["name"]), self
             )
             _connect_action(
-                action_change, lambda: self._main_gui().change_covariate_type(cov)
+                action_change, lambda: self.covariateConversionRequested.emit(cov)
             )
             context_menu.addAction(action_change)
 
@@ -334,9 +312,9 @@ class DatasetTableView(QtWidgets.QTableView):
                 QWidget.focusNextPrevChild(self, event.key() != QtCore.Qt.Key.Key_Backtab and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier)
                 event.accept()
             elif event.key() == QtCore.Qt.Key.Key_Z:
-                self._main_gui().undo()
+                self.undoRequested.emit()
             elif event.key() == QtCore.Qt.Key.Key_Y:
-                self._main_gui().redo()
+                self.redoRequested.emit()
             elif event.key() == QtCore.Qt.Key.Key_D:
                 self.fill_down()
             elif event.key() == QtCore.Qt.Key.Key_C:
@@ -347,7 +325,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 self.selectAll()
                 event.accept()
             else:
-                self._main_gui().keyPressEvent(event)
+                super().keyPressEvent(event)
         elif self._is_return_key(event):
             self._move_current_index_vertically(
                 -1
@@ -394,13 +372,11 @@ class DatasetTableView(QtWidgets.QTableView):
         if not editable_indexes:
             return False
 
-        owner = self._main_gui()
         def clear():
             for index in editable_indexes:
                 model.setData(index, "")
             model.reset_model()
-        owner._commit_model_operation(clear)
-        self._enable_analysis_menus_if_appropriate()
+        required(self.edit_transaction, "workspace edit transaction")(clear)
         return True
 
     def fill_down(self):
@@ -411,7 +387,6 @@ class DatasetTableView(QtWidgets.QTableView):
         if not indexes:
             return
         columns = sorted({index.column() for index in indexes})
-        owner = self._main_gui()
         def fill():
             model = self.model()
             for column in columns:
@@ -421,7 +396,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     index = model.index(row, column)
                     if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
                         model.setData(index, value)
-        owner._commit_model_operation(fill)
+        required(self.edit_transaction, "workspace edit transaction")(fill)
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -458,7 +433,6 @@ class DatasetTableView(QtWidgets.QTableView):
             return
         upper_left_index = self._upper_left(selected_indexes)
         self.paste_from_clipboard(upper_left_index)
-        self._enable_analysis_menus_if_appropriate()
 
     def row_header_clicked(self, row):
         from rc_metastudio import r_runtime
@@ -467,7 +441,6 @@ class DatasetTableView(QtWidgets.QTableView):
         if row > len(self.model().get_studies(False)) - 1:
             return
 
-        # Prevent row-header signals while the edit dialog mutates row state.
         signal_blocker = QSignalBlocker(self.vert_header)
 
         try:
@@ -517,10 +490,9 @@ class DatasetTableView(QtWidgets.QTableView):
                     model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
                     model.update_all_effect_previews()
                     model.reset_model()
-                    self._enable_analysis_menus_if_appropriate()
                     self.synchronize_column_widths()
 
-                self._main_gui()._commit_model_operation(apply_calculator_result)
+                required(self.edit_transaction, "workspace edit transaction")(apply_calculator_result)
         finally:
             del signal_blocker
 
@@ -555,8 +527,7 @@ class DatasetTableView(QtWidgets.QTableView):
         # Drop a trailing blank row commonly included in copied spreadsheet data.
         if new_content and self._is_blank_row(new_content[-1]):
             new_content = new_content[:-1]
-        new_content = self._normalize_matrix_rows(new_content)
-        if not new_content:
+        if not any(new_content):
             return False
 
         if not self.paste_contents(upper_left_index, new_content):
@@ -611,23 +582,23 @@ class DatasetTableView(QtWidgets.QTableView):
 
     def paste_contents(self, upper_left_index, source_content):
         """Validate and publish one clipboard edit through the workspace."""
-        source_content = self._normalize_matrix_rows(source_content)
+        source_content = row_padding.normalize_rows(source_content)
         if not source_content:
             return True
 
         valid, failure = self._preflight_paste(upper_left_index, source_content)
         if not valid:
-            self._report_model_data_error(failure)
+            self.clipboardError.emit(failure)
             return False
         origin_row, origin_col = upper_left_index.row(), upper_left_index.column()
         try:
             skipped = self.model().paste_cells(origin_row, self._paste_columns(origin_col), source_content)
         except (IndexError, TypeError, ValueError) as exc:
-            self._report_model_data_error(str(exc))
+            self.clipboardError.emit(str(exc))
             return False
         if skipped:
             noun = "cell" if skipped == 1 else "cells"
-            self._main_gui().statusBar().showMessage(f"{skipped} {noun} skipped: not a number", 8000)
+            self.pasteNotice.emit(f"{skipped} {noun} skipped: not a number")
         return True
 
     def _paste_columns(self, origin):
@@ -635,47 +606,19 @@ class DatasetTableView(QtWidgets.QTableView):
                 if not self.isColumnHidden(column)]
 
 
-    def _report_model_data_error(self, msg):
-        if self.main_gui is not None and hasattr(self.main_gui, "data_error"):
-            self._main_gui().data_error(msg)
-        else:
-            QMessageBox.warning(self, "Warning", msg)
-
-    def _enable_analysis_menus_if_appropriate(self):
-
-        if self._get_number_of_included_studies() >= 1:
-            self._main_gui().enable_menu_options_that_require_dataset()
-        else:
-            self._main_gui().disable_menu_options_that_require_dataset()
-
-    def _get_number_of_included_studies(self):
-        studies = self.model().current_sheet.rows
-        num_included = 0
-        for study in studies:
-            if study.include and (not study.manually_excluded):
-                num_included += 1
-        return num_included
-
-
-    def _str_to_matrix(self, text, col_delimiter="\t", row_delimiter="\n"):
+    def _str_to_matrix(self, text):
         """Transforms raw text (e.g., from the clipboard) to a structured matrix"""
-        return list(csv.reader(io.StringIO(text, newline=""), delimiter=col_delimiter))
-
-    def _normalize_matrix_rows(self, matrix):
-        return row_padding.normalize_rows(matrix)
+        return list(csv.reader(io.StringIO(text, newline=""), delimiter="\t"))
 
     def _is_blank_row(self, r):
         return len(r) == 1 and r[0] == ""
 
-    def _matrix_to_str(
-        self, m, col_delimiter="\t", row_delimiter="\n", append_new_line=False
-    ):
+    def _matrix_to_str(self, matrix):
         """Takes a matrix of data (i.e., a nested list) and converts to a string representation"""
         stream = io.StringIO(newline="")
-        writer = csv.writer(stream, delimiter=col_delimiter, lineterminator=row_delimiter)
-        writer.writerows(m)
-        text = stream.getvalue()
-        return text if append_new_line or not text else text[:-len(row_delimiter)]
+        writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
+        writer.writerows(matrix)
+        return stream.getvalue().removesuffix("\n")
 
     def _upper_left(self, indexes):
         """Returns the upper most index object in the indexes list."""
@@ -690,8 +633,9 @@ class DatasetTableView(QtWidgets.QTableView):
 
 
 class StudyDelegate(QItemDelegate):
-    def __init__(self, parent=None):
-        super(StudyDelegate, self).__init__(parent)
+    def __init__(self, table: DatasetTableView) -> None:
+        super().__init__(table)
+        self.table = table
 
     @staticmethod
     def _check_rect(option):
@@ -746,17 +690,15 @@ class StudyDelegate(QItemDelegate):
                 if event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
                 else 1
             )
-            table = self._table_for_editor(editor)
-            edited_index = table.currentIndex() if table is not None else None
+            edited_index = self.table.currentIndex()
             self.commitData.emit(editor)
             self.closeEditor.emit(
                 editor, QtWidgets.QAbstractItemDelegate.EndEditHint.NoHint
             )
-            if table is not None:
-                QtCore.QTimer.singleShot(
-                    0,
-                    lambda: table._move_index_vertically_from(edited_index, direction),
-                )
+            QtCore.QTimer.singleShot(
+                0,
+                lambda: self.table._move_index_vertically_from(edited_index, direction),
+            )
             event.accept()
             return True
         return super(StudyDelegate, self).eventFilter(editor, event)
@@ -764,18 +706,6 @@ class StudyDelegate(QItemDelegate):
     def createEditor(self, parent, *args):
         le = QLineEdit(parent)
         return le
-
-    def _table_for_editor(self, editor):
-        delegate_parent = self.parent()
-        if hasattr(delegate_parent, "_move_current_index_vertically"):
-            return delegate_parent
-
-        parent = editor.parent()
-        while parent is not None:
-            if hasattr(parent, "_move_current_index_vertically"):
-                return parent
-            parent = parent.parent()
-        return None
 
     def setEditorData(self, editor, index):
         text = index.model().data(index, Qt.ItemDataRole.EditRole)

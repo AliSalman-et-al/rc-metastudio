@@ -563,55 +563,6 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 }
 
 
-multiple.cum.ma.diagnostic <- function(fnames, params.list, diagnostic.data) {
-
-
-
-	results <- list()
-	pretty.names <- diagnostic.fixed.inv.var.pretty.names()
-	images <- c()
-	plot.names <- c()
-	plot.params.paths <- c()
-
-	references <- c()
-
-	for (count in 1:length(params.list)) {
-		params <- params.list[[count]]
-		fname <- fnames[count]
-		diagnostic.data <- compute.diag.point.estimates(diagnostic.data, params)
-		res <- cum.ma.diagnostic(fname, diagnostic.data, params)
-
-		summary <- list("Summary"=res[["Cumulative Summary"]])
-		names(summary) <- paste(pretty.metric.name(as.character(params$measure), params$metric.label), " Summary", sep="")
-
-		results <- c(results, summary)
-
-		image.name <- paste(pretty.metric.name(as.character(params$measure), params$metric.label), "forest plot", sep=" ")
-		analysis_images <- c(res$images[[1]])
-		names(analysis_images) <- image.name
-		images <- c(images, analysis_images)
-		analysis_plot_paths <- res$plot_params_paths
-		names(analysis_plot_paths) <- image.name
-		plot.params.paths <- c(plot.params.paths, analysis_plot_paths)
-
-		analysis_plot_names <- c("forest plot"="forest.plot")
-		plot.names <- c(plot.names, analysis_plot_names)
-
-
-		references <- c(references, res$References)
-
-	}
-
-	results <- c(results, list("images"=images,
-					           "plot_names"=plot.names,
-							   "plot_params_paths"=plot.params.paths,
-							   "References"=rcmetar.unique.references(references)))
-	results
-
-
-
-}
-
 loo.ma.continuous <- function(fname, cont.data, params){
     if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
@@ -780,45 +731,6 @@ get.cov <- function(om.data, cov.name) {
     covariate
 }
 
-multiple.loo.diagnostic <- function(fnames, params.list, diagnostic.data) {
-
-
-    results <- list()
-    pretty.names <- diagnostic.fixed.inv.var.pretty.names()
-	references <- c()
-
-    images <- c()
-    plot.names <- c()
-    plot.params.paths <- c()
-
-
-
-    if (length(params.list) > 0) {
-        for (count in 1:length(params.list)) {
-            subset_diagnostic_data <- compute.diag.point.estimates(diagnostic.data, params.list[[count]])
-            analysis_result <- loo.ma.diagnostic(fnames[[count]], subset_diagnostic_data, params.list[[count]])
-            analysis_images <- analysis_result$images
-            names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " forest plot", sep="")
-            images <- c(images, analysis_images)
-            analysis_plot_paths <- analysis_result$plot_params_paths
-            names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " forest plot", sep="")
-            plot.params.paths <- c(plot.params.paths, analysis_plot_paths)
-            plot.names <- c(plot.names, analysis_result$plot.names)
-            analysis_summary <- list("Summary"=analysis_result$Summary)
-            names(analysis_summary) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Summary", sep="")
-
-			references <- c(references, analysis_result$References)
-
-			results <- c(results, analysis_summary)
-        }
-    }
-    results <- c(results, list("images"=images,
-					           "plot_names"=plot.names,
-                               "plot_params_paths"=plot.params.paths,
-							   "References"=rcmetar.unique.references(references)))
-    results
-}
-
 loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
@@ -859,46 +771,27 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 }
 
 
-multiple.subgroup.diagnostic <- function(fnames, params.list, diagnostic.data) {
-
-
-    results <- list()
-    pretty.names <- diagnostic.fixed.inv.var.pretty.names()
-    cov.name <- as.character(params.list[[1]]$cov_name)
-    selected.cov <- get.cov(diagnostic.data, cov.name)
-    images <- c()
-    plot.names <- c()
-    plot.params.paths <- c()
-	references <- c()
-
-
-
-    if (length(params.list) > 0) {
-        for (count in 1:length(params.list)) {
-            subset_diagnostic_data <- compute.diag.point.estimates(diagnostic.data, params.list[[count]])
-            analysis_result <- subgroup.ma.diagnostic(fnames[[count]], subset_diagnostic_data, params.list[[count]], selected.cov)
-            if (is.null(params.list[[count]]$create.plot)) {
-                analysis_images <- analysis_result$images
-                names(analysis_images) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " forest plot", sep="")
-                images <- c(images, analysis_images)
-                analysis_plot_paths <- analysis_result$plot_params_paths
-                names(analysis_plot_paths) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " forest plot", sep="")
-                plot.params.paths <- c(plot.params.paths, analysis_plot_paths)
-                plot.names <- c(plot.names, analysis_result$plot_names)
-            }
-            analysis_summary <- list("Summary"=analysis_result$Summary)
-                names(analysis_summary) <- paste(pretty.metric.name(as.character(params.list[[count]]$measure)), " Summary", sep="")
-
-			references <- c(references, analysis_result$References)
-
-			results <- c(results, analysis_summary)
+.rcmetar.repeated.diagnostic.contribution <- function(fit, request) {
+    workflow <- request$workflow
+    params <- request$params
+    cumulative <- workflow == "cumulative"
+    label <- pretty.metric.name(as.character(params$measure),
+                                if (cumulative) params$metric.label else NULL)
+    summary.key <- if (cumulative) "Cumulative Summary" else "Summary"
+    result <- list(summary=setNames(list(fit[[summary.key]]), paste(label, "Summary")),
+                   references=fit$References)
+    if (!(workflow == "subgroup" && !is.null(params$create.plot))) {
+        if (length(fit$images)) {
+            result$images <- setNames(fit$images, paste(label, "forest plot"))
+            result$plot.paths <- setNames(fit$plot_params_paths, names(result$images))
         }
+        result$plot.names <- switch(workflow,
+            cumulative=c("forest plot"="forest.plot"),
+            "leave-one-out"=fit$plot.names,
+            subgroup=fit$plot_names
+        )
     }
-    results <- c(results, list("images"=images,
-					           "plot_names"=plot.names,
-                               "plot_params_paths"=plot.params.paths,
-							   "References"=rcmetar.unique.references(references)))
-    results
+    result
 }
 
 subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov){

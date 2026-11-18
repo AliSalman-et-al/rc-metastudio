@@ -78,6 +78,17 @@ implementation details, while application code calls this core interface so
 that validation, dispatch, and future compatibility changes are centralized
 in rcmetar.
 }
+\section{Diagnostic requests}{
+
+\code{rcmetar.run.diagnostic.analyses()} accepts either a shared
+\code{DiagnosticData} object or \code{request.data}, one named list of
+\code{rcmetar.create.diagnostic.data()} arguments per entry in
+\code{request.list}. Omit \code{allow.partial} for strict failure on any
+request. With \code{allow.partial=TRUE}, a failed fit or input construction
+leaves a metric error alongside the successful results. If no request
+succeeds, the function raises an error containing each failed metric.
+}
+
 \section{SROC plot rendering}{
 
 \code{rcmetar.draw.sroc.plot()} renders a Reitsma SROC render bundle returned

@@ -17,9 +17,11 @@ from uuid import uuid4
 
 if __package__:
     from scripts import r_verification_support as r_support
+    from scripts.desktop_partition import DESKTOP_SHARDS
     from scripts.verification_evidence import source_digest, typing_command, verified_typing
 else:
     import r_verification_support as r_support
+    from desktop_partition import DESKTOP_SHARDS
     from verification_evidence import source_digest, typing_command, verified_typing
 
 
@@ -398,7 +400,7 @@ def parser() -> argparse.ArgumentParser:
     r_stack = subparsers.add_parser("r-stack", help="run Full R Stack Evidence")
     selection = r_stack.add_mutually_exclusive_group()
     selection.add_argument("--skip-desktop", action="store_true")
-    selection.add_argument("--desktop-shard", type=int, choices=(1, 2, 3))
+    selection.add_argument("--desktop-shard", type=int, choices=DESKTOP_SHARDS)
     r_stack.add_argument("--sync", action="store_true")
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)

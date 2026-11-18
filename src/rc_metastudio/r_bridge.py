@@ -34,6 +34,7 @@ from rc_metastudio.study_effect_shapes import (
 from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
 from rc_metastudio.analysis_catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
+from rc_metastudio.dataset_analysis_domain import fit_raw_rows, raw_data_is_complete
 from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
 
 _P = ParamSpec("_P")
@@ -532,6 +533,18 @@ def get_analysis_plot_capabilities(data_type, method_name, workflow="standard"):
     return r_object_to_python(capabilities)
 
 
+def dataset_for_analysis(table_model, family: object, *, metric="Sens", **selection):
+    if family == "binary":
+        return dataset_to_simple_binary_r_object(table_model, **selection)
+    if family == "continuous":
+        return dataset_to_simple_continuous_r_object(table_model, **selection)
+    if family == "diagnostic":
+        return dataset_to_simple_diagnostic_r_object(table_model, metric=metric, **selection)
+    if family in ("time_to_event", "event_rates"):
+        return dataset_to_simple_ratio_r_object(table_model, **selection)
+    raise ValueError(f"unsupported analysis data family: {family!r}")
+
+
 @serialized_r_call
 def dataset_to_simple_ratio_r_object(
     table_model, covs_to_include=None, studies=None
@@ -569,7 +582,6 @@ def dataset_to_simple_continuous_r_object(
     table_model, covs_to_include=None, studies=None
 ):
     if studies is None:
-        # grab all studies. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies()
     study_ids = [study.id for study in studies]
 
@@ -586,19 +598,11 @@ def dataset_to_simple_continuous_r_object(
         standard_errors=standard_errors,
     )
 
-    raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
-    has_raw_data = len(raw_data) == len(studies) and all(
-        all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
-        for row in raw_data
-    ) and not any(
-        study.analysis_unit.calculator_source(table_model.current_effect, table_model.get_current_arm_key()) == "entered"
-        for study in studies
+    raw_data = (
+        None if table_model.current_effect in ONE_ARM_METRICS
+        else _raw_rows_for_selected_studies(table_model, studies, study_ids)
     )
-    # One-arm continuous models use only the estimate and standard error.
-    if (
-        table_model.current_effect not in ONE_ARM_METRICS
-    ) and has_raw_data:
-        raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
+    if raw_data is not None:
         data_kwargs.update(
             {
                 "N1": _r_numeric_vector(_get_col(raw_data, 0)),
@@ -617,13 +621,11 @@ def dataset_to_simple_continuous_r_object(
 @serialized_r_call
 def dataset_to_simple_binary_r_object(
     table_model,
-    include_raw_data=True,
     covs_to_include=None,
     studies=None,
 ):
     """Convert the table's current sheet to an RCMetaR object."""
     if studies is None:
-        # grab the study names. note: the list is pulled out in reverse order from the
         studies = table_model.get_studies(only_if_included=True)
 
     study_ids = [study.id for study in studies]
@@ -641,17 +643,8 @@ def dataset_to_simple_binary_r_object(
         standard_errors=standard_errors,
     )
 
-    raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
-    has_raw_data = len(raw_data) == len(studies) and all(
-        all(value not in EMPTY_VALS for value in (row[:2] if table_model.current_effect in ONE_ARM_METRICS else row))
-        for row in raw_data
-    ) and not any(
-        study.analysis_unit.calculator_source(table_model.current_effect, table_model.get_current_arm_key()) == "entered"
-        for study in studies
-    )
-    if include_raw_data and has_raw_data:
-        raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
-
+    raw_data = _raw_rows_for_selected_studies(table_model, studies, study_ids)
+    if raw_data is not None:
         g1_events = _get_col(raw_data, 0)
 
         g1_totals = _get_col(raw_data, 1)
@@ -683,33 +676,20 @@ def dataset_to_simple_binary_r_object(
     return r_obj
 
 
-def _data_blank_or_none(*args):
-    """Returns True if there is a blank or none value in args,
-    Returns False otherwise
-    """
-    if args is None:
-        return True
-
-    for x in args:
-        if x in EMPTY_VALS:
-            return True
-    return False
+def _raw_rows_for_selected_studies(table_model, studies, study_ids):
+    return fit_raw_rows(
+        studies, table_model.get_current_raw_data(only_these_studies=study_ids),
+        table_model.current_effect, table_model.get_current_arm_key(),
+    )
 
 
 @serialized_r_call
-def dataset_to_simple_diagnostic_r_object(
+def diagnostic_data_arguments(
     table_model,
     metric="Sens",
     covs_to_include=None,
     studies=None,
 ):
-    """This converts a DatasetTableModel to an RCMetaR OMData object. We use type DatasetTableModel
-    rather than a DataSet model directly to access the current variables. Furthermore, this allows
-    us to check which studies (if any) were excluded by the user.
-
-
-    """
-    # grab the study names. note: the list is pulled out in reverse order from the
     if studies is None:
         studies = table_model.get_studies(only_if_included=True)
     study_ids = [study.id for study in studies]
@@ -728,9 +708,7 @@ def dataset_to_simple_diagnostic_r_object(
     )
 
     raw_data = table_model.get_current_raw_data(only_these_studies=study_ids)
-    has_raw_data = len(raw_data) == len(studies) and all(
-        not any(value in EMPTY_VALS for value in row) for row in raw_data
-    )
+    has_raw_data = len(raw_data) == len(studies) and all(map(raw_data_is_complete, raw_data))
     has_point_estimates = (
         len(estimates) == len(studies)
         and len(standard_errors) == len(studies)
@@ -755,11 +733,18 @@ def dataset_to_simple_diagnostic_r_object(
             "for %s." % metric
         )
 
+    return data_kwargs
+
+
+@serialized_r_call
+def dataset_to_simple_diagnostic_r_object(
+    table_model, metric="Sens", covs_to_include=None, studies=None,
+):
+    arguments = diagnostic_data_arguments(table_model, metric, covs_to_include, studies)
     try:
-        r_obj = execute_r_function("rcmetar.create.diagnostic.data", **data_kwargs)
+        return execute_r_function("rcmetar.create.diagnostic.data", **arguments)
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
-    return r_obj
 
 
 def _analysis_data_kwargs(
@@ -777,7 +762,7 @@ def _analysis_data_kwargs(
 def _r_character_vector(values):
     _require_initialized_r()
     converted = [
-        ro.NA_Character if _data_blank_or_none(value) else str(value)
+        ro.NA_Character if value in EMPTY_VALS else str(value)
         for value in values
     ]
     return ro.StrVector(converted)
@@ -786,7 +771,7 @@ def _r_character_vector(values):
 def _r_year_vector(values):
     _require_initialized_r()
     converted = [
-        ro.NA_Integer if _data_blank_or_none(value) else int(value) for value in values
+        ro.NA_Integer if value in EMPTY_VALS else int(value) for value in values
     ]
     return ro.IntVector(converted)
 
@@ -794,7 +779,7 @@ def _r_year_vector(values):
 def _r_numeric_vector(values):
     _require_initialized_r()
     converted = [
-        ro.NA_Real if _data_blank_or_none(value) else float(value) for value in values
+        ro.NA_Real if value in EMPTY_VALS else float(value) for value in values
     ]
     return ro.FloatVector(converted)
 
@@ -831,7 +816,7 @@ def _cov_values_for_studies(cov, study_ids, dataset):
 
 def _cov_ref_value(values):
     for value in values:
-        if not _data_blank_or_none(value):
+        if value not in EMPTY_VALS:
             return str(value)
     return ""
 
@@ -844,7 +829,7 @@ def _cov_ref_value(values):
 def run_small_study_effects(
     table_model,
     request,
-    res_name="small_study_effects_result",
+    *,
     preview: Literal[False] = False,
 ) -> AnalysisResult: ...
 
@@ -853,8 +838,8 @@ def run_small_study_effects(
 def run_small_study_effects(
     table_model,
     request,
-    res_name="small_study_effects_result",
-    preview: Literal[True] = True,
+    *,
+    preview: Literal[True],
 ) -> Mapping[str, object]: ...
 
 
@@ -862,7 +847,7 @@ def run_small_study_effects(
 def run_small_study_effects(
     table_model,
     request,
-    res_name="small_study_effects_result",
+    *,
     preview=False,
 ) -> AnalysisResult | Mapping[str, object]:
     """Run the complete guided small-study effects workflow in one R call.
@@ -876,19 +861,7 @@ def run_small_study_effects(
     version = request.get("version")
     if type(version) is not int or version != 1:
         raise ValueError("unsupported small-study effects request version")
-    family = request.get("data.type")
-    if family == "binary":
-        data = dataset_to_simple_binary_r_object(table_model)
-    elif family in ("time_to_event", "event_rates"):
-        data = dataset_to_simple_ratio_r_object(table_model)
-    elif family == "continuous":
-        data = dataset_to_simple_continuous_r_object(table_model)
-    elif family == "diagnostic":
-        data = dataset_to_simple_diagnostic_r_object(
-            table_model, metric=request.get("metric", "DOR")
-        )
-    else:
-        raise ValueError("unsupported small-study effects data family: %r" % family)
+    data = dataset_for_analysis(table_model, request.get("data.type"), metric=request.get("metric", "DOR"))
     r_request = dict(request)
     r_request["preview"] = bool(preview)
     if not preview:
@@ -901,7 +874,6 @@ def run_small_study_effects(
     )
     if preview:
         return r_object_to_python(result.rx2("eligibility"))
-    ro.globalenv[_r_symbol(res_name)] = result
     return parse_out_results(result)
 
 
@@ -949,13 +921,6 @@ def _to_r_params(params):
     )
 
 
-def _r_symbol(name):
-    name = str(name)
-    if not name.replace(".", "_").isidentifier():
-        raise ValueError("Unsafe R symbol name: %s" % name)
-    return name
-
-
 def _normalize_rcmetar_workflow(workflow):
     if workflow is None:
         return "standard"
@@ -977,12 +942,11 @@ def _normalize_rcmetar_workflow(workflow):
 def run_versioned_analysis_request(
     request: Mapping[str, object],
     data,
-    res_name: str = "result",
 ):
     """Execute one complete immutable request through the public RCMetaR API."""
     data_type, method, metric, workflow, params = _validated_versioned_request(request)
     return _execute_versioned_request(
-        data_type, method, metric, workflow, params, res_name, data
+        data_type, method, metric, workflow, params, data
     )
 
 
@@ -990,17 +954,7 @@ def run_versioned_analysis_request(
 def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
     """Convert this frozen model and execute it within one R transaction."""
     family, _, metric, _, _ = _validated_versioned_request(request)
-    kwargs = dict(covs_to_include=covs_to_include, studies=studies)
-    if family == "binary":
-        data = dataset_to_simple_binary_r_object(table_model, **kwargs)
-    elif family == "continuous":
-        data = dataset_to_simple_continuous_r_object(table_model, **kwargs)
-    elif family in ("time_to_event", "event_rates"):
-        data = dataset_to_simple_ratio_r_object(table_model, **kwargs)
-    elif family == "diagnostic":
-        data = dataset_to_simple_diagnostic_r_object(table_model, metric=metric, **kwargs)
-    else:
-        raise ValueError("unsupported analysis data family: %s" % family)
+    data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
     return run_versioned_analysis_request(request, data)
 
 
@@ -1038,7 +992,6 @@ def _execute_versioned_request(
     metric: str,
     workflow: object,
     params: Mapping[str, object],
-    res_name: str,
     data,
 ) -> object:
     _require_initialized_r()
@@ -1055,7 +1008,6 @@ def _execute_versioned_request(
         data,
         _to_r_params(normalized),
     )
-    ro.globalenv[_r_symbol(res_name)] = result
     return parse_out_results(result)
 
 
@@ -1063,12 +1015,11 @@ def _execute_versioned_request(
 def run_versioned_analysis_requests(
     requests: list[Mapping[str, object]],
     data,
-    res_name: str = "result",
 ):
     """Execute a validated diagnostic request set through one R operation."""
     validated_requests = _validated_versioned_requests(requests)
     return _execute_versioned_requests(
-        validated_requests, res_name, data
+        validated_requests, data
     )
 
 
@@ -1101,23 +1052,21 @@ def _validated_versioned_requests(
 
 def _execute_versioned_requests(
     requests: list[dict[str, object]],
-    res_name: str,
     data,
 ) -> object:
     _require_initialized_r()
     request_list = execute_r_function(
         "list", *[_to_r_params(request) for request in requests]
     )
+    arguments = {"request.list": request_list, "request.version": 1, "allow.partial": True}
+    if isinstance(data, list):
+        arguments["request.data"] = execute_r_function("list", *(ro.ListVector(args) for args in data))
+    else:
+        arguments["diagnostic.data"] = data
     try:
-        result = execute_r_function(
-            "rcmetar.run.diagnostic.analyses",
-            data,
-            **{"request.list": request_list},
-            **{"request.version": 1},
-        )
+        result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
-    ro.globalenv[_r_symbol(res_name)] = result
     return parse_out_results(result)
 
 

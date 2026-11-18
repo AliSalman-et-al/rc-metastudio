@@ -422,9 +422,11 @@ def analysis_dialog(app, window):
             if sample == "amino" and "Giamarellou" in str(window.model.data(window.model.index(row, window.model.NAME))):
                 assert texts == ["0.08", "0.0040", "1.44"], texts
             assert len(set(decimals)) <= 1, texts
-        kwargs = {"diagnostic_metrics": ["dor"]} if sample == "lymph" else {}
+        diagnostic_metrics = ["dor"] if sample == "lymph" else None
         form = analysis_setup_dialog.AnalysisSetupDialog(
-            window.model, parent=window, confidence_level=95, **kwargs)
+            window.model, parent=window, confidence_level=95,
+            diagnostic_metrics=diagnostic_metrics, on_result=window.analysis,
+        )
         window.resize(1600, 828)
         form.resize(631, 437)
         form.show()
@@ -460,7 +462,7 @@ def analysis_dialog(app, window):
         record_step("slice2c-analysis-expanded", form)
         form.hide()
         reopened = analysis_setup_dialog.AnalysisSetupDialog(
-            window.model, parent=window, confidence_level=95, **kwargs)
+            window.model, parent=window, confidence_level=95, diagnostic_metrics=diagnostic_metrics)
         assert reopened.advanced_toggle.isChecked()
         reopened.close()
         form.show()
@@ -801,6 +803,7 @@ def sheets_swap(app, window):
     import copy
     import math
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
+    from tests.fit_observations import observe_fit
     for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Pignon2000-HR.rcms", "HR"), ("NielWeise2008-IRR.rcms", "IRR")):
         window.workspace.mark_saved()
         assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
@@ -814,13 +817,14 @@ def sheets_swap(app, window):
         values = []
         for iteration in range(3):
             assert window.action_swap_arms.isEnabled()
-            view = analyze(app, window, model.get_current_data_type() + ".random")
+            with observe_fit() as fit:
+                view = analyze(app, window, model.get_current_data_type() + ".random")
             if metric in ("OR", "RD", "MD"):
                 from rc_metastudio import r_bridge
                 load_saved_analysis(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
-                receipt = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
+                receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
                 expected_labels = model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in model.arm_names])
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
@@ -1676,17 +1680,11 @@ def plot_edit(app, window):
         if not isinstance(dialog, EditPlotDialog):
             QtCore.QTimer.singleShot(10, edit)
             return
+        apply = required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         try:
             dialog.x_lbl_le.setText("Edited effect axis")
             record_step("plot-edit-draft", dialog, axis="Edited effect axis")
-            mouse_click(
-                required(
-                    dialog.buttonBox.button(
-                        QtWidgets.QDialogButtonBox.StandardButton.Apply
-                    )
-                ),
-                QtCore.Qt.MouseButton.LeftButton,
-            )
+            mouse_click(apply, QtCore.Qt.MouseButton.LeftButton)
             assert path.read_bytes() != before
             assert (
                 view.plot_service.load_params(artifact.params_path)["fp_xlabel"]
@@ -1695,19 +1693,18 @@ def plot_edit(app, window):
             applied = path.read_bytes()
             for invalid in ("abc", "0.1, nope", "1, nan", "1,"):
                 dialog.x_ticks_le.setText(invalid)
-                dialog._commit()
+                mouse_click(apply, QtCore.Qt.MouseButton.LeftButton)
                 assert "comma-separated finite numbers" in dialog._commit_error.text()
                 assert path.read_bytes() == applied
             for invalid in ("0, 1", "-1, 1"):
                 dialog.x_ticks_le.setText(invalid)
-                dialog._commit()
+                mouse_click(apply, QtCore.Qt.MouseButton.LeftButton)
                 assert "positive" in dialog._commit_error.text()
                 assert path.read_bytes() == applied
             record_step("plot-invalid-ticks", dialog)
             dialog.style_cbo.setCurrentText("BMJ")
             dialog.x_ticks_le.setText("0.1, 1, 10")
-            dialog._commit()
-            assert dialog._commit_outcome is True, dialog._commit_error.text()
+            mouse_click(apply, QtCore.Qt.MouseButton.LeftButton)
             from xml.etree import ElementTree as ET
             def plot_text():
                 return " ".join("".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
@@ -1717,8 +1714,7 @@ def plot_edit(app, window):
             record_step("bmj-columns-visible", view)
             dialog.show_1.setChecked(False)
             dialog.show_2.setChecked(False)
-            dialog._commit()
-            assert dialog._commit_outcome is True, dialog._commit_error.text()
+            mouse_click(apply, QtCore.Qt.MouseButton.LeftButton)
             hidden = plot_text()
             assert "Gonzalez" not in hidden, hidden
             assert "0.770 (0.485" not in hidden, hidden

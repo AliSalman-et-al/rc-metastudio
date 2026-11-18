@@ -6,19 +6,29 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from scripts.inspect_macos_deployment import DIRECT_BUILD_INPUT_MEMBERS
+if __package__:
+    from scripts.macos_direct_build_contract import (
+        DIRECT_BUILD_INPUT_MEMBERS,
+        DIRECT_R_PPM_SNAPSHOT,
+        RCMETAR_VERSION,
+    )
+else:
+    from macos_direct_build_contract import (
+        DIRECT_BUILD_INPUT_MEMBERS,
+        DIRECT_R_PPM_SNAPSHOT,
+        RCMETAR_VERSION,
+    )
 
 
 def record(path: Path) -> dict[str, object]:
     if not path.is_file():
         raise ValueError(f"required direct-build input is absent: {path}")
+    with path.open("rb") as stream:
+        sha256 = hashlib.file_digest(stream, "sha256").hexdigest()
     return {
-        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "sha256": sha256,
         "size": path.stat().st_size,
     }
 
@@ -37,56 +47,18 @@ def main() -> int:
     args = parser.parse_args()
     root = args.qualification_root
     names = {
-        "adapter_script": root / "embedded-r-adapter.py",
-        "pre_normalization_audit": root / "direct-r-pre-normalization-audit.json",
-        "normalized_adapter_map": root / "direct-r-adapter.json",
-        "host_r_isolation_script": root / "macos-host-r-isolation.sh",
-        "pyinstaller_toc_preflight": root / "verify-macos-r-pyinstaller-toc.py",
-        "pyinstaller_toc_preflight_report": root
-        / "macos-r-pyinstaller-toc-preflight.json",
-        "explicit_r_toc": root / "direct-r-toc.json",
-        "rpy2_api_build": root / "rpy2-api-build.json",
-        "pre_sign_native_graph": root / "pre-sign-native-graph.json",
-        "post_sign_native_inventory": root / "post-sign-native-inventory.json",
-        "signing_inventory": root / "ad-hoc-signing-inventory.json",
-        "ppm_archive_inventory": root / "ppm-archive-inventory.json",
-        "rcmetar_source_archive": root / "RCMetaR-0.2.0-source.tar.gz",
-        "r_runtime_profile": root / "embedded-r-runtime-profile.json",
-        "runtime_probe": root / "runtime-probe.json",
-        "runtime_stdout": root / "runtime-probe.stdout.log",
-        "runtime_stderr": root / "runtime-probe.stderr.log",
-        "deployment_manifest": root / "deployment-manifest.json",
-        "smoke_evidence": root / "packaged-smoke.json",
-        "smoke_log": root / "packaged-smoke.log",
-        "smoke_stdout": root / "packaged-smoke.stdout.log",
-        "smoke_stderr": root / "packaged-smoke.stderr.log",
-        "hang_trace": root / "packaged-smoke.hang-trace.log",
-        "launchservices_marker": root / "launchservices-completion.json",
-        "launchservices_stdout": root / "launchservices.stdout.log",
-        "launchservices_stderr": root / "launchservices.stderr.log",
-        "runner_environment": root / "runner-environment.json",
-        "official_r_signature": root / "official-r-signature.json",
-        "surface_125_stdout": root / "packaged-surface-125.stdout.log",
-        "surface_125_stderr": root / "packaged-surface-125.stderr.log",
-        "surface_150_stdout": root / "packaged-surface-150.stdout.log",
-        "surface_150_stderr": root / "packaged-surface-150.stderr.log",
-        "surface_175_stdout": root / "packaged-surface-175.stdout.log",
-        "surface_175_stderr": root / "packaged-surface-175.stderr.log",
+        label: root / PurePosixPath(member).relative_to("qualification")
+        for label, member in DIRECT_BUILD_INPUT_MEMBERS.items()
     }
-    if set(names) != set(DIRECT_BUILD_INPUT_MEMBERS):
-        raise ValueError("provenance input map drifted from validator")
 
     def ppm(path: Path) -> dict[str, object]:
-        relative = str(path.relative_to(args.ppm_root))
+        relative = path.relative_to(args.ppm_root).as_posix()
         package, version = path.name.rsplit(".", 1)[0].rsplit("_", 1)
         return {
             "path": relative,
             "package": package,
             "version": version,
-            "archive_url": "https://packagemanager.posit.co/cran/2026-11-13/"
-            + args.ppm_contrib_path.strip("/")
-            + "/"
-            + relative,
+            "archive_url": f"{DIRECT_R_PPM_SNAPSHOT}/{args.ppm_contrib_path.strip('/')}/{relative}",
             **record(path),
         }
 
@@ -95,11 +67,11 @@ def main() -> int:
     ]
     if not archives:
         raise ValueError("PPM archive inventory is empty")
-    (root / "ppm-archive-inventory.json").write_text(
+    names["ppm_archive_inventory"].write_text(
         json.dumps(
             {
                 "schema_version": 1,
-                "repository": "https://packagemanager.posit.co/cran/2026-11-13",
+                "repository": DIRECT_R_PPM_SNAPSHOT,
                 "archives": archives,
             },
             indent=2,
@@ -108,7 +80,7 @@ def main() -> int:
         + "\n"
     )
     inputs = {key: record(path) for key, path in names.items()}
-    rcmetar = names["rcmetar_source_archive"]
+    rcmetar = inputs["rcmetar_source_archive"]
     payload = {
         "schema_version": 1,
         "kind": "rc-metastudio-direct-macos-target-build",
@@ -118,17 +90,17 @@ def main() -> int:
             "url": args.official_r_url,
             "sha256": args.official_r_sha256,
         },
-        "ppm_snapshot": "https://packagemanager.posit.co/cran/2026-11-13",
+        "ppm_snapshot": DIRECT_R_PPM_SNAPSHOT,
         "ppm_archives": archives,
         "rcmetar_source": {
             "name": "RCMetaR",
-            "version": "0.2.0",
+            "version": RCMETAR_VERSION,
             "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
             + args.source_commit
             + "/r/RCMetaR",
             "source_commit": args.source_commit,
-            "archive_sha256": record(rcmetar)["sha256"],
-            "archive": record(rcmetar),
+            "archive_sha256": rcmetar["sha256"],
+            "archive": rcmetar,
         },
         "rpy2_api_bridge_source_sha256": record(args.bridge)["sha256"],
         "inputs": inputs,

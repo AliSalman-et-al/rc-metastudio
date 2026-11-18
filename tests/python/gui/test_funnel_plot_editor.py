@@ -8,7 +8,7 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import funnel_plot_editor_dialog, plot_service, results_window
+from rc_metastudio import app_error_handler, funnel_plot_editor_dialog, plot_service, results_window
 from rc_metastudio.analysis_results import empty_analysis_result
 from rc_metastudio.plot_capabilities import PlotCapability
 from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
@@ -150,12 +150,9 @@ def test_funnel_editor_prefers_persisted_output_path_on_reopen(qapp, tmp_path):
 
 
 def test_funnel_editor_apply_then_ok_does_not_regenerate_twice(qapp):
-    dialog = FunnelPlotEditorDialog(
-        _params("ordinary"), "ordinary.png", plot_type="funnel"
-    )
     applied = []
-    dialog.applied.connect(
-        lambda: (applied.append(True), dialog.mark_commit_succeeded())
+    dialog = FunnelPlotEditorDialog(
+        _params("ordinary"), "ordinary.png", plot_type="funnel", on_commit=applied.append
     )
     try:
         apply_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Apply)
@@ -173,12 +170,9 @@ def test_funnel_editor_apply_then_ok_does_not_regenerate_twice(qapp):
 
 @pytest.mark.parametrize("change", ["point-size", "caption", "label-policy"])
 def test_funnel_editor_ok_commits_new_change_and_closes(qapp, change):
-    dialog = FunnelPlotEditorDialog(
-        _params("ordinary"), "ordinary.png", plot_type="funnel"
-    )
     applied = []
-    dialog.applied.connect(
-        lambda: (applied.append(dialog.plot_params()), dialog.mark_commit_succeeded())
+    dialog = FunnelPlotEditorDialog(
+        _params("ordinary"), "ordinary.png", plot_type="funnel", on_commit=applied.append
     )
     try:
         if change == "caption":
@@ -225,9 +219,10 @@ def test_funnel_editor_rejects_ignored_numeric_edits(qapp, kind, fields):
 def test_funnel_editor_invalid_ok_stays_open_and_recovers(qapp, monkeypatch):
     from PyQt6.QtWidgets import QMessageBox
 
-    dialog = FunnelPlotEditorDialog(_params("ordinary"), "funnel.png", plot_type="funnel")
     applied, warnings = [], []
-    dialog.applied.connect(lambda: (applied.append(dialog.plot_params()), dialog.mark_commit_succeeded()))
+    dialog = FunnelPlotEditorDialog(
+        _params("ordinary"), "funnel.png", plot_type="funnel", on_commit=applied.append
+    )
     monkeypatch.setattr(QMessageBox, "warning", lambda *args: warnings.append(args[2]))
     try:
         dialog.show()
@@ -247,18 +242,31 @@ def test_funnel_editor_invalid_ok_stays_open_and_recovers(qapp, monkeypatch):
         dialog.close()
 
 
-def test_funnel_editor_failed_commit_stays_dirty_and_open(qapp):
-    dialog = FunnelPlotEditorDialog(
-        _params("ordinary"), "ordinary.png", plot_type="funnel"
+def test_funnel_editor_failed_ok_stays_open_and_retries_the_draft(qapp, monkeypatch):
+    applied, errors = [], []
+
+    def commit(params):
+        applied.append(params["funnel.point.size"])
+        if len(applied) == 1:
+            raise RuntimeError("render failed")
+
+    monkeypatch.setattr(
+        app_error_handler, "handle_exception", lambda _type, error, _traceback, **_kw: errors.append(str(error))
     )
-    dialog.applied.connect(dialog.mark_commit_failed)
+    dialog = FunnelPlotEditorDialog(
+        _params("ordinary"), "ordinary.png", plot_type="funnel", on_commit=commit
+    )
     try:
+        dialog.show()
         dialog.point_size_spin.setValue(2.0)
         ok_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Ok)
         assert ok_button is not None
         ok_button.click()
-        assert dialog._dirty
-        assert dialog.result() == 0
+        assert dialog.isVisible()
+        assert errors == ["render failed"]
+        ok_button.click()
+        assert dialog.result() == QDialog.DialogCode.Accepted
+        assert applied == [2.0, 2.0]
     finally:
         dialog.close()
 
@@ -294,14 +302,22 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         return {str(params_path): str(staged_params), output: str(staged_render)}
 
     monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "handle_exception", lambda _type, error, _traceback, **_kw: errors.append(str(error))
+    )
     dialog = FunnelPlotEditorDialog(
         {"funnel.kind": "ordinary", "funnel.point.size": 1.0},
         str(image_path),
         plot_type="funnel",
+        on_commit=lambda parameters: window._apply_plot_edits(parameters, artifact, None),
     )
     try:
+        dialog.show()
+        apply_button = dialog.button_box.button(QDialogButtonBox.StandardButton.Apply)
+        assert apply_button is not None
         dialog.point_size_spin.setValue(2.0)
-        window._apply_plot_edits(dialog, artifact, None)
+        apply_button.click()
         assert regenerate_count == [1]
         assert image_path.read_bytes() == b"first good image"
         import ast
@@ -310,12 +326,11 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         committed_params = params_path.read_bytes()
         committed_image = image_path.read_bytes()
         dialog.point_size_spin.setValue(3.0)
-        with pytest.raises(RuntimeError, match="render failed"):
-            window._apply_plot_edits(dialog, artifact, None)
+        apply_button.click()
+        assert errors == ["render failed"]
         assert params_path.read_bytes() == committed_params
         assert image_path.read_bytes() == committed_image
-        assert dialog._dirty
-        assert dialog.result() == 0
+        assert dialog.isVisible()
     finally:
         dialog.close()
 
@@ -337,7 +352,7 @@ def test_funnel_editor_rejects_svgz_output_path(qapp, tmp_path):
     )
     try:
         with pytest.raises(ValueError, match="SVGZ output is not supported"):
-            window._apply_plot_edits(dialog, artifact, None)
+            window._apply_plot_edits(dialog.plot_params(), artifact, None)
         assert output.read_bytes() == b"previous export"
     finally:
         dialog.close()

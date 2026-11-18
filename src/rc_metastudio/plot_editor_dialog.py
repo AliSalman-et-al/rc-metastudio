@@ -3,6 +3,7 @@
 """Edit the presentation of a generated plot."""
 
 import math
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from rc_metastudio.qt_layout import style_inline_error, align_field_columns, add_color_swatch
@@ -25,6 +26,7 @@ from PyQt6.QtWidgets import (
 
 from rc_metastudio import adaptive_window, analysis_identity, app_error_handler, plot_capabilities, qt_text
 from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
+from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_style_controls import (
     configure_plot_style, load_plot_style, selected_plot_style,
 )
@@ -43,15 +45,15 @@ else:
 
 
 class EditPlotDialog(QDialog, Ui_EditPlotDialog):
-    applied = pyqtSignal()
     rerun_requested = pyqtSignal()
 
-    def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
+    def __init__(
+        self, plot_params, image_path, parent=None, plot_type="forest",
+        *, on_commit: Callable[[dict[str, object]], None] | None = None,
+    ):
         super(EditPlotDialog, self).__init__(parent)
         self.setupUi(self)
-        self._pending_ok = False
-        self._allow_close = True
-        self._commit_outcome = None
+        self._on_commit = on_commit
         self._configure_accessibility()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
@@ -90,13 +92,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         configure_plot_style(self.style_cbo, self.accent_color, self.color_btn)
-        # The generated form connects accepted() directly to accept(). Route
-        # both Apply and OK through the transactional commit boundary first.
-        try:
-            self.buttonBox.accepted.disconnect(self.accept)
-        except TypeError:
-            pass
-        self.buttonBox.clicked.connect(self._button_clicked)
+        apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
+        apply_button.clicked.connect(self._commit)
 
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self._load_params(image_path)
@@ -215,24 +212,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             control.setToolTip(description)
         self.color_btn.setToolTip("Choose the plot accent color")
 
-    def mark_commit_succeeded(self):
-        """Allow an OK commit to close only after rendering succeeds."""
-        self._params.update(self.plot_params())
-        self._allow_close = True
-        self._commit_outcome = True
-        self._commit_error.clear()
-        self._commit_error.hide()
-        if self._pending_ok:
-            super().accept()
-
-    def mark_commit_failed(self, message):
-        """Keep the editor open and show the rendering failure inline."""
-        self._allow_close = False
-        self._commit_outcome = False
-        self._commit_error.setText(str(message))
+    def _show_commit_error(self, message: str) -> None:
+        self._commit_error.setText(message)
         self._commit_error.show()
 
-    def _commit(self):
+    def _commit(self) -> bool:
         axes = [("X-axis", self.plot_lb_le, self.plot_ub_le)]
         if self.plot_type == "sroc":
             axes.append(("Y-axis", self.sroc_y_lower, self.sroc_y_upper))
@@ -248,23 +232,29 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 except ValueError:
                     value = math.nan
                 if not math.isfinite(value):
-                    self.mark_commit_failed(f"{axis} {label} bound must be a finite number, or leave it blank for automatic limits.")
+                    self._show_commit_error(f"{axis} {label} bound must be a finite number, or leave it blank for automatic limits.")
                     widget.setFocus()
-                    return
+                    return False
                 values.append(value)
             low, high = values
             if low is not None and high is not None and low >= high:
-                self.mark_commit_failed(f"{axis} lower bound must be less than the upper bound.")
+                self._show_commit_error(f"{axis} lower bound must be less than the upper bound.")
                 lower.setFocus()
-                return
+                return False
         if not self._validate_ticks():
-            return
-        self._commit_outcome = None
-        self.applied.emit()
-        # Preserve the signal-only API for callers that use the dialog without
-        # ResultsWindow. The real integration explicitly marks success/failure.
-        if self._commit_outcome is None:
-            self.mark_commit_succeeded()
+            return False
+        try:
+            params = self.plot_params()
+            if self._on_commit is not None:
+                self._on_commit(params)
+        except Exception as error:
+            self._show_commit_error(str(error))
+            app_error_handler.handle_exception(type(error), error, error.__traceback__, parent=self)
+            return False
+        self._params.update(params)
+        self._commit_error.clear()
+        self._commit_error.hide()
+        return True
 
     def _ticks_changed(self):
         if self._validate_ticks(focus=False):
@@ -281,7 +271,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 continue
             message = self._tick_error(ticks, axis)
             if message:
-                self.mark_commit_failed(message)
+                self._show_commit_error(message)
                 if focus:
                     field.setFocus()
                 return False
@@ -307,22 +297,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             return "X-axis ticks must be positive for a logarithmic effect axis."
         return ""
 
-    def _button_clicked(self, button):
-        button_type = self.buttonBox.standardButton(button)
-        if button_type == QDialogButtonBox.StandardButton.Apply:
-            self._pending_ok = False
-            self._commit()
-        elif button_type == QDialogButtonBox.StandardButton.Ok:
-            self._pending_ok = True
-            self._allow_close = False
-            self._commit()
-
-    def accept(self):
-        if getattr(self, "_pending_ok", False) and not getattr(
-            self, "_allow_close", True
-        ):
-            return
-        super().accept()
+    def accept(self) -> None:
+        if self._commit():
+            super().accept()
 
 
     def _configure_option_groups(self):

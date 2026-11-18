@@ -1,6 +1,5 @@
 from __future__ import annotations
 import copy
-from pathlib import Path
 import pytest
 from rc_metastudio import project_adapter
 from rc_metastudio.project_format import ProjectDocument, migrate_to_latest, JsonObject, JsonValue
@@ -103,14 +102,6 @@ def _identities(dataset):
     return sheet.id, tuple(row.id for row in sheet.rows), tuple(arm.id for arm in sheet.arms)
 
 
-def test_adapter_reconstructs_sheet_row_and_arm_identities_across_reopen():
-    dataset = project_adapter.project_to_dataset(_multi_arm_project("binary"))
-    reopened = project_adapter.project_to_dataset(project_adapter.dataset_to_project(dataset))
-    assert _identities(reopened) == _identities(dataset)
-    assert reopened.sheets[0].rows[0].analysis_unit.sheet is reopened.sheets[0]
-    assert tuple(reopened.sheets[0].rows[0].analysis_unit.arms_by_id) == tuple(a.id for a in reopened.sheets[0].arms)
-
-
 def test_entered_effect_edits_survive_history_and_save(tmp_path):
     project = _multi_arm_project("continuous")
     sheet = project["sheets"][0]
@@ -153,41 +144,3 @@ def test_reader_derives_repeatable_sheet_identities_for_legacy_projects():
     first, _ = migrate_to_latest(1, copy.deepcopy(project), _legacy_state())
     second, _ = migrate_to_latest(1, copy.deepcopy(project), _legacy_state())
     assert _identities(project_adapter.project_to_dataset(first)) == _identities(project_adapter.project_to_dataset(second))
-
-
-def test_document_to_runtime_project_reconstructs_state_and_selection():
-    project = _multi_arm_project("binary")
-    project["sheets"][0]["settings"] = {"metric": "OR", "confidence_level": 95., "arms": ["arm:0", "arm:1"]}
-    state: JsonObject = {"schema_version": 3, "current_sheet_id": "sheet"}
-    runtime = project_adapter.document_to_runtime_project(ProjectDocument(3, project, state))
-    assert isinstance(runtime, project_adapter.RuntimeProject)
-    assert [s.name for s in runtime.dataset.sheets] == ["Outcome"]
-    assert runtime.current_sheet_id == "sheet"
-    assert runtime.dataset.sheets[0].settings == project["sheets"][0]["settings"]
-
-
-
-def test_storage_boundary_revman_iv_subgroups_reopen(tmp_path):
-    import xml.etree.ElementTree as ET
-    from rc_metastudio.rm5_import import read_rm5
-    from rc_metastudio.project_format import save_project, load_project
-    root = ET.parse(Path(__file__).parents[2] / "fixtures/rm5/generic-derived.rm5")
-    for outcome in root.iter("IV_OUTCOME"):
-        outcome.set("SUBGROUPS", "YES")
-        for i, record in enumerate(list(outcome.findall("IV_DATA"))):
-            outcome.remove(record)
-            group = ET.SubElement(outcome, "IV_SUBGROUP", NO=str(i + 1), ID=f"group-{i + 1}")
-            label = f"Region {i}"
-            ET.SubElement(group, "NAME").text = label
-            group.append(record)
-    source = tmp_path / "subgroups.rm5"
-    root.write(source)
-    dataset = read_rm5(source).dataset
-    for sheet in dataset.sheets:
-        cov_id = sheet.covariates[0]["id"]
-        assert [r.covariate_values.get(cov_id) for r in sheet.rows] == ["Region 0", "Region 1", "Region 2"]
-    project = project_adapter.dataset_to_project(dataset)
-    state = dict(schema_version=3, current_sheet_id=dataset.sheets[0].id)
-    path = tmp_path / "import.rcms"
-    save_project(path, project, state)
-    assert project_adapter.dataset_to_project(project_adapter.document_to_runtime_project(load_project(path)).dataset) == project

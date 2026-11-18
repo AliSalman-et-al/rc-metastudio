@@ -4,30 +4,33 @@
 setClass("OMData", representation(study.names="character", notes="character",
          years="integer", covariates="list"))
 
-setClass("BinaryData",
-               representation(g1O1="numeric", g1O2="numeric", g2O1="numeric", g2O2="numeric",
-               y="numeric", SE="numeric",
-               g1.name="character", g2.name="character"),
-               contains="OMData")
+.analysis.study.slots <- list(
+    RatioData=c(estimate="numeric", lower="numeric", upper="numeric", reported.SE="numeric",
+                scale="character", confidence="numeric", source="character", unit="character",
+                x1="numeric", t1="numeric", x2="numeric", t2="numeric"),
+    BinaryData=c(g1O1="numeric", g1O2="numeric", g2O1="numeric", g2O2="numeric"),
+    ContinuousData=c(N1="numeric", mean1="numeric", sd1="numeric",
+                     N2="numeric", mean2="numeric", sd2="numeric"),
+    DiagnosticData=c(TP="numeric", FN="numeric", TN="numeric", FP="numeric")
+)
 
+.effect.study.slots <- c(y="numeric", SE="numeric")
 
-setClass("DiagnosticData",
-               representation(TP="numeric", FN="numeric", TN="numeric", FP="numeric",
-               y="numeric", SE="numeric", g1.name="character"),
-               contains="OMData")
+setClass("BinaryData", slots=c(.analysis.study.slots$BinaryData,
+         .effect.study.slots, g1.name="character", g2.name="character"),
+         contains="OMData")
 
-setClass("ContinuousData",
-               representation(N1="numeric", mean1="numeric", sd1="numeric",
-               N2="numeric", mean2="numeric", sd2="numeric",
-               y="numeric", SE="numeric",
-               g1.name="character", g2.name="character"),
-               contains="OMData")
+setClass("DiagnosticData", slots=c(.analysis.study.slots$DiagnosticData,
+         .effect.study.slots, g1.name="character"), contains="OMData")
 
-setClass("RatioData", representation(metric="character", y="numeric", SE="numeric",
-    estimate="numeric", lower="numeric", upper="numeric", reported.SE="numeric",
-    scale="character", confidence="numeric", source="character", unit="character",
-    x1="numeric", t1="numeric", x2="numeric", t2="numeric", prepared="logical",
-    g1.name="character", g2.name="character"), prototype=list(prepared=FALSE), contains="OMData")
+setClass("ContinuousData", slots=c(.analysis.study.slots$ContinuousData,
+         .effect.study.slots, g1.name="character", g2.name="character"),
+         contains="OMData")
+
+setClass("RatioData", slots=c(metric="character", .effect.study.slots,
+         .analysis.study.slots$RatioData, prepared="logical",
+         g1.name="character", g2.name="character"),
+         prototype=list(prepared=FALSE), contains="OMData")
 
 setClass("AnalysisSpecification",
                 representation(parameters="data.frame"))
@@ -43,9 +46,11 @@ setClass("CovariateValues", representation(cov.name="character", cov.vals="vecto
 #' @param make.unique.names Whether to make duplicated study names unique.
 #' @return An object of the same supported data class with selected rows.
 get.subset <- function(omdata, indices, make.unique.names=FALSE) {
-  if (!any(vapply(c("BinaryData", "ContinuousData", "DiagnosticData", "RatioData"),
-                  function(class) is(omdata, class), logical(1))))
+  supported <- names(.analysis.study.slots)
+  data.classes <- supported[vapply(supported, function(name) is(omdata, name), logical(1))]
+  if (!length(data.classes))
     stop("get.subset requires BinaryData, ContinuousData, DiagnosticData, or RatioData.")
+  data.class <- data.classes[[1L]]
 
   subset.slot <- function(values) {
     if (length(values) == 0) {
@@ -65,52 +70,11 @@ get.subset <- function(omdata, indices, make.unique.names=FALSE) {
         cov.type=covariate@cov.type,
         ref.var=covariate@ref.var)
   })
-  common.slots <- list(
-    y=subset.slot(omdata@y),
-    SE=subset.slot(omdata@SE),
-    study.names=study.names,
-    years=subset.slot(omdata@years),
-    covariates=covariates,
-    notes=omdata@notes
-  )
-
-  if (is(omdata, "RatioData")) {
-    slots <- c("estimate", "lower", "upper", "reported.SE", "scale", "confidence", "source", "unit", "x1", "t1", "x2", "t2")
-    values <- setNames(lapply(slots, function(name) subset.slot(slot(omdata, name))), slots)
-    return(do.call(new, c(list("RatioData"), common.slots, values,
-        list(metric=omdata@metric, prepared=omdata@prepared, g1.name=omdata@g1.name, g2.name=omdata@g2.name))))
-  }
-  if (is(omdata, "BinaryData")) {
-    return(do.call(new, c(list("BinaryData"), common.slots, list(
-      g1O1=subset.slot(omdata@g1O1),
-      g1O2=subset.slot(omdata@g1O2),
-      g2O1=subset.slot(omdata@g2O1),
-      g2O2=subset.slot(omdata@g2O2),
-      g1.name=omdata@g1.name,
-      g2.name=omdata@g2.name
-    ))))
-  }
-  if (is(omdata, "ContinuousData")) {
-    return(do.call(new, c(list("ContinuousData"), common.slots, list(
-      N1=subset.slot(omdata@N1),
-      mean1=subset.slot(omdata@mean1),
-      sd1=subset.slot(omdata@sd1),
-      N2=subset.slot(omdata@N2),
-      mean2=subset.slot(omdata@mean2),
-      sd2=subset.slot(omdata@sd2),
-      g1.name=omdata@g1.name,
-      g2.name=omdata@g2.name
-    ))))
-  }
-  if (is(omdata, "DiagnosticData")) {
-    return(do.call(new, c(list("DiagnosticData"), common.slots, list(
-      TP=subset.slot(omdata@TP),
-      FN=subset.slot(omdata@FN),
-      TN=subset.slot(omdata@TN),
-      FP=subset.slot(omdata@FP),
-      g1.name=omdata@g1.name
-    ))))
-  }
-
-  stop("Unsupported RCMetaR data class.")
+  slots <- methods::slotNames(methods::getClass(data.class))
+  values <- setNames(lapply(slots, function(name) slot(omdata, name)), slots)
+  study.slots <- c("years", names(.effect.study.slots), names(.analysis.study.slots[[data.class]]))
+  values[study.slots] <- lapply(values[study.slots], subset.slot)
+  values$study.names <- study.names
+  values$covariates <- covariates
+  do.call(new, c(list(data.class), values))
 }

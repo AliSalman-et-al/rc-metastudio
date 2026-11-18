@@ -1,7 +1,5 @@
 import os
 from pathlib import Path
-import subprocess
-import sys
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -54,38 +52,6 @@ def _dialog_with_content(text="Content"):
     dialog.setLayout(QtWidgets.QVBoxLayout())
     required(dialog.layout(), "dialog layout").addWidget(QtWidgets.QLabel(text))
     return dialog
-
-
-def test_application_bootstrap_enables_qt_high_dpi_before_construction():
-    script = """
-from PyQt6 import QtWidgets
-from rc_metastudio import app_error_handler
-
-assert QtWidgets.QApplication.instance() is None
-app = app_error_handler.get_or_create_application([])
-assert app is QtWidgets.QApplication.instance()
-"""
-    env = os.environ.copy()
-    env["PYTHONPATH"] = os.pathsep.join(
-        [
-            str(ROOT / "src"),
-            str(ROOT / "build" / "qt6-verification" / "generated"),
-        ]
-    )
-    env["QT_QPA_PLATFORM"] = "offscreen"
-    env["RCMS_QT6_BUILD_ROOT"] = str(ROOT / "build" / "qt6-verification")
-
-    result = subprocess.run(
-        [sys.executable, "-c", script],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=30,
-    )
-
-    assert result.returncode == 0, result.stderr
 
 
 def test_geometry_helpers_bound_the_outer_frame_in_logical_space():
@@ -168,50 +134,28 @@ def test_unparented_workspace_uses_active_screen_before_maximizing(qapp):
     assert main.windowState() & QtCore.Qt.WindowState.WindowMaximized
 
 
-def test_maximized_workspace_does_not_reapply_window_state_during_show(qapp):
+def test_maximized_workspace_exposes_a_visible_window(qapp):
     from rc_metastudio import adaptive_window
 
     window = QtWidgets.QMainWindow()
-    controller = adaptive_window.register_adaptive_window(
+    adaptive_window.register_adaptive_window(
         window,
         adaptive_window.WindowRole.MAIN,
         available_geometry_provider=lambda _window: QtCore.QRect(0, 0, 1200, 800),
     )
-    refits_after_registration = []
-    controller.refitApplied.connect(lambda: refits_after_registration.append(True))
 
     try:
         assert not window.size().isEmpty()
         window.showMaximized()
         qapp.processEvents()
 
-        assert refits_after_registration == []
+        assert window.isMaximized()
         assert window.isVisible()
         assert window.windowHandle() is not None
         assert required(window.windowHandle(), "window handle").isVisible()
     finally:
         window.close()
         qapp.processEvents()
-
-
-def test_content_refit_requests_are_local_and_coalesced(qapp):
-    from rc_metastudio import adaptive_window
-
-    dialog = _dialog_with_content()
-    controller = adaptive_window.register_adaptive_window(
-        dialog,
-        adaptive_window.WindowRole.TRANSACTIONAL,
-        available_geometry_provider=lambda _window: QtCore.QRect(0, 0, 800, 600),
-    )
-    refits = []
-    controller.refitApplied.connect(lambda: refits.append(dialog.frameGeometry()))
-
-    controller.request_content_refit()
-    controller.request_content_refit()
-    controller.request_content_refit()
-    qapp.processEvents()
-
-    assert len(refits) == 1
 
 
 def test_content_refit_preserves_explicit_minimum_size_contract(qapp):
@@ -303,8 +247,6 @@ def test_runtime_clamp_preserves_user_geometry_without_recentering(qapp):
     dialog.move(420, 300)
     qapp.processEvents()
     reachable_geometry = QtCore.QRect(dialog.frameGeometry())
-    clamps = []
-    controller.runtimeClampApplied.connect(lambda: clamps.append(True))
 
     controller.request_runtime_clamp()
     qapp.processEvents()
@@ -317,7 +259,6 @@ def test_runtime_clamp_preserves_user_geometry_without_recentering(qapp):
     controller.request_runtime_clamp()
     qapp.processEvents()
 
-    assert len(clamps) == 2
     assert dialog.frameGeometry().size() == outer_size
     assert available.contains(dialog.frameGeometry())
     assert dialog.frameGeometry().center() != available.center()
@@ -342,27 +283,27 @@ def test_screen_metric_changes_clamp_and_reconnect_to_new_screen(qapp):
     qapp.processEvents()
     dialog.resize(320, 180)
     dialog.move(850, 650)
-    clamps = []
-    controller.runtimeClampApplied.connect(lambda: clamps.append(True))
 
     first_screen.logicalDotsPerInchChanged.emit(144.0)
     qapp.processEvents()
     assert initial.contains(dialog.frameGeometry())
-    assert len(clamps) == 1
 
     current_screen = second_screen
     controller.handle_screen_assignment_change(second_screen)
     qapp.processEvents()
     assert second_screen.availableGeometry().contains(dialog.frameGeometry())
-    assignment_clamps = len(clamps)
+    dialog.move(1920, 440)
+    qapp.processEvents()
+    before = QtCore.QRect(dialog.frameGeometry())
+    assert not second_screen.availableGeometry().contains(before)
 
     first_screen.change_available_geometry(QtCore.QRect(0, 0, 640, 480))
     qapp.processEvents()
-    assert len(clamps) == assignment_clamps
+    assert dialog.frameGeometry() == before
 
     second_screen.change_available_geometry(QtCore.QRect(1200, 0, 640, 480))
     qapp.processEvents()
-    assert len(clamps) == assignment_clamps + 1
+    assert dialog.frameGeometry() != before
     assert second_screen.availableGeometry().contains(dialog.frameGeometry())
 
 

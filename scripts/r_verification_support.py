@@ -9,13 +9,20 @@ import importlib.util
 import os
 import shutil
 import subprocess
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
 
 
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
 R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"
+DEPENDENCY_CACHE_INPUTS = (
+    R_BINARY_POLICY,
+    R_POLICY_LOADER,
+    Path("scripts/r_verification_support.py"),
+    DEPENDENCY_MANIFEST,
+    Path("r/RCMetaR/DESCRIPTION"),
+)
 
 
 class RVerificationSupportError(Exception):
@@ -226,11 +233,11 @@ def dependency_cache_key(
     rscript: Path,
     env: dict[str, str],
     cran_repo: str,
-    identity_paths: Iterable[Path],
+    installer: Path,
     suffix: str,
 ) -> str:
     digest = hashlib.sha256()
-    for relative_path in identity_paths:
+    for relative_path in (installer, *DEPENDENCY_CACHE_INPUTS):
         digest.update((root / relative_path).read_bytes())
     digest.update(cran_repo.encode("utf-8"))
     return f"{r_version_key(rscript, root, env)}-{suffix}-{digest.hexdigest()[:12]}"

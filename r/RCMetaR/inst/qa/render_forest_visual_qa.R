@@ -325,6 +325,9 @@ qa_render_case <- function(kind, workflow, style, scenario.name, scenarios, outp
     rsvg::rsvg_png(svg.path, image.path, width=dimensions[1], height=dimensions[2])
   }
   info <- file.info(image.path)
+  if (is.na(info$size) || info$size <= 1000L) {
+    stop("Missing or incomplete artwork for ", case.name, call. = FALSE)
+  }
   cat(case.name, "|", image.path, "|", info$size, "bytes\n")
   data.frame(
     case = case.name,

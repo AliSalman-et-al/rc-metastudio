@@ -770,7 +770,7 @@ def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
         assert window.open(_sample_project_path("lymph.rcms")) is True
 
         form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-            window.model, parent=window
+            window.model, lambda _metrics: True, parent=window
         )
         form.show()
         app.processEvents()
@@ -785,25 +785,26 @@ def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
         app.processEvents()
 
 
-def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo():
+def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo(monkeypatch):
+    from rc_metastudio import r_runtime
 
     app, window = automation.start_automation()
 
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
         assert window.model.current_sheet.covariates == []
-        window.enable_menu_options_that_require_dataset()
         assert window.action_go.isEnabled()
         assert not window.action_meta_regression.isEnabled()
         assert not window.action_subgroup_ma.isEnabled()
 
-        window.toggle_menu_options_that_require_dataset(False)
-        window._add_new_covariate("region", "factor")
-        assert not window.action_go.isEnabled()
-        assert not window.action_meta_regression.isEnabled()
-        assert not window.action_subgroup_ma.isEnabled()
+        with monkeypatch.context() as not_ready:
+            not_ready.setattr(r_runtime, "is_ready", lambda: False)
+            window._commit_model_operation(lambda: window._add_new_covariate("region", "factor"))
+            assert not window.action_go.isEnabled()
+            assert not window.action_meta_regression.isEnabled()
+            assert not window.action_subgroup_ma.isEnabled()
 
-        window.enable_menu_options_that_require_dataset()
+        window.refresh_analysis_actions()
         assert window.action_meta_regression.isEnabled()
         assert window.action_subgroup_ma.isEnabled()
 
@@ -838,17 +839,11 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         "warning",
         lambda *args: warnings.append(args),
     )
-    monkeypatch.setattr(
-        window,
-        "meta_subgroup",
-        lambda selected_covariate: calls.append(selected_covariate),
-    )
-
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
         window._add_new_covariate("dose", "continuous")
         form = subgroup_analysis_dialog.SubgroupAnalysisDialog(
-            window.model, parent=window
+            window.model, calls.append, parent=window
         )
 
         assert form.covariate_combo_box.count() == 0
@@ -1312,10 +1307,10 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             required(self.callback, "fake signal callback")()
 
     class FakeDialog(object):
-        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest"):
+        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest", *, on_commit):
             assert plot_type == plot_kind
             calls.append(("dialog", plot_params, dialog_image_path))
-            self.applied = FakeSignal()
+            self.on_commit = on_commit
             self.sequence_rerun = QtWidgets.QPushButton()
             self.rerun_requested = FakeSignal()
 
@@ -1323,13 +1318,7 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             return {"fp_outpath": str(image_path)}
 
         def exec(self):
-            self.applied.emit()
-
-        def mark_commit_succeeded(self):
-            pass
-
-        def mark_commit_failed(self, _message):
-            pass
+            self.on_commit(self.plot_params())
 
     window = results_window.ResultsWindow(
         _analysis_result(
@@ -1528,9 +1517,8 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
 
     r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
     applied = []
-    dialog.applied.connect(lambda: applied.append(True))
+    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png", on_commit=applied.append)
 
     try:
         dialog.show()
@@ -1547,13 +1535,13 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
         apply_button.click()
         app.processEvents()
 
-        assert applied == [True]
+        assert len(applied) == 1
         assert dialog.isVisible() is True
 
         ok_button.click()
         app.processEvents()
 
-        assert applied == [True, True]
+        assert len(applied) == 2
         assert dialog.result() == QtWidgets.QDialog.DialogCode.Accepted
         assert dialog.isVisible() is False
     finally:
@@ -1561,13 +1549,19 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
         app.processEvents()
 
 
-def test_edit_plot_dialog_failed_ok_stays_open_with_error():
-    from rc_metastudio import r_bridge
+def test_edit_plot_dialog_failed_ok_stays_open_with_error(monkeypatch):
+    from rc_metastudio import app_error_handler, r_bridge
 
     r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
-    dialog.applied.connect(lambda: dialog.mark_commit_failed("render failed"))
+    def fail(_parameters):
+        raise RuntimeError("render failed")
+
+    errors = []
+    monkeypatch.setattr(
+        app_error_handler, "handle_exception", lambda _type, error, _traceback, **_kw: errors.append(str(error))
+    )
+    dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png", on_commit=fail)
 
     try:
         dialog.show()
@@ -1582,6 +1576,7 @@ def test_edit_plot_dialog_failed_ok_stays_open_with_error():
 
         assert dialog.result() == 0
         assert dialog.isVisible() is True
+        assert errors == ["render failed"]
         assert dialog._commit_error.isVisible() is True
         assert dialog._commit_error.text() == "render failed"
     finally:
@@ -1661,20 +1656,12 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         encoding="utf-8",
     )
 
-    class FakeDialog(object):
-        def plot_params(self):
-            return {
-                "bp_style": "revman",
-                "bp_show_confidence_band": False,
-                "bp_outpath": image_path,
-                "bp_display_path": display_path,
-            }
-
-        def mark_commit_succeeded(self):
-            pass
-
-        def mark_commit_failed(self, _message):
-            pass
+    edits = {
+        "bp_style": "revman",
+        "bp_show_confidence_band": False,
+        "bp_outpath": image_path,
+        "bp_display_path": display_path,
+    }
 
     def prepare(prefix, regenerator, params, output, directory):
         assert regenerator == "regression"
@@ -1711,8 +1698,8 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         )
         artifact = window.plot_artifact('Regression Plot')
 
-        window._apply_plot_edits(FakeDialog(), artifact, plot_item)
-        window._apply_plot_edits(FakeDialog(), artifact, plot_item)
+        window._apply_plot_edits(edits, artifact, plot_item)
+        window._apply_plot_edits(edits, artifact, plot_item)
         app.processEvents()
 
         assert artifact.display_image_path == display_path
@@ -1868,9 +1855,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 callback()
 
     class FakeEditPlotDialog(object):
-        def __init__(self, plot_params, image_path, parent=None, plot_type="forest"):
+        def __init__(self, plot_params, image_path, parent=None, plot_type="forest", *, on_commit):
             assert plot_type == "forest"
-            self.applied = FakeSignal()
+            self.on_commit = on_commit
             self.sequence_rerun = QtWidgets.QPushButton()
             self.rerun_requested = FakeSignal()
             self._params = {
@@ -1881,17 +1868,11 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             calls.append(("dialog", plot_params, image_path, parent is not None))
 
         def exec(self):
-            self.applied.emit()
+            self.on_commit(self.plot_params())
             return QtWidgets.QDialog.DialogCode.Rejected
 
         def plot_params(self):
             return dict(self._params)
-
-        def mark_commit_succeeded(self):
-            pass
-
-        def mark_commit_failed(self, _message):
-            pass
 
     monkeypatch.setattr(
         plot_service.r_bridge, "load_plot_parameters", lambda _path: {"fp_col1_str": "Study"},

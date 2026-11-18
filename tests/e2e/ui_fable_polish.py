@@ -101,7 +101,7 @@ def run(app, window, work, root, record, analyze):
         failures.append('Regression first tab retains space for a taller hidden tab')
     record('fable-regression-first-tab', regression, height=regression.height(), content_height=active_layout.sizeHint().height())
     regression.reject()
-    setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95)
+    setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, on_result=window.analysis)
     setup.show()
     setup.advanced_toggle.setChecked(False)
     wait(150)

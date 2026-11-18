@@ -4,4 +4,4 @@
 
 
 class DiagnosticExecutionError(RuntimeError):
-    """A diagnostic R execution failed and may be retried per metric."""
+    """A diagnostic R execution failed to produce results."""

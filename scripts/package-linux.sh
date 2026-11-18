@@ -24,7 +24,7 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 cd "$repo_root"
-uv python install 3.14.10
+uv python install
 RPY2_CFFI_MODE=ABI uv sync --locked
 bash "$repo_root/scripts/build-linux-package.sh" \
   --python-exe "$repo_root/.venv/bin/python"

@@ -1,5 +1,3 @@
-dir.create("r_tmp", showWarnings = FALSE)
-
 base_plot_params <- function(measure) {
   list(
     conf.level = 95,
@@ -14,7 +12,7 @@ base_plot_params <- function(measure) {
     fp_show_col2 = TRUE,
     fp_show_col1 = TRUE,
     fp_plot_lb = "[default]",
-    fp_outpath = file.path("r_tmp", paste0("forest_", measure, ".png")),
+    fp_outpath = tempfile(pattern = paste0("forest_", measure, "-"), fileext = ".png"),
     rm.method = "DL",
     adjust = 0.5,
     fp_plot_ub = "[default]",
@@ -42,15 +40,11 @@ binary_fixture <- function() {
       new("CovariateValues", cov.name = "groups", cov.vals = c("1", "1", "2", "2", "1", "2"), cov.type = "factor", ref.var = "1")
     )
   )
-  effects <- compute.for.one.bin.study(data, params)
-  data@y <- effects$yi
-  data@SE <- sqrt(effects$vi)
   list(data = data, params = params)
 }
 
 continuous_fixture <- function() {
   params <- base_plot_params("MD")
-  params$cov_name <- "groups"
   data <- new(
     "ContinuousData",
     N1 = c(60, 65, 40, 200, 50, 85),
@@ -60,33 +54,8 @@ continuous_fixture <- function() {
     mean2 = c(92, 92, 88, 82, 88, 92),
     sd2 = c(20, 22, 26, 17, 22, 22),
     study.names = c("Carroll", "Grant", "Peck", "Donat", "Stewart", "Young"),
-    years = as.integer(2001:2006),
-    covariates = list(
-      new("CovariateValues", cov.name = "groups", cov.vals = c("1", "1", "2", "1", "2", "2"), cov.type = "factor", ref.var = "1")
-    )
+    years = as.integer(2001:2006)
   )
-  effects <- compute.for.one.cont.study(data, params)
-  data@y <- effects$yi
-  data@SE <- sqrt(effects$vi)
-  list(data = data, params = params)
-}
-
-diagnostic_fixture <- function(measure = "Sens") {
-  params <- base_plot_params(measure)
-  params$cov_name <- "quality"
-  data <- new(
-    "DiagnosticData",
-    TP = c(19, 8, 41, 5, 45, 8),
-    FN = c(10, 2, 12, 2, 32, 2),
-    TN = c(81, 13, 49, 18, 165, 32),
-    FP = c(1, 9, 1, 1, 58, 6),
-    study.names = c("Kinderman", "Lecart Lenfant", "Piver", "Piver Barlow", "Kolbenstvedt", "Lehman"),
-    years = as.integer(1970:1975),
-    covariates = list(
-      new("CovariateValues", cov.name = "quality", cov.vals = c("A", "A", "B", "B", "A", "B"), cov.type = "factor", ref.var = "A")
-    )
-  )
-  data <- compute.diag.point.estimates(data, params)
   list(data = data, params = params)
 }
 
@@ -204,8 +173,13 @@ test_that("Reitsma feasibility requires count-based diagnostic data", {
     SE = c(0.14, 0.18, 0.09, 0.26, 0.08),
     study.names = c("a", "b", "c", "d", "e")
   )
-  count.data <- diagnostic_fixture("Sens")$data
-
-  expect_false(diagnostic.reitsma.is.feasible(entered.effects, "Sens"))
-  expect_true(diagnostic.reitsma.is.feasible(count.data, "Sens"))
+  count.data <- rcmetar.create.diagnostic.data(
+    TP = c(19, 8, 41, 5, 45, 8), FN = c(10, 2, 12, 2, 32, 2),
+    TN = c(81, 13, 49, 18, 165, 32), FP = c(1, 9, 1, 1, 58, 6),
+    study.names = letters[1:6]
+  )
+  entered.methods <- rcmetar.available.methods(om.data = entered.effects, metric = "Sens")
+  count.methods <- rcmetar.available.methods(om.data = count.data, metric = "Sens")
+  expect_false("diagnostic.reitsma" %in% entered.methods)
+  expect_true("diagnostic.reitsma" %in% count.methods)
 })

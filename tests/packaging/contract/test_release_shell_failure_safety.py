@@ -21,12 +21,20 @@ def run(tmp_path, script, extra=None):
         pytest.skip('bash unavailable')
     path = tmp_path / 'drive.sh'
     path.write_text(script, newline='\n')
-    result = subprocess.run([BASH, posix(path)], capture_output=True, text=True,
-                            env={**os.environ, **(extra or {})}, timeout=30)
-    (tmp_path / 'stdout.log').write_text(result.stdout)
-    (tmp_path / 'stderr.log').write_text(result.stderr)
-    (tmp_path / 'command.txt').write_text(f'{BASH} {posix(path)}\nexit={result.returncode}')
-    return result
+    command = [BASH, posix(path)]
+    receipt = tmp_path / 'command.txt'
+    receipt.write_text(f'{BASH} {posix(path)}\n', encoding='utf-8')
+    stdout = tmp_path / 'stdout.log'
+    stderr = tmp_path / 'stderr.log'
+    with stdout.open('w', encoding='utf-8') as out, stderr.open('w', encoding='utf-8') as err:
+        # This is a failure-recovery check, so allow for MSYS and Python startup under CI load.
+        result = subprocess.run(command, stdout=out, stderr=err,
+                                env={**os.environ, **(extra or {})}, timeout=120)
+    with receipt.open('a', encoding='utf-8') as log:
+        log.write(f'exit={result.returncode}\n')
+    return subprocess.CompletedProcess(command, result.returncode,
+                                       stdout.read_text(encoding='utf-8'),
+                                       stderr.read_text(encoding='utf-8'))
 
 
 def test_linux_failed_qualification_preserves_previous_final_archive(tmp_path):

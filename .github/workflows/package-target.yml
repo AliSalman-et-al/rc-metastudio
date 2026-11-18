@@ -7,9 +7,6 @@ on:
 permissions:
   contents: read
 
-env:
-  RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-11-13
-
 jobs:
   package:
     name: ${{ matrix.target }}
@@ -36,18 +33,19 @@ jobs:
           enable-cache: true
 
       - name: Install locked Python
-        run: uv python install 3.14.10
+        run: uv python install
 
       - name: Resolve package metadata
         id: package-metadata
         shell: bash
-        run: uv run --no-project --python 3.14.10 python scripts/resolve_package_ci_metadata.py
+        run: uv run --no-project python scripts/resolve_package_ci_metadata.py
 
       - name: Resolve target contract
         shell: bash
         run: |
           set -euo pipefail
-          eval "$(python3 scripts/resolve_macos_package_target.py '${{ matrix.architecture }}' --format shell)"
+          target_values="$(python3 scripts/resolve_macos_package_target.py '${{ matrix.architecture }}' --format shell)"
+          eval "$target_values"
           test "$delivery_target" = '${{ matrix.target }}'
           test "$runner" = '${{ matrix.runner }}'
           test "$artifact" = '${{ matrix.artifact }}'
@@ -67,7 +65,7 @@ jobs:
 
       - name: Resolve official Qt rcc
         shell: bash
-        run: uv run --no-project --python 3.14.10 python scripts/macos_rcc.py --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
+        run: uv run --no-project python scripts/macos_rcc.py --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
 
       - name: Build and run the first-green packaged workflow
         shell: bash

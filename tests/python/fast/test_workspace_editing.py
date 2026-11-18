@@ -4,7 +4,7 @@ from rc_metastudio.domain_ids import RowId, SheetId
 from dataclasses import dataclass
 
 from rc_metastudio.workspace_editing import WorkspaceEditingService
-from rc_metastudio.workspace_editing import WorkspaceEditingContext, WorkspaceEditTarget
+from rc_metastudio.workspace_editing import WorkspaceEditingContext
 from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 
@@ -53,24 +53,19 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
         data_type=None,
         outcome_subtype=None,
         arm_key=(),
-        raw_columns=(),
-        outcome_columns=(),
-        include_column=0,
-        name_column=1,
-        year_column=2,
         confidence_level=95.0,
         confidence_multiplier=1.96,
     )
     service = WorkspaceEditingService(FakeBridge())
 
     normalized = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1), context, "  Renamed  "
+        dataset, 0, "name", context, "  Renamed  "
     )
     duplicate = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1), context, " Beta "
+        dataset, 0, "name", context, " Beta "
     )
     blank = service.apply_edit(
-        dataset, WorkspaceEditTarget(0, 1), context, " \t "
+        dataset, 0, "name", context, " \t "
     )
 
     assert normalized is None
@@ -88,17 +83,12 @@ def test_new_study_rejects_whitespace_name_without_mutating_dataset():
         data_type=None,
         outcome_subtype=None,
         arm_key=(),
-        raw_columns=(),
-        outcome_columns=(),
-        include_column=0,
-        name_column=1,
-        year_column=2,
         confidence_level=95.0,
         confidence_multiplier=1.96,
     )
 
     result = WorkspaceEditingService(FakeBridge()).apply_edit(
-        dataset, WorkspaceEditTarget(0, 1), context, "   "
+        dataset, 0, "name", context, "   "
     )
 
     assert result is not None and result.message == "Study names cannot be empty."
