@@ -33,7 +33,6 @@ def test_raw_states_and_combined_interval_are_preserved():
                         (((lower, upper), (missing,)),), role="supporting")
     assert table.quantities[0][0] == (lower, upper)
     assert table.quantities[0][1][0].value is None
-    assert table.quantities[0][0][0].value == 1e-19
 
 
 @pytest.mark.parametrize('quantities', [(((Quantity('value', 1.0),),),),

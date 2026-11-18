@@ -59,8 +59,7 @@ def test_full_r_stack_wrapper_passes_build_root_to_gate_owner(
     def selected_rscript(_args):
         return "Rscript"
 
-    def run(command, *, env=None):
-        captured["command"] = command
+    def run(_command, *, env=None):
         captured["env"] = env
 
     monkeypatch.setattr(
@@ -82,7 +81,6 @@ def test_full_r_stack_wrapper_passes_build_root_to_gate_owner(
     verifier.run_full_r_stack(args)
 
     assert captured["env"]["RCMS_QT6_BUILD_ROOT"] == str(tmp_path.resolve())
-    assert captured["command"][-1] == str(verifier.FULL_R_LIBRARY_CACHE)
 
 
 def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_path):

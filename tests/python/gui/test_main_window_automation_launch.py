@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, cast
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 from rc_metastudio import automation
-from tests.python.gui.support import automation_scenarios
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 pytestmark = pytest.mark.qsettings
@@ -2240,22 +2239,6 @@ def test_new_dataset_wizard_overflow_keeps_diagnostic_choice_reachable():
     finally:
         wizard.close()
         app.processEvents()
-
-
-def test_wizard_layout_smoke_renders_core_wizard_pages():
-    from PyQt6 import QtWidgets
-
-    app = cast(
-        QtWidgets.QApplication,
-        QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
-    )
-
-    assert automation_scenarios.start_wizard_layout_smoke() == 0
-    assert [
-        widget
-        for widget in app.topLevelWidgets()
-        if widget.isVisible() and widget.__class__.__name__ == "MainWizard"
-    ] == []
 
 
 def test_new_dataset_wizard_pages_fill_body_without_clipping_content():

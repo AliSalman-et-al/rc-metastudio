@@ -25,11 +25,7 @@ def validator(tmp_path_factory: pytest.TempPathFactory):
     return load_module_from_path("evidence_validator", validator_path)
 
 
-def test_native_evidence_validator_matches_qt_half_up_pixel_rounding(validator):
-    assert validator._physical_pixel_extent(515, 1.5) == 773
-
-
-def _write_validator_fixture(tmp_path, validator):
+def _write_validator_fixture(tmp_path, validator, *, fractional_capture=False):
     screenshots = tmp_path / "screenshots"
     screenshots.mkdir()
 
@@ -60,7 +56,12 @@ def _write_validator_fixture(tmp_path, validator):
         frame_x, frame_y = 20 + index, 20 + index
         relative = "screenshots/%s.png" % name
         path = tmp_path / relative
-        write_nonblank_png(path, frame_size)
+        capture_size = (
+            [(pixels * 3 + 1) // 2 for pixels in frame_size]
+            if fractional_capture
+            else frame_size
+        )
+        write_nonblank_png(path, capture_size)
         surfaces.append(
             {
                 "name": name,
@@ -87,8 +88,8 @@ def _write_validator_fixture(tmp_path, validator):
                     "width": 1600,
                     "height": 1000,
                 },
-                "device_pixel_ratio": 1.0,
-                "capture_pixel_size": frame_size,
+                "device_pixel_ratio": 1.5 if fractional_capture else 1.0,
+                "capture_pixel_size": capture_size,
                 "client_paint_probe_pixel_size": client_size,
                 "client_paint_probe_device_pixel_ratio": 1.0,
                 "capture_region": "native-frame",
@@ -125,7 +126,7 @@ def _write_validator_fixture(tmp_path, validator):
 
 
 def test_native_evidence_validator_is_exact_and_checks_png_integrity(tmp_path, validator):
-    manifest = _write_validator_fixture(tmp_path, validator)
+    manifest = _write_validator_fixture(tmp_path, validator, fractional_capture=True)
 
     validator.validate_evidence(tmp_path, "windows", "1.0")
     extra = tmp_path / "unexpected.txt"

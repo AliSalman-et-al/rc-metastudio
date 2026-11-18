@@ -113,7 +113,8 @@ def test_comparison_disables_reuse(monkeypatch, tmp_path):
     assert verify_rcms._reuse_evidence({}, args)
 
 
-def test_desktop_passes_recorded_executables_to_its_private_working_directory(monkeypatch, tmp_path):
+@pytest.mark.parametrize("exit_code", [0, 1])
+def test_desktop_preserves_private_workspace_and_recorded_tools(monkeypatch, tmp_path, exit_code):
     from scripts import verification_evidence as evidence_store
 
     monkeypatch.chdir(tmp_path)
@@ -143,13 +144,20 @@ def test_desktop_passes_recorded_executables_to_its_private_working_directory(mo
             child.setenv("PATH", "")
             for name, path in paths.items():
                 assert Path(evidence_store.desktop_tool_executable(name)) == path
-        stdout.write(b"WORKFLOW PASSED\n")
-        return subprocess.CompletedProcess(command, 0)
+        (cwd / "result.bin").write_bytes(b"workflow artifact")
+        stdout.write(b"WORKFLOW FAILED\n" if exit_code else b"WORKFLOW PASSED\n")
+        return subprocess.CompletedProcess(command, exit_code)
 
     monkeypatch.setattr(verify_rcms.subprocess, "run", run_child)
-    assert verify_rcms.main() == 0
+    assert verify_rcms.main() == exit_code
     receipt = next((tmp_path / "artifacts").rglob("manifest.json"))
-    recorded = json.loads(receipt.read_text())["external_tools"]
+    manifest = json.loads(receipt.read_text())
+    assert manifest["passed"] is (exit_code == 0)
+    artifact = receipt.parent / "workflow/result.bin"
+    assert artifact.read_bytes() == b"workflow artifact"
+    assert {"path": "workflow/result.bin", "sha256": evidence_store.file_digest(artifact)} in manifest["files"]
+    assert not list((tmp_path / "build/verification/rcms").iterdir())
+    recorded = manifest["external_tools"]
     for name, path in paths.items():
         assert recorded[name] == {"path": str(path), "sha256": evidence_store.file_digest(path)}
 

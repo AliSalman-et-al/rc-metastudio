@@ -493,10 +493,10 @@ def smoke(
     """Launch a visible native Qt6 form and return user-observable evidence."""
     module_path, resource_path = generate(build_root)
     from contextlib import redirect_stdout
-    from scripts.verify import run_typing
+    from scripts.verify import ensure_typing
     # The smoke CLI stdout is a JSON contract consumed by package tooling.
     with redirect_stdout(sys.stderr):
-        run_typing(build_root.resolve())
+        ensure_typing(build_root.resolve(), dict(os.environ))
     if not QtCore.QResource.registerResource(str(resource_path)):
         raise RuntimeError(f"Qt refused to register binary resource {resource_path}")
 

@@ -13,6 +13,7 @@ permissions:
 
 env:
   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-11-13
+  WINDOWS_RCC_CACHE_KEY: qt-rcc-6.12.0-windows-x64-219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc
 
 concurrency:
   group: fast-verification-${{ github.ref }}
@@ -79,8 +80,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
@@ -94,7 +93,7 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build\qt-rcc
-          key: qt-rcc-6.12.0-windows-x64-7f97edc3937fec7383eb865e010ed5128155bf9c80a563abca450860f3e9bef5
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
       - name: Run Native Qt6 Vertical Slice
         run: .\scripts\verify-qt6.ps1 -Sync -Section Core
@@ -133,6 +132,12 @@ jobs:
 
       - name: Install Python
         run: uv python install
+
+      - name: Cache official Qt rcc package
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build\qt-rcc
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
       - name: Run remaining-surface verification on a fresh runner
         run: .\scripts\verify-qt6.ps1 -Sync -Section RemainingSurfaces
@@ -174,7 +179,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ matrix.platform == 'windows' && '0' || '1' }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
@@ -243,20 +248,20 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build\qt-rcc
-          key: qt-rcc-6.12.0-windows-x64-7f97edc3937fec7383eb865e010ed5128155bf9c80a563abca450860f3e9bef5
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
-      - name: Cache official Qt SDK on macOS
+      - name: Cache official Qt Base SDK on macOS
         if: ${{ matrix.platform == 'macos' }}
         id: macos_qt_sdk_cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/qt-sdk
-          key: qt-sdk-6.12.0-${{ matrix.target }}
+          key: qtbase-sdk-6.12.0-${{ matrix.target }}
 
-      - name: Install official Qt SDK on macOS
+      - name: Install official Qt Base SDK on macOS
         if: ${{ matrix.platform == 'macos' && steps.macos_qt_sdk_cache.outputs.cache-hit != 'true' }}
         shell: bash
-        run: uv run aqt install-qt mac desktop 6.12.0 clang_64 --outputdir "$PWD/build/qt-sdk"
+        run: uv run aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
 
       - name: Resolve official Qt rcc on macOS
         if: ${{ matrix.platform == 'macos' }}
@@ -285,8 +290,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0
+          xcb_packages=(xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0)
+          if ! sudo apt-get install -y "${xcb_packages[@]}"; then
+            sudo apt-get update
+            sudo apt-get install -y "${xcb_packages[@]}"
+          fi
           RPY2_CFFI_MODE=ABI uv sync --locked
           uv run --no-sync python scripts/build_qt6.py generate
           xvfb-run -a uv run --no-sync python scripts/build_qt6.py native-smoke
@@ -323,9 +331,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          # Legacy-project scenarios read sample_projects from commit 322ede26.
-          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
@@ -342,6 +347,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install PDF text verification tool
+        if: ${{ matrix.part != 'checks' }}
         run: |
           choco install poppler --version=26.9.0 --yes --no-progress
           if ($LASTEXITCODE -ne 0) { throw "Poppler installation failed." }
@@ -351,15 +357,14 @@ jobs:
           $env:Path = "$($pdfTool.DirectoryName);$env:Path"
           Get-Command pdftotext -ErrorAction Stop
 
-      - name: Cache Full R Stack library
+      - name: Cache official Qt rcc package
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
-          path: artifacts/r-library-cache
-          key: r-full-stack-v1-windows-r-4.6.2-public-ppm-2026-11-13-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION') }}
-          restore-keys: r-full-stack-v1-windows-r-4.6.2-public-ppm-2026-11-13-
+          path: build\qt-rcc
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
       - name: Run Full R Stack Evidence
-        run: uv run --locked python scripts\verify.py r-stack ${{ matrix.part == 'checks' && '--skip-desktop' || format('--desktop-shard {0}', matrix.part) }}
+        run: uv run --locked python scripts\verify_rcmetar_r_stack.py ${{ matrix.part == 'checks' && '--skip-desktop' || format('--desktop-shard {0}', matrix.part) }}
 
       - name: Upload Full R Stack evidence
         if: ${{ always() }}
@@ -412,6 +417,12 @@ jobs:
 
       - name: Install Python
         run: uv python install
+
+      - name: Cache official Qt rcc package
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build\qt-rcc
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
       - name: Prepare generated Qt6 forms
         run: |

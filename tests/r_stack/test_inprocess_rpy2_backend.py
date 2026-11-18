@@ -44,8 +44,12 @@ _DRIVER = textwrap.dedent(
 
     ro = r_bridge.ro
 
+    from rc_metastudio.plot_service import PlotService
     from rc_metastudio.r_call_serialization import r_transaction
     from tests.fit_observations import observe_fit
+
+    with tempfile.TemporaryDirectory(prefix="rcmetar-missing-plot-") as plot_dir:
+        assert PlotService().load_params(os.path.join(plot_dir, "missing")) is None
 
     with r_transaction():
         ro.globalenv["workflow_data"] = ro.r("list()")
