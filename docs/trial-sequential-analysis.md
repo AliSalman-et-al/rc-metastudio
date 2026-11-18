@@ -71,26 +71,29 @@ HR, include the accrued percentage and append `(entered)` to a manually set RIS.
 
 Use the bubble plot's device sizing, axis layout and unboxed right-side legend.
 Use open L-shaped axes, horizontal tick labels and no grid. Use regular weight
-for information-axis ticks. Mark the information
-axis every 25 percentage points through 200%, then every 50. Mark the cumulative
+for information-axis ticks. Use 25 percentage-point steps when the axis maximum
+is at most 200% and 50 percentage-point steps throughout otherwise. Mark the cumulative
 Z axis every two units. Set the favours labels horizontally at the upper and
 lower left inside the panel in regular `#595959` at tick-label size. Wrap long
-labels to two lines and draw each on a padded panel-background rectangle above
-the curves. Put `RIS` above its 100% line.
+labels to two lines and draw each on a padded panel-background rectangle.
+Put `RIS` above its 100% line.
 
 Draw the funnel-style tint and dotted accent border for the futility wedge
 first (`lty=3`, `lwd=1`). Follow with conventional lines (`#A6A6A6`, dashed,
-`lwd=1`), the bubble's dotted zero line, and charcoal monitoring boundaries
-(`#333333`, `lwd=2`, solid to 100% and dotted during overrun). Draw the RIS
+`lwd=1`) and the bubble's dotted zero line. Draw the favours labels and their
+rectangles before the charcoal monitoring boundaries (`#333333`, `lwd=2`, solid
+to 100% and dotted during overrun). Draw the RIS
 line at 100% (`#4A4A4A`, `lty="84"`, `lwd=1.1`). End the wedge there.
 
 Use the bubble style accent and translucent markers for the cumulative curve
 (`lwd=2`).
 Scale marker area by added information within the bubble plot's size limits.
 Start the curve at zero and break it at non-estimable looks. Draw the optional
-penalty curve in dashed accent (`lwd=1.4`) with small open markers. Use solid accent
-triangles at clipped Z values and a charcoal ring just outside the first
-crossing marker (`lwd=1.6`). List only visible marks in the legend. Use a tinted
+penalty curve in dashed accent (`lwd=1.4`) with small open markers. Above the
+curves and bubbles, draw a charcoal ring just outside the first crossing marker
+(`lwd=1.6`), then solid accent triangles at clipped Z values. List only visible
+marks in the legend. Use the standard bubble legend text size for every plot
+and wrap labels that need extra room. Use a tinted
 futility swatch with the wedge's dotted accent outline. Use the curves' line
 types at a legend segment length of 2.5 characters. Keep the same layout
 in Default, RevMan and BMJ, using the style typography and existing funnel

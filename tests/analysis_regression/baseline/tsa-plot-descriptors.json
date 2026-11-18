@@ -7,7 +7,12 @@
   "identity": "Trial sequential plot",
   "kind": "trial_sequential",
   "favours_color": "#595959",
+  "legend_font_size": "9.79px",
   "legend_min_dash_periods": 1.2,
+  "information_ticks": {
+    "bcg": [0, 50, 100, 150, 200, 250, 300],
+    "through_200_percent": [0, 25, 50, 75, 100]
+  },
   "labels": [
     "Cumulative Z-curve",
     "Monitoring boundary",
@@ -18,5 +23,5 @@
     "Information (% of required information size)"
   ],
   "regeneration": "trial_sequential",
-  "schema_version": 3
+  "schema_version": 4
 }

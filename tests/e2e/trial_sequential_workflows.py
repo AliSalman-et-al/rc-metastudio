@@ -85,6 +85,8 @@ def check_artwork(path, case, style, contract):
         assert "Required information: 4,222.1 · Accrued: 1,775.3 (42%)" in labels
     ticks = [node for node in text_nodes if (node.text or "").endswith("%")]
     assert ticks and all("font-weight" not in node.attrib["style"] for node in ticks)
+    expected_ticks = contract["information_ticks"]["bcg" if case == "bcg" else "through_200_percent"]
+    assert [node.text for node in ticks] == [f"{value}%" for value in expected_ticks]
     favours = [node for node in text_nodes if f'fill: {contract["favours_color"]};' in node.attrib["style"]]
     assert sum((node.text or "").startswith("Favours ") for node in favours) == 2
     assert all("transform" not in node.attrib and "font-weight" not in node.attrib["style"]
@@ -101,6 +103,7 @@ def check_artwork(path, case, style, contract):
     assert 1.5 < width / height < 2.2
     for node in text_nodes:
         if "x" in node.attrib and "fill: #222222;" in node.attrib["style"]:
+            assert node.attrib["style"].startswith(f'font-size: {contract["legend_font_size"]};')
             end = float(node.attrib["x"]) + float(node.attrib["textLength"].removesuffix("px"))
             assert end <= width, (node.text, end, width)
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
@@ -131,6 +134,18 @@ def check_artwork(path, case, style, contract):
     assert len(set(legend_samples)) == 2
     wedge = [node for node in panel.findall(NAMESPACE + "polygon")
              if accent in node.attrib["style"] and "stroke-dasharray" in node.attrib["style"]]
+    boxes = [node for node in panel.findall(NAMESPACE + "rect")
+             if "stroke: none" in node.attrib.get("style", "")]
+    assert len(boxes) == 2
+    paint_order = list(svg.iter())
+    assert max(map(paint_order.index, wedge)) < min(map(paint_order.index, boxes))
+    assert max(map(paint_order.index, favours)) < min(map(paint_order.index, monitoring))
+    if case == "stress":
+        bottom = max(boxes, key=lambda node: float(node.attrib["y"]))
+        x, y, w, h = (float(bottom.attrib[key]) for key in ("x", "y", "width", "height"))
+        bubbles = [node for node in svg.iter(NAMESPACE + "circle") if f"fill: {accent};" in node.attrib["style"]
+                   and x < float(node.attrib["cx"]) < x + w and y < float(node.attrib["cy"]) < y + h]
+        assert bubbles and all(paint_order.index(node) > paint_order.index(bottom) for node in bubbles)
     swatch, = [node for node in svg.iter(NAMESPACE + "rect")
                if wedge and node.attrib.get("style") == wedge[0].attrib["style"]]
     assert float(swatch.attrib["x"]) > panel_end and float(swatch.attrib["width"]) >= 8

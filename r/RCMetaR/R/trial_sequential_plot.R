@@ -33,11 +33,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     list(analysis=res, params=params)
 }
 
-.tsa.plot.points <- function(x, z, limit, pch, col, bg, cex) {
-    in.range <- x >= graphics::par("usr")[1] & x <= graphics::par("usr")[2]
-    inside <- which(abs(z) <= limit & in.range)
-    graphics::points(x[inside], z[inside], pch=pch, bg=bg, col=col, cex=cex[inside], xpd=TRUE)
-    outside <- which(abs(z) > limit & in.range)
+.tsa.plot.triangles <- function(x, z, limit, col, cex) {
+    outside <- which(abs(z) > limit)
     graphics::points(x[outside], sign(z[outside])*limit, pch=ifelse(z[outside] > 0, 24, 25),
                      bg=col, col=col, xpd=TRUE, cex=cex[outside])
 }
@@ -94,6 +91,8 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
     ris.col <- "#4A4A4A"
     ris.lty <- "84"
     legend.segment <- 2.5
+    # Use the standard bubble panel size even when study count scales the panel text.
+    legend.cex <- 1.05 * rcmetar.bubble.legend.cex(1.05) / size$cex
 
     x <- 100*looks$fraction
     xlim <- c(0, max(110, 1.05*tail(x, 1)))
@@ -102,8 +101,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         if (!rcmetar.is.plot.default.text(edit)) xlim[i] <- as.numeric(edit)
     }
     ticks <- if (rcmetar.is.plot.default.text(params$fp_xticks)) {
-        if (xlim[2] > 200) c(seq(0, 200, by=25), seq(200, xlim[2], by=50)[-1]) else
-            seq(0, max(0, xlim[2]), by=25)
+        seq(0, max(0, xlim[2]), by=if (xlim[2] > 200) 50 else 25)
     } else rcmetar.numeric.values(params$fp_xticks)
     ticks <- ticks[ticks >= xlim[1] & ticks <= xlim[2]]
     limit <- max(4, min(8, ceiling(max(abs(looks$z), na.rm=TRUE) + .5)))
@@ -141,6 +139,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
     added <- diff(c(0, looks$accrued))
     markers <- pmax(style$plim[1], style$plim[2] * sqrt(added/max(added[is.finite(looks$z)])))
     lil.markers <- rep(style$plim[1], length(x))
+    in.range <- x >= xlim[1] & x <= xlim[2]
 
     rcmetar.render.plot_file(path, size, function() {
         rcmetar.bubble.panel(size, TRUE, top=3.2)
@@ -150,7 +149,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         margins <- graphics::par("mai")
         if (length(labels)) {
             legend.width <- max(graphics::strwidth(paste0("MMMMMM", labels), units="inches",
-                                                   cex=rcmetar.bubble.legend.cex()))
+                                                   cex=legend.cex))
             margins[4] <- max(margins[4], legend.width)
         }
         graphics::par(mai=margins)
@@ -168,6 +167,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         }
         graphics::abline(h=directions*conventional, col=conventional.col, lty=conventional.lty, lwd=1)
         rcmetar.bubble.draw.refline(0)
+        .tsa.draw.favours(favours)
         for (direction in directions) {
             graphics::lines(curves$x, direction*curves$monitoring, col=charcoal, lwd=2)
             if (overrun) {
@@ -183,15 +183,22 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         graphics::lines(c(0, x), c(0, looks$z), col=accent, lwd=2)
         if (lil) {
             graphics::lines(c(0, x), c(0, looks$lil.z), col=accent, lwd=1.4, lty=2)
-            .tsa.plot.points(x, looks$lil.z, limit, 1, accent, NA, lil.markers)
+            inside <- which(in.range & abs(looks$lil.z) <= limit)
+            graphics::points(x[inside], looks$lil.z[inside], pch=1, col=accent,
+                             cex=lil.markers[inside], xpd=TRUE)
         }
-        .tsa.plot.points(x, looks$z, limit, style$pch, accent, style$bg, markers)
+        inside <- which(in.range & abs(looks$z) <= limit)
+        graphics::points(x[inside], looks$z[inside], pch=style$pch, bg=style$bg, col=accent,
+                         cex=markers[inside], xpd=TRUE)
         crossing <- design$crossing.look
-        if (!is.na(crossing) && x[crossing] >= xlim[1] && x[crossing] <= xlim[2]) {
+        if (!is.na(crossing) && in.range[crossing]) {
             graphics::points(x[crossing], pmax(-limit, pmin(limit, looks$z[crossing])),
                              col=charcoal, pch=1, cex=markers[crossing] + .4, lwd=1.6, xpd=TRUE)
         }
-        .tsa.draw.favours(favours)
+        if (lil) {
+            .tsa.plot.triangles(x[in.range], looks$lil.z[in.range], limit, accent, lil.markers[in.range])
+        }
+        .tsa.plot.triangles(x[in.range], looks$z[in.range], limit, accent, markers[in.range])
 
         if (length(labels)) {
             legend <- rcmetar.bubble.legend(
@@ -201,11 +208,11 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
                 lty=c("solid", "solid", NA, conventional.lty, ris.lty, "dashed")[shown],
                 pch=c(style$pch, NA, NA, NA, NA, 1)[shown],
                 pt.bg=c(style$bg, NA, NA, NA, NA, NA)[shown],
-                merge=TRUE, seg.len=legend.segment)
+                merge=TRUE, seg.len=legend.segment, cex=legend.cex)
             if (wedge.visible) {
                 row <- match("Futility region", labels)
                 # Centre the swatch in the sample slot. Plotting symbols have solid outlines.
-                char.width <- graphics::par("cin")[1] * graphics::par("cex") * rcmetar.bubble.legend.cex()
+                char.width <- graphics::par("cin")[1] * graphics::par("cex") * legend.cex
                 half <- graphics::xyinch(rep(.8 * char.width, 2))
                 x <- legend$text$x[row] - graphics::xinch((1 + legend.segment/2) * char.width)
                 y <- legend$text$y[row]

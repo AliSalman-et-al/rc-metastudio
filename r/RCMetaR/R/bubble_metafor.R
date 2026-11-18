@@ -308,7 +308,7 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
                           col=col[visible], lty=lty[visible], lwd=lwd[visible])
 }
 
-rcmetar.bubble.legend <- function(labels, ...) {
+rcmetar.bubble.legend <- function(labels, ..., cex=rcmetar.bubble.legend.cex()) {
     usr <- graphics::par("usr")
     graphics::legend(
         x=usr[[2]] + 0.012 * diff(usr[1:2]),
@@ -317,15 +317,15 @@ rcmetar.bubble.legend <- function(labels, ...) {
         ...,
         bty="n",
         xpd=NA,
-        cex=rcmetar.bubble.legend.cex(),
+        cex=cex,
         xjust=0,
         yjust=1,
         text.col="#222222"
     )
 }
 
-rcmetar.bubble.legend.cex <- function() {
-    max(0.68, graphics::par("cex") * 0.74)
+rcmetar.bubble.legend.cex <- function(panel.cex=graphics::par("cex")) {
+    max(0.68, panel.cex * 0.74)
 }
 
 rcmetar.bubble.panel <- function(size, show.legend, top=1.1) {
