@@ -88,7 +88,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Candidate archive binding failed." }
       - name: Install Linux display and Qt runtime libraries
         if: matrix.target == 'linux-x64'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libxcb-cursor0
+        shell: bash
+        run: |
+          set -euo pipefail
+          packages=(xvfb libxcb-cursor0)
+          if ! sudo apt-get install -y "${packages[@]}"; then
+            sudo apt-get -o Acquire::Languages=none update
+            sudo apt-get install -y "${packages[@]}"
+          fi
       - name: Assert unsigned-community profile
         shell: pwsh
         env:

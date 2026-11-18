@@ -56,27 +56,62 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/qt-sdk
-          key: qt-sdk-6.12.0-${{ matrix.target }}
+          key: qtbase-sdk-6.12.0-${{ matrix.target }}
 
       - name: Install official Qt SDK
         if: ${{ steps.macos_qt_sdk_cache.outputs.cache-hit != 'true' }}
         shell: bash
-        run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --outputdir "$PWD/build/qt-sdk"
+        run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
 
       - name: Resolve official Qt rcc
         shell: bash
         run: uv run --no-project python scripts/macos_rcc.py --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
 
+      - name: Fingerprint macOS Qt build inputs
+        id: macos-qt-build
+        shell: bash
+        run: |
+          set -euo pipefail
+          fingerprint="$(
+            {
+              printf '%s\n' "$PWD" "${ImageVersion:-}"
+              sw_vers -buildVersion
+              xcodebuild -version
+              xcrun --sdk macosx --show-sdk-path
+              cmake --version
+              ninja --version
+              uv --version
+            } | shasum -a 256 | cut -d ' ' -f 1
+          )"
+          printf 'fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the source-built macOS Qt SDK
+        id: macos-qt-build-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            build/macos-qt-source/install
+            build/macos-qt-source/uv-cache
+          key: macos-package-qt-${{ matrix.target }}-${{ steps.macos-qt-build.outputs.fingerprint }}-${{ hashFiles('scripts/build-macos-package.sh', 'config/macos-package-targets.json', '.python-version', 'pyproject.toml', 'uv.lock') }}
+
       - name: Build and run the first-green packaged workflow
         shell: bash
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
+          RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
         run: |
           set -euo pipefail
           test ! -e /opt/X11
           bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" \
             --artifact-name "${{ matrix.artifact }}" \
             --archive-root-name "RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}"
+
+      - name: Prune the macOS build wheel cache
+        shell: bash
+        run: |
+          if [ -d build/macos-qt-source/uv-cache ]; then
+            uv cache prune --ci --cache-dir build/macos-qt-source/uv-cache
+          fi
 
       - name: Upload immutable unsigned package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
