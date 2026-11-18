@@ -30,8 +30,7 @@ integration rather than the one-method `AnalysisRequest`.
   only as a run-only reference: we run it on chosen inputs and compare our
   results with its reported numbers. Its code is never read.
 - **tsahr.** It covers hazard ratios only and defaults its anticipated effect to
-  the observed pooled effect. Its Schoenfeld required-events approach is the
-  method we use for hazard ratios.
+  the observed pooled effect. We use its statistical-information axis.
 
 ## Statistical policy
 
@@ -47,12 +46,19 @@ integration rather than the one-method `AnalysisRequest`.
   not applied because the boundaries are normal-theory. D² uses the same τ².
 - The required information size is heterogeneity-adjusted without additional
   sequential-design inflation.
+- For HR, accrued information is the sum of inverse squared log-HR standard
+  errors. Required statistical information is the squared sum of the alpha
+  and power quantiles divided by squared log anticipated HR, with heterogeneity
+  applied on the required side only. The unadjusted Schoenfeld-equivalent events
+  are reported for interpretation, assuming equal allocation because HR inputs
+  do not contain arm sizes.
 - Every cumulative step is a look, and its boundary is computed from its
   information fraction. Once accrued information reaches the required
   information size, all remaining alpha is spent and the boundary is held at
   its final value. This is the standard group-sequential treatment of
-  overrunning. Where the reference program differs, the difference is recorded
-  here rather than copied.
+  overrunning. CTU TSA 0.9.5.10 Beta dropped a 0.84% interim look and ended its
+  boundaries at the required information size while continuing the Z-curve
+  in the [run-only CABG settings probe](../../r/RCMetaR/tests/testthat/fixtures/tsa/README.md).
 - The penalised Z-curve is offered for binary measures only, with λ from
   Hu 2007 by measure and one-sided α. It is not plotted where accrued
   information is at most *e*.
