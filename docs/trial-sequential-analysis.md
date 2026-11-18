@@ -47,6 +47,8 @@ crossing, or the first futility crossing if there was no monitoring crossing.
 A triangle marks a Z value beyond the visible vertical range. The vertical
 RIS line is at 100%. The wedge closes against the monitoring boundary there,
 and the dotted monitoring line carries the terminal value through any overrun.
+The drawn boundary curves step at each actual look because spending already
+used at earlier looks changes the boundary for later looks.
 
 Crossing a monitoring boundary gives sequential evidence in the direction
 named by the sheet. Crossing the non-binding futility boundary suggests that

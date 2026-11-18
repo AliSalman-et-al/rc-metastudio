@@ -784,7 +784,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 external_params=external_params, diagnostic_metrics=diagnostic_metrics,
                 confidence_level=confidence_level, analysis_service=self.analysis_service,
                 on_result=self.analysis,
-                on_sheet_settings_saved=self.data_dirtied if not self.model.is_diagnostic() else None,
             )
         except Exception as e:
             self._show_analysis_specs_error(e)

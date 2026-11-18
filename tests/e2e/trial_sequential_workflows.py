@@ -9,6 +9,7 @@ from xml.etree import ElementTree as ET
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import analysis_catalog, analysis_dataset, project_adapter, project_format
+from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis_unit import AnalysisUnit
 from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 from rc_metastudio.plot_editor_dialog import EditPlotDialog
@@ -91,10 +92,10 @@ def check_artwork(path, case, style, contract):
 
 
 def run(app, window, work, record, case):
-    from advanced_workflows import modal
+    from advanced_workflows import click, modal
 
     path = input_project(work, case)
-    window.open(str(path), raise_on_error=True)
+    assert window.open(str(path), raise_on_error=True)
     action = window.action_trial_sequential_analysis
     if case == "smd":
         assert not action.isEnabled() and "supports two-arm RR" in action.toolTip()
@@ -124,6 +125,34 @@ def run(app, window, work, record, case):
         return None
 
     assert action.isEnabled() and not action.icon().isNull()
+    if case == "bcg":
+        window.action_go.trigger()
+        app.processEvents()
+        setup, = [widget for widget in app.topLevelWidgets()
+                  if isinstance(widget, AnalysisSetupDialog) and widget.isVisible()]
+        setup.method_cbo_box.setCurrentText(next(
+            label for label, method in setup.available_method_d.items() if method == "binary.fixed.peto"
+        ))
+        click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+        fit, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
+        fit.close()
+        assert not window.workspace.is_dirty, "Ordinary meta-analysis changed the project"
+
+        def run_default(dialog):
+            assert dialog.run_button.isEnabled(), dialog.status.text()
+            dialog.run_button.click()
+            assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
+
+        modal(app, TrialSequentialAnalysisDialog, run_default, action.trigger)
+        default_view, = [widget for widget in app.topLevelWidgets()
+                         if isinstance(widget, ResultsWindow) and widget.isVisible()]
+        methods = default_view.manuscript.methods
+        assert "fixed-effect (Peto) model" in methods
+        record("tsa-default-run", default_view, project_dirty=window.workspace.is_dirty, methods=methods)
+        default_view.close()
+        assert not window.workspace.is_dirty, "Default TSA changed the project"
+        assert window.open(str(path), raise_on_error=True)
+
     comparison = {
         "bcg": "crossed the monitoring boundary favouring",
         "rr-mh": "crossed the futility boundary",
@@ -249,5 +278,25 @@ def run(app, window, work, record, case):
     view.report_action.setChecked(False)
     view.nav_tree.setCurrentItem(nav)
     app.processEvents()
-    window.workspace.mark_saved()
+    if case == "md":
+        assert window.workspace.is_dirty, "Entered TSA design should be saved with the project"
+        saved = work / "md-with-tsa-design.rcms"
+        assert window.save(destination=saved)
+        assert window.open(str(saved), raise_on_error=True)
+
+        def rerun_saved(dialog):
+            assert dialog.effect.text() == "-1" and dialog.manual_ris.text() == "10000"
+            assert dialog.run_button.isEnabled(), dialog.status.text()
+            record("tsa-reopened-design", dialog, input=str(saved), effect=dialog.effect.text(),
+                   ris=dialog.manual_ris.text())
+            dialog.run_button.click()
+            assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
+
+        modal(app, TrialSequentialAnalysisDialog, rerun_saved, window.action_trial_sequential_analysis.trigger)
+        repeated, = [widget for widget in app.topLevelWidgets()
+                     if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view]
+        repeated.close()
+        assert not window.workspace.is_dirty, "Rerunning the saved TSA design changed the project"
+    else:
+        window.workspace.mark_saved()
     return view

@@ -220,14 +220,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         *,
         on_result: "AnalysisResultHandler | None" = None,
         source_sheet: "Sheet | None" = None,
-        on_sheet_settings_saved: Callable[[], None] | None = None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
         self._on_result = on_result
         self._rerun_source_sheet = source_sheet
-        self._on_sheet_settings_saved = on_sheet_settings_saved
         self.setupUi(self)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
@@ -928,16 +926,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
         finally:
             progress_dialog.dispose(bar)
-        if self._on_sheet_settings_saved is not None and source_sheet is not None and self.analysis_type is None:
-            saved = source_sheet.settings.get("analysis", {})
-            parameters = dict(saved.get("parameters", {})) if saved.get("method") == self.current_method else {}
-            for key in ("rm.method", "inference.method", "adjust", "to", "correction.policy", "drop00"):
-                if key in self.current_param_vals:
-                    parameters[key] = self.current_param_vals[key]
-            settings = {**saved, "method": self.current_method, "parameters": parameters}
-            if saved != settings:
-                source_sheet.settings["analysis"] = settings
-                self._on_sheet_settings_saved()
+        if (
+            source_sheet is not None and self._rerun_source_sheet is None
+            and self.analysis_type is None and not self.model.is_diagnostic()
+        ):
+            parameters = {
+                key: self.current_param_vals[key]
+                for key in ("rm.method", "inference.method", "adjust", "to", "correction.policy", "drop00")
+                if key in self.current_param_vals
+            }
+            source_sheet.last_meta_analysis = self.current_method, parameters
         self.done(QDialog.DialogCode.Accepted.value)
         on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
 

@@ -97,8 +97,7 @@ class TsaRequest:
     def from_sheet(cls, model: DatasetTableModel, options: TsaOptions) -> "TsaRequest":
         sheet = required(model.current_sheet, "active sheet")
         saved = sheet.settings.get("analysis", {})
-        params = saved.get("parameters", {})
-        method = str(saved.get("method", ""))
+        method, params = sheet.last_meta_analysis or (str(saved.get("method", "")), saved.get("parameters", {}))
         fit: TsaModel
         if method.endswith(".peto") and model.current_effect == "OR":
             fit = "peto"

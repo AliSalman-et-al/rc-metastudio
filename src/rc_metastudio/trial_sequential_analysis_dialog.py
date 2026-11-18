@@ -315,10 +315,10 @@ class TrialSequentialAnalysisDialog(QDialog):
             result = replace(run.result, identity=f"{TSA_TITLE} — {context}", manuscript_title=TSA_TITLE)
             manuscript = trial_sequential_report(run, request, context)
             self.on_result(result, source_sheet=self.sheet, manuscript=manuscript)
-            options = request.options.to_mapping()
-            options["futility"] = self.futility.isChecked()
-            if self.sheet.settings.get(TSA_SETTINGS) != options:
-                self.sheet.settings[TSA_SETTINGS] = options
+            options = replace(request.options, futility=self.futility.isChecked())
+            saved = TsaOptions.from_mapping(self.sheet.settings.get(TSA_SETTINGS, {}))
+            if saved != options:
+                self.sheet.settings[TSA_SETTINGS] = options.to_mapping()
                 self.on_settings_saved()
             self.accept()
         except Exception as error:
