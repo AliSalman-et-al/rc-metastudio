@@ -6,6 +6,8 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 ### Added
 
+- Added Trial Sequential Analysis for two-arm binary outcomes, mean differences and reported hazard ratios, with editable monitoring plots and per-look report exports.
+
 - Added persistent System, Light and Dark appearance choices.
 - Added a shared plot-export dialog with format, proportional dimensions, units and raster resolution controls.
 - Added a native citation dialog with copying and BibTeX, RIS and EndNote exports.

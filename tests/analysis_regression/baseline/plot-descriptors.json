@@ -201,5 +201,25 @@
       "id": "continuous-subgroup"
     }
   ],
-  "schema_version": 1
+  "schema_version": 1,
+  "tsa": {
+    "identity": "Trial sequential plot",
+    "kind": "trial_sequential",
+    "regeneration": "trial_sequential",
+    "aspect": 1.6,
+    "accents": {
+      "default": "#2F5597",
+      "revman": "#000000",
+      "bmj": "#6B58A6"
+    },
+    "labels": [
+      "Cumulative Z-curve",
+      "Monitoring boundary",
+      "Futility boundary",
+      "Conventional boundary",
+      "Required information size",
+      "Cumulative Z-score",
+      "Information (% of required information size)"
+    ]
+  }
 }

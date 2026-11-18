@@ -2184,6 +2184,16 @@ def shell(app, window, record):
 
 
 def run(app, window, scenario, record):
+    if scenario.startswith("tsa-") or scenario == "plot-workflow-trial-sequential":
+        from tests.e2e.trial_sequential_workflows import run as tsa
+
+        producer = PLOT_PRODUCERS["trial-sequential"] if scenario.startswith("plot-workflow-") else scenario
+        view = tsa(app, window, Path(sys.argv[2]), record, producer.removeprefix("tsa-"))
+        if scenario.startswith("plot-workflow-"):
+            export_formats(app, view, Path(sys.argv[2]) / "exports", "trial-sequential", record)
+        if view is not None:
+            view.close()
+        return
     if scenario == "project-axis-sequential":
         from tests.e2e.axis_conventions import run_sequential
         run_sequential(app, window, Path(sys.argv[2]), record)

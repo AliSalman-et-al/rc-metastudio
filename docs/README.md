@@ -9,6 +9,7 @@ Start with the [application README](../README.md) for downloads and supported wo
 - [Hazard ratios and incidence rate ratios](hr-irr.md) explains data entry, source confidence, import and interpretation for these measures.
 - [RevMan import](rm5-import.md) describes supported data, method mappings and differences to review before analysis.
 - [Cumulative and leave-one-out analyses](cumulative-and-leave-one-out-design.md) explains cumulative sequences, leave-one-out ordering and report content.
+- [Trial Sequential Analysis](trial-sequential-analysis.md) explains design settings, boundaries and report interpretation.
 - [Terminology and interpretation](../CONTEXT.md) defines the concepts used in the interface and reports.
 - [Project format](project-format.md) describes what an `.rcms` file contains and how older projects are read.
 - [Contribution and support guidelines](../CONTRIBUTING.md) explains how to report a problem or suggest a change.

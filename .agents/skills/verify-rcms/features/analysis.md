@@ -43,6 +43,25 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
 - **Diagnostic.** Run `uv run python scripts/verify_rcms.py lymph`. Kinderman and 17 included studies reach metric DOR, then `diagnostic.random`; compare with `lymph-diagnostic-random-dor`. The public heading is Odds Ratio Summary; use typed section identity rather than assuming it is the internal text key.
 - **Proof.** Each run records `analysis-action`, `analysis-configured`, `analysis-results`, and `numerical-oracle`. The results scene must display the actual summary and render valid SVG. `workflow/forest.pdf` must be a PDF export, not a renamed image.
 
+## Trial Sequential Analysis
+
+- `plot-workflow-trial-sequential` opens BCG OR with random effects, turns on
+  LIL, edits and restores both design defaults, and exercises a monitoring
+  crossing with an overrun. It checks the frozen numerical fields and terminal
+  SVG geometry, regenerates Default, RevMan and BMJ, and decodes all four plot
+  export formats.
+- `tsa-rr-mh` checks a fixed MH risk ratio with a dropped double-zero study,
+  a futility crossing and blank terminal futility limits. `tsa-md` checks the
+  required entered MD and no crossing below RIS. `tsa-hr` checks missing-year
+  recovery with table order and validates the continuous information axis.
+  Those cases also check numerical quantity exports and decoded reports.
+- `tsa-smd` checks the disabled Analysis action and its explanatory tooltip.
+- Target other binary estimators, one-sided or Pocock boundary geometry, custom
+  axis limits, unusual favours labels and narrow windows separately when affected.
+  The native scenario commands in the [TSA guide](../../../../docs/trial-sequential-analysis.md)
+  support separate 100% and 150% captures. Confirm the observed device scale.
+  R tests cover RIS rounding, spending, closure and LIL reference calculations.
+
 ## Gotchas
 
 - Dataset length includes excluded studies; count inclusion, not rows alone.

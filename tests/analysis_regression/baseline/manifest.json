@@ -1,13 +1,13 @@
 {
   "golden_numeric_contract": {
     "path": "tests/analysis_regression/baseline/numeric-contract.json",
-    "sha256": "88d0f6327ee876e99f476e2684956fa3b0f2d4523601426fda3892ff850b926e",
-    "size": 42173
+    "sha256": "9e6626ea10065e49eaab9a2108cdd3127d7570f1bf8ee692f57f11d9ca6509ec",
+    "size": 43527
   },
   "golden_plot_descriptor_contract": {
     "path": "tests/analysis_regression/baseline/plot-descriptors.json",
-    "sha256": "242ecf14905e48454f755e225b0271e983f020f58c0a90164eebe843fe7f9f86",
-    "size": 6384
+    "sha256": "7ad469cfc4ff32bfd4ae68444a2fa908358f8c805a3670fa032710033a3dfbd1",
+    "size": 6887
   },
   "observed_golden_analysis_bundle": {
     "path": "tests/analysis_regression/baseline/observed-golden-baseline.zip",
