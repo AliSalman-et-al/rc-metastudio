@@ -262,4 +262,4 @@ retains complete screen/clipboard/PDF/DOCX reports. The cumulative and
 leave-one-out plot workflows exercise all styles and four decoded exports.
 Native fractional-DPI, missing/non-estimable fits, combined diagnostic metric
 sequences and editor-to-rerun preservation require the targeted evidence listed
-in `docs/sequential-analysis-design.md`; nearby passes do not establish them.
+in `docs/cumulative-and-leave-one-out-design.md`; nearby passes do not establish them.

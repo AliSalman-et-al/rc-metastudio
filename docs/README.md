@@ -8,7 +8,7 @@ Start with the [application README](../README.md) for downloads and supported wo
 - [Sample projects](../sample_projects/README.md) provide ready-to-open data, source citations and provenance.
 - [Hazard ratios and incidence rate ratios](hr-irr.md) explains data entry, source confidence, import and interpretation for these measures.
 - [RevMan import](rm5-import.md) describes supported data, method mappings and differences to review before analysis.
-- [Sequential analyses](sequential-analysis-design.md) explains cumulative sequences, leave-one-out ordering and report content.
+- [Cumulative and leave-one-out analyses](cumulative-and-leave-one-out-design.md) explains cumulative sequences, leave-one-out ordering and report content.
 - [Terminology and interpretation](../CONTEXT.md) defines the concepts used in the interface and reports.
 - [Project format](project-format.md) describes what an `.rcms` file contains and how older projects are read.
 - [Contribution and support guidelines](../CONTRIBUTING.md) explains how to report a problem or suggest a change.

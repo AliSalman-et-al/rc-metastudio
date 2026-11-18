@@ -16,6 +16,7 @@ historical evidence. Use [CONTEXT.md](../../CONTEXT.md) for domain terms.
 | [0008: Analysis boundary](0008-use-a-versioned-analysis-boundary.md) | Typed requests/results and exact numerical quantities |
 | [0009: Release platforms](0009-support-qualified-release-platforms.md) | Supported targets, private runtime and trust profiles |
 | [0010: HR and IRR](0010-distinguish-hazard-and-incidence-rate-ratios.md) | Measures, selected sources, confidence and zero handling |
+| [0011: Trial sequential analysis](0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md) | Authority exception, owned formulas, defaults and references |
 
 The documentation cleanup consolidated sixteen earlier records into these ten.
 Git retains their original text and numbering; historical audit/oracle records

@@ -34,5 +34,5 @@ PDF text inclusion supplements exact DOCX-cell comparisons and does not prove
 PDF geometry. Offscreen source checks do not qualify native shell behavior,
 other platforms or release packages. Rounded display values cannot serve as
 an independent numerical oracle. See [testing](../testing.md) for the maintained
-coverage decisions and [sequential analysis](../sequential-analysis-design.md)
+coverage decisions and [cumulative and leave-one-out analysis](../cumulative-and-leave-one-out-design.md)
 for its current ordering/report obligations.

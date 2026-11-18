@@ -221,3 +221,33 @@ _Avoid_: The omitted study's I²
 The order in which studies enter successive pooled fits. Changing this sequence
 changes the intermediate study subsets and their results.
 _Avoid_: Display order as a synonym for analysis sequence
+
+**Trial sequential analysis**:
+A retrospective cumulative meta-analysis of a sheet's studies in a specified
+order. It uses monitoring boundaries and a required information size to account
+for repeated looks at accumulating evidence.
+_Avoid_: Sequential analysis, sequential meta-analysis as a synonym for cumulative analysis
+
+**Required information size**:
+The amount of information a meta-analysis needs to detect or reject an
+anticipated intervention effect with the chosen false-positive and
+false-negative error rates, optionally inflated for heterogeneity.
+_Avoid_: Sample size, optimal information size as a separate concept
+
+**Anticipated intervention effect**:
+The intervention effect a trial sequential analysis is powered to detect when
+calculating its required information size. It can be specified before the
+analysis or selected retrospectively using an explicit default rule.
+_Avoid_: Observed effect, expected effect as a synonym for the pooled estimate
+
+**Monitoring boundary**:
+The threshold for the cumulative Z-statistic that a trial sequential analysis
+must cross, at the information accrued so far, before benefit or harm is
+declared despite repeated looks at accumulating evidence.
+_Avoid_: Significance line, conventional boundary
+
+**Futility boundary**:
+The inner threshold below which the cumulative Z-statistic indicates that the
+anticipated intervention effect is unlikely, so further trials are unlikely to
+show it. Crossing it does not show that the intervention has no effect.
+_Avoid_: Equivalence boundary, proof of no effect

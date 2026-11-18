@@ -53,7 +53,7 @@ under the pinned implementation; do not substitute a corrected IV fit.
 Cumulative and leave-one-out methods support the ordinary univariate, MH and
 Peto fit classes; generic univariate repeated analyses require no moderators.
 Keep subset membership and package quantities intact. See the
-[sequential-analysis guide](sequential-analysis-design.md),
+[cumulative and leave-one-out guide](cumulative-and-leave-one-out-design.md),
 [cumul](https://wviechtb.github.io/metafor/reference/cumul.html) and
 [leave1out](https://wviechtb.github.io/metafor/reference/leave1out.html).
 Poisson GLMM is a distinct, unsupported extension to this workflow.
