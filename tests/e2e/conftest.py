@@ -73,7 +73,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             path = path.with_name(f"{path.stem}-{config.workerinput['workerid']}{path.suffix}")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"collected": nodes, "shards": bins, "estimated_seconds": loads}, indent=2))
-    selected = set(bins[shard - 1])
-    deselected = [item for item in items if item.nodeid not in selected]
-    items[:] = [item for item in items if item.nodeid in selected]
+    selected = bins[shard - 1]
+    by_node = {item.nodeid: item for item in items}
+    items[:] = [by_node.pop(node) for node in selected]
+    deselected = list(by_node.values())
     config.hook.pytest_deselected(items=deselected)

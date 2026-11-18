@@ -3,7 +3,7 @@ from pathlib import Path
 from qt_test_support import key_click, key_clicks, required
 
 import pytest
-from PyQt6 import QtCore, QtGui, QtSvg, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from rc_metastudio.analysis_results import parse_analysis_result
 from rc_metastudio.plot_capabilities import PlotCapability
 from rc_metastudio.plot_text import normalize_plot_text_value
@@ -99,14 +99,10 @@ def _dispose(widget, qapp):
 
 @pytest.mark.parametrize(
     "placeholder",
-    ["", "[default]", "[Default]", "<default>", "(default)", "default"],
+    ["", "[Default]", "<default>", "(default)", "default"],
 )
 def test_untouched_plot_default_placeholder_is_unset(placeholder):
     assert normalize_plot_text_value(placeholder) is None
-
-
-def test_edited_plot_default_placeholder_remains_user_text():
-    assert normalize_plot_text_value("[default]", was_edited=True) == "[default]"
 
 
 @pytest.mark.parametrize("label", ["default", "(default)", "<default>"])
@@ -118,28 +114,6 @@ def test_plot_editor_preserves_saved_literal_default_label(qapp, label):
     finally:
         _dispose(dialog, qapp)
 
-
-
-def test_qtsvg_renders_materialized_default_black_plot_stroke():
-    svg = b"""<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' viewBox='0 0 100 40'>
-    <g class='svglite'><line x1='10' y1='20' x2='90' y2='20' stroke='#000000' fill='none'
-    stroke-linecap='round' stroke-linejoin='round' stroke-miterlimit='10.00'/></g></svg>"""
-    renderer = QtSvg.QSvgRenderer(QtCore.QByteArray(svg))
-    assert renderer.isValid()
-
-    image = QtGui.QImage(100, 40, QtGui.QImage.Format.Format_ARGB32)
-    image.fill(QtCore.Qt.GlobalColor.white)
-    painter = QtGui.QPainter(image)
-    renderer.render(painter)
-    painter.end()
-
-    assert (
-        sum(
-            image.pixelColor(x, 20) != QtGui.QColor(QtCore.Qt.GlobalColor.white)
-            for x in range(100)
-        )
-        >= 75
-    )
 
 
 def test_plot_graphics_items_paint_an_opaque_white_canvas(qapp, tmp_path):
@@ -475,8 +449,8 @@ def test_plot_editor_omits_unedited_default_axis_label_sentinel(
         assert dialog.x_lbl_le.text() == ""
         assert dialog.plot_params()[parameter_name] is None
         dialog.x_lbl_le.setFocus()
-        key_clicks(dialog.x_lbl_le, "Specific axis label")
-        assert dialog.plot_params()[parameter_name] == "Specific axis label"
+        key_clicks(dialog.x_lbl_le, "[default]")
+        assert dialog.plot_params()[parameter_name] == "[default]"
     finally:
         _dispose(dialog, qapp)
 

@@ -228,8 +228,8 @@ def main() -> int:
                 ).read_text(encoding="utf-8", errors="replace")
                 passed = _compare_hillclimb(passed, args, evidence)
             finally:
-                # Copy before TemporaryDirectory removes settings and R scratch files.
-                shutil.copytree(work, evidence / "workflow")
+                # Move the finished workspace so the evidence keeps its settings and R scratch files.
+                shutil.move(work, evidence / "workflow")
         if passed and tools != external_tools(env):
             raise RuntimeError("Verification tools changed during desktop driving; restart the run")
         record["passed"] = passed

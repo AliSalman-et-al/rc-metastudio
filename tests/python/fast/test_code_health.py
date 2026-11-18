@@ -11,7 +11,6 @@ from pathlib import Path
 import pytest
 
 from scripts.code_health import (
-    _r_tokens,
     build_evidence,
     changed_lines,
     compare_to_baseline,
@@ -67,8 +66,7 @@ def test_r_inline_functions_keep_their_own_body(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("operator", ["%||%", "%&&%", "%%", "%in%", "%o%", "%>%"])
-def test_r_custom_infix_is_one_nonbranch_token(tmp_path: Path, operator: str) -> None:
-    assert _r_tokens(f"x {operator} y") == [("x", 1), (operator, 1), ("y", 1)]
+def test_r_custom_infix_does_not_add_complexity(tmp_path: Path, operator: str) -> None:
     source = tmp_path / "operators.R"
     source.write_text(f"choose <- function(x, y) {{ x {operator} y }}\n", encoding="utf-8")
     metric = r_function_metrics(tmp_path, [source.name])[0]

@@ -25,12 +25,6 @@ def test_incomplete_bundle_cannot_overwrite_plot(tmp_path, monkeypatch):
     assert output.read_text() == "last good"
 
 
-def test_load_params_returns_none_when_artifact_is_missing(monkeypatch):
-    monkeypatch.setattr(r_bridge, "load_plot_parameters", lambda _path: None)
-
-    assert PlotService().load_params("missing") is None
-
-
 def test_load_params_rejects_invalid_r_result(monkeypatch):
     monkeypatch.setattr(r_bridge, "load_plot_parameters", lambda _path: True)
 

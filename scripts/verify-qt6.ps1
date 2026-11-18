@@ -40,6 +40,7 @@ function Invoke-NativeRemainingSurfaceSmoke {
     )
 }
 
+$previousTypingReceipt = $env:RCMS_TYPING_RECEIPT
 Push-Location $repoRoot
 try {
     if ($Sync) {
@@ -66,8 +67,11 @@ try {
 
     # Ty resolves generated modules from their flat build search paths while
     # runtime imports remain package-qualified through rc_metastudio.forms.
-    uv run python -c "from scripts.verify import run_typing; from pathlib import Path; import sys; run_typing(Path(sys.argv[1]))" $BuildRoot
-    if ($LASTEXITCODE -ne 0) { throw "Repository-wide strict type verification failed." }
+    $typingOutput = @(uv run python -c "from scripts.verify import run_typing; from pathlib import Path; import sys; print(run_typing(Path(sys.argv[1])))" $env:RCMS_QT6_BUILD_ROOT)
+    $typingExitCode = $LASTEXITCODE
+    $typingOutput | Write-Output
+    if ($typingExitCode -ne 0) { throw "Repository-wide strict type verification failed." }
+    $env:RCMS_TYPING_RECEIPT = $typingOutput[-1]
 
 
     if ($Section -eq "RemainingSurfaces") {
@@ -139,4 +143,8 @@ try {
         else { Remove-Item Env:QT_FATAL_WARNINGS -ErrorAction SilentlyContinue }
     }
 }
-finally { Pop-Location }
+finally {
+    if ($null -ne $previousTypingReceipt) { $env:RCMS_TYPING_RECEIPT = $previousTypingReceipt }
+    else { Remove-Item Env:RCMS_TYPING_RECEIPT -ErrorAction SilentlyContinue }
+    Pop-Location
+}
