@@ -102,9 +102,9 @@ test_that("HR uses inverse-variance information, and diversity differs from I-sq
     tsa.request("HR", "random", rm.method="DL", anticipated.effect=.8, heterogeneity="i2"))
   expect_equal(diversity$summary$d2, .373)
   expect_equal(diversity$summary$i2, .229)
-  expect_equal(diversity$summary$ris, 251.4035763877411, tolerance=1e-7)
+  expect_equal(diversity$summary$ris, 251.40357702569963, tolerance=1e-7)
   expect_equal(inconsistency$summary$ris, 204.44882333996585, tolerance=1e-7)
-  expect_equal(diversity$looks$accrued, c(.7449446564060334, .9304304686032444), tolerance=1e-6)
+  expect_equal(diversity$looks$accrued, c(.7449446531734039, .9304306400208213))
 })
 
 test_that("RD, OR and Peto convert the anticipated effect and fit on their own scales", {
@@ -132,7 +132,7 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   expect_identical(result$summary$conclusion, "crossed-futility")
   # At the first look RR = 1 and Var(log RR) = 2*(1/10 - 1/100).
   expect_equal(result$looks$adjusted.upper[1], exp(a[1]*sqrt(.18)), tolerance=2e-5)
-  expect_equal(result$looks$ci.upper[1], 2.29710615864141, tolerance=1e-6)
+  expect_equal(result$looks$ci.upper[1], 2.296858442325916)
   expect_identical(attr(result$table, "rcms.table")$role, "cumulative")
   expect_true(any(attr(result$table, "rcms.numeric")$level == 95, na.rm=TRUE))
 })

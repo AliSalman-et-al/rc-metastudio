@@ -136,7 +136,7 @@ def load_policy(manifest_path: Path) -> dict:
         record["name"]: record["installed_version"]
         for record in dependency_records
         if isinstance(record, dict)
-        and record.get("name") in {"mada", "meta", "metafor", "rsvg", "svglite", "tiff"}
+        and record.get("name") in {"gsDesign", "mada", "meta", "metafor", "rsvg", "svglite", "tiff"}
         and record.get("source") == "cran"
         and isinstance(record.get("installed_version"), str)
     }

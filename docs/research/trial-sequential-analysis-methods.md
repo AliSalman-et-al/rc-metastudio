@@ -61,7 +61,7 @@ CTU §5 values:
 | §5.3.1 CABG AF (p.90-91) | P_C=27.6%, RRR 20%, α=1%, β=10%, D²=49% | 7150 | 7150.48 |
 | §5.3.1 CABG AF, low-bias RRR (p.91) | P_C=27.6%, RRR 36.9%, α=1%, β=10%, D²=49% | 1964 | 1962.43 (a D² of 49.04% gives 1964) |
 | §5.5 isoniazid (p.96) | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | 10,508 | 10,507.69 |
-| §5.4 CABG MI (p.95-96) | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | 5942 | **5971.5, not reproduced.** RRR=1/3 gives 5841. The cause is UNVERIFIED (it may be rounding of P_C). |
+| §5.4 CABG MI (p.95-96) | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | 5942 | **5971.5, rounded to 5972 in the CTU run-only probe.** RRR=1/3 gives 5841. The cause of the manual discrepancy remains unverified. |
 
 CTU rounds the RIS **up** (5217.26 is reported as 5218).
 
@@ -375,7 +375,9 @@ boundary values with full trial data were found.
 - CTU defines the spending function on 0-1 (p.39). In CTU Table 3 the adjusted
   CI is shown as "–" for every year after the RIS (1964) was surpassed (p.93).
   That implies that beyond the RIS CTU reports no sequential adjustment.
-  Precisely how CTU draws boundaries past IF=1 is **UNVERIFIED**.
+  The [run-only CABG settings probe](../../r/RCMetaR/tests/testthat/fixtures/tsa/README.md)
+  confirmed that CTU TSA 0.9.5.10 Beta ended its monitoring curves at IF=1,
+  while the cumulative Z-curve continued at the later participant counts.
 - RTSA analysis path: looks with IF > 1 (or > `design_R`) are dropped from the
   boundary computation, a synthetic final look is placed at `design_R` (1 when
   `power_adj=FALSE`), and the Z-curve continues without boundaries (`RTSA.R`).
@@ -606,7 +608,7 @@ pre-specification of the maximum information".
 | CTU-5.2 | P_C=14%, relative benefit increase 20%, α=5% two-sided, β=20%, no heterogeneity adjustment, information = patients | RIS = **5218** | Reproduced (5217.26, rounded up) |
 | CTU-5.3a | P_C=27.6% (median control), RRR 20%, α=1%, β=10%, D²=49.0% | RIS = **7150** | Reproduced (7150.48) |
 | CTU-5.3b | Same, RRR 36.9% (low-bias pooled) | RIS = **1964** | 1962.4 with D²=0.490 (within 0.1%) |
-| CTU-5.4 | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | RIS = **5942** | **Not reproduced** (5971.5) |
+| CTU-5.4 | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | RIS = **5942** | **5972** in the run-only probe (5971.5 before rounding) |
 | CTU-5.5 | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | RIS = **10,508** | Reproduced (10,507.69) |
 | CTU-Table 3 | CABG atrial fibrillation; RIS 1964; 99% CIs (pooled RR / conventional / adjusted): 1999 1 trial, 55 events, 200 pts: 0.24 / 0.14-0.42 / 0.03-7.74; 2000 3, 74, 288: 0.39 / 0.15-0.99 / 0.02-7.18; 2001 5, 143, 649: 0.57 / 0.24-1.34 / 0.12-2.87; 2002 8, 204, 932: 0.52 / 0.30-0.90 / 0.22-1.21; 2003a 10, 285, 1168: 0.55 / 0.37-0.81 / 0.35-0.85; 2003b 13, 391, 1722: 0.53 / 0.35-0.79 / 0.34-0.83; 2004 19, 641, 2832: 0.61 / 0.46-0.82 / –; 2005 20, 679, 2999: 0.63 / 0.49-0.85 / –; 2006 25, 768, 3310: 0.67 / 0.53-0.86 / –; 2007 27, 775, 3372: 0.67 / 0.53-0.86 / – (CTU p.93) | Adjusted CIs | **Trial-level data not in the manual** (Møller 2008 *Eur Heart J* 29:2601). Usable only if the data are obtained. Also shows "–" after the RIS. |
 | CTU-5.2/5.4/5.5 Z-curves | – | Figures only, no numbers | Not usable |
@@ -681,7 +683,7 @@ The gsDesign, RTSA and ldbounds tables in §4.1, §4.3 and §4.5 can serve as
 regression oracles for the boundary layer. They were computed with gsDesign
 3.11.0.
 
-### 8.5 Candidate oracle needing a CTU run (inputs only)
+### 8.5 CTU sample and run-only checks
 
 CTU-sample `High perioperative oxygen SSI.TSA` contains:
 - 7 trials: Greif 2000 13/250 vs 28/250; Pryor 2004 20/80 vs 9/80; Belda 2005
@@ -691,9 +693,9 @@ CTU-sample `High perioperative oxygen SSI.TSA` contains:
   `heterogeneityCorrectionValue 0.67`, OBF α and β spending, looks after
   Greif, Belda, ENIGMA and PROXI.
 
-The file contains no outputs. Someone would have to run the CTU program on it
-to record the RIS and boundaries. Decompiling or inspecting the jar is forbidden;
-whether running it is allowed is the user's call.
+The sample was run normally in CTU TSA 0.9.5.10 Beta. The
+[fixture record](../../r/RCMetaR/tests/testthat/fixtures/tsa/README.md) retains
+the observed RIS, summary and exported plot alongside the CABG settings probe.
 
 ---
 
