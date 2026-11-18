@@ -123,7 +123,7 @@ The manifest binds evidence to an observed dirty worktree, not a release build. 
 
 ## Cleanup
 
-Normal completion and assertion failure close/dispose owned Qt windows and quit the owned application. The helper delegates a 120-second bound (240 seconds for four-format plot workflows; 600 seconds for the full HR/IRR drives, each with six editors and 24 exports including 600-DPI rasters) to `scripts/run_with_timeout.py`, which terminates only the child process tree it launched. Scratch directories under `build/verification/rcms/` are owned `TemporaryDirectory` instances; their settings and R artifacts are copied into evidence before removal, including after failure.
+Normal completion and assertion failure close/dispose owned Qt windows and quit the application. `tests/e2e/desktop_scenarios.py` owns the process limits. Most scenarios use 120 seconds, the four-format plot workflows use 240 seconds, `ratios-hr` uses 600 seconds, and `ratios-irr` uses 1,200 seconds. `scripts/run_with_timeout.py` terminates only the child process tree it launched. The helper copies settings and R artifacts from its temporary directories under `build/verification/rcms/` into evidence before cleanup, including after a failure.
 
 After a proof, confirm the printed directory still contains `manifest.json`, transcripts, and the expected screenshots and side-effect artifacts. Cleanup must preserve failed evidence too. If the outer shell itself is forcibly terminated, inspect its recorded command/PID before cleaning an orphan; never kill by process name or recursively delete a shared artifact directory. Do not clean the user's project files, runtime libraries, or application preferences.
 

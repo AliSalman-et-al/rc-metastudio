@@ -27,7 +27,7 @@ legacy migrations, crash durability or exhaustive persistence coverage.
 - `project-shell` opens through the real Open action with a test-owned picker path, edits a name, cancels a dirty-open prompt, saves through Save As, opens the recent-file action, and reads the actual About dialog. The accepted name and clean state must survive.
 - `ux-improvements` checks sorted paste by stable study identity, sparse fill/copy, quoted clipboard round trips and rejected-paste rollback. Sorted paste and sparse fill include undo/redo, selected-cell clearing and save/reopen. Its clipboard substitute isolates these checks from the user's clipboard.
 
-These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. They do not establish structural deletion, every navigation state, all dirty-close responses, shortcuts, native picker interaction, earlier import pages, or Excel import. Use the targeted recipes below when those paths change.
+These add to `editing`, `csv`, and the eight original New Dataset workflows plus the HR/IRR metric variants. Use `sheets-edges` for additional deletion states and `xlsx-import` for workbook import. Drive the specific navigation state, dirty-close response, shortcut, picker or early import page when it changes.
 
 `project-shell` verifies Escape cancels New project; `sheets` verifies Escape discards an inline sheet rename.
 
@@ -44,7 +44,7 @@ These add to `editing`, `csv`, and the eight original New Dataset workflows plus
 - File > Open, toolbar Open, Ctrl+O (Cmd+O on macOS), File > Open Recent, or opening a project at startup.
 - Edit a study cell in the main table; Edit > Undo/Redo.
 - File > Save/Save As, toolbar Save, Ctrl+S (Cmd+S on macOS).
-- File > Import CSV or the import toolbar action; Dataset > New Dataset starts the creation wizard.
+- **File > Import data…** opens CSV, XLSX or RevMan import. **File > New project…** starts the creation wizard.
 
 ## Driving it with Qt E2E
 
@@ -66,12 +66,12 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user 
 
 ## Structure, table and shell recipes
 
-These are source-backed targeted recipes, not claims that the ordinary editing scenario exercised them. Owners: `main_window.py`, `main_wizard.py`, `dataset_table_view.py`, `edit_dialog.py`.
+The targeted recipes use `main_window.py`, `main_wizard.py`, and `dataset_table_view.py`.
 
 - **Dataset creation:** `action_new_dataset` opens `MainWizard`; click a type button on `Page_DataType`, Next, choose `metric_cbo_box` by item data, Next, enter `outcome_name_LineEdit`, Finish. Eight automated cases are in analysis.md. Test Back/Cancel and invalid names when changing wizard flow. Empty and one-study states need explicit analysis availability/results checks.
 - **Import:** `action_import_csv` is the unified Import data action: pick CSV/XLSX/RM5, review in the matching wizard, then authorize project replacement on acceptance. The mapping page can select another supported file, including switching to RevMan review. On the import page use `select_file_btn`, `from_excel_chkbx`, `has_headers_chkbx`, `delimter_le` (actual spelling), `quotechar_le`, and `preview_table`. Malformed/schema-invalid input must leave completion disabled; corrected input must recover. Require correct raw columns and covariate types after reopening, not only preview rows.
-- **Structure:** `action_edit` opens `EditDialog`: `outcome_list`, `follow_up_list`, `group_list`, `study_list`, `covariate_list` with corresponding add/remove buttons. Add/rename/remove items, cancel a second draft, accept, undo/redo, and reopen. Assert retained study identity/data across multiple outcomes/follow-ups/groups. Deletion must be confirmed and undoable where supported.
-- **Navigation:** `nav_up_btn`/`nav_down_btn` choose dimension, `nav_right_btn`/`nav_left_btn` choose item, `nav_add_btn` adds one. Add dialogs use `outcome_name_le`, `datatype_cbo_box`, `group_name_le`, `follow_up_name_le`. Bounds disable the appropriate controls; switching back must restore the original data and metric.
+- **Structure.** Run `uv run python scripts/verify_rcms.py sheets`. Use **Add outcome** beside the sheet tabs, rename a tab inline, and use a tab's context menu to move or delete the outcome. Check confirmation, Cancel, undo/redo, and save/reopen. Assert that retained sheets keep their study identities, data and metrics. `sheets-edges` also checks that the last sheet cannot be deleted.
+- **Navigation.** Select another sheet tab and return. Confirm the original data and metric reappear and navigation alone leaves a saved project clean.
 - **Covariates:** `action_add_covariate` opens `AddCovariateDialog.covariate_name_le`/`datatype_cbo_box`. Header context choices rename/delete or create a factor/continuous copy. Compare values, types and identity, undo/redo and reopen. Use the covariate in subgroup/regression to prove it crosses the analysis boundary.
 
 `project-table-covariates` exercises the actual header menu for numeric sorting,
@@ -96,7 +96,8 @@ scroll timer; the GUI teardown case closes a wizard before that timer fires.
 Required mapping fields precede optional fields. The grid explains inclusion and
 derived cells locally; automatic study-name sizing gets spare width while user
 widths remain respected. Delete study is separated from Copy/Paste and names the
-confirmed study. Covariate prerequisites are visible in the structure dialog.
+confirmed study. `review1-design` checks Subgroup and Meta-regression action
+availability before and after adding their required covariate types.
 
 ## HR and IRR
 
@@ -115,8 +116,8 @@ style Default, and captures collapsed/expanded Advanced in both themes. See
 
 `review1-design --native` exercises startup without a welcome modal, present and
 missing recent paths (including wrapping full paths), Create/CSV wizard Cancel,
-Open picker Cancel, recent-project opening, and outcome/follow-up/group selector
-switching. The table is hidden until an outcome exists. Light and dark native
+Open picker Cancel, recent-project opening, and switching outcome sheet tabs.
+The table is hidden until an outcome exists. Light and dark native
 palette captures are retained. `project-shell`, `project-structure`, `csv` and the
 data-type matrix supply successful creation/import/save/reopen/undo behavior.
 File pickers remain substituted; native OS picker operation is not claimed.
@@ -207,7 +208,8 @@ The `sheets` drive also proves inline rename and Escape/invalid-name recovery, a
 The overflow proof also narrows the window during inline rename and checks both tab/editor visibility and alignment. Arrow visibility is deferred out of the scroll-area range signal to avoid re-entering the active layout.
 
 
-`ui-crawl` deliberately captures each named surface once, in sections E, F, G, B, C, then retained shell section A. It uses selected real analysis drivers with their assertions intact for the specialized plots. Its index lists omissions and the scenario intentionally fails while D, H, I and J await the next run. This is a visual inventory, not full parameter or native-platform qualification.
+`ui-crawl` exercises named surfaces and records omissions in its index. See the
+[feature index](README.md) for the current sections and rendering prerequisites.
 
 The `sheets` drive compares the raw IRR bridge preview against direct metafor
 intervals with non-unit variance. This supplements pooled numerical comparisons.

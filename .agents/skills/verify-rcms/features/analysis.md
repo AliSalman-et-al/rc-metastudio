@@ -23,16 +23,16 @@ coefficient and the imported HR/OR/MD results with their independent references.
 
 ## Sub-features
 
-- `analysis-binary`: amino project, binary random-effects analysis.
-- `analysis-continuous`: continuous project, continuous random-effects analysis.
-- `analysis-diagnostic`: lymph project, univariate diagnostic odds ratio.
-- `analysis-extended`: cumulative, leave-one-out, subgroup, meta-regression, joint/combined diagnostics, moderator shapes, fixed estimators, and all dataset creation types.
+- `amino` runs binary random-effects analysis.
+- `continuous` runs continuous random-effects analysis.
+- `lymph` runs a univariate diagnostic odds ratio analysis.
+- The extended matrix below covers repeated analyses, regression, joint and combined diagnostic fits, fixed estimators and dataset creation.
 
 ## How to get to it (user POV)
 
-- Open a project, then Analysis > Meta-Analysis or the matching toolbar button.
-- Diagnostic projects first show the metric selection dialog.
-- Analysis menu/toolbar also provides Cumulative Meta-Analysis, Leave-One-Out Meta-Analysis, Subgroup Analysis and Meta-Regression.
+- Open a project and choose **Analysis > Meta-analysis…** or the matching toolbar action.
+- **Analysis** also offers **Cumulative meta-analysis…**, **Leave-one-out meta-analysis…**, **Subgroup meta-analysis…** and **Meta-regression…**.
+- Standard, cumulative and leave-one-out diagnostic analyses ask for metrics. Subgroup analysis asks for a factor covariate first. Diagnostic meta-regression opens setup for joint sensitivity and specificity.
 
 ## Driving it with Qt E2E
 
@@ -70,7 +70,7 @@ Covariate injection constructs a controlled fixture; these drives do not establi
 
 ## Dataset/metric matrix
 
-`analysis-data-*` starts **Dataset > New Dataset** through `action_new_dataset`, clicks the real data-type button, advances the metric/name pages, finishes, populates study cells through validated table edits, saves/reopens `typed.rcms`, then analyzes. It does not bypass wizard type selection.
+`analysis-data-*` starts **File > New project…** through `action_new_dataset`, clicks the real data-type button, advances the metric/name pages, finishes, populates study cells through validated table edits, saves/reopens `typed.rcms`, then analyzes.
 
 The standard untouched one-arm proportion and mean fixtures require their active
 Group total of 135 in the report and a single Group manuscript heading. Entered-only
@@ -153,14 +153,16 @@ Run `uv run python scripts/verify.py r-stack` after shared statistical changes: 
 
 ## Reported inference
 
-Standard univariate results include the package-owned Z/t overall-effect statistic
-and, for random models with more than two studies, `predict.rma` prediction limits.
+Standard univariate results include the package-owned Z/t overall-effect statistic.
+Random-effects results include prediction limits when `stats::predict()` returns
+both bounds, including estimable two-study fits.
 PFT prediction limits use the same harmonic-mean sample size as the pooled inverse,
 with an explicit calculation-scale fallback when that inverse is undefined. Subgroup reports include the package's QM/F, degrees of
-freedom and P beside within-group estimates. `output-authorities.R` in the
-round-two evidence checks 84 metric/inference combinations against independent
-public metafor fits. Keep that check separate from the unchanged frozen contract;
-newly reported quantities must not replace or rewrite existing numerical oracles.
+freedom and P beside within-group estimates. The installed-package checks in
+`test-summary-display.R` compare reported inference with pinned metafor.
+`test-package-policy.R` checks a two-study prediction interval against `predict()`.
+Run `project-reviewer-predictions` to check prediction intervals in the desktop
+forest plot. Keep these comparisons alongside the frozen numerical contract.
 
 ## HR and IRR
 

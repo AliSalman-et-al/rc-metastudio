@@ -51,20 +51,16 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
   disable numeric export. Separate Microsoft Word consumer evidence is linked
   in historical Git revisions; use `docs/testing.md` for current replay guidance.
 
-- `results-render`: actual summary text and valid rendered analysis plots. The sample analysis driver also asserts that Run analysis activates Results before screenshot capture, manual zoom restores the horizontal origin, and the text report has no duplicate Supplementary details or References headings.
-- `plot-apply`: changed axis label regenerates the real R plot and saved parameters.
-- `plot-cancel`: Cancel discards the draft after an applied change.
-- `plot-pdf`: PDF export from the sample-analysis workflows.
+- `amino`, `continuous` and `lymph` exercise summary text, plot rendering and PDF export. The sample driver checks Results activation, the horizontal origin after manual zoom, and unique Supplementary details and References headings.
+- `plot-edit` applies an axis label to the R plot and its saved parameters, then verifies that Cancel discards a later draft.
 
 ## How to get to it (user POV)
 
 - Run an analysis to open the Results window.
-- Results open on the first figure or the summary when no figure exists. Forest plots fit the viewport width; other vector charts, including every funnel family, fit the whole plot when that preserves at least 9 pt body text. Results and manuscript figures adapt R's rectangular SVG clip groups to symbol viewports in memory, using Qt's native vector clipping. Saved SVG exports keep the original clip paths. Ctrl+T opens the selectable Text report. Ctrl+C copies
-  its selection; Ctrl+Shift+C copies the whole report and Ctrl+Shift+S exports
-  it. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
+- Results open on the first figure. Results with a joint Reitsma clinical summary or no figures open on the Text report. Forest plots fit the viewport width; other vector charts, including every funnel family, fit the whole plot when that preserves at least 9 pt body text. Results and manuscript figures adapt R's rectangular SVG clip groups to symbol viewports in memory, using Qt's native vector clipping. Saved SVG exports keep the original clip paths. Ctrl+T opens the selectable Text report. Select text, or use Select All, before copying with Ctrl+C. Ctrl+Shift+S exports the report. Select a plot for Export plot (Ctrl+Shift+E), its format selector, or Edit
   plot. Fit width resets manual zoom and horizontal scrolling using the measured
   figure width; resizing preserves fit until manual zoom is chosen.
-- Right-click an editable plot and choose **Edit Plot**.
+- Right-click an editable plot and choose **Edit plot…**.
 - Use a plot's context menu to save/export it in the offered format.
 - **Change settings…** reopens the existing setup dialog with the result's input
   snapshot, method, metric, inference and display settings. Running creates a new
@@ -78,7 +74,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
   Direction labels are empty by default; two optional text fields let the user
   state the clinical direction explicitly.
 
-`review-workflows` drives Properties prefill/Cancel, a main-project switch,
+`review-workflows` drives Change settings prefill/Cancel, a main-project switch,
 changed-estimator rerun and all four forest orders with exact unchanged numerical
 sections. It also requires the full two-line identity in the header bar and a
 result-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
@@ -100,7 +96,7 @@ The funnel and contour `plot-workflow-*` drives reject partial/nonfinite axis bo
 `ux-improvements` drives report/plot toolbar export, the plot export shortcut, fit/zoom, deliberate CSV mapping and duplicate-name recovery with real Qt/R. It preserves exported report text, decoded PDF, mapped input and a reopened project. Native widget evidence does not establish Narrator/NVDA table semantics: the report uses selectable preformatted text, and plots have textual alternatives rather than interactive accessible study marks.
 
 - A parameter change without changed rendered output is not successful regeneration.
-- Basic `amino`, `continuous`, `lymph`, and `plot-edit` lanes exercise a forest editor and PDF only. The eleven advanced plot workflows supply separate editor and four-format export proof.
+- `amino`, `continuous` and `lymph` export a PDF. `plot-edit` checks editing and Cancel in the standard forest. The eleven advanced plot workflows exercise the scene context menu and all four export formats.
 - Offscreen screenshots cannot prove screen bounds, native DPI, accessibility, or pixel geometry. Native Results smoke provides fractional-scale fixture evidence; real-R E2E supplies the statistical workflow proof.
 - Keep the pre-edit artifact and the last successful applied state when testing failed regeneration or rollback.
 
@@ -171,7 +167,7 @@ from the resulting plot and requires blank Qt output. PDF rendering intersects
 the SVG viewports with the visible page slice because Qt symbol clipping replaces
 an existing painter clip.
 
-These workflows have a 240-second process limit for publication-resolution raster exports; full HR/IRR scenarios retain 600 seconds for six editors and 24 exports, and ordinary scenarios retain 120 seconds. TIFF conversion uses a packed native raster to bound memory while preserving every decoded export and its 600 dpi dimensions. `family-export-decoded` records each completed format to locate slow/failing exports. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
+The `plot-workflow-*` scenarios allow 240 seconds for publication-resolution exports. The [scenario registry](../../../../tests/e2e/desktop_scenarios.py) sets longer limits for the six editors and 24 exports in each full ratio drive. TIFF conversion uses a packed native raster and preserves 600 dpi output. `family-export-decoded` records each completed format. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 
 Send one context-menu event through the viewport and choose the active popup with a bounded callback. Combining a right-click with an unconditional second context event can leave an extra menu open on some Qt platforms. Let Cancel unwind the modal loop before processing further events. Preserve phase captures and print exceptions before teardown so cleanup cannot hide the original failure.
 
@@ -292,7 +288,8 @@ Round-six reviewer follow-up: `project-reviewer-predictions` checks PFT/PLO/PAS
 prediction intervals in three styles, PFT sequential/subgroup footers and report/
 Table/copy/export rows against public-package subset inverses.
 `project-reviewer-groups` checks unnamed/custom single-arm proportion and mean
-spanners in three styles, installed 0.5.0, About and saved/reopened project identity.
+spanners in three styles and verifies that the installed RCMetaR, About, and the
+saved project manifest agree with the running application version.
 `project-reviewer-colours` checks Default markers/intervals/caps/diamonds and four
 export formats across standard/sequential/subgroup, single-arm, diagnostic and
 HR/IRR families, including the unchanged persisted `default` key in Edit plot.

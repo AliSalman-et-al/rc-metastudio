@@ -1,6 +1,6 @@
 # Small-study effects analysis
 
-Users reach guided small-study effects analysis through the Publication Bias UI label, inspect eligibility, select procedures, and read package-authoritative results and funnels.
+Users open **Small-study effects…**, inspect eligibility, select procedures, and read package-authoritative results and funnels.
 
 ## Sub-features
 
@@ -11,7 +11,7 @@ Users reach guided small-study effects analysis through the Publication Bias UI 
 
 ## How to get to it (user POV)
 
-- After opening a project with included study data, choose Analysis > Publication Bias or the matching toolbar button.
+- After opening a project with included study data, choose **Analysis > Small-study effects…** or the matching toolbar action.
 
 ## Driving it with Qt E2E
 
@@ -29,7 +29,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 
 ## Gotchas
 
-- Publication Bias is a navigation label. Results do not establish a bias-present/bias-absent verdict.
+- Interpret asymmetry estimates and eligibility in their study context. The report gives no bias-present or bias-absent verdict.
 - The primary asymmetry test is distinct from exploratory asymmetry tests and the pooled display model.
 - Eligibility is computed by RCMetaR for the included eligible study set; do not silently drop individual studies or guess availability from the UI.
 - A diagnostic Deeks effective-sample-size funnel is distinct from an ordinary or contour-enhanced funnel.
@@ -58,9 +58,9 @@ Trigger `action_publication_bias`. Set `ordinary_funnel_check`, `contour_funnel_
 
 Trim-and-fill uses `trim_fill_check`, `trim_fill_estimator_combo` (L0/R0), `trim_fill_side_combo` (auto/left/right), `trim_fill_model_combo` (random/common). Automatic side uses meta's single selected scenario for every metric; the report names the selected side. ma.common follows meta's TRUE default independently of the display model. Verify imputed counts, augmented effects and warnings, not merely a funnel filename. `extrapolation_check` adds the separate extrapolation report.
 
-Capture configuration and click `button_box` OK. Require hidden `failure_label` and the expected semantic sections: `small-study.data-eligibility`, `small-study.tests`, `small-study.method-details`, `small-study.methods-not-applicable`, `small-study.extrapolation`, and `small-study.trim-and-fill`. Require real retained `small-study.funnel.*`, `small-study.contour_funnel.*`, `small-study.deeks_funnel.*`, and trim-and-fill images. Copy `.data/.res/.params` and temporary funnels before R quits.
+Capture configuration and click `button_box` OK. Require hidden `failure_label` and check the semantic sections for the selected procedures. Trim-and-fill result sections use `small-study.trim-and-fill.<scenario>`. Retain the rendered images and editable plot artifacts for each requested and supported funnel before R quits.
 
-Invalid contour levels must keep the modal recoverable, show `failure_label`, re-enable OK, preserve the project, and succeed after correction. Observe and dismiss the expected error specifically; other dialogs still fail the drive. Diagnostic label policies only offer None/All; no pseudo-confidence/tau²/pooled overlays. Funnel presentation edits must preserve fitted statistics, Deeks ESS geometry and trim-and-fill augmentation.
+Invalid contour levels show `failure_label` inline, focus the contour field and leave Run enabled before any progress popup opens. Check that correction succeeds and the project stays intact. Diagnostic label policies only offer None/All; no pseudo-confidence/tau²/pooled overlays. Funnel presentation edits must preserve fitted statistics, Deeks ESS geometry and trim-and-fill augmentation.
 
 ## Statistical oracle requirements
 
@@ -71,7 +71,11 @@ Invalid contour levels must keep the modal recoverable, show `failure_label`, re
 
 See [ratios.md](ratios.md) for the compact input, original-source persistence, analysis, plot and small-study workflows. Run `ratios-hr` and `ratios-irr` after changes affecting these families; the broader shared-change lane remains required.
 
-The native nine-study IRR sample drive also exercises invalid contour levels (`95,100`), the explicit error, enabled OK after dismissal, correction to `85,95,99`, and successful ordinary/contour results. Execution failures use the generic unexpected-error dialog after the shared running popup closes and its wait cursor is restored. Contour request-validation errors remain inline and do not open the running popup. This native evidence does not turn that recipe into an automated test.
+`project-round6-polish` opens the nine-study IRR sample and tries four invalid
+contour inputs. `contour-inline-validation` records the inline message with Run
+still enabled. Enter `90,95,99` and check the rendered contour in
+`contour-validation-recovered`. Execution failures use the generic unexpected-error
+dialog after the shared running popup closes and its wait cursor is restored.
 
 The extended small-study drives assert that the confidence selector, pseudo-confidence-region checkbox and contour-level editor do not overlap.
 
