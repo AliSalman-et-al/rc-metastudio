@@ -1,0 +1,4 @@
+Command: uv 'run' 'python' '-m' 'pytest' 'tests/python/gui/test_main_window_automation_launch.py' '-k' 'test_results_window_refits_svg_plots_and_reflows_sections_on_resize or test_results_window_refits_svg_after_viewport_geometry_settles or test_results_window_refits_raster_fallback_from_original_source' '-q' '--basetemp' '.tmp/tsa-phase3b-results'
+...                                                                      [100%]
+3 passed, 52 deselected in 1.70s
+Exit: 0

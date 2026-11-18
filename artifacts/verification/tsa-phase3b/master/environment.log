@@ -1,0 +1,9 @@
+Checkout: C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master
+Revision: 84d37e15cc19fad2292595f8b82af7c1cae7b978
+R source tree: 33378b18be546ea424f5f211885f5bcdf8deb49c
+Platform: Windows_NT AMD64, QT_QPA_PLATFORM=windows
+RCMS_R_HOME=C:\Users\Ali-Salman/Downloads/RCMetaStudio-0.5.6-windows-x64/R
+RCMS_R_LIBS=C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.tmp\tsa-phase3b-libraries\master
+RCMS_QT6_RCC=C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt-rcc-verified\bin\rcc.exe
+PATH prefix: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.tmp\poppler-tsa\poppler-26.09.0\Library\bin
+RCMS_QT6_BUILD_ROOT=C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\build\qt6-verification

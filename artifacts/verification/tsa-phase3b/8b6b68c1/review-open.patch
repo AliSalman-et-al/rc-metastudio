@@ -1,0 +1,13 @@
+diff --git a/tests/e2e/analysis_settings_workflows.py b/tests/e2e/analysis_settings_workflows.py
+index 205bb319..55f32f50 100644
+--- a/tests/e2e/analysis_settings_workflows.py
++++ b/tests/e2e/analysis_settings_workflows.py
+@@ -39,6 +39,8 @@ def run(app, window, root, record, analyze):
+     first_plot = plot_hashes(view)
+     first_numbers = parsed_numeric_sections(view.results)
+     assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
++    record('review-second-project-opened', window)
++    return
+     window.action_go.trigger()
+     app.processEvents()
+     fresh_dialog = setup()

@@ -1,0 +1,14 @@
+.\artifacts\verification\tsa-phase3b\2d31c8fd\review-workflows head=2d31c8fd exit=1 platform=offscreen artifacts=27
+.\artifacts\verification\tsa-phase3b\8b6b68c1\review-workflows head=8b6b68c1 exit=0 platform=offscreen artifacts=27
+.\artifacts\verification\tsa-phase3b\branch\review-workflows head=5f073c8f exit=1 platform=windows artifacts=31
+.\artifacts\verification\tsa-phase3b\fixed\plot-workflow-trial-sequential head=fc9e8d34 exit=0 platform=windows artifacts=69
+.\artifacts\verification\tsa-phase3b\fixed\review-workflows head=fc9e8d34 exit=0 platform=windows artifacts=219
+.\artifacts\verification\tsa-phase3b\fixed\tsa-hr head=fc9e8d34 exit=0 platform=windows artifacts=40
+.\artifacts\verification\tsa-phase3b\fixed\tsa-md head=fc9e8d34 exit=0 platform=windows artifacts=48
+.\artifacts\verification\tsa-phase3b\fixed\tsa-rr-mh head=fc9e8d34 exit=0 platform=windows artifacts=41
+.\artifacts\verification\tsa-phase3b\fixed\tsa-smd head=fc9e8d34 exit=0 platform=windows artifacts=16
+.\artifacts\verification\tsa-phase3b\master\review-workflows head=84d37e15 exit=0 platform=windows artifacts=219
+.\artifacts\verification\tsa-phase3b\master-offscreen\review-workflows head=84d37e15 exit=0 platform=offscreen artifacts=210
+.\artifacts\verification\tsa-phase3b\preflight-bcg\plot-workflow-trial-sequential head=5f073c8f exit=0 platform=offscreen artifacts=70
+.\artifacts\verification\tsa-phase3b\preflight-md\tsa-md head=5f073c8f exit=0 platform=offscreen artifacts=49
+.\artifacts\verification\tsa-phase3b\red\plot-workflow-trial-sequential head=5f073c8f exit=1 platform=offscreen artifacts=20

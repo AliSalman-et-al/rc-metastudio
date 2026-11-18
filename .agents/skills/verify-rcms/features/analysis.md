@@ -49,12 +49,15 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   LIL, edits and restores both design defaults, and exercises a monitoring
   crossing with an overrun. It checks the frozen numerical fields and terminal
   SVG geometry, regenerates Default, RevMan and BMJ, and decodes all four plot
-  export formats.
+  export formats. It also checks that a Peto fit carries into default TSA
+  while the project stays clean.
 - `tsa-rr-mh` checks a fixed MH risk ratio with a dropped double-zero study,
   a futility crossing and blank terminal futility limits. `tsa-md` checks the
   required entered MD and no crossing below RIS. `tsa-hr` checks missing-year
   recovery with table order and validates the continuous information axis.
   Those cases also check numerical quantity exports and decoded reports.
+  The MD drive saves its entered design, reopens it and reruns it without
+  another project edit.
 - `tsa-smd` checks the disabled Analysis action and its explanatory tooltip.
 - Target other binary estimators, one-sided or Pocock boundary geometry, custom
   axis limits, unusual favours labels and narrow windows separately when affected.

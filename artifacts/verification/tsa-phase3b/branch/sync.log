@@ -1,0 +1,4 @@
+Command: uv 'sync' '--locked'
+Resolved 84 packages in 1ms
+Checked 80 packages in 14ms
+Exit: 0

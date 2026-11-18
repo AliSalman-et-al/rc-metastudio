@@ -1,0 +1,94 @@
+Command: uv 'run' 'python' 'scripts/verify_rcms.py' 'plot-workflow-trial-sequential'
+[23:44:52] $ C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+All checks passed!
+Typing evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\artifacts\verification\typing\20261118T234452-bde8cec2
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\artifacts\verification\rcms\20261118T184454Z-bd45f2d5-plot-workflow-trial-sequential
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+
+
+R callback write-console: Loading required package: metadat
+
+
+
+R callback write-console: Loading required package: numDeriv
+
+
+
+R callback write-console:
+
+Loading the 'metafor' package (version 5.2-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+
+
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+
+Qt QtWarningMsg: This plugin does not support propagateSizeHints()
+
+Qt QtWarningMsg: This plugin does not support raise()
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\desktop_scenarios.py", line 30, in run
+
+    import_module(module).run(app, window, name, driver.record_step)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2191, in run
+
+    view = tsa(app, window, Path(sys.argv[2]), record, producer.removeprefix("tsa-"))
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\trial_sequential_workflows.py", line 139, in run
+
+    assert not window.workspace.is_dirty, "Ordinary meta-analysis changed the project"
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError: Ordinary meta-analysis changed the project
+
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\desktop_scenarios.py", line 30, in run
+
+    import_module(module).run(app, window, name, driver.record_step)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2191, in run
+
+    view = tsa(app, window, Path(sys.argv[2]), record, producer.removeprefix("tsa-"))
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-bisect\tests\e2e\trial_sequential_workflows.py", line 139, in run
+
+    assert not window.workspace.is_dirty, "Ordinary meta-analysis changed the project"
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError: Ordinary meta-analysis changed the project
+
+
+Exit: 1

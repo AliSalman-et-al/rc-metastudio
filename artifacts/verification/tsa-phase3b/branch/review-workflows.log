@@ -1,0 +1,80 @@
+Command: uv 'run' 'python' 'scripts/verify_rcms.py' 'review-workflows' '--native'
+[23:44:57] $ C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+All checks passed!
+Typing evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\typing\20261118T234457-1964e918
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261118T184459Z-446217ab-review-workflows
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+
+
+R callback write-console: Loading required package: metadat
+
+
+
+R callback write-console: Loading required package: numDeriv
+
+
+
+R callback write-console:
+
+Loading the 'metafor' package (version 5.2-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+
+
+UNEXPECTED DIALOG: Save changes to “amino.rcms”?
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_scenarios.py", line 24, in run
+
+    import_module(f"tests.e2e.{module}").run(*arguments(driver, app, window, name), **options)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\analysis_settings_workflows.py", line 41, in run
+
+    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_scenarios.py", line 24, in run
+
+    import_module(f"tests.e2e.{module}").run(*arguments(driver, app, window, name), **options)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\analysis_settings_workflows.py", line 41, in run
+
+    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+
+Exit: 1
