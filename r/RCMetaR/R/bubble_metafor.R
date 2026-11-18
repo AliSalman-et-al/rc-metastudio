@@ -254,6 +254,14 @@ rcmetar.bubble.refline <- function(bundle, ylim=NULL) {
     refline
 }
 
+rcmetar.bubble.draw.refline <- function(null) {
+    if (is.finite(null)) {
+        panel <- graphics::par("usr")
+        graphics::segments(panel[[1]], null, panel[[2]], null,
+                           col="gray50", lty="dotted", xpd=FALSE)
+    }
+}
+
 rcmetar.bubble.compact.args <- function(args) {
     args[!vapply(args, is.null, logical(1))]
 }
@@ -309,12 +317,16 @@ rcmetar.bubble.legend <- function(labels, ...) {
         ...,
         bty="n",
         xpd=NA,
-        cex=max(0.68, graphics::par("cex") * 0.74),
+        cex=rcmetar.bubble.legend.cex(),
         xjust=0,
         yjust=1,
         text.col="#222222"
     )
     invisible(NULL)
+}
+
+rcmetar.bubble.legend.cex <- function() {
+    max(0.68, graphics::par("cex") * 0.74)
 }
 
 rcmetar.bubble.panel <- function(size, show.legend, top=1.1) {
@@ -401,11 +413,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         # regplot owns the range, including fitted CI/PI. Choose ticks after it
         # draws so they cover that actual range rather than only study estimates.
         panel <- graphics::par("usr")
-        null <- rcmetar.bubble.refline(bundle, panel[3:4])
-        if (is.finite(null)) {
-            graphics::segments(panel[[1]], null, panel[[2]], null,
-                               col="gray50", lty="dotted", xpd=FALSE)
-        }
+        rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)

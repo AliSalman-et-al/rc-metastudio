@@ -59,6 +59,10 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   The MD drive saves its entered design, reopens it and reruns it without
   another project edit.
 - `tsa-smd` checks the disabled Analysis action and its explanatory tooltip.
+- `tsa-stress` drives 36 looks with long favours labels. It compares the
+  SVG margin-label geometry and captures the full figure at Fit width.
+  The [design verification](../../../../artifacts/verification/tsa-phase4/README.md)
+  records the Default, RevMan and BMJ runs at 100% and 150% device scale.
 - Target other binary estimators, one-sided or Pocock boundary geometry, custom
   axis limits, unusual favours labels and narrow windows separately when affected.
   The native scenario commands in the [TSA guide](../../../../docs/trial-sequential-analysis.md)

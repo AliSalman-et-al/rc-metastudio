@@ -1,0 +1,4 @@
+Command: uv 'run' 'python' '-m' 'pytest' '-q' 'tests/python/gui/test_funnel_plot_editor.py' 'tests/python/fast/test_plot_service.py' 'tests/python/fast/test_plot_capabilities.py'
+......................................                                   [100%]
+38 passed in 1.80s
+Exit: 0

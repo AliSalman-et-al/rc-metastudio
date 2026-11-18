@@ -34,9 +34,10 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
 }
 
 .tsa.plot.points <- function(x, z, limit, pch, col, bg, cex) {
-    inside <- which(abs(z) <= limit)
-    graphics::points(x[inside], z[inside], pch=pch, bg=bg, col=col, cex=cex[inside])
-    outside <- which(abs(z) > limit & x >= par("usr")[1] & x <= par("usr")[2])
+    in.range <- x >= graphics::par("usr")[1] & x <= graphics::par("usr")[2]
+    inside <- which(abs(z) <= limit & in.range)
+    graphics::points(x[inside], z[inside], pch=pch, bg=bg, col=col, cex=cex[inside], xpd=TRUE)
+    outside <- which(abs(z) > limit & in.range)
     graphics::points(x[outside], sign(z[outside])*limit, pch=ifelse(z[outside] > 0, 24, 25),
                      bg=col, col=col, xpd=TRUE, cex=cex[outside])
 }
@@ -46,9 +47,9 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     # Balance two rotated lines using their measured length on the current device.
     cuts <- gregexpr(" ", label, fixed=TRUE)[[1]]
     if (length(cuts) < 2L) cuts <- seq_len(nchar(label) - 1L)
-    start <- substr(label, 1L, cuts)
+    start <- substring(label, 1L, cuts)
     end <- trimws(substring(label, cuts + 1L))
-    i <- which.min(pmax(graphics::strwidth(start), graphics::strwidth(end)))
+    i <- which.min(pmax(graphics::strwidth(start, units="inches"), graphics::strwidth(end, units="inches")))
     paste(trimws(start[i]), end[i], sep="\n")
 }
 
@@ -89,11 +90,15 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
     conventional <- qnorm(.tsa.tail.alpha(design), lower.tail=FALSE)
     directions <- c(if (design$alternative != "upper") -1,
                     if (design$alternative != "lower") 1)
-    ris <- .tsa.format.accrued(design$ris, design$metric)
+    format.information <- function(value) {
+        if (design$metric == "HR") formatC(value, format="f", digits=1, big.mark=",") else
+            .tsa.format.accrued(value, design$metric)
+    }
+    ris <- format.information(design$ris)
     required <- if (design$axis == "participants") paste0("Required information size: ", ris, " participants") else
         paste0("Required information: ", ris)
     if (design$ris.source == "manual") required <- paste0(required, " (entered)")
-    accrued <- .tsa.format.accrued(tail(looks$accrued, 1), design$metric)
+    accrued <- format.information(tail(looks$accrued, 1))
     caption <- sprintf("%s \u00b7 Accrued: %s (%.0f%%)", required, accrued, tail(x, 1))
     favours <- params$favours %||% paste("Favours", rcmetar.default.arm.labels())
 
@@ -108,6 +113,10 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
          (overrun && xlim[1] < last && xlim[2] > 100))
     cumulative.visible <- xlim[2] >= 0 && xlim[1] <= last
     lil <- cumulative.visible && any(is.finite(looks$lil.z))
+    shown <- c(cumulative.visible, monitoring.visible, wedge.visible, conventional <= limit, ris.visible, lil)
+    labels <- c("Cumulative Z-curve\n(markers sized by\ninformation added)", "Monitoring boundary",
+                "Futility region", "Conventional boundary", "Required information size",
+                "Penalised Z-curve")[shown]
     added <- diff(c(0, looks$accrued))
     markers <- pmax(style$plim[1], style$plim[2] * sqrt(added/max(added[is.finite(looks$z)])))
     lil.markers <- rep(style$plim[1], length(x))
@@ -117,15 +126,36 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         graphics::par(family=typography$family, font.axis=typography$axis, xaxs="i", yaxs="i")
         tick.width <- max(graphics::strwidth(yticks, units="inches", font=typography$axis))
         label.line <- (tick.width + 0.40) / graphics::par("csi")
+        margins <- graphics::par("mai")
+        margins[2] <- max(margins[2], (label.line + 3.6) * graphics::par("csi"))
+        if (length(labels)) {
+            legend.width <- max(graphics::strwidth(paste0("MMMMM", labels), units="inches",
+                                                   cex=rcmetar.bubble.legend.cex()))
+            margins[4] <- max(margins[4], legend.width)
+        }
+        graphics::par(mai=margins)
+        available <- graphics::par("pin")[2] - .20
+        widths <- graphics::strwidth(favours, units="inches")
+        label.width <- if (sum(widths) <= available) max(widths) else available/2
+        favours <- vapply(favours, .tsa.favours.label, character(1), available=label.width)
+        favours.lines <- strsplit(favours, "\n", fixed=TRUE)
+        longest <- vapply(favours.lines, function(label) max(graphics::strwidth(label, units="inches")), numeric(1))
+        label.lines <- rep(label.line + 1, 2)
+        if (sum(longest) > available) {
+            # Stagger the two blocks if wrapping still leaves too little space between them.
+            offset <- length(favours.lines[[1]])
+            label.lines[2] <- label.lines[2] + offset
+            margins[2] <- margins[2] + offset * graphics::par("csi")
+            graphics::par(mai=margins)
+        }
         graphics::plot(NA_real_, xlim=xlim, ylim=c(-limit, limit), xaxt="n", yaxt="n",
                        ylab="", xlab=xlabel, bty=style$bty)
         graphics::axis(1, at=ticks, labels=paste0(ticks, "%"), las=style$las)
         graphics::axis(2, at=yticks, las=style$las)
         graphics::mtext(ylabel, side=2, line=label.line)
-        available <- (graphics::par("pin")[2] - graphics::strwidth(ylabel, units="inches"))/2 - .12
         for (i in seq_along(favours)) {
-            graphics::mtext(.tsa.favours.label(favours[i], available), side=2,
-                            at=c(-limit, limit)[i], adj=c(0, 1)[i], line=label.line,
+            graphics::mtext(favours[i], side=2, at=c(-limit, limit)[i],
+                            adj=c(0, 1)[i], line=label.lines[i],
                             las=0, cex=size$cex, font=1, col="black")
         }
         rcmetar.draw.panel.caption(caption, line=1.6)
@@ -136,7 +166,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
                               col=region, border=accent, lty=3, lwd=1)
         }
         graphics::abline(h=directions*conventional, col=conventional.col, lty=2, lwd=1)
-        graphics::abline(h=0, col="gray50", lty=3, lwd=1)
+        rcmetar.bubble.draw.refline(0)
         for (direction in directions) {
             graphics::lines(curves$x, direction*curves$monitoring, col=charcoal, lwd=2)
             if (overrun) {
@@ -161,14 +191,12 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
                              col=charcoal, pch=1, cex=markers[crossing] + .4, lwd=1.6, xpd=TRUE)
         }
 
-        shown <- c(cumulative.visible, monitoring.visible, wedge.visible, conventional <= limit, ris.visible, lil)
-        if (any(shown)) {
+        if (length(labels)) {
             rcmetar.bubble.legend(
-                c("Cumulative Z-curve\n(markers sized by\ninformation added)", "Monitoring boundary",
-                  "Futility region", "Conventional boundary", "Required information size",
-                  "Penalised Z-curve")[shown],
+                labels,
                 col=c(accent, charcoal, accent, conventional.col, ris.col, accent)[shown],
-                lwd=c(2, 2, 1, 1, 1.1, 1.4)[shown], lty=c("1", "1", NA, "2", "84", "2")[shown],
+                lwd=c(2, 2, 1, 1, 1.1, 1.4)[shown],
+                lty=c("solid", "solid", NA, "dashed", "84", "dashed")[shown],
                 pch=c(style$pch, NA, 22, NA, NA, 1)[shown], pt.bg=c(style$bg, NA, region, NA, NA, NA)[shown],
                 merge=TRUE)
         }

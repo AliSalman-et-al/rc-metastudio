@@ -2,6 +2,7 @@
 
 import json
 import math
+import os
 import sys
 import traceback
 from pathlib import Path
@@ -910,6 +911,21 @@ def plots(app, window, family, record, *, view=None):
         assert not missing_export.exists()
         assert list(r.execute_r_string("om.data@study.names")) == names
         record("funnel-missing-bundle-blocked", view, family=family, prefix=str(incomplete), study_names=names)
+        if family == "trimfill" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
+            def capture_funnel_styles(dialog):
+                from rc_metastudio.small_study_effects import FUNNEL_STYLE_LABELS
+
+                dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
+                for style, label in FUNNEL_STYLE_LABELS.items():
+                    dialog.style_combo.setCurrentText(label)
+                    click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                    export = Path(sys.argv[2]) / f"trimfill-{style.value}.svg"
+                    view.plot_service.export(regenerator="funnel", params_path=artifact.params_path,
+                                             output_path=str(export))
+                    record("funnel-style-reference", view, style=style.value, plots={artifact.title: str(export)})
+                dialog.reject()
+
+            modal(app, FunnelPlotEditorDialog, capture_funnel_styles, lambda: context("Edit plot…"))
     view.close()
 
 

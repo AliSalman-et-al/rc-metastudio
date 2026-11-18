@@ -2,7 +2,8 @@
 import csv
 import json
 import os
-from math import isclose
+import re
+from math import ceil, isclose
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
@@ -80,7 +81,23 @@ def check_artwork(path, case, style, contract):
     assert set(contract["labels"]) <= labels, labels
     assert ("Penalised Z-curve" in labels) == (case == "bcg")
     assert any(label.startswith("Required information") and "Accrued:" in label for label in labels)
-    assert "Futility region" in labels
+    if case == "hr":
+        assert "Required information: 4,222.1 · Accrued: 1,775.3 (42%)" in labels
+    if case == "stress":
+        tracks = {}
+        for node in svg.iter(NAMESPACE + "text"):
+            transform = re.fullmatch(r"translate\(([\d.]+),([\d.]+)\) rotate\(-90\)",
+                                     node.attrib.get("transform", ""))
+            if transform is None or node.text == "Cumulative Z-score":
+                continue
+            x, y = map(float, transform.groups())
+            size = float(node.attrib["textLength"].removesuffix("px"))
+            bounds = (y, y + size) if node.attrib.get("text-anchor") == "end" else (y - size, y)
+            tracks.setdefault(x, []).append(bounds)
+        assert sum(map(len, tracks.values())) == 4, tracks
+        for intervals in tracks.values():
+            ordered = sorted(intervals)
+            assert all(a[1] < b[0] for a, b in zip(ordered, ordered[1:])), tracks
     assert "100%" in labels and "RIS" in labels
     accent = contract["accents"][style]
     assert accent.lower() in path.read_text(encoding="utf-8").lower()
@@ -93,11 +110,10 @@ def check_artwork(path, case, style, contract):
     if case != "stress":
         assert bool(crossings) == (case != "md")
     if case == "bcg":
-        held = [node for node in svg.iter(NAMESPACE + "polyline")
-                if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]
-                and len(node.attrib.get("points", "").split()) == 2]
+        held = [node for node in svg.iter(NAMESPACE + "line")
+                if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
         tip = monitoring[0].attrib["points"].split()[-1]
-        assert any(node.attrib["points"].split()[0] == tip for node in held), tip
+        assert any(f"{node.attrib['x1']},{node.attrib['y1']}" == tip for node in held), tip
         wedge = [node for node in svg.iter(NAMESPACE + "polygon")
                  if accent in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
         assert any(tip in node.attrib["points"].split() for node in wedge), tip
@@ -170,8 +186,7 @@ def run(app, window, work, record, case):
         "rr-mh": "crossed the futility boundary",
         "md": "crossed neither a monitoring nor a futility boundary",
         "hr": "crossed the monitoring boundary favouring",
-        "stress": "",
-    }[case]
+    }.get(case)
 
     def configure(dialog):
         if case == "hr":
@@ -231,7 +246,8 @@ def run(app, window, work, record, case):
         assert all(row[6] == "" for row in table.rows if float(row[3]) >= 100)
         assert "We pooled odds ratios (OR)" in view.manuscript.methods
         assert "logarithm with λ = 2 (Hu 2007)" in view.manuscript.methods
-    assert comparison in view.manuscript.results, view.manuscript.results
+    if comparison is not None:
+        assert comparison in view.manuscript.results, view.manuscript.results
     assert "Accrued information is" in view.manuscript.results
     assert "Supplementary details" not in view.manuscript.html(supplementary=True)
 
@@ -273,6 +289,13 @@ def run(app, window, work, record, case):
         viewport = view.graphics_view.viewport()
         assert viewport is not None
         bounds = view.graphics_view.mapFromScene(item.sceneBoundingRect()).boundingRect()
+        overflow = bounds.bottom() - viewport.rect().bottom()
+        if overflow > 1:
+            shrink = ceil((overflow + 8) * bounds.width() / bounds.height())
+            view.resize(view.width() - shrink, view.height())
+            view.fit_width_action.trigger()
+            wait(150)
+            bounds = view.graphics_view.mapFromScene(item.sceneBoundingRect()).boundingRect()
         assert viewport.rect().adjusted(-1, -1, 1, 1).contains(bounds), (viewport.rect(), bounds)
         assert viewport.grab(bounds.intersected(viewport.rect())).save(str(screen_plot))
         record(f"tsa-{case}-{style}", view, style=style, dpi_scale=view.devicePixelRatio(),
