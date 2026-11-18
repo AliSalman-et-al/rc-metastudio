@@ -33,6 +33,10 @@ def number(values: Mapping[str, object], key: str) -> float | None:
     return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
 
 
+def _without_favours(label: str) -> str:
+    return label[8:].lstrip() if label.lower().startswith("favours ") else label
+
+
 @dataclass(frozen=True, slots=True)
 class TsaOptions:
     order: str = "year"
@@ -84,6 +88,10 @@ class TsaRequest:
     correction: str = "only0"
     drop_double_zero: bool | None = None
     version: int = 1
+
+    def favoured_labels(self) -> tuple[str, str]:
+        left, right = self.favours
+        return (_without_favours(left), _without_favours(right))
 
     @classmethod
     def from_sheet(cls, model: DatasetTableModel, options: TsaOptions) -> "TsaRequest":

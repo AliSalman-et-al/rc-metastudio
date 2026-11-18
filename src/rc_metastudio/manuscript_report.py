@@ -709,6 +709,11 @@ class ManuscriptReport:
     def sections(self) -> tuple[ResultSection, ...]:
         return self.primary_sections + self.supplementary_sections
 
+    @property
+    def has_supplementary_details(self) -> bool:
+        return any(section.source_key != "References" and (section.tables or section.paragraphs)
+                   for section in self.supplementary_sections)
+
     @classmethod
     def from_result(cls, result):
         summary = [result.manuscript_context] if result.manuscript_context else []
@@ -766,7 +771,7 @@ class ManuscriptReport:
 
     def tables_html(self, supplementary=False):
         parts = ['<a name="report-tables"></a>'] if not supplementary else []
-        if supplementary and self.supplementary_sections:
+        if supplementary and self.has_supplementary_details:
             parts.append('<h2>Supplementary details</h2>')
         for section, tables in self.numbered_sections(supplementary):
             if section.source_key == 'References':
@@ -778,6 +783,8 @@ class ManuscriptReport:
 
 
 def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
+    from decimal import Decimal
+
     from rc_metastudio.analysis_results import ResultSection
     from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE
 
@@ -785,16 +792,25 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     hr = request.metric == "HR"
     units = "units of statistical information" if hr else "participants"
     order = {"year": "publication year", "table": "table order"}[options.order]
-    test = {"two-sided": "two-sided", "benefit": "one-sided benefit", "harm": "one-sided harm"}[options.test]
+    left, right = request.favoured_labels()
+    test = {"two-sided": "two-sided test", "benefit": f"one-sided test favouring {left}",
+            "harm": f"one-sided test favouring {right}"}[options.test]
+    measure_name = {"RR": "risk ratios", "OR": "odds ratios", "RD": "risk differences",
+                    "MD": "mean differences", "HR": "hazard ratios"}[request.metric]
+
+    def accrued_number(value: float) -> str:
+        number = Decimal(f"{value:.6g}" if hr else str(value)).normalize()
+        return f"{number:,f}"
+
     effect = f"{run.anticipated_effect:.4g}"
     source = "entered" if run.effect_source == "user" else EFFECT_SOURCES[run.effect_source]
     ris_label = "entered required information size" if options.manual_ris is not None else "required information size"
     model = (f"random-effects model with the {request.tau_method} estimator of between-study variance"
              if request.model == "random" else request.model_label.replace("fixed", "fixed-effect") + " model")
     method = [
-        f"We pooled {request.metric} using a {model} and the Wald z statistic.",
+        f"We pooled {measure_name} ({request.metric}) using a {model} and the Wald z statistic.",
         f"Studies were added in {order}.",
-        f"The {ris_label} was {run.ris:,.6g} {units} using a {test} test "
+        f"The {ris_label} was {accrued_number(run.ris)} {units} using a {test} "
         f"with α = {options.alpha:g} and {options.power:.0%} power. "
         f"The anticipated intervention effect was {effect} ({source}).",
     ]
@@ -817,7 +833,7 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
     method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
     if run.lil_lambda is not None:
-        method.append(f"The law of the iterated logarithm penalised Z using λ = {run.lil_lambda:g} (Hu 2007).")
+        method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g} (Hu 2007).")
     if run.excluded_studies:
         method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
     method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
@@ -825,21 +841,22 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     final, crossing = run.final, run.crossing
     results: list[str] = []
     if crossing is not None:
-        at = f"when {crossing.study} was added ({crossing.accrued:,.6g} {units}, {crossing.fraction:.0%} of the required information size)."
+        at = f"when {crossing.study} was added ({accrued_number(crossing.accrued)} {units}, {crossing.fraction:.0%} of the required information size)."
         if run.conclusion == "crossed-futility":
             results.append(f"The cumulative Z-curve crossed the futility boundary {at}")
             results.append(f"This suggests that an intervention effect of {effect} is unlikely, "
                            "without establishing its absence.")
         else:
-            direction = {"crossed-benefit": "benefit", "crossed-harm": "harm"}[run.conclusion]
-            results.append(f"The cumulative Z-curve crossed the monitoring boundary for {direction} {at}")
+            favoured = left if run.conclusion == "crossed-benefit" else right
+            results.append(f"The cumulative Z-curve crossed the monitoring boundary favouring {favoured} {at}")
     elif run.conclusion == "ris-reached":
         results.append("Accrued information reached the required information size without the cumulative Z-curve crossing a monitoring boundary.")
     elif run.conclusion == "none":
-        results.append("The cumulative Z-curve crossed neither a monitoring nor a futility boundary. "
-                       f"Accrued information is {final.fraction:.0%} of the required information size.")
+        results.append("The cumulative Z-curve crossed neither a monitoring nor a futility boundary.")
     else:
         raise ValueError("Trial sequential analysis returned an invalid conclusion.")
+    if crossing != final:
+        results.append(f"Accrued information is {final.fraction:.0%} of the required information size.")
     results.append(f"The conventional {request.confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
     if final.fraction >= 1:
         results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
@@ -937,7 +954,7 @@ def _docx_table(document, table):
 
 
 def _docx_sections(document, report, supplementary):
-    if supplementary and report.supplementary_sections:
+    if supplementary and report.has_supplementary_details:
         document.add_heading('Supplementary details', 1)
     for section, tables in report.numbered_sections(supplementary):
         if section.source_key == 'References':

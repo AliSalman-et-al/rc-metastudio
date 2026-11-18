@@ -1120,8 +1120,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _automatic_plot_scale(self, item, target_scale, height, body_pixels):
         if self._explicit_fit_width:
             return target_scale
-        target_scale = min(target_scale, 1.0)
         kind = item.data(0)
+        if kind != 'trial_sequential':
+            target_scale = min(target_scale, 1.0)
         if kind and not str(kind).endswith('forest'):
             index = self._layout_items.index(item) if item in self._layout_items else len(self._layout_items)
             heading = self._layout_items[index - 1] if index else None

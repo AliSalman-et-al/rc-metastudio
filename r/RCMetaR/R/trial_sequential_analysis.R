@@ -235,9 +235,12 @@
   increment <- diff(c(0, replace(spent, negligible, 0)))
   active <- which(increment > 0)
   if (length(active)) {
-    bound <- gsDesign::gsBound(timing[active],
-      trueneg=if (symmetric) increment[active] else rep(0, length(active)),
-      falsepos=increment[active])
+    upper.spend <- increment[active]
+    lower.spend <- if (symmetric) upper.spend else rep(0, length(active))
+    bound <- gsDesign::gsBound(timing[active], trueneg=lower.spend, falsepos=upper.spend)
+    # Close looks can need finer quadrature to resolve the spending increment.
+    if (bound$error != 0L)
+      bound <- gsDesign::gsBound(timing[active], trueneg=lower.spend, falsepos=upper.spend, r=80L)
     if (bound$error != 0L || any(!is.finite(bound$b)))
       stop("gsDesign could not compute the TSA spending boundaries (error ", bound$error, ").")
     upper[active] <- bound$b
@@ -270,8 +273,7 @@
   list(efficacy.upper=if (s$alternative == "lower") NA_real_ else upper,
     efficacy.lower=if (s$alternative == "upper") NA_real_ else -upper,
     futility.upper=wedge, futility.lower=-wedge,
-    alpha.spent=path$alpha.spent[expanded], final=min(terminal, length(fraction)),
-    futility.path=data.frame(fraction=path$fraction, z=path$wedge))
+    alpha.spent=path$alpha.spent[expanded], final=min(terminal, length(fraction)), path=path)
 }
 
 .tsa.conclusion <- function(looks, s, final) {
@@ -290,11 +292,20 @@
   list(category=if (any(monitor$fraction >= 1)) "ris-reached" else "none", look=NA_integer_)
 }
 
+.tsa.format.accrued <- function(x, metric) {
+  if (metric == "HR") x <- signif(x, 6)
+  vapply(x, function(value) format(value, big.mark=",", scientific=FALSE, trim=TRUE), character(1))
+}
+
 .tsa.display.table <- function(looks, s) {
-  number <- function(x) ifelse(is.na(x), "", format(x, digits=4, trim=TRUE))
-  bounds <- function(lower, upper) {
-    ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", number(upper))),
-      ifelse(is.na(upper), paste0("\u2265 ", number(lower)), paste(number(lower), "to", number(upper))))
+  number <- function(x) ifelse(is.na(x), "", sprintf("%.4g", x))
+  bounds <- function(lower, upper, render=number) {
+    ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", render(upper))),
+      ifelse(is.na(upper), paste0("\u2265 ", render(lower)), paste(render(lower), "to", render(upper))))
+  }
+  adjusted <- function(x) {
+    ifelse(!is.na(x) & !s$metric %in% c("MD", "RD") & x < .001, "<0.001",
+      ifelse(!is.na(x) & x > 1000, ">1000", number(x)))
   }
   headers <- c("Step", "Study added", "Accrued", "Information (%)", "Z",
     "Monitoring boundary", "Futility boundary", "Effect (conventional CI)", "TSA-adjusted CI")
@@ -302,10 +313,10 @@
   percent <- looks$fraction*100
   conventional <- ifelse(is.na(looks$estimate), "",
     paste0(number(looks$estimate), " (", bounds(looks$ci.lower, looks$ci.upper), ")"))
-  display <- cbind(step, looks$study, number(looks$accrued), number(percent), number(looks$z),
+  display <- cbind(step, looks$study, .tsa.format.accrued(looks$accrued, s$metric), sprintf("%.1f", percent), number(looks$z),
     bounds(looks$efficacy.lower, looks$efficacy.upper),
     bounds(looks$futility.lower, looks$futility.upper), conventional,
-    bounds(looks$adjusted.lower, looks$adjusted.upper))
+    bounds(looks$adjusted.lower, looks$adjusted.upper, adjusted))
   columns <- c(1, 3, 4, 5, 6, 6, 7, 7, 8, 8, 8, 9, 9)
   values <- cbind(step, looks$accrued, percent, looks$z,
     as.matrix(looks[c("efficacy.lower", "efficacy.upper", "futility.lower", "futility.upper",
@@ -438,7 +449,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   final <- estimable[bounds$final]
   if (bounds$final < length(estimable))
     warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
-  for (name in setdiff(names(bounds), c("final", "futility.path"))) {
+  for (name in setdiff(names(bounds), c("final", "path"))) {
     looks[[name]] <- NA_real_
     looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
   }
@@ -485,7 +496,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   path <- rcmetar.plot.scalar_path(s$fp_outpath)
   if (!is.null(path)) {
     s$fp_style <- s$fp_style %||% "default"
-    res <- list(summary=summary, looks=looks, futility.path=bounds$futility.path)
+    res <- list(summary=summary, looks=looks, curves=.tsa.plot.curves(bounds$path, s))
     plot.data <- rcmetar.tsa.plot.data(data, res, s)
     rcmetar.draw.tsa.plot(plot.data, path)
     result$plot.prefix <- save.data(data, res, s, plot.data, tools::file_path_sans_ext(path))

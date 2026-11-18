@@ -6,11 +6,11 @@ from collections.abc import Callable
 from dataclasses import replace
 from math import isfinite
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QSignalBlocker, Qt, QTimer
 from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
     QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-    QFormLayout, QHBoxLayout, QLabel, QLineEdit, QToolButton, QVBoxLayout, QWidget,
+    QFormLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QToolButton, QVBoxLayout, QWidget,
 )
 
 from rc_metastudio import adaptive_window, app_error_handler, progress_dialog, qt_layout
@@ -45,6 +45,8 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.service = service or TsaService()
         saved = TsaOptions.from_mapping(self.sheet.settings.get(TSA_SETTINGS, {}))
         self.base_request = TsaRequest.from_sheet(model, saved)
+        self.default_inputs: dict[QLineEdit, tuple[QLabel, QPushButton]] = {}
+        self.entered_inputs: set[QLineEdit] = set()
         self.binary = self.base_request.family == "binary"
         self.hr = self.base_request.metric == "HR"
         outer = QVBoxLayout(self)
@@ -57,16 +59,18 @@ class TrialSequentialAnalysisDialog(QDialog):
         fields = QFormLayout()
         outer.addLayout(fields)
         self.order = self._choice("Add studies in", [("Publication year", "year"), ("Table order", "table")], saved.order)
-        self.test = self._choice("Test", [("Two-sided", "two-sided"), ("One-sided (benefit)", "benefit"),
-                                          ("One-sided (harm)", "harm")], saved.test)
+        left, right = self.base_request.favoured_labels()
+        self.test = self._choice("Test", [("Two-sided", "two-sided"),
+                                          (f"One-sided (favours {left})", "benefit"),
+                                          (f"One-sided (favours {right})", "harm")], saved.test)
         self.alpha = self._percent("Type I error (α)", .01, 49.99, 100 * saved.alpha)
         self.power = self._percent("Power", 50.01, 99.99, 100 * saved.power)
         for widget in (self.order, self.test, self.alpha, self.power):
             self._row(fields, widget.accessibleName(), widget)
 
-        self.effect, self.effect_source = self._input(fields, "Anticipated intervention effect", saved.anticipated_effect)
+        self.effect = self._default_input(fields, "Anticipated intervention effect", saved.anticipated_effect)
         if self.binary:
-            self.control, self.control_source = self._input(
+            self.control = self._default_input(
                 fields, "Control event proportion (%)",
                 None if saved.control_proportion is None else 100 * saved.control_proportion,
             )
@@ -178,8 +182,45 @@ class TrialSequentialAnalysisDialog(QDialog):
         self._row(layout, name, line, source)
         return line, source
 
+    def _default_input(self, layout: QFormLayout, name: str, value: float | None) -> QLineEdit:
+        line = self._line(name, value)
+        source = _muted_label()
+        reset = QPushButton("Use default", self)
+        reset.setAccessibleName(f"Use default for {name.lower()}")
+        reset.setFlat(True)
+        reset.setForegroundRole(QPalette.ColorRole.Link)
+        self.default_inputs[line] = source, reset
+        if value is not None:
+            self.entered_inputs.add(line)
+        reset.setVisible(value is not None)
+        reset.clicked.connect(lambda: self._restore_default(line))
+        line.textChanged.connect(lambda: self._mark_entered(line))
+        self._row(layout, name, line, source, reset)
+        return line
+
+    def _mark_entered(self, line: QLineEdit) -> None:
+        self.entered_inputs.add(line)
+        source, reset = self.default_inputs[line]
+        source.setText("Entered")
+        reset.show()
+
+    def _restore_default(self, line: QLineEdit) -> None:
+        self.entered_inputs.discard(line)
+        with QSignalBlocker(line):
+            line.clear()
+        self._schedule_preview()
+
+    def _show_default(self, line: QLineEdit, value: str, description: str) -> None:
+        source, reset = self.default_inputs[line]
+        entered = line in self.entered_inputs
+        if not entered:
+            with QSignalBlocker(line):
+                line.setText(value)
+        source.setText("Entered" if entered else description)
+        reset.setVisible(entered)
+
     @staticmethod
-    def _row(layout: QFormLayout, name: str, editor: QWidget, source: QLabel | None = None) -> None:
+    def _row(layout: QFormLayout, name: str, editor: QWidget, source: QLabel | None = None, reset: QPushButton | None = None) -> None:
         label = QLabel(name)
         label.setBuddy(editor)
         if source is None:
@@ -188,6 +229,8 @@ class TrialSequentialAnalysisDialog(QDialog):
             contents = QHBoxLayout()
             contents.addWidget(editor, 1)
             contents.addWidget(source, 2)
+            if reset is not None:
+                contents.addWidget(reset)
             layout.addRow(label, contents)
 
     @staticmethod
@@ -204,13 +247,14 @@ class TrialSequentialAnalysisDialog(QDialog):
 
     def _request(self) -> TsaRequest:
         test = str(self.test.currentData())
-        control = self._value(self.control)
+        control = self._value(self.control) if self.control in self.entered_inputs else None
         manual_ris = self._value(self.manual_ris) if self.manual.isChecked() else None
         if self.manual.isChecked() and manual_ris is None:
             raise ValueError("Enter the required information size.")
         return replace(self.base_request, options=TsaOptions(
             str(self.order.currentData()), test, self.alpha.value() / 100, self.power.value() / 100,
-            self._value(self.effect), None if control is None else control / 100, self._value(self.variance),
+            self._value(self.effect) if self.effect in self.entered_inputs else None,
+            None if control is None else control / 100, self._value(self.variance),
             str(self.heterogeneity.currentData()), str(self.spending.currentData()),
             self.futility.isChecked() and test == "two-sided", self.lil.isChecked(), manual_ris,
         ))
@@ -233,12 +277,14 @@ class TrialSequentialAnalysisDialog(QDialog):
 
     def _show_preview(self, options: TsaOptions, preview: TsaPreview) -> None:
         defaults = preview.defaults
-        self.effect.setPlaceholderText("" if defaults.anticipated_effect is None else f"{defaults.anticipated_effect:.6g}")
-        self.effect_source.setText(EFFECT_SOURCES.get("user" if options.anticipated_effect is not None else preview.effect_source, ""))
+        self._show_default(
+            self.effect, "" if defaults.anticipated_effect is None else f"{defaults.anticipated_effect:.4g}",
+            EFFECT_SOURCES.get(preview.effect_source, ""),
+        )
         if self.control is not None:
             pc = defaults.control_proportion
-            self.control.setPlaceholderText("" if pc is None else f"{pc:.4%}".rstrip("%"))
-            self.control_source.setText("Entered" if options.control_proportion is not None else "Unweighted mean of control arms")
+            self._show_default(self.control, "" if pc is None else f"{100 * pc:.2f}",
+                               "Unweighted mean of control arms")
         if self.variance is not None:
             self.variance.setPlaceholderText("" if defaults.variance is None else f"{defaults.variance:.6g}")
             self.variance_source.setText("Entered" if options.variance is not None else "Fixed-effect-weighted pooled arm variance")
