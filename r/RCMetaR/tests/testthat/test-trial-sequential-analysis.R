@@ -50,14 +50,16 @@ test_that("preview preserves year ties and states reasons without fabricating MD
   expect_equal(result$looks$estimate, c(-1, -2/3, -5/6))
 })
 
-test_that("CTU participant RIS calculations use half-up rounding on the printed inputs", {
+test_that("CTU participant RIS calculations round up on the printed inputs", {
   # Mirrored tables reproduce the printed DL heterogeneity to within .001 pp.
-  # The smoking, low-bias CABG AF, and CABG MI printed RIS differ from the
-  # half-up calculation on printed inputs (methods note §1.1).
+  # The manual printed 7150 and 1964 for its CABG AF cases. At the
+  # printed D² of 49%, ceiling gives 7151 and 1963. A D² of 49.04%
+  # rounds to the printed 49% and gives 1964 for the low-bias case.
   scenarios <- list(
-    list(a=4, c=5, n=30, alpha=.05, power=.8, pc=.14, rr=1.2, d2=0, ris=5217),
-    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.8, d2=.49, ris=7150),
-    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.631, d2=.49, ris=1962),
+    list(a=4, c=5, n=30, alpha=.05, power=.8, pc=.14, rr=1.2, d2=0, ris=5218),
+    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.8, d2=.49, ris=7151),
+    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.631, d2=.49, ris=1963),
+    list(a=1717, c=1775, n=95649, alpha=.01, power=.9, pc=.276, rr=.631, d2=.4904, ris=1964),
     list(a=1487, c=1527, n=10000, alpha=.05, power=.8, pc=.05, rr=.75, d2=.20, ris=10508),
     list(a=26, c=39, n=1000, alpha=.05, power=.8, pc=.039, rr=.67, d2=0, ris=5972))
   for (x in scenarios) {
@@ -121,7 +123,7 @@ test_that("RD, OR and Peto convert the anticipated effect and fit on their own s
     control.proportion=.10, anticipated.effect=(.08/.92)/(.10/.90)))
   peto <- rcmetar.run.trial.sequential.analysis(data, tsa.request("OR", "peto",
     control.proportion=.10, anticipated.effect=(.08/.92)/(.10/.90)))
-  expect_equal(c(rd$summary$ris, odds$summary$ris, peto$summary$ris), rep(6428, 3))
+  expect_equal(c(rd$summary$ris, odds$summary$ris, peto$summary$ris), rep(6429, 3))
   expect_equal(rd$looks$estimate, c(-.06, -.06))
   expect_equal(odds$looks$estimate[1], (4*90)/(96*10))
   expect_equal(peto$looks$estimate[1], exp((4-7)/(14*186/(4*199))))
@@ -131,12 +133,12 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   data <- tsa.binary(rep(10, 5), rep(10, 5), rep(100, 5))
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=1000))
   a <- c(4.876885, 3.357011, 2.680280, 2.289817, 2.031032)
-  b <- c(NA, .203516, 1.004008, 1.573865, 2.031032)
+  b <- c(NA, .203516, 1.004008, 1.573865, NA)
   expect_equal(result$looks$efficacy.upper, a, tolerance=2e-5)
   expect_equal(result$looks$efficacy.lower, -a, tolerance=2e-5)
   # The independent RTSA getInnerWedge port uses a coarser integration grid.
-  expect_lt(max(abs(result$looks$futility.upper[-1] - b[-1])), .001)
-  expect_true(is.na(result$looks$futility.upper[1]))
+  expect_lt(max(abs(result$looks$futility.upper[2:4] - b[2:4])), .001)
+  expect_true(all(is.na(result$looks$futility.upper[c(1, 5)])))
   expect_identical(result$summary$conclusion, "crossed-futility")
   # At the first look RR = 1 and Var(log RR) = 2*(1/10 - 1/100).
   expect_equal(result$looks$adjusted.upper[1], exp(a[1]*sqrt(.18)), tolerance=2e-5)
@@ -178,7 +180,7 @@ test_that("overrun closes spending once, and tiny looks retain their cumulative 
   result <- rcmetar.run.trial.sequential.analysis(data,
     tsa.request("RR", manual.ris=1000, futility=FALSE))
   expect_equal(result$looks$fraction, c(.3, .7, 1.2, 1.4))
-  expect_equal(result$looks$efficacy.upper, c(3.928573, 2.438742, 2.020316, 2.020316), tolerance=2e-5)
+  expect_equal(result$looks$efficacy.upper, c(3.928573, 2.438742, 2.000009, 2.000009), tolerance=2e-5)
   expect_equal(result$looks$alpha.spent[3:4], c(.05, .05))
   expect_true(all(is.na(result$looks$adjusted.upper[3:4])))
   expect_true(all(is.finite(result$looks$ci.upper)))
@@ -209,8 +211,10 @@ test_that("futility closes at 100% even when the last monitored look overruns", 
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=1000))
   exact <- rcmetar.run.trial.sequential.analysis(
     tsa.binary(rep(10, 3), rep(10, 3), c(100, 200, 200)), tsa.request("RR", manual.ris=1000))
-  expect_equal(result$looks$futility.upper[1:3], exact$looks$futility.upper)
-  expect_true(is.na(result$looks$futility.upper[4]))
+  expect_equal(result$looks$futility.upper[1:2], exact$looks$futility.upper[1:2])
+  expect_true(all(is.na(result$looks$futility.upper[3:4])))
+  expect_true(is.na(exact$looks$futility.upper[3]))
+  expect_identical(result$looks$efficacy.upper[3:4], rep(exact$looks$efficacy.upper[3], 2))
 })
 
 test_that("a later harm crossing takes priority over non-binding futility", {
@@ -229,7 +233,7 @@ test_that("binary I-squared inflation uses the fitted Q and the unadjusted RIS",
   q <- diff(log(c(10, 70)/30))^2/sum(vi)
   unadjusted <- 4*(qnorm(.975)+qnorm(.8))^2*.27*.73/.06^2
   expect_equal(result$summary$i2, 1-1/q)
-  expect_equal(result$summary$ris, floor(unadjusted*q+.5))
+  expect_equal(result$summary$ris, ceiling(unadjusted*q))
 })
 
 test_that("RR, OR and RD defaults use the nearest conventional 95% limit", {
@@ -246,14 +250,19 @@ test_that("RR, OR and RD defaults use the nearest conventional 95% limit", {
   }
 })
 
-test_that("the LIL uses pooled statistical information and a supported Hu coefficient", {
+test_that("the LIL floors the log-log penalty and uses within-study precision", {
   data <- tsa.binary(c(1, 10), c(2, 20), c(25, 250))
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", lil=TRUE))
   expect_equal(result$summary$lil.lambda, 2)
-  expect_true(is.na(result$looks$lil.z[1]))
-  # RR=.5 at both looks, with inverse-variance information 1/.142 + 1/1.42.
-  info <- 1/.142 + 1/1.42
-  expect_equal(result$looks$lil.z[2], log(.5)*sqrt(info)/sqrt(2*log(log(info))))
+  expect_equal(result$looks$lil.z, result$looks$z/sqrt(2))
+  # The fixed-effect precisions are sums of reciprocal log-RR variances. Between-study variation
+  # lowers random-effects precision without lowering the log-log penalty.
+  data <- tsa.binary(c(100, 65), c(50, 100), c(500, 500))
+  result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", "random", lil=TRUE))
+  info <- sum(1/(1/c(50, 65) + 1/100 - 2/500))
+  expect_lt(result$looks$statistical.information[2], exp(exp(1)))
+  expect_equal(result$looks$lil.z[2], result$looks$z[2]/sqrt(2*log(log(info))))
+
   expect_error(rcmetar.run.trial.sequential.analysis(data,
     tsa.request("RR", alpha=.08, lil=TRUE)), "Hu")
 })

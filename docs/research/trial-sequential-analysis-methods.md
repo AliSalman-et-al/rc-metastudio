@@ -21,7 +21,7 @@ Research date: 2026-11-18.
 | T2009 | Thorlund K et al. *Int J Epidemiol* 2009;38:276-86 | Not retrieved. Cited only through CTU. |
 | P&Y1997 | Pogue J, Yusuf S. *Control Clin Trials* 1997;18:580-93 | Abstract, plus CTU's summary (CTU p.30). |
 | Hu2007 | Hu M, Cappelleri JC, Lan KKG. *Clin Trials* 2007;4:329-40 | Abstract (Europe PMC). |
-| Lan2003 | Lan KKG, Hu M, Cappelleri JC. *Statistica Sinica* 2003;13:1135-45 | Index page only, because the full text is gated. Its formula details come from CTU §2.2.6. |
+| Lan2003 | Lan KKG, Hu M, Cappelleri JC. *Statistica Sinica* 2003;13:1135-45 | [Full text](https://www3.stat.sinica.edu.tw/statistica/oldpdf/A13n411.pdf), especially §3.2 and equation (5). |
 | Imb2016 | Imberger G, Thorlund K, Gluud C, Wetterslev J. *BMJ Open* 2016;6:e011890 (PMC4985805) | Full-text XML (Europe PMC). |
 | K&W2014 | Kulinskaya E, Wood J. Trial sequential methods for meta-analysis. *Res Synth Methods* 2014;5:212-20 | Abstract fragments only. Its arguments are summarised through W2017 and the RTSA vignette. **Full text UNVERIFIED.** |
 | CSC2017 | Cochrane Scientific Committee. *Review of approaches to cumulative meta-analyses*, July 2017 | Full PDF. |
@@ -57,15 +57,17 @@ CTU §5 values:
 
 | CTU example | Inputs | Published | Reproduced |
 |---|---|---|---|
-| §5.2 smoking cessation (p.87-88) | P_C=14%, relative **increase** 20% (P_E=16.8%), α=5%, β=20%, no adjustment | 5218 | 5217.26 → 5217 |
-| §5.3.1 CABG AF (p.90-91) | P_C=27.6%, RRR 20%, α=1%, β=10%, D²=49% | 7150 | 7150.48 |
-| §5.3.1 CABG AF, low-bias RRR (p.91) | P_C=27.6%, RRR 36.9%, α=1%, β=10%, D²=49% | 1964 | 1962.43 (a D² of 49.04% gives 1964) |
-| §5.5 isoniazid (p.96) | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | 10,508 | 10,507.69 |
+| §5.2 smoking cessation (p.87-88) | P_C=14%, relative **increase** 20% (P_E=16.8%), α=5%, β=20%, no adjustment | 5218 | 5217.26 → 5218 |
+| §5.3.1 CABG AF (p.90-91) | P_C=27.6%, RRR 20%, α=1%, β=10%, D²=49% | 7150 | 7150.48 → 7151 |
+| §5.3.1 CABG AF, low-bias RRR (p.91) | P_C=27.6%, RRR 36.9%, α=1%, β=10%, D²=49% | 1964 | 1962.43 → 1963 (a D² of 49.04% gives 1964) |
+| §5.5 isoniazid (p.96) | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | 10,508 | 10,507.69 → 10,508 |
 | §5.4 CABG MI (p.95-96) | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | 5942 | **5971.5, rounded to 5972 in the CTU run-only probe.** RRR=1/3 gives 5841. The cause of the manual discrepancy remains unverified. |
 
-RCMetaR rounds participant RIS half up. This matches the printed CABG AF
-7150.48 → 7150 and the run-only CABG MI 5971.5 → 5972. The smoking cessation
-example differs by one participant on the printed inputs.
+RCMetaR rounds calculated participant RIS up and leaves HR information
+unrounded. The printed CABG AF inputs give 7150.48 and therefore 7151, one
+participant above the published 7150. The published inputs are rounded. The
+low-bias CABG AF result likewise depends on the unprinted precision of D²:
+49.04% displays as 49% and produces the published 1964.
 
 **How each effect measure is handled:**
 
@@ -498,10 +500,12 @@ RTSA's random-effects version uses the HKSJ SE with normal boundaries.
 Z*_j = Z_j / sqrt( λ · ln( ln(I_j) ) )
 ```
 
-- `I_j` is the **cumulative statistical information** at look j (CTU p.47: "see
-  section 2.2.1 under alternatives to accumulating number of patients"), i.e.
-  1/Var(pooled estimate). It is not the number of trials or participants.
-  Lan2003's own definition is **UNVERIFIED** (full text gated).
+- CTU defines I as cumulative statistical information. Lan 2003 §3.2
+  specifies sum of inverse within-study variances for the penalty, even
+  with a random-effects Z, and floors the **log-log term** at 1. RCMetaR
+  uses that rule with Hu's binary coefficients and uses inverse pooled
+  variance for fixed estimators. The floor applies for I ≤ exp(e),
+  including where ln ln I would be undefined.
 - Z* is compared with the **conventional single-test threshold**: "|Z*|≥1.96
   means statistical significance at two-sided α=5%" (CTU p.48). CTU shows
   penalised curves on a separate graph from α-spending boundaries, because
@@ -529,14 +533,12 @@ the very minimum", and higher values are probably needed for sparse
 meta-analyses. CSC2017 notes the LIL approach "does not require the
 pre-specification of the maximum information".
 
-**Unresolved by the sources (UNVERIFIED):**
-- ln ln I is undefined or non-positive for I ≤ e, and how CTU handles small I
-  is not stated.
-- For MD, I has units of 1/(outcome unit)², so Z* depends on the measurement
-  scale. This follows from the formula itself; no source discusses it.
-- Peto OR, HR and SMD have no λ in any source.
-
----
+**Run-only CTU check.** In TSA 0.9.5.10 Beta, opening the installed oxygen
+SSI sample with its random-effects DL settings and adding a two-sided 5%
+LIL test with λ = 2 gave an early penalised peak around 2.0 versus the
+unadjusted 2.9. The first trial's RR information is about 9.7, yielding a
+ratio near 0.71 with Lan's floor, versus about 0.78 without it. The graph
+does not establish CTU's precise later-look information calculation.
 
 ## 7. Random-effects models, the cumulative Z, and zero events
 
@@ -607,9 +609,9 @@ pre-specification of the maximum information".
 
 | ID | Inputs | Published output | Status |
 |---|---|---|---|
-| CTU-5.2 | P_C=14%, relative benefit increase 20%, α=5% two-sided, β=20%, no heterogeneity adjustment, information = patients | RIS = **5218** | 5217 on printed inputs (5217.26 before rounding) |
-| CTU-5.3a | P_C=27.6% (median control), RRR 20%, α=1%, β=10%, D²=49.0% | RIS = **7150** | Reproduced (7150.48) |
-| CTU-5.3b | Same, RRR 36.9% (low-bias pooled) | RIS = **1964** | 1962.4 with D²=0.490 (within 0.1%) |
+| CTU-5.2 | P_C=14%, relative benefit increase 20%, α=5% two-sided, β=20%, no heterogeneity adjustment, information = patients | RIS = **5218** | 5218 (5217.26 before rounding) |
+| CTU-5.3a | P_C=27.6% (median control), RRR 20%, α=1%, β=10%, D²=49.0% | RIS = **7150** | 7151 on rounded inputs (7150.48 before ceiling) |
+| CTU-5.3b | Same, RRR 36.9% (low-bias pooled) | RIS = **1964** | 1963 at D²=49%; 1964 at D²=49.04% |
 | CTU-5.4 | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | RIS = **5942** | **5972** in the run-only probe (5971.5 before rounding) |
 | CTU-5.5 | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | RIS = **10,508** | Reproduced (10,507.69) |
 | CTU-Table 3 | CABG atrial fibrillation; RIS 1964; 99% CIs (pooled RR / conventional / adjusted): 1999 1 trial, 55 events, 200 pts: 0.24 / 0.14-0.42 / 0.03-7.74; 2000 3, 74, 288: 0.39 / 0.15-0.99 / 0.02-7.18; 2001 5, 143, 649: 0.57 / 0.24-1.34 / 0.12-2.87; 2002 8, 204, 932: 0.52 / 0.30-0.90 / 0.22-1.21; 2003a 10, 285, 1168: 0.55 / 0.37-0.81 / 0.35-0.85; 2003b 13, 391, 1722: 0.53 / 0.35-0.79 / 0.34-0.83; 2004 19, 641, 2832: 0.61 / 0.46-0.82 / –; 2005 20, 679, 2999: 0.63 / 0.49-0.85 / –; 2006 25, 768, 3310: 0.67 / 0.53-0.86 / –; 2007 27, 775, 3372: 0.67 / 0.53-0.86 / – (CTU p.93) | Adjusted CIs | **Trial-level data not in the manual** (Møller 2008 *Eur Heart J* 29:2601). Usable only if the data are obtained. Also shows "–" after the RIS. |
@@ -759,7 +761,7 @@ ris_ctu <- function(pc, rrr, alpha, beta, AF = 1, increase = FALSE) {
   ps <- (pc + pe) / 2
   4 * (qnorm(1 - alpha/2) + qnorm(1 - beta))^2 * ps * (1 - ps) / (pc - pe)^2 * AF
 }
-ris_ctu(0.14, 0.20, 0.05, 0.20, increase = TRUE)   # 5217.26 -> 5217
+ris_ctu(0.14, 0.20, 0.05, 0.20, increase = TRUE)   # 5217.26 -> 5218
 ris_ctu(0.276, 0.20, 0.01, 0.10, 1/(1 - 0.49))     # 7150.48
 ris_ctu(0.05, 0.25, 0.05, 0.20, 1/(1 - 0.20))      # 10507.69
 t <- c(0.1, 0.25, 0.5, 0.75, 1)

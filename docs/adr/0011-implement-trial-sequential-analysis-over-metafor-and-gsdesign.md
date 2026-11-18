@@ -56,14 +56,18 @@ integration rather than the one-method `AnalysisRequest`.
   the fit are reported and excluded from accrual and the control-risk default.
 - The first monitoring crossing takes precedence over a non-binding futility
   crossing, followed by RIS reached or no crossing.
-- The futility wedge closes at exactly 100% information. The efficacy
-  boundary is held after the first RIS-reaching look for display.
+- The last design evaluation is exactly 100% information, after all
+  estimable looks below 100%. The futility wedge meets the monitoring boundary
+  there and is blank in the table at and above 100%. The monitoring boundary
+  is held at its terminal value from 100% onward.
 - One-sided tests use the full alpha in the RIS quantile. Futility is
   available only for two-sided tests.
-- Calculated participant RIS rounds half up. HR information stays continuous.
+- Calculated participant RIS rounds up. HR information stays continuous.
 - The penalised Z-curve is offered for binary measures only, with λ from
-  Hu 2007 by measure and one-sided α. It is not plotted where accrued
-  information is at most *e*.
+  Hu 2007 by measure and one-sided α. Following Lan 2003 §3.2, the
+  denominator is √(λ × max(1, ln ln I)) and random-effects fits use the
+  sum of within-study precisions for I. Fixed-effect fits use inverse
+  pooled variance. The CTU oxygen sample run supports the early floor.
 
 ## Consequences
 

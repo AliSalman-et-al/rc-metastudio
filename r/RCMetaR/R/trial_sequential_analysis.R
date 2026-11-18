@@ -245,31 +245,33 @@
   list(upper=upper, spent=spent)
 }
 
-.tsa.boundaries <- function(fraction, s) {
-  reached <- which(fraction >= 1)
-  final <- if (length(reached)) reached[1] else length(fraction)
-  timing <- fraction[seq_len(final)]
-  spending.time <- pmin(timing, 1)
+.tsa.boundary.path <- function(timing, s) {
   symmetric <- s$alternative == "two-sided"
   sides <- if (symmetric) 2 else 1
-  alpha <- .tsa.critical(timing, spending.time, s$alpha/sides, s$spending, symmetric)
-  expanded <- pmin(seq_along(fraction), final)
-  upper <- alpha$upper[expanded]
-  wedge <- rep(NA_real_, length(fraction))
-  futility.path <- NULL
+  alpha <- .tsa.critical(timing, timing, s$alpha/sides, s$spending, symmetric)
+  wedge <- rep(NA_real_, length(timing))
   if (s$futility) {
-    wedge.timing <- c(timing[timing < 1], 1)
-    beta <- .tsa.critical(wedge.timing, wedge.timing, 1-s$power, "obf", TRUE)$upper
-    terminal <- tail(.tsa.critical(wedge.timing, wedge.timing, s$alpha/2, s$spending, TRUE)$upper, 1)
-    drift <- terminal + tail(beta, 1)
-    futility.path <- data.frame(fraction=wedge.timing, z=drift*sqrt(wedge.timing) - beta)
-    wedge[seq_len(final)] <- head(futility.path$z, final)
-    wedge[wedge < 0] <- NA_real_
+    beta <- .tsa.critical(timing, timing, 1-s$power, "obf", TRUE)$upper
+    drift <- tail(alpha$upper, 1) + tail(beta, 1)
+    wedge <- drift*sqrt(timing) - beta
+    wedge[length(wedge)] <- tail(alpha$upper, 1)
   }
+  data.frame(fraction=timing, upper=alpha$upper, wedge=wedge, alpha.spent=sides*alpha$spent)
+}
+
+.tsa.boundaries <- function(fraction, s) {
+  interim <- fraction < 1
+  terminal <- sum(interim) + 1L
+  path <- .tsa.boundary.path(c(fraction[interim], 1), s)
+  expanded <- pmin(seq_along(fraction), terminal)
+  upper <- path$upper[expanded]
+  wedge <- path$wedge[expanded]
+  wedge[!interim | wedge < 0] <- NA_real_
   list(efficacy.upper=if (s$alternative == "lower") NA_real_ else upper,
     efficacy.lower=if (s$alternative == "upper") NA_real_ else -upper,
     futility.upper=wedge, futility.lower=-wedge,
-    alpha.spent=sides*alpha$spent[expanded], final=final, futility.path=futility.path)
+    alpha.spent=path$alpha.spent[expanded], final=min(terminal, length(fraction)),
+    futility.path=data.frame(fraction=path$fraction, z=path$wedge))
 }
 
 .tsa.conclusion <- function(looks, s, final) {
@@ -378,7 +380,7 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   delta <- if (hr) log(prepared$effect) else if (s$metric == "MD") prepared$effect else prepared$pe-prepared$pc
   ris.unadjusted <- if (hr) z2/delta^2 else 4*z2*prepared$variance/delta^2
   ris.adjusted <- ris.unadjusted*adjustment
-  ris <- s$manual.ris %||% if (hr) ris.adjusted else floor(ris.adjusted + .5)
+  ris <- s$manual.ris %||% if (hr) ris.adjusted else ceiling(ris.adjusted)
   list(d2=d2, i2=i2, tau2=tau2, adjustment=adjustment, ris=ris,
     ris.unadjusted=ris.unadjusted, ris.adjusted=ris.adjusted, accrued=tail(prepared$accrued, 1))
 }
@@ -405,6 +407,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   ris <- design$ris
   if (!is.finite(ris) || ris <= 0) stop("The required information size is not finite and positive.")
   fraction <- prepared$accrued/ris
+  fraction[abs(fraction - 1) <= .Machine$double.eps] <- 1
   if (any(!is.finite(fraction))) stop("Information fractions must be finite.")
 
   k <- length(prepared$accrued)
@@ -449,9 +452,12 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   looks$adjusted.lower[fraction >= 1] <- NA_real_
   looks$adjusted.upper[fraction >= 1] <- NA_real_
   if (s$lil) {
-    looks$lil.z <- NA_real_
-    available <- which(looks$statistical.information > exp(1))
-    looks$lil.z[available] <- looks$z[available]/sqrt(lambda*log(log(looks$statistical.information[available])))
+    # Lan et al. (2003), section 3.2: use within-study information for
+    # the penalty, even when the numerator is the random-effects Z.
+    information <- if (random) vapply(fits, function(fit) {
+      if (is.null(fit)) NA_real_ else sum(1/fit$vi)
+    }, numeric(1)) else looks$statistical.information
+    looks$lil.z <- looks$z/sqrt(lambda*log(log(pmax(information, exp(exp(1))))))
   }
   conclusion <- .tsa.conclusion(looks, s, final)
   summary <- c(design, list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
