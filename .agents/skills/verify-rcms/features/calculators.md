@@ -4,8 +4,8 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 
 ## Sub-features
 
-- `calculator-binary`: events/totals, comma-decimal input, valid accepted counts.
-- `calculator-continuous`: sample size, mean and standard deviation.
+- `calculator-binary` checks accepted integer event counts and totals.
+- `calculator-continuous` checks sample size, mean and standard deviation, including a mean entered with a decimal comma.
 - `calculator-diagnostic`: TP/FN/FP/TN inputs.
 - `calculator-rollback`: Cancel, undo/redo, dirty state and reopen.
 
@@ -71,7 +71,7 @@ before save or undo can refresh a stale display. Its held interval describes bot
 valid reconstructed count solutions. Subsequent Cancel, undo/redo and reopen
 continue to compare the accepted data and pooled analysis with their references.
 
-This does not prove RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS/PFT previews, or every invalid partial-input combination. Drive the affected alternative after changing it; do not infer its pass from OR/Hedges coverage.
+Use targeted drives for RR/RD back-calculation, candidate 2, unequal SD, Cohen reconstruction, PLN/PLO/PAS previews, and additional invalid partial inputs.
 
 Entered diagnostic acceptance must retain study inclusion. Require Sens enabled and the unavailable Spec/DOR/LR choices disabled after clearing counts and entering only Sens. Check the included count before acceptance and after reopen, then compare the mixed entered/raw pooled fit. An analyzable result that silently omits the edited study fails this contract. Finally accept Clear without replacement, undo, accept partial counts alongside the stored interval, and undo again: both unusable inputs must exclude the study, and both undos must restore the included entered-only data.
 
@@ -131,8 +131,8 @@ round-trip-safe text. Binary OR/RR/RD readouts fit their three rows and columns.
 The baseline acceptance fixtures and independent numerical comparisons remain
 unchanged. Historical offscreen screenshots remain in Git; current replay guidance is in `docs/testing.md`.
 
-- `calculator-binary` also checks that the OR/RR/RD readout's four visible
-  columns share width evenly (at most one pixel difference).
+- `calculator-binary` checks that each visible OR/RR/RD readout column fits its
+  header and data glyphs and that the table fits without a horizontal scrollbar.
 
 The baseline calculator scenario records the CI heading's text metrics and contents
 rectangle after computation, asserting width and height fit at the default application
