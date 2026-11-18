@@ -50,15 +50,16 @@ test_that("preview preserves year ties and states reasons without fabricating MD
   expect_equal(result$looks$estimate, c(-1, -2/3, -5/6))
 })
 
-test_that("published CTU participant RIS examples are reproduced at published precision", {
-  # The random examples use mirrored synthetic tables; their DL heterogeneity
-  # is approximately the published percentage (methods note §1.1).
+test_that("CTU participant RIS calculations use half-up rounding on the printed inputs", {
+  # Mirrored tables reproduce the printed DL heterogeneity to within .001 pp.
+  # The smoking, low-bias CABG AF, and CABG MI printed RIS differ from the
+  # half-up calculation on printed inputs (methods note §1.1).
   scenarios <- list(
-    list(a=4, c=5, n=30, alpha=.05, power=.8, pc=.14, rr=1.2, d2=0, ris=5218, tol=0),
-    list(a=1165, c=1213, n=100000, alpha=.01, power=.9, pc=.276, rr=.8, d2=.49, ris=7150, tol=1),
-    list(a=1115, c=1162, n=100000, alpha=.01, power=.9, pc=.276, rr=.631, d2=.4904, ris=1964, tol=1),
-    list(a=1487, c=1527, n=10000, alpha=.05, power=.8, pc=.05, rr=.75, d2=.20, ris=10508, tol=1),
-    list(a=26, c=39, n=1000, alpha=.05, power=.8, pc=.039, rr=.67, d2=0, ris=5972, tol=0))
+    list(a=4, c=5, n=30, alpha=.05, power=.8, pc=.14, rr=1.2, d2=0, ris=5217),
+    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.8, d2=.49, ris=7150),
+    list(a=1717, c=1775, n=99866, alpha=.01, power=.9, pc=.276, rr=.631, d2=.49, ris=1962),
+    list(a=1487, c=1527, n=10000, alpha=.05, power=.8, pc=.05, rr=.75, d2=.20, ris=10508),
+    list(a=26, c=39, n=1000, alpha=.05, power=.8, pc=.039, rr=.67, d2=0, ris=5972))
   for (x in scenarios) {
     data <- tsa.binary(c(x$a,x$c), c(x$c,x$a), rep(x$n, 2))
     model <- if (x$d2 == 0) "fixed-iv" else "random"
@@ -66,7 +67,7 @@ test_that("published CTU participant RIS examples are reproduced at published pr
       rm.method="DL", alpha=x$alpha, power=x$power,
       control.proportion=x$pc, anticipated.effect=x$rr))
     expect_lt(abs(result$summary$d2 - x$d2), .00001)
-    expect_lte(abs(result$summary$ris - x$ris), x$tol)
+    expect_equal(result$summary$ris, x$ris)
   }
 })
 
@@ -115,7 +116,7 @@ test_that("RD, OR and Peto convert the anticipated effect and fit on their own s
     control.proportion=.10, anticipated.effect=(.08/.92)/(.10/.90)))
   peto <- rcmetar.run.trial.sequential.analysis(data, tsa.request("OR", "peto",
     control.proportion=.10, anticipated.effect=(.08/.92)/(.10/.90)))
-  expect_equal(c(rd$summary$ris, odds$summary$ris, peto$summary$ris), rep(6429, 3))
+  expect_equal(c(rd$summary$ris, odds$summary$ris, peto$summary$ris), rep(6428, 3))
   expect_equal(rd$looks$estimate, c(-.06, -.06))
   expect_equal(odds$looks$estimate[1], (4*90)/(96*10))
   expect_equal(peto$looks$estimate[1], exp((4-7)/(14*186/(4*199))))
@@ -125,15 +126,18 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   data <- tsa.binary(rep(10, 5), rep(10, 5), rep(100, 5))
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=1000))
   a <- c(4.876885, 3.357011, 2.680280, 2.289817, 2.031032)
-  b <- c(NA, .203944, 1.004442, 1.574178, 2.031032)
+  b <- c(NA, .203516, 1.004008, 1.573865, 2.031032)
   expect_equal(result$looks$efficacy.upper, a, tolerance=2e-5)
   expect_equal(result$looks$efficacy.lower, -a, tolerance=2e-5)
-  expect_equal(result$looks$futility.upper, b, tolerance=2e-5)
+  # The independent RTSA getInnerWedge port uses a coarser integration grid.
+  expect_lt(max(abs(result$looks$futility.upper[-1] - b[-1])), .001)
+  expect_true(is.na(result$looks$futility.upper[1]))
   expect_identical(result$summary$conclusion, "crossed-futility")
   # At the first look RR = 1 and Var(log RR) = 2*(1/10 - 1/100).
   expect_equal(result$looks$adjusted.upper[1], exp(a[1]*sqrt(.18)), tolerance=2e-5)
   expect_equal(result$looks$ci.upper[1], 2.296858442325916)
-  expect_identical(attr(result$table, "rcms.table")$role, "cumulative")
+  expect_true(is.na(tail(result$looks$adjusted.upper, 1)))
+  expect_identical(attr(result$table, "rcms.table")$role, "trial_sequential")
   expect_true(any(attr(result$table, "rcms.numeric")$level == 95, na.rm=TRUE))
 })
 
@@ -144,12 +148,70 @@ test_that("overrun closes spending once, and tiny looks retain their cumulative 
   expect_equal(result$looks$fraction, c(.3, .7, 1.2, 1.4))
   expect_equal(result$looks$efficacy.upper, c(3.928573, 2.438742, 2.020316, 2.020316), tolerance=2e-5)
   expect_equal(result$looks$alpha.spent[3:4], c(.05, .05))
+  expect_true(all(is.na(result$looks$adjusted.upper[3:4])))
+  expect_true(all(is.finite(result$looks$ci.upper)))
   expect_identical(result$summary$conclusion, "ris-reached")
   tiny <- tsa.binary(c(1,10,12), c(2,10,12), c(25,1000,3000))
   result <- rcmetar.run.trial.sequential.analysis(tiny, tsa.request("RR", manual.ris=100000))
   expect_equal(result$looks$accrued, c(50, 2050, 8050))
   expect_equal(result$looks$z[1], log(.5)/sqrt(1+1/2-2/25))
-  expect_gt(result$looks$efficacy.upper[1], 90) # exact initial normal tail; no cutoff at 1%
+  expect_equal(result$looks$efficacy.upper[1], 100.2316627528812)
+})
+
+test_that("MH excludes dropped trials and spends no alpha on an unestimable prefix", {
+  data <- tsa.binary(c(0, 0, 3, 5), c(0, 3, 2, 4), c(100, 20, 20, 20))
+  result <- rcmetar.run.trial.sequential.analysis(data,
+    tsa.request("RR", "fixed-mh", manual.ris=200, futility=FALSE))
+  expect_match(paste(result$warnings, collapse=" "), "Excluded.*1")
+  expect_equal(result$summary$control.proportion, mean(c(3, 2, 4)/20))
+  expect_identical(result$looks$study, c("2", "3", "4"))
+  expect_equal(result$looks$accrued, c(40, 80, 120))
+  expect_true(is.na(result$looks$z[1]))
+  expect_true(is.na(result$looks$alpha.spent[1]))
+  spent <- 2*pnorm(qnorm(.0125)/sqrt(.4))
+  expect_equal(result$looks$efficacy.upper[2], qnorm(spent, lower.tail=FALSE))
+})
+
+test_that("futility closes at 100% even when the last monitored look overruns", {
+  data <- tsa.binary(rep(10, 4), rep(10, 4), c(100, 200, 300, 100))
+  result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=1000))
+  exact <- rcmetar.run.trial.sequential.analysis(
+    tsa.binary(rep(10, 3), rep(10, 3), c(100, 200, 200)), tsa.request("RR", manual.ris=1000))
+  expect_equal(result$looks$futility.upper[1:3], exact$looks$futility.upper)
+  expect_true(is.na(result$looks$futility.upper[4]))
+})
+
+test_that("a later harm crossing takes priority over non-binding futility", {
+  data <- tsa.binary(c(100, 100, 900), c(100, 100, 100), rep(1000, 3))
+  result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=8000))
+  expect_lte(abs(result$looks$z[2]), result$looks$futility.upper[2])
+  expect_identical(result$summary$conclusion, "crossed-harm")
+  expect_equal(result$summary$crossing.look, 3)
+})
+
+test_that("binary I-squared inflation uses the fitted Q and the unadjusted RIS", {
+  data <- tsa.binary(c(10, 70), c(30, 30), c(100, 100))
+  result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", "random",
+    rm.method="DL", heterogeneity="i2", anticipated.effect=.8))
+  vi <- 1/c(10, 70) + 1/30 - 2/100
+  q <- diff(log(c(10, 70)/30))^2/sum(vi)
+  unadjusted <- 4*(qnorm(.975)+qnorm(.8))^2*.27*.73/.06^2
+  expect_equal(result$summary$i2, 1-1/q)
+  expect_equal(result$summary$ris, floor(unadjusted*q+.5))
+})
+
+test_that("RR, OR and RD defaults use the nearest conventional 95% limit", {
+  data <- tsa.binary(c(30, 30), c(100, 100), c(200, 200))
+  z <- qnorm(.975)
+  expected <- c(
+    RR=exp(log(.3)+z*sqrt((1/30+1/100-2/200)/2)),
+    OR=exp(log(30/170)+z*sqrt((1/30+1/170+2/100)/2)),
+    RD=-.35+z*sqrt((.15*.85+.25)/400))
+  for (metric in names(expected)) {
+    preview <- rcmetar.preview.trial.sequential.analysis(data, tsa.request(metric, conf.level=90))
+    expect_equal(preview$defaults$anticipated.effect, unname(expected[metric]))
+    expect_identical(preview$defaults$anticipated.effect.source, "wetterslev-2017-nearest-95-ci")
+  }
 })
 
 test_that("the LIL uses pooled statistical information and a supported Hu coefficient", {
@@ -166,9 +228,15 @@ test_that("the LIL uses pooled statistical information and a supported Hu coeffi
 
 test_that("one-sided Pocock honours direction and defaults use a conventional 95% CI", {
   data <- tsa.hr(c(-.5,-.5), c(.1,.1))
+  rejected <- tsa.request("HR", alternative="lower")
+  expect_match(rcmetar.preview.trial.sequential.analysis(data, rejected)$reason, "only.*two-sided")
+  expect_error(rcmetar.run.trial.sequential.analysis(data, rejected), "only.*two-sided")
   preview <- rcmetar.preview.trial.sequential.analysis(data,
-    tsa.request("HR", alpha=.10, alternative="lower", spending="pocock"))
+    tsa.request("HR", alpha=.10, alternative="lower", spending="pocock", futility=FALSE))
   expect_equal(preview$defaults$anticipated.effect, exp(-.5 + qnorm(.975)*.1/sqrt(2)))
+  calculated <- rcmetar.run.trial.sequential.analysis(data, tsa.request("HR",
+    alpha=.10, alternative="lower", futility=FALSE, anticipated.effect=.8))
+  expect_equal(calculated$summary$ris, (qnorm(.9)+qnorm(.8))^2/log(.8)^2)
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("HR", alpha=.10,
     alternative="lower", spending="pocock", manual.ris=200, futility=FALSE))
   # First look spends .10 * log(1 + (e-1)/2) in the single monitored tail.

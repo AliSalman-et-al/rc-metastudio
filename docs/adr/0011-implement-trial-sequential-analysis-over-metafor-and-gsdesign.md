@@ -52,13 +52,15 @@ integration rather than the one-method `AnalysisRequest`.
   applied on the required side only. The unadjusted Schoenfeld-equivalent events
   are reported for interpretation, assuming equal allocation because HR inputs
   do not contain arm sizes.
-- Every cumulative step is a look, and its boundary is computed from its
-  information fraction. Once accrued information reaches the required
-  information size, all remaining alpha is spent and the boundary is held at
-  its final value. This is the standard group-sequential treatment of
-  overrunning. CTU TSA 0.9.5.10 Beta dropped a 0.84% interim look and ended its
-  boundaries at the required information size while continuing the Z-curve
-  in the [run-only CABG settings probe](../../r/RCMetaR/tests/testthat/fixtures/tsa/README.md).
+- Only estimable cumulative Z statistics spend alpha. Studies dropped from
+  the fit are reported and excluded from accrual and the control-risk default.
+- The first monitoring crossing takes precedence over a non-binding futility
+  crossing, followed by RIS reached or no crossing.
+- The futility wedge closes at exactly 100% information. The efficacy
+  boundary is held after the first RIS-reaching look for display.
+- One-sided tests use the full alpha in the RIS quantile. Futility is
+  available only for two-sided tests.
+- Calculated participant RIS rounds half up. HR information stays continuous.
 - The penalised Z-curve is offered for binary measures only, with λ from
   Hu 2007 by measure and one-sided α. It is not plotted where accrued
   information is at most *e*.

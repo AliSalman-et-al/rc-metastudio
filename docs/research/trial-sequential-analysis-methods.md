@@ -57,13 +57,15 @@ CTU §5 values:
 
 | CTU example | Inputs | Published | Reproduced |
 |---|---|---|---|
-| §5.2 smoking cessation (p.87-88) | P_C=14%, relative **increase** 20% (P_E=16.8%), α=5%, β=20%, no adjustment | 5218 | 5217.26 → 5218 (ceiling) |
+| §5.2 smoking cessation (p.87-88) | P_C=14%, relative **increase** 20% (P_E=16.8%), α=5%, β=20%, no adjustment | 5218 | 5217.26 → 5217 |
 | §5.3.1 CABG AF (p.90-91) | P_C=27.6%, RRR 20%, α=1%, β=10%, D²=49% | 7150 | 7150.48 |
 | §5.3.1 CABG AF, low-bias RRR (p.91) | P_C=27.6%, RRR 36.9%, α=1%, β=10%, D²=49% | 1964 | 1962.43 (a D² of 49.04% gives 1964) |
 | §5.5 isoniazid (p.96) | P_C=5%, RRR 25%, α=5%, β=20%, D²=20% | 10,508 | 10,507.69 |
 | §5.4 CABG MI (p.95-96) | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | 5942 | **5971.5, rounded to 5972 in the CTU run-only probe.** RRR=1/3 gives 5841. The cause of the manual discrepancy remains unverified. |
 
-CTU rounds the RIS **up** (5217.26 is reported as 5218).
+RCMetaR rounds participant RIS half up. This matches the printed CABG AF
+7150.48 → 7150 and the run-only CABG MI 5971.5 → 5972. The smoking cessation
+example differs by one participant on the printed inputs.
 
 **How each effect measure is handled:**
 
@@ -605,7 +607,7 @@ pre-specification of the maximum information".
 
 | ID | Inputs | Published output | Status |
 |---|---|---|---|
-| CTU-5.2 | P_C=14%, relative benefit increase 20%, α=5% two-sided, β=20%, no heterogeneity adjustment, information = patients | RIS = **5218** | Reproduced (5217.26, rounded up) |
+| CTU-5.2 | P_C=14%, relative benefit increase 20%, α=5% two-sided, β=20%, no heterogeneity adjustment, information = patients | RIS = **5218** | 5217 on printed inputs (5217.26 before rounding) |
 | CTU-5.3a | P_C=27.6% (median control), RRR 20%, α=1%, β=10%, D²=49.0% | RIS = **7150** | Reproduced (7150.48) |
 | CTU-5.3b | Same, RRR 36.9% (low-bias pooled) | RIS = **1964** | 1962.4 with D²=0.490 (within 0.1%) |
 | CTU-5.4 | P_C=3.9%, RRR 33%, α=5%, β=20%, I²=0 | RIS = **5942** | **5972** in the run-only probe (5971.5 before rounding) |
@@ -757,7 +759,7 @@ ris_ctu <- function(pc, rrr, alpha, beta, AF = 1, increase = FALSE) {
   ps <- (pc + pe) / 2
   4 * (qnorm(1 - alpha/2) + qnorm(1 - beta))^2 * ps * (1 - ps) / (pc - pe)^2 * AF
 }
-ris_ctu(0.14, 0.20, 0.05, 0.20, increase = TRUE)   # 5217.26 -> 5218
+ris_ctu(0.14, 0.20, 0.05, 0.20, increase = TRUE)   # 5217.26 -> 5217
 ris_ctu(0.276, 0.20, 0.01, 0.10, 1/(1 - 0.49))     # 7150.48
 ris_ctu(0.05, 0.25, 0.05, 0.20, 1/(1 - 0.20))      # 10507.69
 t <- c(0.1, 0.25, 0.5, 0.75, 1)

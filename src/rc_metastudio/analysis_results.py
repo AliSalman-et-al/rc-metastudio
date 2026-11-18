@@ -37,7 +37,7 @@ QuantityScale = Literal['display', 'log', 'logit', 'arcsine', 'freeman-tukey', '
 TableRole = Literal['pooled', 'coefficients', 'heterogeneity', 'residual_heterogeneity',
                     'overall_test', 'subgroup_test', 'model_fit', 'model_tests',
                     'model_specification', 'calculation', 'study_results',
-                    'cumulative', 'leave_one_out', 'prediction', 'supporting']
+                    'cumulative', 'leave_one_out', 'trial_sequential', 'prediction', 'supporting']
 
 
 @dataclass(frozen=True, slots=True)

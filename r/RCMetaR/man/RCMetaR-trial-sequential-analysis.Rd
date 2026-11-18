@@ -31,7 +31,7 @@ source identifiers. An eligible preview can require an anticipated effect
 Execution returns \code{version}, \code{summary}, \code{looks},
 \code{table}, \code{package.versions} and \code{warnings}. The summary
 contains the exact unadjusted and adjusted design RIS, the effective RIS
-(participant RIS rounds up; HR information is continuous), design inputs and
+(participant RIS rounds half up; HR information is continuous), design inputs and
 source identifiers, heterogeneity and model, the optional Schoenfeld events
 and allocation, and \code{conclusion} with \code{crossing.look} (one-based
 look position, missing if there was no crossing). Conclusion codes are
@@ -44,7 +44,7 @@ statistical information, efficacy and futility bounds, cumulative alpha
 spent, display-scale estimate and conventional and adjusted confidence
 limits. \code{lil.z} is present when requested. Missing bounds are
 \code{NA}, including the unmonitored side of a one-sided interval.
-\code{table} is the cumulative display array, with \code{rcms.table} and
+\code{table} is the trial sequential display array, with \code{rcms.table} and
 \code{rcms.numeric} metadata for exact numeric cells.
 }
 \description{
@@ -62,13 +62,15 @@ futility on, and LIL off. Lower estimates favour intervention by default.
 The binary and HR target is the conventional Wald 95 percent limit closest
 to the null or the 10 percent relative reduction fallback. The conventional
 interval level in the result uses the sheet setting. The RIS formula uses
-the two-sided design quantile, including when monitoring one side.
+the active test's tail probability. Futility is available only for two-sided tests.
 
 At the first RIS-reaching look the full alpha is spent. Later rows show the
-held threshold and its derived interval for reference. The conclusion
-records the first crossing through the final monitoring look. An
-unestimable prefix retains its accrued information and planned thresholds
-with a missing Z. Vanishing early spending is represented in log
+held efficacy threshold for reference. TSA-adjusted limits are missing at
+and after the RIS, and the futility wedge closes at the RIS. The conclusion
+prioritizes the first efficacy crossing over non-binding futility. An
+unestimable prefix retains its accrued information with a missing Z and
+does not spend alpha. Excluded studies contribute neither participants
+nor control proportions. Vanishing early spending is represented in log
 probability and the marginal quantile approximates the boundary below
 machine precision.
 

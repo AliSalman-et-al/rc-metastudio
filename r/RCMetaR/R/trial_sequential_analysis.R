@@ -76,13 +76,17 @@
   keep <- is.finite(effects$yi) & is.finite(effects$vi) & effects$vi > 0
   if (!any(keep)) return(NULL)
   method <- if (model == "random" && sum(keep) > 1L) s$rm.method else "FE"
-  metafor::rma.uni(yi=effects$yi[keep], vi=effects$vi[keep], method=method,
+  fit <- metafor::rma.uni(yi=effects$yi[keep], vi=effects$vi[keep], method=method,
     test="z", level=s$conf.level)
+  fit$not.na <- keep
+  fit
 }
 
 .tsa.prepare <- function(data, s) {
   no <- function(code, reason) list(version=1L, eligible=FALSE, ready=FALSE,
     reason.code=code, reason=reason)
+  if (s$futility && s$alternative != "two-sided")
+    return(no("one-sided-futility", "Futility boundaries are available only for two-sided tests."))
   binary <- is(data, "BinaryData") && s$metric %in% c("RR", "OR", "RD")
   md <- is(data, "ContinuousData") && s$metric == "MD"
   hr <- is(data, "RatioData") && identical(data@metric, "HR") && s$metric == "HR"
@@ -96,6 +100,8 @@
     return(no("missing-year", "Publication year is required for every included study in year order."))
   indices <- if (s$order == "year") order(data@years, seq_len(k)) else seq_len(k)
   data <- get.subset(data, indices)
+  studies <- data@study.names
+  keep <- rep(TRUE, k)
 
   if (binary) {
     counts <- .tsa.counts(data)
@@ -104,15 +110,17 @@
         any(counts$ai + counts$bi <= 0 | counts$ci + counts$di <= 0))
       return(no("missing-binary-counts", "TSA requires complete two-arm event counts and positive arm sizes."))
     control <- counts$ci + counts$di
-    accrued <- cumsum(counts$ai + counts$bi + control)
-    pc <- mean(counts$ci/control)
+    information <- counts$ai + counts$bi + control
+    if (s$model == "peto" || (s$model == "fixed-mh" && (s$drop00 %||% TRUE))) {
+      keep <- with(counts, !(ai == 0 & ci == 0 | bi == 0 & di == 0))
+    }
   } else if (md) {
     raw <- list(data@N1, data@N2, data@sd1, data@sd2, data@mean1, data@mean2)
     if (!all(lengths(raw) == k) || any(!is.finite(unlist(raw))) ||
         any(data@N1 < 2 | data@N2 < 2 | data@sd1 < 0 | data@sd2 < 0) ||
         any(data@N1 %% 1 != 0 | data@N2 %% 1 != 0))
       return(no("missing-continuous-arms", "MD TSA requires complete arm sizes, means and standard deviations."))
-    accrued <- cumsum(data@N1 + data@N2)
+    information <- data@N1 + data@N2
   } else {
     if (length(data@source)) {
       prepared <- tryCatch(ratio.prepare(data, s), error=identity)
@@ -123,8 +131,8 @@
         any(!is.finite(data@y) | !is.finite(data@SE) | data@SE <= 0) ||
         any(!is.finite(1/data@SE^2) | 1/data@SE^2 <= 0))
       return(no("invalid-hr", "HR TSA requires a finite log HR and positive log-scale SE per included study."))
-    accrued <- cumsum(1/data@SE^2)
-    if (any(!is.finite(accrued))) return(no("invalid-hr", "Accrued HR statistical information must be finite."))
+    information <- 1/data@SE^2
+    if (!is.finite(sum(information))) return(no("invalid-hr", "Accrued HR statistical information must be finite."))
   }
 
   warnings <- data@notes
@@ -132,15 +140,24 @@
     warnings <<- c(warnings, conditionMessage(w))
     invokeRestart("muffleWarning")
   })
-  fit <- tryCatch(fit_at(data), error=identity)
+  too.few <- function() no("too-few-estimable-studies",
+    "TSA requires at least two estimable study effects for the sheet model.")
+  if (sum(keep) < 2L) return(too.few())
+  fit <- tryCatch(fit_at(if (all(keep)) data else get.subset(data, which(keep))), error=identity)
   if (inherits(fit, "error")) return(no("model-fit-failed", conditionMessage(fit)))
-  if (is.null(fit) || fit$k < 2L)
-    return(no("too-few-estimable-studies", "TSA requires at least two estimable study effects for the sheet model."))
+  if (is.null(fit) || fit$k < 2L) return(too.few())
+  keep[keep] <- fit$not.na
+  excluded <- studies[!keep]
+  if (length(excluded)) {
+    warnings <- c(warnings, paste("Excluded from the TSA model:", paste(excluded, collapse=", ")))
+    data <- get.subset(data, which(keep))
+  }
+  accrued <- cumsum(information[keep])
   ratio <- !s$metric %in% c("RD", "MD")
   axis <- if (hr) "statistical-information" else "participants"
   defaults <- c(.tsa.defaults, list(anticipated.effect=NA_real_, anticipated.effect.source="required"))
   if (binary) {
-    defaults$control.proportion <- pc
+    defaults$control.proportion <- mean(counts$ci[keep]/control[keep])
     defaults$control.proportion.source <- "wetterslev-2017-unweighted-control-mean"
   }
   if (md) {
@@ -189,7 +206,7 @@
     reason.code=if (length(required)) "input-required" else "",
     reason=if (length(required)) paste("Enter", required) else "",
     required.inputs=required, metric=s$metric, model=s$model, axis=axis,
-    defaults=defaults, study.order=indices,
+    defaults=defaults, study.order=indices[keep], excluded.studies=excluded,
     setting.sources=setNames(ifelse(names(.tsa.defaults) %in% c("rm.method", "adjust", "conf.level"),
       "rcmetar-sheet-default", "tsa-policy"), names(.tsa.defaults)))
   list(preview=preview, data=data, fit=fit, accrued=accrued, axis=axis,
@@ -232,7 +249,6 @@
   reached <- which(fraction >= 1)
   final <- if (length(reached)) reached[1] else length(fraction)
   timing <- fraction[seq_len(final)]
-  if (tail(timing, 1) < 1 && s$futility) timing <- c(timing, 1)
   spending.time <- pmin(timing, 1)
   symmetric <- s$alternative == "two-sided"
   sides <- if (symmetric) 2 else 1
@@ -240,34 +256,35 @@
   expanded <- pmin(seq_along(fraction), final)
   upper <- alpha$upper[expanded]
   wedge <- rep(NA_real_, length(fraction))
+  terminal <- NA_real_
   if (s$futility) {
-    beta <- .tsa.critical(timing, spending.time, 1-s$power, "obf", TRUE)$upper
-    drift <- tail(alpha$upper + beta, 1)
-    wedge <- (drift*sqrt(spending.time) - beta)[expanded]
-    if (symmetric) wedge[wedge < 0] <- NA_real_
+    wedge.timing <- c(timing[timing < 1], 1)
+    beta <- .tsa.critical(wedge.timing, wedge.timing, 1-s$power, "obf", TRUE)$upper
+    terminal <- tail(.tsa.critical(wedge.timing, wedge.timing, s$alpha/2, s$spending, TRUE)$upper, 1)
+    drift <- terminal + tail(beta, 1)
+    wedge[seq_len(final)] <- head(drift*sqrt(wedge.timing) - beta, final)
+    wedge[wedge < 0] <- NA_real_
   }
   list(efficacy.upper=if (s$alternative == "lower") NA_real_ else upper,
     efficacy.lower=if (s$alternative == "upper") NA_real_ else -upper,
-    futility.upper=if (s$alternative == "upper") NA_real_ else if (symmetric) wedge else -wedge,
-    futility.lower=if (s$alternative == "lower") NA_real_ else if (symmetric) -wedge else wedge,
-    alpha.spent=sides*alpha$spent[expanded], final=final)
+    futility.upper=wedge, futility.lower=-wedge,
+    alpha.spent=sides*alpha$spent[expanded], final=final, futility.terminal=terminal)
 }
 
 .tsa.conclusion <- function(looks, s, final) {
   monitor <- looks[seq_len(final), , drop=FALSE]
   lower <- which(monitor$z <= monitor$efficacy.lower)
   upper <- which(monitor$z >= monitor$efficacy.upper)
-  futile <- switch(s$alternative, "two-sided"=which(monitor$z >= monitor$futility.lower &
-    monitor$z <= monitor$futility.upper), lower=which(monitor$z >= monitor$futility.upper),
-    upper=which(monitor$z <= monitor$futility.lower))
-  indices <- c(lower, upper, futile)
-  if (!length(indices))
-    return(list(category=if (any(monitor$fraction >= 1)) "ris-reached" else "none", look=NA_integer_))
-  categories <- c(rep(if (s$benefit.direction == "lower") "crossed-benefit" else "crossed-harm", length(lower)),
-    rep(if (s$benefit.direction == "upper") "crossed-benefit" else "crossed-harm", length(upper)),
-    rep("crossed-futility", length(futile)))
-  i <- which.min(indices)
-  list(category=categories[i], look=indices[i])
+  efficacy <- c(lower, upper)
+  if (length(efficacy)) {
+    first <- min(efficacy)
+    direction <- if (first %in% lower) "lower" else "upper"
+    return(list(category=if (direction == s$benefit.direction) "crossed-benefit" else "crossed-harm",
+      look=first))
+  }
+  futile <- which(monitor$z >= monitor$futility.lower & monitor$z <= monitor$futility.upper)
+  if (length(futile)) return(list(category="crossed-futility", look=futile[1]))
+  list(category=if (any(monitor$fraction >= 1)) "ris-reached" else "none", look=NA_integer_)
 }
 
 .tsa.display.table <- function(looks, s) {
@@ -288,7 +305,7 @@
     scale <- c(scale, "")
     level <- c(level, NA_real_)
   }
-  table <- rcmetar.table(table, "cumulative", list(measure=s$metric), inference="z")
+  table <- rcmetar.table(table, "trial_sequential", list(measure=s$metric), inference="z")
   rcmetar.numeric.fields(table, seq_along(roles)+1L, roles, values, scale, level)
 }
 
@@ -305,7 +322,7 @@
 #'   lower, upper), benefit.direction (lower or upper), futility and lil.
 #' @return Preview returns eligibility, readiness, reasons, defaults with
 #'   provenance, the information axis and included row order. Execution returns
-#'   version, summary, raw looks, a quantified cumulative table, package versions
+#'   version, summary, raw looks, a quantified per-look table, package versions
 #'   and warnings. See the methods note for formulas and reference comparisons.
 #' @rdname RCMetaR-trial-sequential-analysis
 #' @export
@@ -347,18 +364,16 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   i2 <- as.numeric(fit$I2)/100
   d2 <- if (random) max(0, 1 - sum(1/(fit$vi+tau2))/sum(1/fit$vi)) else 0
   adjustment <- if (!random) 1 else switch(s$heterogeneity, d2=1/(1-d2), i2=1/(1-i2), none=1)
-  z2 <- (qnorm(s$alpha/2, lower.tail=FALSE) + qnorm(s$power))^2
+  tail.alpha <- if (s$alternative == "two-sided") s$alpha/2 else s$alpha
+  z2 <- (qnorm(tail.alpha, lower.tail=FALSE) + qnorm(s$power))^2
   effect <- prepared$effect
   delta <- if (hr) log(effect) else if (s$metric == "MD") effect else prepared$pe-prepared$pc
   ris.unadjusted <- if (hr) z2/delta^2 else 4*z2*prepared$variance/delta^2
   ris.adjusted <- ris.unadjusted*adjustment
-  ris <- s$manual.ris %||% if (hr) ris.adjusted else ceiling(ris.adjusted)
+  ris <- s$manual.ris %||% if (hr) ris.adjusted else floor(ris.adjusted + .5)
   if (!is.finite(ris) || ris <= 0) stop("The required information size is not finite and positive.")
   fraction <- prepared$accrued/ris
   if (any(!is.finite(fraction))) stop("Information fractions must be finite.")
-  bounds <- .tsa.boundaries(fraction, s)
-  if (bounds$final < length(fraction))
-    warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
 
   k <- length(prepared$accrued)
   looks <- data.frame(study=data@study.names,
@@ -383,7 +398,15 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     warnings <- c(warnings, "Some interim looks have no estimable effect under the sheet model.")
   looks$z <- field("zval")
   looks$statistical.information <- 1/se^2
-  for (name in setdiff(names(bounds), "final")) looks[[name]] <- rep_len(bounds[[name]], k)
+  estimable <- which(is.finite(looks$z))
+  bounds <- .tsa.boundaries(fraction[estimable], s)
+  final <- estimable[bounds$final]
+  if (bounds$final < length(estimable))
+    warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
+  for (name in setdiff(names(bounds), c("final", "futility.terminal"))) {
+    looks[[name]] <- NA_real_
+    looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
+  }
   transform <- if (prepared$ratio) exp else identity
   looks$estimate <- transform(estimate)
   looks$ci.lower <- transform(field("ci.lb"))
@@ -391,12 +414,14 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   # A lower Z boundary tests a decrease and therefore gives an upper CI limit.
   looks$adjusted.lower <- transform(estimate - looks$efficacy.upper*se)
   looks$adjusted.upper <- transform(estimate - looks$efficacy.lower*se)
+  looks$adjusted.lower[fraction >= 1] <- NA_real_
+  looks$adjusted.upper[fraction >= 1] <- NA_real_
   if (s$lil) {
     looks$lil.z <- NA_real_
     available <- which(looks$statistical.information > exp(1))
     looks$lil.z[available] <- looks$z[available]/sqrt(lambda*log(log(looks$statistical.information[available])))
   }
-  conclusion <- .tsa.conclusion(looks, s, bounds$final)
+  conclusion <- .tsa.conclusion(looks, s, final)
   summary <- list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
     tau.method=if (random) s$rm.method else "",
     d2=d2, i2=i2, tau2=tau2, heterogeneity=s$heterogeneity, adjustment=adjustment,
@@ -414,7 +439,8 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     schoenfeld.allocation=if (hr) .5 else NA_real_,
     alpha=s$alpha, power=s$power, order=s$order, alternative=s$alternative,
     benefit.direction=s$benefit.direction, spending=s$spending, futility=s$futility,
-    conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=bounds$final,
+    conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=final,
+    excluded.studies=prepared$preview$excluded.studies, futility.terminal=bounds$futility.terminal,
     conclusion=conclusion$category, crossing.look=conclusion$look)
   list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
     package.versions=c(metafor=utils::packageDescription("metafor", fields="Version"),
