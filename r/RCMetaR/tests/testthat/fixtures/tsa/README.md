@@ -23,11 +23,13 @@ The oxygen sample used a user-supplied heterogeneity adjustment of .67 (67%,
 despite the report's percent label). The printed incidences give an unadjusted
 RIS of 3686.797 and 11172.111 with that factor. With the same incidences and its
 default fitted D² of .788590, RCMetaR reports 17440 (17439.05 before rounding).
-The pooled RR, conventional interval, two-sided P and reported heterogeneity
-agree at CTU's printed precision. The earlier graph points are not an exact
-per-look oracle. RCMetaR uses the fitted sheet model at every look, spends at
-every estimable fraction, and holds the final threshold for display after the
-first RIS-reaching look.
+The pooled RR, conventional interval and reported heterogeneity agree at
+CTU's printed precision. The two-sided P is .48221 in RCMetaR and .4824 in
+CTU. The exported report does not provide enough precision to isolate the
+source of that difference, and the earlier graph points are not an exact
+per-look oracle. RCMetaR uses the fitted sheet model at every look, spends
+at every estimable fraction, and holds the final threshold for display after
+the first RIS-reaching look.
 
 ## Manual capture checklist for the remaining comparisons
 
