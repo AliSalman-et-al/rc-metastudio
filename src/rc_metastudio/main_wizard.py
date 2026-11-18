@@ -227,7 +227,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
     def initializePage(self):
         pass
 
-    def isComplete(self):  # disable next/back buttons
+    def isComplete(self):
         return False
 
     def nextId(self):
@@ -1092,10 +1092,12 @@ class MainWizard(QWizard):
             return False
         if suffix == ".rm5":
             from xml.etree.ElementTree import ParseError
-            from rc_metastudio.rm5_import import review_rm5
+            from rc_metastudio.rm5_import import read_rm5
+            from rc_metastudio.rm5_review_dialog import review_rm5
 
             try:
-                dataset = review_rm5(path, self)
+                result = read_rm5(path)
+                dataset = result.dataset if review_rm5(result, self) else None
             except (ValueError, KeyError, OSError, ParseError) as error:
                 QMessageBox.warning(self, "Could not import review", str(error))
                 return False

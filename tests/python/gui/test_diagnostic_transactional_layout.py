@@ -149,7 +149,7 @@ def _open_metrics_dialog(monkeypatch, model):
         "available_geometry_for_window",
         lambda _window: QtCore.QRect(AVAILABLE),
     )
-    dialog = diagnostic_metrics_dialog.DiagnosticMetricsDialog(model)
+    dialog = diagnostic_metrics_dialog.DiagnosticMetricsDialog(model, lambda _metrics: True)
     return app, dialog
 
 
@@ -366,71 +366,6 @@ def test_large_font_count_overflow_and_focus_stay_inside_content(monkeypatch):
         app.setFont(old_font)
         dialog.close()
         app.processEvents()
-
-
-@pytest.mark.parametrize("initially_blocked", [False, True])
-def test_diagnostic_set_val_restores_table_signal_state(initially_blocked):
-    from rc_metastudio import diagnostic_data_dialog
-
-    app = cast(
-        QtWidgets.QApplication,
-        required(
-            QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
-            "application",
-        ),
-    )
-    table = QtWidgets.QTableWidget(1, 1)
-
-    class StubDialog:
-        two_by_two_table = table
-
-        @staticmethod
-        def _raw_count_cell_is_editable(_row, _col):
-            return True
-
-    table.blockSignals(initially_blocked)
-    diagnostic_data_dialog.DiagnosticDataDialog._set_val(
-        cast(diagnostic_data_dialog.DiagnosticDataDialog, StubDialog()), 0, 0, 3
-    )
-
-    assert table.signalsBlocked() is initially_blocked
-    table.deleteLater()
-    app.processEvents()
-
-
-def test_diagnostic_set_val_restores_blocked_state_when_item_update_fails(monkeypatch):
-    from rc_metastudio import diagnostic_data_dialog
-
-    app = cast(
-        QtWidgets.QApplication,
-        required(
-            QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
-            "application",
-        ),
-    )
-    table = QtWidgets.QTableWidget(1, 1)
-    table.setItem(0, 0, QtWidgets.QTableWidgetItem("old"))
-
-    class StubDialog:
-        two_by_two_table = table
-
-        @staticmethod
-        def _raw_count_cell_is_editable(_row, _col):
-            return True
-
-    def fail(*_args, **_kwargs):
-        raise RuntimeError("injected item update failure")
-
-    monkeypatch.setattr(diagnostic_data_dialog, "required", fail)
-    table.blockSignals(True)
-    with pytest.raises(RuntimeError, match="injected item update failure"):
-        diagnostic_data_dialog.DiagnosticDataDialog._set_val(
-            cast(diagnostic_data_dialog.DiagnosticDataDialog, StubDialog()), 0, 0, 3
-        )
-
-    assert table.signalsBlocked()
-    table.deleteLater()
-    app.processEvents()
 
 
 def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):

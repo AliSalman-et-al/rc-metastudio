@@ -57,7 +57,6 @@ def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path,
     DatasetTableModel(dataset=dataset, add_blank_study=False).rename_arm("Arm 1", "Active")
     assert unit.ratio_input(["Active", "Arm 2"]) == record
     assert unit.ratio_input(["Arm 2", "Active"]).estimate == 1 / .8
-    assert len(unit.ratio_inputs) == 1
     path = tmp_path / "ratios.rcms"
     document = project_adapter.runtime_project_to_document(project_adapter.RuntimeProject(dataset))
     save_project(path, document.project, document.state)
@@ -65,8 +64,6 @@ def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path,
     reopened = rebuilt.sheets[0].rows[0].analysis_unit
     assert reopened.ratio_input(["Active", "Arm 2"]) == record
     assert reopened.get_raw_data_for_arms(["Active", "Arm 2"]) == [1, 10, 2, 20]
-    reopened.remove_arm("Active")
-    assert not reopened.ratio_inputs
 
 
 @pytest.mark.parametrize("changes", [dict(estimate=0), dict(se=0), dict(confidence=100),

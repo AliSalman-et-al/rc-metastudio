@@ -77,9 +77,6 @@ class ChoiceControlController(QObject):
         self._measurement_dirty = False
         self._measurement_pending = False
         self._clamp_pending = False
-        self.measurement_applied_count = 0
-        self.tooltip_scan_applied_count = 0
-        self.popup_clamp_applied_count = 0
         if not isinstance(combo.view(), ChoiceListView):
             combo.setView(ChoiceListView(combo))
         combo.view().choice_controller = self
@@ -132,7 +129,6 @@ class ChoiceControlController(QObject):
 
     def _refresh_measurements(self):
         self._measurement_dirty = False
-        self.measurement_applied_count += 1
         combo = self.combo
         # layout-audit: allow=content-overflow-control; reason=required choice content may consume available layout width
         combo.setMaximumWidth(QWIDGETSIZE_MAX)
@@ -208,7 +204,6 @@ class ChoiceControlController(QObject):
         return max(display_width, text_width + chrome)
 
     def _install_complete_value_tooltips(self):
-        self.tooltip_scan_applied_count += 1
         model = self.combo.model()
         root = self.combo.rootModelIndex()
         column = self.combo.modelColumn()
@@ -291,7 +286,6 @@ class ChoiceControlController(QObject):
         available = available_geometry_for_choice_control(self.combo)
         if not available.isValid():
             return
-        self.popup_clamp_applied_count += 1
         frame = popup.frameGeometry()
         width = min(frame.width(), available.width())
         height = min(frame.height(), available.height())

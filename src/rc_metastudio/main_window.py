@@ -7,7 +7,7 @@ from rc_metastudio.domain_ids import ArmId, SheetId
 
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
@@ -47,6 +47,7 @@ from rc_metastudio import name_validation
 from rc_metastudio import project_adapter
 from rc_metastudio import project_format
 from rc_metastudio import csv_import
+from rc_metastudio import row_padding
 from rc_metastudio.settings import (
     add_file_to_recent_files,
     get_default_open_directory,
@@ -134,6 +135,18 @@ def _connect_action(action, callback):
     action.triggered[bool].connect(
         app_error_handler.safe_slot(lambda checked=False: callback(), parent=parent)
     )
+
+
+def _pooled_analysis_availability(
+    label: str, minimum: int, included: int, r_ready: bool,
+) -> tuple[bool, str]:
+    if r_ready and included >= minimum:
+        return True, label
+    if not r_ready and included:
+        return False, "R is not ready"
+    if not included:
+        return False, "requires at least 1 included study"
+    return False, f"requires at least {minimum} included studies"
 
 
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
@@ -366,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace = WorkspaceSession()
         data_model = analysis_dataset.Dataset(title=DEFAULT_DATASET_NAME)
         self.model = dataset_table_model.DatasetTableModel(dataset=data_model)
-        self.workspace.update_live_state(project_adapter.RuntimeProject(data_model, self.model.current_sheet_id))
+        self.workspace.record_edit(data_model, self.model.current_sheet_id)
 
         self.tableView.setModel(self.model)
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
@@ -376,20 +389,29 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._configure_standard_shortcuts()
         self.tableView.setSelectionMode(QTableView.SelectionMode.ContiguousSelection)
         self.model.reset_model()
-        # The table view delegates window-owned actions through this reference.
-        self.tableView.main_gui = cast(dataset_table_view.MainWindowProtocol, self)
+        self.tableView.edit_transaction = self._commit_model_operation
+        for request, command in (
+            (self.tableView.studyDeletionRequested, self.delete_study),
+            (self.tableView.armRenameRequested, self.edit_arm_name),
+            (self.tableView.covariateRenameRequested, self.rename_covariate),
+            (self.tableView.covariateDeletionRequested, self.delete_covariate),
+            (self.tableView.covariateConversionRequested, self.change_covariate_type),
+            (self.tableView.undoRequested, self.undo),
+            (self.tableView.redoRequested, self.redo),
+            (self.tableView.pasteNotice, self._show_paste_notice),
+            (self.tableView.clipboardError, self.data_error),
+        ):
+            request.connect(app_error_handler.safe_slot(command, parent=self))
         self.tableView.synchronize_column_widths()
 
         self._metric_actions: QtGui.QActionGroup | None = None
-
-        self.action_meta_regression.setEnabled(False)
-        self.action_publication_bias.setEnabled(False)
 
         migrate_application_settings()
         self.populate_open_recent_menu()
         self.workspace.mark_saved()
         self._update_project_identity()
-        self.disable_menu_options_that_require_dataset()
+        self.refresh_analysis_actions()
+        self._update_workspace_guidance()
 
     def createPopupMenu(self):
         return None
@@ -489,25 +511,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if state:
             self.statusbar.showMessage(state, 4000)
 
-    def toggle_menu_options_that_require_dataset(self, enable):
-        enable = enable and r_runtime.is_ready()
-        self.action_go.setEnabled(enable)
-        self.action_cum_ma.setEnabled(enable)
-        self.action_loo_ma.setEnabled(enable and len(self.model.get_studies()) >= 2)
-        self._enable_action_meta_regression(enable)
-        self._enable_action_subgroup_ma(enable)
-        self.action_publication_bias.setEnabled(enable)
-        blocked = "requires at least 1 included study" if not self.model.get_studies() else "R is not ready"
-        for action, label in ((self.action_go, "Meta-analysis"), (self.action_cum_ma, "Cumulative meta-analysis"),
-                              (self.action_loo_ma, "Leave-one-out meta-analysis")):
-            reason = label if action.isEnabled() else ("requires at least 2 included studies" if enable else blocked)
-            if action is self.action_go:
-                reason += " (Ctrl+R)"
-            action.setToolTip(reason)
-        self._update_workspace_guidance()
+    def refresh_analysis_actions(self) -> None:
+        included = sum(not study.manually_excluded for study in self.model.get_studies())
+        r_ready = r_runtime.is_ready()
+        can_analyze = r_ready and included > 0
+        sheet = self.model.current_sheet
+        covariates = sheet.covariates if sheet else ()
+        has_factor = any(covariate["data_type"] == analysis_catalog.FACTOR for covariate in covariates)
+        self.action_publication_bias.setEnabled(can_analyze)
+        self.action_meta_regression.setEnabled(can_analyze and bool(covariates))
+        self.action_subgroup_ma.setEnabled(can_analyze and has_factor)
+
+        for action, label, minimum, shortcut in (
+            (self.action_go, "Meta-analysis", 1, " (Ctrl+R)"),
+            (self.action_cum_ma, "Cumulative meta-analysis", 1, ""),
+            (self.action_loo_ma, "Leave-one-out meta-analysis", 2, ""),
+        ):
+            enabled, tooltip = _pooled_analysis_availability(label, minimum, included, r_ready)
+            action.setEnabled(enabled)
+            action.setToolTip(tooltip + shortcut)
+        self.action_meta_regression.setToolTip(
+            "Meta-regression" if covariates else "Add a covariate to run meta-regression."
+        )
+        self.action_subgroup_ma.setToolTip(
+            "Subgroup meta-analysis" if has_factor else "Add a categorical covariate to run subgroup analysis."
+        )
 
     def _update_workspace_guidance(self):
-        enable = hasattr(self, "model") and self.model.current_outcome_name is not None
+        enable = self.model.current_sheet is not None
         self.action_save.setEnabled(enable)
         self.action_save_as.setEnabled(enable)
         self.action_save.setToolTip("Save project (Ctrl+S)" if enable else "Create or open a project to save it")
@@ -519,50 +550,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         for action in self.outcome_navigation_actions:
             action.setEnabled(enable and self.sheet_tabs.count() > 1)
 
-    def _enable_action_meta_regression(self, dataset_analysis_enabled=None):
-        """Enables action_meta_regression if analysis can run and covariates exist."""
-        if dataset_analysis_enabled is None:
-            dataset_analysis_enabled = self.action_go.isEnabled()
-        has_covariates = bool(self.model and (self.model.current_sheet.covariates if self.model.current_sheet else []))
-        self.action_meta_regression.setEnabled(
-            r_runtime.is_ready() and dataset_analysis_enabled and has_covariates
-        )
-        self.action_meta_regression.setToolTip("Meta-regression" if has_covariates else "Add a covariate to run meta-regression.")
-
-    def _enable_action_subgroup_ma(self, dataset_analysis_enabled=None):
-        """Enables action_subgroup_ma if there are suitable covariate(s)
-        i.e. of type Factor
-        """
-        if dataset_analysis_enabled is None:
-            dataset_analysis_enabled = self.action_go.isEnabled()
-        has_factor_covariates = bool(
-            self.model
-            and any(
-                cov['data_type'] == analysis_catalog.FACTOR
-                for cov in (self.model.current_sheet.covariates if self.model.current_sheet else [])
-            )
-        )
-        self.action_subgroup_ma.setEnabled(
-            r_runtime.is_ready() and dataset_analysis_enabled and has_factor_covariates
-        )
-        self.action_subgroup_ma.setToolTip("Subgroup meta-analysis" if has_factor_covariates else "Add a categorical covariate to run subgroup analysis.")
-
-    def disable_menu_options_that_require_dataset(self):
-        self.toggle_menu_options_that_require_dataset(False)
-
-    def enable_menu_options_that_require_dataset(self):
-        self.toggle_menu_options_that_require_dataset(True)
-
-    def keyPressEvent(
-        self, event: QKeyEvent | None
-    ) -> None:
-        if event is None:
-            return
-        if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
-            if event.key() == QtCore.Qt.Key.Key_S and self.action_save.isEnabled():
-                self.save()
-            elif event.key() == QtCore.Qt.Key.Key_O:
-                self.open()
+    def _show_paste_notice(self, message: str) -> None:
+        self.statusbar.showMessage(message, 8000)
 
     def _disconnect_model_signals(self):
         """Disconnect signals owned by the current dataset model."""
@@ -664,9 +653,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_open, self.open)
             _connect_action(self.action_new_dataset, self.create_new_dataset)
             _connect_action(self.action_quit, self.quit)
-            _connect_action(self.action_go, self.go)
-            _connect_action(self.action_cum_ma, self.cum_ma)
-            _connect_action(self.action_loo_ma, self.loo_ma)
+            _connect_action(self.action_go, self._launch_analysis)
+            _connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
+            _connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
 
             _connect_action(self.action_undo, self.undo)
             _connect_action(self.action_redo, self.redo)
@@ -678,9 +667,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             _connect_action(self.action_add_covariate, self.add_covariate)
 
-            _connect_action(self.action_meta_regression, self.meta_reg)
+            _connect_action(self.action_meta_regression, lambda: self._launch_analysis("meta-regression"))
             _connect_action(self.action_publication_bias, self.small_study_effects)
-            _connect_action(self.action_subgroup_ma, self.meta_subgroup_get_cov)
+            _connect_action(self.action_subgroup_ma, self._choose_subgroup_covariate)
 
             _connect_action(self.action_about_legal, self.show_about_legal)
             _connect_action(self.action_change_confidence_level, self._change_global_ci)
@@ -691,52 +680,56 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.setText(f"{confidence_level:g}% CI…")
         self.confidence_button.setAccessibleName(f"Sheet confidence level, {confidence_level:g}%")
 
-    def go(self):
-        form = None
-        if self.model.get_current_data_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                confidence_level=self.model.get_confidence_level()
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, parent=self
-            )
-        if form is None:
-            return
-        form.show()
+    def _launch_analysis(
+        self, analysis_type: analysis_adapter.AnalysisWorkflow | None = None,
+        *, covariate: str | None = None,
+    ) -> None:
+        external_params = {"cov_name": covariate} if covariate is not None else None
 
-    def meta_reg(self):
-        kwargs = {
-            "analysis_type": "meta-regression",
-            "confidence_level": self.model.get_confidence_level(),
-        }
-        if self.model.get_current_data_type() == "diagnostic":
-            # Reitsma meta-regression is a single joint sensitivity/
-            # specificity model. Keep that intent explicit at the UI seam.
-            kwargs["diagnostic_metrics"] = ["sens", "spec"]
-        form = self._build_analysis_specs_dialog(**kwargs)
-        if form is None:
-            return
-        form.show()
+        def open_settings(diagnostic_metrics: list[str] | None = None) -> bool:
+            form = self._build_analysis_specs_dialog(
+                analysis_type=analysis_type,
+                external_params=external_params,
+                diagnostic_metrics=diagnostic_metrics,
+                confidence_level=self.model.get_confidence_level(),
+            )
+            if form is None:
+                return False
+            form.show()
+            return True
+
+        if not self.model.is_diagnostic():
+            open_settings()
+        elif analysis_type == "meta-regression":
+            open_settings(["sens", "spec"])
+        else:
+            diagnostic_metrics_dialog.DiagnosticMetricsDialog(
+                self.model, open_settings, parent=self
+            ).show()
+
+    def _choose_subgroup_covariate(self) -> None:
+        subgroup_analysis_dialog.SubgroupAnalysisDialog(
+            self.model,
+            lambda covariate: self._launch_analysis("subgroup", covariate=covariate),
+            parent=self,
+        ).show()
 
     def small_study_effects(self):
         form = small_study_effects_dialog.SmallStudyEffectsDialog(
             self.model,
             parent=self,
             analysis_service=self.small_study_effects_service,
+            on_result=self.analysis,
         )
         form.exec()
 
     def data_dirtied(self):
-        self.workspace.update_live_state(project_adapter.RuntimeProject(
-            dataset=self.model.dataset, current_sheet_id=self.model.current_sheet_id,
-        ))
-        self.workspace.checkpoint()
+        self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
         self._update_project_identity()
 
     def _workspace_edit_committed(self):
         self.data_dirtied()
-        self.tableView._enable_analysis_menus_if_appropriate()
+        self.refresh_analysis_actions()
 
     def _commit_model_operation(self, operation):
         """Run one already validated UI operation as one workspace change."""
@@ -754,67 +747,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             except Exception as restore_error:
                 error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
             raise
-
-    def meta_subgroup_get_cov(self):
-        form = subgroup_analysis_dialog.SubgroupAnalysisDialog(self.model, parent=self)
-        form.show()
-
-    def cum_ma(self):
-        form = None
-        if self.model.get_current_data_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="cumulative",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="cumulative", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
-
-    def loo_ma(self):
-        form = None
-        if self.model.get_current_data_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="leave-one-out",
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model, analysis_type="leave-one-out", parent=self
-            )
-
-        if form is None:
-            return
-        form.show()
+        self.refresh_analysis_actions()
 
     def show_about_legal(self):
         from rc_metastudio import r_bridge
         r_version = r_bridge.get_r_version_string() if r_runtime.is_ready() else None
         return about_legal_dialog.AboutLegalDialog(self, r_version=r_version).exec()
-
-    def meta_subgroup(self, selected_covariate):
-        form = None
-        if self.model.get_current_data_type() != "diagnostic":
-            form = self._build_analysis_specs_dialog(
-                analysis_type="subgroup",
-                external_params={"cov_name": selected_covariate},
-                confidence_level=self.model.get_confidence_level(),
-            )
-        else:
-            form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
-                self.model,
-                analysis_type="subgroup",
-                parent=self,
-                external_params={"cov_name": selected_covariate},
-            )
-
-        if form is None:
-            return
-        form.show()
 
     def _build_analysis_specs_dialog(
         self,
@@ -824,17 +762,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         confidence_level=None,
     ):
         try:
-            kwargs = {
-                "analysis_type": analysis_type,
-                "parent": self,
-                "confidence_level": confidence_level,
-            }
-            if external_params is not None:
-                kwargs["external_params"] = external_params
-            if diagnostic_metrics is not None:
-                kwargs["diagnostic_metrics"] = diagnostic_metrics
             return analysis_setup_dialog.AnalysisSetupDialog(
-                self.model, analysis_service=self.analysis_service, **kwargs
+                self.model, parent=self, analysis_type=analysis_type,
+                external_params=external_params, diagnostic_metrics=diagnostic_metrics,
+                confidence_level=confidence_level, analysis_service=self.analysis_service,
+                on_result=self.analysis,
             )
         except Exception as e:
             self._show_analysis_specs_error(e)
@@ -880,7 +812,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self._install_workspace_runtime(runtime)
 
     def _install_workspace_runtime(self, runtime):
-        target_digest = self.workspace.runtime_digest
         current = self.tableView.currentIndex()
         position = (current.row(), current.column()) if current.isValid() else None
         self._set_model_adapter(
@@ -888,8 +819,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             runtime.current_sheet_id,
             recalculate_effect_previews=False,
         )
-        self.workspace.update_live_state(runtime)
-        self.workspace.checkpoint(expected_digest=target_digest)
         self._update_project_identity()
         if position is not None:
             self.tableView.setCurrentIndex(self.model.index(*position))
@@ -939,11 +868,26 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
         self._commit_model_operation(apply_metric)
         self.tableView.synchronize_column_widths()
-        self.toggle_menu_options_that_require_dataset(self.action_go.isEnabled())
 
-    def analysis(self, results: AnalysisResult, *, change_settings=None, manuscript: ManuscriptReport | None = None):
+    def analysis(
+        self, result: AnalysisResult, *,
+        source_sheet: analysis_dataset.Sheet | None = None,
+        change_settings=None, manuscript: ManuscriptReport | None = None,
+    ) -> None:
+        sheet = source_sheet or self.model.current_sheet
+
+        def save_favours_labels(left: str, right: str) -> None:
+            # Opening a project or restoring history replaces the live sheets.
+            if sheet is not None and any(candidate is sheet for candidate in self.model.dataset.sheets):
+                sheet.settings["favours_labels"] = [left, right]
+                self.data_dirtied()
+
         try:
-            form = results_window.ResultsWindow(results, parent=self, change_settings=change_settings, manuscript=manuscript)
+            form = results_window.ResultsWindow(
+                result, parent=self, change_settings=change_settings, manuscript=manuscript,
+                source_sheet_name=sheet.name if sheet else None,
+                save_favours_labels=save_favours_labels if sheet else None,
+            )
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)
             QMessageBox.critical(
@@ -998,7 +942,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             covariate_name, covariate_type, stable_id=stable_id
         )
         self.tableView.synchronize_column_widths()
-        self._refresh_advanced_analysis_actions()
         return covariate
 
 
@@ -1083,7 +1026,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 QtCore.QItemSelectionModel.SelectionFlag.NoUpdate,
             )
 
-    def delete_study(self, study, study_index=None):
+    def delete_study(self, study):
         self._commit_model_operation(lambda: self._remove_study(study))
 
     def change_covariate_type(self, covariate):
@@ -1101,13 +1044,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def rename_covariate(self, covariate):
         orig_cov_name = copy.copy(covariate['name'])
-        # The group-name editor is also used for covariate labels.
         covariate_name_dialog = edit_name_dialogs.EditCovariateNameDialog(
             orig_cov_name, parent=self
         )
         if covariate_name_dialog.exec():
-            # the field names are also poorly named, in this case. here we mean the
-            # **covariate name**, of course.
             try:
                 existing_covariates = list(self.model.get_covariate_names())
                 if orig_cov_name in existing_covariates:
@@ -1128,11 +1068,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         # the next atomic workspace change.
         self.data_dirtied()
         self._commit_model_operation(lambda: self.model.remove_covariate(covariate))
-        self._refresh_advanced_analysis_actions()
-
-    def _refresh_advanced_analysis_actions(self):
-        self._enable_action_meta_regression()
-        self._enable_action_subgroup_ma()
 
     def _remove_study(self, study):
         self.model.current_sheet.rows.remove(study)
@@ -1177,7 +1112,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.populate_metrics_menu(metric_to_check=self.model.current_effect)
         self._update_confidence_level_label()
         self._refresh_sheet_tabs()
-        self.tableView._enable_analysis_menus_if_appropriate()
+        self._update_workspace_guidance()
+        self.refresh_analysis_actions()
 
     def _update_swap_arms_enabled(self):
         sheet = self.model.current_sheet
@@ -1351,7 +1287,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             raise
         self.workspace.select_sheet(sheet_id)
         self._refresh_projected_sheet_controls()
-        self._update_workspace_guidance()
 
     def _sheet_change(self, sheet_id, operation):
         if sheet_id != self.model.current_sheet_id:
@@ -1570,7 +1505,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         candidate = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
         for name, data_type in zip(csv_data["covariate_names"], csv_data["covariate_types"], strict=True):
             candidate.add_covariate(name, data_type)
-        rows = csv_import.normalize_import_rows(csv_data["data"])
+        rows = row_padding.normalize_rows(csv_data["data"])
         progress = ImportProgressDialog(self, len(rows))
         try:
             progress.progress_bar.setValue(0)

@@ -1,4 +1,6 @@
 """Manuscript content taken exclusively from an executed result."""
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Protocol
 from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
 import re
@@ -16,6 +18,18 @@ from docx import Document
 from docx.shared import Mm, RGBColor, Pt
 from docx.oxml.ns import qn
 from rc_metastudio import __version__
+
+if TYPE_CHECKING:
+    from rc_metastudio.analysis_dataset import Sheet
+    from rc_metastudio.analysis_results import AnalysisResult
+
+
+class AnalysisResultHandler(Protocol):
+    def __call__(
+        self, result: "AnalysisResult", /, *, source_sheet: "Sheet | None" = None,
+        change_settings: Callable[[dict[str, object]], None] | None = None,
+        manuscript: "ManuscriptReport | None" = None,
+    ) -> None: ...
 
 
 _PACKAGE_REFERENCES = {

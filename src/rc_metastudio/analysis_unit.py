@@ -7,22 +7,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 import copy
 from collections.abc import Iterable
-from typing import Literal, NewType
+from typing import Literal
 from rc_metastudio.domain_ids import ArmId
 import uuid
 
 from rc_metastudio import analysis_catalog, analysis_validation
 from rc_metastudio.ratio_data import RatioInput
 
-BINARY = analysis_catalog.BINARY
-CONTINUOUS = analysis_catalog.CONTINUOUS
 DIAGNOSTIC = analysis_catalog.DIAGNOSTIC
-StableIdentity = NewType("StableIdentity", str)
-EffectSource = Literal["entered", "derived_preview", "analysis"]
-
-
-def _new_identity() -> StableIdentity:
-    return StableIdentity(uuid.uuid4().hex)
+EffectSource = Literal["entered", "derived_preview"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,15 +31,14 @@ class EffectEstimate:
 class AnalysisUnit:
     """Store one study row’s measurements and effect estimates."""
 
-    present_raw_arms: set[str]
-
     def __init__(
         self,
         sheet,
         raw_data=None,
         arm_names=None,
-        stable_id=None,
         arm_stable_ids=None,
+        *,
+        present_raw_arms: set[ArmId] | None = None,
     ):
         """Create the analysis unit for one study row.
 
@@ -55,12 +47,12 @@ class AnalysisUnit:
         """
         self.is_diagnostic = sheet.data_type == DIAGNOSTIC
         self.sheet = sheet
-        self.stable_id = stable_id or _new_identity()
+        # An old archive can omit the measurement slots for a declared arm.
+        self.present_raw_arms = present_raw_arms
 
         if arm_names is None:
             arm_names = analysis_catalog.default_arm_names(sheet.data_type, sheet.sub_type)
 
-        # Arm IDs keep effect entries stable when users rename arms.
         self._arms_by_id = {}
 
         try:
@@ -70,17 +62,15 @@ class AnalysisUnit:
 
         raw_data = raw_data or [[""] * self.raw_data_length for _ in arm_names]
 
-        family = analysis_catalog.TYPE_TO_STR_DICT[sheet.data_type]
-        self.entered_effects = {metric: {} for metric in analysis_catalog.FAMILY_METRICS[family]}
+        self.entered_effects = {}
         self._entered_display = {}
         self.derived_effect_previews = {}
-        self.analysis_effects = {}
         self.ratio_inputs: dict[tuple[ArmId, ...], RatioInput] = {}
 
         identities = arm_stable_ids or [None] * len(arm_names)
-        for i, arm in enumerate(arm_names):
-            self.add_arm(arm, stable_id=identities[i])
-            self.arms[arm].raw_data = raw_data[i]
+        for name, values, identity in zip(arm_names, raw_data, identities, strict=True):
+            arm = StudyArmData(name, values, stable_id=identity)
+            self._arms_by_id[arm.stable_id] = arm
 
     @property
     def arms_by_id(self):
@@ -102,31 +92,11 @@ class AnalysisUnit:
         live object during validation or relying on implementation-level
         ``__dict__`` restoration.
         """
-        self.is_diagnostic = candidate.is_diagnostic
-        self.stable_id = candidate.stable_id
-        self.raw_data_length = candidate.raw_data_length
-        existing_arms = self._arms_by_id
-        for name, candidate_arm in candidate.arms.items():
-            arm = existing_arms.get(candidate_arm.stable_id)
-            if arm is None:
-                arm = next(
-                    (item for item in existing_arms.values() if item.name == name),
-                    None,
-                )
-            if arm is None:
-                arm = copy.deepcopy(candidate_arm)
-            else:
-                arm.name = candidate_arm.name
-                arm.stable_id = candidate_arm.stable_id
-                arm.raw_data[:] = copy.deepcopy(candidate_arm.raw_data)
-            existing_arms[arm.stable_id] = arm
-        for identity, arm in tuple(existing_arms.items()):
-            if arm.name not in candidate.arms:
-                existing_arms.pop(identity)
+        for identity, arm in self._arms_by_id.items():
+            arm.raw_data[:] = copy.deepcopy(candidate._arms_by_id[identity].raw_data)
         self.entered_effects = copy.deepcopy(candidate.entered_effects)
         self._entered_display = copy.deepcopy(candidate._entered_display)
         self.derived_effect_previews = copy.deepcopy(candidate.derived_effect_previews)
-        self.analysis_effects = copy.deepcopy(candidate.analysis_effects)
         self.ratio_inputs = copy.deepcopy(candidate.ratio_inputs)
 
     def ratio_input(self, arms: Iterable[str]) -> RatioInput:
@@ -180,7 +150,6 @@ class AnalysisUnit:
         return {
             "entered": self.entered_effects,
             "derived_preview": self.derived_effect_previews,
-            "analysis": self.analysis_effects,
         }[source]
 
     def _read_effect_entry(self, source: EffectSource, effect: str, arm_comparison: tuple[str, ...]):
@@ -201,22 +170,6 @@ class AnalysisUnit:
             entry.get("upper"),
             entry.get("SE"),
         )
-
-    def _add_effect_entries_for_arm(self, identity):
-        metric_sets = {
-            analysis_catalog.TIME_TO_EVENT: (["HR"], []),
-            analysis_catalog.EVENT_RATES: (["IRR"], []),
-            BINARY: (analysis_catalog.BINARY_TWO_ARM_METRICS, analysis_catalog.BINARY_ONE_ARM_METRICS),
-            CONTINUOUS: (analysis_catalog.CONTINUOUS_TWO_ARM_METRICS, analysis_catalog.CONTINUOUS_ONE_ARM_METRICS),
-            DIAGNOSTIC: ([], analysis_catalog.DIAGNOSTIC_METRICS),
-        }
-        two_arm, one_arm = metric_sets[self.sheet.data_type]
-        for metric in two_arm:
-            for other in self.arms_by_id:
-                for pair in ((identity, other), (other, identity)):
-                    self.entered_effects[metric][pair] = self._new_effect_entry()
-        for metric in one_arm:
-            self.entered_effects[metric][(identity,)] = self._new_effect_entry()
 
     def calculate_se_if_possible(
         self,
@@ -252,11 +205,10 @@ class AnalysisUnit:
         return None
 
     def set_calculator_source(self, effect, arm_comparison, source: EffectSource):
-        entry = self._effect_entry_for_update("entered", effect, arm_comparison)
         if source == "entered":
-            entry["calculator_source"] = source
+            self._effect_entry_for_update("entered", effect, arm_comparison)["calculator_source"] = source
         else:
-            entry.pop("calculator_source", None)
+            self._read_effect_entry("entered", effect, arm_comparison).pop("calculator_source", None)
 
     def calculator_source(self, effect, arm_comparison):
         return self.entered_effects.get(effect, {}).get(arm_comparison, {}).get("calculator_source")
@@ -558,33 +510,6 @@ class AnalysisUnit:
         return entry.estimate, entry.lower, entry.upper
 
 
-    def get_effect_names(self):
-        return list(self.entered_effects.keys())
-
-    def add_arm(self, name, raw_data=None, stable_id=None):
-        if raw_data is None:
-            raw_data = [""] * self.raw_data_length
-        arm = StudyArmData(name, raw_data, stable_id=stable_id)
-        self._add_effect_entries_for_arm(arm.stable_id)
-        self._arms_by_id[arm.stable_id] = arm
-
-    def remove_arm(self, name):
-        arm = self.arms[name]
-        self._arms_by_id.pop(arm.stable_id, None)
-        self.ratio_inputs = {
-            key: value for key, value in self.ratio_inputs.items()
-            if arm.stable_id not in key
-        }
-        for store in (self.entered_effects, self.derived_effect_previews, self.analysis_effects):
-            for entries in store.values():
-                for pair in tuple(entries):
-                    if arm.stable_id in pair:
-                        del entries[pair]
-        self._entered_display = {
-            key: value for key, value in self._entered_display.items()
-            if arm.stable_id not in key[1]
-        }
-
     def rename_arm(self, old_name, new_name):
         self.arms[old_name].name = new_name
 
@@ -609,12 +534,8 @@ class AnalysisUnit:
         for i, arm in enumerate(arms):
             self.set_raw_data_for_arm(arm, raw_data_list[i])
 
-    def get_arm_names(self):
-        return [arm.name for arm in self._arms_by_id.values()]
-
-
 class StudyArmData:
     def __init__(self, name, raw_data, stable_id=None):
         self.name = name
         self.raw_data = raw_data
-        self.stable_id = ArmId(stable_id or str(_new_identity()))
+        self.stable_id = ArmId(stable_id or uuid.uuid4().hex)

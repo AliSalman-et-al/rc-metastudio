@@ -1,8 +1,4 @@
-
-import pytest
-
 from rc_metastudio.result_text_identity import normalize_packaged_summary_identity
-from tests.python.gui.support import automation_scenarios
 
 
 def test_packaged_summary_identity_ignores_display_only_confidence_labels():
@@ -18,8 +14,3 @@ def test_packaged_summary_identity_ignores_display_only_confidence_labels():
     assert normalize_packaged_summary_identity(labelled) == (
         "Estimate Lower bound Upper bound p-value 1.2 1.0 1.4 0.01"
     )
-
-
-def test_packaged_summary_identity_rejects_unknown_sample():
-    with pytest.raises(SystemExit, match="Unsupported packaged smoke sample"):
-        automation_scenarios._expected_packaged_summary_sha256("unknown.rcms")

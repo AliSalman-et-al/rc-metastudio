@@ -93,7 +93,8 @@ esac
 
 target_python="$(command -v python3 || true)"
 [ -n "$target_python" ] || { echo "macOS packaging requires python3 to resolve its target manifest." >&2; exit 1; }
-eval "$("$target_python" "$repo_root/scripts/resolve_macos_package_target.py" "$architecture" --format shell)"
+target_values="$("$target_python" "$repo_root/scripts/resolve_macos_package_target.py" "$architecture" --format shell)"
+eval "$target_values"
 default_artifact="$artifact"
 if [ "$(uname -m)" != "$machine" ]; then
   echo "macOS $architecture packaging requires a native $machine host; found $(uname -m)." >&2
@@ -109,7 +110,7 @@ if [ "$recreate_venv" -eq 1 ] && [ -d "$venv_root" ]; then
 fi
 
 step "Syncing the locked Python environment"
-uv python install 3.14.10
+uv python install
 uv sync --locked
 
 build_args=(

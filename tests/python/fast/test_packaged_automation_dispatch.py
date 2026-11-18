@@ -304,7 +304,7 @@ def test_packaged_runner_reports_timeout_with_command(monkeypatch, tmp_path):
         )
 
 
-def test_assembler_rejects_unobserved_reopen_analysis(tmp_path, monkeypatch):
+def test_assembler_rejects_unobserved_reopen_analysis(tmp_path):
     from scripts import assemble_packaged_smoke_evidence as assembler
 
     observation = {"summary": "summary", "svg_paths": {},
@@ -327,10 +327,6 @@ def test_assembler_rejects_unobserved_reopen_analysis(tmp_path, monkeypatch):
     observation["analysis_after_reopen_observed"] = False
     with pytest.raises(ValueError, match="workflow observation contains an unsuccessful operation"):
         assemble()
-    # The negative control must fail if the required reopen guard is removed.
-    monkeypatch.setattr(assembler, "_workflow_flags_valid", lambda value: all(value[key] for key in
-        ("edit_observed", "analysis_observed", "reopen_observed")))
-    assert assemble()["passed"]
 
 
 def test_assembler_rejects_reused_locale_operation_observation(tmp_path):

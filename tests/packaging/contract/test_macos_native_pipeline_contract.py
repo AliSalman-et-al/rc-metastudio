@@ -19,15 +19,24 @@ TARGETS = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(TARGETS)
 
 
-def test_target_manifest_rejects_silent_architecture_drift(tmp_path: Path):
+@pytest.mark.parametrize(
+    ("field", "value", "error"),
+    (
+        ("delivery_target", "macos-x64", "does not match architecture"),
+        ("r_sha256", None, "invalid R package SHA-256"),
+    ),
+)
+def test_target_manifest_rejects_unqualified_package_inputs(
+    tmp_path: Path, field, value, error
+):
     manifest = json.loads(
         (ROOT / "config/macos-package-targets.json").read_text(encoding="utf-8")
     )
-    manifest["targets"]["arm64"]["delivery_target"] = "macos-x64"
+    manifest["targets"]["arm64"][field] = value
     path = tmp_path / "targets.json"
     path.write_text(json.dumps(manifest), encoding="utf-8")
 
-    with pytest.raises(TARGETS.TargetError, match="does not match architecture"):
+    with pytest.raises(TARGETS.TargetError, match=error):
         TARGETS.load_target("arm64", path)
 
 

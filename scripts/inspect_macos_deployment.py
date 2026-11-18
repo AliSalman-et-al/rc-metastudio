@@ -30,8 +30,20 @@ from rc_metastudio.r_runtime import macos_r_framework_version
 
 if __name__ == "__main__":
     import packaged_smoke_contract as smoke_contract
+    from macos_direct_build_contract import (
+        DIRECT_BUILD_INPUT_MEMBERS,
+        DIRECT_R_OFFICIAL_INPUTS,
+        DIRECT_R_PPM_SNAPSHOT,
+        RCMETAR_VERSION,
+    )
 else:
     from scripts import packaged_smoke_contract as smoke_contract
+    from scripts.macos_direct_build_contract import (
+        DIRECT_BUILD_INPUT_MEMBERS,
+        DIRECT_R_OFFICIAL_INPUTS,
+        DIRECT_R_PPM_SNAPSHOT,
+        RCMETAR_VERSION,
+    )
 
 EXPECTED_VERSIONS = {
     "python": "3.14.10",
@@ -63,48 +75,6 @@ DIRECT_R_MARKER_RELATIVE = Path("Contents/Resources/direct-r-spike.marker")
 DIRECT_R_MARKER_SHA256 = (
     "bff2ab12435dd85693745bfd390e12b97ad7fecf284a05b1b339425d40ca720f"
 )
-DIRECT_R_OFFICIAL_INPUTS = {
-    "macos-arm64": {
-        "url": "https://cloud.r-project.org/bin/macosx/sonoma-arm64/base/R-4.6.2-arm64.pkg",
-        "sha256": "a678b4db1fcd71b1b1cc58edcfa4a8d36ee012a02659dde9eab9366e93571157",
-    },
-}
-DIRECT_R_PPM_SNAPSHOT = "https://packagemanager.posit.co/cran/2026-11-13"
-DIRECT_BUILD_INPUT_MEMBERS = {
-    "adapter_script": "qualification/embedded-r-adapter.py",
-    "pre_normalization_audit": "qualification/direct-r-pre-normalization-audit.json",
-    "normalized_adapter_map": "qualification/direct-r-adapter.json",
-    "host_r_isolation_script": "qualification/macos-host-r-isolation.sh",
-    "pyinstaller_toc_preflight": "qualification/verify-macos-r-pyinstaller-toc.py",
-    "pyinstaller_toc_preflight_report": "qualification/macos-r-pyinstaller-toc-preflight.json",
-    "explicit_r_toc": "qualification/direct-r-toc.json",
-    "rpy2_api_build": "qualification/rpy2-api-build.json",
-    "pre_sign_native_graph": "qualification/pre-sign-native-graph.json",
-    "post_sign_native_inventory": "qualification/post-sign-native-inventory.json",
-    "signing_inventory": "qualification/ad-hoc-signing-inventory.json",
-    "ppm_archive_inventory": "qualification/ppm-archive-inventory.json",
-    "rcmetar_source_archive": "qualification/RCMetaR-0.2.0-source.tar.gz",
-    "r_runtime_profile": "qualification/embedded-r-runtime-profile.json",
-    "runtime_probe": "qualification/runtime-probe.json",
-    "runtime_stdout": "qualification/runtime-probe.stdout.log",
-    "runtime_stderr": "qualification/runtime-probe.stderr.log",
-    "deployment_manifest": "qualification/deployment-manifest.json",
-    "smoke_evidence": "qualification/packaged-smoke.json",
-    "smoke_log": "qualification/packaged-smoke.log",
-    "smoke_stdout": "qualification/packaged-smoke.stdout.log",
-    "smoke_stderr": "qualification/packaged-smoke.stderr.log",
-    "hang_trace": "qualification/packaged-smoke.hang-trace.log",
-    "launchservices_marker": "qualification/launchservices-completion.json",
-    "launchservices_stdout": "qualification/launchservices.stdout.log",
-    "launchservices_stderr": "qualification/launchservices.stderr.log",
-    "runner_environment": "qualification/runner-environment.json",
-    "official_r_signature": "qualification/official-r-signature.json",
-    **{
-        f"surface_{scale_key}_{stream}": f"qualification/packaged-surface-{scale_key}.{stream}.log"
-        for scale_key in (scale.replace(".", "") for scale in smoke_contract.SURFACE_SCALES)
-        for stream in ("stdout", "stderr")
-    },
-}
 
 
 class MacOSDeploymentInspectionError(RuntimeError):
@@ -2035,7 +2005,7 @@ def _valid_rcmetar_source(
     archive = rcmetar.get("archive")
     return (
         rcmetar.get("name") == "RCMetaR"
-        and rcmetar.get("version") == "0.2.0"
+        and rcmetar.get("version") == RCMETAR_VERSION
         and rcmetar.get("url")
         == "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
         + source_commit

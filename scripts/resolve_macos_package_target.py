@@ -47,7 +47,7 @@ def load_target(name: str, manifest_path: Path = DEFAULT_MANIFEST) -> dict[str, 
     if not str(target["r_url"]).startswith("https://cloud.r-project.org/"):
         raise TargetError("official R package must use the authenticated CRAN origin")
     sha256 = target["r_sha256"]
-    if sha256 is not None and not re.fullmatch(r"[0-9a-f]{64}", str(sha256)):
+    if not isinstance(sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", sha256):
         raise TargetError(f"invalid R package SHA-256 for target: {name}")
     return {
         "architecture": name,

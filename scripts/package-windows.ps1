@@ -6,6 +6,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "windows-package-download.ps1")
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $venvRoot = Join-Path $repoRoot ".venv"
 $rDownloadCache = Join-Path $repoRoot "artifacts\download-cache\windows-x64"
@@ -17,31 +18,6 @@ $rSigner = "CN=Martyn Plummer, O=Martyn Plummer, S=West Midlands, C=GB"
 $rThumbprint = "F356FC6CD245D722F4A82697473DA5995CB42975"
 
 function Write-Step { param([string]$Message) Write-Host ("[{0}] {1}" -f (Get-Date -Format "HH:mm:ss"), $Message) }
-
-function Invoke-DownloadWithRetry {
-    param(
-        [string]$Uri,
-        [string]$PartialPath,
-        [int]$MaxAttempts = 3,
-        [int]$RetryDelaySeconds = 2,
-        [scriptblock]$DownloadOperation = { param($RequestUri, $Destination) Invoke-WebRequest -Uri $RequestUri -OutFile $Destination -ErrorAction Stop },
-        [scriptblock]$SleepOperation = { param($Seconds) Start-Sleep -Seconds $Seconds }
-    )
-    $lastError = $null
-    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        if (Test-Path -LiteralPath $PartialPath) { Remove-Item -LiteralPath $PartialPath -Force }
-        try {
-            & $DownloadOperation $Uri $PartialPath
-            return
-        }
-        catch {
-            $lastError = $_
-            if (Test-Path -LiteralPath $PartialPath) { Remove-Item -LiteralPath $PartialPath -Force }
-            if ($attempt -lt $MaxAttempts) { & $SleepOperation $RetryDelaySeconds }
-        }
-    }
-    throw "Could not download '$Uri' after $MaxAttempts attempts: $($lastError.Exception.Message)"
-}
 
 function Assert-WindowsNativePrerequisites {
     if ($env:PROCESSOR_ARCHITECTURE -ne "AMD64") { throw "Windows x64 packaging requires an AMD64 host; found '$env:PROCESSOR_ARCHITECTURE'." }

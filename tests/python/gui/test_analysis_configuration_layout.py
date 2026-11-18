@@ -788,8 +788,9 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
             return [study]
 
     parent = QtWidgets.QWidget()
-    setattr(parent, "meta_subgroup", lambda _covariate: None)
-    subgroup = subgroup_analysis_dialog.SubgroupAnalysisDialog(Model(), parent=parent)
+    subgroup = subgroup_analysis_dialog.SubgroupAnalysisDialog(
+        Model(), lambda _covariate: None, parent=parent
+    )
 
     class PreviewModel(QtGui.QStandardItemModel):
         dataError = QtCore.pyqtSignal(str)
@@ -909,45 +910,33 @@ def test_choice_control_remeasures_font_and_style_before_bounded_popup(
         qapp.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
 
 
-def test_choice_popup_show_burst_coalesces_measurement_tooltips_and_clamp(qapp):
+def test_choice_popup_shows_late_long_option_with_scroll_and_tooltip(qapp):
     from rc_metastudio import adaptive_controls
 
     available = QtCore.QRect(
         required(qapp.primaryScreen(), "primary screen").availableGeometry()
     )
     combo = adaptive_controls.AdaptiveComboBox()
-    combo.addItems(["short", "complete choice " * 80])
+    combo.addItem("short")
     combo.resize(180, combo.sizeHint().height())
     combo.move(available.right() - 10, available.top() + available.height() // 3)
-    controller = adaptive_controls.configure_choice_control(combo)
+    adaptive_controls.configure_choice_control(combo)
     combo.show()
     qapp.processEvents()
     combo_view = required(combo.view(), "combo view")
-    baseline = (
-        controller.measurement_applied_count,
-        controller.tooltip_scan_applied_count,
-        controller.popup_clamp_applied_count,
-    )
-    combo.addItem("a late model value")
+    long_choice = "complete choice " * 80
+    combo.addItem(long_choice)
     combo.showPopup()
     qapp.processEvents()
     qapp.processEvents()
     try:
-        applied = (
-            controller.measurement_applied_count - baseline[0],
-            controller.tooltip_scan_applied_count - baseline[1],
-            controller.popup_clamp_applied_count - baseline[2],
-        )
-        assert applied == (1, 1, 1)
         assert available.contains(
             required(combo_view.window(), "combo popup").frameGeometry()
         )
         assert (
             required(combo_view.horizontalScrollBar(), "combo scrollbar").maximum() > 0
         )
-        assert combo.itemData(1, QtCore.Qt.ItemDataRole.ToolTipRole) == combo.itemText(
-            1
-        )
+        assert combo.itemData(1, QtCore.Qt.ItemDataRole.ToolTipRole) == long_choice
     finally:
         combo.hidePopup()
         combo.close()
@@ -974,7 +963,7 @@ ui.setupUi(dialog)
 combo = ui.covariate_combo_box
 assert isinstance(combo, adaptive_controls.AdaptiveComboBox)
 combo.addItem("short")
-controller = adaptive_controls.configure_choice_control(combo)
+adaptive_controls.configure_choice_control(combo)
 available = QtCore.QRect(app.primaryScreen().availableGeometry())
 dialog.adjustSize()
 dialog.move(
@@ -986,11 +975,6 @@ dialog.raise_()
 dialog.activateWindow()
 combo.setFocus()
 app.processEvents()
-baseline = (
-    controller.measurement_applied_count,
-    controller.tooltip_scan_applied_count,
-    controller.popup_clamp_applied_count,
-)
 extreme = "native complete choice " * 200
 combo.addItem(extreme)
 combo.showPopup()
@@ -1001,9 +985,6 @@ settle.exec()
 result = {
     "platform": app.platformName(),
     "contained": available.contains(popup.frameGeometry()),
-    "measurement_delta": controller.measurement_applied_count - baseline[0],
-    "tooltip_delta": controller.tooltip_scan_applied_count - baseline[1],
-    "clamp_delta": controller.popup_clamp_applied_count - baseline[2],
     "horizontal_access": combo.view().horizontalScrollBar().maximum() > 0,
     "tooltip_complete": combo.itemData(
         1, QtCore.Qt.ItemDataRole.ToolTipRole
@@ -1040,9 +1021,6 @@ app.processEvents()
     assert result == {
         "platform": "windows",
         "contained": True,
-        "measurement_delta": 1,
-        "tooltip_delta": 1,
-        "clamp_delta": 1,
         "horizontal_access": True,
         "tooltip_complete": True,
     }
@@ -1170,143 +1148,6 @@ print("LOCALE_ANALYSIS_REQUESTS=" + json.dumps({
         "backend_calls": [["binary.random", 90.5], ["binary.random", 90.5]],
         "data_calls": [],
     }
-
-
-def test_backend_execution_uses_only_frozen_analysis_requests(monkeypatch):
-    cases = [
-        ("binary", "standard"),
-        ("binary", "cumulative"),
-        ("continuous", "standard"),
-        ("continuous", "leave-one-out"),
-        ("diagnostic", "standard"),
-        ("diagnostic", "subgroup"),
-    ]
-    from rc_metastudio import analysis_adapter
-
-    backend = analysis_adapter.r_bridge
-    for converter in (
-        "dataset_to_simple_binary_r_object",
-        "dataset_to_simple_continuous_r_object",
-        "dataset_to_simple_diagnostic_r_object",
-    ):
-        monkeypatch.setattr(backend, converter, lambda *_args, **_kwargs: None)
-
-    for data_type, workflow in cases:
-        calls = []
-
-        def capture(*args):
-            calls.append(args)
-            return {
-                "version": 1,
-                "texts": {"Summary": "ok"},
-                "images": {},
-                "sections": [
-                    {
-                        "id": "result.summary",
-                        "kind": "text",
-                        "order": 0,
-                        "title": "Summary",
-                        "source_key": "Summary",
-                    }
-                ],
-            }
-
-        runner = (
-            "run_versioned_analysis_requests"
-            if data_type == "diagnostic"
-            else "run_model_analysis"
-        )
-        monkeypatch.setattr(backend, runner, capture)
-        metric = {
-            "binary": "OR",
-            "continuous": "SMD",
-            "diagnostic": "DOR",
-        }[data_type]
-        mutable_parameters = {"conf.level": 90.5, "measure": metric}
-        request = analysis_adapter.make_analysis_request(
-            data_type=data_type,
-            workflow=workflow,
-            method="diagnostic.random"
-            if data_type == "diagnostic"
-            else data_type + ".random",
-            metric=metric,
-            parameters=mutable_parameters,
-        )
-        mutable_parameters["conf.level"] = 1.0
-        mutable_parameters["measure"] = "MUTATED"
-
-        analysis_adapter.execute_analysis_requests(
-            _AnalysisModel(data_type), (request,)
-        )
-
-        rendered = repr(calls)
-        assert "90.5" in rendered
-        assert "MUTATED" not in rendered
-        assert workflow in rendered
-
-
-def test_meta_regression_backend_execution_uses_frozen_request(monkeypatch):
-    from rc_metastudio import analysis_adapter
-
-    calls = []
-    model = _AnalysisModel("continuous")
-    parameters = {"conf.level": 90.5, "bp_xlabel": "Year"}
-    request = analysis_adapter.make_analysis_request(
-        data_type="continuous",
-        workflow="meta-regression",
-        method="meta.regression",
-        metric="SMD",
-        parameters=parameters,
-    )
-    parameters["conf.level"] = 1.0
-    monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "run_model_analysis",
-        lambda *args, **kwargs: calls.append(("backend", args, kwargs))
-        or {"version": 1, "texts": {}, "sections": []},
-    )
-
-    analysis_adapter.execute_meta_regression_request(
-        model,
-        (analysis_dataset.StudyRow(RowId("study"), "Study", AnalysisUnit(analysis_dataset.Sheet(SheetId("unit-sheet"), "Outcome", 1))),),
-        ({"id": "covariate", "name": "Covariate", "data_type": 1},),
-        request,
-        True,
-        95.0,
-    )
-
-    wire_request = calls[0][1][1]
-    assert wire_request["params"] == {
-        "conf.level": 90.5, "bp_xlabel": "Year", "measure": "SMD", "rm.method": "FE",
-    }
-    assert isinstance(calls[0][2]["studies"][0], analysis_dataset.StudyRow)
-    assert calls[0][2]["covs_to_include"][0] == {"id": "covariate", "name": "Covariate", "data_type": 1}
-
-
-@pytest.mark.parametrize(
-    ("data_type", "metric"),
-    (("binary", "OR"), ("continuous", "SMD")),
-    ids=("binary", "continuous"),
-)
-def test_meta_regression_dialog_uses_shared_rcmetar_method(
-    monkeypatch, qapp, data_type, metric
-):
-    from rc_metastudio import analysis_setup_dialog
-
-    covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
-    model = _AnalysisModel(data_type, (covariate,))
-    model.current_effect = metric
-    _install_analysis_backend(monkeypatch, analysis_setup_dialog)
-    dialog = analysis_setup_dialog.AnalysisSetupDialog(
-        model, analysis_type="meta-regression", confidence_level=95.0
-    )
-    try:
-        request = dialog._meta_regression_request()
-        assert request.data_type == data_type
-        assert request.workflow == "meta-regression"
-        assert request.method == "meta.regression"
-    finally:
-        dialog.close()
 
 
 def test_rebuilding_method_does_not_accumulate_effect_labels(qapp, monkeypatch):

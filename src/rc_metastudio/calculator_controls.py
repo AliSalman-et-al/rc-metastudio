@@ -3,9 +3,10 @@
 """Calculator input controls, validation and field sizing."""
 
 import sys
+from collections.abc import Callable, Iterable
 from functools import partial
 from weakref import WeakKeyDictionary
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSignalBlocker, Qt
 from PyQt6.QtGui import QBrush, QColor, QPainter, QPaintEvent
 from PyQt6.QtWidgets import (
     QLineEdit,
@@ -247,12 +248,29 @@ def diagnostic_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
     return (precision, "9999." + ("9" * digits))
 
 
-def commit_calculator_edits(dialog):
-    """Commit drafts before a mode change replaces the shared effect editors."""
-    for name, field in (("est", dialog.effect_text_box), ("lower", dialog.lower_text_box), ("upper", dialog.upper_text_box)):
-        if field.text() != field.property("calculatorValue"):
-            dialog.val_changed(name)
-    return not getattr(dialog, "_validation_failed", False)
+class CalculatorEffectFields:
+    """Track drafts separately from the rendered values of the effect editors."""
+
+    def __init__(self, estimate: QLineEdit, lower: QLineEdit, upper: QLineEdit) -> None:
+        self.editors = {"est": estimate, "lower": lower, "upper": upper}
+        self._committed: dict[str, str] = {}
+
+    def is_pending(self, name: str) -> bool:
+        return self.editors[name].text() != self._committed.get(name)
+
+    def mark_committed(self, name: str) -> None:
+        self._committed[name] = self.editors[name].text()
+
+    def display(self, values: Iterable[float | None]) -> None:
+        for (name, editor), value in zip(self.editors.items(), values, strict=True):
+            with QSignalBlocker(editor):
+                editor.setText("" if value is None else format_calculator_display_value(value))
+                self.mark_committed(name)
+
+    def commit_pending(self, apply: Callable[[str], None]) -> None:
+        for name in self.editors:
+            if self.is_pending(name):
+                apply(name)
 
 
 def snapshot_table_text(table):

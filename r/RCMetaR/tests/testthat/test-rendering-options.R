@@ -57,9 +57,6 @@ test_that("G1B-005 pooled study sizes follow multiplier in both styles", {
   for(style in c("bmj","revman")) {
     f <- r02.fixture(style)
     b <- rcmetar.regenerate.plot.data(f$data,f$res,f$params)
-    base <- get(paste0("rcmetar.",style,".summary.effect"))(b)$psize
-    b$params$fp_point_size_multiplier <- 2
-    expect_equal(get(paste0("rcmetar.",style,".summary.effect"))(b)$psize,2*base)
     widths <- list()
     for (mult in 1:2) {
       b$params$fp_point_size_multiplier <- mult

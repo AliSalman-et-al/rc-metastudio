@@ -7,6 +7,7 @@ def check(app, window, kind, launch, text, family, record):
     from rc_metastudio import r_bridge
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.fit_observations import observe_fit
 
     def confidence(level):
         def change(dialog):
@@ -36,15 +37,16 @@ def check(app, window, kind, launch, text, family, record):
     assert window.save() and window.open(window.workspace.path, raise_on_error=True)
     unit = window.model.get_current_analysis_unit_for_study(0)
     assert all(v in (None, "") for v in unit.get_raw_data_for_arms(window.model.arm_names))
-    view = analyze_existing(app, window, "standard", family + ".random", record,
-                            parameters={"digits": 6, "rm.method": "DL", "inference.method": "z"})
+    with observe_fit() as fit:
+        view = analyze_existing(app, window, "standard", family + ".random", record,
+                                parameters={"digits": 6, "rm.method": "DL", "inference.method": "z"})
     transform = "log" if family == "binary" else "identity"
     expected = float(r_bridge.execute_r_string(
         f"({transform}({bounds[2]})-{transform}({bounds[1]}))/(2*qnorm(.95))")[0])
     metafor_se = float(r_bridge.execute_r_string(
         f"sqrt(metafor::conv.wald(out={bounds[0]}, ci.lb={bounds[1]}, ci.ub={bounds[2]}, level=90, transf={transform})$vi)")[0])
     assert abs(metafor_se - expected) < 1e-12
-    actual = float(r_bridge.execute_r_string("result$input_data@SE[1]")[0])
+    actual = float(fit.evaluate("result$input_data@SE[1]")[0])
     record("entered-90-ci-after-sheet-95", view, metric=metric, bounds=bounds,
            expected_se=expected, actual_se=actual)
     assert abs(actual - expected) < 1e-6, (metric, actual, expected)

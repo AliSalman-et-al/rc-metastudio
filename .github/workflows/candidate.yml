@@ -88,7 +88,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
-      - run: uv python install 3.14.10
+      - run: uv python install
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
         run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
@@ -113,7 +113,7 @@ jobs:
           else
             resolver=(scripts/qt6_macos_feasibility.py resolve-rcc)
           fi
-          PYTHONPATH="$PWD/src" uv run --no-project --python 3.14.10 python "${resolver[@]}" \
+          PYTHONPATH="$PWD/src" uv run --no-project python "${resolver[@]}" \
             --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" \
             --github-env "$GITHUB_ENV" \
             --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"

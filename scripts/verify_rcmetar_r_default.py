@@ -19,9 +19,6 @@ else:
 RCMetaR_PACKAGE = Path("r") / "RCMetaR"
 DEFAULT_R_VERIFIER = Path("scripts") / "verify_rcmetar_r_default.py"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
-R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
-R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"
-R_VERIFICATION_SUPPORT = Path("scripts") / "r_verification_support.py"
 
 
 class DefaultREvidenceError(Exception):
@@ -118,14 +115,7 @@ def dependency_cache_key(
             rscript,
             env,
             cran_repo,
-            (
-                DEFAULT_R_VERIFIER,
-                R_BINARY_POLICY,
-                R_POLICY_LOADER,
-                R_VERIFICATION_SUPPORT,
-                r_support.DEPENDENCY_MANIFEST,
-                RCMetaR_PACKAGE / "DESCRIPTION",
-            ),
+            DEFAULT_R_VERIFIER,
             "default-rdeps",
         )
     except r_support.RVerificationSupportError as exc:

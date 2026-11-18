@@ -48,9 +48,7 @@ def main() -> int:
     ]
     source_inputs = [path for path in paths if path.startswith(SOURCE_DIRECTORIES)]
     matches = package_inputs or source_inputs
-    source_required = str(bool(matches)).lower()
-    print(f"run-windows={source_required}")
-    print(f"run-linux={source_required}")
+    print(f"run-source={str(bool(matches)).lower()}")
     print(f"run-windows-package={str(bool(package_inputs)).lower()}")
     reason = f"matched {matches[0]}" if matches else "no Qt6 integration verification inputs changed"
     print(f"reason={reason}")

@@ -1,14 +1,5 @@
-param(
-    [string]$PackageScript = (Join-Path (Split-Path -Parent $PSScriptRoot) "scripts\package-windows.ps1")
-)
-
 $ErrorActionPreference = "Stop"
-$tokens = $null; $parseErrors = $null
-$ast = [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path -LiteralPath $PackageScript), [ref]$tokens, [ref]$parseErrors)
-if ($parseErrors.Count) { throw "Could not parse package download retry implementation." }
-$function = $ast.Find({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq "Invoke-DownloadWithRetry" }, $true)
-if ($null -eq $function) { throw "Invoke-DownloadWithRetry was not found." }
-. ([scriptblock]::Create($function.Extent.Text))
+. (Join-Path $PSScriptRoot "windows-package-download.ps1")
 
 $root = Join-Path ([IO.Path]::GetTempPath()) ("rcms-download-retry-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Force -Path $root | Out-Null

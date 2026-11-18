@@ -142,7 +142,7 @@ from rc_metastudio.dataset_table_model import DatasetTableModel
 names = ["Intervention", "Control", "Arm C", "Arm D"]
 sheet = Sheet("sheet", "Mortality", 0, arms=[Arm(str(i), n) for i, n in enumerate(names)])
 model = DatasetTableModel(dataset=Dataset(sheets=[sheet]), add_blank_study=False)
-print(json.dumps(model.get_arm_names()))
+print(json.dumps(model.arm_names))
 """
     for seed in ("1", "2"):
         result = subprocess.run([sys.executable, "-c", script], check=True, text=True,

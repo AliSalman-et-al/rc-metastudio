@@ -85,6 +85,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.arm_names = arm_names
         self.arm_key = arm_key
         self.current_effect = current_effect
+        self._effect_fields = calculator_controls.CalculatorEffectFields(
+            self.effect_text_box, self.lower_text_box, self.upper_text_box,
+        )
+        self._validation_failed = False
         self.entry_widgets = [
             self.raw_data_table,
             self.lower_text_box,
@@ -101,7 +105,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             f"{self.confidence_level:g}% confidence interval"
         )
         self._configure_readable_ci_label()
-        self.initialize_form()  # initialize all cell to empty items
+        self.initialize_form()
         self.setup_back_calculation_feedback()
         self._field_history = calculator_edit_history.TransientEditHistory()
 
@@ -114,10 +118,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
         self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
         self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
-        self._update_raw_data()  # analysis_unit --> table
-        self._populate_effect_data()  # make combo boxes for effects
-        self.set_current_effect()  # fill in current effect data in line edits
-        self._update_data_table()  # fill in 2x2
+        self._update_raw_data()
+        self._populate_effect_data()
+        self.set_current_effect()
+        self._update_data_table()
         self._input_mode_changed()
         self._fit_raw_data_columns_for_first_display()
         self.update_back_calculation_button()
@@ -132,7 +136,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
     def _input_mode_changed(self):
         previous = getattr(self, "_active_input_mode", "counts")
-        if not calculator_controls.commit_calculator_edits(self):
+        self._effect_fields.commit_pending(self.val_changed)
+        if self._validation_failed:
             with QSignalBlocker(self.input_mode_combo):
                 self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous))
             return
@@ -368,8 +373,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
             return changed
 
-        # Makes no sense to show the button on a form where the back
-        # calculation is not implemented
         if self.current_effect not in ["OR", "RR", "RD"]:
             self.back_calculate_button.setVisible(False)
             self._request_content_refit()
@@ -382,7 +385,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         imputed = self.calculator.impute_binary_data(bin_data.copy())
 
-        # Leave if nothing was imputed
         if "FAIL" in imputed:
             self.back_calculate_button.setEnabled(False)
             return None
@@ -553,7 +555,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         )
 
     def _populate_effect_data(self):
-        available_effects = {str(effect) for effect in self.analysis_unit.get_effect_names()}
         metric_family = (
             BINARY_ONE_ARM_METRICS
             if self.current_effect in BINARY_ONE_ARM_METRICS
@@ -599,9 +600,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             text_width + scrollbar_width + 24
         )
 
-    def get_effect_names(self):
-        return self.analysis_unit.get_effect_names()
-
     def _effect_display_label(self, effect):
         return "%s (%s)" % (BINARY_METRIC_NAMES.get(effect, effect), effect)
 
@@ -615,14 +613,9 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         """Populate fields from a meta-analysis unit."""
         if getattr(self, "_raw_data_invalid", False):
             return
-        txt_boxes = dict(
-            effect=self.effect_text_box,
-            lower=self.lower_text_box,
-            upper=self.upper_text_box,
-        )
         calculator_effect_readout.populate_effect_ci_fields(
             analysis_unit=self.analysis_unit,
-            effect_fields=txt_boxes,
+            effect_fields=self._effect_fields,
             current_effect=self.current_effect,
             arm_key=self.arm_key,
             data_type="binary",
@@ -637,7 +630,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.change_row_color_according_to_metric()
 
     def change_row_color_according_to_metric(self):
-        # Change color of bottom rows of table according one or two-arm metric
         current_effect_is_one_arm = self.current_effect in BINARY_ONE_ARM_METRICS
         for row in (1, 2):
             self.raw_data_table.setRowHidden(row, current_effect_is_one_arm)
@@ -693,35 +685,27 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             return False, False
         return True, display_scale_val
 
-    def _text_from_value(self, value):
-        if value == "est":
-            return str(self.effect_text_box.text())
-        elif value == "lower":
-            return str(self.lower_text_box.text())
-        elif value == "upper":
-            return str(self.upper_text_box.text())
-        return None  # Unknown value key.
-
     def accept(self):
-        if not getattr(self, "_validation_failed", False) and calculator_controls.commit_calculator_edits(self):
+        if self._validation_failed:
+            return
+        self._effect_fields.commit_pending(self.val_changed)
+        if not self._validation_failed:
             self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self.input_mode_combo.currentData() == "estimate" else "derived_preview")
             super().accept()
 
     def val_changed(self, val_str):
         if getattr(self, "_raw_data_invalid", False):
             return
-        fields = {"est": self.effect_text_box, "lower": self.lower_text_box, "upper": self.upper_text_box}
-        field = fields.get(val_str)
-        if field is not None and field.text() == field.property("calculatorValue") and not getattr(self, "_validation_failed", False):
+        field = self._effect_fields.editors.get(val_str)
+        if field is not None and not self._effect_fields.is_pending(val_str) and not self._validation_failed:
             return
-        # Backup form state
         old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
             table=self.raw_data_table,
             analysis_unit=self.analysis_unit,
             use_old_value=False,
         )
 
-        new_text = self._text_from_value(val_str)
+        new_text = self._effect_fields.editors[val_str].text()
 
         no_errors, display_scale_val = self._text_box_value_is_between_bounds(
             val_str, new_text
@@ -734,12 +718,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     signal_blockers.enter_context(QSignalBlocker(widget))
                 if field is not None:
                     field.setText(new_text)
-                if val_str == "est":
-                    self.effect_text_box.setFocus()
-                elif val_str == "lower":
-                    self.lower_text_box.setFocus()
-                elif val_str == "upper":
-                    self.upper_text_box.setFocus()
+                    field.setFocus()
             return
 
         try:
@@ -753,7 +732,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         self._validation_failed = False
         if field is not None:
-            field.setProperty("calculatorValue", field.text())
+            self._effect_fields.mark_committed(val_str)
 
         calculation_scale_value = self.calculator.binary_convert_scale(
             display_scale_val, self.current_effect, convert_to="calc.scale"
@@ -812,7 +791,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             raw_data[1] = total
 
     def _cell_data_not_valid(self, celldata_string):
-        # ignore blank entries
         if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
@@ -832,7 +810,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         """Restores the analysis_unit data and resets the form"""
         self.analysis_unit = old_analysis_unit.copy_for_edit()
 
-        self.initialize_form()  # clear form first
+        self.initialize_form()
         self._update_raw_data()
         self.set_current_effect()
         self._update_data_table()
@@ -905,7 +883,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             return
 
         try:
-            self._update_data_table()  # calculate derived margins from raw counts
+            self._update_data_table()
             self._mark_table_consistent()
         except Exception as e:
             msg = e.args[0]
@@ -919,7 +897,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
 
         try:
             self._update_analysis_unit()  # table widget --> analysis_unit
-            self.update_effect_from_raw_data()  # update metric in analysis_unit and in table
+            self.update_effect_from_raw_data()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
             QMessageBox.warning(self, "Warning", msg)
@@ -1001,7 +979,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self._set_val(2, 2, computed_d["total"])
 
     def _set_val(self, row, col, val):
-        if is_nan(val):  # get out quick
+        if is_nan(val):
             return
 
         with QSignalBlocker(self.raw_data_table):
@@ -1125,7 +1103,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 self.analysis_unit.set_effect_for_source(
                     "entered", metric, self.arm_key, None, None, None
                 )
-        # clear line edits
         self.set_current_effect()
         self._refresh_raw_data_editability()
 

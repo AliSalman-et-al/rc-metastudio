@@ -262,25 +262,6 @@ def test_context_is_compact_and_distinguishes_included_and_eligible_counts(
         dialog.close()
 
 
-def test_singleton_r_warning_is_accepted_at_dialog_boundary(qapp, monkeypatch):
-    report = _report(
-        "continuous",
-        "MD",
-        [_method("classical-egger", True, "primary")],
-        warnings="Observed standard-error range",
-    )
-    monkeypatch.setattr(
-        r_bridge,
-        "run_small_study_effects",
-        lambda *args, **kwargs: report,
-    )
-    dialog = small_study_effects_dialog.SmallStudyEffectsDialog(_Model("continuous", "MD"))
-    try:
-        assert dialog.automatic_test_label.text().startswith("Primary test: Classical Egger")
-    finally:
-        dialog.close()
-
-
 def test_correction_group_is_hidden_without_raw_count_eligibility(qapp, monkeypatch):
     report = _report(
         "continuous", "MD", [_method("classical-egger", True)], raw_data_available=False

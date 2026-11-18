@@ -412,11 +412,19 @@ def test_generated_ui_bootstrap_rejects_missing_or_tampered_outputs(
         prepare_generated_ui_imports(build_root)
 
 
-def test_minimal_qt6_window_reports_resources_and_exits_cleanly(verified_qt6_output):
+def test_minimal_qt6_window_reports_resources_and_exits_cleanly(
+    tmp_path, verified_qt6_output
+):
+    build = tmp_path / "qt6"
+    shutil.copytree(verified_qt6_output, build)
+    (build / "generated/rc_metastudio/forms/ui_about_legal.py").write_text(
+        "raise RuntimeError('stale generated form')\n", encoding="utf-8"
+    )
+    (build / "resources/icons.rcc").write_bytes(b"stale resources")
     completed = _run_build(
         "smoke",
         "--build-root",
-        str(verified_qt6_output),
+        str(build),
         "--exit-after-ms",
         "1",
     )
@@ -508,7 +516,7 @@ def test_timeout_runner_reports_taskkill_failure(monkeypatch):
 
     monkeypatch.setattr(runner.subprocess, "run", fail_taskkill)
     with pytest.raises(RuntimeError, match="taskkill /T /F failed.*Access is denied"):
-        runner._terminate_process_tree(FakeProcess())
+        runner.terminate_process_tree(FakeProcess())
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX process-group teardown contract")

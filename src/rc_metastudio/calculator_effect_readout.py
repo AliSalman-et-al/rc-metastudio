@@ -10,6 +10,7 @@ from rc_metastudio import r_bridge
 from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS
 from rc_metastudio.analysis_validation import EMPTY_VALS
 from rc_metastudio.calculator_controls import (
+    CalculatorEffectFields,
     fit_effect_ci_line_edits_to_contents,
     format_calculator_display_value,
     binary_effect_display_samples,
@@ -65,7 +66,7 @@ def _effect_values_on_display_scale(analysis_unit, current_effect, arm_key, data
 
 def populate_effect_ci_fields(
     analysis_unit,
-    effect_fields,
+    effect_fields: CalculatorEffectFields,
     current_effect,
     arm_key,
     data_type,
@@ -86,36 +87,22 @@ def populate_effect_ci_fields(
         converter = converters[data_type]
     except KeyError as exc:
         raise ValueError("data_type unrecognized") from exc
-    effect_tbox, lower_tbox, upper_tbox = [
-        effect_fields[box_name] for box_name in ("effect", "lower", "upper")
-    ]
-
     (est, lower, upper) = analysis_unit.get_effect_and_ci_for_source(
         source, current_effect, arm_key, confidence_multiplier
     )
     if data_type in {"binary", "continuous"} and source == "entered":
         est, lower, upper = analysis_unit.get_entered_effect_and_ci(current_effect, arm_key)
-    display_estimate, display_lower, display_upper = _effect_values_on_display_scale(
+    display_values = _effect_values_on_display_scale(
         analysis_unit, current_effect, arm_key, data_type, converter, (est, lower, upper)
     )
-    for val, txt_box in zip(
-        (display_estimate, display_lower, display_upper),
-        [effect_tbox, lower_tbox, upper_tbox],
-    ):
-        txt_box.blockSignals(True)
-        if val is not None:
-            txt_box.setText(format_calculator_display_value(val))
-        else:
-            txt_box.setText("")
-        txt_box.setProperty("calculatorValue", txt_box.text())
-        txt_box.blockSignals(False)
+    effect_fields.display(display_values)
     semantic_samples = {
         "binary": binary_effect_display_samples,
         "continuous": continuous_effect_display_samples,
         "diagnostic": diagnostic_effect_display_samples,
     }[data_type](current_effect)
     fit_effect_ci_line_edits_to_contents(
-        [effect_tbox, lower_tbox, upper_tbox],
+        list(effect_fields.editors.values()),
         semantic_samples=semantic_samples,
     )
 

@@ -24,7 +24,7 @@ test_that("Mean reconstructs one-arm data and matches the independent pooled fit
     expect_equal(prepared@SE, original@sd1 / sqrt(original@N1))
     authority <- metafor::rma.uni(yi=original@mean1, vi=original@sd1^2/original@N1,
                                  method="FE", level=95)
-    for (alias in c("Mean", "TXMean", "TX Mean", "TX.Mean")) {
+    for (alias in c("Mean", "TXMean", "TX Mean", "TX.Mean", " TX Mean ")) {
         result <- rcmetar.run.analysis(original, request=list(
             version=1L, data_type="continuous", method="continuous.fixed", metric=alias,
             params=mean_compatibility_params(), workflow="standard"))

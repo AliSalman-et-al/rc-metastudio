@@ -77,7 +77,9 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 `review-workflows` drives Change settings prefill/Cancel, a main-project switch,
 changed-estimator rerun and all four forest orders with exact unchanged numerical
 sections. It also requires the full two-line identity in the header bar and a
-result-first report without repeated identity lines. The forest editor drive additionally verifies persisted order/direction
+result-first report without repeated identity lines. After switching projects, it
+edits the earlier result's direction labels, checks the regenerated figure, and
+checks that the active project stays clean with its original labels. The forest editor drive additionally verifies persisted order/direction
 fields, reopening, Cancel and decoded four-format exports.
 
 ## Driving it with Qt E2E
@@ -185,7 +187,13 @@ $env:RCMETASTUDIO_QA_ROOT = (Join-Path (Get-Location) 'artifacts/verification/rc
 
 Choose a fresh evidence directory each time. This script loads workspace source through devtools if available, otherwise the selected installed RCMetaR; after R changes, ensure that library contains the changed source and record which mode ran. POSIX uses `bin/Rscript`.
 
-Inspect `manifest.csv`: require 300 rows, no errors or missing/empty images, and decoded valid figures. It crosses binary/continuous one/two-arm and diagnostic data, standard/cumulative/leave-one-out/subgroup workflows, default/RevMan/BMJ styles and five layout/data scenarios. The renderer catches individual errors and writes them into the manifest, so exit zero alone is insufficient. This proves rendering across the matrix; frozen/public numerical comparisons and editor interaction remain separate obligations. The optional test in `test-forest-visual-qa.R` is normally skipped unless `RCMETAR_RUN_VISUAL_QA=true`; state that skip explicitly or supply this matrix evidence.
+Inspect `manifest.csv` for 300 rows and decode the rendered figures. The driver
+crosses binary/continuous one- and two-arm and diagnostic data with four analysis
+workflows, three plot styles and five layout/data scenarios. It writes all case
+outcomes and exits with a failure if a case errors or produces a missing or
+undersized image. Run this command directly for matrix evidence. Use the frozen
+and public-package comparisons for numerical behavior and the desktop drives for
+editor interaction.
 
 The default PNG gallery retains each canonical SVG in the manifest's `svg` column
 and renders review previews at 144 dpi with a 2,400-pixel longest-edge bound.

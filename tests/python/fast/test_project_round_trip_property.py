@@ -8,10 +8,10 @@ import time
 
 from rc_metastudio.project_adapter import dataset_to_project, project_to_dataset
 from rc_metastudio.project_format import (
-    ProjectFormatError, _validate, is_empty_entry_row, load_project, save_project,
+    ProjectFormatError, _validate, load_project, save_project,
 )
 
-from rc_metastudio.project_domain import ProjectSemanticError, validate_project_semantics
+from rc_metastudio.project_domain import ProjectSemanticError, is_empty_entry_row, validate_project_semantics
 
 ROOT = Path(__file__).resolve().parents[3]
 TEXT = ["", " ", 'é漢字🙂\n\t"quoted"', "x" * 1024]

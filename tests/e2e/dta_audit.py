@@ -25,7 +25,7 @@ def check_fixed_workflow(app, window, workflow, record):
                              (('lr',), 'diagnostic.fixed.mh')):
         dialog = AnalysisSetupDialog(window.model, parent=window, analysis_type=workflow,
                                      external_params={'cov_name': 'Group'} if workflow == 'subgroup' else None,
-                                     diagnostic_metrics=selected,
+                                     diagnostic_metrics=selected, on_result=window.analysis,
                                      confidence_level=window.model.get_confidence_level())
         label = next(label for label, key in dialog.available_method_d.items() if key == method)
         dialog.method_cbo_box.setCurrentText(label)
@@ -93,7 +93,7 @@ def check_small_study_threshold(app, window, record):
                                  Qt.CheckState.Checked if row < 7 else Qt.CheckState.Unchecked,
                                  Qt.ItemDataRole.CheckStateRole)
         assert window.action_go.isEnabled()
-        dialog = SmallStudyEffectsDialog(model, parent=window)
+        dialog = SmallStudyEffectsDialog(model, parent=window, on_result=window.analysis)
         dialog.show()
         app.processEvents()
         assert dialog.use_package_minimum_check.isChecked()
@@ -256,7 +256,7 @@ def check_small_sample_ui(app, window, record):
                                      Qt.CheckState.Checked if row < k else Qt.CheckState.Unchecked,
                                      Qt.ItemDataRole.CheckStateRole)
             dialog = AnalysisSetupDialog(model, parent=window, diagnostic_metrics=('sens', 'spec'),
-                                         confidence_level=model.get_confidence_level())
+                                         confidence_level=model.get_confidence_level(), on_result=window.analysis)
             dialog.show()
             app.processEvents()
             assert dialog.current_method == 'diagnostic.reitsma'

@@ -13,6 +13,7 @@ def run(app, window, work, record):
     from rc_metastudio import r_bridge
     from rc_metastudio.ratio_data_dialog import RatioDataDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.fit_observations import observe_fit
     root = Path(__file__).resolve().parents[2]
     for metric, sample, modes in (
         ('HR','Pignon2000-HR', ('ratio','log')),
@@ -68,8 +69,9 @@ def run(app, window, work, record):
             unit = window.model.get_current_analysis_unit_for_study(0)
             assert asdict(unit.ratio_input(window.model.arm_names)) == expected
             assert unit.get_raw_data_for_arms(window.model.arm_names) == raw
-            view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
-                                    parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
+            with observe_fit() as fit:
+                view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
+                                        parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
             if mode == 'raw':
                 expression = f'metafor::escalc("IRR", x1i={raw[0]}, t1i={raw[1]}, x2i={raw[2]}, t2i={raw[3]})'
                 expected_effect, expected_se = math.log(raw[0]/raw[1]/(raw[2]/raw[3])), math.sqrt(1/raw[0]+1/raw[2])
@@ -81,13 +83,13 @@ def run(app, window, work, record):
                 # Direct public conversion, independently from RCMS's source-selection adapter.
                 reference = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON('+expression+',digits=16)')[0]))[0]
                 expected_effect, expected_se = reference['yi'], math.sqrt(reference['vi'])
-            derived = r_bridge.execute_r_string('c(result$input_data@y[1], result$input_data@SE[1])')
+            derived = fit.evaluate('c(result$input_data@y[1], result$input_data@SE[1])')
             assert math.isclose(float(derived[0]), expected_effect, abs_tol=1e-12)
             assert math.isclose(float(derived[1]), expected_se, rel_tol=1e-12, abs_tol=1e-15)
             if mode == 'ratio':
                 from statistics import NormalDist
                 assert math.isclose(expected_se, (math.log(expected['upper'])-math.log(expected['lower']))/(2*NormalDist().inv_cdf(.95)), rel_tol=1e-12)
-                r_bridge.execute_r_string('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6)})')
+                fit.evaluate('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6)})')
             record('ratio-precision-reopened-fit', view, metric=metric, mode=mode,
                    source=expected, raw=raw, expected_effect=expected_effect, expected_se=expected_se,
                    observed_effect=float(derived[0]), observed_se=float(derived[1]))
@@ -96,11 +98,12 @@ def run(app, window, work, record):
                 assert expected['confidence'] == 90
                 sheet_confidence(95)
                 assert asdict(window.model.get_current_analysis_unit_for_study(0).ratio_input(window.model.arm_names)) == expected
-                view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
-                                        parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
-                after = r_bridge.execute_r_string('result$input_data@SE[1]')
+                with observe_fit() as changed_confidence_fit:
+                    view = analyze_existing(app, window, 'standard', 'time_to_event.random' if metric == 'HR' else 'event_rates.random', record,
+                                            parameters={'digits':6,'rm.method':'DL','inference.method':'z'})
+                after = changed_confidence_fit.evaluate('result$input_data@SE[1]')
                 assert math.isclose(float(after[0]), expected_se, rel_tol=1e-12)
-                weights = r_bridge.execute_r_string('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6); weights(ref)})')
+                weights = changed_confidence_fit.evaluate('local({d<-result$input_data; ref<-metafor::rma.uni(d@y,sei=d@SE,method="DL"); stopifnot(max(abs(weights(ref)-weights(result$res)))<1e-6); weights(ref)})')
                 record('original-90-ci-after-sheet-95', view, source=expected, observed_se=float(after[0]), weights=list(weights))
                 view.close()
             if mode in ('raw', 'ratio'):

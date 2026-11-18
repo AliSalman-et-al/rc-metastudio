@@ -907,7 +907,6 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         old_table_model = window.tableView.model()
         old_path = window.workspace.path
         old_dirty = window.workspace.is_dirty
-        old_connection_count = len(window._model_signal_connections)
         selected = old_model.index(0, old_model.NAME)
         window.tableView.setCurrentIndex(selected)
         window.tableView.selectionModel().select(
@@ -940,11 +939,8 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
 
             context.setattr(window, "_refresh_projected_sheet_controls", fail_candidate_refresh)
 
-        sync_failures = []
-
         def sync_failure(context):
             def always_fail():
-                sync_failures.append(True)
                 raise RuntimeError("column synchronization failed")
 
             context.setattr(window.tableView, "synchronize_column_widths", always_fail)
@@ -963,17 +959,21 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
             assert window.tableView.model() is old_table_model
             assert window.workspace.path == old_path
             assert window.workspace.is_dirty is old_dirty
-            assert len(window._model_signal_connections) == old_connection_count
             assert window.tableView.currentIndex().row() == 0
             assert window.tableView.currentIndex().column() == old_model.NAME
             assert selected in window.tableView.selectionModel().selectedIndexes()
             assert window.model.dataset.title == "aminoglycosides"
             assert window.model.rowCount() > 0
 
-        # Rollback did not retry the same failing synchronization operation.
-        assert sync_failures == [True]
+        initial_title = window.windowTitle()
+        label = selected.data()
+        assert window.model.setData(selected, "Recovered study") is True
+        assert selected.data() == "Recovered study"
+        assert "amino.rcms *" in window.windowTitle()
+        window.action_undo.trigger()
+        assert window.model.index(0, window.model.NAME).data() == label
+        assert window.windowTitle() == initial_title
 
-        # The restored connections and model remain usable for a later open.
         assert window.open(candidate) is True
         assert window.model.dataset.title == "BCG"
     finally:
@@ -1035,7 +1035,7 @@ def test_late_cross_family_open_failure_restores_projected_controls_both_directi
             assert window.open(source) is True
             previous_model = window.model
             previous_controls = projected_controls(window)
-            enable_analysis = window.tableView._enable_analysis_menus_if_appropriate
+            refresh_analysis = window.refresh_analysis_actions
 
             def fail_after_projecting_candidate():
                 if window.model is not previous_model:
@@ -1043,11 +1043,11 @@ def test_late_cross_family_open_failure_restores_projected_controls_both_directi
                     assert controls[0] != previous_controls[0]
                     assert controls[2] != previous_controls[2]
                     raise RuntimeError("late candidate installation failure")
-                enable_analysis()
+                refresh_analysis()
 
             with monkeypatch.context() as context:
                 context.setattr(
-                    window.tableView, "_enable_analysis_menus_if_appropriate",
+                    window, "refresh_analysis_actions",
                     fail_after_projecting_candidate,
                 )
                 assert window.open(candidate) is None

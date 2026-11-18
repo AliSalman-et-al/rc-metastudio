@@ -3,7 +3,6 @@
 \name{RCMetaR-diagnostic-methods}
 \alias{RCMetaR-diagnostic-methods}
 \alias{adjust.raw.data}
-\alias{append.image.order}
 \alias{compute.diag.point.estimates}
 \alias{compute.diagnostic.terms}
 \alias{diagnostic.fixed.inv.var}
@@ -32,7 +31,6 @@
 \alias{diagnostic.reitsma.parameters}
 \alias{diagnostic.reitsma.pretty.names}
 \alias{diagnostic.transform.f}
-\alias{multiple.diagnostic}
 \title{Diagnostic test accuracy analysis functions}
 \description{
 Functions for diagnostic test accuracy meta-analysis. RCMetaR supports
@@ -60,8 +58,8 @@ diagnostic metrics.
 
 \section{Multi-run helpers}{
 
-\code{multiple.diagnostic()} runs a sequence of diagnostic analyses and
-\code{append.image.order()} preserves plot ordering in result payloads.
+\code{rcmetar.run.diagnostic.analyses()} runs the requested diagnostic fits
+and assembles their results and plot order.
 }
 
 \section{Plot drawing}{

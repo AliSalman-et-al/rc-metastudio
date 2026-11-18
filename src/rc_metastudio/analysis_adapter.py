@@ -6,18 +6,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-import hashlib
-import json
-from types import MappingProxyType
 from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
 
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio import r_bridge
 from rc_metastudio import analysis_dataset
-from rc_metastudio import result_formatting
 from rc_metastudio.analysis_catalog import AnalysisFamily, FAMILY_METRICS
-from rc_metastudio.analysis_results import AnalysisResult, ResultSection, parse_analysis_result
-from rc_metastudio.analysis_errors import DiagnosticExecutionError
+from rc_metastudio.analysis_results import AnalysisResult, parse_analysis_result
 from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 
 
@@ -81,21 +76,6 @@ class AnalysisRequest:
             raise ValueError(f"unsupported analysis request version: {self.version}")
         _required_text("metric", self.metric)
 
-    @property
-    def semantic_id(self) -> str:
-        """Stable identity for this request's meaning, excluding presentation."""
-        payload = {
-            "data_type": self.data_type,
-            "metric": self.metric,
-            "method": self.method,
-            "parameters": [(item.name, item.value) for item in self.parameters],
-            "version": self.version,
-            "workflow": self.workflow,
-        }
-        return hashlib.sha256(
-            json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()
-
     def to_mapping(self) -> dict[str, object]:
         """Return the explicit wire representation consumed by RCMetaR."""
         parameters = self.parameter_values()
@@ -125,16 +105,8 @@ class StudySelectionResult:
 class AnalysisService:
     """Own the process-global R boundary used by analysis configuration UI."""
 
-    def prepare_method_dataset(self, model: object, data_type: str):
-        if data_type == "binary":
-            return _require_backend(lambda: r_bridge.dataset_to_simple_binary_r_object(model))
-        if data_type == "continuous":
-            return _require_backend(lambda: r_bridge.dataset_to_simple_continuous_r_object(model))
-        if data_type == "diagnostic":
-            return _require_backend(lambda: r_bridge.dataset_to_simple_diagnostic_r_object(model))
-        if data_type in ("time_to_event", "event_rates"):
-            return _require_backend(lambda: r_bridge.dataset_to_simple_ratio_r_object(model))
-        raise ValueError(f"unsupported analysis data family: {data_type!r}")
+    def prepare_method_dataset(self, model: object, data_type: str, *, metric: str):
+        return _require_backend(lambda: r_bridge.dataset_for_analysis(model, data_type, metric=metric))
 
     def available_methods(self, **query: object) -> Mapping[str, str]:
         return _require_backend(lambda: r_bridge.get_available_methods(**query))
@@ -339,7 +311,13 @@ def _execute_diagnostic_request(
 ) -> AnalysisResult:
     if not isinstance(model, DiagnosticExecutionModel):
         raise TypeError("Diagnostic execution requires the diagnostic model queries.")
-    return _run_diagnostic_analysis_isolating_metric_failures(model, requests)
+    if _diagnostic_direct_effects_need_metric_specific_data(model, requests):
+        data = [r_bridge.diagnostic_data_arguments(model, metric=request.metric) for request in requests]
+    else:
+        data = r_bridge.dataset_to_simple_diagnostic_r_object(model)
+    return _typed_result(r_bridge.run_versioned_analysis_requests(
+        [request.to_mapping() for request in requests], data,
+    ))
 
 
 def _conversion_kwargs(
@@ -381,13 +359,6 @@ def execute_meta_regression_request(
     ))
 
 
-def _run_diagnostic_backend(requests: Sequence[AnalysisRequest], data: object):
-    wire_requests: list[Mapping[str, object]] = [
-        request.to_mapping() for request in requests
-    ]
-    return r_bridge.run_versioned_analysis_requests(wire_requests, data)
-
-
 def _diagnostic_direct_effects_need_metric_specific_data(model, requests):
     if model.included_studies_have_raw_data():
         return False
@@ -415,122 +386,3 @@ def _diagnostic_direct_effects_need_metric_specific_data(model, requests):
         )
 
     return True
-
-
-def _run_diagnostic_analysis_isolating_metric_failures(
-    model: DiagnosticExecutionModel, requests: Sequence[AnalysisRequest],
-) -> AnalysisResult:
-    if _diagnostic_direct_effects_need_metric_specific_data(model, requests):
-        return _run_diagnostic_with_metric_specific_data(model, requests)
-
-    data = r_bridge.dataset_to_simple_diagnostic_r_object(model)
-    try:
-        return _typed_result(_run_diagnostic_backend(requests, data))
-    except DiagnosticExecutionError as error:
-        if len(requests) == 1:
-            raise RuntimeError(_format_diagnostic_failures([(requests[0].metric, error)])) from error
-        return _run_diagnostic_methods_per_metric(
-            requests, lambda request: _run_diagnostic_backend((request,), data),
-        )
-
-
-def _run_diagnostic_with_metric_specific_data(model, requests):
-    def run_metric(request: AnalysisRequest):
-        data = r_bridge.dataset_to_simple_diagnostic_r_object(model, metric=request.metric)
-        return _run_diagnostic_backend((request,), data)
-
-    return _run_diagnostic_methods_per_metric(requests, run_metric)
-
-
-def _run_diagnostic_methods_per_metric(requests, run_metric):
-    results: list[AnalysisResult | ResultSection] = []
-    failures = []
-    for request in requests:
-        metric = request.metric
-        try:
-            results.append(_typed_result(run_metric(request)))
-        except DiagnosticExecutionError as error:
-            failures.append((metric, error))
-            title = f"{metric} Error"
-            results.append(ResultSection(
-                f"diagnostic.{metric.lower()}.error", "text", 0, title, str(error), title,
-            ))
-
-    successes = [result for result in results if isinstance(result, AnalysisResult)]
-    if failures and not any(result.sections for result in successes):
-        raise RuntimeError(_format_diagnostic_failures(failures))
-    return _combine_diagnostic_results(results, successes)
-
-
-def _combine_diagnostic_results(
-    results: Sequence[AnalysisResult | ResultSection], successes: Sequence[AnalysisResult],
-) -> AnalysisResult:
-    return AnalysisResult(
-        version=1,
-        image_var_names=MappingProxyType({
-            key: value for result in successes for key, value in result.image_var_names.items()
-        }),
-        image_order=tuple(key for result in successes for key in result.image_order or ()) or None,
-        sections=_merge_diagnostic_sections(results),
-        software=", ".join(dict.fromkeys(
-            filter(None, (package for result in successes for package in result.software.split(", ")))
-        )),
-        inference_methods=tuple(dict.fromkeys(
-            code for result in successes for code in result.inference_methods
-        )),
-    )
-
-
-def _merge_diagnostic_sections(results: Sequence[AnalysisResult | ResultSection]) -> tuple[ResultSection, ...]:
-    sections: list[ResultSection] = []
-    references_index: int | None = None
-    references = ""
-    for result in results:
-        if isinstance(result, ResultSection):
-            sections.append(result)
-            continue
-        metric_sections = [s for s in result.sections if (s.kind, s.source_key) != ("text", "References")]
-        sections.extend(metric_sections)
-        reference_section = next((s for s in result.sections if (s.kind, s.source_key) == ("text", "References")), None)
-        if reference_section is None or not reference_section.value.strip():
-            continue
-        references = _merge_reference_texts(references, reference_section.value)
-        if references_index is None:
-            references_index = len(sections)
-            sections.append(reference_section)
-
-    if references_index is not None:
-        sections[references_index] = replace(sections[references_index], value=references)
-    return tuple(replace(section, order=index) for index, section in enumerate(sections))
-
-
-def _format_diagnostic_failures(failures):
-    return "\n".join("%s failed: %s" % (metric, error) for metric, error in failures)
-
-
-def _merge_reference_texts(existing, incoming):
-    """Combine already-formatted reference sections without losing citations."""
-    references = _reference_entries(existing) + _reference_entries(incoming)
-    if not references:
-        return ""
-    return result_formatting.format_references(
-        result_formatting.dedupe_references_preserving_order(references)
-    )
-
-
-def _reference_entries(value):
-    if not value:
-        return []
-    if not isinstance(value, str):
-        return [str(value)]
-    entries = []
-    for line in value.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        # parse_out_results numbers references for display.  Remove that
-        # presentation detail before applying stable de-duplication.
-        if ". " in line and line.split(". ", 1)[0].isdigit():
-            line = line.split(". ", 1)[1]
-        entries.append(line)
-    return entries

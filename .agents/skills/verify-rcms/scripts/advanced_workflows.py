@@ -102,11 +102,10 @@ def authority(
             if metric == "Mean"
             else f'metafor::escalc("{metric}", n1i={vector(0)}, m1i={vector(1)}, sd1i={vector(2)}, n2i={vector(3)}, m2i={vector(4)}, sd2i={vector(5)})'
         )
-    elif metric == "Sens":
-        # Diagnostic correction applies to all four cells if any is zero,
-        # including zeros in the specificity arm of a Sens analysis.
+    elif metric in {"Sens", "Spec"}:
+        events, other = (0, 1) if metric == "Sens" else (3, 2)
         correction_mask = f"({vector(0)}*{vector(1)}*{vector(2)}*{vector(3)} == 0)"
-        expression = f'metafor::escalc("PLO", xi={vector(0)}+.5*{correction_mask}, ni={vector(0)}+{vector(1)}+{correction_mask}, add=0)'
+        expression = f'metafor::escalc("PLO", xi={vector(events)}+.5*{correction_mask}, ni={vector(events)}+{vector(other)}+{correction_mask}, add=0)'
     else:
         expression = f'metafor::escalc("OR", ai={vector(0)}, bi={vector(1)}, ci={vector(2)}, di={vector(3)}, add=.5, to="only0", drop00=FALSE)'
     override = (
@@ -142,11 +141,11 @@ def compare_authority(view, expected, family, record, metric=None):
     )
 
     sections = parsed_numeric_sections(view.results)
-    actual = sections[
-        ("Sensitivity summary" if metric == "Sens" else "Diagnostic odds ratio summary")
-        if family == "diagnostic"
-        else "Summary"
-    ]
+    diagnostic_summaries = {
+        "Sens": "Sensitivity summary", "Spec": "Specificity summary",
+        "DOR": "Diagnostic odds ratio summary",
+    }
+    actual = sections[diagnostic_summaries[metric or "DOR"] if family == "diagnostic" else "Summary"]
     for key, value in expected.items():
         observed_key = (
             "calculation_scale." + key
@@ -1035,13 +1034,14 @@ def calculators(app, window, mode, record):
         )
     )
     entered = mode.startswith("entered-")
+    diagnostic_metric = "Spec" if entered else "Sens"
     included_before = sum(study.include for study in window.model.get_studies(False))
     observed = {}
 
     def entered_values():
         unit = window.model.get_current_analysis_unit_for_study(0)
         return unit.get_entered_effect_and_ci(
-            "Sens" if family == "diagnostic" else window.model.current_effect,
+            diagnostic_metric if family == "diagnostic" else window.model.current_effect,
             window.model.get_current_arm_key(),
         )
 
@@ -1310,6 +1310,7 @@ def calculators(app, window, mode, record):
                 assert float(dialog.effect_text_box.text()) == .5
             if family == "diagnostic":
                 click(app, dialog.clear_button)
+                dialog.effect_combo_box.setCurrentIndex(dialog.effect_combo_box.findData(diagnostic_metric))
             values = (
                 (0.12345678901234566, 1.2345678901234567e-8, 1e12)
                 if family == "binary"
@@ -1476,13 +1477,10 @@ def calculators(app, window, mode, record):
             focus = app.focusWidget()
             record("calculator-ci-correction-state", dialog, mode=mode,
                    draft=dialog.upper_text_box.text(), expected_upper=values[2],
-                   original_value=dialog.upper_text_box.property("calculatorValue"),
                    editing_finished=len(finished), has_focus=dialog.upper_text_box.hasFocus(),
                    focus=focus.objectName() if focus else None,
-                   invalid=dialog._validation_failed,
                    stored=list(dialog.analysis_unit.get_entered_effect_and_ci(dialog.current_effect, dialog.arm_key)))
             assert finished, ("CI correction did not commit through editingFinished", mode)
-            assert not dialog._validation_failed
         if family == "continuous" and not entered:
             if mode == "pre-post":
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
@@ -1714,14 +1712,12 @@ def calculators(app, window, mode, record):
             for w in app.topLevelWidgets()
             if isinstance(w, DiagnosticMetricsDialog) and w.isVisible()
         )
+        selected_group = diagnostic_metric.lower()
         if entered:
-            assert metrics_dialog._metric_checkbox("sens").isEnabled()
-            assert all(
-                not metrics_dialog._metric_checkbox(metric).isEnabled()
-                for metric in ("spec", "dor", "lr")
-            )
+            assert [group for group in metrics_dialog.SELECTABLE_METRICS
+                    if metrics_dialog._metric_checkbox(group).isEnabled()] == [selected_group]
         for metric in metrics_dialog.SELECTABLE_METRICS:
-            metrics_dialog._metric_checkbox(metric).setChecked(metric == "sens")
+            metrics_dialog._metric_checkbox(metric).setChecked(metric == selected_group)
         click(app, metrics_dialog.btn_ok)
     setup = next(
         w
@@ -1744,7 +1740,7 @@ def calculators(app, window, mode, record):
         for w in app.topLevelWidgets()
         if isinstance(w, results_window.ResultsWindow) and w.isVisible()
     )
-    metric = "Sens" if family == "diagnostic" else window.model.current_effect
+    metric = diagnostic_metric if family == "diagnostic" else window.model.current_effect
     expected = authority(
         window,
         family,

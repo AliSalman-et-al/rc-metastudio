@@ -21,7 +21,7 @@ def run_coefficients(app, window, work, record):
         target.model.add_covariate('Dose','continuous',
             {study.label:float(i+1) for i,study in enumerate(target.model.get_studies(only_if_included=True))})
         target.model.reset_model()
-        target.enable_menu_options_that_require_dataset()
+        target.refresh_analysis_actions()
         assert target.save(destination=work / 'reitsma-six-dose.rcms') and target.open(target.workspace.path,raise_on_error=True)
         assert [list(row) for row in target.model.get_current_raw_data()] == raw
         record('release-reitsma-exact-input', target, raw=raw, dose=list(range(1,7)))

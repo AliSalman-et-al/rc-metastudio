@@ -1,33 +1,5 @@
-param(
-    [string]$BuildScript = (Join-Path (Split-Path -Parent $PSScriptRoot) "scripts\build-windows-package.ps1")
-)
-
 $ErrorActionPreference = "Stop"
-$tokens = $null
-$parseErrors = $null
-$ast = [System.Management.Automation.Language.Parser]::ParseFile(
-    (Resolve-Path -LiteralPath $BuildScript),
-    [ref]$tokens,
-    [ref]$parseErrors
-)
-if ($parseErrors.Count -ne 0) {
-    throw "Could not parse bounded-process implementation: $($parseErrors.Message -join '; ')"
-}
-$functionAsts = @{}
-foreach ($functionName in @("Stop-BoundedPackageProcessTree", "Invoke-BoundedPackageProcess")) {
-    $functionAsts[$functionName] = $ast.Find(
-        {
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-                $node.Name -eq $functionName
-        },
-        $true
-    )
-    if ($null -eq $functionAsts[$functionName]) {
-        throw "$functionName was not found in '$BuildScript'."
-    }
-    . ([scriptblock]::Create($functionAsts[$functionName].Extent.Text))
-}
+. (Join-Path $PSScriptRoot "windows-package-process.ps1")
 
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("rcms-process-exit-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Force -Path $testRoot | Out-Null

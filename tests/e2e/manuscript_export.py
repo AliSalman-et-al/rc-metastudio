@@ -507,7 +507,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         window.model.add_covariate('Group', 'factor', {s.label: 'A' if i % 2 else 'B' for i, s in enumerate(studies)})
         window.model.add_covariate('Dose', 'continuous', {s.label: float(i + 1) for i, s in enumerate(studies)})
         window.model.reset_model()
-        window.enable_menu_options_that_require_dataset()
+        window.refresh_analysis_actions()
         view = analyze_existing(app, window, workflow, 'binary.random', record,
                                 parameters={'digits': 3, 'rm.method': 'DL' if workflow == 'subgroup' else 'REML'})
         from rc_metastudio.manuscript_report import write_docx, write_pdf

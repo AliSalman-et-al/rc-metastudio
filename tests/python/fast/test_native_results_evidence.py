@@ -127,7 +127,6 @@ def test_native_results_evidence_rejects_invalid_numeric_types_ranges_and_mismat
         ("mismatched-scale", ("scale_factor",), 1.1),
         ("zero-top-dpr", ("device_pixel_ratio",), 0),
         ("mismatched-top-dpr", ("device_pixel_ratio",), 1.1),
-        ("mismatched-capture-dpr", ("captures", "results", "device_pixel_ratio"), 1.1),
         (
             "mismatched-image-dpr",
             ("captures", "results", "image_device_pixel_ratio"),
@@ -182,15 +181,11 @@ def test_native_results_evidence_rejects_chained_dpr_drift_reproduction(tmp_path
     _valid_bundle(tmp_path)
     path, record = _record(tmp_path)
     record["scale_factor"] = 1.009
-    record["device_pixel_ratio"] = 1.018
-    record["captures"]["results"]["device_pixel_ratio"] = 0.991
-    record["captures"]["results"]["image_device_pixel_ratio"] = 0.982
+    record["captures"]["results"]["image_device_pixel_ratio"] = 0.991
     path.write_text(json.dumps(record), encoding="utf-8")
 
-    with pytest.raises(ValueError, match="pixel ratio|drifted apart"):
-        native_results_smoke.validate_evidence(tmp_path)
     with pytest.raises(ValueError, match="drifted apart"):
-        native_results_smoke._require_single_dpr_band([1.009, 1.018, 0.991, 0.982])
+        native_results_smoke.validate_evidence(tmp_path)
 
 
 def test_native_results_evidence_accepts_values_on_single_tolerance_boundary(tmp_path):

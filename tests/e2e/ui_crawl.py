@@ -12,8 +12,9 @@ def analysis_setup(driver, capture, missing):
                            ("irr", "NielWeise2008-IRR")):
         driver.window.workspace.mark_saved()
         assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
-        kwargs = {"diagnostic_metrics": ["dor"]} if family == "diagnostic" else {}
-        form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95, **kwargs)
+        diagnostic_metrics = ["dor"] if family == "diagnostic" else None
+        form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95,
+                                   diagnostic_metrics=diagnostic_metrics)
         form.show()
         driver.app.processEvents()
         form.specs_tab.setCurrentWidget(form.methods_tab)
@@ -373,7 +374,8 @@ def imports(driver, capture, missing):
     assert not page.isComplete()
     capture("C-xlsx-error", form)
     form.close()
-    from rc_metastudio.rm5_import import review_rm5
+    from rc_metastudio.rm5_import import read_rm5
+    from rc_metastudio.rm5_review_dialog import review_rm5
     for name in ("Fleiss1993", "generic-derived"):
         failures = []
         def review():
@@ -387,7 +389,7 @@ def imports(driver, capture, missing):
                 if dialog:
                     dialog.reject()
         QtCore.QTimer.singleShot(0, review)
-        review_rm5(str(driver.ROOT / f"tests/fixtures/rm5/{name}.rm5"), driver.window)
+        review_rm5(read_rm5(driver.ROOT / f"tests/fixtures/rm5/{name}.rm5"), driver.window)
         if failures:
             raise failures[0]
 

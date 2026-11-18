@@ -17,8 +17,10 @@ from typing import TypeGuard, cast
 
 if __name__ == "__main__":
     import packaged_smoke_contract as smoke_contract
+    from windows_system_imports import APP_SYSTEM_DLLS, R_KIT_SYSTEM_DLLS, is_system_import
 else:
     from scripts import packaged_smoke_contract as smoke_contract
+    from scripts.windows_system_imports import APP_SYSTEM_DLLS, R_KIT_SYSTEM_DLLS, is_system_import
 
 PE_X64_MACHINE = 0x8664
 NATIVE_SUFFIXES = {".dll", ".exe", ".pyd"}
@@ -59,66 +61,7 @@ REQUIRED_PROJECT_SCHEMAS = {
     "project.schema.json",
     "state.schema.json",
 }
-WINDOWS_SYSTEM_DLLS = {
-    "advapi32.dll",
-    "authz.dll",
-    "bcrypt.dll",
-    "bcryptprimitives.dll",
-    "cfgmgr32.dll",
-    "comctl32.dll",
-    "comdlg32.dll",
-    "crypt32.dll",
-    "cryptbase.dll",
-    "credui.dll",
-    "d2d1.dll",
-    "d3d11.dll",
-    "d3d12.dll",
-    "dnsapi.dll",
-    "d3d9.dll",
-    "dbghelp.dll",
-    "dwrite.dll",
-    "dwmapi.dll",
-    "dxgi.dll",
-    "gdi32.dll",
-    "gdiplus.dll",
-    "imagehlp.dll",
-    "imm32.dll",
-    "icuuc.dll",
-    "iphlpapi.dll",
-    "kernel32.dll",
-    "mscms.dll",
-    "msvcrt.dll",
-    "ncrypt.dll",
-    "netapi32.dll",
-    "normaliz.dll",
-    "mpr.dll",
-    "msimg32.dll",
-    "ntdll.dll",
-    "ole32.dll",
-    "oleaut32.dll",
-    "pdh.dll",
-    "powrprof.dll",
-    "propsys.dll",
-    "psapi.dll",
-    "rpcrt4.dll",
-    "secur32.dll",
-    "setupapi.dll",
-    "shell32.dll",
-    "shlwapi.dll",
-    "ucrtbase.dll",
-    "uiautomationcore.dll",
-    "usp10.dll",
-    "uxtheme.dll",
-    "user32.dll",
-    "userenv.dll",
-    "version.dll",
-    "winhttp.dll",
-    "wininet.dll",
-    "winmm.dll",
-    "wtsapi32.dll",
-    "wldap32.dll",
-    "ws2_32.dll",
-}
+WINDOWS_SYSTEM_DLLS = R_KIT_SYSTEM_DLLS | APP_SYSTEM_DLLS
 
 
 class DeploymentInspectionError(RuntimeError):
@@ -166,15 +109,6 @@ def pe_machine(path: Path) -> int:
         return struct.unpack("<H", raw_machine)[0]
 
 
-def _is_windows_system_import(name: str) -> bool:
-    lowered = name.casefold()
-    return (
-        lowered in WINDOWS_SYSTEM_DLLS
-        or lowered.startswith("api-ms-win-")
-        or lowered.startswith("ext-ms-win-")
-    )
-
-
 def _pe_imports(path: Path) -> list[dict[str, str]]:
     import pefile
 
@@ -203,13 +137,14 @@ def _pe_imports(path: Path) -> list[dict[str, str]]:
 
 def _resolve_pe_closure(records: list[dict]) -> None:
     by_path = {PurePosixPath(record["path"]): record for record in records}
+    by_loader_path: dict[str, dict] = {}
     declared_private_dirs = {
         PurePosixPath("."),
         PurePosixPath("_internal"),
         PurePosixPath("_internal/PyQt6/Qt6/bin"),
     }
-    for record in records:
-        path = PurePosixPath(record["path"])
+    for path, record in by_path.items():
+        by_loader_path.setdefault(path.as_posix().casefold(), record)
         if path.parts[:1] == ("R",):
             declared_private_dirs.add(path.parent)
         # Wheels such as NumPy use an adjacent ``*.libs`` directory and add it
@@ -219,30 +154,24 @@ def _resolve_pe_closure(records: list[dict]) -> None:
             ".libs"
         ):
             declared_private_dirs.add(path.parent)
+    private_dirs = sorted(declared_private_dirs, key=str)
     for record in records:
         resolutions = []
         owner = PurePosixPath(record["path"])
+        search_dirs = [owner.parent, *private_dirs]
         for imported in record.pop("_imports"):
             name = imported["name"]
-            if _is_windows_system_import(name):
+            if is_system_import(name, WINDOWS_SYSTEM_DLLS):
                 resolutions.append({**imported, "resolution": "system"})
                 continue
-            search_dirs = [owner.parent, *sorted(declared_private_dirs, key=str)]
-            matches = []
-            for directory in search_dirs:
-                candidate = directory / name
-                record_match = next(
-                    (
-                        value
-                        for path, value in by_path.items()
-                        if path.as_posix().casefold() == candidate.as_posix().casefold()
-                    ),
-                    None,
-                )
-                if record_match is not None:
-                    matches = [record_match]
-                    break
-            if len(matches) != 1:
+            candidates = (
+                by_loader_path.get((directory / name).as_posix().casefold())
+                for directory in search_dirs
+            )
+            dependency = next(
+                (candidate for candidate in candidates if candidate is not None), None
+            )
+            if dependency is None:
                 raise DeploymentInspectionError(
                     f"Windows PE import is unreachable from declared loader directories: "
                     f"{record['path']} -> {name}"
@@ -251,8 +180,8 @@ def _resolve_pe_closure(records: list[dict]) -> None:
                 {
                     **imported,
                     "resolution": "app-local",
-                    "resolved_path": matches[0]["path"],
-                    "resolved_sha256": matches[0]["sha256"],
+                    "resolved_path": dependency["path"],
+                    "resolved_sha256": dependency["sha256"],
                 }
             )
         record["imports"] = resolutions

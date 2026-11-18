@@ -27,6 +27,7 @@ from rc_metastudio.small_study_effects import (
 )
 
 if TYPE_CHECKING:
+    from rc_metastudio.manuscript_report import AnalysisResultHandler
     import ui_publication_bias_dialog as _ui_publication_bias_dialog
 else:
     from rc_metastudio.forms import (
@@ -77,10 +78,14 @@ class SmallStudyEffectsDialog(
 ):
     """Configure methods and plots while RCMetaR chooses eligible tests."""
 
-    def __init__(self, model, parent=None, analysis_service=None):
+    def __init__(
+        self, model, parent=None, analysis_service=None,
+        *, on_result: AnalysisResultHandler | None = None,
+    ):
         super().__init__(parent)
         self.model = model
         self.analysis_service = analysis_service or SmallStudyEffectsService()
+        self._on_result = on_result
         self.setupUi(self)
         self._configure_accessibility()
         from rc_metastudio.qt_layout import configure_context_label
@@ -494,11 +499,9 @@ class SmallStudyEffectsDialog(
                 result = self._with_report_identity(result)
             finally:
                 progress_dialog.dispose(progress)
-            owner = self.parentWidget()
-            callback = getattr(owner, "analysis", None)
-            if not callable(callback):
+            if self._on_result is None:
                 raise TypeError("small-study effects dialog has no results owner")
-            callback(result)
+            self._on_result(result, source_sheet=self.model.current_sheet)
             self.accept()
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
             self.failure_label.setText(str(error))

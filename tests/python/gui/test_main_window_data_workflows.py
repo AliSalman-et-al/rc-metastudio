@@ -373,7 +373,7 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         table.paste_contents(model.index(1, model.NAME), [[_variant("Lagasse")]])
         analysis_unit = model.get_current_analysis_unit_for_study(1)
         arm_key = model.get_current_arm_key()
-        analysis_unit.arms[model.get_arm_names()[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
+        analysis_unit.arms[model.arm_names[0]].raw_data = [15.0, 11.0, 16.0, 49.0]
         for metric in analysis_catalog.DIAGNOSTIC_METRICS:
             analysis_unit.set_derived_effect_preview(
                 metric,
@@ -603,7 +603,7 @@ def _create_diagnostic_dataset(window):
 
 
 def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatch):
-    from PyQt6 import QtCore, QtWidgets
+    from PyQt6 import QtCore, QtGui, QtWidgets
     from rc_metastudio import dataset_table_view
 
     app, window = automation.start_automation()
@@ -612,27 +612,22 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
         table = window.tableView
         table.paste_contents(window.model.index(0, window.model.NAME), [["Alpha"]])
         popup_menus = []
-        delete_calls = []
 
-        class ContextEvent:
-            def y(self):
-                return 0
-
-            def globalPos(self):
-                return QtCore.QPoint(0, 0)
-
-        event = ContextEvent()
+        def open_menu(point):
+            table.contextMenuEvent(QtGui.QContextMenuEvent(
+                QtGui.QContextMenuEvent.Reason.Mouse,
+                point,
+                table.mapToGlobal(point),
+            ))
         monkeypatch.setattr(
             dataset_table_view.app_error_handler,
             "popup_context_menu",
             lambda menu, *_args, **_kwargs: popup_menus.append(menu),
         )
-        monkeypatch.setattr(table, "rowAt", lambda _y: -1)
-        table.contextMenuEvent(event)
+        open_menu(QtCore.QPoint(0, table.viewport().height() + 1))
         assert popup_menus == []
 
-        monkeypatch.setattr(table, "rowAt", lambda _y: 0)
-        table.contextMenuEvent(event)
+        open_menu(table.visualRect(window.model.index(0, window.model.NAME)).center())
         assert len(popup_menus) == 1
         delete_action = next(
             action
@@ -644,13 +639,8 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
             "question",
             lambda *_args, **_kwargs: QtWidgets.QMessageBox.StandardButton.No,
         )
-        monkeypatch.setattr(
-            window,
-            "delete_study",
-            lambda *args, **kwargs: delete_calls.append((args, kwargs)),
-        )
         delete_action.trigger()
-        assert delete_calls == []
+        assert [study.label for study in window.model.get_studies(only_if_included=False)] == ["Alpha"]
 
         monkeypatch.setattr(
             dataset_table_view.QMessageBox,
@@ -658,8 +648,9 @@ def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatc
             lambda *_args, **_kwargs: QtWidgets.QMessageBox.StandardButton.Yes,
         )
         delete_action.trigger()
-        assert len(delete_calls) == 1
-        assert delete_calls[0][1] == {"study_index": 0}
+        assert not window.model.get_studies(only_if_included=False)
+        window.action_undo.trigger()
+        assert [study.label for study in window.model.get_studies(only_if_included=False)] == ["Alpha"]
     finally:
         window.workspace.mark_saved()
         window.close()

@@ -1561,22 +1561,6 @@ test_that("diagnostic Default Forest Style builds and renders count columns on t
   expect_gte(png_size[["height"]], 500)
 })
 
-test_that("diagnostic extraction keeps image order aligned with semantic forest keys", {
-  fit <- list(
-    Summary = list(),
-    images = c("forest.png" = "forest.png"),
-    plot_params_paths = c("Forest plot" = "forest.rds"),
-    image_order = "Forest plot"
-  )
-
-  extracted <- rcmetar.diagnostic.extract(fit, list(measure = "Sens"))
-
-  expect_identical(names(extracted$images), "diagnostic.Sens.forest")
-  expect_identical(names(extracted$plot.paths), "diagnostic.Sens.forest")
-  expect_identical(extracted$image.order, "diagnostic.Sens.forest")
-  expect_identical(extracted$sections[[2]]$title, "Sensitivity forest plot")
-})
-
 test_that("diagnostic multi-metric workflows save independent metafor forest plots", {
   fixture <- metafor_diagnostic_fixture(measure = "Sens")
   run_metrics <- function(measures) {

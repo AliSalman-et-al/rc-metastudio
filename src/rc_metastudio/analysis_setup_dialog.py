@@ -51,7 +51,7 @@ from rc_metastudio.plot_defaults import apply_default_forest_arm_labels
 from rc_metastudio.plot_style_controls import (
     configure_plot_style, load_plot_style, selected_plot_style,
 )
-from rc_metastudio.dataset_analysis_domain import raw_data_is_complete
+from rc_metastudio.dataset_analysis_domain import fit_raw_rows, raw_data_is_complete
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     plot_axis_label_params,
@@ -64,6 +64,8 @@ from rc_metastudio.settings import analysis_output_path
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
+    from rc_metastudio.analysis_dataset import Sheet
+    from rc_metastudio.manuscript_report import AnalysisResultHandler
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 else:
     from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
@@ -138,12 +140,14 @@ class _DiagnosticMethodPanel(object):
         self.owner = owner
         self.params = {}
         self.widgets = []
+        self.definitions = {}
         self.label = label_widget
         self.label.setText(label + " method")
         self.combo = combo
-        self.param_box = param_box
         owner._configure_method_selector(self.combo)
-        self.param_box.setLayout(QGridLayout())
+        self.layout = QGridLayout(param_box)
+        param_box.setTitle("")
+        param_box.setFlat(True)
         self.combo.currentTextChanged.connect(
             app_error_handler.safe_slot(
                 lambda _text: self._method_changed(), parent=owner
@@ -155,9 +159,11 @@ class _DiagnosticMethodPanel(object):
         return self.methods[str(self.combo.currentText())]
 
     def populate(self):
-        data = self.owner.analysis_service.prepare_method_dataset(self.owner.model, "diagnostic")
         metrics = [metric for group in self.owner.diagnostic_metrics if group in ('lr', 'dor')
                    for metric in DIAGNOSTIC_METRIC_GROUPS[group]]
+        data = self.owner.analysis_service.prepare_method_dataset(
+            self.owner.model, "diagnostic", metric=metrics[0],
+        )
         self.methods = self.owner._methods_for_metrics(metrics, data)
         names = [
             name
@@ -174,38 +180,22 @@ class _DiagnosticMethodPanel(object):
         self._method_changed()
 
     def _method_changed(self, saved=None):
-        self.owner._forget_advanced_controls(self.widgets)
-        for widget in self.widgets:
-            self.param_box.layout().removeWidget(widget)
-            widget.deleteLater()
-        self.widgets = []
-        self.params = {}
-        method = self.method
         definitions, defaults, order, metadata = self.owner.analysis_service.parameters(
-            method
+            self.method
         )
         self.definitions = definitions
         if saved is not None:
             defaults.update(saved)
-        self.param_box.setTitle("")
-        self.param_box.setFlat(True)
-        row = 0
-        for name in order or definitions:
-            spec = _normalize_parameter_definition(
-                name, definitions[name], defaults.get(name), metadata.get(name)
-            )
-            if name in SHARED_DIAGNOSTIC_PARAMS:
-                self.owner._register_shared_diagnostic_param(
-                    spec,
-                )
-                continue
-            label = self.owner._parameter_label(spec)
-            control = self.owner._create_parameter_control(spec, self.params)
-            self.owner._configure_parameter_accessibility(label, control)
-            row = self.owner._place_parameter(self.param_box.layout(), row, spec, label, control, self.params, defaults.get(name))
-            self.widgets.extend((label, control))
-        if self.owner.shared_diagnostic_params_box.layout() is not None:
-            self.owner._rebuild_shared_diagnostic_params()
+        specs = [
+            _normalize_parameter_definition(name, definitions[name], defaults.get(name), metadata.get(name))
+            for name in order or definitions
+        ]
+        self.owner._remove_parameter_widgets(self.widgets)
+        self.params = {}
+        self.widgets = self.owner._render_parameters(
+            self.layout, self.owner._local_diagnostic_parameters(specs), self.params, defaults
+        )
+        self.owner._rebuild_shared_diagnostic_params()
         self.owner._set_analysis_tab_order()
         self.owner._schedule_local_reflow()
 
@@ -227,10 +217,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         confidence_level=None,
         analysis_service=None,
         initial_settings=None,
+        *,
+        on_result: "AnalysisResultHandler | None" = None,
+        source_sheet: "Sheet | None" = None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
+        self._on_result = on_result
+        self._rerun_source_sheet = source_sheet
         self.setupUi(self)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
@@ -239,6 +234,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             diagnostic_metrics,
             diagnostic_analysis_details,
         )
+        self._setup_advanced_parameters()
         self._connect_dialog_actions()
         self._configure_data_family()
         self.populate_parameter_controls()
@@ -322,12 +318,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         label = next((label for label, method in self.available_method_d.items() if method == saved["method"]), None)
         if label is None:
             raise ValueError("The result's analysis method is unavailable for its original dataset.")
-        self.method_cbo_box.setCurrentText(label)
+        with QtCore.QSignalBlocker(self.method_cbo_box):
+            self.method_cbo_box.setCurrentText(label)
         self.method_changed()
         if self._combined_diagnostic:
             method, values = saved["lr_dor"]
             label = next(label for label, key in self.lr_dor_panel.methods.items() if key == method)
-            self.lr_dor_panel.combo.setCurrentText(label)
+            with QtCore.QSignalBlocker(self.lr_dor_panel.combo):
+                self.lr_dor_panel.combo.setCurrentText(label)
             self.lr_dor_panel._method_changed(values)
         if self.is_meta_regression:
             for covariate, checkbox in self.covs_and_check_boxes:
@@ -359,7 +357,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if name in parameters:
                 checkbox.setChecked(_bool_plot_param(parameters[name], True))
 
-    def _change_settings_callback(self):
+    def _change_settings_callback(self, source_sheet: "Sheet | None"):
         from rc_metastudio.dataset_table_model import DatasetTableModel
         model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
         model.set_current_sheet(self.model.current_sheet_id)
@@ -369,7 +367,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
             saved["lr_dor"] = (self.lr_dor_panel.method, copy.deepcopy(self.lr_dor_panel.params))
-        owner, service = self.parentWidget(), self.analysis_service
+        parent, service = self.parentWidget(), self.analysis_service
+        on_result = self._on_result
         workflow, metrics = self.analysis_type, self.diagnostic_metrics
         details = copy.deepcopy(self.diagnostic_analysis_details)
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
@@ -381,10 +380,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 parameters.update({key: value for key, value in plot_params.items()
                                    if key.startswith("fp_") and key not in {"fp_outpath", "fp_display_path"}})
             restored["parameters"] = parameters
-            form = AnalysisSetupDialog(model, parent=owner, analysis_type=workflow,
+            form = AnalysisSetupDialog(model, parent=parent, analysis_type=workflow,
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
-                analysis_service=service, initial_settings=restored)
+                analysis_service=service, initial_settings=restored, on_result=on_result,
+                source_sheet=source_sheet)
             form.show()
 
         return reopen
@@ -466,6 +466,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.confidence_level
         )
         self._shared_diagnostic_widgets = []
+        self._shared_diagnostic_layout: QGridLayout | None = None
 
     def _connect_dialog_actions(self):
         self._accepted_connection = None
@@ -900,11 +901,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         try:
             from rc_metastudio.manuscript_report import ManuscriptReport
 
+            source_sheet = self._rerun_source_sheet or self.model.current_sheet
             result = operation()
             manuscript = ManuscriptReport.from_result(result)
-            change_settings = self._change_settings_callback()
-            callback = getattr(self.parentWidget(), "analysis", None)
-            if not callable(callback):
+            change_settings = self._change_settings_callback(source_sheet)
+            on_result = self._on_result
+            if on_result is None:
                 raise RuntimeError("analysis configuration has no results owner")
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
@@ -925,7 +927,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         finally:
             progress_dialog.dispose(bar)
         self.done(QDialog.DialogCode.Accepted.value)
-        callback(result, change_settings=change_settings, manuscript=manuscript)
+        on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
 
     def _expand_error_details(self, expanded):
         self.analysis_error_details.setVisible(expanded)
@@ -1074,12 +1076,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _correction_raw_data(self):
         raw = self._manuscript_raw_data()
         if self.data_type == "binary":
-            if any(study.analysis_unit.calculator_source(
-                self.model.current_effect, self.model.get_current_arm_key()
-            ) == "entered" for study in self._manuscript_studies()):
-                return []
-            if self.model.current_effect in ONE_ARM_METRICS:
-                raw = [row[:2] for row in raw]
+            return fit_raw_rows(
+                self._manuscript_studies(), raw, self.model.current_effect,
+                self.model.get_current_arm_key(),
+            ) or []
         return raw if all(raw_data_is_complete(row) for row in raw) else []
 
     def _correction_context(self, applied_parameters):
@@ -1167,32 +1167,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.show_4.setEnabled(False)
 
     def method_changed(self):
-        self.clear_param_ui()
-        self.current_widgets = []
         if self.available_method_d is None:
             raise RuntimeError("Analysis methods have not been initialized")
         self.current_method = self.available_method_d[
             str(self.method_cbo_box.currentText())
         ]
         self.setup_params()
-        self._set_parameter_box_title(self.method_cbo_box, self.parameter_grp_box)
-        self.ui_for_params(
-            excluded_names=SHARED_DIAGNOSTIC_PARAMS if self._combined_diagnostic else ()
-        )
-        self._schedule_local_reflow()
+        self._rebuild_primary_parameters()
 
-    def _set_parameter_box_title(self, cbo_box, param_box):
-        param_box.setTitle("")
-        param_box.setFlat(True)
-
-    def populate_parameter_controls(self, cbo_box=None, param_box=None):
-        if cbo_box is None:
-            cbo_box = self.method_cbo_box
-            param_box = self.parameter_grp_box
-
-        data = self.analysis_service.prepare_method_dataset(self.model, self.data_type)
+    def populate_parameter_controls(self):
+        self.parameter_grp_box.setTitle("")
+        self.parameter_grp_box.setFlat(True)
         metrics = self._method_query_metrics()
         metric = metrics[0]
+        data = self.analysis_service.prepare_method_dataset(self.model, self.data_type, metric=metric)
         self.available_method_d = self._methods_for_metrics(metrics, data)
         if self.data_type == "continuous" and metric == "Mean":
             family = analysis_identity.metric_label(self.model)
@@ -1202,13 +1190,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.available_method_d = {label.replace("Binary", "Proportion", 1): key
                                        for label, key in self.available_method_d.items()}
         method_names = self._available_method_names(metric)
-        self._populate_method_combo(cbo_box, method_names)
-        self.current_method = self.available_method_d[str(cbo_box.currentText())]
-        self.setup_params()
-        self._set_parameter_box_title(cbo_box, param_box)
-        if cbo_box is self.method_cbo_box:
-            excluded = SHARED_DIAGNOSTIC_PARAMS if self._combined_diagnostic else ()
-            self.ui_for_params(excluded_names=excluded)
+        self._populate_method_combo(self.method_cbo_box, method_names)
+        self.method_changed()
 
     def _methods_for_metrics(self, metrics, data):
         method_query = {
@@ -1274,21 +1257,24 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         finally:
             cbo_box.blockSignals(signals_were_blocked)
 
-    def clear_param_ui(self):
-        parameter_layout = self.parameter_grp_box.layout()
-        self._forget_advanced_controls(self.current_widgets)
-        for widget in self.current_widgets:
-            if parameter_layout is not None:
-                parameter_layout.removeWidget(widget)
+    def _remove_parameter_widgets(self, widgets):
+        self._advanced_entries = [entry for entry in self._advanced_entries if entry[1] not in widgets]
+        for widget in widgets:
             widget.setParent(None)
             widget.deleteLater()
-            widget = None
 
-    def ui_for_params(self, excluded_names=()):
+    def _rebuild_primary_parameters(self):
+        self._remove_parameter_widgets(self.current_widgets)
         self._configure_plot_option_groups()
         parameter_layout = self._parameter_layout()
-        self._add_parameter_controls(
-            parameter_layout, self._ordered_parameter_definitions(), excluded_names
+        self.current_widgets = self._add_effect_measure(parameter_layout)
+        definitions = self._ordered_parameter_definitions()
+        if self._combined_diagnostic:
+            definitions = self._local_diagnostic_parameters(definitions)
+        self.current_widgets.extend(
+            self._render_parameters(
+                parameter_layout, definitions, self.current_param_vals, self._method_defaults, first_row=1
+            )
         )
         if self.data_type == "diagnostic" and self.sens_spec:
             reason = ""
@@ -1304,6 +1290,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 note.setAccessibleName("Joint model availability")
                 parameter_layout.addWidget(note, parameter_layout.rowCount(), 0, 1, 2)
                 self.current_widgets.append(note)
+        self._rebuild_shared_diagnostic_params()
         self._set_analysis_tab_order()
         self._schedule_local_reflow()
 
@@ -1311,8 +1298,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         """Dynamic fields are created after the buttons; restore their visual order."""
         controls = [self.method_cbo_box]
         controls.extend(widget for widget in self.current_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
-        panel = getattr(self, "lr_dor_panel", None)
-        if panel is not None:
+        if self._shared_diagnostic_layout is not None:
+            panel = self.lr_dor_panel
             controls.append(panel.combo)
             controls.extend(widget for widget in panel.widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
         controls.extend(widget for widget in self._shared_diagnostic_widgets if widget.focusPolicy() & Qt.FocusPolicy.TabFocus)
@@ -1358,10 +1345,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if spec.kind == kind
         ]
 
-    def _forget_advanced_controls(self, widgets):
-        self._advanced_entries = [entry for entry in getattr(self, "_advanced_entries", [])
-                                  if entry[1] not in widgets]
-
     def _refresh_advanced_summary(self):
         changes = []
         for spec, control, target, default in self._advanced_entries:
@@ -1397,20 +1380,22 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             control.toggled.connect(self._refresh_advanced_summary)
         else:
             control.textChanged.connect(self._refresh_advanced_summary)
-        self._refresh_advanced_summary()
         return row
 
-    def _add_parameter_controls(self, layout, definitions, excluded_names):
-        if not hasattr(self, "advanced_toggle"):
-            self._advanced_entries = []
-            self.advanced_toggle = DisclosureButton("Advanced", self)
-            self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
-            self.advanced_panel = QtWidgets.QWidget()
-            QGridLayout(self.advanced_panel)
-            self.advanced_toggle.toggled.connect(self._expand_advanced)
-            expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
-            self.advanced_toggle.setChecked(expanded)
-            self.advanced_panel.setVisible(expanded)
+    def _setup_advanced_parameters(self):
+        self._advanced_entries = []
+        self.advanced_toggle = DisclosureButton("Advanced", self)
+        self.advanced_toggle.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.advanced_panel = QtWidgets.QWidget()
+        QGridLayout(self.advanced_panel)
+        self.advanced_toggle.toggled.connect(self._expand_advanced)
+        expanded = QtCore.QSettings().value("analysis/advancedExpanded", False, type=bool)
+        self.advanced_toggle.setChecked(expanded)
+        self.advanced_panel.setVisible(expanded)
+        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4, Qt.AlignmentFlag.AlignLeft)
+        self.gridLayout.addWidget(self.advanced_panel, 21, 0, 1, 4)
+
+    def _add_effect_measure(self, layout):
         effect_label = QLabel("Effect measure")
         layout.addWidget(effect_label, 0, 0)
         metric_label = QLabel(", ".join({"sens": "Sensitivity", "spec": "specificity"}[group]
@@ -1420,21 +1405,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         metric_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         layout.addWidget(metric_label, 0, 1)
         self._configure_parameter_accessibility(effect_label, metric_label)
-        self.current_widgets.extend((effect_label, metric_label))
-        row = 1
+        return [effect_label, metric_label]
+
+    def _render_parameters(self, layout, definitions, target, defaults, *, first_row=0):
+        widgets = []
+        row = first_row
         for spec in definitions:
-            if spec.name in excluded_names:
-                self._register_shared_diagnostic_param(spec)
-                continue
             label = self._parameter_label(spec)
-            control = self._create_parameter_control(spec, self.current_param_vals)
+            control = self._create_parameter_control(spec, target)
             self._configure_parameter_accessibility(label, control)
-            self.current_widgets.extend((label, control))
-            row = self._place_parameter(layout, row, spec, label, control,
-                                        self.current_param_vals, self._method_defaults.get(spec.name))
-        self.gridLayout.addWidget(self.advanced_toggle, 20, 0, 1, 4, Qt.AlignmentFlag.AlignLeft)
-        self.gridLayout.addWidget(self.advanced_panel, 21, 0, 1, 4)
+            widgets.extend((label, control))
+            row = self._place_parameter(layout, row, spec, label, control, target, defaults.get(spec.name))
         self._refresh_advanced_summary()
+        return widgets
 
     def _expand_advanced(self, checked):
         self.advanced_panel.setVisible(checked)
@@ -1648,11 +1631,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         rows = [(self._method_row, self._method_layout, self.method_lbl, self.method_cbo_box)]
         if self.analysis_type == 'cumulative':
             rows.append((self._sequence_row, self._sequence_layout, self.study_order_label, self.study_order))
-        if hasattr(self, "_lr_dor_method_row"):
+        if self._shared_diagnostic_layout is not None:
             rows.append((self._lr_dor_method_row, self._lr_dor_method_layout,
                          self.lr_dor_method_lbl, self.lr_dor_method_cbo_box))
         panels = [self.parameter_grp_box, self.advanced_panel]
-        if hasattr(self, "_lr_dor_method_row"):
+        if self._shared_diagnostic_layout is not None:
             panels.extend((self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box))
         grids = [(panel, grid) for panel in panels if isinstance(grid := panel.layout(), QGridLayout)]
         labels = _grid_field_labels(grids)
@@ -1729,10 +1712,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.content_scroll_area.ensureWidgetVisible(focused)
 
     def setup_params(self):
-        # parses out information about the parameters of the current method
-        # param_d holds (meta) information about the parameter -- it's a each param
-        # itself maps to a dictionary with a pretty name and description (assuming
-        # they were provided for the given param)
         self.current_params, self.current_defaults, self.var_order, self.param_d = (
             self.analysis_service.parameters(self.current_method)
         )
@@ -1751,18 +1730,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         # The application-level confidence setting overrides method defaults.
         self.current_defaults["conf.level"] = self.confidence_level
 
-    def _register_shared_diagnostic_param(self, spec):
-        if spec.name not in SHARED_DIAGNOSTIC_PARAMS:
-            return
-        existing = self._shared_diagnostic_param_specs[spec.name]
-        self._shared_diagnostic_param_specs[spec.name] = replace(
-            existing, metadata=spec.metadata or existing.metadata
-        )
-        if (
-            hasattr(self, "shared_diagnostic_params_box")
-            and self.shared_diagnostic_params_box.layout() is not None
-        ):
-            self._rebuild_shared_diagnostic_params()
+    def _local_diagnostic_parameters(self, specs):
+        local = []
+        for spec in specs:
+            existing = self._shared_diagnostic_param_specs.get(spec.name)
+            if existing is None:
+                local.append(spec)
+            elif spec.metadata:
+                self._shared_diagnostic_param_specs[spec.name] = replace(existing, metadata=spec.metadata)
+        return local
 
     def _finish_combined_diagnostic_ui(self):
         self.setWindowTitle("Method and parameters")
@@ -1785,7 +1761,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
         self.shared_diagnostic_params_box.show()
-        self.shared_diagnostic_params_box.setLayout(QGridLayout())
 
         lr_label = ("Likelihood ratios and DOR" if {"lr", "dor"}.issubset(self.diagnostic_metrics)
                     else "Positive and negative likelihood ratios" if "lr" in self.diagnostic_metrics
@@ -1801,38 +1776,27 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.lr_dor_method_cbo_box,
             self.lr_dor_parameter_grp_box,
         )
-        self.lr_dor_panel.populate()
         for widget in (self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box):
             widget.setSizePolicy(QSizePolicy.Policy.Ignored, widget.sizePolicy().verticalPolicy())
-        self._rebuild_shared_diagnostic_params()
+        self._shared_diagnostic_layout = QGridLayout(self.shared_diagnostic_params_box)
+        self.lr_dor_panel.populate()
 
     def _rebuild_shared_diagnostic_params(self):
-        layout = self.shared_diagnostic_params_box.layout()
-        if not isinstance(layout, QGridLayout):
-            raise RuntimeError("Shared diagnostic parameters require a grid layout")
-        self._forget_advanced_controls(self._shared_diagnostic_widgets)
-        for widget in self._shared_diagnostic_widgets:
-            layout.removeWidget(widget)
-            widget.deleteLater()
-        self._shared_diagnostic_widgets = []
-
-        active = set(self.current_params)
-        if hasattr(self, "lr_dor_panel"):
-            active.update(getattr(self.lr_dor_panel, "definitions", {}))
-        for row, name in enumerate(SHARED_DIAGNOSTIC_PARAMS):
+        layout = self._shared_diagnostic_layout
+        if layout is None:
+            return
+        self._remove_parameter_widgets(self._shared_diagnostic_widgets)
+        active = self.current_params.keys() | self.lr_dor_panel.definitions.keys()
+        definitions = []
+        defaults = {}
+        for name, spec in self._shared_diagnostic_param_specs.items():
             if name not in active:
                 continue
-            spec = self._shared_diagnostic_param_specs.get(name)
-            if spec is None:
-                continue
-            value = self.current_param_vals.get(name, spec.default)
-            spec = replace(spec, default=value)
-            label = self._parameter_label(spec)
-            control = self._create_parameter_control(spec, self.current_param_vals)
-            self._configure_parameter_accessibility(label, control)
-            self._place_parameter(layout, row, spec, label, control, self.current_param_vals, self._shared_diagnostic_param_specs[name].default)
-            self._shared_diagnostic_widgets.extend((label, control))
-        self._set_analysis_tab_order()
+            defaults[name] = spec.default
+            definitions.append(replace(spec, default=self.current_param_vals.get(name, spec.default)))
+        self._shared_diagnostic_widgets = self._render_parameters(
+            layout, definitions, self.current_param_vals, defaults
+        )
 
     def add_current_analysis_details(self):
         """This method only applicable for diagnostic data, wherein

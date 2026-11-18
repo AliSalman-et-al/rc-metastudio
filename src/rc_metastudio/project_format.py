@@ -27,6 +27,7 @@ from rc_metastudio.project_domain import (
     ProjectSemanticError,
     validate_project_semantics,
 )
+from rc_metastudio.project_migration import convert_legacy_project, normalize_project_metric_names
 
 
 CURRENT_FORMAT_VERSION = 3
@@ -65,130 +66,6 @@ class ProjectDocument:
     format_version: int
     project: JsonObject
     state: JsonObject
-
-
-def legacy_pairs_with_data(source, outcome):
-    """Discard placeholder pairs, retaining one sheet for an entirely empty outcome."""
-    def has_data(unit):
-        return (
-            any(value not in (None, "") for arm in unit["groups"] for value in arm["raw_data"])
-            or any(value is not None for entries in unit["entered_effects"].values()
-                   for effect in entries.values() for value in effect.values())
-            or any(entry["input"].get(field) is not None
-                   for entry in unit.get("ratio_inputs", [])
-                   for field in ("estimate", "lower", "upper", "se"))
-        )
-
-    declared = list(outcome["follow_ups"])
-    units = [unit for row in source["studies"] for unit in row["analysis_units"]
-             if unit["outcome"] == outcome["name"]]
-    if not declared or any(unit["follow_up"] is None for unit in units):
-        declared.insert(0, None)
-    populated = [follow for follow in declared
-                 if any(unit["follow_up"] == follow and has_data(unit) for unit in units)]
-    return populated or [declared[0]]
-
-
-def _legacy_sheet_name(outcome, follow_up, follow_ups, names):
-    base = outcome["name"].strip() or "Untitled"
-    if len(follow_ups) > 1:
-        base += " — " + (follow_up or "Unnamed")
-    name, suffix = base, 2
-    while name in names:
-        name = f"{base} ({suffix})"
-        suffix += 1
-    names.add(name)
-    return name
-
-def _legacy_sheet_arms(units, state, sid):
-    labels = []
-    for unit in units:
-        for arm in unit["groups"] if unit else []:
-            if arm["name"] not in labels:
-                labels.append(arm["name"])
-    selected = [label for label in state.get("active_groups", []) if label in labels]
-    labels = selected + [label for label in labels if label not in selected]
-    arms = [{"id": f"{sid}:arm:{i}", "name": label} for i, label in enumerate(labels)]
-    identities = {a["name"]: a["id"] for a in arms}
-    comparisons = _legacy_comparisons(labels, identities)
-    return arms, identities, comparisons
-
-def _legacy_comparisons(labels, identities):
-    comparisons = {label: [identities[label]] for label in labels}
-    for left in labels:
-        for right in labels:
-            if left != right:
-                key = left + "-" + right
-                pair = [identities[left], identities[right]]
-                if key in comparisons and comparisons[key] != pair:
-                    raise ProjectFormatError("ambiguous legacy comparison: " + key)
-                comparisons[key] = pair
-    return comparisons
-
-def _legacy_sheet_settings(source, state, outcome, identities, arms):
-    summary = source.get("summary")
-    settings = copy.deepcopy(summary) if isinstance(summary, dict) else {}
-    settings["summary"] = copy.deepcopy(source.get("summary"))
-    settings.update({k: copy.deepcopy(v) for k,v in state.items() if k not in {"schema_version", "active_outcome", "active_follow_up", "active_groups"}})
-    settings["metric"] = state.get("active_effect") or settings.get("effect")
-    active = state.get("active_groups", [])
-    settings["arms"] = [identities[n] for n in active] if active and all(n in identities for n in active) else [a["id"] for a in arms[:1 if outcome["data_type"] == 2 else 2]]
-    return settings
-
-def _convert_legacy_unit(record, unit, identities, comparisons):
-        record["raw_data"] = {identities[a["name"]]: copy.deepcopy(a["raw_data"]) for a in unit["groups"]}
-        record["entered_effects"] = [{"metric": metric, "arms": comparisons[key], "values": copy.deepcopy(values)} for metric, entries in unit["entered_effects"].items() for key,values in entries.items()]
-        record["ratio_inputs"] = [{"arms": [identities[n] for n in value["groups"]], "input": copy.deepcopy(value["input"])} for value in unit.get("ratio_inputs", [])]
-
-def _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_ids):
-    rows = []
-    for index, (row, unit) in enumerate(zip(source["studies"], units)):
-        record = {k: copy.deepcopy(v) for k,v in row.items() if k not in {"analysis_units", "id", "name"}}
-        record.update(id=f"{sid}:row:{index}", label=row["name"], raw_data={}, entered_effects=[], ratio_inputs=[])
-        record["covariates"] = {covariate_ids[k]: v for k, v in record["covariates"].items()}
-        if unit:
-            _convert_legacy_unit(record, unit, identities, comparisons)
-        if is_empty_entry_row(record):
-            continue
-        rows.append(record)
-    return rows
-
-def _legacy_unit_for_pair(row, outcome, follow_up):
-    return next((unit for unit in row["analysis_units"]
-                 if (unit["outcome"], unit["follow_up"]) == (outcome, follow_up)), None)
-
-
-def _convert_pairs(project, state):
-    from rc_metastudio.project_domain import validate_legacy_project_semantics
-    validate_legacy_project_semantics(project, state)
-    source = project["dataset"]
-    sheets, names, selection = [], set(), None
-    families = {0: "binary", 1: "continuous", 2: "diagnostic", 5: "time_to_event", 6: "event_rates"}
-    for outcome in source["outcomes"]:
-        follow_ups = legacy_pairs_with_data(source, outcome)
-        for follow_up in follow_ups:
-            sid = f"sheet:{len(sheets)}"
-            name = _legacy_sheet_name(outcome, follow_up, follow_ups, names)
-            units = [_legacy_unit_for_pair(row, outcome["name"], follow_up) for row in source["studies"]]
-            arms, identities, comparisons = _legacy_sheet_arms(units, state, sid)
-            settings = _legacy_sheet_settings(source, state, outcome, identities, arms)
-            covariates = [dict(c, id=f"{sid}:cov:{i}") for i, c in enumerate(source["covariates"])]
-            covariate_ids = {c["name"]: c["id"] for c in covariates}
-            rows = _legacy_sheet_rows(source, units, sid, identities, comparisons, covariate_ids)
-            sheets.append(dict(id=sid, name=name, family=families[outcome["data_type"]], data_type=outcome["data_type"], sub_type=outcome["sub_type"], arms=arms, covariates=covariates, settings=settings, rows=rows))
-            if (state.get("active_outcome"), state.get("active_follow_up")) == (outcome["name"], follow_up):
-                selection = sid
-    return {"schema_version": 3, "title": source["title"], "notes": source["notes"], "sheets": sheets}, {"schema_version": 3, "current_sheet_id": selection or (sheets[0]["id"] if sheets else None)}
-
-
-def is_empty_entry_row(row):
-    """Recognize persisted grid placeholders without discarding partially entered studies."""
-    return (not row['label'] and not row['manually_excluded']
-            and row['year'] is None and row['sample_size'] is None and not row['notes']
-            and all(v in ('', None) for v in row['covariates'].values())
-            and all(value is None for entry in row['entered_effects'] for value in entry['values'].values())
-            and not row['ratio_inputs']
-            and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
 
 
 def _reject_duplicate_keys(pairs: list[tuple[str, JsonValue]]) -> JsonObject:
@@ -443,10 +320,9 @@ def migrate_to_latest(
     try:
         _validate(version, "project.json", migrated_project)
         _validate(version, "state.json", migrated_state)
-        from rc_metastudio.project_metric_migration import normalize_project_metric_names
         normalize_project_metric_names(migrated_project, migrated_state)
         if version in (1, 2):
-            migrated_project, migrated_state = _convert_pairs(migrated_project, migrated_state)
+            migrated_project, migrated_state = convert_legacy_project(migrated_project, migrated_state, CURRENT_FORMAT_VERSION)
             _validate(CURRENT_FORMAT_VERSION, "project.json", migrated_project)
             _validate(CURRENT_FORMAT_VERSION, "state.json", migrated_state)
         validate_project_semantics(migrated_project, migrated_state)
@@ -583,7 +459,6 @@ def save_project(
     _validate(CURRENT_FORMAT_VERSION, "project.json", project_value)
     _validate(CURRENT_FORMAT_VERSION, "state.json", state_value)
     try:
-        from rc_metastudio.project_metric_migration import normalize_project_metric_names
         normalize_project_metric_names(project_value, state_value)
         validate_project_semantics(project_value, state_value)
     except (ProjectSemanticError, RecursionError) as exc:

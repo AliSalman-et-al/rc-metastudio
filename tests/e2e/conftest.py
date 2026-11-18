@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.desktop_partition import DESKTOP_SHARDS, partition
 from scripts.desktop_worker_capacity import desktop_resources
 from scripts.verification_evidence import desktop_environment, verification_context, verification_launch_inputs
 
@@ -14,7 +15,7 @@ _DESKTOP_ENV = pytest.StashKey[dict[str, str]]()
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption("--desktop-shard", type=int, choices=(1, 2, 3), default=None)
+    parser.addoption("--desktop-shard", type=int, choices=DESKTOP_SHARDS, default=None)
     parser.addoption("--shard-report", default=None)
     parser.addoption("--fresh", action="store_true", help="Run every desktop case without evidence reuse")
 
@@ -63,16 +64,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     durations = json.loads(
         (Path(__file__).resolve().parents[2] / "config/desktop-durations.json").read_text()
     )
-    bins: list[list[str]] = [[], [], []]
-    loads = [0.0, 0.0, 0.0]
     nodes = [item.nodeid for item in items]
-    def duration(node: str) -> float:
-        # shortcut: unmeasured scenarios count as 60 s, refresh config/desktop-durations.json from shard JUnit when shards drift apart.
-        return float(durations.get(node.rsplit("[", 1)[-1].removesuffix("]"), 60.0))
-    for node in sorted(nodes, key=lambda node: (-duration(node), node)):
-        index = min(range(3), key=lambda index: (loads[index], index))
-        bins[index].append(node)
-        loads[index] += duration(node)
+    bins, loads = partition(nodes, durations)
     report = config.getoption("--shard-report")
     if report:
         path = Path(report)

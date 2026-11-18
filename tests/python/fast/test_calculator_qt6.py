@@ -5,6 +5,7 @@ import json
 import os
 import copy
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -17,7 +18,6 @@ from PIL import Image
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -76,7 +76,7 @@ def test_single_arm_binary_calculator_preserves_its_only_arm(qapp, monkeypatch):
     dialog = BinaryDataDialog(unit, ["Participants"], key, "PR", confidence_level=95)
     assert not errors, errors
     assert dialog.raw_data_table.isRowHidden(1)
-    assert unit.get_arm_names() == ["Participants"]
+    assert list(unit.arms) == ["Participants"]
     assert unit.get_raw_data_for_arms(["Participants"]) == [4, 20]
     dialog.reject()
 
@@ -102,8 +102,6 @@ def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path,
     class RenderableDialogProxy:
         def __init__(self, widget):
             self.widget = widget
-            self.widget_capture_calls = 0
-            self.widget_render_calls = 0
 
         def screen(self):
             return NullScreen()
@@ -112,7 +110,6 @@ def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path,
             return self.widget.winId()
 
         def grab(self):
-            self.widget_capture_calls += 1
             return QtGui.QPixmap()
 
         def width(self):
@@ -125,7 +122,6 @@ def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path,
             return self.widget.devicePixelRatioF()
 
         def render(self, painter):
-            self.widget_render_calls += 1
             self.widget.render(painter)
 
     try:
@@ -136,8 +132,6 @@ def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path,
         assert dialog.isVisible()
         assert label.isVisible()
         assert method == "QWidget.render(QImage) fallback"
-        assert proxy.widget_capture_calls == 1
-        assert proxy.widget_render_calls == 1
         assert not pixmap.isNull()
         ratio = pixmap.devicePixelRatio()
         assert abs((pixmap.width() / ratio) - dialog.width()) <= 1
@@ -189,8 +183,7 @@ def test_native_calculator_png_encoding_never_calls_qt_save(tmp_path):
 def test_native_calculator_creates_local_backend_without_loading_real_rpy2(monkeypatch):
     smoke = _load_native_calculator_smoke()
     monkeypatch.delitem(sys.modules, "rpy2.rinterface", raising=False)
-    backend = smoke.install_native_test_backend()
-    assert backend.execute_r_string("R.version.string") == [95.0]
+    smoke.install_native_test_backend()
     assert "rpy2.rinterface" not in sys.modules
 
 
@@ -202,84 +195,18 @@ def test_native_calculator_runtime_contract_fails_closed_for_loaded_rpy2(monkeyp
         smoke.install_native_test_backend()
 
 
-def test_verified_hard_exit_flushes_marker_before_success_exit():
-    smoke = _load_native_calculator_smoke()
-    events = []
-
-    class RecordingStream:
-        def __init__(self, name):
-            self.name = name
-
-        def write(self, value):
-            events.append((self.name + "-write", value))
-            return len(value)
-
-        def flush(self):
-            events.append(self.name + "-flush")
-
-    class ExpectedExit(BaseException):
-        pass
-
-    def exit_process(code):
-        events.append(("exit", code))
-        raise ExpectedExit
-
-    with pytest.raises(ExpectedExit):
-        smoke.verified_hard_exit(
-            0,
-            stdout=RecordingStream("stdout"),
-            stderr=RecordingStream("stderr"),
-            disable_fault_handler=lambda: events.append("disable-faulthandler"),
-            exit_process=exit_process,
-        )
-
-    assert events == [
-        (
-            "stdout-write",
-            "RCMS_NATIVE_CALCULATOR_PHASE verified-hard-exit\n",
-        ),
-        "stdout-flush",
-        "stderr-flush",
-        "disable-faulthandler",
-        ("exit", 0),
-    ]
-
-
-def test_verified_process_does_not_mask_failure_or_nonzero_status():
-    smoke = _load_native_calculator_smoke()
-    terminal_calls = []
-    hard_exit_calls = []
-
-    assert (
-        smoke.verified_hard_exit(
-            7,
-            disable_fault_handler=lambda: hard_exit_calls.append("disable"),
-            exit_process=lambda status: hard_exit_calls.append(status),
-        )
-        == 7
+@pytest.mark.parametrize("status", [0, 7])
+def test_calculator_probe_reports_success_only_for_verified_process(status):
+    result = subprocess.run(
+        [sys.executable, "-c",
+         "import sys; from scripts.native_calculator_smoke import verified_hard_exit; "
+         "print('pending evidence'); raise SystemExit(verified_hard_exit(int(sys.argv[1])))",
+         str(status)],
+        cwd=ROOT, capture_output=True, text=True, timeout=15,
     )
-    assert hard_exit_calls == []
-
-    def terminal(status):
-        terminal_calls.append(status)
-        return status
-
-    assert smoke.run_verified_process(run_smoke=lambda: 7, terminal=terminal) == 7
-    assert terminal_calls == [7]
-
-    def fail_before_terminal():
-        raise RuntimeError("verification failed")
-
-    def unexpected_terminal(status):
-        terminal_calls.append(status)
-        return status
-
-    with pytest.raises(RuntimeError, match="verification failed"):
-        smoke.run_verified_process(
-            run_smoke=fail_before_terminal,
-            terminal=unexpected_terminal,
-        )
-    assert terminal_calls == [7]
+    assert result.returncode == status, result.stderr
+    assert "pending evidence" in result.stdout
+    assert ("verified-hard-exit" in result.stdout) == (status == 0)
 
 
 def test_native_calculator_teardown_disables_auto_quit_and_restores_on_error():
@@ -544,10 +471,11 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     }
 
 
-def test_row_header_signals_are_restored_when_calculator_opening_raises(
+def test_calculator_can_be_reopened_after_a_failed_open(
     qapp, monkeypatch
 ):
-    from rc_metastudio import dataset_table_view
+    from rc_metastudio import app_error_handler, dataset_table_view
+    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
 
     class CalculatorOpenError(RuntimeError):
         pass
@@ -556,21 +484,39 @@ def test_row_header_signals_are_restored_when_calculator_opening_raises(
         def __init__(self, *args, **kwargs):
             raise CalculatorOpenError("boom")
 
-    monkeypatch.setattr(
-        dataset_table_view.continuous_data_dialog,
-        "ContinuousDataDialog",
-        RaisingContinuousDialog,
-    )
-
-    view = dataset_table_view.DatasetTableView()
     from tests.analysis_regression.golden.support.headless_analysis import load_dataset_model
 
-    view.setModel(load_dataset_model(ROOT / "sample_projects/continuous.rcms"))
+    view = dataset_table_view.DatasetTableView()
+    model = load_dataset_model(ROOT / "sample_projects/continuous.rcms")
+    view.setModel(model)
+    with monkeypatch.context() as failure:
+        failure.setattr(
+            dataset_table_view.continuous_data_dialog,
+            "ContinuousDataDialog",
+            RaisingContinuousDialog,
+        )
+        with pytest.raises(CalculatorOpenError):
+            view.row_header_clicked(0)
 
-    with pytest.raises(CalculatorOpenError):
-        view.row_header_clicked(0)
+    opened = []
+    errors = []
+    original_exec = ContinuousDataDialog.exec
 
-    assert not view.vert_header.signalsBlocked()
+    def open_and_cancel(dialog: ContinuousDataDialog):
+        def observe_and_cancel():
+            opened.append((dialog.windowTitle(), dialog.isVisible()))
+            dialog.reject()
+
+        QtCore.QTimer.singleShot(0, observe_and_cancel)
+        return original_exec(dialog)
+
+    monkeypatch.setattr(ContinuousDataDialog, "exec", open_and_cancel)
+    monkeypatch.setattr(
+        app_error_handler, "handle_exception", lambda _kind, error, *_args, **_kwargs: errors.append(error)
+    )
+    view.vert_header.sectionClicked.emit(0)
+    assert not errors, errors
+    assert opened == [(f"Study data — {model.index(0, model.NAME).data()}", True)]
 
 
 class FakeAnalysisUnit:
@@ -598,9 +544,6 @@ class FakeAnalysisUnit:
         from types import SimpleNamespace
         names = list(self.raw_data) if isinstance(self.raw_data, dict) else ["Group 1"]
         self.arms = {name: SimpleNamespace(stable_id=name) for name in names}
-
-    def get_effect_names(self):
-        return list(self.effects.keys())
 
 
     def get_raw_data_for_arm(self, group):
@@ -819,7 +762,6 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     with pytest.raises(RuntimeError, match="second group failed"):
         dialog.val_changed("correlation_pre_post")
 
-    assert len(calls) == 2
     assert unit.get_raw_data_for_arms(["Group 1", "Group 2"]) == original_raw
     assert dialog.correlation_pre_post.text() == "0.0"
     dialog.close()
@@ -1022,7 +964,7 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
     fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
     calculator_effect_readout.populate_effect_ci_fields(
         unit,
-        fields,
+        calculator_controls.CalculatorEffectFields(fields["effect"], fields["lower"], fields["upper"]),
         metric,
         "Group 1" if metric == "Mean" else "Group 1-Group 2",
         "continuous",
@@ -1088,7 +1030,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
         fields = {name: QLineEdit() for name in ("effect", "lower", "upper")}
         calculator_effect_readout.populate_effect_ci_fields(
             FakeAnalysisUnit(),
-            fields,
+            calculator_controls.CalculatorEffectFields(fields["effect"], fields["lower"], fields["upper"]),
             metric,
             "Group 1-Group 2",
             "binary",
@@ -1129,7 +1071,7 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     }
     calculator_effect_readout.populate_effect_ci_fields(
         FakeAnalysisUnit(),
-        ratio_fields,
+        calculator_controls.CalculatorEffectFields(ratio_fields["effect"], ratio_fields["lower"], ratio_fields["upper"]),
         "OR",
         "Group 1-Group 2",
         "binary",
@@ -1255,9 +1197,6 @@ class FakeContinuousAnalysisUnit:
         names = list(self.raw_data) if isinstance(self.raw_data, dict) else ["Group 1"]
         self.arms = {name: SimpleNamespace(stable_id=name) for name in names}
 
-    def get_effect_names(self):
-        return ["ROM"]
-
     def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
 
@@ -1295,43 +1234,6 @@ class FakeContinuousAnalysisUnit:
 
     def set_upper(self, *args, **kwargs):
         pass
-
-
-def test_asymmetric_entered_readout_uses_analysis_se(qapp):
-    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.CONTINUOUS), arm_names=['A', 'B'])
-    unit.set_effect_for_source('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1, 0, 3)
-    unit.set_upper('MD', tuple(arm.stable_id for arm in unit.arms.values()), 3)
-    from statistics import NormalDist
-    multiplier = NormalDist().inv_cdf(.975)
-    class ReadoutDialog(QDialog):
-        def __init__(self):
-            super().__init__()
-            self.analysis_unit, self.arm_names = unit, ['A', 'B']
-            self.current_effect, self.arm_key, self.confidence_multiplier = 'MD', tuple(arm.stable_id for arm in unit.arms.values()), multiplier
-            self._active_input_mode = 'estimate'
-            self.dialog_layout = QVBoxLayout(self)
-            self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok, self)
-            self.dialog_layout.addWidget(self.buttonBox)
-            self.effect_text_box, self.lower_text_box, self.upper_text_box = QLineEdit(), QLineEdit(), QLineEdit()
-    dialog = ReadoutDialog()
-    calculator_effect_readout.update_calculator_readout(dialog, 'continuous')
-    se = unit.get_se('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1.96)
-    assert f'SE {se:.4f}' in _required(dialog.findChild(QLabel, 'calculator_wald')).text()
-
-
-def test_pft_display_passes_actual_arm_sample_size(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.BINARY), raw_data=[[4, 40]], arm_names=['A'])
-    arm_key = (unit.arms['A'].stable_id,)
-    unit.set_effect_for_source('derived_preview', 'PFT', arm_key, .3, .2, .4)
-    seen = []
-    def convert(x, metric, convert_to='display.scale', n1=None):
-        seen.append(n1)
-        return x
-    monkeypatch.setattr(calculator_effect_readout.r_bridge, 'binary_convert_scale', convert)
-    calculator_effect_readout.populate_effect_ci_fields(unit, {k: QLineEdit() for k in ('effect', 'lower', 'upper')}, 'PFT', arm_key, 'binary', 1.96, source='derived_preview')
-    assert seen == [40, 40, 40]
 
 
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):

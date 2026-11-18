@@ -418,10 +418,6 @@ def _load_generated_form(module_path: Path) -> type[_GeneratedForm]:
     return cast(type[_GeneratedForm], module.Ui_AboutLegalDialog)
 
 
-def _smoke_inputs(build_root: Path) -> tuple[Path, Path]:
-    return generate(build_root)
-
-
 def _smoke_application() -> tuple[QtWidgets.QApplication, bool]:
     application = cast(QtWidgets.QApplication | None, QtWidgets.QApplication.instance())
     owns_application = application is None
@@ -495,7 +491,7 @@ def smoke(
     expected_qpa: str | None = None,
 ) -> dict[str, str | bool]:
     """Launch a visible native Qt6 form and return user-observable evidence."""
-    module_path, resource_path = _smoke_inputs(build_root)
+    module_path, resource_path = generate(build_root)
     from contextlib import redirect_stdout
     from scripts.verify import run_typing
     # The smoke CLI stdout is a JSON contract consumed by package tooling.

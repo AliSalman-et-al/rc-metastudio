@@ -430,7 +430,11 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
         "inputs": inputs,
         "rcmetar_source": {
             "name": "RCMetaR",
-            "version": "0.2.0",
+            "version": next(
+                line.removeprefix("Version: ").strip()
+                for line in (ROOT / "r/RCMetaR/DESCRIPTION").read_text().splitlines()
+                if line.startswith("Version: ")
+            ),
             "source_commit": "c" * 40,
             "url": "https://github.com/ResearchConsultancy/rc-metastudio/tree/"
             + "c" * 40

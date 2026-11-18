@@ -123,8 +123,8 @@ NULL
 #' diagnostic metrics.
 #'
 #' @section Multi-run helpers:
-#' \code{multiple.diagnostic()} runs a sequence of diagnostic analyses and
-#' \code{append.image.order()} preserves plot ordering in result payloads.
+#' \code{rcmetar.run.diagnostic.analyses()} runs the requested diagnostic fits
+#' and assembles their results and plot order.
 #'
 #' @section Plot drawing:
 #' \code{rcmetar.draw.sroc.plot()} renders the Reitsma SROC curve.
@@ -137,7 +137,7 @@ NULL
 #' \code{rcmetar.method.references("reitsma")} for the
 #' statistical method citations used in result payloads.
 #'
-#' @aliases adjust.raw.data append.image.order compute.diag.point.estimates compute.diagnostic.terms diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f multiple.diagnostic
+#' @aliases adjust.raw.data compute.diag.point.estimates compute.diagnostic.terms diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f
 #' @name RCMetaR-diagnostic-methods
 NULL
 
@@ -149,18 +149,18 @@ NULL
 #'
 #' @section Cumulative analyses:
 #' \code{cum.ma.binary()}, \code{cum.ma.continuous()},
-#' \code{cum.ma.diagnostic()}, and \code{multiple.cum.ma.diagnostic()} build
+#' and \code{cum.ma.diagnostic()} build
 #' cumulative result lists. \code{construct.sequential.res.output()} formats
 #' repeated-analysis output.
 #'
 #' @section Leave-one-out analyses:
 #' \code{loo.ma.binary()}, \code{loo.ma.continuous()},
-#' \code{loo.ma.diagnostic()} and \code{multiple.loo.diagnostic()} support
+#' and \code{loo.ma.diagnostic()} support
 #' influence-style workflows.
 #'
 #' @section Subgroup analyses:
 #' \code{subgroup.ma.binary()}, \code{subgroup.ma.continuous()},
-#' \code{subgroup.ma.diagnostic()}, and \code{multiple.subgroup.diagnostic()}
+#' and \code{subgroup.ma.diagnostic()}
 #' split data by covariate levels and
 #' format subgroup results.
 #'
@@ -176,7 +176,7 @@ NULL
 #' See \code{rcmetar.method.references("bootstrap")} for the bootstrap
 #' method citations used in result payloads.
 #'
-#' @aliases boot.ma.output.results boot.meta.reg.cond.means.output.results boot.meta.reg.output.results bootstrap calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic multiple.cum.ma.diagnostic multiple.loo.diagnostic multiple.subgroup.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic
+#' @aliases boot.ma.output.results boot.meta.reg.cond.means.output.results boot.meta.reg.output.results bootstrap calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic
 #' @name RCMetaR-repeated-analyses
 NULL
 

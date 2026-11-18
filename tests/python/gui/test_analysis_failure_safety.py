@@ -62,7 +62,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
             return True
 
     class Owner(QtWidgets.QWidget):
-        def analysis(self, _result, *, change_settings=None, manuscript=None):
+        def analysis(self, _result, *, source_sheet=None, change_settings=None, manuscript=None):
             raise RuntimeError("owner callback failed")
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -99,10 +99,10 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
             ],
         },
     )
-    monkeypatch.setattr(analysis_setup_dialog.AnalysisSetupDialog, "_change_settings_callback", lambda self: lambda: None)
+    monkeypatch.setattr(analysis_setup_dialog.AnalysisSetupDialog, "_change_settings_callback", lambda self, _sheet: lambda: None)
     owner = Owner()
     form = analysis_setup_dialog.AnalysisSetupDialog(
-        Model(), parent=owner, confidence_level=95.0
+        Model(), parent=owner, confidence_level=95.0, on_result=owner.analysis,
     )
 
     with pytest.raises(RuntimeError, match="owner callback failed"):
@@ -151,7 +151,10 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
         monkeypatch.setattr(backend, 'get_analysis_plot_capabilities', lambda *a, **k: [])
         monkeypatch.setattr(backend, 'reset_r_working_directory', lambda: None)
-        monkeypatch.setattr(window, 'analysis', lambda *a, **k: delivered.append(a))
+        def unexpected_result(*args, **_kwargs):
+            delivered.append(args)
+        deliver = unexpected_result
+        monkeypatch.setattr(window, 'analysis', lambda *args, **kwargs: deliver(*args, **kwargs))
         form = window._build_analysis_specs_dialog(confidence_level=95.0)
         form.show()
         def fail(*args, **kwargs):
@@ -181,7 +184,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         def prepare(result):
             report_calls.append(result)
             return build_report(result)
-        def deliver(result, *, change_settings, manuscript):
+        def check_delivered_result(result, *, source_sheet, change_settings, manuscript):
             view = ResultsWindow(result, parent=window, change_settings=change_settings, manuscript=manuscript)
             assert view.manuscript is manuscript
             assert manuscript == build_report(view.results)
@@ -199,7 +202,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
             view.close()
         monkeypatch.setattr(form, '_with_result_identity', lambda result: result)
         monkeypatch.setattr(ManuscriptReport, 'from_result', prepare)
-        monkeypatch.setattr(window, 'analysis', deliver)
+        deliver = check_delivered_result
         form.run_ma()
         QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         qapp.processEvents()

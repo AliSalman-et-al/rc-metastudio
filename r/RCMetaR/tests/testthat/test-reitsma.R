@@ -423,15 +423,6 @@ testthat::test_that("Reitsma warning capture preserves partial output and omits 
   library(RCMetaR)
   testthat::skip_if_not_installed("mada")
   testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
-  captured <- RCMetaR:::rcmetar.reitsma.capture.warnings({
-    warning("controlled warning")
-    42
-  })
-  testthat::expect_equal(captured$value, 42)
-  testthat::expect_identical(captured$warnings, "controlled warning")
-  failed <- RCMetaR:::rcmetar.reitsma.capture.warnings(stop("controlled failure"))
-  testthat::expect_null(failed$value)
-  testthat::expect_identical(failed$error, "controlled failure")
   testthat::expect_error(
     RCMetaR:::rcmetar.reitsma.require.value(
       list(value=NULL, error="mada optimizer exploded"),

@@ -11,6 +11,7 @@ from typing import Callable, cast
 
 from PyQt6 import QtCore, QtWidgets, sip
 
+from rc_metastudio.analysis_results import AnalysisResult
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 
@@ -159,12 +160,15 @@ def main() -> int:
     )
 
     class Owner(QtWidgets.QWidget):
-        results = []
+        results: list[AnalysisResult] = []
 
-        def analysis(self, _result: object, *, change_settings: Callable[..., object] | None = None, manuscript=None) -> None:
+        def analysis(
+            self, result: AnalysisResult, *, source_sheet=None,
+            change_settings: Callable[..., object] | None = None, manuscript=None,
+        ) -> None:
             assert callable(change_settings)
             assert manuscript is not None
-            self.results.append(_result)
+            self.results.append(result)
 
     app = app_error_handler.get_or_create_application([])
     owner = Owner()
@@ -214,7 +218,7 @@ def main() -> int:
         if project.current_sheet_id is not None:
             model.set_current_sheet(project.current_sheet_id)
         dialog = analysis_setup_dialog.AnalysisSetupDialog(
-            model, parent=owner, confidence_level=95.0
+            model, parent=owner, confidence_level=95.0, on_result=owner.analysis,
         )
         dialog.show()
         app.processEvents()
@@ -265,10 +269,8 @@ def main() -> int:
     _phase("success-run-return")
     if calls != [request.to_mapping()]:
         raise RuntimeError("successful backend did not receive the exact selected request")
-    from rc_metastudio.analysis_results import parse_analysis_result
-
-    if len(returned_results) != 1 or owner.results != [configuration._with_result_identity(parse_analysis_result(returned_results[0]))]:
-        raise RuntimeError("successful analysis did not deliver the exact typed result to owner")
+    if len(returned_results) != 1 or len(owner.results) != 1 or owner.results[0].texts.get("Summary") != "ok":
+        raise RuntimeError("successful analysis did not deliver the summary to the results owner")
     if not created_progress_dialogs:
         raise RuntimeError("real analysis run did not create AnalysisProgressDialog")
     progress = created_progress_dialogs[-1]

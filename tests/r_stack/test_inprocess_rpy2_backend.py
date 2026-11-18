@@ -45,6 +45,7 @@ _DRIVER = textwrap.dedent(
     ro = r_bridge.ro
 
     from rc_metastudio.r_call_serialization import r_transaction
+    from tests.fit_observations import observe_fit
 
     with r_transaction():
         ro.globalenv["workflow_data"] = ro.r("list()")
@@ -437,32 +438,33 @@ _DRIVER = textwrap.dedent(
         with tempfile.TemporaryDirectory(prefix="rcmetar-meta-regression-") as isolated_cwd:
             try:
                 os.chdir(isolated_cwd)
-                diagnostic_meta_result = analysis_adapter.execute_meta_regression_request(
-                    filtered_model,
-                    selected.studies,
-                    (filtered_model.covariate,),
-                    diagnostic_meta_request,
-                    False,
-                    95.0,
-                )
+                with observe_fit() as fit:
+                    diagnostic_meta_result = analysis_adapter.execute_meta_regression_request(
+                        filtered_model,
+                        selected.studies,
+                        (filtered_model.covariate,),
+                        diagnostic_meta_request,
+                        False,
+                        95.0,
+                    )
             finally:
                 os.chdir(previous_cwd)
     finally:
         if previous_scratch_dir is not None:
             os.environ["RCMS_ANALYSIS_SCRATCH_DIR"] = previous_scratch_dir
-        assert "Sensitivity coefficients" in diagnostic_meta_result.texts
-    assert list(ro.r("result$input_data@study.names")) == [
+    assert "Sensitivity coefficients" in diagnostic_meta_result.texts
+    assert list(fit.evaluate("result$input_data@study.names")) == [
         "Included 1",
         "Included 2",
         "Included 3",
         "Included 4",
         "Included 5",
     ]
-    assert list(ro.r("result$input_data@TP")) == [10, 12, 8, 15, 11]
-    assert list(ro.r("result$input_data@FN")) == [5, 4, 7, 3, 6]
-    assert list(ro.r("result$input_data@FP")) == [4, 6, 5, 8, 7]
-    assert list(ro.r("result$input_data@TN")) == [10, 10, 13, 9, 12]
-    assert list(ro.r("result$input_data@covariates[[1]]@cov.vals")) == [1, 2, 3, 4, 5]
+    assert list(fit.evaluate("result$input_data@TP")) == [10, 12, 8, 15, 11]
+    assert list(fit.evaluate("result$input_data@FN")) == [5, 4, 7, 3, 6]
+    assert list(fit.evaluate("result$input_data@FP")) == [4, 6, 5, 8, 7]
+    assert list(fit.evaluate("result$input_data@TN")) == [10, 10, 13, 9, 12]
+    assert list(fit.evaluate("result$input_data@covariates[[1]]@cov.vals")) == [1, 2, 3, 4, 5]
 
     invalid_confidence_level_checks = ro.r('''
       c(
@@ -493,11 +495,6 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(__REPO_ROOT__, "src"))
     from rc_metastudio import r_bridge
     r_bridge.initialize_r()
-    try:
-        from rc_metastudio import r_bridge
-    except Exception as exc:
-        sys.stdout.write("SKIP %s: %s\\n" % (exc.__class__.__name__, exc))
-        sys.exit(42)
 
     assert r_bridge.r_object_to_python(r_bridge.ro.r("NULL")) is None
     # Typed R missing values must not become non-serializable CHARSXP objects,
@@ -515,11 +512,15 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     from math import isinf
     assert isinf(r_bridge.r_object_to_python(r_bridge.ro.r("Inf"))[0])
     null_section_result = r_bridge.ro.r(
-        "list(Warning='kept', `Trim-and-fill data`=NULL, References='refs')"
+        "list(Warning='kept', `Trim-and-fill data`=NULL, sections=list("
+        "list(id='small-study.warning', kind='text', order=0L, title='Warning', "
+        "source_key='small-study.warning', value_key='Warning'), "
+        "list(id='small-study.trimfill-data', kind='text', order=1L, title='Trim-and-fill data', "
+        "source_key='small-study.trimfill-data', value_key='Trim-and-fill data')))"
     )
     parsed_null_section = r_bridge.parse_out_results(null_section_result)
-    assert "Trim-and-fill data" not in parsed_null_section.texts
-    assert parsed_null_section.texts["Warning"] == "kept"
+    assert dict(parsed_null_section.texts) == {"small-study.warning": "kept"}
+    assert [(s.title, s.source_key) for s in parsed_null_section.sections] == [("Warning", "small-study.warning")]
     nested_section_result = r_bridge.ro.r(
         "list(Warning='kept', Summary='kept summary', `Trim-and-fill data`="
         "list(fit=list(effect=c(0.1, 0.2), se=c(0.05, 0.06)), side='left'), "
@@ -529,14 +530,6 @@ _NULL_RESULT_DRIVER = textwrap.dedent(
     assert "Trim-and-fill data" not in parsed_nested_section.texts
     assert parsed_nested_section.texts["Warning"] == "kept"
     assert parsed_nested_section.texts["Summary"] == "kept summary"
-    semantic_section_result = r_bridge.ro.r(
-        "list(Warning='kept', sections=list(list(id='small-study.warning', "
-        "kind='text', order=0L, title='Warning', source_key='small-study.warning', "
-        "value_key='Warning')))"
-    )
-    parsed_semantic_section = r_bridge.parse_out_results(semantic_section_result)
-    assert parsed_semantic_section.texts["small-study.warning"] == "kept"
-    assert parsed_semantic_section.sections[0].title == "Warning"
     semantic_image_result = r_bridge.ro.r(
         "list(images=c('Ordinary Funnel Plot'='plot.png'), "
         "plot_names=c('Ordinary Funnel Plot'='funnel'), "

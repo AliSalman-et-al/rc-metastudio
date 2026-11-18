@@ -3,7 +3,10 @@
 """Domain operations shared by the dataset table adapter."""
 
 import math
-from rc_metastudio.analysis_catalog import RATIO_DATA_TYPES
+from rc_metastudio.analysis_catalog import (
+    BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM,
+    RATIO_DATA_TYPES,
+)
 
 from collections.abc import Buffer, Callable, Mapping, Sequence
 from typing import Protocol, SupportsFloat, SupportsIndex, TypeAlias, cast, runtime_checkable
@@ -187,17 +190,28 @@ def has_study_entered_data(study):
     return bool(study.label.strip() or study.year or any(v not in EMPTY_VALS for v in study.covariate_values.values()) or has_entered_data(study.analysis_unit))
 
 
-def included_studies_have_raw_data(
+_FIRST_ARM_FIELDS = (
+    dict.fromkeys(BINARY_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM[BINARY])
+    | dict.fromkeys(CONTINUOUS_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM[CONTINUOUS])
+)
+
+
+def fit_raw_rows(
     studies: Sequence[StudyRow],
-    raw_data_for_study: Callable[[int, bool], Sequence[object]],
-    one_arm: bool,
-) -> bool:
-    for index, study in enumerate(studies):
-        if study.include and not raw_data_is_complete(
-            raw_data_for_study(index, one_arm)
-        ):
-            return False
-    return True
+    raw_rows: Sequence[Sequence[object]],
+    metric: str,
+    arm_key: tuple[str, ...],
+) -> Sequence[Sequence[object]] | None:
+    """Return complete raw inputs for the selected studies when raw data has authority."""
+    if len(raw_rows) != len(studies) or any(
+        study.analysis_unit.calculator_source(metric, arm_key) == "entered"
+        for study in studies
+    ):
+        return None
+    arm_fields = _FIRST_ARM_FIELDS.get(metric)
+    if arm_fields is not None:
+        raw_rows = [row[:arm_fields] for row in raw_rows]
+    return raw_rows if all(raw_data_is_complete(row) for row in raw_rows) else None
 
 
 def included_studies_have_effects(

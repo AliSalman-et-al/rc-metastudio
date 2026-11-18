@@ -12,7 +12,9 @@ from tests.e2e.plot_observations import load_saved_analysis, load_serialized_obj
 
 
 def run(app, window, root, record, analyze):
+    from advanced_workflows import modal, click
     from rc_metastudio import analysis_setup_dialog, r_bridge, results_window
+    from rc_metastudio.plot_editor_dialog import EditPlotDialog
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 
     def setup():
@@ -159,6 +161,26 @@ def run(app, window, root, record, analyze):
     changed = submit(dialog)
     assert "REML" in changed.manuscript_text.toPlainText() or "Restricted" in changed.manuscript_text.toPlainText()
     record("review-settings-rerun", changed, plots=dict(changed.results.display_images), text=changed.manuscript_text.toPlainText())
+    project_path = window.workspace.path
+    old_labels = window.model.current_sheet.settings.get("favours_labels")
+
+    def edit_replaced_project_plot(editor):
+        editor.favours_left.setText("Earlier project left")
+        editor.favours_right.setText("Earlier project right")
+        click(app, editor.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+
+    changed.report_action.setChecked(False)
+    app.processEvents()
+    modal(app, EditPlotDialog, edit_replaced_project_plot, changed.edit_plot_action.trigger)
+    edited_svg = next(iter(changed.results.display_images.values()))
+    edited_caption = " ".join(ET.parse(edited_svg).getroot().itertext())
+    assert "Earlier project left" in edited_caption
+    assert "Earlier project right" in edited_caption
+    assert window.workspace.path == project_path
+    assert window.model.current_sheet.settings.get("favours_labels") == old_labels
+    assert not window.workspace.is_dirty
+    record("review-replaced-project-edit-stays-local", changed, project=str(project_path),
+           favours_labels=old_labels, plots={"Edited forest plot": edited_svg})
     changed.close()
     view.close()
 
@@ -199,7 +221,7 @@ def run(app, window, root, record, analyze):
         view = changed
     view.close()
 
-    window.cum_ma()
+    window.action_cum_ma.trigger()
     app.processEvents()
     dialog = setup()
     assert dialog.study_order.isEnabled()
@@ -225,8 +247,6 @@ def run(app, window, root, record, analyze):
     record('review-cumulative-forest', view, plots=dict(view.results.display_images))
     view.report_action.setChecked(True)
     record('review-cumulative-summary', view, text=view.manuscript.results, plots=dict(view.results.display_images))
-    from advanced_workflows import modal, click
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
     original_plot = Path(next(iter(view.results.display_images.values())))
     original_bytes = original_plot.read_bytes()
     original_last = sequential[0].rows[-1]
@@ -276,7 +296,7 @@ def run(app, window, root, record, analyze):
     changed.close()
     view.close()
 
-    window.loo_ma()
+    window.action_loo_ma.trigger()
     app.processEvents()
     dialog = setup()
     assert [dialog.study_order.itemData(i) for i in range(dialog.study_order.count())] == ['table', 'year', 'effect', 'i2']

@@ -13,13 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--version-only",
-        action="store_true",
-        help="legacy alias for the default version-only output",
-    )
-    parser.parse_args()
+    argparse.ArgumentParser(description=__doc__).parse_args()
     output_path = os.environ.get("GITHUB_OUTPUT")
     if not output_path:
         raise SystemExit("GITHUB_OUTPUT is required.")

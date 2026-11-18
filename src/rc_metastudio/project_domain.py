@@ -478,6 +478,16 @@ def validate_legacy_project_semantics(
     _validate_active_state(state, family, outcomes, available_groups)
 
 
+def is_empty_entry_row(row):
+    """Recognize persisted grid placeholders without discarding partially entered studies."""
+    return (not row['label'] and not row['manually_excluded']
+            and row['year'] is None and row['sample_size'] is None and not row['notes']
+            and all(v in ('', None) for v in row['covariates'].values())
+            and all(value is None for entry in row['entered_effects'] for value in entry['values'].values())
+            and not row['ratio_inputs']
+            and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
+
+
 def _unique_sheet_items(items, location):
     ids = [item.get("id") for item in items]
     if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):

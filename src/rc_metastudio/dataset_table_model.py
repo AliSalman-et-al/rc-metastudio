@@ -17,9 +17,9 @@ from rc_metastudio.analysis_dataset import Dataset, StudyRow
 from rc_metastudio.analysis_unit import AnalysisUnit
 import uuid
 from rc_metastudio.dataset_analysis_domain import (
+    fit_raw_rows,
     has_study_entered_data,
     included_studies_have_effects,
-    included_studies_have_raw_data,
     raw_data_is_complete,
     )
 from rc_metastudio.analysis_catalog import BINARY, CONTINUOUS, DIAGNOSTIC, ONE_ARM_METRICS, TYPE_TO_STR_DICT
@@ -466,12 +466,23 @@ class DatasetTableModel(QAbstractTableModel):
         arms = self.current_sheet.arms if self.current_sheet else []
         return tuple(a.id for a in (arms[:1] if self.current_effect in ONE_ARM_METRICS else arms))
 
-    def _editing_context(self, column=None):
-        covariate = (
-            self.get_covariate_for_column(column)
-            if column is not None and self.OUTCOMES and column > max(self.OUTCOMES)
-            else None
-        )
+    def _editable_field(self, column: int) -> workspace_editing.EditableField | None:
+        if column == self.NAME:
+            return "name"
+        if column == self.YEAR:
+            return "year"
+        if column == self.INCLUDE_STUDY:
+            return "include"
+        if column in self.columns.raw_sections:
+            return workspace_editing.RawCell(column - self.columns.raw_sections.start)
+        if column in self.columns.effect_sections:
+            return workspace_editing.OutcomeCell(column - self.columns.first_effect)
+        covariate = self.get_covariate_for_column(column)
+        if covariate is None:
+            return None
+        return workspace_editing.CovariateCell(covariate["id"], covariate["data_type"])
+
+    def _editing_context(self):
         return workspace_editing.WorkspaceEditingContext(
             sheet_id=self.current_sheet_id,
             arm_names=tuple(self.arm_names),
@@ -479,16 +490,8 @@ class DatasetTableModel(QAbstractTableModel):
             data_type=self.get_current_data_type(get_str=False),
             outcome_subtype=self.get_current_data_subtype(),
             arm_key=self.get_current_arm_key(),
-            raw_columns=tuple(self.RAW_DATA),
-            outcome_columns=tuple(self.OUTCOMES),
-            include_column=self.INCLUDE_STUDY,
-            name_column=self.NAME,
-            year_column=self.YEAR,
             confidence_level=self.get_confidence_level(),
             confidence_multiplier=self.get_confidence_multiplier(),
-            covariate_name=covariate['name'] if covariate is not None else None,
-            covariate_type=covariate['data_type'] if covariate is not None else None,
-            covariate=covariate,
         )
 
     def _display_effect_source(self, analysis_unit):
@@ -547,9 +550,11 @@ class DatasetTableModel(QAbstractTableModel):
         study = self._study_for_row(index.row()) if index.row() < len(self._display_studies) else None
         new_study = study is None or self._is_blank_study(study)
         canonical_row = index.row() if new_study else self.current_sheet.rows.index(study)
+        field = self._editable_field(column)
+        if field is None:
+            return workspace_editing.CellRejection("Cannot edit that cell.")
         rejection = self.editing_service.apply_edit(
-            self.dataset, workspace_editing.WorkspaceEditTarget(canonical_row, column),
-            self._editing_context(column), value,
+            self.dataset, canonical_row, field, self._editing_context(), value,
         )
         if rejection is not None:
             return rejection
@@ -588,13 +593,15 @@ class DatasetTableModel(QAbstractTableModel):
     def load_import_rows(self, rows, on_row_loaded) -> list[str]:
         """Fill a detached model from normalized CSV or workbook rows."""
         columns = range(self.NAME, self.columnCount())
-        contexts = {column: self._editing_context(column) for column in columns}
+        fields = [(column, self._editable_field(column)) for column in columns]
+        context = self._editing_context()
         warnings = []
         for row, values in enumerate(rows):
-            for column, value in zip(columns, values):
-                target = workspace_editing.WorkspaceEditTarget(row, column)
+            for (column, field), value in zip(fields, values):
+                if field is None:
+                    raise ValueError(f"Study row {row + 1}, column {column}: Cannot edit that cell.")
                 rejection = self.editing_service.apply_edit(
-                    self.dataset, target, contexts[column], value, import_csv=True,
+                    self.dataset, row, field, context, value, allow_raw_and_entered=True,
                 )
                 if rejection is None:
                     continue
@@ -800,10 +807,6 @@ class DatasetTableModel(QAbstractTableModel):
         return self.dataset.title
 
 
-    def get_arm_names(self):
-        return self.arm_names
-
-
     def _sort_display_studies(self, value, reverse):
         values = [(row, value(row)) for row in self.current_sheet.rows]
         populated = [(row, cell) for row, cell in values if cell not in EMPTY_VALS]
@@ -868,20 +871,6 @@ class DatasetTableModel(QAbstractTableModel):
     def is_diagnostic(self):
         return self.get_current_data_type(False) == DIAGNOSTIC
 
-    def _get_raw_data_according_to_arms(self, study_index, first_arm_only=False):
-        if self.current_outcome_name is None or self.current_sheet_id is None:
-            return False
-
-        raw_data = self._get_canonical_raw_data_for_study(study_index)
-        data_type = self.get_current_data_type(get_str=False)
-
-        if first_arm_only:
-            if data_type == BINARY:
-                raw_data = raw_data[:2]
-            elif data_type == CONTINUOUS:
-                raw_data = raw_data[:3]
-        return raw_data
-
     def update_all_effect_previews(self):
         context = self._editing_context()
         for study in self.current_sheet.rows:
@@ -937,17 +926,10 @@ class DatasetTableModel(QAbstractTableModel):
         return raw_data
 
     def included_studies_have_raw_data(self):
-        """Return whether each included study has the required current raw data.
-
-        For a one-arm metric, the active arm alone determines completeness.
-        """
-        if any(study.analysis_unit.calculator_source(self.current_effect, self.get_current_arm_key()) == "entered" for study in self.get_studies()):
-            return False
-        return included_studies_have_raw_data(
-            self.current_sheet.rows,
-            self._get_raw_data_according_to_arms,
-            self.current_effect in ONE_ARM_METRICS,
-        )
+        return fit_raw_rows(
+            self.get_studies(), self.get_current_raw_data(),
+            self.current_effect, self.get_current_arm_key(),
+        ) is not None
 
     def study_has_point_est(self, study_index, effect=None):
         arm_key = self.get_current_arm_key()
@@ -1060,15 +1042,12 @@ class DatasetTableModel(QAbstractTableModel):
                 n1 = self._raw_value(study, 1) if metric == "PFT" else None
                 unit.calculate_display_effect_and_ci(
                     metric, arm_key,
-                    self._get_conv_to_display_scale(sheet.data_type, metric, n1),
+                    self.editing_service.display_scale_converter(sheet.data_type, metric, n1),
                     confidence_level=self.confidence_level,
                     confidence_multiplier=self.confidence_multiplier,
                     check_if_necessary=True,
                     source=self._display_effect_source(unit),
                 )
-
-    def _get_conv_to_display_scale(self, data_type, effect, n1=None):
-        return self.editing_service.display_scale_converter(data_type, effect, n1)
 
     def set_confidence_level(self, confidence_level):
         settings = self.editing_service.confidence_settings(confidence_level)

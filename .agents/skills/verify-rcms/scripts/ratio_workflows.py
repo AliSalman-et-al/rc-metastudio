@@ -121,7 +121,7 @@ def run(app, window, scenario, record):
         assert "zero events in both arms" in model.data(
             model.index(2, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole
         )
-    window.tableView._enable_analysis_menus_if_appropriate()
+    window.refresh_analysis_actions()
     assert window.action_go.isEnabled()
     record("ratio-inputs-complete", window, family=family, raw=raws, log_effects=ys, log_ses=ses,
            source_confidence=90, selected_sources=["reported" if hazard or i >= 8 else "raw" for i in range(12)])
@@ -328,7 +328,7 @@ def run(app, window, scenario, record):
     ):
         model.add_covariate(name, kind, values)
     model.reset_model()
-    window.enable_menu_options_that_require_dataset()
+    window.refresh_analysis_actions()
     # A visible rectangle crosses hidden input metadata. Copy/paste must reach
     # the adjacent covariate, rather than corrupting the original CI settings.
     dose_column = model.columnCount()-1
