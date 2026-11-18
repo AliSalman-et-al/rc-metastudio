@@ -13,6 +13,18 @@ ROOT = Path(__file__).resolve().parents[3]
 BASH = shutil.which("bash") or ("C:/Program Files/Git/bin/bash.exe" if os.name == "nt" else None)
 
 
+def test_direct_provenance_entrypoint_works_without_pythonpath():
+    result = subprocess.run(
+        [sys.executable, "-E", str(ROOT / "scripts/build_macos_direct_provenance.py"), "--help"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--qualification-root" in result.stdout
+
+
 def posix(path: Path) -> str:
     value = path.resolve().as_posix()
     return "/" + value[0].lower() + value[2:] if len(value) > 1 and value[1] == ":" else value

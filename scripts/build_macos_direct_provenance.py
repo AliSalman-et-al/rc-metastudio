@@ -6,9 +6,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-from inspect_macos_deployment import DIRECT_BUILD_INPUT_MEMBERS
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.inspect_macos_deployment import DIRECT_BUILD_INPUT_MEMBERS
 
 
 def record(path: Path) -> dict[str, object]:
