@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Attach the shared style and accent fields to the plot controls."""
 
+from collections.abc import Mapping
+
 from PyQt6.QtCore import QSignalBlocker
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QAbstractButton, QColorDialog, QComboBox, QLineEdit
@@ -15,15 +17,16 @@ def selected_plot_style(selector: QComboBox) -> str:
 
 
 def configure_plot_style(
-    selector: QComboBox, accent: QLineEdit, color_button: QAbstractButton
+    selector: QComboBox, accent: QLineEdit, color_button: QAbstractButton,
+    *, accents: Mapping[str, str] = PLOT_STYLE_ACCENTS,
 ) -> None:
     for style, label in PLOT_STYLE_LABELS.items():
         selector.addItem(label, style)
     selector.setCurrentIndex(selector.findData("default"))
-    accent.setText(PLOT_STYLE_ACCENTS["default"])
+    accent.setText(accents["default"])
 
     def update_accent() -> None:
-        accent.setText(PLOT_STYLE_ACCENTS[selected_plot_style(selector)])
+        accent.setText(accents[selected_plot_style(selector)])
 
     def choose_color() -> None:
         color = QColorDialog.getColor(QColor(accent.text()), selector.window(), "Plot accent color")
@@ -35,7 +38,8 @@ def configure_plot_style(
 
 
 def load_plot_style(
-    selector: QComboBox, accent: QLineEdit, saved_style: object, saved_accent: object
+    selector: QComboBox, accent: QLineEdit, saved_style: object, saved_accent: object,
+    *, accents: Mapping[str, str] = PLOT_STYLE_ACCENTS,
 ) -> None:
     if isinstance(saved_style, (list, tuple)) and saved_style:
         saved_style = saved_style[0]
@@ -44,4 +48,4 @@ def load_plot_style(
         style = "default"
     with QSignalBlocker(selector):
         selector.setCurrentIndex(selector.findData(style))
-    accent.setText(str(saved_accent or PLOT_STYLE_ACCENTS[style]))
+    accent.setText(str(saved_accent or accents[style]))

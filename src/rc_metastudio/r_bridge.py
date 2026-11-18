@@ -893,14 +893,21 @@ def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaR
 @serialized_r_call
 def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaRun":
     from uuid import uuid4
+    from rc_metastudio.analysis_identity import plot_caption
     from rc_metastudio.plot_capabilities import PlotCapability
     from rc_metastudio.settings import analysis_output_path
+    from rc_metastudio.small_study_effects import FUNNEL_STYLE_PRESETS, FunnelStyle
     from rc_metastudio.trial_sequential_analysis import TsaRun
 
     data = dataset_for_analysis(model, request.family, metric=request.metric)
     path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
-    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data,
-                             _to_r_params({**request.to_mapping(), "fp_outpath": path}))
+    params = {
+        **request.to_mapping(),
+        "fp_outpath": path,
+        "plot_caption": plot_caption(model, "trial_sequential"),
+        "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT]["region_color"],
+    }
+    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(params))
     title = "Trial sequential results"
     table = _report_table_entry(_structured_matrix(title, raw.rx2("table"), None, first_row_headers=True))
     section = ResultSection("trial-sequential.looks", "text", 0, title, "", "trial-sequential.looks", tables=(table,))

@@ -496,8 +496,9 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
             digits <- as.integer(style$digits %||% 3L)
             if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
-            mtext(sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC),
-                  side=3, line=.3, cex=as.numeric(style$text.cex %||% .8))
+            rcmetar.draw.panel.caption(
+                sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC),
+                cex=as.numeric(style$text.cex %||% .8))
         }
         legend.spec <- plot.data$legend %||% rcmetar.reitsma.legend.spec(
             style, plot.data$curve, plot.data$confidence.region, plot.data$prediction.region,

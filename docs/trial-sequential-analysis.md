@@ -47,8 +47,8 @@ crossing, or the first futility crossing if there was no monitoring crossing.
 A triangle marks a Z value beyond the visible vertical range. The vertical
 RIS line is at 100%. The wedge closes against the monitoring boundary there,
 and the dotted monitoring line carries the terminal value through any overrun.
-The drawn boundary curves step at each actual look because spending already
-used at earlier looks changes the boundary for later looks.
+The smooth boundaries show hypothetical looks between actual looks. Each
+hypothetical boundary accounts for spending at the preceding actual looks.
 
 Crossing a monitoring boundary gives sequential evidence in the direction
 named by the sheet. Crossing the non-binding futility boundary suggests that
@@ -61,6 +61,34 @@ The report gives the study at the crossing and the final accrued share of RIS.
 The table preserves all modelled looks in order and identifies excluded studies
 in Methods. It displays conventional CIs and, below 100%, TSA-adjusted limits.
 The CSV values export retains the exact numbers behind the displayed limits.
+
+## Plot design
+
+Use the shared standalone figure title for the outcome and comparison. Center
+the required and accrued information above the panel in the SROC caption
+treatment. Label participant counts as such, show continuous information for
+HR, include the accrued percentage and append `(entered)` to a manually set RIS.
+
+Use the bubble plot's device sizing, axis layout and unboxed right-side legend.
+Use open L-shaped axes, horizontal tick labels and no grid. Mark the information
+axis every 25 percentage points through 200%, then every 50. Mark the cumulative
+Z axis every two units. Align the rotated favours labels with the two ends of
+the left margin, in plain black at tick-label size. Wrap long labels in two
+lines. Keep the panel clear of annotations and put `RIS` above its 100% line.
+
+Draw the funnel-style tint and dotted accent border for the futility wedge
+first. Draw dashed grey conventional lines, the bubble's dotted zero line,
+solid charcoal monitoring boundaries and their dotted continuation through
+overrun. Draw the long-dashed RIS line in dark grey. End the wedge at 100%.
+
+Use the bubble style accent and translucent markers for the cumulative curve.
+Scale marker area by added information within the bubble plot's size limits.
+Start the curve at zero and break it at non-estimable looks. Draw the optional
+penalty curve in dashed accent with small open markers. Use solid accent
+triangles at clipped Z values and a charcoal ring just outside the first
+crossing marker. List only visible marks in the legend. Keep the same layout
+in Default, RevMan and BMJ, using the style typography and existing funnel
+region preset, including RevMan's grey.
 
 ## Differences from Copenhagen Trial Unit TSA
 

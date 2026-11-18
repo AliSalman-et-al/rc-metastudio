@@ -216,6 +216,7 @@ SCENARIOS = {
     **{f"tsa-{case}": Scenario(skill("advanced_workflows"), 240,
                               qualifies=f"tsa-{case}" not in PLOT_PRODUCERS.values())
        for case in ("bcg", "rr-mh", "md", "hr", "smd")},
+    "tsa-stress": Scenario(skill("advanced_workflows"), 240, qualifies=False),
     "review1-design": Scenario(external("desktop_navigation_workflows", standard_args)),
     "ui-fine-tuning": Scenario(external("ui_fine_tuning", standard_args), 240),
     "ui-fable-polish": Scenario(external("ui_fable_polish", standard_args)),

@@ -1,6 +1,7 @@
 """Drive TSA setup, results, saved plot styles and exports through Qt and R."""
 import csv
 import json
+import os
 from math import isclose
 from pathlib import Path
 from unittest.mock import patch
@@ -27,7 +28,8 @@ def input_project(work, case):
     if case in ("bcg", "hr"):
         return ROOT / "sample_projects" / ("BCG.rcms" if case == "bcg" else "Pignon2000-HR.rcms")
     binary = case == "rr-mh"
-    metric = "RR" if binary else case.upper()
+    stress = case == "stress"
+    metric = "RR" if binary else "MD" if stress else case.upper()
     arms = [analysis_dataset.Arm(ArmId(label), label) for label in ("Treatment", "Comparator")]
     sheet = analysis_dataset.Sheet(
         SheetId("tsa"), f"TSA {case}", analysis_catalog.BINARY if binary else analysis_catalog.CONTINUOUS,
@@ -44,6 +46,12 @@ def input_project(work, case):
             [[75, 4, 2], [75, 5, 2]],
         )
     )
+    if stress:
+        sheet.settings["favours_labels"] = [
+            "Favours the new extended therapy programme",
+            "Favours conventional outpatient management",
+        ]
+        raw = tuple([[25 + 2*i, 4.5, 2], [25 + 2*i, 5, 2]] for i in range(36))
     for i, cells in enumerate(raw):
         unit = AnalysisUnit(sheet, cells, arm_names=[a.name for a in arms], arm_stable_ids=[a.id for a in arms])
         sheet.rows.append(analysis_dataset.StudyRow(
@@ -71,28 +79,32 @@ def check_artwork(path, case, style, contract):
     labels = {"".join(node.itertext()) for node in svg.iter(NAMESPACE + "text")}
     assert set(contract["labels"]) <= labels, labels
     assert ("Penalised Z-curve" in labels) == (case == "bcg")
-    assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()
+    assert any(label.startswith("Required information") and "Accrued:" in label for label in labels)
+    assert "Futility region" in labels
+    assert "100%" in labels and "RIS" in labels
+    accent = contract["accents"][style]
+    assert accent.lower() in path.read_text(encoding="utf-8").lower()
     _, _, width, height = map(float, svg.attrib["viewBox"].split())
-    assert isclose(width / height, contract["aspect"], rel_tol=.001)
+    assert 1.5 < width / height < 2.2
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
-                  if "#B03A2E" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
+                  if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
     assert monitoring and len(monitoring[0].attrib["points"].split()) >= 100
-    crossings = [node for node in svg.iter(NAMESPACE + "circle") if "#B03A2E" in node.attrib.get("style", "")]
-    assert bool(crossings) == (case != "md")
+    crossings = [node for node in svg.iter(NAMESPACE + "circle") if "#333333" in node.attrib.get("style", "")]
+    if case != "stress":
+        assert bool(crossings) == (case != "md")
     if case == "bcg":
         held = [node for node in svg.iter(NAMESPACE + "polyline")
-                if "#B03A2E" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]
+                if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]
                 and len(node.attrib.get("points", "").split()) == 2]
         tip = monitoring[0].attrib["points"].split()[-1]
         assert any(node.attrib["points"].split()[0] == tip for node in held), tip
-        wedge = [node for node in svg.iter(NAMESPACE + "polyline")
-                 if "#B03A2E" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]
-                 and len(node.attrib.get("points", "").split()) > 2]
-        assert any(node.attrib["points"].split()[-1] == tip for node in wedge), tip
+        wedge = [node for node in svg.iter(NAMESPACE + "polygon")
+                 if accent in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
+        assert any(tip in node.attrib["points"].split() for node in wedge), tip
 
 
 def run(app, window, work, record, case):
-    from advanced_workflows import click, modal
+    from advanced_workflows import click, export_formats, modal
 
     path = input_project(work, case)
     assert window.open(str(path), raise_on_error=True)
@@ -158,6 +170,7 @@ def run(app, window, work, record, case):
         "rr-mh": "crossed the futility boundary",
         "md": "crossed neither a monitoring nor a futility boundary",
         "hr": "crossed the monitoring boundary favouring",
+        "stress": "",
     }[case]
 
     def configure(dialog):
@@ -188,8 +201,8 @@ def run(app, window, work, record, case):
             assert dialog.effect.text() == original and dialog.control.text() == "4.49"
             assert not any(button.isVisible() for _, button in dialog.default_inputs.values())
             record("tsa-dialog-restored", dialog, effect=dialog.effect.text(), control=dialog.control.text())
-        elif case in ("rr-mh", "md"):
-            if case == "md":
+        elif case in ("rr-mh", "md", "stress"):
+            if case in ("md", "stress"):
                 assert not dialog.run_button.isEnabled() and not original
                 key_clicks(dialog.effect, "-1")
             else:
@@ -205,7 +218,10 @@ def run(app, window, work, record, case):
     modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
     view, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
     table, = view._report_tables
-    compare_numeric(table, case, record, view)
+    if case == "stress":
+        assert len(table.rows) == 36
+    else:
+        compare_numeric(table, case, record, view)
     if case == "rr-mh":
         assert len(table.rows) == 5 and all(row[1] != "Double zero" for row in table.rows)
         assert table.rows[-1][3] == "100.0" and table.rows[-1][6] == ""
@@ -226,7 +242,7 @@ def run(app, window, work, record, case):
     view.showNormal()
     screen = view.screen().availableGeometry()
     height = int(.92 * screen.height())
-    view.resize(min(screen.width() - 30, int(1.6 * (height - 185) + 170)), height)
+    view.resize(min(screen.width() - 30, int(1.8 * (height - 140) + 170)), height)
     view.move(screen.topLeft() + QtCore.QPoint(12, 24))
     wait(250)
     view.fit_width_action.trigger()
@@ -244,14 +260,30 @@ def run(app, window, work, record, case):
                 dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
                 assert dialog.result() == dialog.DialogCode.Accepted
             modal(app, EditPlotDialog, edit, view.edit_plot_action.trigger)
+        artifact, _ = view._selected_plot()
+        view.fit_width_action.trigger()
+        wait(150)
         rendered = work / f"{case}-{style}.svg"
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path,
                                  output_path=str(rendered))
         check_artwork(rendered, case, style, descriptor)
         _, item = view._selected_plot()
         assert item.sceneBoundingRect().width() >= .95 * view._plot_viewport_width()
+        screen_plot = work / f"{case}-{style}-viewport.png"
+        viewport = view.graphics_view.viewport()
+        assert viewport is not None
+        bounds = view.graphics_view.mapFromScene(item.sceneBoundingRect()).boundingRect()
+        assert viewport.rect().adjusted(-1, -1, 1, 1).contains(bounds), (viewport.rect(), bounds)
+        assert viewport.grab(bounds.intersected(viewport.rect())).save(str(screen_plot))
         record(f"tsa-{case}-{style}", view, style=style, dpi_scale=view.devicePixelRatio(),
+               input=str(path), viewport=str(screen_plot),
                plots={artifact.title: str(rendered)})
+        if os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
+            export_formats(app, view, work / "design-exports", f"{case}-{style}", record)
+
+    if case == "stress":
+        window.workspace.mark_saved()
+        return view
 
     view.report_action.setChecked(True)
     app.processEvents()

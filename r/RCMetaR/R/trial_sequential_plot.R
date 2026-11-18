@@ -33,14 +33,23 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     list(analysis=res, params=params)
 }
 
-.tsa.plot.points <- function(x, z, limit, accent, marker, markers, lwd, lty=1) {
-    graphics::lines(c(0, x), c(0, z), col=accent, lwd=lwd, lty=lty)
+.tsa.plot.points <- function(x, z, limit, pch, col, bg, cex) {
     inside <- which(abs(z) <= limit)
-    graphics::points(x[inside], z[inside], pch=marker, bg=accent,
-                     col=if (marker == 21) "white" else accent, cex=markers)
+    graphics::points(x[inside], z[inside], pch=pch, bg=bg, col=col, cex=cex[inside])
     outside <- which(abs(z) > limit & x >= par("usr")[1] & x <= par("usr")[2])
     graphics::points(x[outside], sign(z[outside])*limit, pch=ifelse(z[outside] > 0, 24, 25),
-                     bg=accent, col=accent, xpd=TRUE, cex=markers)
+                     bg=col, col=col, xpd=TRUE, cex=cex[outside])
+}
+
+.tsa.favours.label <- function(label, available) {
+    if (graphics::strwidth(label, units="inches") <= available) return(label)
+    # Balance two rotated lines using their measured length on the current device.
+    cuts <- gregexpr(" ", label, fixed=TRUE)[[1]]
+    if (length(cuts) < 2L) cuts <- seq_len(nchar(label) - 1L)
+    start <- substr(label, 1L, cuts)
+    end <- trimws(substring(label, cuts + 1L))
+    i <- which.min(pmax(graphics::strwidth(start), graphics::strwidth(end)))
+    paste(trimws(start[i]), end[i], sep="\n")
 }
 
 rcmetar.draw.tsa.plot <- function(plot.data, path) {
@@ -49,11 +58,21 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
     looks <- res$looks
     design <- res$summary
     curves <- res$curves %||% rcmetar.tsa.plot.data(NULL, res, params)$analysis$curves
-    typography <- rcmetar.forest.plot.font(params)
-    accent <- rcmetar.forest.accent.color(params)
-    red <- "#B03A2E"
-    grey <- "#738290"
+
+    xlabel <- rcmetar.plot.axis.label(params, "fp") %||% "Information (% of required information size)"
+    ylabel <- "Cumulative Z-score"
+    bundle <- list(params=list(bp_show_legend=TRUE, bp_accent_color=params$fp_accent_color,
+                                bp_point_size_multiplier=rcmetar.point.size.multiplier(params)),
+                   bp_style=rcmetar.bubble.style(params), slab=looks$study, xlabel=xlabel, ylabel=ylabel)
+    style <- rcmetar.bubble.style.args(bundle, revman.accent=rcmetar.bubble.accent.color(bundle))
+    size <- rcmetar.bubble.measure.device(bundle)
+    accent <- style$col
+    typography <- rcmetar.forest.plot.font(list(fp_style=bundle$bp_style))
+    region <- .small.study.funnel.settings(params)$region.color
+    charcoal <- "#333333"
+    conventional.col <- "#A6A6A6"
     ris.col <- "#4A4A4A"
+
     x <- 100*looks$fraction
     xlim <- c(0, max(110, 1.05*tail(x, 1)))
     for (i in seq_along(xlim)) {
@@ -61,73 +80,98 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         if (!rcmetar.is.plot.default.text(edit)) xlim[i] <- as.numeric(edit)
     }
     ticks <- if (rcmetar.is.plot.default.text(params$fp_xticks)) {
-        seq(0, max(0, xlim[2]), by=if (xlim[2] > 200) 50 else 25)
+        if (xlim[2] > 200) c(seq(0, 200, by=25), seq(200, xlim[2], by=50)[-1]) else
+            seq(0, max(0, xlim[2]), by=25)
     } else rcmetar.numeric.values(params$fp_xticks)
-    xlab <- rcmetar.plot.axis.label(params, "fp") %||% "Information (% of required information size)"
+    ticks <- ticks[ticks >= xlim[1] & ticks <= xlim[2]]
     limit <- max(4, min(8, ceiling(max(abs(looks$z), na.rm=TRUE) + .5)))
+    yticks <- seq(-2*floor(limit/2), 2*floor(limit/2), by=2)
     conventional <- qnorm(.tsa.tail.alpha(design), lower.tail=FALSE)
     directions <- c(if (design$alternative != "upper") -1,
                     if (design$alternative != "lower") 1)
     ris <- .tsa.format.accrued(design$ris, design$metric)
-    ris.label <- if (design$axis == "participants") paste0("RIS = ", ris, " participants") else
-        paste0("Required information = ", ris)
-    if (design$ris.source == "manual") ris.label <- paste0(ris.label, " (entered)")
-    accrued <- paste("Accrued", .tsa.format.accrued(tail(looks$accrued, 1), design$metric))
+    required <- if (design$axis == "participants") paste0("Required information size: ", ris, " participants") else
+        paste0("Required information: ", ris)
+    if (design$ris.source == "manual") required <- paste0(required, " (entered)")
+    accrued <- .tsa.format.accrued(tail(looks$accrued, 1), design$metric)
+    caption <- sprintf("%s \u00b7 Accrued: %s (%.0f%%)", required, accrued, tail(x, 1))
     favours <- params$favours %||% paste("Favours", rcmetar.default.arm.labels())
-    monitoring <- which(curves$monitoring <= limit)
-    wedge <- which(curves$futility >= 0 & curves$futility <= limit)
-    lil <- any(is.finite(looks$lil.z))
-    markers <- .9*rcmetar.point.size.multiplier(params)
-    size <- list(width=10.8, height=10.8/1.6, dpi=120, bg="white")
+
+    last <- tail(x, 1)
+    ris.visible <- xlim[1] <= 100 && xlim[2] >= 100
+    monitor <- tail(curves$monitoring, 1)
+    overrun <- last > 100
+    wedge <- which(curves$futility >= 0)
+    wedge.visible <- length(wedge) > 1 && xlim[1] < 100 && xlim[2] > curves$x[wedge[1]]
+    monitoring.visible <- monitor <= limit &&
+        ((xlim[1] < 100 && any(curves$x <= xlim[2] & curves$monitoring <= limit)) ||
+         (overrun && xlim[1] < last && xlim[2] > 100))
+    cumulative.visible <- xlim[2] >= 0 && xlim[1] <= last
+    lil <- cumulative.visible && any(is.finite(looks$lil.z))
+    added <- diff(c(0, looks$accrued))
+    markers <- pmax(style$plim[1], style$plim[2] * sqrt(added/max(added[is.finite(looks$z)])))
+    lil.markers <- rep(style$plim[1], length(x))
 
     rcmetar.render.plot_file(path, size, function() {
-        cex <- 1.08
-        graphics::par(mar=c(7.1, 4.6, 2.1, 1.4), family=typography$family, font.axis=typography$axis,
-                      xaxs="i", yaxs="i", xpd=FALSE, mgp=c(2.65, .75, 0))
+        rcmetar.bubble.panel(size, TRUE, top=3.2)
+        graphics::par(family=typography$family, font.axis=typography$axis, xaxs="i", yaxs="i")
+        tick.width <- max(graphics::strwidth(yticks, units="inches", font=typography$axis))
+        label.line <- (tick.width + 0.40) / graphics::par("csi")
         graphics::plot(NA_real_, xlim=xlim, ylim=c(-limit, limit), xaxt="n", yaxt="n",
-                       ylab="Cumulative Z-score", xlab=xlab, cex.lab=cex, bty="l")
-        graphics::axis(1, at=ticks, cex.axis=cex)
-        graphics::axis(2, at=seq(-limit, limit, by=2), las=1, cex.axis=cex)
-        graphics::abline(h=0, col="#D0D5DA", lwd=.8)
-        graphics::abline(h=directions*conventional, col=grey, lty="44", lwd=1.1)
+                       ylab="", xlab=xlabel, bty=style$bty)
+        graphics::axis(1, at=ticks, labels=paste0(ticks, "%"), las=style$las)
+        graphics::axis(2, at=yticks, las=style$las)
+        graphics::mtext(ylabel, side=2, line=label.line)
+        available <- (graphics::par("pin")[2] - graphics::strwidth(ylabel, units="inches"))/2 - .12
+        for (i in seq_along(favours)) {
+            graphics::mtext(.tsa.favours.label(favours[i], available), side=2,
+                            at=c(-limit, limit)[i], adj=c(0, 1)[i], line=label.line,
+                            las=0, cex=size$cex, font=1, col="black")
+        }
+        rcmetar.draw.panel.caption(caption, line=1.6)
+
+        if (wedge.visible) {
+            graphics::polygon(c(curves$x[wedge], rev(curves$x[wedge])),
+                              c(curves$futility[wedge], -rev(curves$futility[wedge])),
+                              col=region, border=accent, lty=3, lwd=1)
+        }
+        graphics::abline(h=directions*conventional, col=conventional.col, lty=2, lwd=1)
+        graphics::abline(h=0, col="gray50", lty=3, lwd=1)
         for (direction in directions) {
-            graphics::lines(curves$x[monitoring], direction*curves$monitoring[monitoring], col=red, lwd=2)
-            if (tail(x, 1) > 100 && tail(curves$monitoring, 1) <= limit)
-                graphics::lines(c(100, tail(x, 1)), rep(direction*tail(curves$monitoring, 1), 2),
-                                col=red, lty="13", lwd=2)
-            graphics::lines(curves$x[wedge], direction*curves$futility[wedge], col=red, lty="42", lwd=1.6)
+            graphics::lines(curves$x, direction*curves$monitoring, col=charcoal, lwd=2)
+            if (overrun) {
+                graphics::segments(100, direction*monitor, last, direction*monitor,
+                                   col=charcoal, lty=3, lwd=2)
+            }
         }
-        graphics::abline(v=100, col=ris.col, lty="84", lwd=1.3)
-        if (100 >= xlim[1] && 100 <= xlim[2]) {
-            align <- if (100 - xlim[1] >= strwidth(ris.label, cex=cex)) 1 else 0
-            graphics::mtext(ris.label, side=3, at=100, line=.35, adj=align, cex=cex, col=ris.col)
+        if (ris.visible) {
+            graphics::abline(v=100, col=ris.col, lty="84", lwd=1.1)
+            graphics::mtext("RIS", side=3, line=.25, at=100, cex=.8, col=ris.col)
         }
-        if (strwidth(accrued, cex=cex) + .5*strwidth(xlab, cex=cex) + strwidth("  ") < .5*diff(xlim))
-            graphics::mtext(accrued, side=1, at=xlim[2], line=2.65, adj=1, cex=cex, col=ris.col)
-        .tsa.plot.points(x, looks$z, limit, accent, 21, markers, 2.4)
-        if (lil) .tsa.plot.points(x, looks$lil.z, limit, accent, 1, markers, 1.5, "42")
+
+        graphics::lines(c(0, x), c(0, looks$z), col=accent, lwd=2)
+        if (lil) {
+            graphics::lines(c(0, x), c(0, looks$lil.z), col=accent, lwd=1.4, lty=2)
+            .tsa.plot.points(x, looks$lil.z, limit, 1, accent, NA, lil.markers)
+        }
+        .tsa.plot.points(x, looks$z, limit, style$pch, accent, style$bg, markers)
         crossing <- design$crossing.look
-        if (!is.na(crossing) && x[crossing] >= xlim[1] && x[crossing] <= xlim[2])
+        if (!is.na(crossing) && x[crossing] >= xlim[1] && x[crossing] <= xlim[2]) {
             graphics::points(x[crossing], pmax(-limit, pmin(limit, looks$z[crossing])),
-                             col=red, pch=1, cex=2.2, lwd=1.6, xpd=TRUE)
-        label.x <- xlim[1] + .02*diff(xlim)
-        label.y <- c(-.88, .88)*limit
-        pad.x <- .3*strwidth("M", cex=cex)
-        pad.y <- .3*strheight("M", cex=cex)
-        label.height <- strheight(favours, cex=cex)/2 + pad.y
-        graphics::rect(label.x - pad.x, label.y - label.height,
-                       label.x + strwidth(favours, font=3, cex=cex) + pad.x, label.y + label.height,
-                       col=size$bg, border=NA)
-        graphics::text(label.x, label.y, labels=favours, adj=c(0, .5), font=3, col=grey, cex=cex)
-        labels <- c("Cumulative Z-curve", "Monitoring boundary", "Futility boundary",
-                    "Conventional boundary", "Required information size", "Penalised Z-curve")
-        shown <- c(TRUE, length(monitoring) > 0, length(wedge) > 1, TRUE, TRUE, lil)
-        graphics::legend(mean(xlim), grconvertY(.025, from="ndc", to="user"), xjust=.5, yjust=0,
-            legend=labels[shown], ncol=ceiling(sum(shown)/2), bty="n", xpd=NA, cex=cex,
-            text.font=typography$axis, col=c(accent, red, red, grey, ris.col, accent)[shown],
-            lwd=c(2.4, 2, 1.6, 1.1, 1.3, 1.5)[shown],
-            lty=c("solid", "solid", "42", "44", "84", "42")[shown],
-            pch=c(21, NA, NA, NA, NA, 1)[shown], pt.bg=accent)
+                             col=charcoal, pch=1, cex=markers[crossing] + .4, lwd=1.6, xpd=TRUE)
+        }
+
+        shown <- c(cumulative.visible, monitoring.visible, wedge.visible, conventional <= limit, ris.visible, lil)
+        if (any(shown)) {
+            rcmetar.bubble.legend(
+                c("Cumulative Z-curve\n(markers sized by\ninformation added)", "Monitoring boundary",
+                  "Futility region", "Conventional boundary", "Required information size",
+                  "Penalised Z-curve")[shown],
+                col=c(accent, charcoal, accent, conventional.col, ris.col, accent)[shown],
+                lwd=c(2, 2, 1, 1, 1.1, 1.4)[shown], lty=c("1", "1", NA, "2", "84", "2")[shown],
+                pch=c(style$pch, NA, 22, NA, NA, 1)[shown], pt.bg=c(style$bg, NA, region, NA, NA, NA)[shown],
+                merge=TRUE)
+        }
     }, caption=params$plot_caption)
     invisible(path)
 }

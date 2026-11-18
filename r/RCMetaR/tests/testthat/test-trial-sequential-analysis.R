@@ -161,7 +161,8 @@ test_that("trial sequential artwork regenerates from its saved bundle", {
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=500,
     favours=c("Favours Intervention", "Favours Control"), fp_outpath=path))
   expect_true(file.exists(path))
-  expect_match(paste(readLines(path), collapse=" "), "RIS = 500 participants (entered)", fixed=TRUE)
+  expect_match(paste(readLines(path), collapse=" "),
+    "Required information size: 500 participants (entered)", fixed=TRUE)
   expect_match(paste(readLines(path), collapse=" "), "Favours Intervention")
   params <- rcmetar.plot.bundle.params(result$plot.prefix)
   expect_identical(params$fp_style, "default")

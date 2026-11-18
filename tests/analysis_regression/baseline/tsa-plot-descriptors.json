@@ -2,20 +2,18 @@
   "accents": {
     "bmj": "#6B58A6",
     "default": "#2F5597",
-    "revman": "#000000"
+    "revman": "#111111"
   },
-  "aspect": 1.6,
   "identity": "Trial sequential plot",
   "kind": "trial_sequential",
   "labels": [
     "Cumulative Z-curve",
     "Monitoring boundary",
-    "Futility boundary",
     "Conventional boundary",
     "Required information size",
     "Cumulative Z-score",
     "Information (% of required information size)"
   ],
   "regeneration": "trial_sequential",
-  "schema_version": 1
+  "schema_version": 2
 }

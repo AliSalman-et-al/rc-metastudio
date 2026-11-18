@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import (
 )
 
 from rc_metastudio import adaptive_window, analysis_identity, app_error_handler, plot_capabilities, qt_text
-from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
+from rc_metastudio.plot_defaults import BUBBLE_STYLE_ACCENTS, FOREST_ARM_LABELS, PLOT_STYLE_ACCENTS
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_style_controls import (
     configure_plot_style, load_plot_style, selected_plot_style,
@@ -37,6 +37,7 @@ from rc_metastudio.plot_text import (
     plot_text_value,
     set_plot_text_value,
 )
+from rc_metastudio.small_study_effects import FUNNEL_STYLE_PRESETS, FunnelStyle
 
 if TYPE_CHECKING:
     from ui_edit_plot_dialog import Ui_EditPlotDialog
@@ -58,6 +59,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
         self.plot_type = plot_type
+        self._style_accents = BUBBLE_STYLE_ACCENTS if plot_type == "trial_sequential" else PLOT_STYLE_ACCENTS
         if plot_type == "subgroup_forest":
             note = QLabel("Subgroup figures use the default layout. RevMan and BMJ apply their accent colors; their standard-forest layouts are unavailable for subgroups.", self)
             note.setWordWrap(True)
@@ -91,7 +93,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.accent_color.setMaximumWidth(self.accent_color.fontMetrics().height() * 6)
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
-        configure_plot_style(self.style_cbo, self.accent_color, self.color_btn)
+        configure_plot_style(self.style_cbo, self.accent_color, self.color_btn, accents=self._style_accents)
         apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
         apply_button.clicked.connect(self._commit)
 
@@ -430,6 +432,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.accent_color,
             self._params.get(self._param_name("style")),
             self._params.get(self._param_name("accent_color")),
+            accents=self._style_accents,
         )
         self._set_text(
             self.col1_str_edit, self._params.get("fp_col1_str", "Study")
@@ -623,6 +626,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:
             params["fp_display_path"] = forest_display_path
+        if self.plot_type == "trial_sequential":
+            params["funnel.region.color"] = FUNNEL_STYLE_PRESETS[FunnelStyle(style)]["region_color"]
         if self.plot_type == "regression":
             params = {
                 "bp_style": style,
