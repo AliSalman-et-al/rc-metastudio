@@ -55,8 +55,8 @@ def input_project(work, case):
 
 
 def compare_numeric(table, case, record, view):
-    contract = json.loads((BASELINE / "numeric-contract.json").read_text(encoding="utf-8"))
-    expected = contract["tsa_cases"][case]
+    contract = json.loads((BASELINE / "tsa-numeric-contract.json").read_text(encoding="utf-8"))
+    expected = contract["cases"][case]
     actual = {}
     for row, column, role, value in expected:
         quantity, = [q for q in table.quantities[row][table.headers.index(column)] if q.role == role]
@@ -203,7 +203,7 @@ def run(app, window, work, record, case):
     view.fit_width_action.trigger()
     wait(150)
     artifact, _ = view._selected_plot()
-    descriptor = json.loads((BASELINE / "plot-descriptors.json").read_text(encoding="utf-8"))["tsa"]
+    descriptor = json.loads((BASELINE / "tsa-plot-descriptors.json").read_text(encoding="utf-8"))
     assert artifact.title == descriptor["identity"]
     assert artifact.capability.plot_kind == descriptor["kind"]
     assert artifact.capability.regenerator == descriptor["regeneration"]
