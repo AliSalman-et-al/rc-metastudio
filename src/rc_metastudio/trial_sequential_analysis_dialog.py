@@ -16,19 +16,11 @@ from PyQt6.QtWidgets import (
 from rc_metastudio import adaptive_window, app_error_handler, progress_dialog, qt_layout
 from rc_metastudio.analysis_identity import dataset_identity
 from rc_metastudio.dataset_table_model import DatasetTableModel
-from rc_metastudio.manuscript_report import AnalysisResultHandler
+from rc_metastudio.manuscript_report import AnalysisResultHandler, trial_sequential_report
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.trial_sequential_analysis import (
-    HKSJ_NOTE, TSA_SETTINGS, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService,
+    EFFECT_SOURCES, HKSJ_NOTE, TSA_SETTINGS, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService,
 )
-
-EFFECT_SOURCES = {
-    "wetterslev-2017-nearest-95-ci": "95% CI limit closest to the null (Wetterslev 2017)",
-    "imberger-2016-10-percent-rrr": "10% relative risk reduction (Imberger 2016)",
-    "required": "Required",
-    "user": "Entered",
-}
-
 
 def _muted_label(text: str = "") -> QLabel:
     label = QLabel(text)
@@ -91,7 +83,7 @@ class TrialSequentialAnalysisDialog(QDialog):
             self.heterogeneity.setEnabled(False)
             self.heterogeneity.setToolTip("Not applicable to fixed-effect models")
             self.heterogeneity_value.setText(self.heterogeneity.toolTip())
-        self.spending = self._choice("Boundaries", [("O’Brien-Fleming", "obf"), ("Pocock", "pocock")], saved.spending)
+        self.spending = self._choice("Boundaries", [("O'Brien-Fleming", "obf"), ("Pocock", "pocock")], saved.spending)
         self._row(fields, "Boundaries", self.spending)
         self.futility = self._check("Futility boundaries", saved.futility)
         self.lil = self._check("Penalised Z-curve (law of the iterated logarithm)", saved.lil and self.binary)
@@ -275,7 +267,8 @@ class TrialSequentialAnalysisDialog(QDialog):
             run = self.service.run(self.model, request)
             context = dataset_identity(self.model)
             result = replace(run.result, identity=f"{TSA_TITLE} — {context}", manuscript_title=TSA_TITLE)
-            self.on_result(result, source_sheet=self.sheet)
+            manuscript = trial_sequential_report(run, request, context)
+            self.on_result(result, source_sheet=self.sheet, manuscript=manuscript)
             options = request.options.to_mapping()
             options["futility"] = self.futility.isChecked()
             if self.sheet.settings.get(TSA_SETTINGS) != options:

@@ -56,6 +56,10 @@ rcmetar.forest.accent.color <- function(params) {
     rcmetar.default.plot.accent(rcmetar.forest.style(params), "forest")
 }
 
+rcmetar.forest.plot.font <- function(params) {
+    list(family="sans", axis=if (rcmetar.forest.style(params) == "bmj") 2 else 1)
+}
+
 rcmetar.default.plot.accent <- function(style, plot) {
     colors <- RCMETAR_PLOT_STYLE_ACCENTS[[plot]]
     key <- if (style %in% names(colors)) style else "default"

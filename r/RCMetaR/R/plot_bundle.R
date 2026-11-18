@@ -28,7 +28,7 @@
 #' Read, edit, and render persisted plot bundles
 #'
 #' @param prefix The base path of an existing RCMetaR plot bundle.
-#' @param regenerator One of `forest`, `regression`, `sroc`, or `funnel`.
+#' @param regenerator One of `forest`, `regression`, `sroc`, `funnel`, or `trial_sequential`.
 #' @param changed A named list of edited plot parameters.
 #' @param output.path The requested plot destination.
 #' @param staging.directory A caller-owned directory for staged files.
@@ -63,6 +63,7 @@ rcmetar.plot.bundle.params <- function(prefix) {
         forest=list(draw=rcmetar.draw.forest.plot, build=rcmetar.regenerate.plot.data, prefix="fp"),
         regression=list(draw=rcmetar.draw.regression.plot, build=rcmetar.regenerate.regression.plot.data, prefix="bp"),
         sroc=list(draw=rcmetar.draw.sroc.plot, build=rcmetar.regenerate.plot.data, prefix="fp"),
+        trial_sequential=list(draw=rcmetar.draw.tsa.plot, build=rcmetar.tsa.plot.data, prefix="fp"),
         stop(sprintf("Unknown plot regenerator: %s", regenerator), call.=FALSE))
 }
 

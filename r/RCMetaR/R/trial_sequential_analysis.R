@@ -256,19 +256,20 @@
   expanded <- pmin(seq_along(fraction), final)
   upper <- alpha$upper[expanded]
   wedge <- rep(NA_real_, length(fraction))
-  terminal <- NA_real_
+  futility.path <- NULL
   if (s$futility) {
     wedge.timing <- c(timing[timing < 1], 1)
     beta <- .tsa.critical(wedge.timing, wedge.timing, 1-s$power, "obf", TRUE)$upper
     terminal <- tail(.tsa.critical(wedge.timing, wedge.timing, s$alpha/2, s$spending, TRUE)$upper, 1)
     drift <- terminal + tail(beta, 1)
-    wedge[seq_len(final)] <- head(drift*sqrt(wedge.timing) - beta, final)
+    futility.path <- data.frame(fraction=wedge.timing, z=drift*sqrt(wedge.timing) - beta)
+    wedge[seq_len(final)] <- head(futility.path$z, final)
     wedge[wedge < 0] <- NA_real_
   }
   list(efficacy.upper=if (s$alternative == "lower") NA_real_ else upper,
     efficacy.lower=if (s$alternative == "upper") NA_real_ else -upper,
     futility.upper=wedge, futility.lower=-wedge,
-    alpha.spent=sides*alpha$spent[expanded], final=final, futility.terminal=terminal)
+    alpha.spent=sides*alpha$spent[expanded], final=final, futility.path=futility.path)
 }
 
 .tsa.conclusion <- function(looks, s, final) {
@@ -288,25 +289,40 @@
 }
 
 .tsa.display.table <- function(looks, s) {
-  columns <- c("study", "year", "accrued", "fraction", "z", "efficacy.upper", "efficacy.lower",
-    "futility.upper", "futility.lower", "estimate", "ci.lower", "ci.upper",
-    "adjusted.lower", "adjusted.upper", "alpha.spent")
-  if (s$lil) columns <- c(columns, "lil.z")
-  values <- as.matrix(looks[columns[-1]])
-  display <- format(values, digits=6, trim=TRUE)
-  display[is.na(values)] <- ""
-  table <- rbind(columns, cbind(looks$study, display))
-  roles <- c("value", "value", "value", "statistic", rep("value", 4), "estimate",
-    "ci_lower", "ci_upper", "ci_lower", "ci_upper", "value")
-  scale <- c("", "", "proportion", rep("", 5), rep("display", 5), "proportion")
-  level <- c(rep(NA_real_, 9), rep(s$conf.level, 2), rep(100*(1-s$alpha), 2), NA_real_)
+  number <- function(x) ifelse(is.na(x), "", format(x, digits=4, trim=TRUE))
+  bounds <- function(lower, upper) {
+    ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", number(upper))),
+      ifelse(is.na(upper), paste0("\u2265 ", number(lower)), paste(number(lower), "to", number(upper))))
+  }
+  headers <- c("Step", "Study added", "Accrued", "Information (%)", "Z",
+    "Monitoring boundary", "Futility boundary", "Effect (conventional CI)", "TSA-adjusted CI")
+  step <- seq_len(nrow(looks))
+  percent <- looks$fraction*100
+  conventional <- ifelse(is.na(looks$estimate), "",
+    paste0(number(looks$estimate), " (", bounds(looks$ci.lower, looks$ci.upper), ")"))
+  display <- cbind(step, looks$study, number(looks$accrued), number(percent), number(looks$z),
+    bounds(looks$efficacy.lower, looks$efficacy.upper),
+    bounds(looks$futility.lower, looks$futility.upper), conventional,
+    bounds(looks$adjusted.lower, looks$adjusted.upper))
+  columns <- c(1, 3, 4, 5, 6, 6, 7, 7, 8, 8, 8, 9, 9)
+  values <- cbind(step, looks$accrued, percent, looks$z,
+    as.matrix(looks[c("efficacy.lower", "efficacy.upper", "futility.lower", "futility.upper",
+      "estimate", "ci.lower", "ci.upper", "adjusted.lower", "adjusted.upper")]))
+  roles <- c(rep("value", 3), "statistic", rep("value", 4), "estimate", rep(c("ci_lower", "ci_upper"), 2))
+  scale <- c("", "", "percent", rep("", 5), rep("display", 5))
+  level <- c(rep(NA_real_, 9), rep(s$conf.level, 2), rep(100*(1-s$alpha), 2))
   if (s$lil) {
+    headers <- c(headers, "Penalised Z")
+    columns <- c(columns, 10)
+    display <- cbind(display, number(looks$lil.z))
+    values <- cbind(values, looks$lil.z)
     roles <- c(roles, "statistic")
     scale <- c(scale, "")
     level <- c(level, NA_real_)
   }
-  table <- rcmetar.table(table, "trial_sequential", list(measure=s$metric), inference="z")
-  rcmetar.numeric.fields(table, seq_along(roles)+1L, roles, values, scale, level)
+  table <- rcmetar.table(rbind(headers, display), "trial_sequential", list(measure=s$metric),
+    inference="z", label.column=1L)
+  rcmetar.numeric.fields(table, columns, roles, values, scale, level)
 }
 
 #' Trial sequential analysis (version 1)
@@ -419,7 +435,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   final <- estimable[bounds$final]
   if (bounds$final < length(estimable))
     warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
-  for (name in setdiff(names(bounds), c("final", "futility.terminal"))) {
+  for (name in setdiff(names(bounds), c("final", "futility.path"))) {
     looks[[name]] <- NA_real_
     looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
   }
@@ -455,9 +471,18 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     alpha=s$alpha, power=s$power, order=s$order, alternative=s$alternative,
     benefit.direction=s$benefit.direction, spending=s$spending, futility=s$futility,
     conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=final,
-    excluded.studies=prepared$preview$excluded.studies, futility.terminal=bounds$futility.terminal,
+    excluded.studies=prepared$preview$excluded.studies,
     conclusion=conclusion$category, crossing.look=conclusion$look))
-  list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
+  result <- list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
     package.versions=c(metafor=utils::packageDescription("metafor", fields="Version"),
       gsDesign=utils::packageDescription("gsDesign", fields="Version")), warnings=unique(warnings))
+  path <- rcmetar.plot.scalar_path(s$fp_outpath)
+  if (!is.null(path)) {
+    s$fp_style <- s$fp_style %||% "default"
+    res <- list(summary=summary, looks=looks, futility.path=bounds$futility.path)
+    plot.data <- rcmetar.tsa.plot.data(data, res, s)
+    rcmetar.draw.tsa.plot(plot.data, path)
+    result$plot.prefix <- save.data(data, res, s, plot.data, tools::file_path_sans_ext(path))
+  }
+  result
 }

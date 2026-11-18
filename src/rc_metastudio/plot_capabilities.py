@@ -15,13 +15,14 @@ PlotKind = Literal[
     "regression",
     "roc",
     "sroc",
+    "trial_sequential",
     "funnel",
     "contour_funnel",
     "deeks_funnel",
     "trimfill_funnel",
     "other",
 ]
-PlotRegenerator = Literal["forest", "regression", "funnel", "sroc", "none"]
+PlotRegenerator = Literal["forest", "regression", "funnel", "sroc", "trial_sequential", "none"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +57,7 @@ _PLOT_RULES: dict[str, tuple[PlotRegenerator, frozenset[str]]] = {
     ),
     "roc": ("none", frozenset()),
     "sroc": ("sroc", frozenset(("style", "appearance", "axis", "sroc"))),
+    "trial_sequential": ("trial_sequential", frozenset(("style", "appearance", "axis"))),
     "funnel": ("funnel", _FUNNEL_OPTIONS),
     "contour_funnel": ("funnel", _FUNNEL_OPTIONS),
     "deeks_funnel": ("funnel", _FUNNEL_OPTIONS),

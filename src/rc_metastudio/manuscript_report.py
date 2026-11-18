@@ -22,6 +22,7 @@ from rc_metastudio import __version__
 if TYPE_CHECKING:
     from rc_metastudio.analysis_dataset import Sheet
     from rc_metastudio.analysis_results import AnalysisResult
+    from rc_metastudio.trial_sequential_analysis import TsaRequest, TsaRun
 
 
 class AnalysisResultHandler(Protocol):
@@ -774,6 +775,103 @@ class ManuscriptReport:
                 parts.append(_table_html(table, table_number))
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
+
+
+def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
+    from rc_metastudio.analysis_results import ResultSection
+    from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE
+
+    options = request.options
+    hr = request.metric == "HR"
+    units = "units of statistical information" if hr else "participants"
+    order = {"year": "publication year", "table": "table order"}[options.order]
+    test = {"two-sided": "two-sided", "benefit": "one-sided benefit", "harm": "one-sided harm"}[options.test]
+    effect = f"{run.anticipated_effect:.4g}"
+    source = "entered" if run.effect_source == "user" else EFFECT_SOURCES[run.effect_source]
+    ris_label = "entered required information size" if options.manual_ris is not None else "required information size"
+    model = (f"random-effects model with the {request.tau_method} estimator of between-study variance"
+             if request.model == "random" else request.model_label.replace("fixed", "fixed-effect") + " model")
+    method = [
+        f"We pooled {request.metric} using a {model} and the Wald z statistic.",
+        f"Studies were added in {order}.",
+        f"The {ris_label} was {run.ris:,.6g} {units} using a {test} test "
+        f"with α = {options.alpha:g} and {options.power:.0%} power. "
+        f"The anticipated intervention effect was {effect} ({source}).",
+    ]
+    if request.inference in {"knha", "adhoc"}:
+        method.insert(1, HKSJ_NOTE)
+    if run.control_proportion is not None:
+        control = "entered" if run.control_source == "user" else "unweighted mean of control arms"
+        method.append(f"The control event proportion was {run.control_proportion:.2%} ({control}).")
+    if request.metric == "MD" and run.variance is not None:
+        variance = "entered" if run.variance_source == "user" else "fixed-effect-weighted pooled arm variance"
+        method.append(f"The participant variance was {run.variance:.4g} ({variance}).")
+    if request.model != "random":
+        method.append("Heterogeneity adjustment was inapplicable to the fixed-effect model.")
+    elif options.heterogeneity == "none":
+        method.append("The analysis used no heterogeneity adjustment.")
+    else:
+        measure, value = ("D²", run.d2) if options.heterogeneity == "d2" else ("I²", run.i2)
+        method.append(f"The information size was adjusted for {measure} = {value:.1%}.")
+    spending = "O’Brien-Fleming" if options.spending == "obf" else "Pocock"
+    method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
+    method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
+    if run.lil_lambda is not None:
+        method.append(f"The law of the iterated logarithm penalised Z using λ = {run.lil_lambda:g} (Hu 2007).")
+    if run.excluded_studies:
+        method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
+    method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
+
+    final, crossing = run.final, run.crossing
+    results: list[str] = []
+    if crossing is not None:
+        at = f"when {crossing.study} was added ({crossing.accrued:,.6g} {units}, {crossing.fraction:.0%} of the required information size)."
+        if run.conclusion == "crossed-futility":
+            results.append(f"The cumulative Z-curve crossed the futility boundary {at}")
+            results.append(f"This suggests that an intervention effect of {effect} is unlikely, "
+                           "without establishing its absence.")
+        else:
+            direction = {"crossed-benefit": "benefit", "crossed-harm": "harm"}[run.conclusion]
+            results.append(f"The cumulative Z-curve crossed the monitoring boundary for {direction} {at}")
+    elif run.conclusion == "ris-reached":
+        results.append("Accrued information reached the required information size without the cumulative Z-curve crossing a monitoring boundary.")
+    elif run.conclusion == "none":
+        results.append("The cumulative Z-curve crossed neither a monitoring nor a futility boundary. "
+                       f"Accrued information is {final.fraction:.0%} of the required information size.")
+    else:
+        raise ValueError("Trial sequential analysis returned an invalid conclusion.")
+    results.append(f"The conventional {request.confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
+    if final.fraction >= 1:
+        results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
+    elif final.adjusted_lower is not None and final.adjusted_upper is not None:
+        results.append(f"The TSA-adjusted CI was {final.adjusted_lower:.4g} to {final.adjusted_upper:.4g}.")
+    elif final.adjusted_lower is not None:
+        results.append(f"The one-sided TSA-adjusted lower limit was {final.adjusted_lower:.4g}.")
+    elif final.adjusted_upper is not None:
+        results.append(f"The one-sided TSA-adjusted upper limit was {final.adjusted_upper:.4g}.")
+    if run.lil_lambda is not None:
+        results.append(f"The final penalised Z-score was {final.penalised_z:.4g}." if final.penalised_z is not None
+                       else "The final penalised Z-score was unavailable at the accrued statistical information.")
+
+    references = [
+        "Wetterslev J, Thorlund K, Brok J, Gluud C. J Clin Epidemiol. 2008;61:64–75.",
+        "Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol. 2009;9:86.",
+        "Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70:659–663.",
+    ]
+    if (run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
+            or run.variance_source.startswith("wetterslev-2017")):
+        references.append("Wetterslev J, Jakobsen JC, Gluud C. BMC Med Res Methodol. 2017;17:39.")
+    if run.effect_source == "imberger-2016-10-percent-rrr":
+        references.append("Imberger G, Thorlund K, Gluud C, Wetterslev J. BMJ Open. 2016;6:e011890.")
+    if run.lil_lambda is not None:
+        references.append("Hu M, Cappelleri JC, Lan KKG. Clin Trials. 2007;4:329–340.")
+    citations = ResultSection("trial-sequential.references", "text", 2, "References",
+                              "\n".join(references), "References", paragraphs=tuple(references))
+    return ManuscriptReport(
+        TSA_TITLE, " ".join(method), tuple(section for section in run.result.sections if section.tables),
+        (citations,), tuple(section for section in run.result.sections if section.kind == "image"),
+        tuple(results), comparison=context.replace("\n", " · "),
+    )
 
 
 def figure_source(path, clip_bounds=None):

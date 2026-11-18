@@ -25,7 +25,8 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 \arguments{
 \item{prefix}{The base path of an existing RCMetaR plot bundle.}
 
-\item{regenerator}{One of \code{forest}, \code{regression}, \code{sroc}, or \code{funnel}.}
+\item{regenerator}{One of \code{forest}, \code{regression}, \code{sroc},
+\code{funnel}, or \code{trial_sequential}.}
 
 \item{changed}{A named list of edited plot parameters.}
 

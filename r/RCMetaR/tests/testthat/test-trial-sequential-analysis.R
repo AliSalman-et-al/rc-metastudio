@@ -143,7 +143,34 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   expect_equal(result$looks$ci.upper[1], 2.296858442325916)
   expect_true(is.na(tail(result$looks$adjusted.upper, 1)))
   expect_identical(attr(result$table, "rcms.table")$role, "trial_sequential")
+  expect_identical(unname(result$table[1, ]), c("Step", "Study added", "Accrued",
+    "Information (%)", "Z", "Monitoring boundary", "Futility boundary",
+    "Effect (conventional CI)", "TSA-adjusted CI"))
+  exact <- attr(result$table, "rcms.numeric")
+  expect_equal(exact$values[, which(exact$column == 4)], c(20, 40, 60, 80, 100))
+  expect_equal(exact$values[1, exact$column == 8], c(1, 1/2.296858442325916, 2.296858442325916))
   expect_true(any(attr(result$table, "rcms.numeric")$level == 95, na.rm=TRUE))
+})
+
+test_that("trial sequential artwork regenerates from its saved bundle", {
+  directory <- withr::local_tempdir()
+  path <- file.path(directory, "original.svg")
+  data <- tsa.binary(c(10, 11, 12), c(15, 16, 17), rep(100, 3))
+  result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=500,
+    favours=c("Favours Intervention", "Favours Control"), fp_outpath=path))
+  expect_true(file.exists(path))
+  expect_match(paste(readLines(path), collapse=" "), "RIS = 500 participants (entered)", fixed=TRUE)
+  expect_match(paste(readLines(path), collapse=" "), "Favours Intervention")
+  params <- rcmetar.plot.bundle.params(result$plot.prefix)
+  expect_identical(params$fp_style, "default")
+  output <- file.path(directory, "regenerated.svg")
+  expect_equal(rcmetar.render.plot.bundle(result$plot.prefix, "trial_sequential", output), output)
+  expect_true(file.exists(output))
+  staging <- withr::local_tempdir()
+  staged <- rcmetar.prepare.plot.bundle.edit(result$plot.prefix, "trial_sequential",
+    list(fp_style="revman", fp_xlabel_literal=FALSE), output, staging)
+  expect_true(any(grepl("Information (% of required information size)",
+    readLines(staged[[output]]), fixed=TRUE)))
 })
 
 test_that("overrun closes spending once, and tiny looks retain their cumulative data", {

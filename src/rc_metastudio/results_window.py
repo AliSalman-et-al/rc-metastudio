@@ -1567,7 +1567,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         regenerator = artifact.capability.regenerator
         output_parameter = {
             "forest": "fp_outpath", "regression": "bp_outpath",
-            "sroc": "fp_outpath", "funnel": "funnel.outpath",
+            "sroc": "fp_outpath", "funnel": "funnel.outpath", "trial_sequential": "fp_outpath",
         }[regenerator]
         outpath = updated_params.get(output_parameter) or artifact.image_path
         self.plot_service.apply_edits(
@@ -1658,6 +1658,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 "regression": "regression",
                 "funnel": "small_study_effects_funnel",
                 "sroc": "sroc",
+                "trial_sequential": "trial_sequential_analysis",
             }[regenerator]
             default_path = self._export_name(default_path, export_format.extension)
 

@@ -14,6 +14,12 @@ TSA_TITLE = "Trial Sequential Analysis"
 TSA_SETTINGS = "trial_sequential_analysis"
 SUPPORTED = {"binary": {"RR", "OR", "RD"}, "continuous": {"MD"}, "time_to_event": {"HR"}}
 HKSJ_NOTE = "HKSJ is not applied: monitoring boundaries assume a normal statistic."
+EFFECT_SOURCES = {
+    "wetterslev-2017-nearest-95-ci": "95% CI limit closest to the null (Wetterslev 2017)",
+    "imberger-2016-10-percent-rrr": "10% relative risk reduction (Imberger 2016)",
+    "required": "Required",
+    "user": "Entered",
+}
 TsaModel = Literal["fixed-mh", "fixed-iv", "peto", "random"]
 
 
@@ -184,7 +190,7 @@ class TsaRun:
     excluded_studies: tuple[str, ...]
 
     @classmethod
-    def from_mapping(cls, values: Mapping[str, object], section: ResultSection) -> "TsaRun":
+    def from_mapping(cls, values: Mapping[str, object], sections: tuple[ResultSection, ...]) -> "TsaRun":
         _validate_version(values)
         summary, looks, packages = (values[key] for key in ("summary", "looks", "package.versions"))
         if not isinstance(summary, Mapping) or not isinstance(looks, Mapping) or not isinstance(packages, Mapping):
@@ -200,7 +206,7 @@ class TsaRun:
 
         crossing = summary["crossing.look"]
         excluded = summary.get("excluded.studies", ())
-        result = AnalysisResult(1, {}, None, (section,), analysis_method="trial-sequential",
+        result = AnalysisResult(1, {}, None, sections, analysis_method="trial-sequential",
                                 software=", ".join(f"{key} {version}" for key, version in packages.items()))
         return cls(
             result, str(summary["conclusion"]), look(int(crossing) - 1) if crossing is not None else None,

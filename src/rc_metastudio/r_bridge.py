@@ -892,16 +892,32 @@ def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaR
 
 @serialized_r_call
 def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaRun":
+    from uuid import uuid4
+    from rc_metastudio.plot_capabilities import PlotCapability
+    from rc_metastudio.settings import analysis_output_path
     from rc_metastudio.trial_sequential_analysis import TsaRun
 
     data = dataset_for_analysis(model, request.family, metric=request.metric)
-    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
+    path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
+    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data,
+                             _to_r_params({**request.to_mapping(), "fp_outpath": path}))
     title = "Trial sequential results"
     table = _report_table_entry(_structured_matrix(title, raw.rx2("table"), None, first_row_headers=True))
     section = ResultSection("trial-sequential.looks", "text", 0, title, "", "trial-sequential.looks", tables=(table,))
-    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "looks", "package.versions")}
+    plot_title = "Trial sequential plot"
+    plot = ResultSection(
+        "trial-sequential.plot", "image", 1, plot_title, path, plot_title,
+        plot_data=str(raw.rx2("plot.prefix")[0]), capability=PlotCapability(
+            "trial_sequential", True, True, "trial_sequential"),
+    )
+    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "package.versions")}
+    looks = raw.rx2("looks")
+    fields["looks"] = {
+        key: [_r_na_to_none(value) for value in column]
+        for key, column in zip(looks.names, looks, strict=True)
+    }
     fields["version"] = int(raw.rx2("version")[0])
-    return TsaRun.from_mapping(fields, section)
+    return TsaRun.from_mapping(fields, (section, plot))
 
 
 def _r_param_value(param):

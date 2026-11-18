@@ -18,18 +18,22 @@ where applicable. TSA options are \code{order} (year or table),
 \code{anticipated.effect} (display scale), \code{control.proportion},
 \code{variance} (MD participant variance), \code{spending} (obf or pocock),
 \code{alternative} (two-sided, lower, upper), \code{benefit.direction}
-(lower or upper), and logical \code{futility} and \code{lil}.}
+(lower or upper), and logical \code{futility} and \code{lil}.
+Set \code{fp_outpath} to render and save an editable plot bundle, and pass
+\code{favours} as the negative and positive Z labels.}
 }
 \value{
 The preview supplies \code{version}, \code{eligible}, \code{ready},
 \code{reason.code} and \code{reason}. Eligible previews also supply
 \code{required.inputs}, \code{metric}, \code{model}, \code{axis},
 \code{study.order} (one-based input positions), \code{defaults} and their
-source identifiers. An eligible preview can require an anticipated effect
+source identifiers, final accrued information, effective RIS when calculable,
+and fitted heterogeneity. An eligible preview can require an anticipated effect
 (MD) or another design input before execution.
 
 Execution returns \code{version}, \code{summary}, \code{looks},
-\code{table}, \code{package.versions} and \code{warnings}. The summary
+\code{table}, \code{package.versions} and \code{warnings}, with
+\code{plot.prefix} when a plot is requested. The summary
 contains the exact unadjusted and adjusted design RIS, the effective RIS
 (participant RIS rounds half up; HR information is continuous), design inputs and
 source identifiers, heterogeneity and model, the optional Schoenfeld events
