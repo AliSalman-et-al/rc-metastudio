@@ -15,6 +15,7 @@ def workflow_label(workflow):
     return {
         "cumulative": "Cumulative meta-analysis",
         "leave-one-out": "Leave-one-out meta-analysis",
+        "trial-sequential": "Trial Sequential Analysis",
         "subgroup": "Subgroup meta-analysis",
         "meta-regression": "Meta-regression",
     }.get(workflow, "Meta-analysis")

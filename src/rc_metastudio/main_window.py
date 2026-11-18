@@ -66,6 +66,7 @@ from rc_metastudio import add_new_dialogs
 from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import small_study_effects_dialog
 from rc_metastudio import small_study_effects
+from rc_metastudio import trial_sequential_analysis, trial_sequential_analysis_dialog
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_name_dialogs
@@ -271,6 +272,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
             (self.action_loo_ma, "leave-one-out-analysis"),
+            (self.action_trial_sequential_analysis, "trial-sequential-analysis"),
             (self.action_subgroup_ma, "subgroup-analysis"),
             (self.action_meta_regression, "meta-regression"),
             (self.action_publication_bias, "publication-bias"),
@@ -286,7 +288,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_button.setToolTip("Choose an analysis")
         self.analysis_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.toolBar.insertWidget(self.action_go, self.analysis_button)
-        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
+        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_trial_sequential_analysis, self.action_subgroup_ma,
                        self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
             self.toolBar.removeAction(action)
         self.action_new_dataset.setText("New project…")
@@ -530,6 +532,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             enabled, tooltip = _pooled_analysis_availability(label, minimum, included, r_ready)
             action.setEnabled(enabled)
             action.setToolTip(tooltip + shortcut)
+        tsa_enabled, tsa_tooltip = _pooled_analysis_availability(
+            trial_sequential_analysis.TSA_TITLE, 2, included, r_ready,
+        )
+        if sheet is not None and self.model.current_effect not in trial_sequential_analysis.SUPPORTED.get(sheet.family, ()):
+            tsa_enabled = False
+            tsa_tooltip = "Trial sequential analysis supports two-arm RR, OR, RD, Peto OR, MD and reported HR."
+        self.action_trial_sequential_analysis.setEnabled(tsa_enabled)
+        self.action_trial_sequential_analysis.setToolTip(tsa_tooltip)
         self.action_meta_regression.setToolTip(
             "Meta-regression" if covariates else "Add a covariate to run meta-regression."
         )
@@ -656,6 +666,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_go, self._launch_analysis)
             _connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
             _connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
+            _connect_action(self.action_trial_sequential_analysis, self._trial_sequential_analysis)
 
             _connect_action(self.action_undo, self.undo)
             _connect_action(self.action_redo, self.redo)
@@ -723,6 +734,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         form.exec()
 
+    def _trial_sequential_analysis(self) -> None:
+        form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
+            self.model, self, on_result=self.analysis, on_settings_saved=self.data_dirtied,
+        )
+        form.exec()
+
     def data_dirtied(self):
         self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
         self._update_project_identity()
@@ -767,6 +784,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 external_params=external_params, diagnostic_metrics=diagnostic_metrics,
                 confidence_level=confidence_level, analysis_service=self.analysis_service,
                 on_result=self.analysis,
+                on_sheet_settings_saved=self.data_dirtied if not self.model.is_diagnostic() else None,
             )
         except Exception as e:
             self._show_analysis_specs_error(e)

@@ -330,7 +330,41 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   s <- .tsa.settings(params)
   prepared <- .tsa.prepare(om.data, s)
   if (is.null(prepared$preview)) return(prepared)
-  prepared$preview
+  preview <- prepared$preview
+  validation <- tryCatch(.tsa.lambda(prepared$data, s), error=identity)
+  if (inherits(validation, "error")) {
+    preview$ready <- FALSE
+    preview$reason.code <- "invalid-lil"
+    preview$reason <- conditionMessage(validation)
+  }
+  c(preview, .tsa.design(prepared, s))
+}
+
+.tsa.tail.alpha <- function(s) if (s$alternative == "two-sided") s$alpha/2 else s$alpha
+
+.tsa.lambda <- function(data, s) {
+  if (!s$lil) return(NA_real_)
+  if (!is(data, "BinaryData")) stop("LIL requires a binary measure.")
+  hu <- match(round(.tsa.tail.alpha(s), 15), c(.01, .025, .05))
+  if (is.na(hu)) stop("Hu LIL coefficients are available at one-sided alpha .01, .025 or .05.")
+  if (s$metric == "RD") c(3, 1.5, 1.5)[hu] else c(3.5, 2, 2)[hu]
+}
+
+.tsa.design <- function(prepared, s) {
+  fit <- prepared$fit
+  hr <- prepared$axis == "statistical-information"
+  random <- s$model == "random"
+  tau2 <- if (random) fit$tau2 else 0
+  i2 <- as.numeric(fit$I2)/100
+  d2 <- if (random) max(0, 1 - sum(1/(fit$vi+tau2))/sum(1/fit$vi)) else 0
+  adjustment <- if (!random) 1 else switch(s$heterogeneity, d2=1/(1-d2), i2=1/(1-i2), none=1)
+  z2 <- (qnorm(.tsa.tail.alpha(s), lower.tail=FALSE) + qnorm(s$power))^2
+  delta <- if (hr) log(prepared$effect) else if (s$metric == "MD") prepared$effect else prepared$pe-prepared$pc
+  ris.unadjusted <- if (hr) z2/delta^2 else 4*z2*prepared$variance/delta^2
+  ris.adjusted <- ris.unadjusted*adjustment
+  ris <- s$manual.ris %||% if (hr) ris.adjusted else floor(ris.adjusted + .5)
+  list(d2=d2, i2=i2, tau2=tau2, adjustment=adjustment, ris=ris,
+    ris.unadjusted=ris.unadjusted, ris.adjusted=ris.adjusted, accrued=tail(prepared$accrued, 1))
 }
 
 #' @rdname RCMetaR-trial-sequential-analysis
@@ -344,33 +378,15 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   fit <- prepared$fit
   defaults <- prepared$preview$defaults
   warnings <- prepared$warnings
-
-  lambda <- NA_real_
-  if (s$lil) {
-    if (!is(data, "BinaryData")) stop("LIL requires a binary measure.")
-    tail.alpha <- if (s$alternative == "two-sided") s$alpha/2 else s$alpha
-    hu <- match(round(tail.alpha, 15), c(.01, .025, .05))
-    if (is.na(hu)) stop("Hu LIL coefficients are available at one-sided alpha .01, .025 or .05.")
-    lambda <- if (s$metric == "RD") c(3, 1.5, 1.5)[hu] else c(3.5, 2, 2)[hu]
-  }
+  lambda <- .tsa.lambda(data, s)
   if (rcmetar.inference.method(s) != "z")
     warnings <- c(warnings, "TSA uses Wald z. The sheet's t or Hartung-Knapp inference was not applied.")
-
   hr <- prepared$axis == "statistical-information"
   random <- s$model == "random"
   if (random)
     warnings <- c(warnings, "Lan-DeMets monitoring with re-estimated random-effects weights is approximate.")
-  tau2 <- if (random) fit$tau2 else 0
-  i2 <- as.numeric(fit$I2)/100
-  d2 <- if (random) max(0, 1 - sum(1/(fit$vi+tau2))/sum(1/fit$vi)) else 0
-  adjustment <- if (!random) 1 else switch(s$heterogeneity, d2=1/(1-d2), i2=1/(1-i2), none=1)
-  tail.alpha <- if (s$alternative == "two-sided") s$alpha/2 else s$alpha
-  z2 <- (qnorm(tail.alpha, lower.tail=FALSE) + qnorm(s$power))^2
-  effect <- prepared$effect
-  delta <- if (hr) log(effect) else if (s$metric == "MD") effect else prepared$pe-prepared$pc
-  ris.unadjusted <- if (hr) z2/delta^2 else 4*z2*prepared$variance/delta^2
-  ris.adjusted <- ris.unadjusted*adjustment
-  ris <- s$manual.ris %||% if (hr) ris.adjusted else floor(ris.adjusted + .5)
+  design <- .tsa.design(prepared, s)
+  ris <- design$ris
   if (!is.finite(ris) || ris <= 0) stop("The required information size is not finite and positive.")
   fraction <- prepared$accrued/ris
   if (any(!is.finite(fraction))) stop("Information fractions must be finite.")
@@ -422,12 +438,11 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     looks$lil.z[available] <- looks$z[available]/sqrt(lambda*log(log(looks$statistical.information[available])))
   }
   conclusion <- .tsa.conclusion(looks, s, final)
-  summary <- list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
+  summary <- c(design, list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
     tau.method=if (random) s$rm.method else "",
-    d2=d2, i2=i2, tau2=tau2, heterogeneity=s$heterogeneity, adjustment=adjustment,
-    ris=ris, ris.unadjusted=ris.unadjusted, ris.adjusted=ris.adjusted,
+    heterogeneity=s$heterogeneity,
     ris.source=if (is.null(s$manual.ris)) "calculated" else "manual",
-    anticipated.effect=effect,
+    anticipated.effect=prepared$effect,
     anticipated.effect.source=if (is.null(s$anticipated.effect)) defaults$anticipated.effect.source else "user",
     control.proportion=prepared$pc,
     control.proportion.source=if (!is.null(s$control.proportion) && !is.na(prepared$pc)) "user" else
@@ -435,13 +450,13 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     intervention.proportion=prepared$pe, variance=prepared$variance,
     variance.source=if (hr) "" else if (s$metric != "MD") "ctu-pooled-bernoulli" else
       if (is.null(s$variance)) defaults$variance.source else "user",
-    schoenfeld.events=if (hr) ris.unadjusted/.25 else NA_real_,
+    schoenfeld.events=if (hr) design$ris.unadjusted/.25 else NA_real_,
     schoenfeld.allocation=if (hr) .5 else NA_real_,
     alpha=s$alpha, power=s$power, order=s$order, alternative=s$alternative,
     benefit.direction=s$benefit.direction, spending=s$spending, futility=s$futility,
     conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=final,
     excluded.studies=prepared$preview$excluded.studies, futility.terminal=bounds$futility.terminal,
-    conclusion=conclusion$category, crossing.look=conclusion$look)
+    conclusion=conclusion$category, crossing.look=conclusion$look))
   list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
     package.versions=c(metafor=utils::packageDescription("metafor", fields="Version"),
       gsDesign=utils::packageDescription("gsDesign", fields="Version")), warnings=unique(warnings))

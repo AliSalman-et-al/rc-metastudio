@@ -87,6 +87,9 @@ test_that("CTU oxygen DL effect agrees after aligning the Z direction, with Wald
 
 test_that("HR uses inverse-variance information, and diversity differs from I-squared", {
   data <- tsa.hr(c(-.3, -.2, -.1), c(.2, .1, .25))
+  preview <- rcmetar.preview.trial.sequential.analysis(data, tsa.request("HR", anticipated.effect=.8))
+  expect_equal(preview$ris, 157.63004279511367)
+  expect_equal(preview$accrued, 141)
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("HR", anticipated.effect=.8))
   expect_identical(result$summary$axis, "statistical-information")
   expect_equal(result$looks$accrued, c(25, 125, 141))
@@ -102,6 +105,8 @@ test_that("HR uses inverse-variance information, and diversity differs from I-sq
   inconsistency <- rcmetar.run.trial.sequential.analysis(data,
     tsa.request("HR", "random", rm.method="DL", anticipated.effect=.8, heterogeneity="i2"))
   expect_equal(diversity$summary$d2, .373)
+  expect_equal(rcmetar.preview.trial.sequential.analysis(data,
+    tsa.request("HR", "random", rm.method="DL", anticipated.effect=.8))$d2, .373)
   expect_equal(diversity$summary$i2, .229)
   expect_equal(diversity$summary$ris, 251.40357702569963, tolerance=1e-7)
   expect_equal(inconsistency$summary$ris, 204.44882333996585, tolerance=1e-7)

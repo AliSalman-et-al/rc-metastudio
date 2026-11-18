@@ -15,7 +15,7 @@ from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Callable, Literal, ParamSpec, TypeVar, cast, overload
 
 from rc_metastudio import r_runtime
 from rc_metastudio.analysis_method_labels import (
@@ -24,7 +24,7 @@ from rc_metastudio.analysis_method_labels import (
 )
 from rc_metastudio import result_formatting
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
-from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, TableRole, parse_analysis_result
+from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, ResultSection, TableRole, _report_table_entry, parse_analysis_result
 from typing import get_args
 from rc_metastudio.study_effect_shapes import (
     effect_triplet as effect_triplet,
@@ -36,6 +36,10 @@ from rc_metastudio.analysis_catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_
 from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.dataset_analysis_domain import fit_raw_rows, raw_data_is_complete
 from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
+
+if TYPE_CHECKING:
+    from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.trial_sequential_analysis import TsaPreview, TsaRequest, TsaRun
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
@@ -875,6 +879,29 @@ def run_small_study_effects(
     if preview:
         return r_object_to_python(result.rx2("eligibility"))
     return parse_out_results(result)
+
+
+@serialized_r_call
+def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaPreview":
+    from rc_metastudio.trial_sequential_analysis import TsaPreview
+
+    data = dataset_for_analysis(model, request.family, metric=request.metric)
+    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
+    return TsaPreview.from_mapping(_r_mapping_or_empty(raw))
+
+
+@serialized_r_call
+def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaRun":
+    from rc_metastudio.trial_sequential_analysis import TsaRun
+
+    data = dataset_for_analysis(model, request.family, metric=request.metric)
+    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
+    title = "Trial sequential results"
+    table = _report_table_entry(_structured_matrix(title, raw.rx2("table"), None, first_row_headers=True))
+    section = ResultSection("trial-sequential.looks", "text", 0, title, "", "trial-sequential.looks", tables=(table,))
+    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "looks", "package.versions")}
+    fields["version"] = int(raw.rx2("version")[0])
+    return TsaRun.from_mapping(fields, section)
 
 
 def _r_param_value(param):

@@ -215,6 +215,16 @@ def main() -> None:
     write_family(ICON_ROOT / "actions", "48 48", ACTIONS)
     write_family(ICON_ROOT / "analyses", "48 48", STANDARD_ANALYSES)
     write_family(ICON_ROOT / "analyses" / "compact", "20 20", COMPACT_ANALYSES)
+    write_family(ICON_ROOT / "analyses", "24 24", {"trial-sequential-analysis.svg": """
+  <path d="M3 3.5C6.5 9.5 11 12 21 13" fill="none" stroke="#738290" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M18 3v18" stroke="#2C9160" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+  <path d="M3 20.5 8 17.5 12 14.5 16 9.5 20 6.5" fill="none" stroke="#2F7FC8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+"""})
+    write_family(ICON_ROOT / "analyses" / "compact", "18 18", {"trial-sequential-analysis.svg": """
+  <path d="M2.25 2.625C4.875 7.125 8.25 9 15.75 9.75" fill="none" stroke="#738290" stroke-width="1" stroke-linecap="round"/>
+  <path d="M13.5 2.25v13.5" stroke="#2C9160" stroke-width="1" stroke-dasharray="1.5 1"/>
+  <path d="M2.25 15.375 6 13.125 9 10.875 12 7.125 15 4.875" fill="none" stroke="#2F7FC8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+"""})
     write_family(ICON_ROOT / "table", "18 18", TABLE)
 
 
