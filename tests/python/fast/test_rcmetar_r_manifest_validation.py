@@ -134,6 +134,8 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
     except OSError as exc:
         pytest.skip(f"symlink creation is unavailable: {exc}")
     expected_python = str(venv_python.absolute())
+    monkeypatch.setattr(source_verifier, "prepare_qt_environment", lambda _root: dict(os.environ))
+    monkeypatch.setattr(source_verifier, "run_typing", lambda _root: tmp_path / "typing.json")
 
     class StopAfterFirstChild(Exception):
         pass
