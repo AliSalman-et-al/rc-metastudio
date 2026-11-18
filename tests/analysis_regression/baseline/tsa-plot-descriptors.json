@@ -6,6 +6,8 @@
   },
   "identity": "Trial sequential plot",
   "kind": "trial_sequential",
+  "favours_color": "#595959",
+  "legend_min_dash_periods": 1.2,
   "labels": [
     "Cumulative Z-curve",
     "Monitoring boundary",
@@ -16,5 +18,5 @@
     "Information (% of required information size)"
   ],
   "regeneration": "trial_sequential",
-  "schema_version": 2
+  "schema_version": 3
 }

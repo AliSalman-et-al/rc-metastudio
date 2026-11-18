@@ -322,7 +322,6 @@ rcmetar.bubble.legend <- function(labels, ...) {
         yjust=1,
         text.col="#222222"
     )
-    invisible(NULL)
 }
 
 rcmetar.bubble.legend.cex <- function() {

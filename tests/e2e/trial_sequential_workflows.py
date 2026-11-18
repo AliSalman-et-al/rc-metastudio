@@ -2,7 +2,6 @@
 import csv
 import json
 import os
-import re
 from math import ceil, isclose
 from pathlib import Path
 from unittest.mock import patch
@@ -77,35 +76,64 @@ def compare_numeric(table, case, record, view):
 
 def check_artwork(path, case, style, contract):
     svg = ET.parse(path).getroot()
-    labels = {"".join(node.itertext()) for node in svg.iter(NAMESPACE + "text")}
+    text_nodes = list(svg.iter(NAMESPACE + "text"))
+    labels = {"".join(node.itertext()) for node in text_nodes}
     assert set(contract["labels"]) <= labels, labels
     assert ("Penalised Z-curve" in labels) == (case == "bcg")
     assert any(label.startswith("Required information") and "Accrued:" in label for label in labels)
     if case == "hr":
         assert "Required information: 4,222.1 · Accrued: 1,775.3 (42%)" in labels
+    ticks = [node for node in text_nodes if (node.text or "").endswith("%")]
+    assert ticks and all("font-weight" not in node.attrib["style"] for node in ticks)
+    favours = [node for node in text_nodes if f'fill: {contract["favours_color"]};' in node.attrib["style"]]
+    assert sum((node.text or "").startswith("Favours ") for node in favours) == 2
+    assert all("transform" not in node.attrib and "font-weight" not in node.attrib["style"]
+               and node.attrib.get("text-anchor", "start") == "start" for node in favours)
     if case == "stress":
-        tracks = {}
-        for node in svg.iter(NAMESPACE + "text"):
-            transform = re.fullmatch(r"translate\(([\d.]+),([\d.]+)\) rotate\(-90\)",
-                                     node.attrib.get("transform", ""))
-            if transform is None or node.text == "Cumulative Z-score":
-                continue
-            x, y = map(float, transform.groups())
-            size = float(node.attrib["textLength"].removesuffix("px"))
-            bounds = (y, y + size) if node.attrib.get("text-anchor") == "end" else (y - size, y)
-            tracks.setdefault(x, []).append(bounds)
-        assert sum(map(len, tracks.values())) == 4, tracks
-        for intervals in tracks.values():
-            ordered = sorted(intervals)
-            assert all(a[1] < b[0] for a, b in zip(ordered, ordered[1:])), tracks
+        lines = sorted(favours, key=lambda node: float(node.attrib["y"]))
+        assert len(lines) == 4
+        assert " ".join(node.text or "" for node in lines[:2]) == "Favours conventional outpatient management"
+        assert " ".join(node.text or "" for node in lines[2:]) == "Favours the new extended therapy programme"
     assert "100%" in labels and "RIS" in labels
     accent = contract["accents"][style]
     assert accent.lower() in path.read_text(encoding="utf-8").lower()
     _, _, width, height = map(float, svg.attrib["viewBox"].split())
     assert 1.5 < width / height < 2.2
+    for node in text_nodes:
+        if "x" in node.attrib and "fill: #222222;" in node.attrib["style"]:
+            end = float(node.attrib["x"]) + float(node.attrib["textLength"].removesuffix("px"))
+            assert end <= width, (node.text, end, width)
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
                   if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
     assert monitoring and len(monitoring[0].attrib["points"].split()) >= 100
+    panel, = [group for group in svg.iter(NAMESPACE + "g") if monitoring[0] in list(group)]
+    clip = panel.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
+    bounds = svg.find(f".//{NAMESPACE}clipPath[@id='{clip}']/{NAMESPACE}rect")
+    assert bounds is not None
+    left, top, wide, tall = (float(bounds.attrib[key]) for key in ("x", "y", "width", "height"))
+    panel_end = left + wide
+    for node in favours:
+        x, y = (float(node.attrib[key]) for key in ("x", "y"))
+        size = float(node.attrib["textLength"].removesuffix("px"))
+        assert left < x < left + .05 * wide and x + size < panel_end
+        assert top < y < top + tall and min(y - top, top + tall - y) < .20 * tall
+    lines = list(svg.iter(NAMESPACE + "line"))
+    legend_samples = []
+    for color in ("#A6A6A6", "#4A4A4A"):
+        plotted = [node for node in lines if node in list(panel) and color in node.attrib["style"]]
+        sample, = [node for node in lines if color in node.attrib["style"]
+                   and float(node.attrib["x1"]) > panel_end]
+        assert plotted and sample.attrib["style"] == plotted[0].attrib["style"]
+        dash = sample.attrib["style"].split("stroke-dasharray: ")[1].split(";")[0]
+        length = float(sample.attrib["x2"]) - float(sample.attrib["x1"])
+        assert length >= sum(map(float, dash.split(","))) * contract["legend_min_dash_periods"]
+        legend_samples.append(dash)
+    assert len(set(legend_samples)) == 2
+    wedge = [node for node in panel.findall(NAMESPACE + "polygon")
+             if accent in node.attrib["style"] and "stroke-dasharray" in node.attrib["style"]]
+    swatch, = [node for node in svg.iter(NAMESPACE + "rect")
+               if wedge and node.attrib.get("style") == wedge[0].attrib["style"]]
+    assert float(swatch.attrib["x"]) > panel_end and float(swatch.attrib["width"]) >= 8
     crossings = [node for node in svg.iter(NAMESPACE + "circle") if "#333333" in node.attrib.get("style", "")]
     if case != "stress":
         assert bool(crossings) == (case != "md")
@@ -114,8 +142,6 @@ def check_artwork(path, case, style, contract):
                 if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
         tip = monitoring[0].attrib["points"].split()[-1]
         assert any(f"{node.attrib['x1']},{node.attrib['y1']}" == tip for node in held), tip
-        wedge = [node for node in svg.iter(NAMESPACE + "polygon")
-                 if accent in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
         assert any(tip in node.attrib["points"].split() for node in wedge), tip
 
 

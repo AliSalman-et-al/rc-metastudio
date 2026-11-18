@@ -70,12 +70,13 @@ treatment. Label participant counts as such, show continuous information for
 HR, include the accrued percentage and append `(entered)` to a manually set RIS.
 
 Use the bubble plot's device sizing, axis layout and unboxed right-side legend.
-Use open L-shaped axes, horizontal tick labels and no grid. Mark the information
+Use open L-shaped axes, horizontal tick labels and no grid. Use regular weight
+for information-axis ticks. Mark the information
 axis every 25 percentage points through 200%, then every 50. Mark the cumulative
-Z axis every two units. Align the rotated favours labels with the two ends of
-the left margin, in plain black at tick-label size. Wrap long labels in two
-lines, staggered within the left margin when their ends would overlap. Keep
-the panel clear of annotations and put `RIS` above its 100% line.
+Z axis every two units. Set the favours labels horizontally at the upper and
+lower left inside the panel in regular `#595959` at tick-label size. Wrap long
+labels to two lines and draw each on a padded panel-background rectangle above
+the curves. Put `RIS` above its 100% line.
 
 Draw the funnel-style tint and dotted accent border for the futility wedge
 first (`lty=3`, `lwd=1`). Follow with conventional lines (`#A6A6A6`, dashed,
@@ -89,7 +90,9 @@ Scale marker area by added information within the bubble plot's size limits.
 Start the curve at zero and break it at non-estimable looks. Draw the optional
 penalty curve in dashed accent (`lwd=1.4`) with small open markers. Use solid accent
 triangles at clipped Z values and a charcoal ring just outside the first
-crossing marker (`lwd=1.6`). List only visible marks in the legend. Keep the same layout
+crossing marker (`lwd=1.6`). List only visible marks in the legend. Use a tinted
+futility swatch with the wedge's dotted accent outline. Use the curves' line
+types at a legend segment length of 2.5 characters. Keep the same layout
 in Default, RevMan and BMJ, using the style typography and existing funnel
 region preset, including RevMan's grey.
 

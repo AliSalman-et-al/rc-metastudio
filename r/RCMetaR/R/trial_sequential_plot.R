@@ -43,14 +43,32 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
 }
 
 .tsa.favours.label <- function(label, available) {
-    if (graphics::strwidth(label, units="inches") <= available) return(label)
-    # Balance two rotated lines using their measured length on the current device.
+    if (graphics::strwidth(label) <= available) return(label)
     cuts <- gregexpr(" ", label, fixed=TRUE)[[1]]
-    if (length(cuts) < 2L) cuts <- seq_len(nchar(label) - 1L)
-    start <- substring(label, 1L, cuts)
+    if (cuts[1] == -1L) cuts <- seq_len(nchar(label) - 1L)
+    start <- trimws(substring(label, 1L, cuts))
     end <- trimws(substring(label, cuts + 1L))
-    i <- which.min(pmax(graphics::strwidth(start, units="inches"), graphics::strwidth(end, units="inches")))
-    paste(trimws(start[i]), end[i], sep="\n")
+    i <- which.min(pmax(graphics::strwidth(start), graphics::strwidth(end)))
+    c(start[i], end[i])
+}
+
+.tsa.draw.favours <- function(favours) {
+    usr <- graphics::par("usr")
+    padding <- graphics::xyinch(.3 * graphics::par("cin") * graphics::par("cex"))
+    line.height <- 1.5 * graphics::strheight("Mg")
+    left <- usr[1] + padding[1]
+    x <- left + padding[1]
+    # Wrap within the left third so the labels stay close to the axis.
+    available <- diff(usr[1:2])/3 - 3 * padding[1]
+    for (i in seq_along(favours)) {
+        lines <- .tsa.favours.label(favours[i], available)
+        height <- length(lines) * line.height + 2 * padding[2]
+        bottom <- if (i == 1L) usr[3] + padding[2] else usr[4] - padding[2] - height
+        graphics::rect(left, bottom, x + max(graphics::strwidth(lines)) + padding[1],
+                       bottom + height, col=graphics::par("bg"), border=NA)
+        y <- bottom + padding[2] + (rev(seq_along(lines)) - .5) * line.height
+        graphics::text(x, y, lines, adj=c(0, .5), font=1, col="#595959")
+    }
 }
 
 rcmetar.draw.tsa.plot <- function(plot.data, path) {
@@ -72,7 +90,10 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
     region <- .small.study.funnel.settings(params)$region.color
     charcoal <- "#333333"
     conventional.col <- "#A6A6A6"
+    conventional.lty <- "dashed"
     ris.col <- "#4A4A4A"
+    ris.lty <- "84"
+    legend.segment <- 2.5
 
     x <- 100*looks$fraction
     xlim <- c(0, max(110, 1.05*tail(x, 1)))
@@ -127,37 +148,17 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
         tick.width <- max(graphics::strwidth(yticks, units="inches", font=typography$axis))
         label.line <- (tick.width + 0.40) / graphics::par("csi")
         margins <- graphics::par("mai")
-        margins[2] <- max(margins[2], (label.line + 3.6) * graphics::par("csi"))
         if (length(labels)) {
-            legend.width <- max(graphics::strwidth(paste0("MMMMM", labels), units="inches",
+            legend.width <- max(graphics::strwidth(paste0("MMMMMM", labels), units="inches",
                                                    cex=rcmetar.bubble.legend.cex()))
             margins[4] <- max(margins[4], legend.width)
         }
         graphics::par(mai=margins)
-        available <- graphics::par("pin")[2] - .20
-        widths <- graphics::strwidth(favours, units="inches")
-        label.width <- if (sum(widths) <= available) max(widths) else available/2
-        favours <- vapply(favours, .tsa.favours.label, character(1), available=label.width)
-        favours.lines <- strsplit(favours, "\n", fixed=TRUE)
-        longest <- vapply(favours.lines, function(label) max(graphics::strwidth(label, units="inches")), numeric(1))
-        label.lines <- rep(label.line + 1, 2)
-        if (sum(longest) > available) {
-            # Stagger the two blocks if wrapping still leaves too little space between them.
-            offset <- length(favours.lines[[1]])
-            label.lines[2] <- label.lines[2] + offset
-            margins[2] <- margins[2] + offset * graphics::par("csi")
-            graphics::par(mai=margins)
-        }
         graphics::plot(NA_real_, xlim=xlim, ylim=c(-limit, limit), xaxt="n", yaxt="n",
                        ylab="", xlab=xlabel, bty=style$bty)
-        graphics::axis(1, at=ticks, labels=paste0(ticks, "%"), las=style$las)
+        graphics::axis(1, at=ticks, labels=paste0(ticks, "%"), las=style$las, font=1)
         graphics::axis(2, at=yticks, las=style$las)
         graphics::mtext(ylabel, side=2, line=label.line)
-        for (i in seq_along(favours)) {
-            graphics::mtext(favours[i], side=2, at=c(-limit, limit)[i],
-                            adj=c(0, 1)[i], line=label.lines[i],
-                            las=0, cex=size$cex, font=1, col="black")
-        }
         rcmetar.draw.panel.caption(caption, line=1.6)
 
         if (wedge.visible) {
@@ -165,7 +166,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
                               c(curves$futility[wedge], -rev(curves$futility[wedge])),
                               col=region, border=accent, lty=3, lwd=1)
         }
-        graphics::abline(h=directions*conventional, col=conventional.col, lty=2, lwd=1)
+        graphics::abline(h=directions*conventional, col=conventional.col, lty=conventional.lty, lwd=1)
         rcmetar.bubble.draw.refline(0)
         for (direction in directions) {
             graphics::lines(curves$x, direction*curves$monitoring, col=charcoal, lwd=2)
@@ -175,7 +176,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
             }
         }
         if (ris.visible) {
-            graphics::abline(v=100, col=ris.col, lty="84", lwd=1.1)
+            graphics::abline(v=100, col=ris.col, lty=ris.lty, lwd=1.1)
             graphics::mtext("RIS", side=3, line=.25, at=100, cex=.8, col=ris.col)
         }
 
@@ -190,15 +191,27 @@ rcmetar.draw.tsa.plot <- function(plot.data, path) {
             graphics::points(x[crossing], pmax(-limit, pmin(limit, looks$z[crossing])),
                              col=charcoal, pch=1, cex=markers[crossing] + .4, lwd=1.6, xpd=TRUE)
         }
+        .tsa.draw.favours(favours)
 
         if (length(labels)) {
-            rcmetar.bubble.legend(
+            legend <- rcmetar.bubble.legend(
                 labels,
                 col=c(accent, charcoal, accent, conventional.col, ris.col, accent)[shown],
                 lwd=c(2, 2, 1, 1, 1.1, 1.4)[shown],
-                lty=c("solid", "solid", NA, "dashed", "84", "dashed")[shown],
-                pch=c(style$pch, NA, 22, NA, NA, 1)[shown], pt.bg=c(style$bg, NA, region, NA, NA, NA)[shown],
-                merge=TRUE)
+                lty=c("solid", "solid", NA, conventional.lty, ris.lty, "dashed")[shown],
+                pch=c(style$pch, NA, NA, NA, NA, 1)[shown],
+                pt.bg=c(style$bg, NA, NA, NA, NA, NA)[shown],
+                merge=TRUE, seg.len=legend.segment)
+            if (wedge.visible) {
+                row <- match("Futility region", labels)
+                # Centre the swatch in the sample slot. Plotting symbols have solid outlines.
+                char.width <- graphics::par("cin")[1] * graphics::par("cex") * rcmetar.bubble.legend.cex()
+                half <- graphics::xyinch(rep(.8 * char.width, 2))
+                x <- legend$text$x[row] - graphics::xinch((1 + legend.segment/2) * char.width)
+                y <- legend$text$y[row]
+                graphics::rect(x - half[1], y - half[2], x + half[1], y + half[2],
+                               col=region, border=accent, lty=3, lwd=1, xpd=NA)
+            }
         }
     }, caption=params$plot_caption)
     invisible(path)
