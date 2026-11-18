@@ -54,7 +54,6 @@ done
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 venv_root="$repo_root/.venv"
-python_exe="$venv_root/bin/python"
 
 step() {
   printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$1"
@@ -109,15 +108,13 @@ if [ "$recreate_venv" -eq 1 ] && [ -d "$venv_root" ]; then
   rm -rf "$venv_root"
 fi
 
-step "Syncing the locked Python environment"
+step "Installing the locked Python interpreter"
 uv python install
-uv sync --locked
 
 build_args=(
   --architecture "$architecture"
   --artifact-name "$artifact_name"
   --bundle-identifier "$bundle_identifier"
-  --python-exe "$python_exe"
 )
 if [ -n "$archive_root_name" ]; then
   build_args+=(--archive-root-name "$archive_root_name")

@@ -226,36 +226,51 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   # itself at the package floor before building bindings against that runtime.
   qt_build_root="$repo_root/build/macos-qt-source"
   qt_sdk_root="$qt_build_root/install"
-  rm -rf "$qt_build_root"
-  mkdir -p "$qt_build_root"
-  for module in qtbase qtsvg; do
-    case "$module" in
-      qtbase) revision=025bdad181de241e81bf853c8a2d7bf3d19261a9 ;;
-      qtsvg) revision=883a58532078d003cefef0a549bfe9f885ce41f5 ;;
-    esac
-    git init "$qt_build_root/$module"
-    git -C "$qt_build_root/$module" fetch --depth 1 "https://github.com/qt/$module.git" "$revision"
-    git -C "$qt_build_root/$module" checkout --detach FETCH_HEAD
-    [ "$(git -C "$qt_build_root/$module" rev-parse HEAD)" = "$revision" ] || exit 1
-  done
-  mkdir -p "$qt_build_root/base-build" "$qt_build_root/svg-build"
-  (cd "$qt_build_root/base-build" && "$qt_build_root/qtbase/configure" \
-    -prefix "$qt_sdk_root" -release -opensource -confirm-license \
-    -nomake tests -nomake examples -- -G Ninja \
-    -DCMAKE_OSX_ARCHITECTURES="$architecture" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
-  cmake --build "$qt_build_root/base-build" --parallel 3
-  cmake --install "$qt_build_root/base-build"
-  (cd "$qt_build_root/svg-build" && "$qt_sdk_root/bin/qt-configure-module" "$qt_build_root/qtsvg" -- \
-    -G Ninja -DCMAKE_OSX_ARCHITECTURES="$architecture" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
-  cmake --build "$qt_build_root/svg-build" --parallel 3
-  cmake --install "$qt_build_root/svg-build"
+  if [ "${RCMS_MACOS_QT_CACHE_HIT:-false}" = true ] &&
+     [ -x "$qt_sdk_root/bin/qmake" ] &&
+     [ -d "$qt_sdk_root/lib/QtCore.framework" ] &&
+     [ -d "$qt_sdk_root/lib/QtSvg.framework" ] &&
+     [ -d "$qt_sdk_root/plugins" ] &&
+     [ "$("$qt_sdk_root/bin/qmake" -query QT_INSTALL_PREFIX)" = "$qt_sdk_root" ] &&
+     [ "$("$qt_sdk_root/bin/qmake" -query QT_VERSION)" = 6.12.0 ]; then
+    step "Reusing the source-built macOS Qt SDK"
+  else
+    rm -rf "$qt_build_root"
+    mkdir -p "$qt_build_root"
+    for module in qtbase qtsvg; do
+      case "$module" in
+        qtbase) revision=025bdad181de241e81bf853c8a2d7bf3d19261a9 ;;
+        qtsvg) revision=883a58532078d003cefef0a549bfe9f885ce41f5 ;;
+      esac
+      git init "$qt_build_root/$module"
+      git -C "$qt_build_root/$module" fetch --depth 1 "https://github.com/qt/$module.git" "$revision"
+      git -C "$qt_build_root/$module" checkout --detach FETCH_HEAD
+      [ "$(git -C "$qt_build_root/$module" rev-parse HEAD)" = "$revision" ] || exit 1
+    done
+    mkdir -p "$qt_build_root/base-build" "$qt_build_root/svg-build"
+    (cd "$qt_build_root/base-build" && "$qt_build_root/qtbase/configure" \
+      -prefix "$qt_sdk_root" -release -opensource -confirm-license \
+      -nomake tests -nomake examples -- -G Ninja \
+      -DCMAKE_OSX_ARCHITECTURES="$architecture" \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
+    cmake --build "$qt_build_root/base-build" --parallel 3
+    cmake --install "$qt_build_root/base-build"
+    (cd "$qt_build_root/svg-build" && "$qt_sdk_root/bin/qt-configure-module" "$qt_build_root/qtsvg" -- \
+      -G Ninja -DCMAKE_OSX_ARCHITECTURES="$architecture" \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET="$minimum_macos_version")
+    cmake --build "$qt_build_root/svg-build" --parallel 3
+    cmake --install "$qt_build_root/svg-build"
+  fi
   qt_qmake="$qt_sdk_root/bin/qmake"
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
+  pyqt_cache_options=(--reinstall-package pyqt6)
+  if [ -n "${RCMS_MACOS_QT_CACHE_HIT:-}" ] && [ ! -e "$repo_root/.venv" ]; then
+    # The workflow keys this cache to the SDK, runner toolchain, and Python lock.
+    pyqt_cache_options=(--cache-dir "$qt_build_root/uv-cache")
+  fi
   # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
   # Keep binding rpaths relative to the single runtime tree collected by PyInstaller.
-  (cd "$repo_root" && uv sync --verbose --locked --no-binary-package pyqt6 --reinstall-package pyqt6 \
+  (cd "$repo_root" && uv sync --verbose --locked --no-binary-package pyqt6 "${pyqt_cache_options[@]}" \
     --config-settings-package "pyqt6:--confirm-license=" \
     --config-settings-package "pyqt6:--target-qt-dir=Qt6/lib" \
     --config-settings-package "pyqt6:--qmake=$qt_qmake" \

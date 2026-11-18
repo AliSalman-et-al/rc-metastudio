@@ -91,18 +91,25 @@ jobs:
       - run: uv python install
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6
+        shell: bash
+        run: |
+          set -euo pipefail
+          packages=(xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2 libdeflate-dev libzstd-dev libtirpc-dev liblzma-dev libbz2-dev libblas-dev liblapack-dev libgfortran5 libgomp1 libtk8.6)
+          if ! sudo apt-get install -y "${packages[@]}"; then
+            sudo apt-get -o Acquire::Languages=none update
+            sudo apt-get install -y "${packages[@]}"
+          fi
       - name: Cache official Qt SDK for macOS
         if: startsWith(matrix.target, 'macos-')
         id: macos_qt_sdk_cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/qt-sdk
-          key: qt-sdk-6.12.0-${{ matrix.target }}
+          key: qtbase-sdk-6.12.0-${{ matrix.target }}
       - name: Install official Qt SDK for macOS
         if: startsWith(matrix.target, 'macos-') && steps.macos_qt_sdk_cache.outputs.cache-hit != 'true'
         shell: bash
-        run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --outputdir "$PWD/build/qt-sdk"
+        run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
       - name: Resolve official Qt rcc for macOS
         if: startsWith(matrix.target, 'macos-')
         shell: bash
@@ -117,17 +124,62 @@ jobs:
             --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" \
             --github-env "$GITHUB_ENV" \
             --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
+      - name: Cache immutable official Windows R download
+        if: matrix.target == 'windows-x64'
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: artifacts/download-cache/windows-x64
+          key: official-r-4.6.2-windows-x64-B0B0053BAA1963B6D8A28C9642D50107EF9CE2F41C8B9A90E952846C8918B38A
+
       - name: Build Windows unsigned candidate
         if: matrix.target == 'windows-x64'
         shell: powershell
         run: .\scripts\package-windows.ps1
+      - name: Fingerprint macOS Qt build inputs
+        if: startsWith(matrix.target, 'macos-')
+        id: macos-qt-build
+        shell: bash
+        run: |
+          set -euo pipefail
+          fingerprint="$(
+            {
+              printf '%s\n' "$PWD" "${ImageVersion:-}"
+              sw_vers -buildVersion
+              xcodebuild -version
+              xcrun --sdk macosx --show-sdk-path
+              cmake --version
+              ninja --version
+              uv --version
+            } | shasum -a 256 | cut -d ' ' -f 1
+          )"
+          printf 'fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the source-built macOS Qt SDK
+        if: startsWith(matrix.target, 'macos-')
+        id: macos-qt-build-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            build/macos-qt-source/install
+            build/macos-qt-source/uv-cache
+          key: macos-package-qt-${{ matrix.target }}-${{ steps.macos-qt-build.outputs.fingerprint }}-${{ hashFiles('scripts/build-macos-package.sh', 'config/macos-package-targets.json', '.python-version', 'pyproject.toml', 'uv.lock') }}
+
       - name: Build native macOS unsigned candidate
         if: startsWith(matrix.target, 'macos-')
         shell: bash
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
+          RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
           ARTIFACT: ${{ matrix.artifact }}
         run: bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" --artifact-name "${ARTIFACT%.zip}"
+      - name: Prune the macOS build wheel cache
+        if: startsWith(matrix.target, 'macos-')
+        shell: bash
+        run: |
+          if [ -d build/macos-qt-source/uv-cache ]; then
+            uv cache prune --ci --cache-dir build/macos-qt-source/uv-cache
+          fi
+
       - name: Build native Linux unsigned candidate
         if: matrix.target == 'linux-x64'
         shell: bash

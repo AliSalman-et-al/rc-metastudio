@@ -177,7 +177,14 @@ jobs:
           uv run python scripts/delivery.py verify-archive --manifest $manifest.FullName --result $record.FullName --target "$env:TARGET" --archive "candidate/artifacts/RCMetaStudio-$env:TARGET.$extension" --source-sha "$env:SOURCE_SHA" --version "$env:VERSION" --repository "$env:GITHUB_REPOSITORY" --trust-profile macos-trusted
           if ($LASTEXITCODE -ne 0) { throw "Candidate archive binding failed." }
       - name: Install Linux display and Qt runtime libraries
-        run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2
+        shell: bash
+        run: |
+          set -euo pipefail
+          packages=(xvfb libegl1 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxcb-util1 libxcb-xkb1 libxkbcommon-x11-0 librsvg2-2)
+          if ! sudo apt-get install -y "${packages[@]}"; then
+            sudo apt-get -o Acquire::Languages=none update
+            sudo apt-get install -y "${packages[@]}"
+          fi
       - name: Launch unchanged unsigned Linux bytes
         shell: bash
         run: |
