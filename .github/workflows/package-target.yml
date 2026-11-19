@@ -3,6 +3,11 @@ name: Package native macOS applications
 on:
   workflow_call:
   workflow_dispatch:
+    inputs:
+      prepare_dependencies_only:
+        description: Prepare the source-built Qt SDK and PyQt wheel for release builds.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -70,35 +75,39 @@ jobs:
       - name: Fingerprint macOS Qt build inputs
         id: macos-qt-build
         shell: bash
-        run: |
-          set -euo pipefail
-          fingerprint="$(
-            {
-              printf '%s\n' "$PWD" "${ImageVersion:-}"
-              sw_vers -buildVersion
-              xcodebuild -version
-              xcrun --sdk macosx --show-sdk-path
-              cmake --version
-              ninja --version
-              uv --version
-            } | shasum -a 256 | cut -d ' ' -f 1
-          )"
-          printf 'fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+        env:
+          ARCHITECTURE: ${{ matrix.architecture }}
+        run: uv run --no-project python scripts/macos_build_cache.py "$ARCHITECTURE"
 
       - name: Cache the source-built macOS Qt SDK
         id: macos-qt-build-cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
-          path: |
-            build/macos-qt-source/install
-            build/macos-qt-source/uv-cache
-          key: macos-package-qt-${{ matrix.target }}-${{ steps.macos-qt-build.outputs.fingerprint }}-${{ hashFiles('scripts/build-macos-package.sh', 'config/macos-package-targets.json', '.python-version', 'pyproject.toml', 'uv.lock') }}
+          path: build/macos-qt-source/install
+          key: macos-qt-sdk-${{ steps.macos-qt-build.outputs.sdk }}
+
+      - name: Cache the source-built PyQt wheel
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build/macos-pyqt-cache
+          key: macos-pyqt-wheel-${{ steps.macos-qt-build.outputs.wheel }}
+
+      - name: Prepare macOS build dependencies
+        if: inputs.prepare_dependencies_only
+        shell: bash
+        env:
+          ARCHITECTURE: ${{ matrix.architecture }}
+          RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
+          RCMS_MACOS_PYQT_CACHE: "true"
+        run: bash scripts/build-macos-package.sh --architecture "$ARCHITECTURE" --prepare-qt-only
 
       - name: Build and run the first-green packaged workflow
+        if: ${{ !inputs.prepare_dependencies_only }}
         shell: bash
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
           RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
+          RCMS_MACOS_PYQT_CACHE: "true"
         run: |
           set -euo pipefail
           test ! -e /opt/X11
@@ -109,11 +118,12 @@ jobs:
       - name: Prune the macOS build wheel cache
         shell: bash
         run: |
-          if [ -d build/macos-qt-source/uv-cache ]; then
-            uv cache prune --ci --cache-dir build/macos-qt-source/uv-cache
+          if [ -d build/macos-pyqt-cache ]; then
+            uv cache prune --ci --cache-dir build/macos-pyqt-cache
           fi
 
       - name: Upload immutable unsigned package
+        if: ${{ !inputs.prepare_dependencies_only }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.artifact }}
@@ -123,7 +133,7 @@ jobs:
           compression-level: 0
 
       - name: Upload bring-up evidence and failure diagnostics
-        if: ${{ always() }}
+        if: ${{ always() && !inputs.prepare_dependencies_only }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.artifact }}-evidence

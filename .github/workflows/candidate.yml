@@ -139,45 +139,57 @@ jobs:
         if: startsWith(matrix.target, 'macos-')
         id: macos-qt-build
         shell: bash
+        env:
+          ARCHITECTURE: ${{ matrix.architecture }}
         run: |
-          set -euo pipefail
-          fingerprint="$(
-            {
-              printf '%s\n' "$PWD" "${ImageVersion:-}"
-              sw_vers -buildVersion
-              xcodebuild -version
-              xcrun --sdk macosx --show-sdk-path
-              cmake --version
-              ninja --version
-              uv --version
-            } | shasum -a 256 | cut -d ' ' -f 1
-          )"
-          printf 'fingerprint=%s\n' "$fingerprint" >> "$GITHUB_OUTPUT"
+          # Older protected-master sources predate the independent caches.
+          if [ -f scripts/macos_build_cache.py ]; then
+            uv run --no-project python scripts/macos_build_cache.py "$ARCHITECTURE"
+          fi
 
       - name: Cache the source-built macOS Qt SDK
-        if: startsWith(matrix.target, 'macos-')
+        if: steps.macos-qt-build.outputs.sdk != ''
         id: macos-qt-build-cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
-          path: |
-            build/macos-qt-source/install
-            build/macos-qt-source/uv-cache
-          key: macos-package-qt-${{ matrix.target }}-${{ steps.macos-qt-build.outputs.fingerprint }}-${{ hashFiles('scripts/build-macos-package.sh', 'config/macos-package-targets.json', '.python-version', 'pyproject.toml', 'uv.lock') }}
+          path: build/macos-qt-source/install
+          key: macos-qt-sdk-${{ steps.macos-qt-build.outputs.sdk }}
+
+      - name: Cache the source-built PyQt wheel
+        if: steps.macos-qt-build.outputs.sdk != ''
+        id: macos-pyqt-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build/macos-pyqt-cache
+          key: macos-pyqt-wheel-${{ steps.macos-qt-build.outputs.wheel }}
+
+      - name: Require warm macOS build dependencies
+        if: >-
+          steps.macos-qt-build.outputs.sdk != '' &&
+          (steps.macos-qt-build-cache.outputs.cache-hit != 'true' ||
+          steps.macos-pyqt-cache.outputs.cache-hit != 'true')
+        shell: bash
+        run: |
+          echo "::error::Run Package native macOS applications on master with prepare_dependencies_only enabled, then retry the candidate."
+          exit 1
 
       - name: Build native macOS unsigned candidate
         if: startsWith(matrix.target, 'macos-')
+        timeout-minutes: ${{ steps.macos-qt-build.outputs.sdk != '' && 14 || 160 }}
         shell: bash
         env:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
           RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
+          RCMS_MACOS_PYQT_CACHE: ${{ steps.macos-qt-build.outputs.wheel != '' }}
+          RCMS_MACOS_REQUIRE_WARM_QT: ${{ steps.macos-qt-build.outputs.sdk != '' }}
           ARTIFACT: ${{ matrix.artifact }}
         run: bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" --artifact-name "${ARTIFACT%.zip}"
       - name: Prune the macOS build wheel cache
         if: startsWith(matrix.target, 'macos-')
         shell: bash
         run: |
-          if [ -d build/macos-qt-source/uv-cache ]; then
-            uv cache prune --ci --cache-dir build/macos-qt-source/uv-cache
+          if [ -d build/macos-pyqt-cache ]; then
+            uv cache prune --ci --cache-dir build/macos-pyqt-cache
           fi
 
       - name: Build native Linux unsigned candidate
