@@ -311,7 +311,7 @@ rcmetar.revman.study.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
         return("")
     }
-    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
+    rcmetar.metafor.study.header(bundle)
 }
 
 rcmetar.draw.revman.forest <- function(bundle, outpath) {
@@ -369,9 +369,6 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         textpos=c(rcmetar.forest.study.x(layout), layout$annotation.xpos),
         lty=c("solid", "blank"),
         refline=NA,
-        ilab=rcmetar.forest.display.ilab(ilab$matrix),
-        ilab.xpos=layout$ilab.xpos,
-        ilab.pos=NULL,
         cex=plan$typography$cex,
         cex.lab=plan$typography$cex.lab,
         cex.axis=plan$typography$cex.axis,
@@ -411,7 +408,6 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1, header)
     }
 
-    graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
         graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
@@ -420,7 +416,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
 
     graphics::par(cex=1, font=1)
-    graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="black")
+    rcmetar.draw.forest.study.columns(bundle, rows, layout, ilab, plot.info$cex)
     rcmetar.draw.revman.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
     rcmetar.draw.revman.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout)
 
@@ -606,7 +602,7 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
             ", ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), "]"
         )
     }
-    graphics::text(layout$annotation.xpos, rows, labels, pos=2, cex=cex)
+    graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, 0), cex=cex)
 }
 
 rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {

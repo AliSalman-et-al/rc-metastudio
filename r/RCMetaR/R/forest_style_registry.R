@@ -82,7 +82,18 @@ rcmetar.is.metafor.forest.bundle <- function(plot.data) {
 
 rcmetar.ilab.for.data <- function(om.data, params, res=NULL) {
     style <- rcmetar.metafor.style(rcmetar.forest.style(params))
-    style$ilab.for.data(om.data, params, res)
+    ilab <- style$ilab.for.data(om.data, params, res)
+    n <- nrow(ilab$matrix)
+    columns <- Filter(function(column) column$key != "weight", ilab$columns)
+    if (rcmetar.param.is.true(params, "fp_show_weight", TRUE)) {
+        weight <- Filter(function(column) column$key == "weight", ilab$columns)
+        if (!length(weight)) {
+            weight <- list(list(key="weight", group="", header="Weight (%)",
+                values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n)))
+        }
+        columns <- c(columns, weight)
+    }
+    rcmetar.revman.ilab(columns, n)
 }
 
 rcmetar.decorate.metafor.bundle <- function(bundle) {

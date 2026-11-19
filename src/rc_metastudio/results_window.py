@@ -10,7 +10,7 @@ import re
 from html import escape
 from pathlib import Path
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns, report_numbers
+from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns, report_cell
 from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
 from typing import TYPE_CHECKING, Callable
@@ -794,7 +794,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
         if headers:
             writer.writerow(headers)
-        writer.writerows([report_numbers(cell) if _numeric_cell(cell) else cell for cell in row]
+        writer.writerows([report_cell(cell) if _numeric_cell(cell) else cell for cell in row]
                          for row in rows)
         mime.setText(stream.getvalue())
         mime.setHtml(table_html(headers, rows))
@@ -1705,15 +1705,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not artifact.params_path:
             unscaled_image = QImage(artifact.image_path)
 
-        return format, dimensions, unscaled_image
+        return format, dimensions, unscaled_image, dialog.include_title.isChecked()
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
         dimensions = None
+        include_title = True
         if format is None:
             options = self._plot_export_options(artifact, unscaled_image)
             if options is None:
                 return
-            format, dimensions, unscaled_image = options
+            format, dimensions, unscaled_image, include_title = options
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
@@ -1757,7 +1758,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         elif dimensions is not None:
             width, height, dpi = dimensions
             self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,
-                                           output_path=destination, width=width, height=height, dpi=dpi)
+                                           output_path=destination, width=width, height=height, dpi=dpi,
+                                           include_title=include_title)
         else:
             self.plot_service.export(
                 regenerator=regenerator,

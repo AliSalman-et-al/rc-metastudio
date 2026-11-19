@@ -3,6 +3,6 @@
   "styles": {
     "default": {"label": "Default", "accent": "#2f5597"},
     "revman": {"label": "RevMan", "accent": "#000000", "bubble_accent": "#111111"},
-    "bmj": {"label": "BMJ", "accent": "#6b58a6"}
+    "bmj": {"label": "BMJ", "accent": "#5f4c9a"}
   }
 }

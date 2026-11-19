@@ -4,6 +4,6 @@ rcmetar.default.arm.labels <- function() {
 }
 
 RCMETAR_PLOT_STYLE_ACCENTS <- list(
-    forest=c("default"="#2f5597", "revman"="#000000", "bmj"="#6b58a6"),
-    bubble=c("default"="#2f5597", "revman"="#111111", "bmj"="#6b58a6")
+    forest=c("default"="#2f5597", "revman"="#000000", "bmj"="#5f4c9a"),
+    bubble=c("default"="#2f5597", "revman"="#111111", "bmj"="#5f4c9a")
 )

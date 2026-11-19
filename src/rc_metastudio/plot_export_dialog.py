@@ -4,7 +4,7 @@
 import math
 
 from PyQt6.QtCore import QSettings, QSignalBlocker
-from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QSpinBox
+from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QSpinBox
 
 from rc_metastudio.settings import load_plot_export_format, save_plot_export_format
 
@@ -62,6 +62,11 @@ class PlotExportDialog(QDialog):
             "Increase the width or simplify the figure in Edit plot.", self)
         self.legibility_warning.setWordWrap(True)
         layout.addRow(self.legibility_warning)
+        self.include_title = QCheckBox("Include title line", self)
+        if resizable:
+            layout.addRow(self.include_title)
+        else:
+            self.include_title.hide()
         if not resizable:
             layout.addRow(QLabel("This image keeps its original size and resolution.", self))
         self.units.currentIndexChanged.connect(self._change_units)

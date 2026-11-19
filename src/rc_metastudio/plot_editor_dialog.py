@@ -76,6 +76,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.tsa_x_axis.hide()
         self.default_panel.setTitle("Forest options")
         self._setup_direction_labels()
+        self.show_weight = QCheckBox("Show weight column", self)
+        self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
+        self.show_weight.setVisible(plot_type in {"forest", "subgroup_forest"})
+        self.default_layout.addWidget(self.show_weight, self.default_layout.rowCount(), 0, 1, 2)
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
@@ -632,6 +636,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_col4": self.show_4.isChecked(),
             "fp_col4_str": qt_text.to_native_text(plot_text_value(self.col4_str_edit)),
             "fp_show_raw_counts": self.show_raw_counts.isChecked(),
+            "fp_show_weight": self.show_weight.isChecked(),
             "fp_show_headers": self.show_headers.isChecked(),
             "fp_show_annotation": self.show_annotation.isChecked(),
             "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),

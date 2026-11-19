@@ -85,16 +85,19 @@ class PlotService:
 
     @serialized_r_call
     def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
-                     output_path: str, width: float, height: float, dpi: int) -> None:
+                     output_path: str, width: float, height: float, dpi: int,
+                     include_title: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
         if regenerator == "trial_sequential":
-            if not r_bridge.render_plot_bundle(params_path, regenerator, output_path, width, height, dpi):
+            if not r_bridge.render_plot_bundle(params_path, regenerator, output_path, width, height, dpi,
+                                               include_title=include_title):
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             return
         from xml.etree import ElementTree as ET
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
-            self.export(regenerator=regenerator, params_path=params_path, output_path=str(source))
+            if not r_bridge.render_plot_bundle(params_path, regenerator, str(source), include_title=include_title):
+                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             ET.register_namespace('', 'http://www.w3.org/2000/svg')
             ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
             tree = ET.parse(source)

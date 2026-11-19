@@ -865,8 +865,8 @@ def run_small_study_effects(
     r_request = dict(request)
     r_request["preview"] = bool(preview)
     if not preview:
-        from rc_metastudio.analysis_identity import dataset_identity
-        r_request["plot_caption"] = dataset_identity(table_model)
+        from rc_metastudio.analysis_identity import plot_caption
+        r_request["plot_caption"] = plot_caption(table_model, "small-study-effects")
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         data,
@@ -1161,8 +1161,9 @@ def prepare_plot_edit(
 
 @serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
-                       *dimensions: float) -> bool:
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions)
+                       *dimensions: float, include_title: bool = True) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions,
+                                include_title=include_title)
     return not _r_is_null(result)
 
 

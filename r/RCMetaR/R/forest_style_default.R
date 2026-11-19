@@ -235,8 +235,11 @@ rcmetar.draw.default.subgroup.estimate <- function(bundle, layout, row, index, c
     if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) return(invisible(NULL))
     values <- c(bundle$effect_display$y.disp[[index]], bundle$effect_display$lb.disp[[index]], bundle$effect_display$ub.disp[[index]])
     values <- rcmetar.format.effect.number(values, display.digits(bundle$params))
+    label <- if (rcmetar.forest.style(bundle$params) == "bmj")
+        paste0(values[[1]], " (", values[[2]], " to ", values[[3]], ")") else
+        paste0(values[[1]], " [", values[[2]], ", ", values[[3]], "]")
     graphics::text(rcmetar.forest.annotation.x(layout), row,
-        paste0(values[[1]], " [", values[[2]], ", ", values[[3]], "]"), pos=2, font=2, cex=cex)
+        label, adj=c(1, 0), font=2, cex=cex)
     invisible(NULL)
 }
 
@@ -303,8 +306,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     rcmetar.draw.default.study.marks(bundle, plan, forest.args, raw.effect, accent.color)
 
     if (!manual.sequential.labels) {
-        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab,
-                       pos=4, cex=plan$typography$cex, col="black")
+        rcmetar.draw.forest.study.columns(bundle, rows, layout, bundle$ilab, plan$typography$cex)
     }
 
     if (identical(bundle$forest_variant, "subgroup")) {
@@ -341,6 +343,14 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
     k <- plan$rows$k
     size <- plan$device
     manual.sequential.labels <- plan$rows$manual_sequential_labels
+    if (rcmetar.forest.style(bundle$params) == "bmj" && identical(bundle$forest_variant, "subgroup")) {
+        effect <- rcmetar.forest.axis.effect(bundle, raw.effect)
+        forest.args$col <- NA
+        do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
+            ci.ub=effect$ci.ub, sei=bundle$effect$sei), forest.args))
+        rcmetar.draw.bmj.effects(effect, rows, alim, accent.color, forest.args$psize)
+        return(invisible(NULL))
+    }
     if (rcmetar.forest.natural.axis(bundle)) {
         effect <- rcmetar.forest.axis.effect(bundle, raw.effect)
         if (is.null(forest.args$psize) && inherits(bundle$res, "rma")) {
@@ -405,7 +415,7 @@ rcmetar.draw.default.annotations <- function(bundle, plan) {
         label.rows <- if (length(labels) == length(rows) + 1L) c(rows, -1) else rows
         fonts <- rep(1, length(labels))
         if (length(labels) == length(rows) + 1L) fonts[[length(fonts)]] <- 2
-        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, pos=2, font=fonts, cex=size$cex)
+        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, adj=c(1, 0), font=fonts, cex=size$cex)
     }
 
 }
@@ -413,7 +423,6 @@ rcmetar.draw.default.annotations <- function(bundle, plan) {
 rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
     layout <- plan$layout
     rows <- plan$rows$study_rows
-    show.ilab <- !plan$rows$manual_sequential_labels && ncol(bundle$ilab$matrix) > 0
     groups <- if (identical(bundle$forest_variant, "subgroup")) {
         split(rows, bundle$study_groups)
     } else {
@@ -425,9 +434,6 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
     }), use.names=FALSE)
     forest.args <- list(
         slab = rep("", length(bundle$slab)),
-        ilab = if (show.ilab) rcmetar.forest.display.ilab(bundle$ilab$matrix) else NULL,
-        ilab.lab = NULL,
-        ilab.xpos = if (show.ilab) layout$ilab.xpos else NULL,
         textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),
         xlim = plan$x$xlim,
         alim = plan$x$alim,

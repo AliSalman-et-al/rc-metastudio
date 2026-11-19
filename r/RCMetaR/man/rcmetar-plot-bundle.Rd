@@ -24,7 +24,8 @@ rcmetar.render.plot.bundle(
   output.path,
   width = NULL,
   height = NULL,
-  dpi = 600
+  dpi = 600,
+  include_title = TRUE
 )
 
 rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
@@ -46,6 +47,8 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 \item{width, height}{The requested width and height in inches.}
 
 \item{dpi}{The requested raster resolution in dots per inch.}
+
+\item{include_title}{Whether to draw the figure's title line on export.}
 }
 \value{
 Parameters, a mapping from destination paths to staged files, or the

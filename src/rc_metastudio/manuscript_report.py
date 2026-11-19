@@ -9,7 +9,7 @@ import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
 from rc_metastudio.application_metadata import CITATION_DOI, citation_text
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell, numeric_columns, report_numbers, table_html
+from rc_metastudio.result_formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -799,7 +799,7 @@ class ManuscriptReport:
                 number += 1
                 parts.append(f'Table {number}. {table.title}')
                 parts.append('\t'.join(table.headers))
-                parts.extend('\t'.join(report_numbers(cell) if numeric_cell(cell) else cell for cell in row)
+                parts.extend('\t'.join(report_cell(cell) if numeric_cell(cell) else cell for cell in row)
                              for row in table.rows)
             parts.extend(map(report_numbers, section.paragraphs))
         if self.configuration:
@@ -1282,7 +1282,7 @@ def _docx_column_widths(table, available):
     lengths = [max(len(line) for row in (table.headers, *table.rows)
                    for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
     weights = [max(5, min(45, length)) for length in lengths]
-    minimums = [Pt(12 + 6 * max((len(row[column]) for row in table.rows
+    minimums = [Pt(12 + 6 * max((len(report_cell(row[column])) for row in table.rows
                                 if numeric_cell(row[column])), default=0))
                 for column in range(len(table.headers))]
     remaining = max(0, available - sum(minimums))
@@ -1293,7 +1293,7 @@ def _docx_column_widths(table, available):
 def _style_docx_cell(cell, value, width, numeric, heading):
     from docx.oxml import OxmlElement
     is_numeric = not heading and numeric_cell(value)
-    cell.text = report_numbers(value) if is_numeric else value
+    cell.text = report_cell(value) if is_numeric else value
     cell.width = width
     if is_numeric or (numeric and not heading):
         cell._tc.get_or_add_tcPr().append(OxmlElement('w:noWrap'))

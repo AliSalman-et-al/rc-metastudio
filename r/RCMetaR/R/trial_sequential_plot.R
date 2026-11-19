@@ -441,7 +441,6 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     annotation <- .tsa.plot.annotation(looks, design, last, hr)
     favours <- params$favours %||% paste("Favours", rcmetar.default.arm.labels())
     title <- params$plot_caption
-    if (length(title) && !is.na(title)) substr(title, 1, 1) <- toupper(substr(title, 1, 1))
 
     draw <- function() {
         panel <- .tsa.plot.panel(size, theme, axes, curves$labels, annotation, bundle$xlabel)

@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.study.header.label <- function(header) {
+rcmetar.forest.study.header.label <- function(header, subgroup=FALSE) {
     if (is.null(header) || length(header) == 0 ||
-            as.character(header) %in% c("[default]", "Studies", "Author(s) and Year")) {
-        return("Study or Subgroup")
+            tolower(as.character(header)) %in% c("[default]", "studies", "author(s) and year", "study or subgroup")) {
+        return(if (subgroup) "Study or subgroup" else "Study")
     }
     as.character(header)
 }
@@ -111,6 +111,9 @@ rcmetar.compact.numeric.labels <- function(labels) {
     values <- suppressWarnings(as.numeric(labels))
     compact <- is.finite(values) & nchar(labels) > 12
     labels[compact] <- formatC(values[compact], digits=4, format="e")
+    integers <- gregexpr("(?<![.[:alnum:],])[0-9]{4,}(?![.[:alnum:],])", labels, perl=TRUE)
+    regmatches(labels, integers) <- lapply(regmatches(labels, integers), function(matches)
+        formatC(as.numeric(matches), digits=0, format="f", big.mark=","))
     gsub("(^|[eE])-(?=[0-9.])", "\\1\u2212", labels, perl=TRUE)
 }
 
@@ -740,7 +743,8 @@ rcmetar.metafor.study.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
         return("")
     }
-    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
+    rcmetar.forest.study.header.label(bundle$params$fp_col1_str,
+                                     identical(bundle$forest_variant, "subgroup"))
 }
 
 rcmetar.metafor.effect.header <- function(bundle) {
@@ -752,7 +756,11 @@ rcmetar.metafor.effect.header <- function(bundle) {
 
 rcmetar.metafor.psize <- function(bundle) {
     if (identical(bundle$forest_variant, "subgroup")) {
-        return(rep(1, length(bundle$effect$yi)))
+        weights <- bundle$weights
+        size <- rep(1, length(bundle$slab))
+        finite <- is.finite(weights) & weights > 0
+        if (any(finite)) size[finite] <- 0.65 + 0.9 * sqrt(weights[finite] / max(weights[finite]))
+        return(size * rcmetar.point.size.multiplier(bundle$params))
     }
     if (inherits(bundle$res, "rma") && is.null(bundle$forest_variant)) {
         return(NULL)
@@ -822,7 +830,9 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
     scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
-    labels <- paste0(
+    labels <- if (rcmetar.forest.style(bundle$params) == "bmj") {
+        rcmetar.bmj.effect.label(y, lb, ub, digits, ratio=metric.is.log.scale(bundle$params$measure))
+    } else paste0(
         rcmetar.format.effect.number(y, digits, scale=scale),
         " [",
         rcmetar.format.effect.number(lb, digits, scale=scale),
@@ -880,13 +890,10 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     graphics::par(xpd=NA)
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
-    graphics::text(study.x, rows, bundle$slab, pos=4, cex=cex, col="black",
+    rcmetar.draw.forest.study.columns(bundle, rows, layout, bundle$ilab, cex,
         font=ifelse(seq_along(rows) == 1L & isTRUE(bundle$has_overall), 2, 1))
     if (isTRUE(bundle$has_overall) && length(rows) > 1) {
         graphics::segments(study.x, rows[1] - .5, annotation.x, rows[1] - .5, col="grey65", lwd=.6)
-    }
-    for (column in seq_len(ncol(bundle$ilab$matrix))) {
-        graphics::text(layout$ilab.xpos[column], rows, bundle$ilab$matrix[, column], cex=cex, col="black")
     }
     if (!is.null(bundle$summary_res)) {
         graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
@@ -894,7 +901,7 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
-        graphics::text(annotation.x, rows, labels, pos=2, cex=cex, col="black")
+        graphics::text(annotation.x, rows, labels, adj=c(1, 0), cex=cex, col="black")
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
         first.row <- max(rows, na.rm=TRUE)
@@ -906,6 +913,18 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
         graphics::segments(study.x, rule.y, annotation.x, rule.y, lwd=0.8)
     }
     invisible(NULL)
+}
+
+rcmetar.draw.forest.study.columns <- function(bundle, rows, layout, ilab, cex, font=1) {
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
+        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab,
+                       adj=c(0, 0), cex=cex, col="black", font=font)
+    }
+    values <- rcmetar.forest.display.ilab(ilab$matrix)
+    for (column in seq_len(ncol(values))) {
+        graphics::text(layout$ilab.xpos[column], rows, values[, column],
+                       adj=c(0.5, 0), cex=cex, col="black")
+    }
 }
 
 rcmetar.draw.metafor.single.study.accent <- function(bundle, rows, alim, color, pch=15) {
@@ -939,6 +958,10 @@ rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize,
     rcmetar.draw.metafor.single.study.interval.ends(ci.lb[finite], ci.ub[finite], rows[finite], alim, color, lwd=lwd)
     inside <- yi[finite] >= alim[[1]] & yi[finite] <= alim[[2]]
     if (any(inside)) {
+        if (pch == 18) {
+            graphics::points(yi[finite][inside], rows[finite][inside],
+                             pch=pch, col="white", cex=psize[finite][inside] * 1.15)
+        }
         graphics::points(
             yi[finite][inside],
             rows[finite][inside],

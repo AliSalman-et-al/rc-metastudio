@@ -326,10 +326,10 @@ def expected_fit_table(result, section, source):
 
 
 def assert_exports(view, data, *, pdf_ordered=True):
-    from rc_metastudio.result_formatting import numeric_cell, report_numbers
+    from rc_metastudio.result_formatting import numeric_cell, report_cell
 
     def rendered_row(row):
-        return [report_numbers(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
+        return [report_cell(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
 
     tables = [table for section in view.manuscript.sections for table in section.tables]
     expected = [[list(table.headers), *[rendered_row(row) for row in table.rows]] for table in tables]

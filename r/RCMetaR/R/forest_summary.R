@@ -36,7 +36,7 @@ rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
     labels <- rcmetar.revman.direction.labels(bundle)
     # Qt trims outer SVG whitespace, so reserve the space in coordinates.
-    gap <- graphics::strwidth(" ", cex=cex, font=font)
+    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
         if (nzchar(labels[[side]])) graphics::text(at,
@@ -51,8 +51,12 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     on.exit(graphics::par(previous), add=TRUE)
     labels <- rcmetar.revman.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
+    if (rcmetar.forest.style(bundle$params) == "bmj") {
+        y <- graphics::grconvertY(0.10, from="ndc", to="user")
+        return(rcmetar.draw.bmj.direction(bundle, rcmetar.bmj.axis.footer.layout(bundle, list(alim=alim)), y, cex))
+    }
     if (!is.finite(footer$split.x) || footer$split.x <= alim[[1]] || footer$split.x >= alim[[2]]) return(invisible(NULL))
-    gap <- graphics::strwidth(" ", cex=cex)
+    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
         if (nzchar(labels[[side]])) graphics::mtext(labels[[side]], side=1,
@@ -118,8 +122,11 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     measure <- as.character(bundle$params$measure)
     display <- rcmetar.prediction.display(bounds, bundle$params,
         rcmetar.bundle.transform(bundle), bundle$sample_sizes)
-    paste0(display.confidence.level(bundle$params), "% prediction interval: [",
-           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=", "), "]",
+    bmj <- identical(rcmetar.forest.style(bundle$params), "bmj")
+    limits <- rcmetar.format.effect.number(display$bounds, display.digits(bundle$params))
+    interval <- if (bmj) paste0("(", paste(limits, collapse=" to "), ")") else
+        paste0("[", paste(limits, collapse=", "), "]")
+    paste0(display.confidence.level(bundle$params), "% prediction interval: ", interval,
            if (measure == "PFT" && isTRUE(display$transformed))
                " (Freeman-Tukey scale; proportion inverse undefined)" else "")
 }
