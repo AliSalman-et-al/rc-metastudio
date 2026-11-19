@@ -89,7 +89,7 @@ rcmetar.forest.layout.warning <- function(severity, code, message) {
     list(severity=severity, code=code, message=message)
 }
 
-rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18, max.height=Inf) {
+rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.height=Inf) {
     warnings <- list()
     text.floor <- if (!is.null(size$text_floor) && is.finite(size$text_floor)) size$text_floor else min.cex
     if (!is.null(size$cex) && is.finite(size$cex) && size$cex < text.floor - 1e-8) {
@@ -97,13 +97,6 @@ rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.width=18,
             "warning",
             "text-scale-floor",
             "Forest plot text scale reached the minimum readable size."
-        )
-    }
-    if (!is.null(size$width) && is.finite(size$width) && size$width >= max.width - 1e-8) {
-        warnings[[length(warnings) + 1]] <- rcmetar.forest.layout.warning(
-            "warning",
-            "device-width-cap",
-            "Forest plot width reached the configured export cap."
         )
     }
     if (!is.null(size$height) && is.finite(size$height) && size$height >= max.height - 1e-8) {
@@ -252,7 +245,7 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         row.height <- if (sequential) 0.34 else 0.30
         min.height <- if (sequential) 3.90 else 5.0
         list(
-            width=max(9.5, min(18, left.width + plot.width + annotation.width + 1.5)),
+            width=max(9.5, left.width + plot.width + annotation.width + 1.5),
             height=max(min.height, vertical.margin + row.height * display.rows),
             cex=cex,
             text_floor=text.floor,
@@ -392,6 +385,10 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
 rcmetar.forest.revman.device.metrics <- function(bundle) {
     size <- rcmetar.forest.default.device.metrics(bundle)
     size$height <- max(4.5, 3.3 + 0.30 * size$display_rows)
+    if (size$width > 18) {
+        # The axis margins consume 57% of the panel, in addition to the right graphics margin.
+        size$width <- size$left_width + size$annotation_width + 1.57 * size$plot_width + 0.2
+    }
     size
 }
 

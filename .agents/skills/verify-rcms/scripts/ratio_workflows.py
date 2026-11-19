@@ -423,7 +423,7 @@ def run(app, window, scenario, record):
             assert "ratios of " + metric in "\n".join(view.texts.values())
             expression = prefix + 'dose <- (0:11)[keep]; f <- metafor::rma.uni(e$yi,vi=e$vi,mods=~dose,method="REML"); '
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),digits=16)}')[0]))
-            actual = _parse_result_table(view.texts["Summary"])
+            actual = _parse_result_table(view.texts["Summary"].replace("−", "-"))
             for i, label in enumerate(("intercept", "dose")):
                 for field, key in (("coefficient", "b"), ("standard_error", "se"), ("lower_bound", "lower"), ("upper_bound", "upper")):
                     assert abs(actual[f"model.{label}.{field}"]-expected[key][i]) <= 1.1e-6, (actual, expected)
@@ -438,7 +438,7 @@ def run(app, window, scenario, record):
             expression = prefix + f'fits <- lapply({indices}, function(ix) metafor::rma.uni(e$yi[ix],vi=e$vi[ix],method="REML")); '
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
             if workflow == "subgroup":
-                actual = _parse_result_table(view.texts["Subgroup Summary"])
+                actual = _parse_result_table(view.texts["Subgroup Summary"].replace("−", "-"))
                 for label, row in zip(("B", "A", "Overall"), expected, strict=True):
                     for key, value in row.items():
                         assert abs(actual[f"model.{_result_row_key(label)}.{key}"]-value) <= 1.1e-6, (label, actual, expected)
@@ -496,7 +496,7 @@ def run(app, window, scenario, record):
             expression = f'x1 <- {vector(0)}; t1 <- {vector(1)}; x2 <- {vector(2)}; t2 <- {vector(3)}; fits <- lapply({indices},function(ix) {{ if(sum(x1[ix])==0 || sum(x2[ix])==0)return(NULL); f <- metafor::rma.mh(measure="IRR",x1i=x1[ix],t1i=t1[ix],x2i=x2[ix],t2i=t2[ix],add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se) }}); jsonlite::toJSON(fits,auto_unbox=TRUE,digits=16)'
             expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
             if workflow == "subgroup":
-                actual = _parse_result_table(view.texts["Subgroup Summary"])
+                actual = _parse_result_table(view.texts["Subgroup Summary"].replace("−", "-"))
                 for label, row in zip(("B", "A", "Overall"), expected, strict=True):
                     for key, value in row.items():
                         assert abs(actual[f"model.{_result_row_key(label)}.{key}"] - value) <= 1.1e-6, (label, actual, expected)
@@ -607,7 +607,7 @@ def verify_bundled_sample(app, window, hazard, record):
         view = visible(results_window.ResultsWindow)
         expression = 'data("dat.pignon2000",package="metadat"); d <- dat.pignon2000; fits <- lapply(c(lapply(1:3,function(g)which(d$grp==g)),list(seq_len(nrow(d)))),function(ix)metafor::rma.uni(yi=d$OmE[ix]/d$V[ix],vi=1/d$V[ix],method="REML")); jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)'
         expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
-        actual = _parse_result_table(view.texts["Subgroup Summary"])
+        actual = _parse_result_table(view.texts["Subgroup Summary"].replace("−", "-"))
         for label, row in zip(("Adjuvant", "Neoadjuvant", "Concomitant", "Overall"), expected, strict=True):
             for key, value in row.items():
                 assert abs(actual[f"model.{_result_row_key(label)}.{key}"] - value) <= 1.1e-6, (label, actual, expected)

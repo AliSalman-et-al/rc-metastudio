@@ -27,10 +27,11 @@ def run(app, window, work, record):
                         precision = max(3, digits) if table.headers[column] == 'p-value' else digits
                         if table.headers[column] == 'p-value' and value < 10**(-precision):
                             assert text.startswith('< '), (name, text, value)
-                        elif value and float(f'{value:.{precision}f}') == 0:
-                            assert float(text) != 0, (name, text, value)
                         else:
-                            assert text == f'{value:.{precision}f}', (name, table.headers[column], text, value, precision)
+                            expected = f'{value:z,.{precision}f}'
+                            if table.headers[column].endswith('(OR)') and value > 0 and not expected.strip('0.'):
+                                expected = f'{value:.1e}'
+                            assert text == expected.replace('-', '−'), (name, table.headers[column], text, value, precision)
             check_report(app, view, work, record)
             record('diagnostic-selected-precision', view, shape=shape, digits=digits,
                    raw_coefficients=raw, tables={name: dict(headers=tables[name].headers, rows=tables[name].rows) for name in raw})

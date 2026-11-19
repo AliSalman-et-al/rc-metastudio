@@ -389,7 +389,9 @@ def assert_report(view):
                 assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
     if coefficients is not None:
-        assert coefficients.headers[1:3] == ('Estimate', '95% CI')
+        bounds = [q for row in coefficients.quantities for cell in row for q in cell if q.role == 'ci_lower']
+        level, = {q.level for q in bounds}
+        assert level is not None and coefficients.headers[1:3] == ('Estimate', f'{level:g}% CI')
         expected_coefficients = expected_pooled(view.results, ('coefficients',))
         assert [row[:3] for row in coefficients.rows] == [row[:3] for row in expected_coefficients]
     expected_rows = expected_pooled(view.results, ('pooled',)) if structured else ()

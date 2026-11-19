@@ -144,7 +144,7 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     display <- rcmetar.prediction.display(bounds, bundle$params,
         rcmetar.bundle.transform(bundle), bundle$sample_sizes)
     bmj <- identical(rcmetar.forest.style(bundle$params), "bmj")
-    limits <- rcmetar.format.effect.number(display$bounds, rcmetar.forest.effect.digits(bundle))
+    limits <- rcmetar.format.interval.bound(display$bounds, rcmetar.forest.effect.digits(bundle), bundle$params)
     interval <- if (bmj) paste0("(", paste(limits, collapse=" to "), ")") else
         paste0("[", paste(limits, collapse=", "), "]")
     paste0(display.confidence.level(bundle$params), "% prediction interval: ", interval,

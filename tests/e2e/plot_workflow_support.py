@@ -18,6 +18,7 @@ def check_table_surface(app, view, work, record, title, label):
     import csv
     import io
     from unittest.mock import patch
+    from rc_metastudio.result_formatting import numeric_cell, report_cell
     from tests.e2e.report_retention import assert_report, assert_retained_table
     assert_report(view)
     held = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]
@@ -44,7 +45,8 @@ def check_table_surface(app, view, work, record, title, label):
     headers = list(retained.headers)
     view.result_table.clearSelection()
     view.copy_table_action.trigger()
-    assert list(csv.reader(io.StringIO(app.clipboard().text()),delimiter='\t')) == [headers,*rows]
+    copied_rows = [[report_cell(cell) if numeric_cell(cell) else cell for cell in row] for row in rows]
+    assert list(csv.reader(io.StringIO(app.clipboard().text()),delimiter='\t')) == [headers,*copied_rows]
     target = work / (label + '.csv')
     with patch.object(QtWidgets.QFileDialog,'getSaveFileName',return_value=(str(target),'CSV table (*.csv)')):
         view.export_table_action.trigger()

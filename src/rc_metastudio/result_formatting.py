@@ -65,7 +65,7 @@ def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]], *, label_w
         for column, value in enumerate(row):
             is_numeric = numeric_cell(value)
             align = 'right' if is_numeric or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
-            wrap = 'nowrap' if is_numeric or numeric[column] else 'pre-wrap'
+            wrap = 'nowrap' if is_numeric else 'pre-wrap'
             if is_numeric:
                 value = report_cell(value)
             border = 'border-bottom:1px solid black;' if index == len(rows) - 1 else ''
@@ -171,8 +171,11 @@ def _reference_key(reference: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", reference.lower()).strip()
 
 
-def fixed_result_number(value: float, digits: int) -> str:
-    return f"{value:z,.{digits}f}".replace("-", "\u2212", 1)
+def fixed_result_number(value: float, digits: int, *, preserve_positive: bool = False) -> str:
+    formatted = f"{value:z,.{digits}f}"
+    if preserve_positive and value > 0 and not formatted.strip("0."):
+        formatted = f"{value:.1e}"
+    return formatted.replace("-", "\u2212", 1)
 
 
 def format_effect_number(value: float, digits: int) -> str:

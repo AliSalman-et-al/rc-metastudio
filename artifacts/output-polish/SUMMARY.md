@@ -134,3 +134,9 @@ $env:QT_FATAL_WARNINGS = '1'
 uv run python scripts/native_results_smoke.py
 git status --ignored --short
 ```
+
+## Ratio bounds and PR qualification
+
+Positive ratio bounds that round to zero use two significant figures in scientific notation, with a true minus in the exponent. The native six-decimal HR/IRR drive found `1.7e−13` in the forest, table, text, HTML and DOCX and compared the underlying bound to the full-precision public calculation. True zeros and all other values retain fixed decimals. [Evidence and replay commands](ratio-precision/EVIDENCE.md).
+
+Hosted checks exposed stale desktop assertions and three layout regressions. Wrapped BMJ arm headings now clear the group rule, long prose can wrap in mixed report columns, and saved custom direction labels follow their arms when the comparison is swapped. The Windows/macOS package inspectors pin the reviewed summary digests. [Exact summary differences](ratio-precision/packaged-summaries.diff).

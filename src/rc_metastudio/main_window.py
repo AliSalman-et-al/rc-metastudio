@@ -1185,6 +1185,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 sheet.arms.reverse()
                 if "favours_labels" in sheet.settings:
                     sheet.settings["favours_labels"].reverse()
+                for plots in sheet.settings.get("plot_overrides", {}).values():
+                    for params in plots.values():
+                        left, right = "fp_favours_left", "fp_favours_right"
+                        if left in params and right in params:
+                            params[left], params[right] = params[right], params[left]
             self._sheet_change(sheet.id, swap)
 
     def _setup_sheet_strip(self):

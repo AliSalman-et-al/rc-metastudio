@@ -567,9 +567,9 @@ rcmetar.revman.summary.effect <- function(bundle) {
         label=paste0(
             rcmetar.format.effect.number(pred[[1]], digits),
             " [",
-            rcmetar.format.effect.number(pred[[2]], digits),
+            rcmetar.format.interval.bound(pred[[2]], digits, bundle$params),
             ", ",
-            rcmetar.format.effect.number(pred[[3]], digits),
+            rcmetar.format.interval.bound(pred[[3]], digits, bundle$params),
             "]"
         )
     )
@@ -596,8 +596,8 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
         labels[finite] <- paste0(
             rcmetar.format.effect.number(y, digits),
-            " [", rcmetar.format.effect.number(lower, digits),
-            ", ", rcmetar.format.effect.number(upper, digits), "]"
+            " [", rcmetar.format.interval.bound(lower, digits, bundle$params),
+            ", ", rcmetar.format.interval.bound(upper, digits, bundle$params), "]"
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, 0), cex=cex)

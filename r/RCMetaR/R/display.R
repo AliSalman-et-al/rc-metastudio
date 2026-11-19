@@ -69,14 +69,26 @@ format.i2.display <- function(value, missing="") {
   ifelse(is.finite(value), format.percent.display(value, 1L), missing)
 }
 
-rcmetar.collapsed.intervals <- function(lower, upper, digits) {
+rcmetar.format.interval.bound <- function(values, digits, params) {
+  values <- as.numeric(values)
+  labels <- rcmetar.format.effect.number(values, digits)
+  metric <- as.character(params$measure)
+  if (isTRUE(metric.is.log.scale(metric) & !metric %in% binary.one.arm.metrics)) {
+    tiny <- is.finite(values) & values > 0 & grepl("^0(\\.0+)?$", labels)
+    labels[tiny] <- sub("e-", "e\u2212", sprintf("%.1e", values[tiny]), fixed=TRUE)
+  }
+  labels
+}
+
+rcmetar.collapsed.intervals <- function(lower, upper, digits, params) {
   finite <- is.finite(lower) & is.finite(upper) & lower < upper
-  any(round.display(lower[finite], digits) == round.display(upper[finite], digits))
+  any(rcmetar.format.interval.bound(lower[finite], digits, params) ==
+      rcmetar.format.interval.bound(upper[finite], digits, params))
 }
 
 rcmetar.effect.digits <- function(params, lower, upper) {
   digits <- display.digits(params)
-  while (digits < 4L && rcmetar.collapsed.intervals(lower, upper, digits)) {
+  while (digits < 4L && rcmetar.collapsed.intervals(lower, upper, digits, params)) {
     digits <- digits + 1L
   }
   digits
@@ -84,7 +96,7 @@ rcmetar.effect.digits <- function(params, lower, upper) {
 
 rcmetar.effect.precision.note <- function(params, digits, lower, upper) {
   if (digits <= display.digits(params)) return(NULL)
-  suffix <- if (rcmetar.collapsed.intervals(lower, upper, digits)) {
+  suffix <- if (rcmetar.collapsed.intervals(lower, upper, digits, params)) {
     "to help distinguish narrow intervals. Some bounds still round to the same value at 4 decimals."
   } else {
     "so intervals are distinguishable."

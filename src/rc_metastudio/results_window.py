@@ -600,7 +600,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         position = scrollbar.value()
         color = self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()
         self.manuscript_text.setHtml((self.manuscript.html(heading=False) + self.manuscript.html(supplementary=True))
-                                     .replace('solid black', 'solid ' + color).replace(' to ', '\u00a0to\u00a0'))
+                                     .replace('solid black', 'solid ' + color))
         scrollbar.setValue(position)
 
     def _refresh_theme(self):

@@ -366,7 +366,9 @@ def _run(app, window, work, root, record, analyze):
     assert view.result_table.item(0, 0).text() == table.rows[0][0]
     key_click(view.result_table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
-    assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *map(list, table.rows)]
+    from rc_metastudio.result_formatting import numeric_cell, report_cell
+    clipboard_rows = [[report_cell(cell) if numeric_cell(cell) else cell for cell in row] for row in table.rows]
+    assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *clipboard_rows]
     csv_path = work / "model-results.csv"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(csv_path), "CSV")):
         view.export_table_action.trigger()
@@ -408,7 +410,10 @@ def _run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):
         from rc_metastudio.plot_export_dialog import PlotExportDialog
         def accept_export():
-            dialog = next(widget for widget in app.topLevelWidgets() if isinstance(widget, PlotExportDialog))
+            dialog = app.activeModalWidget()
+            if not isinstance(dialog, PlotExportDialog):
+                QtCore.QTimer.singleShot(10, accept_export)
+                return
             dialog.format_control.setCurrentIndex(dialog.format_control.findData('pdf'))
             record('plot-export-options', dialog, dimensions=dialog.dimensions())
             dialog.accept()

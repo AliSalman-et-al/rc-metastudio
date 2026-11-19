@@ -125,8 +125,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   effect.digits <- rcmetar.effect.digits(params, lower, upper)
   if (!is.null(studies)) studies$digits <- effect.digits
   y.disp <- rcmetar.format.effect.number(y.disp, effect.digits)
-  lb.disp <- rcmetar.format.effect.number(lb.disp, effect.digits)
-  ub.disp <- rcmetar.format.effect.number(ub.disp, effect.digits)
+  lb.disp <- rcmetar.format.interval.bound(lb.disp, effect.digits, params)
+  ub.disp <- rcmetar.format.interval.bound(ub.disp, effect.digits, params)
   se <- rcmetar.format.effect.number(res$se, result.digits)
 
   random <- !res$method %in% c("FE", "EE", "CE", "MH", "PETO")
@@ -374,11 +374,11 @@ create.regression.display <- function(res, params, display.data) {
 
   reg.array <- array(dim=c(length(cov.display.col) + 1, length(col.labels)), dimnames=list(NULL, col.labels))
   reg.array[1,] <- col.labels
-  display.values <- function(values, digits) {
+  display.values <- function(values, digits, ratio.bound=FALSE) {
     vapply(seq_along(res$b), function(index) {
       value <- if (length(values) >= index) values[index] else NULL
-      if (display.value.is.missing(value)) "Not estimable" else
-        rcmetar.format.effect.number(value, digits)
+      if (display.value.is.missing(value)) "Not estimable" else if (ratio.bound)
+        rcmetar.format.interval.bound(value, digits, params) else rcmetar.format.effect.number(value, digits)
     }, character(1))
   }
   display.p.values <- function(values) {
@@ -536,7 +536,8 @@ create.regression.display <- function(res, params, display.data) {
   if (params$measure %in% c("HR", "IRR")) {
     multipliers <- rcmetar.regression.summary.array(lapply(seq_along(res$b), function(i) c(
       sub("^intrcpt$", "Intercept", rownames(res$b)[i]), display.values(exp(res$b), result.digits)[i],
-      display.values(exp(res$ci.lb), result.digits)[i], display.values(exp(res$ci.ub), result.digits)[i]
+      display.values(exp(res$ci.lb), result.digits, ratio.bound=TRUE)[i],
+      display.values(exp(res$ci.ub), result.digits, ratio.bound=TRUE)[i]
     )), c("Coefficient", "Multiplier", ci.labels))
     arrays <- c(arrays, list(multipliers))
     titles <- c(titles, paste0("Exponentiated coefficients (ratios of ", params$measure, "s; intercept is baseline ratio)"))
@@ -678,8 +679,8 @@ adjusted_means_display <- function(res, params, display.data) {
   adj.array[2:(n.levels + 1), "Level"] <- paste0(levels, ifelse(levels == reference, " (reference)", ""))
   adj.array[2:(n.levels + 1), "Studies"] <- studies.display.col[level.start:level.end]
   adj.array[2:(n.levels + 1), "Estimate"] <- rcmetar.format.effect.number(estimates.disp, display.digits(params))
-  adj.array[2:(n.levels + 1), ci.labels[[1]]] <- rcmetar.format.effect.number(ci.lb.disp, display.digits(params))
-  adj.array[2:(n.levels + 1), ci.labels[[2]]] <- rcmetar.format.effect.number(ci.ub.disp, display.digits(params))
+  adj.array[2:(n.levels + 1), ci.labels[[1]]] <- rcmetar.format.interval.bound(ci.lb.disp, display.digits(params), params)
+  adj.array[2:(n.levels + 1), ci.labels[[2]]] <- rcmetar.format.interval.bound(ci.ub.disp, display.digits(params), params)
   adj.array[2:(n.levels + 1), "Std. error"] <- rcmetar.format.effect.number(se, display.digits(params))
   adj.array <- rcmetar.numeric.fields(adj.array, 3:6, c("estimate", "ci_lower", "ci_upper", "se"),
     c(estimates.disp, ci.lb.disp, ci.ub.disp, se), c("display", "display", "display", rcmetar.analysis.scale(params)),
@@ -736,7 +737,8 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   lower <- raw[,2]
   upper <- raw[,3]
   effect.digits <- rcmetar.effect.digits(params, lower, upper)
-  overall.array[-1, 2:4] <- rcmetar.format.effect.number(raw[,1:3], effect.digits)
+  overall.array[-1, 2] <- rcmetar.format.effect.number(raw[,1], effect.digits)
+  overall.array[-1, 3:4] <- rcmetar.format.interval.bound(raw[,2:3], effect.digits, params)
   overall.array[which(!is.finite(raw[,1])) + 1L, 2] <- "Not estimable"
 
   k <- rcmetar.result.vector(res, "k")
@@ -813,8 +815,9 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   upper <- c(studies$upper, raw.subgroup[,4])
   effect.digits <- rcmetar.effect.digits(params, lower, upper)
   if (!is.null(studies)) studies$digits <- effect.digits
-  subgroup.array[-1, 3:5] <- rcmetar.format.effect.number(raw.subgroup[,2:4], effect.digits)
-  prediction.array[-1, 2:3] <- rcmetar.format.effect.number(raw.prediction, effect.digits)
+  subgroup.array[-1, 3] <- rcmetar.format.effect.number(raw.subgroup[,2], effect.digits)
+  subgroup.array[-1, 4:5] <- rcmetar.format.interval.bound(raw.subgroup[,3:4], effect.digits, params)
+  prediction.array[-1, 2:3] <- rcmetar.format.interval.bound(raw.prediction, effect.digits, params)
 
   table.titles <- c("Model Results", "Heterogeneity")
   level <- display.confidence.level(params)
@@ -851,7 +854,7 @@ rcmetar.summary.prediction <- function(res, params, transform, n, result.digits)
       bounds <- display$bounds
       interval <- rbind(paste0(c("Lower bound (", "Upper bound ("),
                               display.confidence.level(params), "% PI)"),
-                        rcmetar.format.effect.number(bounds, result.digits))
+                        rcmetar.format.interval.bound(bounds, result.digits, params))
       interval <- rcmetar.numeric.fields(interval, 1:2, c("pi_lower", "pi_upper"), bounds,
         if (isTRUE(display$transformed)) "freeman-tukey" else "display", display.confidence.level(params))
       note <- paste0(display.confidence.level(params),

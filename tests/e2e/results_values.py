@@ -63,9 +63,10 @@ def run(app, window, work, root, record, analyze):
                 assert any(table.rows == held.rows and table.headers == held.headers for table in supporting), (label, held.title, 'source context lost')
         if label == 'adjusted-means':
             means = next(t for t in source if t.role == 'pooled')
-            expected_levels = {row[0] for row in means.rows}
-            assert expected_levels == {'Group: A (reference: B)', 'Group: B (reference: B)'}, means.rows
-            assert expected_levels <= {row[0] for row in primary.rows}, primary.rows
+            fitted = next(table for table in view._report_tables if table.role == 'fitted')
+            assert fitted.headers[0] == 'Subgroup', fitted.headers
+            assert {row[0] for row in means.rows} == {'A', 'B (reference)'}, means.rows
+            assert {row[0] for row in fitted.rows} == {'A', 'B (reference)'}, fitted.rows
             assert 'Studies' in means.headers, means.headers
         if label == 'Reitsma':
             assert view.results.analysis_method == 'diagnostic.reitsma', view.results.analysis_method

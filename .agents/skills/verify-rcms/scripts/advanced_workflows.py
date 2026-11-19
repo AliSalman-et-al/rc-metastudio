@@ -353,7 +353,7 @@ def zero_cells(app, window, record):
     assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
     assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
-    assert "1097" in report and "Participants in Intervention" in report, report
+    assert "1,097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
     assert "Arm: Intervention" in manuscript, manuscript
     view.close()
@@ -556,7 +556,7 @@ def plots(app, window, family, record, *, view=None):
                         "null <- RCMetaR:::rcmetar.metafor.refline(state$plot.data, limits); "
                         "is.finite(null) && null > limits[[1]] && null < limits[[2]] })"
                     )[0])
-                    expected = tuple("Favours " + name for name in names) if null_inside else ()
+                    expected = tuple("Favours " + name for name in names) if null_inside or style == "BMJ" else ()
                     measurements = check_forest_footer(path, expected_directions=expected)
                     retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
                     retained.write_bytes(path.read_bytes())
@@ -1999,6 +1999,13 @@ def table_covariates(app, window, record):
         if workflow == "meta-regression":
             expression = f'{{ e <- {effects}; f <- metafor::rma.uni(e$yi, vi=e$vi, mods=~{dose}, method="DL"); jsonlite::toJSON(list(coefficient=as.numeric(f$b[2]), standard_error=f$se[2], lower_bound=f$ci.lb[2], upper_bound=f$ci.ub[2], p_value=f$pval[2]), auto_unbox=TRUE, digits=16) }}'
             expected = json.loads(str(r_bridge.execute_r_string(expression)[0]))
+            coefficients = next(table for section in view.results.sections for table in section.tables
+                                if table.role == "coefficients")
+            dose_row = next(index for index, row in enumerate(coefficients.rows) if "Dose" in row)
+            actual["Summary"]["model.dose.standard_error"] = next(
+                q.value for cell in coefficients.quantities[dose_row] for q in cell
+                if q.role == "se" and q.value is not None
+            )
             for key, value in expected.items():
                 assert abs(actual["Summary"]["model.dose." + key] - value) <= 1e-6, (
                     actual,

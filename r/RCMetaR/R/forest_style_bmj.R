@@ -296,7 +296,7 @@ rcmetar.bmj.effect.values <- function(bundle) {
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            rcmetar.forest.effect.digits(bundle)
+            rcmetar.forest.effect.digits(bundle), bundle$params
         )
     }
     labels
@@ -312,7 +312,7 @@ rcmetar.bmj.summary.label.for.bundle <- function(bundle) {
         transform$display.scale(res$b, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.lb, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.ub, ni=bundle$sample_sizes),
-        rcmetar.forest.effect.digits(bundle)
+        rcmetar.forest.effect.digits(bundle), bundle$params
     )
 }
 
@@ -675,7 +675,7 @@ rcmetar.bmj.summary.effect <- function(bundle) {
     summary <- rcmetar.revman.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
-    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], rcmetar.forest.effect.digits(bundle))
+    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], rcmetar.forest.effect.digits(bundle), bundle$params)
     finite.weights <- is.finite(summary$weights)
     if (any(finite.weights)) {
         scaled <- rep(NA_real_, length(summary$weights))
@@ -738,16 +738,19 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
         x <- layout$ilab.xpos[arms]
         line <- graphics::strheight("Mg") * 1.65
         arm.y <- k + 1.55 + 1.55 * line
-        for (index in arms) {
-            rcmetar.draw.forest.header(layout$ilab.xpos[index], arm.y,
-                                       rcmetar.bmj.wrap.header(ilab$columns[[index]]$group))
+        blocks <- lapply(ilab$columns[arms], function(column) rcmetar.bmj.header.lines(column$group))
+        for (index in seq_along(arms)) {
+            block <- blocks[[index]]
+            rcmetar.draw.forest.header(x[index], arm.y + (length(block) - 1) * line / 2,
+                                       paste(block, collapse="\n"))
         }
+        rule.y <- arm.y + (max(lengths(blocks)) + 0.2) * line
         if (length(x) == 2L) {
             pad <- graphics::strwidth("00")
-            rule.y <- arm.y + 1.2 * line
             graphics::segments(min(x) - pad, rule.y, max(x) + pad, rule.y, col="#a7a9ac")
-            graphics::text(mean(x), rule.y + .8 * line, "No of events / total")
         }
+        graphics::text(mean(x), rule.y + .8 * line,
+                       if (length(x) == 2L) "No of events / total" else "Events / Total")
         weight <- which(keys == "weight")
         if (length(weight)) rcmetar.draw.forest.header(layout$ilab.xpos[weight], arm.y, "Weight\n(%)")
     } else {
@@ -761,13 +764,13 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     invisible(NULL)
 }
 
-rcmetar.bmj.effect.label <- function(center, lower, upper, digits) {
+rcmetar.bmj.effect.label <- function(center, lower, upper, digits, params) {
     paste0(
         rcmetar.format.effect.number(center, digits),
         " (",
-        rcmetar.format.effect.number(lower, digits),
+        rcmetar.format.interval.bound(lower, digits, params),
         " to ",
-        rcmetar.format.effect.number(upper, digits),
+        rcmetar.format.interval.bound(upper, digits, params),
         ")"
     )
 }
@@ -782,7 +785,7 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            rcmetar.forest.effect.digits(bundle)
+            rcmetar.forest.effect.digits(bundle), bundle$params
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, 0), cex=cex)

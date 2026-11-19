@@ -117,7 +117,7 @@ def run(app, window, work, record, scenario):
                         from rc_metastudio import r_bridge
                         for title, path in view.results.display_images.items():
                             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); list(metric=plot.data$params$measure, ticks=ticks, labels=RCMetaR:::rcmetar.revman.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
+                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.revman.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.revman.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
                             raw = [[float(window.model.data(window.model.index(row, column))) for column in window.model.RAW_DATA[:2]] for row in range(6)]
                             assert raw == [[4.0+i, 20.0+i] for i in range(6)], raw
                             counts = ",".join(str(row[0]) for row in raw)
@@ -152,7 +152,10 @@ def run(app, window, work, record, scenario):
                             record("review1-transformed-public-reference", view, metric=metric, style=style, inputs=raw, reference=reference)
                             labels = [float(label) for label in axis["labels"]]
                             assert len(labels) >= 2, axis
-                            assert labels[0] == 0 and labels[-1] == 1, axis
+                            lower, upper = map(float, axis["limits"])
+                            assert 0 <= lower <= min(row[1] for row in reference["studies"]), axis
+                            assert min(1, max(row[2] for row in reference["studies"])) <= upper <= 1, axis
+                            assert lower <= labels[0] < labels[-1] <= upper, axis
                             assert all(abs(value*10-round(value*10)) < 1e-7 for value in labels), axis
                             record("review1-transformed-forest-axis", view, axis=axis, plots={title: path})
                     from PyQt6.QtCore import Qt
@@ -259,7 +262,10 @@ def run(app, window, work, record, scenario):
             assert not any(" · None" in caption for caption in captions), captions
             assert any("[0.000000, 0.400000]" in caption for caption in captions), captions
             assert not any("e-16" in caption or "e-17" in caption for caption in captions), captions
-            for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
+            weights = [node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))
+                       and "".join(node.itertext()) != "100.0%"]
+            assert len(weights) == 6, weights
+            for weight in weights:
                 row = [node for node in nodes if "[" in "".join(node.itertext())
                        and abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 2]
                 assert len(row) == 1, row
@@ -273,9 +279,12 @@ def run(app, window, work, record, scenario):
         view = run_analysis_case(app, window, "analysis-data-generic-effect", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
-        row = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results").rows[0]
-        for cell, expected in zip(row[:4], reference.values(), strict=True):
-            assert float(cell) != 0 and math.isclose(float(cell), expected, rel_tol=1e-6), (cell, expected)
+        model = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results")
+        row = model.rows[0]
+        for cell, quantities, expected in zip(row[:4], model.quantities[0][:4], reference.values(), strict=True):
+            quantity, = quantities
+            assert quantity.value is not None and math.isclose(quantity.value, expected, rel_tol=1e-6), (quantity, expected)
+            assert cell == "0.000000", cell
         check_report(app, view, work, record)
         view.report_action.setChecked(False)
         app.processEvents()
@@ -284,12 +293,12 @@ def run(app, window, work, record, scenario):
             captions = ["".join(node.itertext()) for node in svg.iter("{http://www.w3.org/2000/svg}text")]
             numeric = [node for node in svg.iter("{http://www.w3.org/2000/svg}text")
                        if node.attrib.get("text-anchor") == "middle"
-                       and re.fullmatch(r"[-+\d.]+(?:e[-+]\d+)?", "".join(node.itertext()))]
+                       and re.fullmatch(r"[-+−\d.]+(?:e[-+−]\d+)?", "".join(node.itertext()))]
             axis_y = max(float(node.attrib["y"]) for node in numeric)
             axis = [node for node in numeric if abs(float(node.attrib["y"]) - axis_y) < .01]
-            ticks = {float("".join(node.itertext())) for node in axis}
+            ticks = {float("".join(node.itertext()).replace("−", "-")) for node in axis}
             assert len(ticks) >= 2 and len(ticks) == len(axis), (ticks, axis)
-            assert all(value != 0 and math.isfinite(value) for value in ticks), ticks
+            assert 0 in ticks and any(value >= 1e-10 for value in ticks), ticks
             width = float(svg.getroot().attrib["width"].removesuffix("pt"))
             intervals = [node.attrib for node in svg.iter("{http://www.w3.org/2000/svg}line")
                          if abs(float(node.attrib["y1"]) - float(node.attrib["y2"])) < .01
@@ -679,12 +688,13 @@ def run_irr_context(app, window, record):
                     left, right = sorted((float(line.attrib["x1"]), float(line.attrib["x2"])))
                     assert not (left <= x <= right and y-height < float(line.attrib["y1"]) < y + height * .25), ("rule crosses exposure header", node.attrib, line.attrib)
         raw = window.model.get_current_raw_data()
-        totals = [str(sum(column)) for column in zip(*raw, strict=True)]
+        totals = [f"{sum(column):,}" for column in zip(*raw, strict=True)]
         weight = next(node for node in nodes if "".join(node.itertext()) in {"100.0%", "100.0"})
         pooled = [node for node in nodes if abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 3]
         pooled_text = ["".join(node.itertext()) for node in pooled]
         assert all(total in pooled_text for total in totals), (style, totals, pooled_text)
-        assert all("font-weight: bold" in node.attrib["style"] for node in pooled if "".join(node.itertext()) in totals), pooled_text
+        assert all(("font-weight: bold" in node.attrib["style"]) == (style != "bmj")
+                   for node in pooled if "".join(node.itertext()) in totals), pooled_text
         destination = Path(path).parent / ("irr-context-" + style + ".svg")
         view.plot_service.export(regenerator="forest", params_path=view.params_paths[title], output_path=str(destination))
         assert unit in destination.read_text()

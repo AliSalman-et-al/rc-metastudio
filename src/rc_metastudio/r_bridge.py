@@ -2601,13 +2601,15 @@ def _structured_study_table(value):
     data = dict(zip(list(value.names), list(value), strict=True))
     digits = int(data["digits"][0])
     level = float(data["level"][0])
+    metric = str(data["metric"][0])
+    ratio = metric in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
     rows = []
     quantities = []
     for study, estimate, lower, upper, weight in zip(
         data["study"], data["estimate"], data["lower"], data["upper"], data["weight"],
         strict=True,
     ):
-        effects = _display_effect_values((estimate, lower, upper), digits)
+        effects = _display_effect_values((estimate, lower, upper), digits, ratio=ratio)
         if effects[0] == "NA":
             effects = ["Not estimable", "—", "—"]
         rows.append([str(study), *effects, _format_weight(weight)])
@@ -2620,7 +2622,7 @@ def _structured_study_table(value):
         ])
     return {
         "title": "Study weights", "role": "study_results", "label_column": 0,
-        "metric": str(data["metric"][0]), "metric_label": str(data["metric_label"][0]),
+        "metric": metric, "metric_label": str(data["metric_label"][0]),
         "headers": ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"],
         "rows": rows, "quantities": quantities,
     }
@@ -2650,7 +2652,9 @@ def _format_numeric_table_cell(value, field_name):
             return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
         if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
             return str(int(value))
-        return result_formatting.fixed_result_number(value, digits)
+        return result_formatting.fixed_result_number(
+            value, digits, preserve_positive=compact_name.endswith(("ciloweror", "ciupperor"))
+        )
     if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
         if value < 0.001:
             return "< 0.001"
@@ -2674,11 +2678,11 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
     return tables[0]
 
 
-def _display_effect_values(values, digits):
-    effects = [result_formatting.fixed_result_number(value, digits)
+def _display_effect_values(values, digits, *, ratio):
+    effects = [result_formatting.fixed_result_number(value, digits, preserve_positive=ratio and index > 0)
                if isinstance(value, (float, int)) and math.isfinite(value)
                else _format_r_table_cell(value)
-               for value in values]
+               for index, value in enumerate(values)]
     return effects
 
 

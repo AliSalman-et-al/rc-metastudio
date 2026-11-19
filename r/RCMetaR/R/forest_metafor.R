@@ -816,13 +816,13 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
     labels <- if (rcmetar.forest.style(bundle$params) == "bmj") {
-        rcmetar.bmj.effect.label(y, lb, ub, digits)
+        rcmetar.bmj.effect.label(y, lb, ub, digits, bundle$params)
     } else paste0(
         rcmetar.format.effect.number(y, digits),
         " [",
-        rcmetar.format.effect.number(lb, digits),
+        rcmetar.format.interval.bound(lb, digits, bundle$params),
         ", ",
-        rcmetar.format.effect.number(ub, digits),
+        rcmetar.format.interval.bound(ub, digits, bundle$params),
         "]"
     )
     labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
