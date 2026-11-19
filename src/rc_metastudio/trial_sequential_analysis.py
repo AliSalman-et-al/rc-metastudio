@@ -4,6 +4,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from rc_metastudio.analysis_results import AnalysisResult, ResultSection
@@ -161,22 +162,16 @@ class FixedEffectNote:
         return cls(d2, ris) if d2 is not None and ris is not None else None
 
 
-def _preview_conclusion(values: Mapping[str, object]) -> str:
-    outcome = values.get("outcome")
-    if not isinstance(outcome, Mapping):
-        return ""
-    category = outcome.get("category")
-    look, study = outcome.get("look"), outcome.get("study")
+def preview_conclusion(category: str, look: str, study: str, accrued: float, ris: float) -> str:
     if category in ("crossed-benefit", "crossed-harm"):
         return f"Crosses the monitoring boundary at study {look} ({study})"
     if category == "crossed-futility":
         return f"Crosses the futility boundary at study {look} ({study})"
     if category == "ris-reached":
         return "Reaches the required information size without crossing"
-    accrued, ris = number(values, "accrued"), number(values, "ris")
-    if category == "none" and accrued is not None and ris:
+    if category == "none":
         return f"Crosses no boundary (accrued {accrued / ris:.0%})"
-    return str(outcome.get("error", ""))
+    return ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,7 +186,6 @@ class TsaPreview:
     i2: float | None
     fixed_effect_note: FixedEffectNote | None
     fixed_effect_zero: bool
-    conclusion: str
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, object]) -> "TsaPreview":
@@ -203,7 +197,6 @@ class TsaPreview:
             TsaOptions.from_mapping(defaults), _setting_text(defaults, "anticipated.effect.source", ""),
             number(values, "ris"), number(values, "accrued"), number(values, "d2"), number(values, "i2"),
             FixedEffectNote.from_result(values), values.get("fixed.effect.zero") is True,
-            _preview_conclusion(values),
         )
 
 
@@ -272,6 +265,10 @@ class TsaService:
     def preview(self, model: DatasetTableModel, request: TsaRequest) -> TsaPreview:
         from rc_metastudio.r_bridge import preview_trial_sequential_analysis
         return preview_trial_sequential_analysis(model, request)
+
+    def conclusion_command(self, model: DatasetTableModel, request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
+        from rc_metastudio.r_bridge import trial_sequential_conclusion_command
+        return trial_sequential_conclusion_command(model, request, directory)
 
     def run(self, model: DatasetTableModel, request: TsaRequest) -> TsaRun:
         from rc_metastudio.r_bridge import run_trial_sequential_analysis

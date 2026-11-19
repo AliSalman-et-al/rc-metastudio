@@ -5,8 +5,10 @@
 from collections.abc import Callable
 from dataclasses import replace
 from math import isfinite
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from PyQt6.QtCore import QSignalBlocker, Qt, QTimer
+from PyQt6.QtCore import QProcess, QSignalBlocker, Qt, QTimer
 from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
     QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
@@ -19,8 +21,9 @@ from rc_metastudio.analysis_results import AnalysisResult
 from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.manuscript_report import ManuscriptReport, trial_sequential_report
 from rc_metastudio.qt_object_guard import required
+from rc_metastudio.settings import make_r_tmp
 from rc_metastudio.trial_sequential_analysis import (
-    EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService,
+    EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService, preview_conclusion,
 )
 
 TOOLTIPS = {
@@ -147,6 +150,8 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.status = QLabel()
         self.status.setAccessibleName("Trial sequential analysis preview")
         qt_layout.configure_context_label(self.status)
+        self.status.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.status.setMinimumHeight(2 * self.status.fontMetrics().lineSpacing())
         outer.addWidget(self.status)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.run_button = required(buttons.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
@@ -160,6 +165,18 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.preview_timer.setSingleShot(True)
         self.preview_timer.setInterval(120)
         self.preview_timer.timeout.connect(self._preview)
+        self.conclusion_timer = QTimer(self)
+        self.conclusion_timer.setSingleShot(True)
+        self.conclusion_timer.setInterval(600)
+        self.conclusion_timer.timeout.connect(self._start_conclusion)
+        self.conclusion_process = QProcess(self)
+        self.conclusion_process.finished.connect(self._conclusion_finished)
+        self.conclusion_process.errorOccurred.connect(self._conclusion_error)
+        self.conclusion_dir: TemporaryDirectory[str] | None = None
+        self.ready_preview: tuple[TsaRequest, float, float] | None = None
+        self.active_preview: tuple[TsaRequest, float, float] | None = None
+        self.finished.connect(self._stop_conclusion)
+        self.finished.connect(self.preview_timer.stop)
         for combo in (self.order, self.test, self.heterogeneity, self.spending):
             combo.currentIndexChanged.connect(self._schedule_preview)
         for spin in (self.alpha, self.power):
@@ -173,6 +190,7 @@ class TrialSequentialAnalysisDialog(QDialog):
         controller = adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.TRANSACTIONAL)
         adaptive_window.set_content_preferred_width(self, 560, 700)
         self._preview()
+        self.conclusion_timer.start()
         controller.request_content_refit()
 
     def _choice(self, name: str, choices: list[tuple[str, str]], selected: str) -> QComboBox:
@@ -311,7 +329,56 @@ class TrialSequentialAnalysisDialog(QDialog):
 
     def _schedule_preview(self) -> None:
         self.run_button.setEnabled(False)
+        self._stop_conclusion()
         self.preview_timer.start()
+        self.conclusion_timer.start()
+
+    def _stop_conclusion(self) -> None:
+        self.conclusion_timer.stop()
+        self.ready_preview = None
+        self.active_preview = None
+        if self.conclusion_process.state() != QProcess.ProcessState.NotRunning:
+            self.conclusion_process.kill()
+
+    def _start_conclusion(self) -> None:
+        if self.ready_preview is None or self.conclusion_dir is not None:
+            return
+        self.active_preview = self.ready_preview
+        request, _, _ = self.active_preview
+        try:
+            self.conclusion_dir = TemporaryDirectory(prefix="tsa-conclusion-", dir=make_r_tmp())
+            program, arguments = self.service.conclusion_command(self.model, request, Path(self.conclusion_dir.name))
+            self.conclusion_process.start(program, arguments)
+        except Exception as error:
+            self._release_conclusion_files()
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+
+    def _release_conclusion_files(self) -> None:
+        if self.conclusion_dir is not None:
+            self.conclusion_dir.cleanup()
+            self.conclusion_dir = None
+        self.active_preview = None
+
+    def _conclusion_finished(self, code: int, status: QProcess.ExitStatus) -> None:
+        try:
+            if (code != 0 or status != QProcess.ExitStatus.NormalExit
+                    or self.active_preview is None or self.conclusion_dir is None):
+                return
+            outcome = Path(self.conclusion_dir.name) / "outcome.txt"
+            if outcome.is_file():
+                category, look, study = outcome.read_text(encoding="utf-8").split("\n", 2)
+                _, accrued, ris = self.active_preview
+                text = preview_conclusion(category, look, study, accrued, ris)
+                if text:
+                    self.status.setText(f"{self.status.text()}\n{text}")
+        except (OSError, ValueError) as error:
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
+        finally:
+            self._release_conclusion_files()
+
+    def _conclusion_error(self, error: QProcess.ProcessError) -> None:
+        if error == QProcess.ProcessError.FailedToStart:
+            self._release_conclusion_files()
 
     def _preview(self) -> None:
         two_sided = self.test.currentData() == "two-sided"
@@ -319,8 +386,9 @@ class TrialSequentialAnalysisDialog(QDialog):
         try:
             request = self._request()
             preview = self.service.preview(self.model, request)
-            self._show_preview(request.options, preview)
+            self._show_preview(request, preview)
         except Exception as error:
+            self.ready_preview = None
             self.run_button.setEnabled(False)
             self.fixed_effect_notice.hide()
             self.status.setText(str(error).strip())
@@ -346,7 +414,8 @@ class TrialSequentialAnalysisDialog(QDialog):
         measure = "hazard" if self.hr else "risk"
         return f"≈ {abs(change):.{precision}%} relative {measure} {direction}{at_control}"
 
-    def _show_preview(self, options: TsaOptions, preview: TsaPreview) -> None:
+    def _show_preview(self, request: TsaRequest, preview: TsaPreview) -> None:
+        options = request.options
         defaults = preview.defaults
         self._show_default(
             self.effect, "" if defaults.anticipated_effect is None else f"{defaults.anticipated_effect:.4g}",
@@ -384,16 +453,18 @@ class TrialSequentialAnalysisDialog(QDialog):
         ris, accrued = preview.ris, preview.accrued
         ready = preview.ready and ris is not None and isfinite(ris) and ris > 0 and accrued is not None
         self.run_button.setEnabled(ready)
+        self.ready_preview = None
         if not ready or ris is None or accrued is None:
             self.status.setText(preview.reason or "The required information size must be finite and positive.")
         elif self.hr:
             self.status.setText(f"Required statistical information: {ris:,.4g} · accrued {accrued:,.4g} ({accrued / ris:.0%})")
         else:
             self.status.setText(f"Required information size: {ris:,.0f} participants · accrued {accrued:,.0f} ({accrued / ris:.0%})")
-        if ready and preview.conclusion:
-            self.status.setText(f"{self.status.text()}\n{preview.conclusion}")
+        if ready and ris is not None and accrued is not None:
+            self.ready_preview = request, accrued, ris
 
     def _run(self) -> None:
+        self._stop_conclusion()
         self.run_button.setEnabled(False)
         progress = progress_dialog.AnalysisProgressDialog(self, operation="Running trial sequential analysis…")
         progress.show()

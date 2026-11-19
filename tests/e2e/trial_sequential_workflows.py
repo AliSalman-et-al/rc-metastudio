@@ -277,17 +277,25 @@ def run(app, window, work, record, case):
             dialog.manual_ris.setText("1000" if case == "rr-mh" else "10000")
             wait(300)
         assert dialog.run_button.isEnabled(), dialog.status.text()
-        assert "\nCrosses " in dialog.status.text(), dialog.status.text()
         assert dialog.alpha.text() == "5.0%" and dialog.power.text() == "80.0%"
-        record("tsa-configured", dialog, input=str(path), status=dialog.status.text(), dpi_scale=dialog.devicePixelRatio())
+        samples = []
         if case in ("bcg", "hr"):
-            samples = []
             for _ in range(7):
                 start = perf_counter()
                 dialog._preview()
                 samples.append(round((perf_counter() - start) * 1000, 2))
+        start = perf_counter()
+        dialog._schedule_preview()
+        wait(300)
+        assert dialog.run_button.isEnabled() and "\n" not in dialog.status.text(), dialog.status.text()
+        while "\n" not in dialog.status.text() and perf_counter() - start < 20:
+            wait(30)
+        assert "\nCrosses " in dialog.status.text(), dialog.status.text()
+        elapsed = round((perf_counter() - start) * 1000, 2)
+        record("tsa-configured", dialog, input=str(path), status=dialog.status.text(), dpi_scale=dialog.devicePixelRatio())
+        if samples:
             record("tsa-preview-timings", dialog, case=case, milliseconds=samples,
-                   median_ms=median(samples), dpi_scale=dialog.devicePixelRatio())
+                   median_ms=median(samples), conclusion_elapsed_ms=elapsed, dpi_scale=dialog.devicePixelRatio())
         dialog.run_button.click()
         assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
@@ -455,8 +463,15 @@ def run(app, window, work, record, case):
                 assert dialog.default_inputs[dialog.effect][0].text().startswith("Entered · ")
             wait(300)
             assert dialog.run_button.isEnabled(), dialog.status.text()
+            if change is None:
+                deadline = perf_counter() + 3
+                while dialog.conclusion_process.state() != QtCore.QProcess.ProcessState.Running and perf_counter() < deadline:
+                    wait(20)
+                assert dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running
+                assert dialog.run_button.isEnabled() and "\n" not in dialog.status.text()
             record("tsa-change-settings-dialog", dialog, power=dialog.power.text(),
-                   effect=dialog.effect.text(), status=dialog.status.text())
+                   effect=dialog.effect.text(), status=dialog.status.text(),
+                   background_running=dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running)
             dialog.run_button.click()
             assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 

@@ -886,9 +886,33 @@ def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaR
     from rc_metastudio.trial_sequential_analysis import TsaPreview
 
     data = dataset_for_analysis(model, request.family, metric=request.metric)
-    params = {**request.to_mapping(), "preview.conclusion": True}
-    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(params))
+    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
     return TsaPreview.from_mapping(_r_mapping_or_empty(raw))
+
+
+@serialized_r_call
+def trial_sequential_conclusion_command(
+    model: "DatasetTableModel", request: "TsaRequest", directory: Path,
+) -> tuple[str, list[str]]:
+    # Embedded R is main-thread-only. Pass a typed, local snapshot to the
+    # selected runtime instead of sharing rpy2 state with a Qt worker.
+    data = dataset_for_analysis(model, request.family, metric=request.metric)
+    params = _to_r_params({**request.to_mapping(), "preview.conclusion": True})
+    inputs = directory / "input.rds"
+    execute_r_function("saveRDS", ro.ListVector({"data": data, "params": params}), ro.StrVector([str(inputs)]))
+    bin_dir = Path(os.environ["R_HOME"]) / "bin"
+    script = (
+        "args <- commandArgs(TRUE); request <- readRDS(args[1L]); "
+        "result <- RCMetaR::rcmetar.preview.trial.sequential.analysis(request$data, request$params); "
+        "outcome <- result$outcome; "
+        "if (!is.null(outcome$category)) writeBin(charToRaw(enc2utf8("
+        "paste(outcome$category, outcome$look, outcome$study, sep='\\n'))), args[2L])"
+    )
+    paths = [str(inputs), str(directory / "outcome.txt")]
+    if os.name == "nt":
+        # Launch the actual R process so cancelling it leaves no child behind.
+        return str(bin_dir / "x64" / "Rterm.exe"), ["--vanilla", "--slave", "-e", script, "--args", *paths]
+    return str(bin_dir / "Rscript"), ["--vanilla", "-e", script, *paths]
 
 
 @serialized_r_call

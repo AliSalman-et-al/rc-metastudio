@@ -51,7 +51,9 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   SVG geometry, regenerates Default, RevMan and BMJ, and decodes all four plot
   export formats. It checks the Peto random-effects comparison, sensitivity
   navigation and exports, and in-place power changes followed by a clean
-  unchanged rerun. The BCG and HR drives record seven warm preview timings.
+  unchanged rerun while the background conclusion is running. The BCG and HR
+  drives record seven warm RIS preview timings and the asynchronous conclusion
+  time from the start of the debounce.
 - `tsa-rr-mh` checks a fixed MH risk ratio with a dropped double-zero study,
   a futility crossing and blank terminal futility limits. `tsa-md` checks the
   required entered MD and no crossing below RIS. `tsa-hr` checks missing-year

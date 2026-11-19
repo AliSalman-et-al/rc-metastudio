@@ -12,7 +12,9 @@ The conventional intervals in this analysis use Wald inference.
 the inputs needed for the selected measure and heterogeneity adjustment.
 **Monitoring** groups study order, sidedness, boundaries, futility and the
 penalised Z-curve. The preview shows required and accrued information and
-the conclusion for the current settings.
+the conclusion for the current settings. The conclusion follows in the
+background. You can run the analysis as soon as the inputs and required
+information size are valid.
 
 - **Add studies in** defaults to publication year. Ties retain table order.
   If any included study lacks a year, enter it or select **Table order**.
