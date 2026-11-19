@@ -1434,15 +1434,16 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
         colci=if (settings$show.region) settings$reference.color else NA,
         label=identical(settings$label.policy, "all"))
     if (!is.null(settings$xlim)) args$xlim <- settings$xlim
-    if (!is.null(settings$at)) args$at <- settings$at
-    if (ratio && is.null(settings$at)) args$xaxt <- "n"
+    if (ratio || !is.null(settings$at)) args$xaxt <- "n"
     args
 }
 
-.small.study.draw.ratio.axis <- function(settings, ratio) {
-    if (!ratio || !is.null(settings$at)) return(invisible(NULL))
-    ticks <- rcmetar.forest.journal.ratio.ticks(graphics::par("usr")[1:2])
-    graphics::axis(1, at=ticks, labels=vapply(exp(ticks), format, character(1), trim=TRUE, scientific=FALSE))
+.small.study.draw.funnel.axis <- function(settings, ratio) {
+    if (!ratio && is.null(settings$at)) return(invisible(NULL))
+    ticks <- settings$at %||% rcmetar.forest.journal.ratio.ticks(graphics::par("usr")[1:2])
+    display <- if (ratio) exp(ticks) else ticks
+    graphics::axis(1, at=ticks, labels=rcmetar.compact.numeric.labels(
+        vapply(display, format, character(1), trim=TRUE, scientific=FALSE)))
 }
 
 .small.study.label.outside <- function(y, se, center, settings, labels) {
@@ -1485,7 +1486,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     }
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.guides(settings, center)
-    .small.study.draw.ratio.axis(settings, ratio)
+    .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.outside(y, se, center, settings, om.data@study.names)
     if (identical(settings$kind, "trimfill"))
         graphics::legend("topright", c("Observed", "Imputed"), pch=c(settings$point.symbol, 1),
@@ -1511,7 +1512,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.guides(settings, center)
-    .small.study.draw.ratio.axis(settings, ratio)
+    .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.outside(y, se, 0, settings, om.data@study.names)
     thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
     bands <- c(paste0("P > ", thresholds[[1L]]),

@@ -30,12 +30,17 @@ def run(driver, app, window, scenario):
         families = {family: kind for family, kind in families.items() if kind in ("regression", "sroc", "trial_sequential")}
 
     receipts = []
+    funnel_view = None
     for family, kind in families.items():
         window.workspace.mark_saved()
         if family == "trial-sequential":
             view = tsa(app, window, driver.WORK, driver.record_step, "bcg")
+        elif family in ("funnel", "contour", "trimfill") and funnel_view is not None:
+            view = funnel_view
         else:
             view = matrix(app, window, PLOT_PRODUCERS[family], driver.record_step, keep_results=True)
+            if family == "funnel":
+                funnel_view = view
         section = next(section for section in view.results.sections if section.plot_kind == kind)
         item, = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
         view.nav_tree.setCurrentItem(item)
@@ -66,8 +71,9 @@ def run(driver, app, window, scenario):
                     modal(app, PlotExportDialog, export, view.export_plot_action.trigger)
                 assert destination.is_file(), destination
                 (driver.WORK / "export-sizes.json").write_text(json.dumps(receipts, indent=2))
-        view.close()
-        app.processEvents()
+        if family not in ("funnel", "contour"):
+            view.close()
+            app.processEvents()
 
 
 for family in ("forest", "funnel", "other"):

@@ -273,7 +273,8 @@ rcmetar.bmj.summary.result <- function(bundle) {
 rcmetar.bmj.heterogeneity.label <- function(bundle) {
     res <- rcmetar.bmj.summary.result(bundle)
     df <- rcmetar.heterogeneity.df(res)
-    if (isTRUE(df <= 0) || isTRUE(bundle$single_study)) return("Test for heterogeneity: \u2014")
+    if (isTRUE(df <= 0) || (isTRUE(bundle$single_study) &&
+            !identical(bundle$forest_variant, "subgroup"))) return("Test for heterogeneity: \u2014")
     if (is.null(res$QE)) return("")
     digits <- display.digits(bundle$params)
     tau <- if (!is.null(res$tau2) && !res$method %in% c("FE", "EE", "CE", "MH", "PETO"))
@@ -285,7 +286,8 @@ rcmetar.bmj.heterogeneity.label <- function(bundle) {
 
 rcmetar.bmj.test.overall.label <- function(bundle) {
     res <- rcmetar.bmj.summary.result(bundle)
-    if (is.null(res$zval) || isTRUE(bundle$single_study)) return("")
+    if (is.null(res$zval) || (isTRUE(bundle$single_study) &&
+            !identical(bundle$forest_variant, "subgroup"))) return("")
     digits <- display.digits(bundle$params)
     test <- if (res$test %in% c("t", "knha", "adhoc")) paste0("t (df=", res$dfs, ")") else "Z"
     paste0(rcmetar.overall.test.heading(res, bundle$params), ": ", test, "=",

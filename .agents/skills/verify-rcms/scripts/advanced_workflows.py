@@ -818,7 +818,7 @@ def plots(app, window, family, record, *, view=None):
     app.processEvents()
     record("family-plot-reopened", view, family=family)
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
-                           lambda extension, action_label: context("Export plot…"))
+                           lambda extension, action_label: context("Export plot…"), include_title=True)
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         from rc_metastudio.plot_export_dialog import PlotExportDialog
         modal(app, PlotExportDialog, lambda dialog: dialog.accept(), lambda: context("Export plot…"))
@@ -929,7 +929,7 @@ def plots(app, window, family, record, *, view=None):
     view.close()
 
 
-def export_formats(app, view, directory, family, record, invoke=None):
+def export_formats(app, view, directory, family, record, invoke=None, *, include_title=False):
     directory.mkdir(parents=True, exist_ok=True)
     if invoke is None:
         if view._selected_plot() is None:
@@ -955,6 +955,8 @@ def export_formats(app, view, directory, family, record, invoke=None):
         ) as picker:
             from rc_metastudio.plot_export_dialog import PlotExportDialog
             def accept_export(dialog):
+                assert not dialog.include_title.isChecked()
+                dialog.include_title.setChecked(include_title)
                 dialog.format_control.setCurrentIndex(dialog.format_control.findData(extension))
                 record('export-options', dialog, format=extension, dimensions=dialog.dimensions())
                 dialog.accept()

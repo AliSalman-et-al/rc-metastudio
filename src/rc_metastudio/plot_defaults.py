@@ -14,7 +14,7 @@ PLOT_STYLE_ACCENTS = {
 BUBBLE_STYLE_ACCENTS = {
     "default": "#2f5597",
     "revman": "#111111",
-    "bmj": "#5f4c9a"
+    "bmj": "#6b58a6"
 }
 
 

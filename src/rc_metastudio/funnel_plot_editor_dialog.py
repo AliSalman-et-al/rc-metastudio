@@ -9,7 +9,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
 from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch, style_inline_error
@@ -256,8 +256,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         try:
             params = self.plot_params()
         except ValueError as error:
-            self._commit_error.setText(str(error))
-            self._commit_error.show()
+            QMessageBox.warning(self, "Invalid funnel settings", str(error))
             return False
         try:
             if self._on_commit is not None:

@@ -133,6 +133,7 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
+    if (identical(regenerator, "sroc")) bundle$plot.data$display.path <- NULL
     if (!include_title) {
         bundle$plot.data$params$plot_caption <- NULL
         if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
