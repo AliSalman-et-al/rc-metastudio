@@ -334,8 +334,9 @@ def run(app, window, work, record, case):
                 modal(app, PlotExportDialog, configure_export, view.export_plot_action.trigger)
             with TiffImageFile(export) as image:
                 assert abs(image.width - 89/25.4*300) <= 1
-                assert image.tag_v2[259] == 5 and image.info["dpi"] == (300.0, 300.0)
-                record("tsa-print-export", view, pixels=image.size, dpi=image.info["dpi"],
+                dpi = tuple(map(float, image.info["dpi"]))
+                assert image.tag_v2[259] == 5 and dpi == (300.0, 300.0)
+                record("tsa-print-export", view, pixels=image.size, dpi=dpi,
                        exports={"tiff": str(export)})
 
     if case in ("stress", "peto"):

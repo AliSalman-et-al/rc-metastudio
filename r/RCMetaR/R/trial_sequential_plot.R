@@ -314,7 +314,8 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         # Cairo writes unitless sizes. Restore the SVG's physical print size.
         original <- xml2::read_xml(source)
         document <- xml2::read_xml(outlined)
-        xml2::xml_set_attrs(document, xml2::xml_attrs(original)[c("width", "height")])
+        for (attribute in c("width", "height"))
+            xml2::xml_set_attr(document, attribute, xml2::xml_attr(original, attribute))
         xml2::write_xml(document, outlined)
         if (extension == "svgz") {
             output <- gzfile(path, "wb")
