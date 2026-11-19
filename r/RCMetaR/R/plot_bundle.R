@@ -36,6 +36,7 @@
 #' @param width,height The requested width and height in inches.
 #' @param dpi The requested raster resolution in dots per inch.
 #' @param include_title Whether to draw the figure's title line on export.
+#' @param outline_text Whether to outline text in trial sequential SVG exports.
 #' @return Parameters, a mapping from destination paths to staged files, or the
 #'   rendered path, respectively. Missing bundles return `NULL`.
 #' @name rcmetar-plot-bundle
@@ -123,7 +124,7 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 #' @rdname rcmetar-plot-bundle
 #' @export
 rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600,
-                                       include_title=TRUE) {
+                                       include_title=TRUE, outline_text=TRUE) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
@@ -139,7 +140,7 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
         if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
     }
     if (identical(regenerator, "trial_sequential")) {
-        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=TRUE)
+        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text))
     } else {
         .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
     }

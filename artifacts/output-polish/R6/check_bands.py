@@ -38,5 +38,3 @@ with Path(sys.argv[2]).open("w", newline="", encoding="utf-8") as target:
     writer = csv.writer(target)
     writer.writerow(("plot", "displayed rows", "grey bands", "shaded labels"))
     writer.writerows(results)
-
-

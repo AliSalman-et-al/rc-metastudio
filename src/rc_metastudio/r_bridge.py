@@ -1161,9 +1161,9 @@ def prepare_plot_edit(
 
 @serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
-                       *dimensions: float, include_title: bool = True) -> bool:
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions,
-                                include_title=include_title)
+                       *, include_title: bool = True, outline_text: bool = True) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
+                                include_title=include_title, outline_text=outline_text)
     return not _r_is_null(result)
 
 

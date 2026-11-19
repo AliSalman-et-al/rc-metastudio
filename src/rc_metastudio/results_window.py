@@ -1706,22 +1706,29 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         from rc_metastudio.manuscript_report import figure_source
         source, ratio = figure_source(artifact.display_path())
         from PyQt6.QtSvg import QSvgRenderer
-        minimum_width = 0.0
+        text_per_inch = (0.0, 0.0)
         if isinstance(source, QSvgRenderer):
             bounds = source.viewBoxF()
             width = bounds.width() / 72
             ratio = bounds.width() / bounds.height()
-            if artifact.params_path and artifact.capability.regenerator != "trial_sequential":
-                sizes = [float(size) for size in re.findall(
-                    rb"font-size:\s*([\d.]+)px", svg_bytes_for_qt(artifact.display_path())
-                )]
-                if sizes:
-                    minimum_width = width * 6 / min(sizes)
+            if artifact.params_path:
+                from tempfile import TemporaryDirectory
+                from rc_metastudio.plot_service import svg_text_points_per_inch
+
+                with TemporaryDirectory(prefix="rcms-export-size-") as directory:
+                    untitled = Path(directory) / "untitled.svg"
+                    self.plot_service.export(regenerator=artifact.capability.regenerator,
+                                             params_path=artifact.params_path, output_path=str(untitled),
+                                             include_title=False, outline_text=False)
+                    text_per_inch = (
+                        svg_text_points_per_inch(untitled, 1 / ratio),
+                        svg_text_points_per_inch(artifact.display_path(), 1 / ratio),
+                    )
         else:
             width = source.width() / max(1, source.dotsPerMeterX() * .0254)
         dialog = PlotExportDialog(
             artifact.export_formats(), width, width / ratio, self,
-            resizable=bool(artifact.params_path), minimum_width=minimum_width,
+            resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
             native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
         )
         if not dialog.exec():

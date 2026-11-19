@@ -4,11 +4,14 @@
 
 from __future__ import annotations
 
+import gzip
 import os
+import re
 import shutil
 import tempfile
 from collections.abc import Mapping
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 from rc_metastudio import r_bridge
 from rc_metastudio.plot_capabilities import PlotRegenerator
@@ -88,12 +91,6 @@ class PlotService:
                      output_path: str, width: float, height: float, dpi: int,
                      include_title: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
-        if regenerator == "trial_sequential":
-            if not r_bridge.render_plot_bundle(params_path, regenerator, output_path, width, height, dpi,
-                                               include_title=include_title):
-                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
-            return
-        from xml.etree import ElementTree as ET
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
             if not r_bridge.render_plot_bundle(params_path, regenerator, str(source), include_title=include_title):
@@ -104,9 +101,20 @@ class PlotService:
             root = tree.getroot()
             root.set('width', f'{width}in')
             root.set('height', f'{height}in')
+            x, y, view_width, view_height = map(float, root.attrib['viewBox'].split())
+            # Center the unchanged artwork and fill the physical paper, including
+            # the space freed when the title is excluded.
+            paper_width = max(view_width, view_height * width / height)
+            paper_height = max(view_height, view_width * height / width)
+            x -= (paper_width - view_width) / 2
+            y -= (paper_height - view_height) / 2
+            root.set('viewBox', f'{x} {y} {paper_width} {paper_height}')
+            paper = ET.Element('{http://www.w3.org/2000/svg}rect', {
+                'x': str(x), 'y': str(y), 'width': str(paper_width), 'height': str(paper_height), 'fill': 'white',
+            })
+            root.insert(0, paper)
             tree.write(source, encoding='utf-8', xml_declaration=True)
             if Path(output_path).suffix.lower() == '.svgz':
-                import gzip
                 with source.open('rb') as input_file, gzip.open(output_path, 'wb') as output_file:
                     shutil.copyfileobj(input_file, output_file)
             elif Path(output_path).suffix.lower() == '.svg':
@@ -116,13 +124,25 @@ class PlotService:
 
     @serialized_r_call
     def export(
-        self, *, regenerator: PlotRegenerator, params_path: str, output_path: str
+        self, *, regenerator: PlotRegenerator, params_path: str, output_path: str,
+        include_title: bool = True, outline_text: bool = True,
     ) -> None:
         """Render a stored plot to an already validated destination path."""
         if regenerator == "none":
             raise PlotServiceError(f"Plot is not regeneratable: {regenerator}")
-        if not r_bridge.render_plot_bundle(params_path, regenerator, output_path):
+        if not r_bridge.render_plot_bundle(params_path, regenerator, output_path,
+                                           include_title=include_title, outline_text=outline_text):
             raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+
+
+def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float:
+    """Measure the smallest SVG font against the physical export viewport."""
+    opener = gzip.open if str(path).lower().endswith(".svgz") else open
+    with opener(path, "rb") as source:
+        svg = source.read()
+    _, _, view_width, view_height = map(float, ET.fromstring(svg).attrib["viewBox"].split())
+    sizes = map(float, re.findall(rb"font-size:\s*([\d.]+)px", svg))
+    return min(sizes, default=0.0) * 72 * min(1 / view_width, height_per_width / view_height)
 
 
 def _staged_files(prepared: object, staging: Path) -> dict[Path, Path]:

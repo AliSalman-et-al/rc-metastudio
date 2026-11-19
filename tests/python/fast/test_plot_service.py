@@ -33,7 +33,7 @@ def test_load_params_rejects_invalid_r_result(monkeypatch):
 
 
 def test_funnel_export_stops_when_bundle_is_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr(r_bridge, "render_plot_bundle", lambda *_args: False)
+    monkeypatch.setattr(r_bridge, "render_plot_bundle", lambda *_args, **_options: False)
     output = tmp_path / "export.png"
 
     with pytest.raises(PlotServiceError, match="funnel.*incomplete"):
