@@ -317,7 +317,7 @@ def run(app, window, work, record, case):
                input=str(path), viewport=str(screen_plot), ticks=ticks,
                plots={artifact.title: str(rendered)})
         if case == "peto" and style == "default" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
-            from PIL import Image
+            from PIL.TiffImagePlugin import TiffImageFile
             from rc_metastudio.plot_export_dialog import PlotExportDialog
 
             export = work / "peto-89mm-300dpi.tiff"
@@ -332,7 +332,7 @@ def run(app, window, work, record, case):
 
             with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(export), "")):
                 modal(app, PlotExportDialog, configure_export, view.export_plot_action.trigger)
-            with Image.open(export) as image:
+            with TiffImageFile(export) as image:
                 assert abs(image.width - 89/25.4*300) <= 1
                 assert image.tag_v2[259] == 5 and image.info["dpi"] == (300.0, 300.0)
                 record("tsa-print-export", view, pixels=image.size, dpi=image.info["dpi"],

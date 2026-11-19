@@ -73,7 +73,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         }
         direction <- if (i == 1L) -1 else 1
         center <- direction * limit/2
-        left <- x + graphics::xinch(.055 * (seq_along(lines)*2 - length(lines) - 1))
+        spacing <- if (compact) .065 else .09
+        left <- x + graphics::xinch(spacing * (seq_along(lines)*2 - length(lines) - 1))
         graphics::text(left, center, lines, srt=90, cex=cex, col=col, xpd=NA)
         arrow.x <- x - graphics::xinch(if (compact) .13 else 0)
         start <- center + direction*graphics::yinch(if (compact) -.06 else max(width(lines))/2 + .025)
@@ -103,8 +104,10 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     if (!is.null(width)) {
         size$width <- width
         size$height <- height %||% (width * 9/16)
-        size$cex <- max(.70, min(size$cex, width/7))
-        if (width < 7) size$caption.cex <- if (width <= 89/25.4 + .01) .55 else size$cex
+        if (width < 7) {
+            size$cex <- .70
+            size$caption.cex <- if (width <= 89/25.4 + .01) .55 else size$cex
+        }
         size$caption.in.height <- TRUE
     }
     size$dpi <- dpi
@@ -171,38 +174,50 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         legend.width <- max(inches(labels, legend.cex)) + .39
         legend.below <- (size$width - left - legend.width)/size$width <
             if (size$width <= 89/25.4 + .01) .60 else .72
-        right <- if (legend.below) max(.27, inches(tail(axis$labels, 1)) / 2) else legend.width
+        conventional.cex <- max(.8, 6/(12*size$cex))
+        right <- if (legend.below) {
+            max(inches("\u22121.96", conventional.cex) + .075, inches(tail(axis$labels, 1))/2 + .025)
+        } else legend.width
         bottom <- if (legend.below) (if (compact) .57 else .96) else (if (compact) .34 else .92)
         center <- (size$width + left - right)/2
         caption.width <- 2*min(center, size$width - center) - .12
-        caption.cex <- max(.5, min(.8, .8 * caption.width /
+        caption.cex <- max(.5, min(if (compact) .7 else .8, .8 * caption.width /
                                    max(inches(c(caption, outcome), .8/size$cex))))
-        conventional.cex <- max(.8, 6/(12*size$cex))
-        line <- if (compact) 1.19 else 1.15
+        line <- if (compact) 1.52 else 1.15
+        caption.spacing <- if (compact) 1.35 else 1
         top <- if (compact) {
-            if (length(outcome)) .38 else .26
+            if (length(outcome)) .44 else .29
         } else graphics::par("csi") * (line + if (length(outcome)) 2.1 else 1.2)
         graphics::par(mai=c(bottom, left, top, right))
         graphics::plot(NA_real_, xlim=c(0, 1), ylim=c(-limit, limit), xaxt="n", yaxt="n",
                        ylab="", xlab=xlabel, bty="n")
 
         at <- axis$x(axis$ticks)
-        keep <- rep(TRUE, length(at))
+        label.at <- at
+        last.tick <- length(at)
         half <- graphics::xinch(inches(axis$labels)/2 + .026)
+        if (length(axis$join)) {
+            join.tick <- last.tick - 1L
+            # Keep both compressed-section labels at narrow print widths.
+            label.at[join.tick] <- min(at[join.tick], at[last.tick] - half[last.tick] - half[join.tick])
+        }
+        keep <- rep(TRUE, last.tick)
         for (i in rev(seq_along(at)[-1])) {
             if (!keep[i]) next
             earlier <- seq_len(i - 1L)
-            keep[earlier[at[earlier] + half[earlier] > at[i] - half[i]]] <- FALSE
+            keep[earlier[label.at[earlier] + half[earlier] > label.at[i] - half[i] + 1e-9]] <- FALSE
         }
-        graphics::axis(1, at=at[keep], labels=axis$labels[keep], las=style$las, font=1, gap.axis=0)
+        graphics::axis(1, at=at[keep], labels=FALSE)
+        graphics::axis(1, at=label.at[keep], labels=axis$labels[keep], las=style$las, font=1,
+                       gap.axis=0, tick=FALSE)
         graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0)
         graphics::segments(0, -limit, 0, limit)
         graphics::segments(0, -limit, 1, -limit)
         title.inset <- if (compact) .14 else .24
         graphics::mtext(ylabel, side=2, cex=size$cex,
                         line=(left - title.inset)/(graphics::par("csi") * graphics::par("mex")))
-        .tsa.draw.favours(favours, limit, tick.width + if (compact) .23 else .32, text.col, compact)
-        rcmetar.draw.panel.caption(caption, cex=caption.cex, line=line + length(outcome))
+        .tsa.draw.favours(favours, limit, tick.width + if (compact) .22 else .29, text.col, compact)
+        rcmetar.draw.panel.caption(caption, cex=caption.cex, line=line + caption.spacing*length(outcome))
         if (length(outcome)) rcmetar.draw.panel.caption(outcome, cex=caption.cex, line=line)
 
         if (show.wedge) {
