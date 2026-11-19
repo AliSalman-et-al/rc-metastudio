@@ -1106,7 +1106,7 @@ def write_pdf(report, path):
         h = w / ratio
         caption = _print_document()
         caption.setTextWidth(width)
-        note = ''.join('<br>' + escape(line) for line in figure.paragraphs)
+        note = ''.join('<br><span>' + escape(line) + '</span>' for line in figure.paragraphs)
         caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>' + note)
         # Lay out captions in the same 96-DPI coordinates as table captions.
         available = page.height() - (caption.size().height() + 12) * scale
