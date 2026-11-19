@@ -1674,11 +1674,24 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         from rc_metastudio.manuscript_report import figure_source
         source, ratio = figure_source(artifact.display_path())
         from PyQt6.QtSvg import QSvgRenderer
+        minimum_width = 0.0
         if isinstance(source, QSvgRenderer):
-            width = source.defaultSize().width() / 96
+            bounds = source.viewBoxF()
+            width = bounds.width() / 72
+            ratio = bounds.width() / bounds.height()
+            if artifact.params_path and artifact.capability.regenerator != "trial_sequential":
+                sizes = [float(size) for size in re.findall(
+                    rb"font-size:\s*([\d.]+)px", svg_bytes_for_qt(artifact.display_path())
+                )]
+                if sizes:
+                    minimum_width = width * 6 / min(sizes)
         else:
             width = source.width() / max(1, source.dotsPerMeterX() * .0254)
-        dialog = PlotExportDialog(artifact.export_formats(), width, width / ratio, self, resizable=bool(artifact.params_path), native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96)
+        dialog = PlotExportDialog(
+            artifact.export_formats(), width, width / ratio, self,
+            resizable=bool(artifact.params_path), minimum_width=minimum_width,
+            native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
+        )
         if not dialog.exec():
             return
         format = dialog.format_control.currentData()

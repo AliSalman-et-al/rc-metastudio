@@ -10,12 +10,13 @@ from rc_metastudio.settings import load_plot_export_format, save_plot_export_for
 
 
 class PlotExportDialog(QDialog):
-    def __init__(self, formats, width: float, height: float, parent=None, *, resizable: bool = True, native_dpi: int = 96):
+    def __init__(self, formats, width: float, height: float, parent=None, *, resizable: bool = True, native_dpi: int = 96, minimum_width: float = 0):
         super().__init__(parent)
         self.setWindowTitle('Export plot')
         self.setMinimumWidth(360)
         self.ratio = height / width
         self.resizable = resizable
+        self.minimum_width = minimum_width
         self._width_inches = width
         if resizable:
             try:
@@ -56,6 +57,11 @@ class PlotExportDialog(QDialog):
         self.width_control.valueChanged.connect(self._change_width)
         self.pixel_label = QLabel(self)
         layout.addRow(self.pixel_label)
+        self.legibility_warning = QLabel(
+            "At this width, some figure text will be smaller than 6 pt. "
+            "Increase the width or simplify the figure in Edit plot.", self)
+        self.legibility_warning.setWordWrap(True)
+        layout.addRow(self.legibility_warning)
         if not resizable:
             layout.addRow(QLabel("This image keeps its original size and resolution.", self))
         self.units.currentIndexChanged.connect(self._change_units)
@@ -84,6 +90,7 @@ class PlotExportDialog(QDialog):
         raster = self.format_control.currentData() in ('png', 'tiff')
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster)
+        self.legibility_warning.setVisible(self._width_inches < self.minimum_width)
         self.pixel_label.setText(f'{round(self._width_inches * self.dpi.value())} × {round(self._width_inches * self.ratio * self.dpi.value())} pixels')
 
     def dimensions(self) -> tuple[float, float, int]:
