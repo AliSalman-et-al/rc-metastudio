@@ -330,7 +330,8 @@
   monitoring <- if (s$alternative == "two-sided") {
     ifelse(is.na(looks$efficacy.upper), "", paste0("\u00b1", sprintf("%.2f", looks$efficacy.upper)))
   } else {
-    number(if (s$alternative == "lower") looks$efficacy.lower else looks$efficacy.upper)
+    signed <- if (s$alternative == "lower") looks$efficacy.lower else looks$efficacy.upper
+    ifelse(is.na(signed), "", sprintf("%+.2f", signed))
   }
   display <- cbind(step, looks$study, .tsa.format.accrued(looks$accrued, s$metric), sprintf("%.1f", percent), number(looks$z),
     monitoring, .tsa.interval(looks$futility.lower, looks$futility.upper), conventional,
@@ -355,7 +356,8 @@
 }
 
 .tsa.table <- function(headers, display, columns, roles, values, scale, level, s) {
-  visible <- colSums(display != "") > 0
+  optional <- headers %in% c("Futility boundary", "TSA-adjusted CI", "Penalised Z")
+  visible <- !optional | colSums(display != "") > 0
   keep <- visible[columns]
   table <- rcmetar.table(rbind(headers, display)[, visible, drop=FALSE], "trial_sequential", list(measure=s$metric),
     inference="z", label.column=1L)
@@ -545,13 +547,18 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
 
 .tsa.sensitivity <- function(prepared, s, path, summary, looks) {
   primary <- if (is.null(s$anticipated.effect)) "Primary (default)" else "Primary (entered)"
+  pc <- prepared$pc
+  if (is.finite(pc)) {
+    change <- prepared$pe/pc - 1
+    primary <- paste0(primary, sprintf(", %.1f%% %s", abs(100*change),
+      if (change < 0) "RRR" else "risk increase"))
+  }
   row <- function(label, effect, summary=NULL, look=tail(looks, 1)[NA_integer_, ]) {
     list(label=label, effect=effect, summary=summary, look=look)
   }
   result <- list(row(primary, prepared$effect, summary, tail(looks, 1)))
   # Wetterslev 2017 discusses sensitivity to design inputs. Keep all fitted
   # looks fixed while changing the effect that sets the information target.
-  pc <- prepared$pc
   reduction <- c(.1, .2, .3)
   increase <- as.numeric(prepared$fit$b) > 0
   rr <- if (increase) 1/(1-reduction) else 1-reduction

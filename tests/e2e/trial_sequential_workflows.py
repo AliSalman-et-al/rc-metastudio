@@ -4,6 +4,8 @@ import json
 import os
 from math import ceil, isclose
 from pathlib import Path
+from statistics import median
+from time import perf_counter
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
@@ -209,6 +211,10 @@ def run(app, window, work, record, case):
 
         def run_default(dialog):
             assert dialog.run_button.isEnabled(), dialog.status.text()
+            notice = dialog.fixed_effect_notice.text()
+            assert notice.startswith("Fixed-effect model: the required information size ignores heterogeneity.")
+            assert "With random effects, D² = " in notice
+            record("tsa-peto-fixed-effect-notice", dialog, notice=notice, dpi_scale=dialog.devicePixelRatio())
             dialog.run_button.click()
             assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
@@ -249,7 +255,7 @@ def run(app, window, work, record, case):
             wait(300)
             for field in (dialog.effect, dialog.control):
                 source, button = dialog.default_inputs[field]
-                assert source.text() == "Entered" and button.isVisible()
+                assert source.text().split(" · ")[0] == "Entered" and button.isVisible()
             record("tsa-dialog-entered", dialog, effect=dialog.effect.text(), control=dialog.control.text())
             for field in (dialog.effect, dialog.control):
                 dialog.default_inputs[field][1].click()
@@ -261,19 +267,41 @@ def run(app, window, work, record, case):
             if case in ("md", "stress"):
                 assert not dialog.run_button.isEnabled() and not original
                 key_clicks(dialog.effect, "-1")
+                if case == "md":
+                    wait(300)
+                    assert dialog.run_button.isEnabled(), dialog.status.text()
+                    record("tsa-md-calculated-preview", dialog, status=dialog.status.text())
             else:
                 assert "fixed (MH)" in dialog.base_request.model_label
             dialog.manual.setChecked(True)
             dialog.manual_ris.setText("1000" if case == "rr-mh" else "10000")
             wait(300)
         assert dialog.run_button.isEnabled(), dialog.status.text()
-        record("tsa-configured", dialog, input=str(path), status=dialog.status.text())
+        assert "\nCrosses " in dialog.status.text(), dialog.status.text()
+        assert dialog.alpha.text() == "5.0%" and dialog.power.text() == "80.0%"
+        record("tsa-configured", dialog, input=str(path), status=dialog.status.text(), dpi_scale=dialog.devicePixelRatio())
+        if case in ("bcg", "hr"):
+            samples = []
+            for _ in range(7):
+                start = perf_counter()
+                dialog._preview()
+                samples.append(round((perf_counter() - start) * 1000, 2))
+            record("tsa-preview-timings", dialog, case=case, milliseconds=samples,
+                   median_ms=median(samples), dpi_scale=dialog.devicePixelRatio())
         dialog.run_button.click()
         assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
     modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
     view, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
-    table, = view._report_tables
+    table = view._report_tables[0]
+    if case in ("bcg", "hr"):
+        sensitivity = view._report_tables[1]
+        assert sensitivity.title == "Sensitivity to the anticipated intervention effect"
+        assert "Primary (default)" in sensitivity.rows[0][0]
+        assert "Sensitivity analyses repeated the analysis with alternative anticipated intervention effects." in view.manuscript.methods
+    else:
+        assert len(view._report_tables) == 1
+        assert "Sensitivity analyses repeated" not in view.manuscript.methods
     if case == "stress":
         assert len(table.rows) == 36
     else:
@@ -283,8 +311,11 @@ def run(app, window, work, record, case):
         assert table.rows[-1][3] == "100.0" and table.rows[-1][6] == ""
         assert "The fitted model excluded Double zero." in view.manuscript.methods
     if case == "bcg":
-        assert table.rows[0][8] == "<0.001 to >1000"
-        assert all(row[6] == "" for row in table.rows if float(row[3]) >= 100)
+        adjusted = table.headers.index("TSA-adjusted CI")
+        assert table.rows[0][adjusted] == "—" and table.rows[0][5].startswith("±")
+        assert table.quantities[0][adjusted][0].value < .001
+        assert "— Too little information for a finite TSA-adjusted interval." in view.manuscript.html()
+        assert "Futility boundary" not in table.headers
         assert "We pooled odds ratios (OR)" in view.manuscript.methods
         assert "logarithm with λ = 2 (Hu 2007)" in view.manuscript.methods
     if comparison is not None:
@@ -356,21 +387,34 @@ def run(app, window, work, record, case):
     # Poppler emits continuations of split HR cells in page order. DOCX,
     # clipboard and CSV still compare every cell in table order.
     assert_exports(view, report, pdf_ordered=case != "hr")
+    if case in ("bcg", "hr"):
+        caption = "Table 2. Sensitivity to the anticipated intervention effect"
+        item, = view.nav_tree.findItems(caption, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+        assert not item.isHidden()
+        view.nav_tree.setCurrentItem(item)
+        record("tsa-sensitivity-report", view, caption=caption, rows=sensitivity.rows)
     view.tables_action.trigger()
-    for action, name, filter_name in (
-        (view.export_table_action, "formatted", "CSV table"),
-        (view.export_values_action, "values", "CSV values"),
-    ):
-        export = work / f"{case}-{name}.csv"
-        with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(export), f"{filter_name} (*.csv)")):
-            action.trigger()
-        with export.open(encoding="utf-8-sig", newline="") as stream:
-            if name == "formatted":
-                assert list(csv.reader(stream)) == [list(table.headers), *map(list, table.rows)]
-            else:
-                values = list(csv.DictReader(stream))
-                exported_z = next(row for row in values if row["Column"] == "Z")
-                assert float(exported_z["Value"]) == table.quantities[0][4][0].value
+    for index, exported_table in enumerate(view._report_tables):
+        view.table_selector.setCurrentIndex(index)
+        for action, name, filter_name in (
+            (view.export_table_action, "formatted", "CSV table"),
+            (view.export_values_action, "values", "CSV values"),
+        ):
+            export = work / f"{case}-{index + 1}-{name}.csv"
+            with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(export), f"{filter_name} (*.csv)")):
+                action.trigger()
+            with export.open(encoding="utf-8-sig", newline="") as stream:
+                if name == "formatted":
+                    assert list(csv.reader(stream)) == [list(exported_table.headers), *map(list, exported_table.rows)]
+                else:
+                    values = list(csv.DictReader(stream))
+                    column = "Required information size" if index else "Z"
+                    exported = next(row for row in values if row["Column"] == column)
+                    exact = exported_table.quantities[0][exported_table.headers.index(column)][0].value
+                    assert float(exported["Value"]) == exact
+                    if case == "bcg" and index == 0:
+                        limit = next(row for row in values if row["Column"] == "TSA-adjusted CI")
+                        assert float(limit["Value"]) == table.quantities[0][adjusted][0].value
     view.report_action.setChecked(False)
     view.nav_tree.setCurrentItem(nav)
     app.processEvents()
@@ -393,6 +437,47 @@ def run(app, window, work, record, case):
                      if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view]
         repeated.close()
         assert not window.workspace.is_dirty, "Rerunning the saved TSA design changed the project"
+    elif case == "bcg":
+        saved = work / "bcg-with-tsa-settings.rcms"
+        assert window.save(destination=saved)
+        assert not window.workspace.is_dirty
+        original_table = view._report_tables[0]
+        original_methods = view.manuscript.methods
+
+        def rerun(dialog, change):
+            assert dialog.base_request.options.power == (.8 if change == "power" else .9)
+            if change == "power":
+                dialog.power.setValue(90)
+            elif change == "effect":
+                dialog.effect.setText("0.7")
+            else:
+                assert dialog.effect.text() == "0.7"
+                assert dialog.default_inputs[dialog.effect][0].text().startswith("Entered · ")
+            wait(300)
+            assert dialog.run_button.isEnabled(), dialog.status.text()
+            record("tsa-change-settings-dialog", dialog, power=dialog.power.text(),
+                   effect=dialog.effect.text(), status=dialog.status.text())
+            dialog.run_button.click()
+            assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
+
+        modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, "power"), view.change_settings_action.trigger)
+        visible, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
+        assert visible is view
+        assert view._report_tables[0].rows[-1][3] != original_table.rows[-1][3]
+        assert "90% power" in view.manuscript.methods and view.manuscript.methods != original_methods
+        assert window.workspace.is_dirty
+        modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, "effect"), view.change_settings_action.trigger)
+        entered_rows = view._report_tables[0].rows
+        assert "Primary (entered)" in view._report_tables[1].rows[0][0]
+        # Change the live sheet before a rerun. The result must still use the
+        # original study snapshot, while a later Save includes the live edit.
+        assert window.model.setData(window.model.index(0, window.model.NAME), "Edited in source sheet")
+        assert window.save(destination=saved)
+        modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, None), view.change_settings_action.trigger)
+        assert not window.workspace.is_dirty and view._report_tables[0].rows == entered_rows
+        view.report_action.setChecked(True)
+        record("tsa-change-settings-result", view, same_window=visible is view, project_dirty=window.workspace.is_dirty,
+               before=original_methods, after=view.manuscript.methods)
     else:
         window.workspace.mark_saved()
     return view

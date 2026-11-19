@@ -8,6 +8,12 @@ The conventional intervals in this analysis use Wald inference.
 
 ## Choose the settings
 
+**Design assumptions** groups type I error, power, the anticipated effect,
+the inputs needed for the selected measure and heterogeneity adjustment.
+**Monitoring** groups study order, sidedness, boundaries, futility and the
+penalised Z-curve. The preview shows required and accrued information and
+the conclusion for the current settings.
+
 - **Add studies in** defaults to publication year. Ties retain table order.
   If any included study lacks a year, enter it or select **Table order**.
 - **Test** defaults to two-sided, with 5% total type I error and 80% power.
@@ -18,7 +24,9 @@ The conventional intervals in this analysis use Wald inference.
   nearest the null when the interval excludes the null (Wetterslev 2017).
   Otherwise the default is a 10% relative risk reduction (Imberger 2016),
   expressed on the selected measure's scale, or an HR of 0.90. For MD, enter
-  a difference on the outcome's original scale.
+  a difference on the outcome's original scale. The dialog expresses RR and
+  HR as relative changes, OR and Peto OR as relative risk changes at the
+  displayed control risk, and RD in percentage points.
 - **Control event proportion** defaults to the unweighted mean of the fitted
   trials' control-arm event proportions (Wetterslev 2017). **Participant
   variance** for MD defaults to the fixed-effect-weighted mean of the trials'
@@ -27,7 +35,11 @@ The conventional intervals in this analysis use Wald inference.
   calculated input.
 - **Heterogeneity adjustment** defaults to diversity (D²) for random effects
   (Wetterslev 2009). I² and no adjustment are alternatives. Fixed-effect models
-  use the unadjusted required information size (RIS).
+  use the unadjusted required information size (RIS). For random effects the
+  dialog shows the size multiplier, 1/(1 − D²) or 1/(1 − I²). With a calculated
+  fixed-effect RIS, RC MetaStudio also fits the same studies with random
+  effects using the sheet's τ² estimator, or REML by default. The dialog and
+  report show the resulting D²-adjusted size for comparison (Wetterslev 2017).
 - **Boundaries** default to Lan-DeMets O’Brien-Fleming spending, which requires
   stronger evidence early. Pocock is also available. The default non-binding
   futility wedge uses O’Brien-Fleming beta spending and is available for
@@ -35,6 +47,11 @@ The conventional intervals in this analysis use Wald inference.
 - The optional **Penalised Z-curve** for binary outcomes uses Hu's λ values
   with the early floor described by Lan. Compare this curve with the
   conventional threshold. Crossing summaries use the ordinary cumulative Z.
+
+Use **Change settings…** in Results to rerun with the original dataset and
+the options from the displayed run. The same window shows the updated plot
+and report. Settings are saved to the source sheet while it remains open in
+the project. Repeating the same settings leaves the saved project clean.
 
 The [methods note](research/trial-sequential-analysis-methods.md) links the
 sources and documents the information-size, boundary and penalty calculations.
@@ -60,7 +77,16 @@ possible result.
 The report gives the study at the crossing and the final accrued share of RIS.
 The table preserves all modelled looks in order and identifies excluded studies
 in Methods. It displays conventional CIs and, below 100%, TSA-adjusted limits.
-The CSV values export retains the exact numbers behind the displayed limits.
+The report and exports omit optional columns without any values. An em dash
+marks a TSA-adjusted interval with too little information for display. The
+CSV values export retains the exact numbers behind those limits.
+
+Table 2 shows sensitivity to the anticipated effect (Wetterslev 2017). It
+keeps the original Z-curve, study order and monitoring settings while
+recalculating the information target, boundaries and conclusion. Binary and
+HR alternatives use 10%, 20% and 30% reductions or the corresponding increases
+in the direction of the pooled estimate. MD alternatives are 50% and 150% of
+the primary effect. A manually entered RIS omits this table.
 
 ## Plot design
 

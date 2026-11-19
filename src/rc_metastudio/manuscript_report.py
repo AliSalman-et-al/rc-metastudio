@@ -30,7 +30,7 @@ class AnalysisResultHandler(Protocol):
         self, result: "AnalysisResult", /, *, source_sheet: "Sheet | None" = None,
         change_settings: Callable[[dict[str, object]], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
-    ) -> None: ...
+    ) -> object: ...
 
 
 _PACKAGE_REFERENCES = {
@@ -777,13 +777,18 @@ class ManuscriptReport:
             if section.source_key == 'References':
                 parts.append('<a name="references"></a><h2>References</h2>')
             for table_number, table in tables:
+                parts.append(f'<a name="table-{table_number}"></a>')
                 parts.append(_table_html(table, table_number))
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
 
 
+TSA_ADJUSTED_INTERVAL_NOTE = "— Too little information for a finite TSA-adjusted interval."
+
+
 def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
     from decimal import Decimal
+    from dataclasses import replace
 
     from rc_metastudio.analysis_results import ResultSection
     from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE
@@ -791,7 +796,7 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     options = request.options
     hr = request.metric == "HR"
     units = "units of statistical information" if hr else "participants"
-    order = {"year": "publication year", "table": "table order"}[options.order]
+    order = {"year": "publication-year order", "table": "table order"}[options.order]
     left, right = request.favoured_labels()
     test = {"two-sided": "two-sided test", "benefit": f"one-sided test favouring {left}",
             "harm": f"one-sided test favouring {right}"}[options.test]
@@ -803,7 +808,10 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         return f"{number:,f}"
 
     effect = f"{run.anticipated_effect:.4g}"
-    source = "entered" if run.effect_source == "user" else EFFECT_SOURCES[run.effect_source]
+    effect_phrase = {"OR": "an OR", "RR": "an RR", "RD": "an RD", "MD": "a mean difference",
+                     "HR": "an HR", "Peto OR": "a Peto OR"}[request.measure]
+    source = (" (entered)" if run.effect_source == "user" else
+              f", the {EFFECT_SOURCES[run.effect_source]}")
     ris_label = "entered required information size" if options.manual_ris is not None else "required information size"
     model = (f"random-effects model with the {request.tau_method} estimator of between-study variance"
              if request.model == "random" else request.model_label.replace("fixed", "fixed-effect") + " model")
@@ -812,7 +820,7 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         f"Studies were added in {order}.",
         f"The {ris_label} was {accrued_number(run.ris)} {units} using a {test} "
         f"with α = {options.alpha:g} and {options.power:.0%} power. "
-        f"The anticipated intervention effect was {effect} ({source}).",
+        f"The anticipated intervention effect was {effect_phrase} of {effect}{source}.",
     ]
     if request.inference in {"knha", "adhoc"}:
         method.insert(1, HKSJ_NOTE)
@@ -823,7 +831,14 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         variance = "entered" if run.variance_source == "user" else "fixed-effect-weighted pooled arm variance"
         method.append(f"The participant variance was {run.variance:.4g} ({variance}).")
     if request.model != "random":
-        method.append("Heterogeneity adjustment was inapplicable to the fixed-effect model.")
+        if run.fixed_effect_note is None:
+            method.append("Heterogeneity adjustment was inapplicable to the fixed-effect model.")
+        else:
+            d2, ris = run.fixed_effect_note.d2, accrued_number(run.fixed_effect_note.ris)
+            size, note_units = ("required information", "units of information") if hr else ("required information size", units)
+            method.append(f"The fixed-effect model does not adjust the information size for heterogeneity; "
+                          f"a random-effects model gave D² = {d2:.1%} and a {size} of {ris} "
+                          f"{note_units} (Wetterslev 2017).")
     elif options.heterogeneity == "none":
         method.append("The analysis used no heterogeneity adjustment.")
     else:
@@ -836,6 +851,8 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g} (Hu 2007).")
     if run.excluded_studies:
         method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
+    if options.manual_ris is None:
+        method.append("Sensitivity analyses repeated the analysis with alternative anticipated intervention effects.")
     method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
 
     final, crossing = run.final, run.crossing
@@ -869,13 +886,20 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     if run.lil_lambda is not None:
         results.append(f"The final penalised Z-score was {final.penalised_z:.4g}." if final.penalised_z is not None
                        else "The final penalised Z-score was unavailable at the accrued statistical information.")
+    if run.conclusion in {"crossed-benefit", "crossed-harm"}:
+        results.append("Because the cumulative Z-curve crossed the monitoring boundary, the result remains "
+                       "statistically significant after accounting for repeated significance testing.")
+    elif run.conclusion == "ris-reached":
+        results.append(f"The required information size was reached without demonstrating an intervention effect of {effect}.")
+    elif run.conclusion == "none":
+        results.append(f"More information is needed before an intervention effect of {effect} can be confirmed or rejected.")
 
     references = [
         "Wetterslev J, Thorlund K, Brok J, Gluud C. J Clin Epidemiol. 2008;61:64–75.",
         "Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol. 2009;9:86.",
         "Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70:659–663.",
     ]
-    if (run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
+    if (options.manual_ris is None or run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
             or run.variance_source.startswith("wetterslev-2017")):
         references.append("Wetterslev J, Jakobsen JC, Gluud C. BMC Med Res Methodol. 2017;17:39.")
     if run.effect_source == "imberger-2016-10-percent-rrr":
@@ -886,7 +910,8 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
                               "\n".join(references), "References", paragraphs=tuple(references))
     return ManuscriptReport(
         TSA_TITLE, " ".join(method), tuple(section for section in run.result.sections if section.tables),
-        (citations,), tuple(section for section in run.result.sections if section.kind == "image"),
+        (citations,), tuple(replace(section, title=section.title + ". Marker area is proportional to the information each trial added.")
+                           for section in run.result.sections if section.kind == "image"),
         tuple(results), comparison=context.replace("\n", " · "),
     )
 

@@ -886,7 +886,8 @@ def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaR
     from rc_metastudio.trial_sequential_analysis import TsaPreview
 
     data = dataset_for_analysis(model, request.family, metric=request.metric)
-    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
+    params = {**request.to_mapping(), "preview.conclusion": True}
+    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(params))
     return TsaPreview.from_mapping(_r_mapping_or_empty(raw))
 
 
@@ -898,6 +899,7 @@ def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaReque
     from rc_metastudio.settings import analysis_output_path
     from rc_metastudio.small_study_effects import FUNNEL_STYLE_PRESETS, FunnelStyle
     from rc_metastudio.trial_sequential_analysis import TsaRun
+    from rc_metastudio.manuscript_report import TSA_ADJUSTED_INTERVAL_NOTE
 
     data = dataset_for_analysis(model, request.family, metric=request.metric)
     path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
@@ -908,23 +910,30 @@ def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaReque
         "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT]["region_color"],
     }
     raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(params))
-    title = "Trial sequential results"
-    table = _report_table_entry(_structured_matrix(title, raw.rx2("table"), None, first_row_headers=True))
-    section = ResultSection("trial-sequential.looks", "text", 0, title, "", "trial-sequential.looks", tables=(table,))
+    def table_section(key: str, title: str, order: int, matrix) -> ResultSection:
+        identity = f"trial-sequential.{key}"
+        table = _report_table_entry(_structured_matrix(title, matrix, None, first_row_headers=True))
+        notes = (TSA_ADJUSTED_INTERVAL_NOTE,) if any("—" in row for row in table.rows) else ()
+        return ResultSection(identity, "text", order, title, "", identity, tables=(table,), paragraphs=notes)
+
+    sections = [table_section("looks", "Trial sequential results", 0, raw.rx2("table"))]
+    if "sensitivity.table" in raw.names:
+        sections.append(table_section("sensitivity", "Sensitivity to the anticipated intervention effect",
+                                      1, raw.rx2("sensitivity.table")))
     plot_title = "Trial sequential plot"
     plot = ResultSection(
-        "trial-sequential.plot", "image", 1, plot_title, path, plot_title,
+        "trial-sequential.plot", "image", 2, plot_title, path, plot_title,
         plot_data=str(raw.rx2("plot.prefix")[0]), capability=PlotCapability(
             "trial_sequential", True, True, "trial_sequential"),
     )
-    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "package.versions")}
+    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "package.versions", "fixed_effect_note")}
     looks = raw.rx2("looks")
     fields["looks"] = {
         key: [_r_na_to_none(value) for value in column]
         for key, column in zip(looks.names, looks, strict=True)
     }
     fields["version"] = int(raw.rx2("version")[0])
-    return TsaRun.from_mapping(fields, (section, plot))
+    return TsaRun.from_mapping(fields, (*sections, plot))
 
 
 def _r_param_value(param):

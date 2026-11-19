@@ -213,6 +213,7 @@ SCENARIOS = {
         "audit-round3-" + family: Scenario(external("analysis_presentation_workflows", presentation_args), 600)
         for family in AUDIT_FAMILIES
     },
+    # The BCG plot workflow also drives the dialog, report exports and in-place reruns.
     **{f"tsa-{case}": Scenario(skill("advanced_workflows"), 240,
                               qualifies=f"tsa-{case}" not in PLOT_PRODUCERS.values())
        for case in ("bcg", "rr-mh", "md", "hr", "smd")},

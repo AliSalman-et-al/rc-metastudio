@@ -21,7 +21,7 @@
       ],
       [
         -1,
-        "Effect (conventional CI)",
+        "OR (95% CI)",
         "estimate",
         0.4746499130523234
       ]
@@ -41,7 +41,7 @@
       ],
       [
         -1,
-        "Effect (conventional CI)",
+        "HR (95% CI)",
         "estimate",
         0.8743438267669217
       ]
@@ -61,7 +61,7 @@
       ],
       [
         -1,
-        "Effect (conventional CI)",
+        "MD (95% CI)",
         "estimate",
         -0.8333333333333334
       ]
@@ -87,7 +87,7 @@
       ],
       [
         -1,
-        "Effect (conventional CI)",
+        "RR (95% CI)",
         "estimate",
         1
       ]

@@ -120,6 +120,10 @@ class TsaRequest:
         )
 
     @property
+    def measure(self) -> str:
+        return "Peto OR" if self.model == "peto" else self.metric
+
+    @property
     def model_label(self) -> str:
         if self.model == "random":
             return f"random effects ({self.tau_method})"
@@ -144,6 +148,38 @@ def _validate_version(values: Mapping[str, object]) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class FixedEffectNote:
+    d2: float
+    ris: float
+
+    @classmethod
+    def from_result(cls, values: Mapping[str, object]) -> "FixedEffectNote | None":
+        note = values.get("fixed_effect_note")
+        if not isinstance(note, Mapping):
+            return None
+        d2, ris = number(note, "d2"), number(note, "ris")
+        return cls(d2, ris) if d2 is not None and ris is not None else None
+
+
+def _preview_conclusion(values: Mapping[str, object]) -> str:
+    outcome = values.get("outcome")
+    if not isinstance(outcome, Mapping):
+        return ""
+    category = outcome.get("category")
+    look, study = outcome.get("look"), outcome.get("study")
+    if category in ("crossed-benefit", "crossed-harm"):
+        return f"Crosses the monitoring boundary at study {look} ({study})"
+    if category == "crossed-futility":
+        return f"Crosses the futility boundary at study {look} ({study})"
+    if category == "ris-reached":
+        return "Reaches the required information size without crossing"
+    accrued, ris = number(values, "accrued"), number(values, "ris")
+    if category == "none" and accrued is not None and ris:
+        return f"Crosses no boundary (accrued {accrued / ris:.0%})"
+    return str(outcome.get("error", ""))
+
+
+@dataclass(frozen=True, slots=True)
 class TsaPreview:
     ready: bool
     reason: str
@@ -153,6 +189,9 @@ class TsaPreview:
     accrued: float | None
     d2: float | None
     i2: float | None
+    fixed_effect_note: FixedEffectNote | None
+    fixed_effect_zero: bool
+    conclusion: str
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, object]) -> "TsaPreview":
@@ -163,6 +202,8 @@ class TsaPreview:
             values.get("ready") is True, _setting_text(values, "reason", ""),
             TsaOptions.from_mapping(defaults), _setting_text(defaults, "anticipated.effect.source", ""),
             number(values, "ris"), number(values, "accrued"), number(values, "d2"), number(values, "i2"),
+            FixedEffectNote.from_result(values), values.get("fixed.effect.zero") is True,
+            _preview_conclusion(values),
         )
 
 
@@ -195,6 +236,7 @@ class TsaRun:
     i2: float
     lil_lambda: float | None
     excluded_studies: tuple[str, ...]
+    fixed_effect_note: FixedEffectNote | None
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, object], sections: tuple[ResultSection, ...]) -> "TsaRun":
@@ -222,6 +264,7 @@ class TsaRun:
             str(summary["control.proportion.source"]), number(summary, "variance"),
             str(summary["variance.source"]), float(summary["d2"]), float(summary["i2"]),
             number(summary, "lil.lambda"), (excluded,) if isinstance(excluded, str) else tuple(excluded),
+            FixedEffectNote.from_result(values),
         )
 
 

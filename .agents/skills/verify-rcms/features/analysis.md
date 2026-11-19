@@ -49,8 +49,9 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   LIL, edits and restores both design defaults, and exercises a monitoring
   crossing with an overrun. It checks the frozen numerical fields and terminal
   SVG geometry, regenerates Default, RevMan and BMJ, and decodes all four plot
-  export formats. It also checks that a Peto fit carries into default TSA
-  while the project stays clean.
+  export formats. It checks the Peto random-effects comparison, sensitivity
+  navigation and exports, and in-place power changes followed by a clean
+  unchanged rerun. The BCG and HR drives record seven warm preview timings.
 - `tsa-rr-mh` checks a fixed MH risk ratio with a dropped double-zero study,
   a futility crossing and blank terminal futility limits. `tsa-md` checks the
   required entered MD and no crossing below RIS. `tsa-hr` checks missing-year
