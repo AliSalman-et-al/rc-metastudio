@@ -309,7 +309,6 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     # Persisting them makes the next regeneration freeze or double-transform it.
     changed.params <- plot.options$changed.params
     changed.params$fp_xlabel <- NULL
-    changed.params$fp_col2_str <- NULL
     list(
         plot_range=plot.range,
         changed.params=changed.params,
@@ -753,13 +752,14 @@ rcmetar.metafor.effect.header <- function(bundle) {
             !rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) {
         return("")
     }
-    rcmetar.forest.estimate.header(bundle,
-        paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]"))
+    rcmetar.forest.estimate.header(bundle, rcmetar.forest.auto.estimate.header(bundle$params))
 }
 
 rcmetar.forest.estimate.header <- function(bundle, default) {
     heading <- bundle$params[["fp_col2_str"]]
-    if (rcmetar.is.plot.default.text(heading)) default else as.character(heading[[1L]])
+    legacy <- paste0("Estimate (", bundle$params$conf.level, "% CI)")
+    if (identical(bundle$forest_variant, "cumulative")) legacy <- c(legacy, "Cumulative Estimate")
+    if (rcmetar.is.plot.default.text(heading) || as.character(heading[[1L]]) %in% legacy) default else as.character(heading[[1L]])
 }
 
 rcmetar.metafor.psize <- function(bundle) {

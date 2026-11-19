@@ -1737,7 +1737,6 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     load(paste0(params.path, ".res"))
     if (identical(variant, "cumulative")) {
       expect_equal(params$fp_col1_str, "Study added")
-      expect_equal(params$fp_col2_str, "Cumulative Estimate")
     }
     expect_identical(params$fp_plot_lb, "[default]")
     expect_identical(params$fp_plot_ub, "[default]")
@@ -1751,7 +1750,6 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     expect_equal(regenerated$fp_style, "bmj")
     if (identical(variant, "cumulative")) {
       expect_equal(regenerated$params$fp_col1_str, "Study added")
-      expect_equal(regenerated$params$fp_col2_str, "Cumulative Estimate")
     }
     expect_true(rcmetar.is.metafor.forest.bundle(regenerated))
     expect_true(file.exists(regenerated.path))

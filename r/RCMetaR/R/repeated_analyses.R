@@ -65,7 +65,6 @@ cum.ma.binary <- function(fname, binary.data, params){
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
     rcmetar.draw.forest.plot(plot.data, forest.path)
     params <- update.changed.plot.params(params, plot.data$changed.params)
@@ -492,7 +491,6 @@ cum.ma.continuous <- function(fname, cont.data, params){
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
     rcmetar.draw.forest.plot(plot.data, forest.path)
     params <- update.changed.plot.params(params, plot.data$changed.params)
@@ -543,7 +541,6 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
 	params.cum$fp_col1_str <- "Study added"
-	params.cum$fp_col2_str <- "Cumulative Estimate"
 	plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
 	rcmetar.draw.forest.plot(plot.data, forest.path)
 	params <- update.changed.plot.params(params, plot.data$changed.params)

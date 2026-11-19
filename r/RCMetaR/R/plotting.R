@@ -254,10 +254,8 @@ set.plot.options <- function(params) {
     } else {
       plot.options$show.col2 <- FALSE
     }
-    if (params$fp_col2_str == "[default]") {
-        col2.str <- paste("Estimate (", params$conf.level, "% CI)", sep="")
-        plot.options$col2.str <- col2.str
-        changed.params$fp_col2_str <- col2.str
+    if (rcmetar.is.plot.default.text(params$fp_col2_str)) {
+        plot.options$col2.str <- rcmetar.forest.auto.estimate.header(params)
     } else {
         plot.options$col2.str <- as.character(params$fp_col2_str)
     }
@@ -339,6 +337,11 @@ calc.plot.range <- function(effects, plot.options) {
 rcmetar.display.metric.name <- function(params) {
     if (as.character(params$measure) %in% binary.one.arm.metrics) return("Proportion")
     pretty.metric.name(as.character(params$measure), params$metric.label)
+}
+
+rcmetar.forest.auto.estimate.header <- function(params) {
+    measure <- if (length(params$measure)) rcmetar.display.metric.name(params)
+    paste0(measure %||% "Estimate", " [", params$conf.level, "% CI]")
 }
 
 pretty.metric.name <- function(metric, label=NULL) {
