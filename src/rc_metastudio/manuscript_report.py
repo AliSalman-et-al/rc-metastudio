@@ -1171,11 +1171,9 @@ def write_pdf(report, path):
     document.setHtml(report.html())
     # QTextDocument prints paginated real tables; figures get their own pages so
     # long reports cannot overwrite a figure or split its caption.
-    from PyQt6.QtCore import QSizeF
     scale = writer.resolution() / 96
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     width, height = page.width() / scale, page.height() / scale
-    document.setPageSize(QSizeF(width, height))
     painter = QPainter(writer)
     _print_pdf_pages(document, writer, painter, width, height, scale)
     for number, figure in enumerate(report.figures, 1):
@@ -1312,7 +1310,19 @@ def _style_docx_cell(cell, value, width, numeric, heading):
 
 
 def _print_pdf_pages(document, writer, painter, width, height, scale, first_page=False):
+    from PyQt6.QtCore import QSizeF
     from PyQt6.QtGui import QAbstractTextDocumentLayout
+
+    document.setPageSize(QSizeF(width, height))
+    # Qt allows a table with unbreakable cells to exceed the page width.
+    # Fit that layout to the page before paginating it or clipping the painter.
+    required_width = document.idealWidth()
+    if required_width > width:
+        expansion = required_width / width
+        width = required_width
+        height *= expansion
+        scale /= expansion
+        document.setPageSize(QSizeF(width, height))
     _keep_pdf_tables_together(document, height)
     for number in range(document.pageCount()):
         if number or first_page:

@@ -309,6 +309,7 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     # Persisting them makes the next regeneration freeze or double-transform it.
     changed.params <- plot.options$changed.params
     changed.params$fp_xlabel <- NULL
+    changed.params$fp_col2_str <- NULL
     list(
         plot_range=plot.range,
         changed.params=changed.params,

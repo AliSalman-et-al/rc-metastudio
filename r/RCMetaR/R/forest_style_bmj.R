@@ -187,20 +187,9 @@ rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
     gap <- graphics::strwidth("M", cex=cex, font=2)
     available <- (footer$right.x - footer$left.x - gap) / 2
     for (side in c("left", "right")) {
-        label <- labels[[side]]
-        if (!nzchar(label)) next
-        if (graphics::strwidth(label, cex=cex, font=2) > available) {
-            width <- max(1, floor(nchar(label) * available /
-                                   graphics::strwidth(label, cex=cex, font=2)))
-            repeat {
-                lines <- strwrap(label, width=width)
-                if (max(graphics::strwidth(lines, cex=cex, font=2)) <= available || width == 1) break
-                width <- width - 1
-            }
-        } else {
-            lines <- label
-        }
-        leading <- graphics::strheight("Mg", cex=cex, font=2) * 1.30
+        lines <- rcmetar.bmj.wrap.direction(labels[[side]], available, cex)
+        if (!length(lines)) next
+        leading <- graphics::strheight("Mg", cex=cex, font=2) * 1.60
         graphics::text(footer[[paste0(side, ".x")]], y - (seq_along(lines) - 1) * leading, lines,
                        pos=if (side == "left") 4 else 2, offset=0,
                        cex=cex, font=2, xpd=NA)
@@ -373,27 +362,16 @@ rcmetar.bmj.header.lines <- function(label, width=24) {
     lines[nzchar(lines)]
 }
 
-rcmetar.bmj.wrap.direction <- function(label, width=22) {
-    if (is.null(label) || !nzchar(label)) {
-        return("")
+rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user") {
+    if (!nzchar(label)) return(character())
+    measure <- function(text) graphics::strwidth(text, cex=cex, font=2, units=units)
+    if (measure(label) <= available) return(label)
+    width <- max(1, floor(nchar(label) * available / measure(label)))
+    repeat {
+        lines <- strwrap(label, width=width)
+        if (all(measure(lines) <= available) || width == 1) return(lines)
+        width <- width - 1
     }
-    wrapped.label <- strwrap(label, width=width)
-    if (length(wrapped.label) <= 1) {
-        return(label)
-    }
-    if (grepl("^Favors\\s+", label)) {
-        arm.label <- sub("^Favors\\s+", "", label)
-        arm.lines <- strwrap(arm.label, width=max(16, width - 7))
-        return(paste(c("Favors", arm.lines), collapse="\n"))
-    }
-    rcmetar.bmj.wrap.header(label, width=width)
-}
-
-rcmetar.bmj.line.count <- function(label) {
-    if (is.null(label) || !nzchar(label)) {
-        return(0)
-    }
-    length(strsplit(label, "\n", fixed=TRUE)[[1]])
 }
 
 rcmetar.bmj.text.width <- function(values, cex, minimum=0) {
@@ -413,11 +391,6 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         header.lines <- max(c(1, vapply(bundle$ilab$groups, function(group) {
             length(rcmetar.bmj.header.lines(group))
         }, integer(1))))
-        direction.lines <- max(
-            rcmetar.bmj.line.count(rcmetar.bmj.wrap.direction(bundle$style_blocks$favours_left)),
-            rcmetar.bmj.line.count(rcmetar.bmj.wrap.direction(bundle$style_blocks$favours_right)),
-            1
-        )
         column.widths <- rcmetar.bmj.column.widths(bundle, cex)
         weight.index <- rcmetar.bmj.column.index(bundle, "weight")
         left.indexes <- setdiff(seq_along(column.widths), weight.index)
@@ -470,16 +443,14 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         # The coordinate range includes 16% of the panel on each side. Include
         # that space and the right graphics margin so measured text stays in inches.
         width <- max(10.8, left.width + plot.width + right.width + 0.32 * plot.width + 0.16)
-        height.extra <- max(0, direction.lines - 2) * 0.20
         list(
             width=width,
-            height=max(5.0, 3.35 + 0.30 * display.rows + height.extra),
+            height=max(5.0, 3.35 + 0.30 * display.rows),
             cex=cex,
             text_floor=text.floor,
             bg="white",
             display_rows=display.rows,
             header_lines=header.lines,
-            direction_lines=direction.lines,
             study_width=study.width,
             column_widths=column.widths,
             left_indexes=left.indexes,
@@ -572,7 +543,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
     top.padding <- 3.2
-    bottom.padding <- 5.15 + max(0, size$direction_lines - 1) * 0.8
+    bottom.padding <- 5.15
     rows <- list(
         k=k,
         study_rows=k:1,

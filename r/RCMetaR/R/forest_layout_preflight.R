@@ -22,7 +22,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     plan$device$direction_lines <- direction$lines
     plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
     # Reserve device space beyond the null for full-size direction labels.
-    if (direction$lines > 0) {
+    if (direction$lines > 0 && rcmetar.forest.style(bundle$params) != "bmj") {
         labels <- rcmetar.revman.direction.labels(bundle)
         widths <- rcmetar.forest.with.measurement.device(
             strwidth(paste0(unlist(labels[c("left", "right")]), "  "), units="inches",

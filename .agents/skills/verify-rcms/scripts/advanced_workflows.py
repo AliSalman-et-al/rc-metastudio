@@ -300,7 +300,7 @@ def mh_rd(app, window, record):
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, EditPlotDialog, edit_rd, view.edit_plot_action.trigger)
     figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
-    assert "M–H, Fixed" in figure and "IV, random" not in figure, figure
+    assert figure.count("Risk difference, M–H, fixed (95% CI)") == 2 and "IV, random" not in figure, figure
     record("mh-rd-bmj-method", view, figure=figure, plots={"RD":artifact.display_path()})
     view.close()
     window.workspace.mark_saved()

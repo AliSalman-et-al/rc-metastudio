@@ -630,7 +630,8 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
 
 rcmetar.revman.axis.labels <- function(bundle, ticks) {
     if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
-        return(vapply(ticks, function(value) format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1)))
+        return(rcmetar.compact.numeric.labels(vapply(ticks, function(value)
+            format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1))))
     }
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
@@ -641,8 +642,8 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
     if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) || metric.is.freeman_tukey.scale(measure)) {
         return(trimws(formatC(values, digits=3, format="fg")))
     }
-    digits <- max(0, min(2, as.integer(bundle$params$digits)))
-    vapply(values, function(value) format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1))
+    rcmetar.compact.numeric.labels(vapply(values, function(value)
+        format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1)))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {

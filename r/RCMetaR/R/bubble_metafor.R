@@ -388,9 +388,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
             ),
             args
         )
-        if (length(x.ticks) > 0) {
-            args$xaxt <- "n"
-        }
+        args$xaxt <- "n"
         args <- rcmetar.bubble.compact.args(args)
         tick.width <- rcmetar.forest.with.measurement.device({
             graphics::par(cex=size$cex, family="sans")
@@ -418,9 +416,9 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         graphics::axis(2, at=ticks, labels=labels, las=1)
         graphics::mtext(bundle$ylabel, side=2,
                         line=(max(graphics::strwidth(labels, units="inches")) + 0.40) / graphics::par("csi"))
-        if (length(x.ticks) > 0) {
-            graphics::axis(1, at=x.ticks)
-        }
+        if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
+        graphics::axis(1, at=x.ticks, labels=rcmetar.compact.numeric.labels(
+            vapply(x.ticks, format, character(1), trim=TRUE, scientific=FALSE)))
         rcmetar.bubble.draw.legend(bundle, args)
         invisible(result)
     }, display.path=display.path, caption=bundle$params$plot_caption)
