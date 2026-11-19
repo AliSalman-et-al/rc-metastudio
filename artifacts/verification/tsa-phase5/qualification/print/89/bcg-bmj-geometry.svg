@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="252.28pt" height="141.91pt" viewBox="0 0 252.28 141.91">
+  <g class="svglite">
+    <defs>
+      <style type="text/css"><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+    </defs>
+    <rect width="100%" height="100%" style="stroke: none; fill: #FFFFFF;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    <defs>
+      <clipPath id="cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=">
+        <rect x="0.00" y="0.00" width="252.28" height="141.91" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+</g>
+    <defs>
+      <clipPath id="cpMC4wMHwyNTIuMjh8MTUuODR8MTQxLjkx">
+        <rect x="0.00" y="15.84" width="252.28" height="126.07" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MTUuODR8MTQxLjkx)">
+      <text x="138.46" y="121.41" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="127.38px" lengthAdjust="spacingAndGlyphs">Cumulative number of participants</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <line x1="47.02" y1="100.87" x2="227.23" y2="100.87" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="100.87" x2="47.02" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="88.57" y1="100.87" x2="88.57" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="130.12" y1="100.87" x2="130.12" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="193.32" y1="100.87" x2="193.32" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="227.23" y1="100.87" x2="227.23" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="47.02" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">0</text>
+      <text x="88.57" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="25.69px" lengthAdjust="spacingAndGlyphs">50,000</text>
+      <text x="130.12" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="30.36px" lengthAdjust="spacingAndGlyphs">100,000</text>
+      <text x="193.12" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="30.36px" lengthAdjust="spacingAndGlyphs">176,046</text>
+      <text x="227.23" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="30.36px" lengthAdjust="spacingAndGlyphs">357,347</text>
+      <line x1="47.02" y1="95.53" x2="47.02" y2="52.85" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="95.53" x2="45.28" y2="95.53" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="84.86" x2="45.28" y2="84.86" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="74.19" x2="45.28" y2="74.19" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="63.52" x2="45.28" y2="63.52" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="52.85" x2="45.28" y2="52.85" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="43.39" y="98.54" text-anchor="end" style="font-size: 8.40px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="9.58px" lengthAdjust="spacingAndGlyphs">−8</text>
+      <text x="43.39" y="87.87" text-anchor="end" style="font-size: 8.40px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="9.58px" lengthAdjust="spacingAndGlyphs">−4</text>
+      <text x="43.39" y="77.20" text-anchor="end" style="font-size: 8.40px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">0</text>
+      <text x="43.39" y="66.53" text-anchor="end" style="font-size: 8.40px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">4</text>
+      <text x="43.39" y="55.86" text-anchor="end" style="font-size: 8.40px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">8</text>
+    </g>
+    <defs>
+      <clipPath id="cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==">
+        <rect x="47.02" y="47.52" width="182.88" height="53.35" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==)">
+      <line x1="47.02" y1="100.87" x2="47.02" y2="47.52" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="100.87" x2="229.90" y2="100.87" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text transform="translate(8.06,74.19) rotate(-90)" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="72.78px" lengthAdjust="spacingAndGlyphs">Cumulative Z-score</text>
+      <text transform="translate(19.14,87.53) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="20.30px" lengthAdjust="spacingAndGlyphs">Favo…</text>
+      <text transform="translate(28.54,87.53) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="19.94px" lengthAdjust="spacingAndGlyphs">BCG…</text>
+      <line x1="12.24" y1="83.21" x2="12.24" y2="90.77" style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="10.08,87.03 12.24,90.77 14.40,87.03 " style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text transform="translate(19.14,60.86) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="20.30px" lengthAdjust="spacingAndGlyphs">Favo…</text>
+      <text transform="translate(28.54,60.86) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="20.30px" lengthAdjust="spacingAndGlyphs">Control</text>
+      <line x1="12.24" y1="65.18" x2="12.24" y2="57.62" style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="14.40,61.36 12.24,57.62 10.08,61.36 " style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="138.46" y="23.81" text-anchor="middle" style="font-size: 6.76px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="218.88px" lengthAdjust="spacingAndGlyphs">Required information size 117,364 participants · Accrued 357,347 (304%)</text>
+      <text x="138.46" y="34.01" text-anchor="middle" style="font-size: 6.76px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="169.88px" lengthAdjust="spacingAndGlyphs">Monitoring boundary crossed at 24% (Hart &amp; Sutherland)</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==)">
+      <polygon points="88.29,74.14 88.90,74.07 89.51,74.00 90.13,73.92 90.76,73.85 91.38,73.78 92.02,73.71 92.65,73.64 93.29,73.57 93.94,73.50 94.59,73.43 95.24,73.35 95.90,73.28 96.57,73.21 97.23,73.14 97.91,73.07 98.58,73.00 99.26,72.93 99.95,72.86 100.64,72.79 101.34,72.71 102.03,72.64 102.74,72.57 103.45,72.50 104.16,72.43 104.88,72.36 105.60,72.29 106.32,72.22 107.05,72.15 107.79,72.08 108.53,72.01 109.27,71.93 110.02,71.86 110.77,71.79 111.53,71.72 112.29,71.65 113.06,71.58 113.83,71.51 114.61,71.44 115.38,71.37 116.17,71.30 116.96,71.23 117.75,71.16 118.55,71.09 119.35,71.02 120.16,70.94 120.97,70.87 121.78,70.80 122.60,70.73 123.43,70.66 124.26,70.59 125.09,70.52 125.93,70.45 126.77,70.38 127.62,70.31 128.47,70.24 129.32,70.17 130.18,70.10 131.05,70.02 131.92,69.95 132.79,69.88 133.67,69.81 134.55,69.74 135.44,69.67 136.33,69.60 137.23,69.53 138.13,69.46 139.03,69.39 139.94,69.32 140.85,69.25 141.77,69.17 142.70,69.10 143.62,69.03 144.55,68.96 144.55,79.43 143.62,79.36 142.70,79.29 141.77,79.21 140.85,79.14 139.94,79.07 139.03,79.00 138.13,78.93 137.23,78.86 136.33,78.79 135.44,78.72 134.55,78.65 133.67,78.58 132.79,78.51 131.92,78.44 131.05,78.36 130.18,78.29 129.32,78.22 128.47,78.15 127.62,78.08 126.77,78.01 125.93,77.94 125.09,77.87 124.26,77.80 123.43,77.73 122.60,77.66 121.78,77.59 120.97,77.52 120.16,77.45 119.35,77.37 118.55,77.30 117.75,77.23 116.96,77.16 116.17,77.09 115.38,77.02 114.61,76.95 113.83,76.88 113.06,76.81 112.29,76.74 111.53,76.67 110.77,76.60 110.02,76.53 109.27,76.45 108.53,76.38 107.79,76.31 107.05,76.24 106.32,76.17 105.60,76.10 104.88,76.03 104.16,75.96 103.45,75.89 102.74,75.82 102.03,75.75 101.34,75.67 100.64,75.60 99.95,75.53 99.26,75.46 98.58,75.39 97.91,75.32 97.23,75.25 96.57,75.18 95.90,75.11 95.24,75.04 94.59,74.96 93.94,74.89 93.29,74.82 92.65,74.75 92.02,74.68 91.38,74.61 90.76,74.54 90.13,74.47 89.51,74.39 88.90,74.32 88.29,74.25 " style="stroke-width: 0.60; stroke: #6B58A6; stroke-opacity: 0.60; fill: #E8E2F4;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="74.19" x2="229.90" y2="74.19" style="stroke-width: 0.75; stroke: #9A9A9A; stroke-dasharray: 1.00,3.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="79.42" x2="144.55" y2="79.42" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="232.42" y="81.83" style="font-size: 6.72px;fill: #808080; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="16.98px" lengthAdjust="spacingAndGlyphs">−1.96</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==)">
+      <line x1="47.02" y1="68.97" x2="144.55" y2="68.97" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="232.42" y="71.37" style="font-size: 6.72px;fill: #808080; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="16.98px" lengthAdjust="spacingAndGlyphs">+1.96</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==)">
+      <line x1="144.55" y1="100.87" x2="144.55" y2="47.52" style="stroke-width: 0.75; stroke: #8C8C8C;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="144.55" y="44.97" text-anchor="middle" style="font-size: 8.40px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.98px" lengthAdjust="spacingAndGlyphs">RIS</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDQ3LjUyfDEwMC44Nw==)">
+      <polyline points="51.87,100.56 52.06,99.91 52.26,99.30 52.47,98.71 52.68,98.15 52.89,97.62 53.11,97.12 53.33,96.64 53.55,96.18 53.78,95.75 54.02,95.34 54.25,94.95 54.49,94.59 54.74,94.24 54.99,93.92 55.24,93.61 55.49,93.32 55.75,93.05 56.02,92.79 56.29,92.55 56.56,92.33 56.83,92.11 57.11,91.91 57.40,91.73 57.69,91.55 57.98,91.39 58.27,91.23 58.57,91.08 58.88,90.94 59.18,90.81 59.50,90.68 59.81,90.56 60.13,90.45 60.45,90.34 60.78,90.23 61.11,90.12 61.45,90.01 61.79,89.91 62.13,89.80 62.48,89.69 62.83,89.58 63.18,89.47 63.54,89.36 63.90,89.23 64.27,89.11 64.64,88.98 65.01,88.84 65.39,88.69 65.77,88.53 66.16,88.37 66.55,88.19 66.95,88.00 67.34,87.80 67.75,87.59 68.15,87.36 68.56,87.12 68.97,86.87 69.39,86.59 69.81,86.30 70.11,86.09 70.24,86.00 70.67,85.72 71.10,85.48 71.54,85.27 71.98,85.10 72.43,84.95 72.88,84.83 73.33,84.73 73.79,84.65 74.25,84.59 74.71,84.54 75.18,84.50 75.65,84.46 76.13,84.43 76.61,84.41 77.10,84.38 77.58,84.34 78.08,84.30 78.57,84.25 79.07,84.18 79.15,84.17 79.58,84.11 80.09,84.05 80.60,84.00 81.11,83.94 81.63,83.88 81.64,83.88 82.16,83.82 82.69,83.74 83.22,83.67 83.75,83.60 84.27,83.53 84.29,83.53 84.84,83.47 85.38,83.42 85.94,83.36 86.49,83.30 87.05,83.24 87.61,83.19 88.18,83.13 88.75,83.07 89.33,83.02 89.91,82.96 90.49,82.91 91.08,82.86 91.67,82.80 92.26,82.75 92.86,82.70 93.46,82.64 94.07,82.59 94.68,82.54 95.30,82.49 95.91,82.44 96.54,82.39 97.16,82.34 97.79,82.29 98.43,82.24 99.07,82.19 99.71,82.14 100.35,82.09 101.00,82.04 101.66,81.99 102.32,81.94 102.98,81.90 103.64,81.85 104.31,81.80 104.99,81.76 105.66,81.71 106.34,81.66 107.03,81.62 107.72,81.57 108.41,81.52 109.11,81.48 109.81,81.43 110.52,81.39 111.22,81.34 111.94,81.29 112.65,81.25 113.37,81.20 114.10,81.16 114.83,81.11 115.56,81.07 116.30,81.02 117.04,80.98 117.78,80.93 118.53,80.89 119.28,80.85 120.04,80.80 120.80,80.76 121.56,80.71 122.33,80.67 123.10,80.62 123.88,80.58 124.66,80.53 125.44,80.49 126.23,80.44 127.02,80.40 127.82,80.35 128.62,80.31 129.42,80.26 130.23,80.22 131.04,80.17 131.85,80.13 132.67,80.08 133.50,80.04 134.32,79.99 135.15,79.95 135.99,79.90 136.83,79.85 137.67,79.81 138.52,79.76 139.37,79.71 140.22,79.67 141.08,79.62 141.94,79.57 142.81,79.52 143.68,79.48 144.55,79.43 " style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="144.55" y1="79.43" x2="227.23" y2="79.43" style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="51.87,47.83 52.06,48.48 52.26,49.09 52.47,49.68 52.68,50.24 52.89,50.77 53.11,51.27 53.33,51.75 53.55,52.21 53.78,52.64 54.02,53.05 54.25,53.44 54.49,53.80 54.74,54.15 54.99,54.47 55.24,54.78 55.49,55.07 55.75,55.34 56.02,55.60 56.29,55.84 56.56,56.06 56.83,56.28 57.11,56.48 57.40,56.66 57.69,56.84 57.98,57.00 58.27,57.16 58.57,57.31 58.88,57.45 59.18,57.58 59.50,57.70 59.81,57.83 60.13,57.94 60.45,58.05 60.78,58.16 61.11,58.27 61.45,58.38 61.79,58.48 62.13,58.59 62.48,58.70 62.83,58.81 63.18,58.92 63.54,59.03 63.90,59.15 64.27,59.28 64.64,59.41 65.01,59.55 65.39,59.70 65.77,59.86 66.16,60.02 66.55,60.20 66.95,60.39 67.34,60.59 67.75,60.80 68.15,61.02 68.56,61.27 68.97,61.52 69.39,61.79 69.81,62.08 70.11,62.30 70.24,62.39 70.67,62.67 71.10,62.91 71.54,63.12 71.98,63.29 72.43,63.44 72.88,63.56 73.33,63.66 73.79,63.74 74.25,63.80 74.71,63.85 75.18,63.89 75.65,63.93 76.13,63.96 76.61,63.98 77.10,64.01 77.58,64.05 78.08,64.09 78.57,64.14 79.07,64.21 79.15,64.22 79.58,64.28 80.09,64.34 80.60,64.39 81.11,64.45 81.63,64.50 81.64,64.50 82.16,64.57 82.69,64.65 83.22,64.72 83.75,64.79 84.27,64.85 84.29,64.86 84.84,64.92 85.38,64.97 85.94,65.03 86.49,65.09 87.05,65.15 87.61,65.20 88.18,65.26 88.75,65.32 89.33,65.37 89.91,65.43 90.49,65.48 91.08,65.53 91.67,65.59 92.26,65.64 92.86,65.69 93.46,65.75 94.07,65.80 94.68,65.85 95.30,65.90 95.91,65.95 96.54,66.00 97.16,66.05 97.79,66.10 98.43,66.15 99.07,66.20 99.71,66.25 100.35,66.30 101.00,66.35 101.66,66.40 102.32,66.44 102.98,66.49 103.64,66.54 104.31,66.59 104.99,66.63 105.66,66.68 106.34,66.73 107.03,66.77 107.72,66.82 108.41,66.87 109.11,66.91 109.81,66.96 110.52,67.00 111.22,67.05 111.94,67.10 112.65,67.14 113.37,67.19 114.10,67.23 114.83,67.28 115.56,67.32 116.30,67.37 117.04,67.41 117.78,67.45 118.53,67.50 119.28,67.54 120.04,67.59 120.80,67.63 121.56,67.68 122.33,67.72 123.10,67.77 123.88,67.81 124.66,67.86 125.44,67.90 126.23,67.95 127.02,67.99 127.82,68.04 128.62,68.08 129.42,68.13 130.23,68.17 131.04,68.22 131.85,68.26 132.67,68.31 133.50,68.35 134.32,68.40 135.15,68.44 135.99,68.49 136.83,68.54 137.67,68.58 138.52,68.63 139.37,68.68 140.22,68.72 141.08,68.77 141.94,68.82 142.81,68.87 143.68,68.91 144.55,68.96 " style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="144.55" y1="68.96" x2="227.23" y2="68.96" style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="47.02,74.19 47.24,77.16 47.74,81.47 48.12,82.48 70.11,91.89 79.15,79.64 81.64,80.64 84.27,81.54 201.84,79.50 204.61,79.71 205.24,80.47 219.82,80.42 220.72,80.08 227.23,79.76 " style="stroke-width: 0.90; stroke: #6B58A6; stroke-dasharray: 4.80,4.80;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="47.02,74.19 47.24,78.38 47.74,84.48 48.12,85.91 70.11,103.86 79.15,83.54 81.64,85.89 84.27,87.55 201.84,84.28 204.61,84.70 205.24,86.16 219.82,86.13 220.72,85.49 227.23,84.88 " style="stroke-width: 1.50; stroke: #6B58A6;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MTUuODR8MTQxLjkx)">
+      <circle cx="47.24" cy="78.38" r="0.047" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="47.74" cy="84.48" r="0.072" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="48.12" cy="85.91" r="0.062" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="79.15" cy="83.54" r="0.30" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="81.64" cy="85.89" r="0.16" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="84.27" cy="87.55" r="0.16" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="201.84" cy="84.28" r="1.23" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="204.61" cy="84.70" r="0.35" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="205.24" cy="86.16" r="0.17" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="219.82" cy="86.13" r="0.81" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="220.72" cy="85.49" r="0.20" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="227.23" cy="84.88" r="0.54" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="70.11,103.34 70.38,102.87 69.84,102.87 " style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="70.11" cy="103.03" r="0.64" style="stroke-width: 1.20; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <rect x="189.99" y="99.57" width="6.67" height="2.59" style="stroke-width: 0.75; stroke: none; fill: #FFFFFF;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="193.32" y="103.87" text-anchor="middle" style="font-size: 8.40px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.66px" lengthAdjust="spacingAndGlyphs">//</text>
+      <line x1="21.56" y1="129.67" x2="29.66" y2="129.67" style="stroke-width: 1.50; stroke: #6B58A6;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="91.46" y1="129.67" x2="99.56" y2="129.67" style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="25.61" cy="129.67" r="1.35" style="stroke-width: 0.75; stroke: #6B58A6; fill: #6B58A6; fill-opacity: 0.34;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <rect x="164.22" y="128.47" width="2.39" height="2.39" style="stroke-width: 0.60; stroke: #6B58A6; stroke-opacity: 0.60; fill: #E8E2F4;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="35.06" y="131.82" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="52.06px" lengthAdjust="spacingAndGlyphs">Cumulative Z-curve</text>
+      <text x="104.96" y="131.82" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="54.78px" lengthAdjust="spacingAndGlyphs">Monitoring boundary</text>
+      <text x="174.86" y="131.82" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="35.72px" lengthAdjust="spacingAndGlyphs">Futility region</text>
+      <line x1="49.49" y1="138.31" x2="57.59" y2="138.31" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="126.41" y1="138.31" x2="134.51" y2="138.31" style="stroke-width: 0.90; stroke: #6B58A6; stroke-dasharray: 4.80,4.80;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="62.99" y="140.46" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="61.80px" lengthAdjust="spacingAndGlyphs">Conventional boundary</text>
+      <text x="139.91" y="140.46" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="48.41px" lengthAdjust="spacingAndGlyphs">Penalised Z-curve</text>
+      <text x="5.05" y="11.93" style="font-size: 6.60px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="208.39px" lengthAdjust="spacingAndGlyphs">Tuberculosis · Binary · Odds ratio · Comparison: BCG vaccine / Control</text>
+    </g>
+  </g>
+</svg>

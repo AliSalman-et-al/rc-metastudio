@@ -1,0 +1,91 @@
+Command: uv run python -m pytest tests/python -q --tb=short -o faulthandler_timeout=45 --basetemp .tmp/tsa-phase5-tests
+Timeout (0:00:45)!
+Thread 0x00003ce4 [Thread-6 (_readerthread)] (most recent call first):
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\subprocess.py", line 1614 in _readerthread
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1025 in run
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1083 in _bootstrap_inner
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1045 in _bootstrap
+
+Thread 0x00001ae4 [Thread-5 (_readerthread)] (most recent call first):
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\subprocess.py", line 1614 in _readerthread
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1025 in run
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1083 in _bootstrap_inner
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1045 in _bootstrap
+
+Thread 0x000027c0 (most recent call first):
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\threading.py", line 1134 in join
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\subprocess.py", line 1662 in _communicate
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\subprocess.py", line 1221 in communicate
+  File "C:\Users\Ali-Salman\AppData\Roaming\uv\python\cpython-3.14.10-windows-x86_64-none\Lib\subprocess.py", line 557 in run
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\python\fast\test_code_health.py", line 117 in test_code_health_emits_machine_readable_evidence_and_report
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\python.py", line 187 in pytest_pyfunc_call
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_execution.py", line 147 in _multicall
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_manager.py", line 183 in _hookexec
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_caller.py", line 197 in __call__
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\python.py", line 1798 in runtest
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 184 in pytest_runtest_call
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_execution.py", line 147 in _multicall
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_manager.py", line 183 in _hookexec
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_caller.py", line 197 in __call__
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 250 in <lambda>
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 361 in from_call
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 249 in call_and_report
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 139 in runtestprotocol
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\runner.py", line 118 in pytest_runtest_protocol
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_execution.py", line 147 in _multicall
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_manager.py", line 183 in _hookexec
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_caller.py", line 197 in __call__
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\main.py", line 411 in pytest_runtestloop
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_execution.py", line 147 in _multicall
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_manager.py", line 183 in _hookexec
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_caller.py", line 197 in __call__
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\main.py", line 387 in _main
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\main.py", line 333 in wrap_session
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\main.py", line 380 in pytest_cmdline_main
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_execution.py", line 147 in _multicall
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_manager.py", line 183 in _hookexec
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pluggy\_caller.py", line 197 in __call__
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\config\__init__.py", line 262 in _main
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\_pytest\config\__init__.py", line 286 in _console_main
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Lib\site-packages\pytest\__main__.py", line 9 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 203 in _run_module_as_main
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+........................................................................ [ 33%]
+..........................................................s............. [ 41%]
+................................F....................................... [ 49%]
+........................................................................ [ 57%]
+......................................F................................. [ 66%]
+........................................................................ [ 74%]
+........................................................................ [ 82%]
+........................................................................ [ 90%]
+........................................................................ [ 99%]
+.......                                                                  [100%]
+================================== FAILURES ===================================
+______ test_native_r_binary_policy_fails_closed_without_source_fallback _______
+tests\python\fast\test_rcmetar_r_manifest_validation.py:611: in test_native_r_binary_policy_fails_closed_without_source_fallback
+    assert result.returncode == 0, result.stdout + result.stderr
+E   AssertionError: Error in expect_error(assert_rcms_binary_runtime(policy, arch = "unsupported"),  :
+E       Expected error containing 'Unsupported R binary target'
+E     Execution halted
+E
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=[WindowsPath('C:/Program Files/R/R-4.6.1/bin/Rscript.exe'), 'C:\\Users\\Ali-Salman\\Documents\\C...e(policy, arch = "unsupported"),  : \n  Expected error containing \'Unsupported R binary target\'\nExecution halted\n').returncode
+______ test_result_owner_exception_still_deletes_real_specs_and_progress ______
+tests\python\gui\test_analysis_failure_safety.py:109: in test_result_owner_exception_still_deletes_real_specs_and_progress
+    form.run_ma()
+src\rc_metastudio\analysis_setup_dialog.py:884: in run_ma
+    self._run_analysis(self.execute_configured_analysis)
+src\rc_metastudio\analysis_setup_dialog.py:931: in _run_analysis
+    and self.analysis_type is None and not self.model.is_diagnostic()
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Model' object has no attribute 'is_diagnostic'
+=========================== short test summary info ===========================
+FAILED tests/python/fast/test_rcmetar_r_manifest_validation.py::test_native_r_binary_policy_fails_closed_without_source_fallback
+FAILED tests/python/gui/test_analysis_failure_safety.py::test_result_owner_exception_still_deletes_real_specs_and_progress
+2 failed, 868 passed, 1 skipped in 535.54s (0:08:55)
+During startup - Warning message:
+package 'stats' in options("defaultPackages") was not found
+Exit: 1
