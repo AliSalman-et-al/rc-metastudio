@@ -11,6 +11,7 @@ skip_dependency_install=0
 skip_clean=0
 skip_smoke=0
 stop_after_r_substrate=0
+prepare_qt_only=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -54,12 +55,21 @@ while [ "$#" -gt 0 ]; do
       stop_after_r_substrate=1
       shift
       ;;
+    --prepare-qt-only)
+      prepare_qt_only=1
+      shift
+      ;;
     *)
       echo "Unknown argument: $1" >&2
       exit 2
       ;;
   esac
 done
+
+if [ "$prepare_qt_only" -eq 1 ] && [ "$skip_dependency_install" -eq 1 ]; then
+  echo "--prepare-qt-only requires dependency installation." >&2
+  exit 2
+fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
@@ -235,6 +245,10 @@ if [ "$skip_dependency_install" -eq 0 ]; then
      [ "$("$qt_sdk_root/bin/qmake" -query QT_VERSION)" = 6.12.0 ]; then
     step "Reusing the source-built macOS Qt SDK"
   else
+    if [ "${RCMS_MACOS_REQUIRE_WARM_QT:-false}" = true ]; then
+      echo "The restored Qt SDK failed validation. Refresh the macOS dependency cache." >&2
+      exit 1
+    fi
     rm -rf "$qt_build_root"
     mkdir -p "$qt_build_root"
     for module in qtbase qtsvg; do
@@ -264,9 +278,9 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   qt_qmake="$qt_sdk_root/bin/qmake"
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   pyqt_cache_options=(--reinstall-package pyqt6)
-  if [ -n "${RCMS_MACOS_QT_CACHE_HIT:-}" ] && [ ! -e "$repo_root/.venv" ]; then
-    # The workflow keys this cache to the SDK, runner toolchain, and Python lock.
-    pyqt_cache_options=(--cache-dir "$qt_build_root/uv-cache")
+  if [ "${RCMS_MACOS_PYQT_CACHE:-false}" = true ] && [ ! -e "$repo_root/.venv" ]; then
+    # Keep the wheel cache outside the SDK tree, which is cleared on a miss.
+    pyqt_cache_options=(--cache-dir "$repo_root/build/macos-pyqt-cache")
   fi
   # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
   # Keep binding rpaths relative to the single runtime tree collected by PyInstaller.
@@ -284,6 +298,11 @@ if [ "$skip_dependency_install" -eq 0 ]; then
   [ -d "$qt_sdk_root/lib/QtCore.framework" ] && [ -d "$qt_sdk_root/plugins" ] || { echo "Incomplete Qt SDK: $qt_sdk_root" >&2; exit 1; }
   rm -rf "$qt_runtime_root"
   ditto "$qt_sdk_root" "$qt_runtime_root"
+fi
+
+if [ "$prepare_qt_only" -eq 1 ]; then
+  step "Source-built macOS Qt and PyQt dependencies are ready"
+  exit 0
 fi
 
 python_exe="${python_exe:-$repo_root/.venv/bin/python}"

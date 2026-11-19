@@ -265,22 +265,35 @@ def ensure_typing(build_root: Path, env: dict[str, str]) -> Path:
     return run_typing(build_root)
 
 
-def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
-    run(
-        [
-            sys.executable,
-            "scripts/code_health.py",
-            "--base",
-            STABLE_BASELINE,
-            "--head",
-            STABLE_BASELINE,
-            "--allow-fail",
-            "--output",
-            "artifacts/code-health/baseline.json",
-            "--report",
-            "artifacts/code-health/baseline.txt",
-        ]
-    )
+def run_code_health(
+    base: str = "origin/master", head: str = "HEAD", *, reuse_baseline: bool = False
+) -> None:
+    baseline = Path("artifacts/code-health/baseline.json")
+    report = baseline.with_suffix(".txt")
+    cached = False
+    if reuse_baseline and (REPO_ROOT / report).is_file():
+        from scripts.code_health import CodeHealthError, load_baseline
+
+        try:
+            cached = load_baseline(REPO_ROOT / baseline).get("head") == STABLE_BASELINE
+        except CodeHealthError:
+            pass
+    if not cached:
+        run(
+            [
+                sys.executable,
+                "scripts/code_health.py",
+                "--base",
+                STABLE_BASELINE,
+                "--head",
+                STABLE_BASELINE,
+                "--allow-fail",
+                "--output",
+                str(baseline),
+                "--report",
+                str(report),
+            ]
+        )
     # shortcut: local code health measures committed HEAD, upgrade if dirty-tree qualification is needed.
     run(
         [
@@ -291,7 +304,7 @@ def run_code_health(base: str = "origin/master", head: str = "HEAD") -> None:
             "--head",
             head,
             "--baseline",
-            "artifacts/code-health/baseline.json",
+            str(baseline),
             "--output",
             "artifacts/code-health/final.json",
             "--report",

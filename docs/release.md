@@ -12,6 +12,13 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 
 ## Build a candidate
 
+The candidate build's target is under 15 minutes per platform. macOS uses a
+source-built Qt SDK and PyQt wheel to support macOS 14.0. When those dependencies
+are missing, run `Package native macOS applications` on `master` with
+`prepare_dependencies_only` enabled. That run compiles and caches the dependencies
+without building a candidate. After it succeeds, dispatch the candidate from the
+same source. An app version bump alone does not invalidate these caches.
+
 Run the `Build Immutable Candidate` workflow with:
 
 - `version`: the full RC version, such as `0.4.0-rc.1`; its base must match the repository version
