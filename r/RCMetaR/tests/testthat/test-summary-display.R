@@ -207,7 +207,7 @@ test_that("summary display uses readable labels and aligned columns", {
   expect_match(text, "I\u00b2", fixed = TRUE)
   expect_false(grepl("tau^2", text, fixed = TRUE))
   expect_false(grepl("I^2", text, fixed = TRUE))
-  expect_match(text, "92.645%", fixed = TRUE)
+  expect_match(text, "92.6%", fixed = TRUE)
   expect_false(grepl(" Results (log scale)", text, fixed = TRUE))
   expect_match(
     text,
@@ -260,7 +260,7 @@ test_that("subgroup heterogeneity display uses readable I-squared labels", {
 
   expect_match(text, "I\u00b2", fixed = TRUE)
   expect_false(grepl("I^2", text, fixed = TRUE))
-  expect_match(text, "92.645%", fixed = TRUE)
+  expect_match(text, "92.6%", fixed = TRUE)
 })
 
 test_that("subgroup display leaves unavailable statistics blank", {

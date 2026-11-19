@@ -105,7 +105,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   scale.str <- get.scale(params)
   tau2 <- rcmetar.format.effect.number(res$tau2 %||% NA_real_, result.digits)
   degf <- rcmetar.heterogeneity.df(res)
-  I2 <- format.percent.display(res$I2, result.digits)
+  I2 <- format.i2.display(res$I2)
   n <- rcmetar.summary.sample.sizes(om.data, params)
   QE <- rcmetar.format.effect.number(res$QE %||% NA_real_, result.digits)
   QEp <- format.p.value.display(res$QEp, params$digits)
@@ -541,7 +541,7 @@ create.regression.display <- function(res, params, display.data) {
       c("Residual heterogeneity (\u03c4\u00b2)", rcmetar.regression.display.value(res$tau2, result.digits)),
       c("SE of \u03c4\u00b2", rcmetar.regression.display.value(res$se.tau2, result.digits)),
       c("Residual heterogeneity (\u03c4)", rcmetar.regression.display.value(sqrt(res$tau2 %||% NA_real_), result.digits)),
-      c("Residual I\u00b2", rcmetar.regression.display.value(res$I2, result.digits, percent=TRUE)),
+      c("Residual I\u00b2", format.i2.display(res$I2, missing="Not estimable")),
       c("Residual H\u00b2", rcmetar.regression.display.value(res$H2, result.digits)),
       c("Heterogeneity explained (R\u00b2)", rcmetar.regression.display.value(res$R2, result.digits, percent=TRUE))
     ))
@@ -737,7 +737,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   k <- rcmetar.result.vector(res, "k")
   i2 <- rcmetar.sequential.i2(res)
   overall.array <- cbind(overall.array[,1], c("k", ifelse(is.finite(k), as.character(k), "\u2014")),
-    overall.array[,2:6], c("I\u00b2", rcmetar.sequential.i2.labels(res, params)))
+    overall.array[,2:6], c("I\u00b2", rcmetar.sequential.i2.labels(res)))
   raw <- cbind(k, raw, i2)
   columns <- 2:8
   roles <- c("k", "estimate", "ci_lower", "ci_upper", "se", "p", "i2")
@@ -876,7 +876,7 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params,
       QE <- ""
       degf <- ""
     }
-    I2 <- format.percent.display(fit$I2, display.digits(params))
+    I2 <- format.i2.display(fit$I2)
     QEp <- format.p.value.display(fit$QEp, params$digits)
     pVal <- format.p.value.display(fit$pval, params$digits)
     zVal <- rcmetar.format.effect.number(fit$zval %||% NA_real_, display.digits(params))

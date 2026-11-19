@@ -132,7 +132,7 @@ rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
     paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
            "Q = ", round.display(res$QE, digits), ", df = ", df,
            " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
-           round.display(res$I2, digits), "%")
+           format.i2.display(res$I2))
 }
 
 rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {

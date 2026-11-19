@@ -256,7 +256,7 @@ rcmetar.bmj.heterogeneity.label <- function(bundle) {
         paste0("\u03c4\u00b2=", round.display(res$tau2, digits), "; ") else ""
     paste0("Test for heterogeneity: ", tau, "\u03c7\u00b2=", round.display(res$QE, digits),
            ", df=", df, ", ", rcmetar.bmj.p.label(res$QEp, digits),
-           "; I\u00b2=", round.display(res$I2, digits), "%")
+           "; I\u00b2=", format.i2.display(res$I2))
 }
 
 rcmetar.bmj.test.overall.label <- function(bundle) {

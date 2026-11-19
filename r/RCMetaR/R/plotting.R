@@ -66,7 +66,7 @@ create.plot.data.generic <- function(om.data, params, res, selected.cov=NULL){
       QE <- "NA"
     }
     if (!display.value.is.missing(res$I2)) {
-        I2 <- paste(round(res$I2, digits = 2), "%", sep="")
+        I2 <- format.i2.display(res$I2)
     } else {
         I2 <- ""
     }

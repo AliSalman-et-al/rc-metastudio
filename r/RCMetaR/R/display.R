@@ -64,6 +64,11 @@ format.percent.display <- function(value, digits) {
   paste0(rcmetar.format.effect.number(value, digits), "%")
 }
 
+format.i2.display <- function(value, missing="") {
+  if (!length(value)) return(missing)
+  ifelse(is.finite(value), format.percent.display(value, 1L), missing)
+}
+
 format.p.value.display <- function(value, digits) {
   if (display.value.is.missing(value)) {
     return("")

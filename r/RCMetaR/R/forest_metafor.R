@@ -190,9 +190,8 @@ rcmetar.sequential.i2 <- function(results) {
     values
 }
 
-rcmetar.sequential.i2.labels <- function(results, params) {
-    values <- rcmetar.sequential.i2(results)
-    ifelse(is.finite(values), paste0(rcmetar.format.effect.number(values, display.digits(params)), "%"), "\u2014")
+rcmetar.sequential.i2.labels <- function(results) {
+    format.i2.display(rcmetar.sequential.i2(results), missing="\u2014")
 }
 
 rcmetar.sequential.ilab <- function(results, params) {
@@ -201,7 +200,7 @@ rcmetar.sequential.ilab <- function(results, params) {
     keys <- "k"
     headers <- "k"
     if (rcmetar.param.is.true(params, "fp_show_i2", TRUE)) {
-        values <- cbind(values, rcmetar.sequential.i2.labels(results, params))
+        values <- cbind(values, rcmetar.sequential.i2.labels(results))
         keys <- c(keys, "i2")
         headers <- c(headers, "I\u00b2")
     }
