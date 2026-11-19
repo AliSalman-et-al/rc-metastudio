@@ -433,9 +433,8 @@ rcmetar.forest.nonzero.axis.range <- function(alim) {
     alim
 }
 
-rcmetar.forest.journal.alim <- function(bundle) {
+rcmetar.forest.journal.interval.values <- function(bundle, proportion) {
     effect <- rcmetar.forest.journal.effect.intervals(bundle)
-    proportion <- rcmetar.forest.proportion(bundle) && rcmetar.forest.natural.axis(bundle)
     summary.bounds <- function(fit, group=bundle) {
         bounds <- c(fit$ci.lb, fit$ci.ub)
         if (!proportion) return(bounds)
@@ -452,6 +451,29 @@ rcmetar.forest.journal.alim <- function(bundle) {
                 summary.bounds(bundle$subgroups$results[[index]], group)
             }), use.names=FALSE))
     }
+    values
+}
+
+rcmetar.forest.journal.final.bounds <- function(bundle, alim, raw, proportion) {
+    explicit <- vapply(c("lower", "upper"), function(bound) {
+        rcmetar.forest.has.explicit.axis.bound(bundle, bound)
+    }, logical(1))
+    for (index in which(explicit)) {
+        alim[[index]] <- if (proportion) {
+            as.numeric(bundle$params[[c("fp_plot_lb", "fp_plot_ub")[[index]]]])
+        } else raw[[index]]
+    }
+    if (alim[[1]] > alim[[2]]) {
+        if (!proportion) return(raw)
+        if (!explicit[[2]]) alim[[2]] <- 1
+        if (!explicit[[1]]) alim[[1]] <- 0
+    }
+    rcmetar.forest.nonzero.axis.range(alim)
+}
+
+rcmetar.forest.journal.alim <- function(bundle) {
+    proportion <- rcmetar.forest.proportion(bundle) && rcmetar.forest.natural.axis(bundle)
+    values <- rcmetar.forest.journal.interval.values(bundle, proportion)
     raw <- rcmetar.metafor.alim(bundle)
     linear <- get.scale(bundle$params) == "standard"
     if (linear && !rcmetar.forest.proportion(bundle)) {
@@ -465,19 +487,7 @@ rcmetar.forest.journal.alim <- function(bundle) {
     alim <- alim + c(-0.02, 0.02) * diff(alim)
     if (linear || proportion) alim <- range(pretty(alim, n=5))
     if (proportion) alim <- c(max(0, alim[[1]]), min(1, alim[[2]]))
-    for (index in 1:2) {
-        if (rcmetar.forest.has.explicit.axis.bound(bundle, c("lower", "upper")[[index]])) {
-            alim[[index]] <- if (proportion) {
-                as.numeric(bundle$params[[c("fp_plot_lb", "fp_plot_ub")[[index]]]])
-            } else raw[[index]]
-        }
-    }
-    if (alim[[1]] > alim[[2]]) {
-        if (!proportion) return(raw)
-        if (!rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) alim[[2]] <- 1
-        if (!rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) alim[[1]] <- 0
-    }
-    rcmetar.forest.nonzero.axis.range(alim)
+    rcmetar.forest.journal.final.bounds(bundle, alim, raw, proportion)
 }
 
 rcmetar.forest.journal.ratio.alim <- function(bundle) {

@@ -587,6 +587,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         return params
 
     def _validate_plot_ranges(self):
+        self._validate_x_bounds()
+        if self.x_ticks_edit.text().strip():
+            ticks = self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+            if self._ratio_axis and any(tick <= 0 for tick in ticks):
+                raise ValueError("Ratio ticks must be greater than zero.")
+        if self.contour_levels_edit.isEnabled():
+            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
+            if any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+
+    def _validate_x_bounds(self):
         lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
         if bool(lower) != bool(upper):
             raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
@@ -599,14 +610,6 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
             if self._ratio_axis and bounds[0] <= 0:
                 raise ValueError("Ratio bounds must be greater than zero.")
-        if self.x_ticks_edit.text().strip():
-            ticks = self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
-            if self._ratio_axis and any(tick <= 0 for tick in ticks):
-                raise ValueError("Ratio ticks must be greater than zero.")
-        if self.contour_levels_edit.isEnabled():
-            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
-            if any(not 0 < value < 100 for value in levels):
-                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
 
     @staticmethod
     def _finite_list(text, label):

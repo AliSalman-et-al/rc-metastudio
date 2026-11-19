@@ -247,7 +247,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.setText(message)
         self._commit_error.show()
 
-    def _commit(self) -> bool:
+    def _validate_bounds(self) -> bool:
         axes = [("X-axis", self.plot_lb_le, self.plot_ub_le)]
         if self.plot_type == "sroc":
             axes.append(("Y-axis", self.sroc_y_lower, self.sroc_y_upper))
@@ -272,7 +272,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 self._show_commit_error(f"{axis} lower bound must be less than the upper bound.")
                 lower.setFocus()
                 return False
-        if not self._validate_ticks():
+        return True
+
+    def _commit(self) -> bool:
+        if not self._validate_bounds() or not self._validate_ticks():
             return False
         colors = [self.accent_color]
         if self.plot_type == "sroc":

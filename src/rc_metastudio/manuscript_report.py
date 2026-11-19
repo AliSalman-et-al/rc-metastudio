@@ -580,9 +580,7 @@ def _report_sections(result, summary, methods):
     level, statistic = '95% CI', 'z'
     coefficient_level, coefficient_statistic = level, statistic
     _report_subgroup_tests(text_sections, fit, summary)
-    for section in result.sections:
-        if section.kind != 'text':
-            continue
+    for section in text_sections:
         overall, calculation = _section_statistics(section)
         for table in section.tables:
             if table.role == 'subgroup_test':
@@ -597,9 +595,7 @@ def _report_sections(result, summary, methods):
     if coefficients and primary:
         primary[0] = _regression_section(result, primary[0], coefficients,
                                          coefficient_level, coefficient_statistic)
-    sequential = _sequential_sections(result, text_sections)
-    if sequential:
-        primary = sequential + primary
+    primary = _sequential_sections(result, text_sections) + primary
     supplementary = _supplementary_sections(result, primary)
     return primary, supplementary
 

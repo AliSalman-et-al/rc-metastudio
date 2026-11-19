@@ -42,19 +42,24 @@ def report_cell(value: str) -> str:
                   lambda match: f"{match[1]}{int(match[2]):,}{match[3]}", value)
 
 
+def _table_header_html(headers: Sequence[str], numeric: Sequence[bool], label_width: int | None) -> str:
+    if not headers:
+        return ''
+    parts = ['<thead><tr>']
+    for index, header in enumerate(headers):
+        align = 'right' if numeric and numeric[index] else 'left'
+        width = f' width="{label_width}"' if index == 0 and label_width is not None else ''
+        parts.append(f'<th align="{align}"{width} style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
+    parts.append('</tr></thead>')
+    return ''.join(parts)
+
+
 def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]], *, label_width: int | None = None) -> str:
     """Editable, content-sized table for clipboard and manuscript surfaces."""
     numeric = numeric_columns(rows)
     width = ' width="100%"' if label_width is not None else ''
-    parts = [f'<table border="0" cellspacing="0" cellpadding="5"{width}>']
-    if headers:
-        parts.append('<thead><tr>')
-        for index, header in enumerate(headers):
-            align = 'right' if numeric and numeric[index] else 'left'
-            width = f' width="{label_width}"' if index == 0 and label_width is not None else ''
-            parts.append(f'<th align="{align}"{width} style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
-        parts.append('</tr></thead>')
-    parts.append('<tbody>')
+    parts = [f'<table border="0" cellspacing="0" cellpadding="5"{width}>',
+             _table_header_html(headers, numeric, label_width), '<tbody>']
     for index, row in enumerate(rows):
         parts.append('<tr>')
         for column, value in enumerate(row):

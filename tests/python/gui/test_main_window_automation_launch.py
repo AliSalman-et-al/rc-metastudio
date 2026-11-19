@@ -1308,8 +1308,9 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             required(self.callback, "fake signal callback")()
 
     class FakeDialog(object):
-        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest", *, on_commit):
+        def __init__(self, plot_params, dialog_image_path, parent=None, plot_type="forest", *, on_commit, default_params):
             assert plot_type == plot_kind
+            assert default_params == {"fp_col1_str": "Study"}
             calls.append(("dialog", plot_params, dialog_image_path))
             self.on_commit = on_commit
             self.sequence_rerun = QtWidgets.QPushButton()
@@ -1406,15 +1407,16 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
         dialog.style_cbo.setCurrentText("BMJ")
         dialog.show_raw_counts.setChecked(False)
         dialog.show_headers.setChecked(False)
-        dialog.show_annotation.setChecked(False)
+        dialog.show_2.setChecked(False)
         dialog.point_size_multiplier.setValue(1.75)
 
         params = dialog.plot_params()
 
         assert params["fp_style"] == "bmj"
-        assert params["fp_accent_color"] == "#6b58a6"
+        assert params["fp_accent_color"] == "#5f4c9a"
         assert params["fp_show_raw_counts"] is False
         assert params["fp_show_headers"] is False
+        assert params["fp_show_col2"] is False
         assert params["fp_show_annotation"] is False
         assert params["fp_point_size_multiplier"] == 1.75
     finally:
@@ -1856,8 +1858,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
                 callback()
 
     class FakeEditPlotDialog(object):
-        def __init__(self, plot_params, image_path, parent=None, plot_type="forest", *, on_commit):
+        def __init__(self, plot_params, image_path, parent=None, plot_type="forest", *, on_commit, default_params):
             assert plot_type == "forest"
+            assert default_params == {"fp_col1_str": "Study"}
             self.on_commit = on_commit
             self.sequence_rerun = QtWidgets.QPushButton()
             self.rerun_requested = FakeSignal()
