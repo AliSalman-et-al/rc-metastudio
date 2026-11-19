@@ -34,6 +34,11 @@ def check_trimfill(view, record):
         assert Path(image).suffix == '.svg'
         assert ET.canonicalize(from_file=image) == ET.canonicalize(from_file=path), 'Preview differs from its exported geometry'
         circles = list(root.iter('{http://www.w3.org/2000/svg}circle'))
+        text = {node.text for node in root.iter('{http://www.w3.org/2000/svg}text')}
+        assert {"Observed", "Imputed"} <= text
+        legend = circles[-2:]
+        assert legend[0].get("cx") == legend[1].get("cx")
+        circles = circles[:-2]
         hollow = [node for node in circles if node.attrib.get('fill') == 'none' or 'fill: none' in node.attrib.get('style', '')]
         assert len(observed) == 17, len(observed)
         assert sum(filled) == k0, (title, sum(filled), k0)

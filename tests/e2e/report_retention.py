@@ -369,6 +369,8 @@ def assert_retained_table(view, section, source):
 
 
 def assert_report(view):
+    from rc_metastudio.result_formatting import numeric_cell, report_cell, report_numbers
+
     report_text = view.manuscript.plain_text().casefold()
     for verdict in ('so these data do not show a clear', 'the confidence interval excludes',
                     'which may represent', 'evidence of small-study effects'):
@@ -487,9 +489,12 @@ def assert_report(view):
         if section.source_key == 'small-study.warning':
             for line in section.value.splitlines():
                 if line.strip():
-                    assert line in copied_lines, (line, copied_lines)
+                    assert report_numbers(line).replace('\u00a0', ' ') in copied_lines, (line, copied_lines)
     observed_tables = [[[cell.replace("\u00a0", " ") for cell in row] for row in table] for table in document_tables(document)]
-    assert observed_tables == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
+    expected_tables = [[list(t.headers), *[
+        [report_cell(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
+        for row in t.rows]] for t in tables]
+    assert observed_tables == expected_tables
     prose_surfaces = [
         (Path(data['directory']) / 'copy.txt').read_text(encoding='utf-8'),
         (Path(data['directory']) / 'pdf.txt').read_text(encoding='utf-8'),
@@ -500,7 +505,7 @@ def assert_report(view):
         normalized = re.sub(r'\s+', '', unicodedata.normalize('NFKC', text))
         for section in view.manuscript.sections:
             for paragraph in section.paragraphs:
-                assert re.sub(r'\s+', '', unicodedata.normalize('NFKC', paragraph)) in normalized, paragraph
+                assert re.sub(r'\s+', '', unicodedata.normalize('NFKC', report_numbers(paragraph))) in normalized, paragraph
     selected = view.table_selector.currentIndex()
     for index, table in enumerate(tables):
         view.table_selector.setCurrentIndex(index)

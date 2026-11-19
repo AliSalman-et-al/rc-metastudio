@@ -197,9 +197,11 @@ rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
                 if (max(graphics::strwidth(lines, cex=cex, font=2)) <= available || width == 1) break
                 width <- width - 1
             }
-            label <- paste(lines, collapse="\n")
+        } else {
+            lines <- label
         }
-        graphics::text(footer[[paste0(side, ".x")]], y, label,
+        leading <- graphics::strheight("Mg", cex=cex, font=2) * 1.30
+        graphics::text(footer[[paste0(side, ".x")]], y - (seq_along(lines) - 1) * leading, lines,
                        pos=if (side == "left") 4 else 2, offset=0,
                        cex=cex, font=2, xpd=NA)
     }

@@ -575,6 +575,7 @@ def curated_golden_bundles(root_dir=None):
 def parsed_numeric_sections(result: AnalysisResult):
     parsed = {}
     for name, text in _public_texts(result).items():
+        text = text.replace("−", "-")
         values = _parse_summary(text)
         values.update(_parse_result_table(text))
         values.update(_parse_weights(text))
@@ -1392,7 +1393,7 @@ def _extract_heterogeneity_values(row):
 
 
 def _to_float(value):
-    return float(str(value).replace("<", "").replace("%", "").strip())
+    return float(str(value).replace("−", "-").replace(",", "").replace("<", "").replace("%", "").strip())
 
 
 if __name__ == "__main__":

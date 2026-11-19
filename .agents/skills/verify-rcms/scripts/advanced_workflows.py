@@ -417,12 +417,12 @@ def plots(app, window, family, record, *, view=None):
     path = Path(artifact.display_path())
     before = path.read_bytes()
     from tests.e2e.plot_geometry_checks import check_caption
-    from rc_metastudio.analysis_identity import dataset_identity, metric_label
+    from rc_metastudio.analysis_identity import plot_caption, metric_label
     initial_svg = path
     if path.suffix != ".svg":
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
-    check_caption(initial_svg, dataset_identity(window.model))
+    check_caption(initial_svg, plot_caption(window.model, ""))
     if artifact.capability.regenerator == "forest":
         from tests.e2e.header_geometry import check_forest_footer
         check_forest_footer(initial_svg)

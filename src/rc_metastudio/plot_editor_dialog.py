@@ -109,7 +109,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
         apply_button.clicked.connect(self._commit)
         reset = self.buttonBox.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
-        reset.clicked.connect(self._reset_to_defaults)
+        required(reset, "plot reset button").clicked.connect(self._reset_to_defaults)
 
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self._load_params(image_path)
@@ -621,7 +621,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             widget.setPlaceholderText("Automatic")
             keys = {self.col2_str_edit: "effect", self.x_lbl_le: "xlabel",
                     self.plot_lb_le: "lower", self.plot_ub_le: "upper", self.x_ticks_le: "ticks"}
-            resolved = self._params.get("resolved.defaults", {}).get(keys[widget])
+            defaults = self._params.get("resolved.defaults")
+            resolved = defaults.get(keys[widget]) if isinstance(defaults, dict) else None
             if isinstance(resolved, (list, tuple)):
                 resolved = ", ".join(str(item) for item in resolved)
             widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data"))

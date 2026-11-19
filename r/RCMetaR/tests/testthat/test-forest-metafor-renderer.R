@@ -221,8 +221,8 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
   expect_equal(bundle$fp_style, "default")
   expect_true("effect_display" %in% names(bundle))
   expect_false("legacy_plot_data" %in% names(bundle))
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
-  expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "119", "11", "128"))
+  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
+  expect_equal(unname(bundle$ilab$matrix[1, 1:4]), c("4", "119", "11", "128"))
   expect_equal(bundle$ilab$groups, c("Intervention", "Control"))
   expect_equal(nrow(bundle$ilab$matrix), length(fixture$data@study.names))
   expect_true(inherits(bundle$res, "rma"))
@@ -297,7 +297,7 @@ test_that("effect estimates and confidence limits never use probability threshol
 
   expect_equal(
     labels,
-    c("0.00", "0.07", "0.006", "0.00004", "4e-07", "-0.006", "")
+    c("0.00", "0.07", "0.006", "0.00004", "4e−07", "−0.006", "")
   )
   expect_false(any(grepl("<", labels, fixed=TRUE)))
 })
@@ -357,7 +357,7 @@ test_that("binary RevMan Forest Style builds faithful count, weight, and block s
   expect_match(bundle$style_blocks$test_overall, "Test for overall effect.*Z =")
   expect_equal(bundle$style_blocks$favours_left, "")
   expect_equal(bundle$style_blocks$favours_right, "")
-  expect_equal(rcmetar.revman.study.header(bundle), "Study or Subgroup")
+  expect_equal(rcmetar.revman.study.header(bundle), "Study")
   expect_false(any(grepl("bias|rob", c(names(bundle$style_blocks), unlist(bundle$style_blocks)), ignore.case = TRUE)))
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
 
@@ -396,7 +396,7 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_s3_class(revman.plan, "rcmetar_forest_layout_plan")
   expect_equal(revman.plan$style$name, "revman")
   expect_equal(revman.plan$style$template, "standard")
-  expect_equal(revman.plan$headers$study, "Study or Subgroup")
+  expect_equal(revman.plan$headers$study, "Study")
   expect_equal(revman.plan$rows$study_rows, length(revman.bundle$slab):1)
   expect_equal(revman.plan$footer$axis$axis.x, mean(revman.plan$x$alim), tolerance = 1e-8)
 
@@ -407,7 +407,7 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_s3_class(bmj.plan, "rcmetar_forest_layout_plan")
   expect_equal(bmj.plan$style$name, "bmj")
   expect_equal(bmj.plan$style$template, "standard")
-  expect_equal(bmj.plan$headers$study, "Study or Subgroup")
+  expect_equal(bmj.plan$headers$study, "Study or\nsubgroup")
   expect_equal(bmj.plan$headers$effect, "Odds ratio")
   expect_equal(bmj.plan$rows$study_rows, length(bmj.bundle$slab):1)
   expect_equal(bmj.plan$footer$axis$axis.x, mean(bmj.plan$x$alim), tolerance = 1e-8)
@@ -676,7 +676,7 @@ test_that("RevMan study heading uses reference default and respects custom label
   )
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  expect_equal(rcmetar.revman.study.header(bundle), "Study or Subgroup")
+  expect_equal(rcmetar.revman.study.header(bundle), "Study")
 
   fixture$params$fp_col1_str <- "Trial"
   custom.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
@@ -885,10 +885,10 @@ test_that("BMJ Forest Style builds faithful family columns and renders smoke cas
     expect_equal(bundle$style_blocks$favours_left, case$favours_left)
     expect_equal(bundle$style_blocks$favours_right, case$favours_right)
     expect_equal(bundle$style_blocks$axis_label, case$axis_label)
-    expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ² = ")
-    expect_match(bundle$style_blocks$heterogeneity, ", df =")
-    expect_match(bundle$style_blocks$test_overall, "Test for overall effect.*Z = ")
-    expect_equal(rcmetar.forest.accent.color(bundle$params), "#6b58a6")
+    expect_match(bundle$style_blocks$heterogeneity, "Test for heterogeneity: τ²=")
+    expect_match(bundle$style_blocks$heterogeneity, ", df=")
+    expect_match(bundle$style_blocks$test_overall, "Test for overall effect.*Z=")
+    expect_equal(rcmetar.forest.accent.color(bundle$params), "#5f4c9a")
     if (identical(bundle$data_type, "binary")) {
       summary <- rcmetar.bmj.summary.effect(bundle)
       expect_gte(min(summary$psize, na.rm = TRUE), 1.2)
@@ -975,14 +975,14 @@ test_that("unspecified forest style selects the complete RevMan layout", {
   expect_equal(bundle$fp_style, "revman")
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight"))
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#000000")
-  expect_equal(rcmetar.metafor.study.header(bundle), "Study or Subgroup")
+  expect_equal(rcmetar.metafor.study.header(bundle), "Study")
   expect_true(rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE))
   expect_true(rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE))
 
   bundle$params$fp_col1_str <- "Studies"
-  expect_equal(rcmetar.metafor.study.header(bundle), "Study or Subgroup")
+  expect_equal(rcmetar.metafor.study.header(bundle), "Study")
   bundle$params$fp_col1_str <- "Author(s) and Year"
-  expect_equal(rcmetar.metafor.study.header(bundle), "Study or Subgroup")
+  expect_equal(rcmetar.metafor.study.header(bundle), "Study")
   bundle$params$fp_col1_str <- "Trial"
   expect_equal(rcmetar.metafor.study.header(bundle), "Trial")
 })
@@ -1005,10 +1005,10 @@ test_that("Default Forest Style panel toggles raw counts headers and annotation"
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(ncol(bundle$ilab$matrix), 0)
+  expect_equal(bundle$ilab$headers, "Weight (%)")
   expect_equal(rcmetar.metafor.effect.header(bundle), "")
   size <- rcmetar.forest.default.device.metrics(bundle)
-  expect_equal(size$left_width, size$study_width + size$block_gap)
+  expect_equal(size$left_width, size$study_width + size$column_widths[[1]] + 2 * size$block_gap)
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)
@@ -1036,7 +1036,7 @@ test_that("entered-effect-only standard plots render without raw arm columns", {
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
     expect_equal(bundle$render_engine, "metafor")
-    expect_equal(ncol(bundle$ilab$matrix), 0)
+    expect_equal(bundle$ilab$headers, "Weight (%)")
     expect_equal(bundle$slab, fixture$data@study.names)
 
     png_path <- tempfile(fileext = ".png")
@@ -1133,8 +1133,8 @@ test_that("mixed raw and entered-effect rows render blanks for unavailable raw d
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
   expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
-  expect_equal(unname(bundle$ilab$matrix[2, ]), rep("", 4))
+  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
+  expect_equal(unname(bundle$ilab$matrix[2, 1:4]), rep("", 4))
 
   fixture$params$fp_style <- "revman"
   revman.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
@@ -1275,7 +1275,7 @@ test_that("single-study binary Default Forest Style uses normalized vectors", {
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(unname(bundle$effect$yi), unname(as.numeric(fixture$data@y)))
   expect_equal(unname(bundle$effect$sei), unname(as.numeric(fixture$data@SE)))
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events"))
+  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)
@@ -1375,9 +1375,9 @@ test_that("single-arm binary metrics build and render Default metafor bundles", 
 
     expect_equal(bundle$render_engine, "metafor")
     expect_equal(bundle$data_type, "binary")
-    expect_equal(bundle$ilab$headers, c("Events", "Non-events"))
+    expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Weight (%)"))
     expect_equal(bundle$ilab$groups, "Cohort")
-    expect_equal(unname(bundle$ilab$matrix[1, ]), c("4", "96"))
+    expect_equal(unname(bundle$ilab$matrix[1, 1:2]), c("4", "96"))
     expect_equal(bundle$sample_sizes, fixture$data@g1O1 + fixture$data@g1O2)
     expect_true(inherits(bundle$res, "rma"))
     expect_equal(rcmetar.metafor.effect.header(bundle), "Proportion [95% CI]")
@@ -1451,7 +1451,7 @@ test_that("continuous Default Forest Style builds and renders mean SD N columns"
 
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "continuous")
-  expect_equal(bundle$ilab$headers, c("Mean", "SD", "N", "Mean", "SD", "N"))
+  expect_equal(bundle$ilab$headers, c("Mean", "SD", "N", "Mean", "SD", "N", "Weight (%)"))
   expect_equal(bundle$ilab$groups, c("Treatment", "Control"))
   expect_equal(nrow(bundle$ilab$matrix), length(fixture$data@study.names))
   expect_true(inherits(bundle$res, "rma"))
@@ -1481,9 +1481,9 @@ test_that("single-arm continuous styles use one-arm mean SD N columns and plain 
 
   expect_equal(default.bundle$render_engine, "metafor")
   expect_equal(default.bundle$data_type, "continuous")
-  expect_equal(default.bundle$ilab$headers, c("Mean", "SD", "N"))
+  expect_equal(default.bundle$ilab$headers, c("Mean", "SD", "N", "Weight (%)"))
   expect_equal(default.bundle$ilab$groups, "Cohort")
-  expect_equal(unname(default.bundle$ilab$matrix[1, ]), c("8.200", "1.500", "22"))
+  expect_equal(unname(default.bundle$ilab$matrix[1, 1:3]), c("8.200", "1.500", "22"))
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(default.bundle, png_path)
@@ -1534,7 +1534,7 @@ test_that("diagnostic Default Forest Style builds and renders count columns on t
 
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
-  expect_equal(bundle$ilab$headers, c("TP", "FP", "FN", "TN"))
+  expect_equal(bundle$ilab$headers, c("TP", "FP", "FN", "TN", "Weight (%)"))
   expect_equal(bundle$ilab$groups, "Counts")
   expect_null(rcmetar.metafor.atransf(bundle))
   expect_true(inherits(bundle$res, "rma"))
@@ -1679,7 +1679,7 @@ test_that("single-study entered diagnostic Default Forest Style omits count ilab
 
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
-  expect_equal(ncol(bundle$ilab$matrix), 0)
+  expect_equal(bundle$ilab$headers, "Weight (%)")
   expect_equal(unname(as.numeric(bundle$res$yi)), unname(as.numeric(data@y)))
   expect_equal(unname(sqrt(bundle$res$vi)), unname(as.numeric(data@SE)))
 
@@ -1936,9 +1936,9 @@ test_that("subgroup workflow saves and renders BMJ subtotal diamonds", {
   expect_equal(bundle$ilab$headers, c("Events / Total", "Events / Total", "Weight (%)"))
   expect_length(bundle$subgroups$polygon_rows, 2)
   expect_true(inherits(bundle$subgroups$overall, "rma"))
-  expect_match(bundle$style_blocks$heterogeneity, "Heterogeneity: τ² = ")
-  expect_match(bundle$style_blocks$test_overall, "Test for overall effect.*Z = ")
-  expect_equal(rcmetar.forest.accent.color(bundle$params), "#6b58a6")
+  expect_match(bundle$style_blocks$heterogeneity, "Test for heterogeneity: τ²=")
+  expect_match(bundle$style_blocks$test_overall, "Test for overall effect.*Z=")
+  expect_equal(rcmetar.forest.accent.color(bundle$params), "#5f4c9a")
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 })
