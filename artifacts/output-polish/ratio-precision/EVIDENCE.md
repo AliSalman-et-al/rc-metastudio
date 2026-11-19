@@ -24,3 +24,14 @@ foreach ($sample in @('amino', 'BCG')) {
     uv run python -m rc_metastudio --automation-package-analyze "$root/build/output-polish/$sample-analysis.json" "$root/sample_projects/$sample.rcms" binary.random DL
 }
 ```
+
+Windows strict typing and 235 focused tests passed. The frozen gate passed all 416 numerical comparisons. Both the fitted-report and BMJ prediction scenarios passed with the original value checks, along with both manuscript export scenarios. The fitted-report check now takes subgroup names from the source table's designated label column. The BMJ check compares each printed prediction bound against metafor and verifies all six study-line colors at the study row positions.
+
+[Typing](../qualification/ratio-precision-typing.log), [focused tests](../qualification/ratio-precision-focused.log), [frozen comparison](../qualification/ratio-precision-frozen.log), [report and manuscript scenarios](../qualification/ratio-precision-report-checks.log).
+
+```powershell
+uv run python -m pytest -W error tests/python/fast/test_plot_service.py tests/python/fast/test_plot_capabilities.py tests/python/fast/test_result_formatting_audit.py tests/python/gui/test_results_workspace_layout.py tests/python/gui/test_funnel_plot_editor.py tests/python/gui/test_main_window_automation_launch.py tests/analysis_regression/golden/test_analysis_regression_compare.py -q --tb=short
+uv run python -m pytest tests/e2e -n 3 -q -k 'results-values or reviewer-predictions or (manuscript-export and not split)'
+```
+
+The hosted Windows R-stack checks on `e2d669bd` passed R CMD check, all 103 independent authority cases, 21 Reitsma visual cases, nine bridge tests and the frozen comparison. [Hosted R-stack transcript](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/44574508738/job/135738528061).

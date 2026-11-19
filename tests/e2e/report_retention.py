@@ -225,7 +225,9 @@ def expected_effect_rows(result, section, overall, calculation, roles=('pooled',
         metric = table.metric_label.lower() or result.manuscript_metric or 'effect'
         if table.role != 'coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
-        effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
+        label_header = headers[table.label_column] if table.label_column is not None and not vertical else ''
+        effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title,
+                                         overall, calculation, label_header)
         if table.role == 'coefficients':
             scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
             label = {'SMD': 'standardized', 'PFT': 'Freeman-Tukey'}.get(
@@ -239,13 +241,13 @@ def expected_effect_rows(result, section, overall, calculation, roles=('pooled',
     return rows
 
 
-def expected_effect_values(values, headers, low, high, metric, vertical, title, overall, calculation):
+def expected_effect_values(values, headers, low, high, metric, vertical, title, overall, calculation, label_header):
     rows = []
     for row in values:
         if not row.get('Estimate'):
             continue
         context = next((row[h] for h in headers if h.startswith(('Study added', 'Study omitted'))), title if vertical else metric)
-        label = row.get('Term', row.get('Subgroups', row.get('Level', context)))
+        label = row.get('Term', row.get('Subgroups', row.get('Level', row.get(label_header, context))))
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
@@ -400,22 +402,18 @@ def assert_report(view):
     if structured and expected_rows:
         assert pooled is not None
         level = next(header.split(' (')[0] for header in pooled.headers if '% CI' in header)
-        expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_pooled(view.results))
+        expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_rows)
         scales = {row[4] for row in expected_rows if row[3] not in ('', '—', 'NA')}
         compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
         indexes = [i for i in range(7) if (i != 4 or not compact_scale) and any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        statistic = 'z'
-        for section in view.results.sections:
-            for source in section.tables:
-                if not {'t', 't-value'}.intersection(source.headers):
-                    continue
-                statistic = 't'
-                if 'df' in source.headers:
-                    statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
+        statistic = 't' if any(
+            {'t', 't-value'}.intersection(source.headers)
+            for section in view.results.sections for source in section.tables
+        ) else 'z'
         label = 'Subgroup' if pooled.role == 'fitted' else 'Effect'
         headers = (label, 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE',
                    'SE scale', statistic, 'P')
-        assert pooled.headers == tuple(headers[i] for i in indexes)
+        assert pooled.headers == tuple(headers[i] for i in indexes), (pooled.headers, headers, indexes)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:
