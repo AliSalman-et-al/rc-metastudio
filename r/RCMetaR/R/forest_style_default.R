@@ -410,6 +410,15 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
     layout <- plan$layout
     rows <- plan$rows$study_rows
     show.ilab <- !plan$rows$manual_sequential_labels && ncol(bundle$ilab$matrix) > 0
+    groups <- if (identical(bundle$forest_variant, "subgroup")) {
+        split(rows, bundle$study_groups)
+    } else {
+        list(rows)
+    }
+    shade <- unlist(lapply(groups, function(group.rows) {
+        displayed <- sort(group.rows, decreasing=TRUE)
+        displayed[seq_along(displayed) %% 2L == 1L]
+    }), use.names=FALSE)
     forest.args <- list(
         slab = rep("", length(bundle$slab)),
         ilab = if (show.ilab) rcmetar.forest.display.ilab(bundle$ilab$matrix) else NULL,
@@ -432,7 +441,7 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
         xaxt = "n",
         col = forest.color,
         colshade = "#eeeeee",
-        shade = "zebra",
+        shade = shade,
         lty = c("solid", "blank", "blank"),
         pch = 15,
         psize = rcmetar.metafor.psize(bundle),
