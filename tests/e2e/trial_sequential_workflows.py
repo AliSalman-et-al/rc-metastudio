@@ -92,7 +92,10 @@ def check_artwork(path, case, style, contract, *, percent=False):
     assert 1 <= len(ticks) <= 6, ticks
     assert ("//" in labels) == (case in ("bcg", "peto"))
     if case == "peto":
-        assert "−8" in labels and "8" in labels, labels
+        limit = contract["peto"]["z_limit"]
+        assert f"−{limit}" in labels and str(limit) in labels, labels
+        units = "percent" if percent else "participants"
+        assert ticks[-2] == contract["peto"]["join_tick"][units], ticks
     favours = [node for node in text_nodes if (node.text or "").startswith("Favours")]
     assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
     assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()

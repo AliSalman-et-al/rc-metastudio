@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "identity": "Trial sequential plot",
   "kind": "trial_sequential",
   "regeneration": "trial_sequential",
@@ -9,5 +9,9 @@
     "hr": "Cumulative statistical information",
     "percent": "Information (% of required information size)"
   },
-  "labels": ["RIS", "Cumulative Z-score", "Cumulative Z-curve", "Monitoring boundary", "Conventional boundary"]
+  "labels": ["RIS", "Cumulative Z-score", "Cumulative Z-curve", "Monitoring boundary", "Conventional boundary"],
+  "peto": {
+    "z_limit": 16,
+    "join_tick": {"participants": "8,507", "percent": "150%"}
+  }
 }
