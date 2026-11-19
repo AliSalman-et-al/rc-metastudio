@@ -42,15 +42,17 @@ def report_cell(value: str) -> str:
                   lambda match: f"{match[1]}{int(match[2]):,}{match[3]}", value)
 
 
-def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
+def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]], *, label_width: int | None = None) -> str:
     """Editable, content-sized table for clipboard and manuscript surfaces."""
     numeric = numeric_columns(rows)
-    parts = ['<table border="0" cellspacing="0" cellpadding="5">']
+    width = ' width="100%"' if label_width is not None else ''
+    parts = [f'<table border="0" cellspacing="0" cellpadding="5"{width}>']
     if headers:
         parts.append('<thead><tr>')
         for index, header in enumerate(headers):
             align = 'right' if numeric and numeric[index] else 'left'
-            parts.append(f'<th align="{align}" style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
+            width = f' width="{label_width}"' if index == 0 and label_width is not None else ''
+            parts.append(f'<th align="{align}"{width} style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
         parts.append('</tr></thead>')
     parts.append('<tbody>')
     for index, row in enumerate(rows):

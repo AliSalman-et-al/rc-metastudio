@@ -660,15 +660,16 @@ adjusted_means_display <- function(res, params, display.data) {
     dim=c(n.levels + 1, 6),
     dimnames=list(NULL, c("Level", "Studies", "Estimate", ci.labels, "Std. error"))
   )
-  adj.array[1,] <- c("Level", "Studies", "Estimate", ci.labels, display.standard.error.label(params))
+  adj.array[1,] <- c(display.data$factor.cov.names[[1]] %||% "Subgroup", "Studies", "Estimate", ci.labels,
+                     display.standard.error.label(params))
   level.start <- display.data$n.cont.covs + 2
   level.end <- level.start + n.levels - 1
   if (length(levels.display.col) < level.end || length(studies.display.col) < level.end) {
     stop("display data does not contain factor levels")
   }
-  adj.array[2:(n.levels + 1), "Level"] <- paste0(
-    display.data$factor.cov.names[[1]], ": ", levels.display.col[level.start:level.end],
-    " (reference: ", display.data$factor.ref.levels[[1]], ")")
+  levels <- levels.display.col[level.start:level.end]
+  reference <- display.data$factor.ref.levels[[1]] %||% levels[[1]]
+  adj.array[2:(n.levels + 1), "Level"] <- paste0(levels, ifelse(levels == reference, " (reference)", ""))
   adj.array[2:(n.levels + 1), "Studies"] <- studies.display.col[level.start:level.end]
   adj.array[2:(n.levels + 1), "Estimate"] <- rcmetar.format.effect.number(estimates.disp, display.digits(params))
   adj.array[2:(n.levels + 1), ci.labels[[1]]] <- rcmetar.format.effect.number(ci.lb.disp, display.digits(params))

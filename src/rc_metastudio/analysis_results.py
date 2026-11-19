@@ -34,7 +34,7 @@ class RawAnalysisResult(TypedDict, total=False):
 QuantityRole = Literal['estimate', 'ci_lower', 'ci_upper', 'pi_lower', 'pi_upper',
                        'se', 'statistic', 'df', 'df2', 'p', 'q', 'i2', 'tau2', 'k', 'weight', 'value']
 QuantityScale = Literal['display', 'log', 'logit', 'arcsine', 'freeman-tukey', 'percent', 'proportion', '']
-TableRole = Literal['pooled', 'coefficients', 'heterogeneity', 'residual_heterogeneity',
+TableRole = Literal['pooled', 'coefficients', 'fitted', 'heterogeneity', 'residual_heterogeneity',
                     'overall_test', 'subgroup_test', 'model_fit', 'model_tests',
                     'model_specification', 'calculation', 'study_results',
                     'cumulative', 'leave_one_out', 'trial_sequential', 'prediction', 'supporting']

@@ -389,7 +389,7 @@ def assert_report(view):
                 assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
     if coefficients is not None:
-        assert coefficients.headers[1].startswith('Estimate (')
+        assert coefficients.headers[1:3] == ('Estimate', '95% CI')
         expected_coefficients = expected_pooled(view.results, ('coefficients',))
         assert [row[:3] for row in coefficients.rows] == [row[:3] for row in expected_coefficients]
     expected_rows = expected_pooled(view.results, ('pooled',)) if structured else ()
@@ -410,10 +410,10 @@ def assert_report(view):
                 statistic = 't'
                 if 'df' in source.headers:
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
-        full_headers = [('Effect', 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE', 'SE scale', statistic, 'P')]
-        headers_without_scale = tuple(header.split(' (')[0] if ('% CI' in header or header.startswith('Estimate ('))
-                                      else header for header in pooled.headers)
-        assert headers_without_scale in [tuple(headers[i] for i in indexes) for headers in full_headers]
+        label = 'Subgroup' if pooled.role == 'fitted' else 'Effect'
+        headers = (label, 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE',
+                   'SE scale', statistic, 'P')
+        assert pooled.headers == tuple(headers[i] for i in indexes)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:

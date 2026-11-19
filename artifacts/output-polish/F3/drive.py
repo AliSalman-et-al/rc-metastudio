@@ -36,7 +36,7 @@ def run(driver, app, window, scenario):
     tables = [table for section in view.manuscript.primary_sections for table in section.tables]
     assert tables[0].title == "Model coefficients (log odds ratio scale)", [t.title for t in tables]
     assert tables[1].title == "Fitted subgroup effects (odds ratio)", [t.title for t in tables]
-    assert all("Estimate (" in table.headers[1] for table in tables[:2])
+    assert all(table.headers[1:3] == ("Estimate", "95% CI") for table in tables[:2])
     for suffix, writer in (("docx", write_docx), ("pdf", write_pdf)):
         writer(view.manuscript, driver.WORK / f"factor-regression.{suffix}")
     (driver.WORK / "report.html").write_text(view.manuscript.html(), encoding="utf-8")
@@ -96,7 +96,7 @@ def run(driver, app, window, scenario):
                             parameters={"digits": 2, "rm.method": "REML"}, covariates=("latitude",))
     tables = [table for section in view.manuscript.primary_sections for table in section.tables]
     assert tables[0].title == "Model coefficients (risk difference scale)", [t.title for t in tables]
-    assert "risk difference" in tables[0].headers[1]
+    assert tables[0].headers[1:3] == ("Estimate", "95% CI")
     driver.record_step("risk-difference-continuous-moderator", view,
                        tables=[dict(title=t.title, headers=t.headers, rows=t.rows) for t in tables])
     view.close()

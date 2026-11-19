@@ -636,10 +636,9 @@ def _regression_section(result, section, coefficients, level, statistic):
         metric = 'proportion'
     scale = _coefficient_scale(coefficients, metric)
     title = f'Model coefficients ({scale})'
-    coefficient_table = _pooled_table(title, coefficients, level, statistic, scale=scale)
-    fitted = [replace(table, title=f'Fitted subgroup effects ({metric})',
-                      headers=tuple(f'{header} ({metric})' if header == 'Estimate' or header.endswith('% CI')
-                                    else header for header in table.headers))
+    coefficient_table = _pooled_table(title, coefficients, level, statistic)
+    fitted = [replace(table, title=f'Fitted subgroup effects ({metric})', role='fitted',
+                      headers=('Subgroup', *table.headers[1:]))
               for table in section.tables]
     return replace(section, title=title, paragraphs=(),
                    tables=(_available_columns(replace(coefficient_table, role='coefficients')), *fitted))
@@ -658,15 +657,13 @@ def _coefficient_scale(rows, metric):
     return f'{metric} scale'
 
 
-def _pooled_table(title, rows, level, statistic, *, scale=''):
-    estimate = f'Estimate ({scale})' if scale else 'Estimate'
-    interval = f'{level} ({scale})' if scale else level
+def _pooled_table(title, rows, level, statistic):
     scales = {row[4][0] for row in rows if row[3][0] not in ('', '—', 'NA')}
     if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'}:
         se_scale = next(iter(scales))
-        return _table(title, ('Effect', estimate, interval, f'SE ({se_scale} scale)', statistic, 'P'),
+        return _table(title, ('Effect', 'Estimate', level, f'SE ({se_scale} scale)', statistic, 'P'),
                       [(*row[:4], *row[5:]) for row in rows], role='pooled')
-    return _table(title, ('Effect', estimate, interval, 'SE', 'SE scale', statistic, 'P'), rows, role='pooled')
+    return _table(title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'P'), rows, role='pooled')
 
 
 def _available_columns(table):
@@ -732,7 +729,9 @@ def _methods_fragments(text):
 
 
 def _table_html(table, table_number):
-    return f'<p style="page-break-after:avoid;"><b>Table {table_number}. {escape(table.title)}</b></p>' + table_html(table.headers, table.rows)
+    label_width = 420 if table.role in ('coefficients', 'fitted') else None
+    return f'<p style="page-break-after:avoid;"><b>Table {table_number}. {escape(table.title)}</b></p>' + table_html(
+        table.headers, table.rows, label_width=label_width)
 
 
 @dataclass(frozen=True)
@@ -1048,26 +1047,40 @@ def _workflow_prose(workflow, parameters, details, *, missing_years=False):
 
 def _docx_table(document, table):
     target = document.add_table(rows=1, cols=len(table.headers))
-    target.autofit = True
+    target.autofit = False
     section = document.sections[-1]
     available = section.page_width - section.left_margin - section.right_margin
     widths = _docx_column_widths(table, available)
     for column, width in zip(target.columns, widths):
         column.width = width
     from docx.oxml import OxmlElement
-    from docx.oxml.ns import qn
-    borders = OxmlElement('w:tblBorders')
-    for edge in ('top', 'bottom'):
-        rule = OxmlElement('w:' + edge)
-        rule.set(qn('w:val'), 'single')
-        rule.set(qn('w:sz'), '6')
-        borders.append(rule)
-    target._tbl.tblPr.append(borders)
+
+    _add_docx_rules(target._tbl.tblPr, 'tblBorders', ('top', 'bottom'))
     target.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:tblHeader'))
     numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
     for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
+        # Word resolves a shared edge from both cells. Assign the same rule
+        # to each side of the header boundary.
+        edges = tuple(edge for edge, rows in (('top', (0, 1)), ('bottom', (0, len(table.rows)))) if index in rows)
         for column, (cell, value) in enumerate(zip(row.cells, values)):
             _style_docx_cell(cell, value, widths[column], numeric[column], index == 0)
+            if edges:
+                _add_docx_rules(cell._tc.get_or_add_tcPr(), 'tcBorders', edges)
+
+
+def _add_docx_rules(properties, kind, edges):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    borders = OxmlElement('w:' + kind)
+    for edge in edges:
+        rule = OxmlElement('w:' + edge)
+        for attribute, value in (('val', 'single'), ('sz', '8'), ('space', '0'), ('color', '000000')):
+            rule.set(qn('w:' + attribute), value)
+        borders.append(rule)
+    properties.insert_element_before(
+        borders, 'w:shd', 'w:noWrap', 'w:tcMar', 'w:tblLayout', 'w:tblCellMar', 'w:tblLook'
+    )
 
 
 def _docx_sections(document, report, supplementary):
@@ -1283,6 +1296,12 @@ def _docx_column_widths(table, available):
     minimums = [Pt(12 + 6 * max((len(report_cell(row[column])) for row in table.rows
                                 if numeric_cell(row[column])), default=0))
                 for column in range(len(table.headers))]
+    if table.role in ('coefficients', 'fitted'):
+        # Reserve just the space needed for the numeric values and their headings.
+        for column in range(1, len(weights)):
+            heading = max(table.headers[column].split(), key=len, default='')
+            minimums[column] = max(minimums[column], Pt(12 + 6 * len(heading)))
+        weights = [1, *([0] * (len(weights) - 1))]
     remaining = max(0, available - sum(minimums))
     return [round(minimum + remaining * weight / sum(weights))
             for minimum, weight in zip(minimums, weights)]
@@ -1293,7 +1312,7 @@ def _style_docx_cell(cell, value, width, numeric, heading):
     is_numeric = not heading and numeric_cell(value)
     cell.text = report_cell(value) if is_numeric else value
     cell.width = width
-    if is_numeric or (numeric and not heading):
+    if not heading and (is_numeric or numeric):
         cell._tc.get_or_add_tcPr().append(OxmlElement('w:noWrap'))
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     for paragraph in cell.paragraphs:
