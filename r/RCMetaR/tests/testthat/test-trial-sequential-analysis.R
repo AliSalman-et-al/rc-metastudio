@@ -147,11 +147,24 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   expect_identical(attr(result$table, "rcms.table")$role, "trial_sequential")
   expect_identical(unname(result$table[1, ]), c("Step", "Study added", "Accrued",
     "Information (%)", "Z", "Monitoring boundary", "Futility boundary",
-    "Effect (conventional CI)", "TSA-adjusted CI"))
+    "RR (95% CI)", "TSA-adjusted CI"))
   exact <- attr(result$table, "rcms.numeric")
   expect_equal(exact$values[, which(exact$column == 4)], c(20, 40, 60, 80, 100))
   expect_equal(exact$values[1, exact$column == 8], c(1, 1/2.296858442325916, 2.296858442325916))
   expect_true(any(attr(result$table, "rcms.numeric")$level == 95, na.rm=TRUE))
+})
+
+test_that("BCG REML sensitivity reuses the primary result and matches an entered 10% RRR", {
+  x <- metadat::dat.bcg
+  data <- tsa.binary(x$tpos, x$cpos, x$tpos+x$tneg, x$cpos+x$cneg, x$year, x$author)
+  params <- tsa.request("OR", "random")
+  run <- rcmetar.run.trial.sequential.analysis(data, params)
+  expect_identical(run$sensitivity[[1]]$summary, run$summary)
+  expect_identical(run$sensitivity[[1]]$look, tail(run$looks, 1))
+  pc <- run$summary$control.proportion
+  or <- .9*(1-pc)/(1-.9*pc)
+  entered <- rcmetar.run.trial.sequential.analysis(data, c(params, list(anticipated.effect=or)))
+  expect_identical(run$sensitivity[[2]]$summary$ris, entered$summary$ris)
 })
 
 test_that("trial sequential artwork regenerates from its saved bundle", {

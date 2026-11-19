@@ -297,26 +297,44 @@
   vapply(x, function(value) format(value, big.mark=",", scientific=FALSE, trim=TRUE), character(1))
 }
 
+.tsa.number <- function(x) ifelse(is.na(x), "", sprintf("%.4g", x))
+
+.tsa.interval <- function(lower, upper) {
+  ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", .tsa.number(upper))),
+    ifelse(is.na(upper), paste0("\u2265 ", .tsa.number(lower)),
+      paste(.tsa.number(lower), "to", .tsa.number(upper))))
+}
+
+.tsa.adjusted.display <- function(looks, s) {
+  lower <- looks$adjusted.lower
+  upper <- looks$adjusted.upper
+  too.wide <- if (s$metric %in% c("MD", "RD")) {
+    upper-lower > 1000*(looks$ci.upper-looks$ci.lower)
+  } else {
+    outside <- function(x) !is.na(x) & (x < .001 | x > 1000)
+    outside(lower) | outside(upper)
+  }
+  replace(.tsa.interval(lower, upper), which(too.wide), "\u2014")
+}
+
 .tsa.display.table <- function(looks, s) {
-  number <- function(x) ifelse(is.na(x), "", sprintf("%.4g", x))
-  bounds <- function(lower, upper, render=number) {
-    ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", render(upper))),
-      ifelse(is.na(upper), paste0("\u2265 ", render(lower)), paste(render(lower), "to", render(upper))))
-  }
-  adjusted <- function(x) {
-    ifelse(!is.na(x) & !s$metric %in% c("MD", "RD") & x < .001, "<0.001",
-      ifelse(!is.na(x) & x > 1000, ">1000", number(x)))
-  }
+  number <- .tsa.number
+  measure <- if (s$model == "peto") "Peto OR" else s$metric
   headers <- c("Step", "Study added", "Accrued", "Information (%)", "Z",
-    "Monitoring boundary", "Futility boundary", "Effect (conventional CI)", "TSA-adjusted CI")
+    "Monitoring boundary", "Futility boundary", sprintf("%s (%g%% CI)", measure, s$conf.level),
+    "TSA-adjusted CI")
   step <- seq_len(nrow(looks))
   percent <- looks$fraction*100
   conventional <- ifelse(is.na(looks$estimate), "",
-    paste0(number(looks$estimate), " (", bounds(looks$ci.lower, looks$ci.upper), ")"))
+    paste0(number(looks$estimate), " (", .tsa.interval(looks$ci.lower, looks$ci.upper), ")"))
+  monitoring <- if (s$alternative == "two-sided") {
+    ifelse(is.na(looks$efficacy.upper), "", paste0("\u00b1", sprintf("%.2f", looks$efficacy.upper)))
+  } else {
+    number(if (s$alternative == "lower") looks$efficacy.lower else looks$efficacy.upper)
+  }
   display <- cbind(step, looks$study, .tsa.format.accrued(looks$accrued, s$metric), sprintf("%.1f", percent), number(looks$z),
-    bounds(looks$efficacy.lower, looks$efficacy.upper),
-    bounds(looks$futility.lower, looks$futility.upper), conventional,
-    bounds(looks$adjusted.lower, looks$adjusted.upper, adjusted))
+    monitoring, .tsa.interval(looks$futility.lower, looks$futility.upper), conventional,
+    .tsa.adjusted.display(looks, s))
   columns <- c(1, 3, 4, 5, 6, 6, 7, 7, 8, 8, 8, 9, 9)
   values <- cbind(step, looks$accrued, percent, looks$z,
     as.matrix(looks[c("efficacy.lower", "efficacy.upper", "futility.lower", "futility.upper",
@@ -333,9 +351,16 @@
     scale <- c(scale, "")
     level <- c(level, NA_real_)
   }
-  table <- rcmetar.table(rbind(headers, display), "trial_sequential", list(measure=s$metric),
+  .tsa.table(headers, display, columns, roles, values, scale, level, s)
+}
+
+.tsa.table <- function(headers, display, columns, roles, values, scale, level, s) {
+  visible <- colSums(display != "") > 0
+  keep <- visible[columns]
+  table <- rcmetar.table(rbind(headers, display)[, visible, drop=FALSE], "trial_sequential", list(measure=s$metric),
     inference="z", label.column=1L)
-  rcmetar.numeric.fields(table, columns, roles, values, scale, level)
+  rcmetar.numeric.fields(table, cumsum(visible)[columns[keep]], roles[keep],
+    values[, keep, drop=FALSE], scale[keep], level[keep])
 }
 
 #' Trial sequential analysis (version 1)
@@ -366,7 +391,15 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     preview$reason.code <- "invalid-lil"
     preview$reason <- conditionMessage(validation)
   }
-  c(preview, .tsa.design(prepared, s))
+  design <- .tsa.design(prepared, s)
+  outcome <- NULL
+  if (isTRUE(s$preview.conclusion) && preview$ready && is.finite(design$ris) && design$ris > 0) {
+    outcome <- tryCatch({
+      monitored <- .tsa.monitor(.tsa.cumulative(prepared, s), design$ris, s, prepared$ratio)
+      c(monitored$conclusion, list(study=monitored$looks$study[monitored$conclusion$look]))
+    }, error=function(e) list(error=conditionMessage(e)))
+  }
+  c(preview, design, .tsa.fixed.effect(prepared, s, design), list(outcome=outcome))
 }
 
 .tsa.tail.alpha <- function(s) if (s$alternative == "two-sided") s$alpha/2 else s$alpha
@@ -379,13 +412,31 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   if (s$metric == "RD") c(3, 1.5, 1.5)[hu] else c(3.5, 2, 2)[hu]
 }
 
+.tsa.diversity <- function(fit) max(0, 1 - sum(1/(fit$vi+fit$tau2))/sum(1/fit$vi))
+
+.tsa.fixed.effect <- function(prepared, s, design) {
+  if (s$model == "random" || !is.null(s$manual.ris) || length(prepared$accrued) < 2L)
+    return(NULL)
+  random <- s
+  random$model <- "random"
+  fit <- tryCatch(suppressWarnings(.tsa.fit(prepared$data, random)), error=function(e) NULL)
+  if (is.null(fit) || fit$k != length(prepared$accrued)) return(NULL)
+  d2 <- .tsa.diversity(fit)
+  if (!is.finite(d2)) return(NULL)
+  if (d2 == 0) return(list(fixed.effect.zero=TRUE))
+  ris <- design$ris.unadjusted/(1-d2)
+  if (!is.finite(ris)) return(NULL)
+  list(fixed_effect_note=list(d2=d2,
+    ris=if (prepared$axis == "statistical-information") ris else ceiling(ris)))
+}
+
 .tsa.design <- function(prepared, s) {
   fit <- prepared$fit
   hr <- prepared$axis == "statistical-information"
   random <- s$model == "random"
   tau2 <- if (random) fit$tau2 else 0
   i2 <- as.numeric(fit$I2)/100
-  d2 <- if (random) max(0, 1 - sum(1/(fit$vi+tau2))/sum(1/fit$vi)) else 0
+  d2 <- if (random) .tsa.diversity(fit) else 0
   adjustment <- if (!random) 1 else switch(s$heterogeneity, d2=1/(1-d2), i2=1/(1-i2), none=1)
   z2 <- (qnorm(.tsa.tail.alpha(s), lower.tail=FALSE) + qnorm(s$power))^2
   delta <- if (hr) log(prepared$effect) else if (s$metric == "MD") prepared$effect else prepared$pe-prepared$pc
@@ -396,36 +447,21 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     ris.unadjusted=ris.unadjusted, ris.adjusted=ris.adjusted, accrued=tail(prepared$accrued, 1))
 }
 
-#' @rdname RCMetaR-trial-sequential-analysis
-#' @export
-rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
-  s <- .tsa.settings(params)
-  prepared <- .tsa.prepare(om.data, s)
-  if (is.null(prepared$preview)) stop(prepared$reason, call.=FALSE)
-  if (!prepared$preview$ready) stop(prepared$preview$reason, call.=FALSE)
+.tsa.cumulative <- function(prepared, s) {
   data <- prepared$data
   fit <- prepared$fit
-  defaults <- prepared$preview$defaults
   warnings <- prepared$warnings
   lambda <- .tsa.lambda(data, s)
   if (rcmetar.inference.method(s) != "z")
     warnings <- c(warnings, "TSA uses Wald z. The sheet's t or Hartung-Knapp inference was not applied.")
-  hr <- prepared$axis == "statistical-information"
   random <- s$model == "random"
   if (random)
     warnings <- c(warnings, "Lan-DeMets monitoring with re-estimated random-effects weights is approximate.")
-  design <- .tsa.design(prepared, s)
-  ris <- design$ris
-  if (!is.finite(ris) || ris <= 0) stop("The required information size is not finite and positive.")
-  fraction <- prepared$accrued/ris
-  fraction[abs(fraction - 1) <= .Machine$double.eps] <- 1
-  if (any(!is.finite(fraction))) stop("Information fractions must be finite.")
-
   k <- length(prepared$accrued)
   looks <- data.frame(study=data@study.names,
     year=if (length(data@years) == k) data@years else NA_integer_,
     input.row=prepared$preview$study.order,
-    accrued=prepared$accrued, fraction=fraction)
+    accrued=prepared$accrued)
   fits <- lapply(seq_len(k), function(j) {
     if (j == k) return(fit)
     withCallingHandlers(
@@ -444,24 +480,10 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     warnings <- c(warnings, "Some interim looks have no estimable effect under the sheet model.")
   looks$z <- field("zval")
   looks$statistical.information <- 1/se^2
-  estimable <- which(is.finite(looks$z))
-  bounds <- .tsa.boundaries(fraction[estimable], s)
-  final <- estimable[bounds$final]
-  if (bounds$final < length(estimable))
-    warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
-  for (name in setdiff(names(bounds), c("final", "path"))) {
-    looks[[name]] <- NA_real_
-    looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
-  }
   transform <- if (prepared$ratio) exp else identity
   looks$estimate <- transform(estimate)
   looks$ci.lower <- transform(field("ci.lb"))
   looks$ci.upper <- transform(field("ci.ub"))
-  # A lower Z boundary tests a decrease and therefore gives an upper CI limit.
-  looks$adjusted.lower <- transform(estimate - looks$efficacy.upper*se)
-  looks$adjusted.upper <- transform(estimate - looks$efficacy.lower*se)
-  looks$adjusted.lower[fraction >= 1] <- NA_real_
-  looks$adjusted.upper[fraction >= 1] <- NA_real_
   if (s$lil) {
     # Lan et al. (2003), section 3.2: use within-study information for
     # the penalty, even when the numerator is the random-effects Z.
@@ -470,9 +492,38 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     }, numeric(1)) else looks$statistical.information
     looks$lil.z <- looks$z/sqrt(lambda*log(log(pmax(information, exp(exp(1))))))
   }
-  conclusion <- .tsa.conclusion(looks, s, final)
-  summary <- c(design, list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
-    tau.method=if (random) s$rm.method else "",
+  list(looks=looks, estimate=estimate, se=se, warnings=warnings, lambda=lambda)
+}
+
+.tsa.monitor <- function(path, ris, s, ratio) {
+  if (!is.finite(ris) || ris <= 0) stop("The required information size is not finite and positive.")
+  looks <- path$looks
+  fraction <- looks$accrued/ris
+  fraction[abs(fraction - 1) <= .Machine$double.eps] <- 1
+  if (any(!is.finite(fraction))) stop("Information fractions must be finite.")
+  looks$fraction <- fraction
+  estimable <- which(is.finite(looks$z))
+  bounds <- .tsa.boundaries(fraction[estimable], s)
+  final <- estimable[bounds$final]
+  for (name in setdiff(names(bounds), c("final", "path"))) {
+    looks[[name]] <- NA_real_
+    looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
+  }
+  transform <- if (ratio) exp else identity
+  # A lower Z boundary tests a decrease and therefore gives an upper CI limit.
+  looks$adjusted.lower <- transform(path$estimate - looks$efficacy.upper*path$se)
+  looks$adjusted.upper <- transform(path$estimate - looks$efficacy.lower*path$se)
+  looks$adjusted.lower[fraction >= 1] <- NA_real_
+  looks$adjusted.upper[fraction >= 1] <- NA_real_
+  list(looks=looks, conclusion=.tsa.conclusion(looks, s, final), final=final, curves=bounds$path,
+    overrun=bounds$final < length(estimable))
+}
+
+.tsa.summary <- function(prepared, s, design, monitored, lambda) {
+  hr <- prepared$axis == "statistical-information"
+  defaults <- prepared$preview$defaults
+  c(design, list(axis=prepared$axis, metric=s$metric, model=s$model, inference="z",
+    tau.method=if (s$model == "random") s$rm.method else "",
     heterogeneity=s$heterogeneity,
     ris.source=if (is.null(s$manual.ris)) "calculated" else "manual",
     anticipated.effect=prepared$effect,
@@ -487,19 +538,107 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
     schoenfeld.allocation=if (hr) .5 else NA_real_,
     alpha=s$alpha, power=s$power, order=s$order, alternative=s$alternative,
     benefit.direction=s$benefit.direction, spending=s$spending, futility=s$futility,
-    conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=final,
+    conf.level=s$conf.level, lil.lambda=lambda, monitoring.last.look=monitored$final,
     excluded.studies=prepared$preview$excluded.studies,
-    conclusion=conclusion$category, crossing.look=conclusion$look))
+    conclusion=monitored$conclusion$category, crossing.look=monitored$conclusion$look))
+}
+
+.tsa.sensitivity <- function(prepared, s, path, summary, looks) {
+  primary <- if (is.null(s$anticipated.effect)) "Primary (default)" else "Primary (entered)"
+  row <- function(label, effect, summary=NULL, look=tail(looks, 1)[NA_integer_, ]) {
+    list(label=label, effect=effect, summary=summary, look=look)
+  }
+  result <- list(row(primary, prepared$effect, summary, tail(looks, 1)))
+  # Wetterslev 2017 discusses sensitivity to design inputs. Keep all fitted
+  # looks fixed while changing the effect that sets the information target.
+  pc <- prepared$pc
+  reduction <- c(.1, .2, .3)
+  increase <- as.numeric(prepared$fit$b) > 0
+  rr <- if (increase) 1/(1-reduction) else 1-reduction
+  effects <- switch(s$metric, RR=rr, HR=rr, OR=rr*(1-pc)/(1-pc*rr),
+    RD=pc*reduction*(if (increase) 1 else -1), MD=prepared$effect*c(.5, 1.5))
+  labels <- if (s$metric == "MD") c("50% of primary", "150% of primary") else
+    paste0(100*reduction, if (increase) "% (reciprocal RRR)" else "% RRR")
+  for (i in seq_along(effects)) {
+    effect <- effects[i]
+    if (isTRUE(signif(effect, 4) == signif(prepared$effect, 4))) next
+    alternative <- prepared
+    alternative$effect <- effect
+    alternative.settings <- s
+    alternative.settings$anticipated.effect <- effect
+    if (is.finite(pc)) {
+      alternative$pe <- switch(s$metric, RR=pc*effect, RD=pc+effect,
+        OR=if (effect > 0) plogis(qlogis(pc)+log(effect)) else NA_real_)
+      p.bar <- (pc + alternative$pe)/2
+      alternative$variance <- p.bar*(1-p.bar)
+    }
+    scenario <- tryCatch({
+      if (!is.finite(effect) || (is.finite(pc) &&
+          (is.na(alternative$pe) || alternative$pe < 0 || alternative$pe > 1)))
+        stop("The alternative effect implies an infeasible intervention risk.")
+      design <- .tsa.design(alternative, alternative.settings)
+      monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
+      row(labels[i], effect, .tsa.summary(alternative, alternative.settings, design, monitored, path$lambda),
+        tail(monitored$looks, 1))
+    }, error=function(e) row(labels[i], if (is.finite(effect) && (!prepared$ratio || effect > 0)) effect else NA_real_))
+    result[[length(result)+1L]] <- scenario
+  }
+  result
+}
+
+.tsa.sensitivity.table <- function(rows, s) {
+  looks <- do.call(rbind, lapply(rows, `[[`, "look"))
+  effect <- vapply(rows, `[[`, numeric(1), "effect")
+  label <- vapply(rows, `[[`, character(1), "label")
+  ris <- vapply(rows, function(row) row$summary$ris %||% NA_real_, numeric(1))
+  conclusions <- vapply(rows, function(row) {
+    if (is.null(row$summary)) return("Not estimable")
+    switch(row$summary$conclusion, "crossed-benefit"="Crosses monitoring boundary (benefit)",
+      "crossed-harm"="Crosses monitoring boundary (harm)", "crossed-futility"="Crosses futility boundary",
+      "ris-reached"="Reaches required information size without crossing", "none"="Crosses no boundary")
+  }, character(1))
+  percent <- 100*looks$fraction
+  display <- cbind(ifelse(is.na(effect), label, paste0(.tsa.number(effect), " (", label, ")")),
+    ifelse(is.na(ris), "", .tsa.format.accrued(ris, s$metric)),
+    ifelse(is.na(percent), "", sprintf("%.1f%%", percent)), conclusions, .tsa.adjusted.display(looks, s))
+  .tsa.table(c("Anticipated effect", "Required information size", "Accrued (% of required)",
+    "Conclusion", "TSA-adjusted CI"), display, c(1, 2, 3, 5, 5),
+    c("estimate", "value", "value", "ci_lower", "ci_upper"),
+    cbind(effect, ris, percent, looks$adjusted.lower, looks$adjusted.upper),
+    c("display", "", "percent", "display", "display"), c(rep(NA_real_, 3), rep(100*(1-s$alpha), 2)), s)
+}
+
+#' @rdname RCMetaR-trial-sequential-analysis
+#' @export
+rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
+  s <- .tsa.settings(params)
+  prepared <- .tsa.prepare(om.data, s)
+  if (is.null(prepared$preview)) stop(prepared$reason, call.=FALSE)
+  if (!prepared$preview$ready) stop(prepared$preview$reason, call.=FALSE)
+  design <- .tsa.design(prepared, s)
+  path <- .tsa.cumulative(prepared, s)
+  monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
+  looks <- monitored$looks
+  warnings <- path$warnings
+  if (monitored$overrun)
+    warnings <- c(warnings, "Looks after the first RIS-reaching look show the held boundary for reference. Sequential inference ended at that first look.")
+  summary <- .tsa.summary(prepared, s, design, monitored, path$lambda)
   result <- list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
     package.versions=c(metafor=utils::packageDescription("metafor", fields="Version"),
       gsDesign=utils::packageDescription("gsDesign", fields="Version")), warnings=unique(warnings))
-  path <- rcmetar.plot.scalar_path(s$fp_outpath)
-  if (!is.null(path)) {
+  result["fixed_effect_note"] <- list(.tsa.fixed.effect(prepared, s, design)$fixed_effect_note)
+  if (is.null(s$manual.ris)) {
+    result$sensitivity <- .tsa.sensitivity(prepared, s, path, summary, looks)
+    result$sensitivity.table <- .tsa.sensitivity.table(result$sensitivity, s)
+  }
+  output <- rcmetar.plot.scalar_path(s$fp_outpath)
+  if (!is.null(output)) {
     s$fp_style <- s$fp_style %||% "default"
-    res <- list(summary=summary, looks=looks, curves=.tsa.plot.curves(bounds$path, s))
+    data <- prepared$data
+    res <- list(summary=summary, looks=looks, curves=.tsa.plot.curves(monitored$curves, s))
     plot.data <- rcmetar.tsa.plot.data(data, res, s)
-    rcmetar.draw.tsa.plot(plot.data, path)
-    result$plot.prefix <- save.data(data, res, s, plot.data, tools::file_path_sans_ext(path))
+    rcmetar.draw.tsa.plot(plot.data, output)
+    result$plot.prefix <- save.data(data, res, s, plot.data, tools::file_path_sans_ext(output))
   }
   result
 }
