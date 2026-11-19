@@ -57,6 +57,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     def __init__(
         self, plot_params, image_path, parent=None, plot_type="funnel",
         *, on_commit: Callable[[dict[str, object]], None] | None = None,
+        default_params: dict[str, object] | None = None,
     ):
         super().__init__(parent)
         self.setupUi(self)
@@ -70,6 +71,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._commit_error.hide()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
+        self._default_params = dict(default_params or {})
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Shown under the figure when exported alone. Clear it to omit the caption.")
@@ -139,6 +141,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             )
         apply_button = required(self.button_box.button(QDialogButtonBox.StandardButton.Apply), "funnel Apply button")
         apply_button.clicked.connect(self._commit)
+        reset = self.button_box.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
+        reset.clicked.connect(self._reset_to_defaults)
         self._connect_dirty_signals()
         align_field_columns((self.appearance_layout, self.confidence_layout, self.axis_layout))
         size_plot_text_editor(self)
@@ -229,6 +233,13 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 signal.connect(self._mark_dirty)
 
     def _mark_dirty(self, *_args):
+        self._dirty = True
+
+    def _reset_to_defaults(self):
+        self._params = dict(self._default_params)
+        self._load_params(self._funnel_outpath)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
+        self._refresh_bounds_warning()
         self._dirty = True
 
     def _commit(self) -> bool:
@@ -428,6 +439,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             )
         self.contour_levels_edit.setEnabled(contour)
         self.contour_levels_label.setEnabled(contour)
+        self.contour_levels_edit.setVisible(contour)
+        self.contour_levels_label.setVisible(contour)
         self.contour_levels_edit.setToolTip(
             "Available only for contour-enhanced funnels."
             if not contour
@@ -435,13 +448,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.sampling_confidence_spin.setEnabled(not deeks)
         self.sampling_confidence_label.setEnabled(not deeks)
+        self.sampling_confidence_spin.setVisible(not deeks)
+        self.sampling_confidence_label.setVisible(not deeks)
         self.sampling_region_check.setEnabled(not deeks and not contour)
+        self.sampling_region_check.setVisible(not deeks and not contour)
         self.sampling_region_check.setToolTip(
             "Contour levels replace the single pseudo-confidence region."
             if contour
             else "Show or hide the sampling-error pseudo-confidence region."
         )
         self.include_tau2_check.setEnabled(not deeks)
+        self.include_tau2_check.setVisible(not deeks)
         self.include_tau2_check.setToolTip(
             "Not applicable to the Deeks effective-sample-size funnel."
             if deeks
@@ -449,8 +466,14 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.pooled_overlay_check.setEnabled(not deeks)
         self.pooled_overlay_label.setEnabled(not deeks)
+        self.pooled_overlay_check.setVisible(not deeks)
+        self.pooled_overlay_label.setVisible(not deeks)
+        self.reference_visible_check.setVisible(not deeks)
+        self.reference_visible_label.setVisible(not deeks)
         self.regression_visible_check.setEnabled(deeks)
         self.regression_visible_label.setEnabled(deeks)
+        self.regression_visible_check.setVisible(deeks)
+        self.regression_visible_label.setVisible(deeks)
         self.regression_visible_check.setToolTip(
             "Deeks regression line visibility; statistical fitting is unchanged."
             if deeks

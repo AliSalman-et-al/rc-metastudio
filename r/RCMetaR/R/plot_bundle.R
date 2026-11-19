@@ -133,7 +133,10 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
-    if (!include_title) bundle$plot.data$params$plot_caption <- NULL
+    if (!include_title) {
+        bundle$plot.data$params$plot_caption <- NULL
+        if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
+    }
     if (identical(regenerator, "trial_sequential")) {
         rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=TRUE)
     } else {

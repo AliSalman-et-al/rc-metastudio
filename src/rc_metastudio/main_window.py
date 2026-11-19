@@ -922,6 +922,16 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         change_settings=None, manuscript: ManuscriptReport | None = None,
     ) -> results_window.ResultsWindow | None:
         sheet = source_sheet or self.model.current_sheet
+        identity = result.identity.splitlines()[0] if result.identity else ""
+        plot_key = result.analysis_method + " | " + identity
+        saved_plots = sheet.settings.get("plot_overrides", {}).get(plot_key, {}) if sheet else {}
+
+        def save_plot_override(title: str, overrides: dict[str, object]) -> None:
+            if sheet is not None and any(candidate is sheet for candidate in self.model.dataset.sheets):
+                plots = sheet.settings.setdefault("plot_overrides", {}).setdefault(plot_key, {})
+                if plots.get(title) != overrides:
+                    plots[title] = overrides
+                    self.data_dirtied()
 
         def save_favours_labels(left: str, right: str) -> None:
             # Opening a project or restoring history replaces the live sheets.
@@ -934,6 +944,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 result, parent=self, change_settings=change_settings, manuscript=manuscript,
                 source_sheet_name=sheet.name if sheet else None,
                 save_favours_labels=save_favours_labels if sheet else None,
+                plot_overrides=saved_plots, save_plot_override=save_plot_override if sheet else None,
             )
         except Exception as e:
             app_error_handler.log_exception(type(e), e, e.__traceback__)

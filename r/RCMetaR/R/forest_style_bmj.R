@@ -445,7 +445,8 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
             " (", bundle$params$conf.level, "% CI)"
         )
         effect.width <- rcmetar.bmj.text.width(
-            c(metric.header, rcmetar.bmj.effect.values(bundle), rcmetar.bmj.summary.label.for.bundle(bundle)),
+            c(metric.header, rcmetar.forest.estimate.header(bundle, metric.header),
+              rcmetar.bmj.effect.values(bundle), rcmetar.bmj.summary.label.for.bundle(bundle)),
             cex,
             minimum=1.85
         )
@@ -684,7 +685,8 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     refline <- rcmetar.metafor.refline(bundle, layout$alim)
     if (is.finite(refline)) graphics::segments(refline, -1.0, refline, k + 1.55, lwd=0.85, col="#a7a9ac")
     summary.x <- rcmetar.forest.axis.values(bundle, summary$yi)
-    if (summary.x >= layout$alim[[1]] && summary.x <= layout$alim[[2]])
+    if (rcmetar.param.is.true(bundle$params, "fp_show_summary_line", TRUE) &&
+            summary.x >= layout$alim[[1]] && summary.x <= layout$alim[[2]])
         graphics::segments(summary.x, -0.65, summary.x, k, lwd=0.8, lty="33", col=accent)
 
     graphics::par(cex=plot.info$cex, font=2, col="#111111")
@@ -790,7 +792,8 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     header <- paste0(metric, ", ", sub(", ", ",\n", method, fixed=TRUE), " (", bundle$params$conf.level, "% CI)")
     rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1.55, header)
     if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-        rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55, header)
+        rcmetar.draw.forest.effect.header(layout$annotation.header.xpos, k + 1.55,
+                                          rcmetar.forest.estimate.header(bundle, header))
     invisible(NULL)
 }
 

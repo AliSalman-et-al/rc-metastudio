@@ -404,7 +404,8 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
         if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-            rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1, header, adj=1)
+            rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1,
+                                              rcmetar.forest.estimate.header(bundle, header), adj=1)
         rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1, header)
     }
 

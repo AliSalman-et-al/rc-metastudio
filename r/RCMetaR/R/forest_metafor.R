@@ -748,22 +748,26 @@ rcmetar.metafor.study.header <- function(bundle) {
 }
 
 rcmetar.metafor.effect.header <- function(bundle) {
-    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE) ||
+            !rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) {
         return("")
     }
-    paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]")
+    rcmetar.forest.estimate.header(bundle,
+        paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]"))
+}
+
+rcmetar.forest.estimate.header <- function(bundle, default) {
+    heading <- bundle$params[["fp_col2_str"]]
+    if (rcmetar.is.plot.default.text(heading)) default else as.character(heading[[1L]])
 }
 
 rcmetar.metafor.psize <- function(bundle) {
-    if (identical(bundle$forest_variant, "subgroup")) {
+    if (inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
         weights <- bundle$weights
         size <- rep(1, length(bundle$slab))
         finite <- is.finite(weights) & weights > 0
         if (any(finite)) size[finite] <- 0.65 + 0.9 * sqrt(weights[finite] / max(weights[finite]))
         return(size * rcmetar.point.size.multiplier(bundle$params))
-    }
-    if (inherits(bundle$res, "rma") && is.null(bundle$forest_variant)) {
-        return(NULL)
     }
     sei <- as.numeric(bundle$effect$sei)
     multiplier <- rcmetar.point.size.multiplier(bundle$params)

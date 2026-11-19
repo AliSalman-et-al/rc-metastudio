@@ -52,6 +52,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def __init__(
         self, plot_params, image_path, parent=None, plot_type="forest",
         *, on_commit: Callable[[dict[str, object]], None] | None = None,
+        default_params: dict[str, object] | None = None,
     ):
         super(EditPlotDialog, self).__init__(parent)
         self.setupUi(self)
@@ -59,6 +60,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._configure_accessibility()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
+        self._default_params = dict(default_params or {})
         self.plot_type = plot_type
         self._style_accents = BUBBLE_STYLE_ACCENTS if plot_type == "trial_sequential" else PLOT_STYLE_ACCENTS
         if plot_type == "subgroup_forest":
@@ -106,12 +108,15 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         configure_plot_style(self.style_cbo, self.accent_color, self.color_btn, accents=self._style_accents)
         apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
         apply_button.clicked.connect(self._commit)
+        reset = self.buttonBox.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
+        reset.clicked.connect(self._reset_to_defaults)
 
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self._load_params(image_path)
         self.setTabOrder(self.style_cbo, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
+        self.style_cbo.currentIndexChanged.connect(self._configure_option_groups)
         layouts = [self.style_layout, self.appearance_layout, self.gridLayout_2, self.default_layout, self.regression_layout, self.gridLayout_4]
         if self._sroc_group is not None:
             layouts.append(self._sroc_group.layout())
@@ -341,13 +346,36 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _configure_option_groups(self):
         self.study_order.setVisible("forest" in self._option_groups)
         self.study_order_label.setVisible("forest" in self._option_groups)
-        self.groupBox.setVisible("columns" in self._option_groups)
+        has_columns = "forest" in self._option_groups
+        self.groupBox.setVisible(has_columns)
+        has_arms = "columns" in self._option_groups
+        for control in (self.label_5, self.col3_str_edit, self.show_3,
+                        self.label_6, self.col4_str_edit, self.show_4, self.show_raw_counts):
+            control.setVisible(has_arms)
+        self.show_annotation.hide()
         self.default_panel.setVisible("forest" in self._option_groups)
-        self.label_16.setVisible("summary" in self._option_groups)
-        self.show_summary_line.setVisible("summary" in self._option_groups)
+        pooled_guide = self.plot_type == "forest" and selected_plot_style(self.style_cbo) == "bmj"
+        self.label_16.setVisible(pooled_guide)
+        self.show_summary_line.setVisible(pooled_guide)
         self.regression_group.setVisible("regression" in self._option_groups)
         if self._sroc_group is not None:
             self._sroc_group.setVisible(True)
+            self.sroc_extrapolate.hide()
+
+    def _reset_to_defaults(self):
+        self._params = dict(self._default_params)
+        self._load_params(self._image_path)
+        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
+        self.favours_left.setText(str(self._params.get("fp_favours_left") or ""))
+        self.favours_right.setText(str(self._params.get("fp_favours_right") or ""))
+        for control, key in ((self.axis_scale, "fp_axis_scale"), (self.study_order, "fp_study_order"),
+                             (self.tsa_x_axis, "tsa_x_axis")):
+            value = self._scalar(self._params.get(key))
+            if value is None and control is self.axis_scale:
+                value = "natural" if self._scalar(self._params.get("measure")) in {
+                    "PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"} else "transformed"
+            control.setCurrentIndex(max(0, control.findData(value)))
+        self._configure_option_groups()
 
     def _build_sroc_controls(self):
         self._sroc_group = QWidget(self.content_scroll_contents)
@@ -483,7 +511,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._params.get("fp_col4_str", FOREST_ARM_LABELS[1]),
         )
         self.show_1.setChecked(self._bool_param("fp_show_col1", True))
-        self.show_2.setChecked(self._bool_param("fp_show_col2", True))
+        self.show_2.setChecked(self._bool_param("fp_show_col2", True) and self._bool_param("fp_show_annotation", True))
         self.show_3.setChecked(self._bool_param("fp_show_col3", True))
         self.show_4.setChecked(self._bool_param("fp_show_col4", True))
         self.show_raw_counts.setChecked(
@@ -493,6 +521,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.show_annotation.setChecked(
             self._bool_param("fp_show_annotation", True)
         )
+        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
+        self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
         xlabel = self._params.get(self._param_name("xlabel"))
         if self._bool_param(self._param_name("xlabel_literal"), False):
             set_plot_text_value(self.x_lbl_le, self._scalar(xlabel), literal=True)
@@ -648,7 +678,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_raw_counts": self.show_raw_counts.isChecked(),
             "fp_show_weight": self.show_weight.isChecked(),
             "fp_show_headers": self.show_headers.isChecked(),
-            "fp_show_annotation": self.show_annotation.isChecked(),
+            "fp_show_annotation": self.show_2.isChecked() if "forest" in self._option_groups else True,
             "fp_accent_color": plot_color(self.accent_color.text()) or self._style_accents[style],
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
             **plot_axis_label_params(self.x_lbl_le, "fp"),
