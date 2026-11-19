@@ -168,6 +168,8 @@ def _interval_fields(table):
     return lower[0], upper[0], f'{lower[1].level:g}% {kind.upper()}'
 
 def _heterogeneity_sentence(values, quantities, heading="Heterogeneity"):
+    if values.get('Q') == '—' and values.get('df') == '—':
+        return [heading + ': not estimable (k = 1).']
     parts = []
     if "Q" in values:
         test = f"Q = {values['Q']}"
@@ -493,6 +495,8 @@ def _sequential_prose(result, section, table, lower, upper, level, summary):
     estimable = [row for row in subsets if _has_sequential_estimate(row)]
     if not cumulative:
         _omission_range_prose(estimable, len(subsets), summary)
+    elif records[0][0].get('k') == '1':
+        summary.append('Heterogeneity at the first step was not estimable (k = 1).')
     _sequential_missing_prose(subsets, label, cumulative, summary)
     number = _sequential_table_number(result, section, table)
     summary.append(f'Table {number} gives the estimate, {level} and I² after each addition.' if cumulative else f'Table {number} gives every omission fit.')

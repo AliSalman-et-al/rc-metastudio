@@ -210,8 +210,15 @@ rcmetar.result.vector <- function(results, field) {
     vapply(results, function(result) as.numeric((result[[field]] %||% NA_real_)[1]), numeric(1))
 }
 
-rcmetar.sequential.i2.labels <- function(results) {
+rcmetar.sequential.i2 <- function(results) {
     values <- rcmetar.result.vector(results, "I2")
+    k <- rcmetar.result.vector(results, "k")
+    values[which(k <= 1)] <- NA_real_
+    values
+}
+
+rcmetar.sequential.i2.labels <- function(results) {
+    values <- rcmetar.sequential.i2(results)
     ifelse(is.finite(values), sprintf("%.1f%%", values), "\u2014")
 }
 

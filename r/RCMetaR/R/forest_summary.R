@@ -94,12 +94,18 @@ rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
     label
 }
 
+rcmetar.heterogeneity.df <- function(res) {
+    (res$k.yi %||% res$k %||% NA_real_) - (res$p %||% 1)
+}
+
 rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
+    df <- rcmetar.heterogeneity.df(res)
+    if (isTRUE(df <= 0)) return("Heterogeneity: \u2014")
     if (is.null(res$QE)) return("")
     digits <- display.digits(params)
     fixed <- inherits(res, "rma.mh") || inherits(res, "rma.peto") || res$method %in% c("FE", "EE", "CE")
     paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
-           "Q = ", round.display(res$QE, digits), ", df = ", (res$k.yi %||% res$k) - res$p,
+           "Q = ", round.display(res$QE, digits), ", df = ", df,
            " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
            round.display(res$I2, 1), "%")
 }

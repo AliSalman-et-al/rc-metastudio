@@ -189,7 +189,8 @@ rcmetar.revman.summary.result <- function(bundle) {
 }
 
 rcmetar.revman.heterogeneity.label <- function(bundle) {
-    if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) return("")
+    if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup"))
+        return(if (rcmetar.forest.is.sequential.variant(bundle)) "" else "Heterogeneity: \u2014")
     rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle), bundle$params)
 }
 

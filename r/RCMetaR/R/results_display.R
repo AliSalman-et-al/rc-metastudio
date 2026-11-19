@@ -106,7 +106,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
   tau2 <- format.numeric.display(res$tau2, digits.str)
-  degf <- (res$k.yi %||% res$k) - (res$p %||% 1)
+  degf <- rcmetar.heterogeneity.df(res)
   I2 <- format.percent.display(res$I2, "%.1f")
   n <- rcmetar.summary.sample.sizes(om.data, params)
   QE <- format.numeric.display(res$QE, digits.str)
@@ -132,11 +132,17 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   het.col.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")[het.columns]
   het.col.vals <- c(QE, if (display.value.is.missing(res$QE)) "" else degf,
                     QEp, I2, tau2)[het.columns]
+  het.raw <- c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf,
+               res$QEp %||% NA_real_, res$I2 %||% NA_real_, res$tau2 %||% NA_real_)[het.columns]
+  if (isTRUE(degf <= 0)) {
+    het.col.vals[] <- "\u2014"
+    het.raw[] <- NA_real_
+  }
   het.array <- rbind(het.col.labels, het.col.vals)
   class(het.array) <- "summary.data"
   het.array <- rcmetar.numeric.fields(het.array, seq_along(het.col.labels),
     c("q", "df", "p", "i2", "tau2")[het.columns],
-    c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf, res$QEp %||% NA_real_, res$I2 %||% NA_real_, res$tau2 %||% NA_real_)[het.columns],
+    het.raw,
     c("", "", "", "percent", analysis.scale)[het.columns])
   het.title <- "Heterogeneity"
 
@@ -579,11 +585,12 @@ create.regression.display <- function(res, params, display.data) {
       if (t.inference) residual.df else NULL, params$digits)
     raw.tests[[length(raw.tests)+1L]] <- c(statistic, df1, if (t.inference) residual.df else NA_real_, factor.test$QMp)
   }
+  residual.p <- if (isTRUE(residual.df <= 0)) NA_real_ else res$QEp
   test.rows[[length(test.rows) + 1]] <- rcmetar.regression.test.row(
-    "Residual heterogeneity (Q\u2091)", res$QE, residual.df, res$QEp,
+    "Residual heterogeneity (Q\u2091)", res$QE, residual.df, residual.p,
     NULL, params$digits)
   tests <- rcmetar.regression.summary.array(test.rows, c("Test", "Statistic", "df", "p-value"))
-  raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, res$QEp)
+  raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, residual.p)
   tests <- rcmetar.numeric.fields(tests, c(2L, 3L, 3L, 4L), c("statistic", "df", "df2", "p"), do.call(rbind, raw.tests))
   arrays <- c(arrays, list(rcmetar.table(tests, "model_tests", params, res$test, label.column=0L)))
   titles <- c(titles, "Model tests")
@@ -736,7 +743,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   }
 
   k <- rcmetar.result.vector(res, "k")
-  i2 <- rcmetar.result.vector(res, "I2")
+  i2 <- rcmetar.sequential.i2(res)
   overall.array <- cbind(overall.array[,1], c("k", ifelse(is.finite(k), as.character(k), "\u2014")),
     overall.array[,2:6], c("I\u00b2", rcmetar.sequential.i2.labels(res)))
   raw <- cbind(k, raw, i2)
@@ -834,7 +841,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
 }
 
 rcmetar.summary.prediction <- function(res, params, transform, n, result.digits) {
-  if (inherits(res, "rma.uni") && !identical(res$method, "FE")) {
+  if (inherits(res, "rma.uni") && !identical(res$method, "FE") && isTRUE(res$k > 1)) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
     if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
@@ -873,7 +880,7 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
     ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
     se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
     if (!display.value.is.missing(fit$QE)) {
-      degf <- (fit$k.yi %||% fit$k) - fit$p
+      degf <- rcmetar.heterogeneity.df(fit)
       QE <- sprintf(digits.str, fit$QE)
     } else {
       QE <- ""
@@ -890,11 +897,17 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
     subgroup <- c(study.name, num.studies, y.disp, lb.disp, ub.disp, se.disp, pVal, zVal)
     heterogeneity <- c(study.name, QE, degf, QEp, I2,
                             if (any.random) if (is.random) round.display(fit$tau2, display.digits(params)) else "")
+    heterogeneity.raw <- c(fit$QE %||% NA_real_, if (identical(degf, "")) NA_real_ else degf,
+                           fit$QEp %||% NA_real_, fit$I2 %||% NA_real_, if (any.random) if (is.random) fit$tau2 else NA_real_)
+    if (isTRUE(rcmetar.heterogeneity.df(fit) <= 0)) {
+      heterogeneity[-1] <- "\u2014"
+      heterogeneity.raw[] <- NA_real_
+    }
     prediction.values <- c(study.name, "", "")
     prediction.notes <- character()
     prediction.raw <- c(NA_real_, NA_real_)
     prediction.scale <- "display"
-    if (is.random) {
+    if (is.random && isTRUE(fit$k > 1)) {
       prediction <- stats::predict(fit, level=display.confidence.level(params))
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
       if (length(bounds) == 2 && all(is.finite(bounds))) {
@@ -909,8 +922,7 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
     list(subgroup=subgroup, heterogeneity=heterogeneity,
          prediction=prediction.values, notes=prediction.notes,
          raw=list(subgroup=c(num.studies, effect.raw, se, fit$pval %||% NA_real_, fit$zval %||% NA_real_),
-                  heterogeneity=c(fit$QE %||% NA_real_, if (identical(degf, "")) NA_real_ else degf,
-                    fit$QEp %||% NA_real_, fit$I2 %||% NA_real_, if (any.random) if (is.random) fit$tau2 else NA_real_),
+                  heterogeneity=heterogeneity.raw,
                   prediction=prediction.raw, prediction.scale=prediction.scale))
 }
 

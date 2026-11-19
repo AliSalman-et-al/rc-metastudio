@@ -251,7 +251,11 @@ rcmetar.default.subgroup.difference.label <- function(test, params=NULL) {
 }
 
 rcmetar.draw.default.heterogeneity <- function(bundle, x, cex) {
-    if (isTRUE(bundle$single_study)) return(invisible(NULL))
+    if (isTRUE(bundle$single_study)) {
+        if (!rcmetar.forest.is.sequential.variant(bundle))
+            graphics::text(x, -2, "Heterogeneity: \u2014", pos=4, cex=cex)
+        return(invisible(NULL))
+    }
     graphics::text(x, -1, rcmetar.forest.model.label(bundle$res), pos=4, font=2, cex=cex)
     rcmetar.draw.forest.inference(bundle, x, -1, cex)
     invisible(NULL)
