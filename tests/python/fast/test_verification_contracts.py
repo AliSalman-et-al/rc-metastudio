@@ -75,6 +75,30 @@ def test_explicit_rscript_cannot_be_overridden(tmp_path):
         verify.selected_rscript(argparse.Namespace(rscript=str(other), r_runtime_root=str(root)))
 
 
+@pytest.mark.parametrize(
+    ("reuse", "cached_head", "expected_passes"),
+    [(True, verify.STABLE_BASELINE, 1), (True, "wrong", 2), (True, None, 2),
+     (False, verify.STABLE_BASELINE, 2)],
+)
+def test_code_health_always_checks_current_commit(monkeypatch, tmp_path, reuse, cached_head, expected_passes):
+    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
+    if cached_head is not None:
+        directory = tmp_path / "artifacts/code-health"
+        directory.mkdir(parents=True)
+        (directory / "baseline.json").write_text(
+            json.dumps({"schema_version": 1, "head": cached_head}), encoding="utf-8"
+        )
+        (directory / "baseline.txt").write_text("cached report", encoding="utf-8")
+    commands = []
+    monkeypatch.setattr(verify, "run", commands.append)
+
+    verify.run_code_health("base-commit", "current-commit", reuse_baseline=reuse)
+
+    assert len(commands) == expected_passes
+    assert commands[-1][commands[-1].index("--head") + 1] == "current-commit"
+    assert "--baseline" in commands[-1]
+
+
 def test_pre_push_uses_one_prepared_build_for_all_checks(monkeypatch, tmp_path):
     build = tmp_path / "generated-ui"
     monkeypatch.setenv("RCMS_QT6_BUILD_ROOT", str(build))

@@ -18,12 +18,25 @@ jobs:
         with:
           fetch-depth: 0
       - name: Fetch pre-squash baseline
-        run: git fetch origin "$(python3 -c 'from scripts.verify import STABLE_BASELINE; print(STABLE_BASELINE)')"
+        id: baseline-source
+        run: |
+          set -euo pipefail
+          sha="$(python3 -c 'from scripts.verify import STABLE_BASELINE; print(STABLE_BASELINE)')"
+          git fetch origin "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
       - run: uv python install
       - run: uv sync --frozen --only-group dev --no-install-project
+      - name: Cache fixed code-health baseline
+        id: baseline-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            artifacts/code-health/baseline.json
+            artifacts/code-health/baseline.txt
+          key: code-health-baseline-${{ runner.os }}-${{ runner.arch }}-${{ steps.baseline-source.outputs.sha }}-${{ hashFiles('scripts/code_health.py', 'config/code-health.json', 'pyproject.toml', '.python-version', 'uv.lock') }}
       - name: Resolve comparison base
         id: base
         shell: bash
@@ -46,10 +59,12 @@ jobs:
       - name: Enforce shared code-health gates
         env:
           COMPARISON_BASE: ${{ steps.base.outputs.sha }}
+          BASELINE_CACHE_HIT: ${{ steps.baseline-cache.outputs.cache-hit }}
         run: >-
           uv run --no-sync python -c
           "from scripts.verify import run_code_health; import os;
-          run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'])"
+          run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'],
+          reuse_baseline=os.environ['BASELINE_CACHE_HIT'] == 'true')"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
