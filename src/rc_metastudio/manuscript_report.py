@@ -572,7 +572,9 @@ def _report_sections(result, summary, methods):
     if not text_sections:
         return [], []
     pooled, fit = [], [((label, ()), (value, ())) for label, value in result.manuscript_model_info]
+    coefficients = []
     level, statistic = '95% CI', 'z'
+    coefficient_level, coefficient_statistic = level, statistic
     _report_subgroup_tests(text_sections, fit, summary)
     for section in result.sections:
         if section.kind != 'text':
@@ -581,8 +583,16 @@ def _report_sections(result, summary, methods):
         for table in section.tables:
             if table.role == 'subgroup_test':
                 continue
-            level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
+            if table.role == 'coefficients':
+                coefficient_level, coefficient_statistic = _report_table(
+                    result, section, table, summary, coefficients, fit, coefficient_level,
+                    coefficient_statistic, overall, calculation, methods)
+            else:
+                level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     primary = _primary_sections(result, text_sections, pooled, fit, level, statistic)
+    if coefficients and primary:
+        primary[0] = _regression_section(result, primary[0], coefficients,
+                                         coefficient_level, coefficient_statistic)
     sequential = _sequential_sections(result, text_sections)
     if sequential:
         primary = sequential + primary
@@ -605,10 +615,10 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     if any(t.role in {'cumulative', 'leave_one_out'} for s in text_sections for t in s.tables):
         return [replace(template, title='Model fit', paragraphs=notes,
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit, role='model_fit'),))] if fit else []
-    sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
-                         ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
-                        tables=(_pooled_table(primary_title, pooled, level, statistic),)),
-                replace(template, title='Model fit', paragraphs=notes,
+    estimates = replace(template, title=primary_title, paragraphs=(() if pooled else
+        ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
+        tables=(_pooled_table(primary_title, pooled, level, statistic),))
+    sections = [estimates, replace(template, title='Model fit', paragraphs=notes,
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit, role='model_fit'),)),
                 _study_results(result, template, level)]
     if not any(section.tables for section in text_sections):
@@ -616,13 +626,43 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 
 
-def _pooled_table(title, rows, level, statistic):
+def _regression_section(result, section, coefficients, level, statistic):
+    metric = (result.manuscript_metric or 'effect').lower()
+    if metric.endswith('transformed proportion'):
+        metric = 'proportion'
+    scale = _coefficient_scale(coefficients, metric)
+    title = f'Model coefficients ({scale})'
+    coefficient_table = _pooled_table(title, coefficients, level, statistic, scale=scale)
+    fitted = [replace(table, title=f'Fitted subgroup effects ({metric})',
+                      headers=tuple(f'{header} ({metric})' if header == 'Estimate' or header.endswith('% CI')
+                                    else header for header in table.headers))
+              for table in section.tables]
+    return replace(section, title=title, paragraphs=(),
+                   tables=(_available_columns(replace(coefficient_table, role='coefficients')), *fitted))
+
+
+def _coefficient_scale(rows, metric):
+    scales = {quantity.scale for row in rows for quantity in row[1][1] if quantity.role == 'estimate'}
+    if scales == {'log'}:
+        return f'log {metric} scale'
+    if scales == {'logit'}:
+        return 'logit scale'
+    if scales == {'arcsine'}:
+        return 'arcsine scale'
+    if scales == {'freeman-tukey'}:
+        return 'Freeman–Tukey scale'
+    return f'{metric} scale'
+
+
+def _pooled_table(title, rows, level, statistic, *, scale=''):
+    estimate = f'Estimate ({scale})' if scale else 'Estimate'
+    interval = f'{level} ({scale})' if scale else level
     scales = {row[4][0] for row in rows if row[3][0] not in ('', '—', 'NA')}
     if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'}:
-        scale = next(iter(scales))
-        return _table(title, ('Effect', 'Estimate', level, f'SE ({scale} scale)', statistic, 'P'),
+        se_scale = next(iter(scales))
+        return _table(title, ('Effect', estimate, interval, f'SE ({se_scale} scale)', statistic, 'P'),
                       [(*row[:4], *row[5:]) for row in rows], role='pooled')
-    return _table(title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'P'), rows, role='pooled')
+    return _table(title, ('Effect', estimate, interval, 'SE', 'SE scale', statistic, 'P'), rows, role='pooled')
 
 
 def _available_columns(table):

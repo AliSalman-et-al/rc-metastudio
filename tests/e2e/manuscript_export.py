@@ -488,7 +488,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random', estimator='DL')
     assert_manuscript_tables(view)
-    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI -0.565 to -0.152; z = -3.400; P < 0.001).'
+    expected_swap = 'The pooled standardized mean difference was −0.358 (95% CI −0.565 to −0.152; z = −3.400; P < 0.001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
     assert 'The confidence interval excludes' not in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
@@ -526,10 +526,11 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         else:
             assert 'coefficient' in prose and '95% CI' in prose and '; P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose
-            assert 'For Dose, the coefficient was 0.063 (95% CI -0.026 to 0.151; z = 1.384; P = 0.166).' in prose
+            assert 'For Dose, the coefficient was 0.063 (95% CI −0.026 to 0.151; z = 1.384; P = 0.166).' in prose
             assert 'Residual heterogeneity: Q = ' in prose
             assert 'The confidence interval includes 0' not in prose
-            assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
+            assert any(t.title == 'Model coefficients (log odds ratio scale)'
+                       for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
         assert any(p.startswith('Table ') for p in captions)

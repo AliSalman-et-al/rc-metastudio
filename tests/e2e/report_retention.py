@@ -199,21 +199,21 @@ def expected_p(value):
     return '< 0.001' if float(value) < .001 else value
 
 
-def expected_pooled(result):
+def expected_pooled(result, roles=('pooled', 'coefficients')):
     rows = []
     for section in result.sections:
         overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
                         if t.role == 'overall_test' and t.rows), {})
         calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
                             if t.role == 'calculation' and t.rows), {})
-        rows.extend(expected_effect_rows(result, section, overall, calculation))
+        rows.extend(expected_effect_rows(result, section, overall, calculation, roles))
     return tuple(rows)
 
 
-def expected_effect_rows(result, section, overall, calculation):
+def expected_effect_rows(result, section, overall, calculation, roles=('pooled', 'coefficients')):
     rows = []
     for table in section.tables:
-        if table.role not in ('pooled', 'coefficients'):
+        if table.role not in roles:
             continue
         vertical = table.vertical
         headers = tuple(dict(table.rows)) if vertical else table.headers
@@ -374,7 +374,9 @@ def assert_report(view):
                     'which may represent', 'evidence of small-study effects'):
         assert verdict not in report_text, verdict
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')), None)
+    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')
+                   or table.title.startswith('Fitted subgroup effects (')), None)
+    coefficients = next((table for table in tables if table.title.startswith('Model coefficients (')), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
     for section in view.results.sections:
@@ -384,12 +386,16 @@ def assert_report(view):
                 model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
                 assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
-    expected_rows = expected_pooled(view.results) if structured else ()
+    if coefficients is not None:
+        assert coefficients.headers[1].startswith('Estimate (')
+        expected_coefficients = expected_pooled(view.results, ('coefficients',))
+        assert [row[:3] for row in coefficients.rows] == [row[:3] for row in expected_coefficients]
+    expected_rows = expected_pooled(view.results, ('pooled',)) if structured else ()
     assert (pooled is not None) == bool(expected_rows), (pooled, expected_rows)
     level = '95% CI'
     if structured and expected_rows:
         assert pooled is not None
-        level = next(header for header in pooled.headers if header.endswith('% CI'))
+        level = next(header.split(' (')[0] for header in pooled.headers if '% CI' in header)
         expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_pooled(view.results))
         scales = {row[4] for row in expected_rows if row[3] not in ('', '—', 'NA')}
         compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
@@ -403,7 +409,9 @@ def assert_report(view):
                 if 'df' in source.headers:
                     statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
         full_headers = [('Effect', 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE', 'SE scale', statistic, 'P')]
-        assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
+        headers_without_scale = tuple(header.split(' (')[0] if ('% CI' in header or header.startswith('Estimate ('))
+                                      else header for header in pooled.headers)
+        assert headers_without_scale in [tuple(headers[i] for i in indexes) for headers in full_headers]
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:
