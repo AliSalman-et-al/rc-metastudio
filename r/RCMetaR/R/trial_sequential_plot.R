@@ -248,9 +248,9 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         added <- diff(c(0, looks$accrued))
         finite <- is.finite(looks$z)
         # The bubble renderer uses square-root scaling of point diameter.
-        # The SVG device draws a circle with a diameter of 0.28 em.
+        # The SVG device draws a circle with a diameter of 0.45 em.
         cap <- max(.01, (.06 * graphics::par("pin")[2] - .75/72) /
-                   (.28 * 12/72 * size$cex))
+                   (.45 * 12/72 * size$cex))
         markers <- min(style$plim[2], cap) * sqrt(added/max(added[finite]))
         median.marker <- stats::median(markers[finite])
         inside <- which(finite & abs(looks$z) <= limit)
