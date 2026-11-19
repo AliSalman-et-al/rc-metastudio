@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
+from decimal import Decimal
 import re
 import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
@@ -791,15 +792,13 @@ class ManuscriptReport:
         return ''.join(parts)
 
 
-TSA_ADJUSTED_INTERVAL_NOTE = "— Too little information for a finite TSA-adjusted interval."
+def _tsa_accrued_number(value: float, hr: bool) -> str:
+    number = Decimal(f"{value:.6g}" if hr else str(value)).normalize()
+    return f"{number:,f}"
 
 
-def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
-    from decimal import Decimal
-    from dataclasses import replace
-
-    from rc_metastudio.analysis_results import ResultSection
-    from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE
+def _tsa_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE
 
     options = request.options
     hr = request.metric == "HR"
@@ -810,10 +809,6 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
             "harm": f"one-sided test favouring {right}"}[options.test]
     measure_name = {"RR": "risk ratios", "OR": "odds ratios", "RD": "risk differences",
                     "MD": "mean differences", "HR": "hazard ratios"}[request.metric]
-
-    def accrued_number(value: float) -> str:
-        number = Decimal(f"{value:.6g}" if hr else str(value)).normalize()
-        return f"{number:,f}"
 
     effect = f"{run.anticipated_effect:.4g}"
     effect_phrase = {"OR": "an OR", "RR": "an RR", "RD": "an RD", "MD": "a mean difference",
@@ -826,7 +821,7 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     method = [
         f"We pooled {measure_name} ({request.metric}) using a {model} and the Wald z statistic.",
         f"Studies were added in {order}.",
-        f"The {ris_label} was {accrued_number(run.ris)} {units} using a {test} "
+        f"The {ris_label} was {_tsa_accrued_number(run.ris, hr)} {units} using a {test} "
         f"with α = {options.alpha:g} and {options.power:.0%} power. "
         f"The anticipated intervention effect was {effect_phrase} of {effect}{source}.",
     ]
@@ -838,20 +833,31 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     if request.metric == "MD" and run.variance is not None:
         variance = "entered" if run.variance_source == "user" else "fixed-effect-weighted pooled arm variance"
         method.append(f"The participant variance was {run.variance:.4g} ({variance}).")
+    method.append(_tsa_heterogeneity_prose(run, request, units))
+    method.extend(_tsa_monitoring_methods(run, request))
+    return method
+
+
+def _tsa_heterogeneity_prose(run: "TsaRun", request: "TsaRequest", units: str) -> str:
+    hr = request.metric == "HR"
+    options = request.options
     if request.model != "random":
         if run.fixed_effect_note is None:
-            method.append("Heterogeneity adjustment was inapplicable to the fixed-effect model.")
-        else:
-            d2, ris = run.fixed_effect_note.d2, accrued_number(run.fixed_effect_note.ris)
-            size, note_units = ("required information", "units of information") if hr else ("required information size", units)
-            method.append(f"The fixed-effect model does not adjust the information size for heterogeneity; "
-                          f"a random-effects model gave D² = {d2:.1%} and a {size} of {ris} "
-                          f"{note_units} (Wetterslev 2017).")
-    elif options.heterogeneity == "none":
-        method.append("The analysis used no heterogeneity adjustment.")
-    else:
-        measure, value = ("D²", run.d2) if options.heterogeneity == "d2" else ("I²", run.i2)
-        method.append(f"The information size was adjusted for {measure} = {value:.1%}.")
+            return "Heterogeneity adjustment was inapplicable to the fixed-effect model."
+        d2, ris = run.fixed_effect_note.d2, _tsa_accrued_number(run.fixed_effect_note.ris, hr)
+        size, note_units = ("required information", "units of information") if hr else ("required information size", units)
+        return (f"The fixed-effect model does not adjust the information size for heterogeneity; "
+                f"a random-effects model gave D² = {d2:.1%} and a {size} of {ris} "
+                f"{note_units} (Wetterslev 2017).")
+    if options.heterogeneity == "none":
+        return "The analysis used no heterogeneity adjustment."
+    measure, value = ("D²", run.d2) if options.heterogeneity == "d2" else ("I²", run.i2)
+    return f"The information size was adjusted for {measure} = {value:.1%}."
+
+
+def _tsa_monitoring_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    options = request.options
+    method: list[str] = []
     spending = "O’Brien-Fleming" if options.spending == "obf" else "Pocock"
     method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
     method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
@@ -863,10 +869,18 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         method.append("Sensitivity analyses repeated the analysis with alternative anticipated intervention effects.")
     method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
 
-    final, crossing = run.final, run.crossing
+    return method
+
+
+def _tsa_crossing_prose(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    hr = request.metric == "HR"
+    units = "units of statistical information" if hr else "participants"
+    left, right = request.favoured_labels()
+    effect = f"{run.anticipated_effect:.4g}"
+    crossing = run.crossing
     results: list[str] = []
     if crossing is not None:
-        at = f"when {crossing.study} was added ({accrued_number(crossing.accrued)} {units}, {crossing.fraction:.0%} of the required information size)."
+        at = f"when {crossing.study} was added ({_tsa_accrued_number(crossing.accrued, hr)} {units}, {crossing.fraction:.0%} of the required information size)."
         if run.conclusion == "crossed-futility":
             results.append(f"The cumulative Z-curve crossed the futility boundary {at}")
             results.append(f"This suggests that an intervention effect of {effect} is unlikely, "
@@ -880,9 +894,15 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
         results.append("The cumulative Z-curve crossed neither a monitoring nor a futility boundary.")
     else:
         raise ValueError("Trial sequential analysis returned an invalid conclusion.")
-    if crossing != final:
+    return results
+
+
+def _tsa_interval_prose(run: "TsaRun", confidence: float) -> list[str]:
+    final = run.final
+    results: list[str] = []
+    if run.crossing != final:
         results.append(f"Accrued information is {final.fraction:.0%} of the required information size.")
-    results.append(f"The conventional {request.confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
+    results.append(f"The conventional {confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
     if final.fraction >= 1:
         results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
     elif final.adjusted_lower is not None and final.adjusted_upper is not None:
@@ -894,6 +914,13 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     if run.lil_lambda is not None:
         results.append(f"The final penalised Z-score was {final.penalised_z:.4g}." if final.penalised_z is not None
                        else "The final penalised Z-score was unavailable at the accrued statistical information.")
+    return results
+
+
+def _tsa_results(run: "TsaRun", request: "TsaRequest") -> tuple[str, ...]:
+    effect = f"{run.anticipated_effect:.4g}"
+    results = _tsa_crossing_prose(run, request)
+    results.extend(_tsa_interval_prose(run, request.confidence))
     if run.conclusion in {"crossed-benefit", "crossed-harm"}:
         results.append("Because the cumulative Z-curve crossed the monitoring boundary, the result remains "
                        "statistically significant after accounting for repeated significance testing.")
@@ -902,27 +929,36 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     elif run.conclusion == "none":
         results.append(f"More information is needed before an intervention effect of {effect} can be confirmed or rejected.")
 
+    return tuple(results)
+
+
+def _tsa_references(run: "TsaRun", request: "TsaRequest") -> ResultSection:
     references = [
         "Wetterslev J, Thorlund K, Brok J, Gluud C. J Clin Epidemiol. 2008;61:64–75.",
         "Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol. 2009;9:86.",
         "Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70:659–663.",
     ]
-    if (options.manual_ris is None or run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
+    if (request.options.manual_ris is None or run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
             or run.variance_source.startswith("wetterslev-2017")):
         references.append("Wetterslev J, Jakobsen JC, Gluud C. BMC Med Res Methodol. 2017;17:39.")
     if run.effect_source == "imberger-2016-10-percent-rrr":
         references.append("Imberger G, Thorlund K, Gluud C, Wetterslev J. BMJ Open. 2016;6:e011890.")
     if run.lil_lambda is not None:
         references.append("Hu M, Cappelleri JC, Lan KKG. Clin Trials. 2007;4:329–340.")
-    citations = ResultSection("trial-sequential.references", "text", 2, "References",
-                              "\n".join(references), "References", paragraphs=tuple(references))
+    return ResultSection("trial-sequential.references", "text", 2, "References",
+                         "\n".join(references), "References", paragraphs=tuple(references))
+
+
+def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
+    from rc_metastudio.trial_sequential_analysis import TSA_TITLE
+
     return ManuscriptReport(
-        TSA_TITLE, " ".join(method), tuple(section for section in run.result.sections if section.tables),
-        (citations,), tuple(
+        TSA_TITLE, " ".join(_tsa_methods(run, request)), tuple(section for section in run.result.sections if section.tables),
+        (_tsa_references(run, request),), tuple(
             replace(section, paragraphs=("Marker area is proportional to the information each trial added.",))
             for section in run.result.sections if section.kind == "image"
         ),
-        tuple(results), comparison=context.replace("\n", " · "),
+        _tsa_results(run, request), comparison=context.replace("\n", " · "),
     )
 
 

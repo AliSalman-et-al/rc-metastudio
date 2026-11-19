@@ -12,6 +12,13 @@
     stop("TSA requires a metric.")
   if (is.null(params$model)) stop("TSA requires the sheet model.")
   settings <- utils::modifyList(.tsa.defaults, params)
+  .tsa.validate.choices(settings)
+  .tsa.validate.numeric(settings)
+  .tsa.validate.flags(settings)
+  settings
+}
+
+.tsa.validate.choices <- function(settings) {
   for (name in c("order", "model", "heterogeneity", "spending", "alternative", "benefit.direction", "rm.method")) {
     choices <- switch(name, order=c("year", "table"), model=c("fixed-iv", "fixed-mh", "peto", "random"),
       heterogeneity=c("d2", "i2", "none"), spending=c("obf", "pocock"),
@@ -20,6 +27,9 @@
     if (length(settings[[name]]) != 1L || !is.character(settings[[name]]) ||
         !(settings[[name]] %in% choices)) stop("Invalid TSA setting: ", name, ".")
   }
+}
+
+.tsa.validate.numeric <- function(settings) {
   for (name in c("alpha", "power", "conf.level", "adjust", "anticipated.effect",
                  "control.proportion", "variance", "manual.ris")) {
     value <- settings[[name]]
@@ -32,15 +42,37 @@
       manual.ris=value > 0, TRUE)
     if (!valid) stop("Invalid TSA setting: ", name, ".")
   }
+}
+
+.tsa.validate.flags <- function(settings) {
   for (name in c("futility", "lil", "drop00"))
     if (!is.null(settings[[name]]) &&
         (!is.logical(settings[[name]]) || length(settings[[name]]) != 1L || is.na(settings[[name]])))
       stop("Invalid TSA setting: ", name, ".")
-  settings
 }
 
 .tsa.counts <- function(data) {
   list(ai=data@g1O1, bi=data@g1O2, ci=data@g2O1, di=data@g2O2)
+}
+
+.tsa.fit.counts <- function(args, s, to) {
+  model <- s$model
+  drop <- s$drop00 %||% TRUE
+  no.events <- with(args, ai == 0 & ci == 0)
+  all.events <- with(args, bi == 0 & di == 0)
+  if (all(no.events | all.events) && (model == "peto" || drop)) return(NULL)
+  if (model == "fixed-mh") {
+    estimable <- switch(s$metric,
+      OR=with(args, sum(ai*di) > 0 && sum(bi*ci) > 0),
+      RR=with(args, sum(ai) > 0 && sum(ci) > 0), RD=TRUE)
+    if (!estimable) return(NULL)
+  }
+  args <- c(args, list(add=c(s$adjust, 0), to=c(to, "none"),
+    drop00=c(drop, drop), level=s$conf.level))
+  fit <- if (model == "peto") do.call(metafor::rma.peto, args) else
+    do.call(metafor::rma.mh, c(args, list(measure=s$metric)))
+  if (!all(is.finite(c(fit$b, fit$se, fit$zval))) || fit$se <= 0) return(NULL)
+  fit
 }
 
 .tsa.fit <- function(data, s) {
@@ -48,24 +80,7 @@
   if (is(data, "BinaryData")) {
     args <- .tsa.counts(data)
     to <- .rcmetar.binary.correction.target(s)
-    if (model %in% c("fixed-mh", "peto")) {
-      drop <- s$drop00 %||% TRUE
-      no.events <- with(args, ai == 0 & ci == 0)
-      all.events <- with(args, bi == 0 & di == 0)
-      if (all(no.events | all.events) && (model == "peto" || drop)) return(NULL)
-      if (model == "fixed-mh") {
-        estimable <- switch(s$metric,
-          OR=with(args, sum(ai*di) > 0 && sum(bi*ci) > 0),
-          RR=with(args, sum(ai) > 0 && sum(ci) > 0), RD=TRUE)
-        if (!estimable) return(NULL)
-      }
-      args <- c(args, list(add=c(s$adjust, 0), to=c(to, "none"),
-        drop00=c(drop, drop), level=s$conf.level))
-      fit <- if (model == "peto") do.call(metafor::rma.peto, args) else
-        do.call(metafor::rma.mh, c(args, list(measure=s$metric)))
-      if (!all(is.finite(c(fit$b, fit$se, fit$zval))) || fit$se <= 0) return(NULL)
-      return(fit)
-    }
+    if (model %in% c("fixed-mh", "peto")) return(.tsa.fit.counts(args, s, to))
     effects <- do.call(metafor::escalc, c(list(measure=s$metric), args,
       list(add=s$adjust, to=to, drop00=s$drop00 %||% FALSE)))
   } else if (is(data, "ContinuousData")) {
@@ -82,69 +97,75 @@
   fit
 }
 
-.tsa.prepare <- function(data, s) {
-  no <- function(code, reason) list(version=1L, eligible=FALSE, ready=FALSE,
-    reason.code=code, reason=reason)
+.tsa.ineligible <- function(code, reason) {
+  list(version=1L, eligible=FALSE, ready=FALSE, reason.code=code, reason=reason)
+}
+
+.tsa.eligibility <- function(data, s) {
   if (s$futility && s$alternative != "two-sided")
-    return(no("one-sided-futility", "Futility boundaries are available only for two-sided tests."))
+    return(.tsa.ineligible("one-sided-futility", "Futility boundaries are available only for two-sided tests."))
   binary <- is(data, "BinaryData") && s$metric %in% c("RR", "OR", "RD")
   md <- is(data, "ContinuousData") && s$metric == "MD"
   hr <- is(data, "RatioData") && identical(data@metric, "HR") && s$metric == "HR"
   if (!binary && !md && !hr)
-    return(no("unsupported-measure", "TSA supports two-arm RR, OR, RD, Peto OR, MD and reported HR."))
+    return(.tsa.ineligible("unsupported-measure", "TSA supports two-arm RR, OR, RD, Peto OR, MD and reported HR."))
   if ((s$model %in% c("fixed-mh", "peto") && !binary) || (s$model == "peto" && s$metric != "OR"))
-    return(no("unsupported-model", "The sheet model does not support this TSA measure."))
-  k <- length(data@study.names)
-  if (k < 2L) return(no("too-few-studies", "TSA requires at least two included studies."))
-  if (s$order == "year" && (length(data@years) != k || anyNA(data@years)))
-    return(no("missing-year", "Publication year is required for every included study in year order."))
-  indices <- if (s$order == "year") order(data@years, seq_len(k)) else seq_len(k)
-  data <- get.subset(data, indices)
-  studies <- data@study.names
+    return(.tsa.ineligible("unsupported-model", "The sheet model does not support this TSA measure."))
+  list(binary=binary, md=md, hr=hr)
+}
+
+.tsa.binary.information <- function(data, s, k) {
   keep <- rep(TRUE, k)
-
-  if (binary) {
-    counts <- .tsa.counts(data)
-    if (!all(lengths(counts) == k) || any(!is.finite(unlist(counts))) ||
-        any(unlist(counts) < 0 | unlist(counts) %% 1 != 0) ||
-        any(counts$ai + counts$bi <= 0 | counts$ci + counts$di <= 0))
-      return(no("missing-binary-counts", "TSA requires complete two-arm event counts and positive arm sizes."))
-    control <- counts$ci + counts$di
-    information <- counts$ai + counts$bi + control
-    if (s$model == "peto" || (s$model == "fixed-mh" && (s$drop00 %||% TRUE))) {
-      keep <- with(counts, !(ai == 0 & ci == 0 | bi == 0 & di == 0))
-    }
-  } else if (md) {
-    raw <- list(data@N1, data@N2, data@sd1, data@sd2, data@mean1, data@mean2)
-    if (!all(lengths(raw) == k) || any(!is.finite(unlist(raw))) ||
-        any(data@N1 < 2 | data@N2 < 2 | data@sd1 < 0 | data@sd2 < 0) ||
-        any(data@N1 %% 1 != 0 | data@N2 %% 1 != 0))
-      return(no("missing-continuous-arms", "MD TSA requires complete arm sizes, means and standard deviations."))
-    information <- data@N1 + data@N2
-  } else {
-    if (length(data@source)) {
-      prepared <- tryCatch(ratio.prepare(data, s), error=identity)
-      if (inherits(prepared, "error")) return(no("invalid-hr", conditionMessage(prepared)))
-      data <- prepared
-    }
-    if (length(data@y) != k || length(data@SE) != k ||
-        any(!is.finite(data@y) | !is.finite(data@SE) | data@SE <= 0) ||
-        any(!is.finite(1/data@SE^2) | 1/data@SE^2 <= 0))
-      return(no("invalid-hr", "HR TSA requires a finite log HR and positive log-scale SE per included study."))
-    information <- 1/data@SE^2
-    if (!is.finite(sum(information))) return(no("invalid-hr", "Accrued HR statistical information must be finite."))
+  counts <- .tsa.counts(data)
+  values <- unlist(counts)
+  if (!all(lengths(counts) == k) || any(!is.finite(values) | values < 0 | values %% 1 != 0) ||
+      any(counts$ai + counts$bi <= 0 | counts$ci + counts$di <= 0))
+    return(.tsa.ineligible("missing-binary-counts", "TSA requires complete two-arm event counts and positive arm sizes."))
+  control <- counts$ci + counts$di
+  information <- counts$ai + counts$bi + control
+  if (s$model == "peto" || (s$model == "fixed-mh" && (s$drop00 %||% TRUE))) {
+    keep <- with(counts, !(ai == 0 & ci == 0 | bi == 0 & di == 0))
   }
+  list(data=data, keep=keep, information=information, counts=counts, control=control)
+}
 
+.tsa.md.information <- function(data, k) {
+  raw <- list(data@N1, data@N2, data@sd1, data@sd2, data@mean1, data@mean2)
+  if (!all(lengths(raw) == k) || any(!is.finite(unlist(raw))) ||
+      any(data@N1 < 2 | data@N2 < 2 | data@sd1 < 0 | data@sd2 < 0) ||
+      any(data@N1 %% 1 != 0 | data@N2 %% 1 != 0))
+    return(.tsa.ineligible("missing-continuous-arms", "MD TSA requires complete arm sizes, means and standard deviations."))
+  information <- data@N1 + data@N2
+  list(data=data, keep=rep(TRUE, k), information=information)
+}
+
+.tsa.hr.information <- function(data, s, k) {
+  if (length(data@source)) {
+    prepared <- tryCatch(ratio.prepare(data, s), error=identity)
+    if (inherits(prepared, "error")) return(.tsa.ineligible("invalid-hr", conditionMessage(prepared)))
+    data <- prepared
+  }
+  if (length(data@y) != k || length(data@SE) != k ||
+      any(!is.finite(data@y) | !is.finite(data@SE) | data@SE <= 0) ||
+      any(!is.finite(1/data@SE^2) | 1/data@SE^2 <= 0))
+    return(.tsa.ineligible("invalid-hr", "HR TSA requires a finite log HR and positive log-scale SE per included study."))
+  information <- 1/data@SE^2
+  if (!is.finite(sum(information))) return(.tsa.ineligible("invalid-hr", "Accrued HR statistical information must be finite."))
+  list(data=data, keep=rep(TRUE, k), information=information)
+}
+
+.tsa.fit.included <- function(data, s, keep) {
+  studies <- data@study.names
   warnings <- data@notes
   fit_at <- function(data) withCallingHandlers(.tsa.fit(data, s), warning=function(w) {
     warnings <<- c(warnings, conditionMessage(w))
     invokeRestart("muffleWarning")
   })
-  too.few <- function() no("too-few-estimable-studies",
+  too.few <- function() .tsa.ineligible("too-few-estimable-studies",
     "TSA requires at least two estimable study effects for the sheet model.")
   if (sum(keep) < 2L) return(too.few())
   fit <- tryCatch(fit_at(if (all(keep)) data else get.subset(data, which(keep))), error=identity)
-  if (inherits(fit, "error")) return(no("model-fit-failed", conditionMessage(fit)))
+  if (inherits(fit, "error")) return(.tsa.ineligible("model-fit-failed", conditionMessage(fit)))
   if (is.null(fit) || fit$k < 2L) return(too.few())
   keep[keep] <- fit$not.na
   excluded <- studies[!keep]
@@ -152,11 +173,12 @@
     warnings <- c(warnings, paste("Excluded from the TSA model:", paste(excluded, collapse=", ")))
     data <- get.subset(data, which(keep))
   }
-  accrued <- cumsum(information[keep])
-  ratio <- !s$metric %in% c("RD", "MD")
-  axis <- if (hr) "statistical-information" else "participants"
+  list(data=data, fit=fit, keep=keep, excluded=excluded, warnings=warnings)
+}
+
+.tsa.design.defaults <- function(data, s, fit, keep, counts, control, md, ratio) {
   defaults <- c(.tsa.defaults, list(anticipated.effect=NA_real_, anticipated.effect.source="required"))
-  if (binary) {
+  if (!is.null(counts)) {
     defaults$control.proportion <- mean(counts$ci[keep]/control[keep])
     defaults$control.proportion.source <- "wetterslev-2017-unweighted-control-mean"
   }
@@ -181,6 +203,27 @@
       defaults$anticipated.effect.source <- "imberger-2016-10-percent-rrr"
     }
   }
+  list(values=defaults, keep=keep)
+}
+
+.tsa.intervention.risk <- function(metric, pc, effect) {
+  switch(metric, RR=pc*effect, RD=pc+effect,
+    OR=if (effect > 0) plogis(qlogis(pc)+log(effect)) else NA_real_)
+}
+
+.tsa.bernoulli.variance <- function(pc, pe) {
+  p.bar <- (pc + pe)/2
+  p.bar*(1-p.bar)
+}
+
+.tsa.check.intervention.risk <- function(pc, pe, entered.effect) {
+  if (pe >= 0 && pe <= 1 && pe != pc) return(TRUE)
+  if (!is.null(entered.effect))
+    stop("The anticipated effect and control proportion must imply a different, feasible intervention risk.")
+  FALSE
+}
+
+.tsa.design.inputs <- function(defaults, s, binary, md, ratio) {
   effect <- s$anticipated.effect %||% defaults$anticipated.effect
   required <- character()
   pc <- if (binary) s$control.proportion %||% defaults$control.proportion else NA_real_
@@ -192,26 +235,50 @@
     required <- "anticipated.effect"
   }
   variance <- if (md) s$variance %||% defaults$variance else NA_real_
+  pe <- NA_real_
   if (binary && !length(required)) {
-    pe <- switch(s$metric, RR=pc*effect, RD=pc+effect, OR=plogis(qlogis(pc)+log(effect)))
-    if (pe < 0 || pe > 1 || pe == pc) {
-      if (!is.null(s$anticipated.effect))
-        stop("The anticipated effect and control proportion must imply a different, feasible intervention risk.")
+    pe <- .tsa.intervention.risk(s$metric, pc, effect)
+    variance <- .tsa.bernoulli.variance(pc, pe)
+    if (!.tsa.check.intervention.risk(pc, pe, s$anticipated.effect)) {
       required <- "anticipated.effect"
+      pe <- NA_real_
     }
-    p.bar <- (pc + pe)/2
-    variance <- p.bar*(1-p.bar)
   }
+  list(effect=effect, pc=pc, variance=variance, pe=pe, required=required)
+}
+
+.tsa.prepare <- function(data, s) {
+  eligible <- .tsa.eligibility(data, s)
+  if (identical(eligible$eligible, FALSE)) return(eligible)
+  k <- length(data@study.names)
+  if (k < 2L) return(.tsa.ineligible("too-few-studies", "TSA requires at least two included studies."))
+  if (s$order == "year" && (length(data@years) != k || anyNA(data@years)))
+    return(.tsa.ineligible("missing-year", "Publication year is required for every included study in year order."))
+  indices <- if (s$order == "year") order(data@years, seq_len(k)) else seq_len(k)
+  data <- get.subset(data, indices)
+  raw <- if (eligible$binary) .tsa.binary.information(data, s, k) else
+    if (eligible$md) .tsa.md.information(data, k) else .tsa.hr.information(data, s, k)
+  if (identical(raw$eligible, FALSE)) return(raw)
+  fitted <- .tsa.fit.included(raw$data, s, raw$keep)
+  if (identical(fitted$eligible, FALSE)) return(fitted)
+  keep <- fitted$keep
+  accrued <- cumsum(raw$information[keep])
+  ratio <- !s$metric %in% c("RD", "MD")
+  axis <- if (eligible$hr) "statistical-information" else "participants"
+  design <- .tsa.design.defaults(fitted$data, s, fitted$fit, keep, raw$counts, raw$control, eligible$md, ratio)
+  defaults <- design$values
+  keep <- design$keep
+  inputs <- .tsa.design.inputs(defaults, s, eligible$binary, eligible$md, ratio)
+  required <- inputs$required
   preview <- list(version=1L, eligible=TRUE, ready=!length(required),
     reason.code=if (length(required)) "input-required" else "",
     reason=if (length(required)) paste("Enter", required) else "",
     required.inputs=required, metric=s$metric, model=s$model, axis=axis,
-    defaults=defaults, study.order=indices[keep], excluded.studies=excluded,
+    defaults=defaults, study.order=indices[keep], excluded.studies=fitted$excluded,
     setting.sources=setNames(ifelse(names(.tsa.defaults) %in% c("rm.method", "adjust", "conf.level"),
       "rcmetar-sheet-default", "tsa-policy"), names(.tsa.defaults)))
-  list(preview=preview, data=data, fit=fit, accrued=accrued, axis=axis,
-    warnings=warnings, effect=effect, pc=pc, variance=variance, ratio=ratio,
-    pe=if (binary && !length(required)) pe else NA_real_)
+  list(preview=preview, data=fitted$data, fit=fitted$fit, accrued=accrued, axis=axis,
+    warnings=fitted$warnings, effect=inputs$effect, pc=inputs$pc, variance=inputs$variance, ratio=ratio, pe=inputs$pe)
 }
 
 .tsa.critical <- function(timing, spending.time, tail.alpha, spending, symmetric) {
@@ -545,6 +612,27 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     conclusion=monitored$conclusion$category, crossing.look=monitored$conclusion$look))
 }
 
+.tsa.sensitivity.scenario <- function(prepared, s, path, label, effect, rrr, row) {
+  pc <- prepared$pc
+  alternative <- prepared
+  alternative$effect <- effect
+  alternative.settings <- s
+  alternative.settings$anticipated.effect <- effect
+  if (is.finite(pc)) {
+    alternative$pe <- .tsa.intervention.risk(s$metric, pc, effect)
+    alternative$variance <- .tsa.bernoulli.variance(pc, alternative$pe)
+  }
+  tryCatch({
+    if (!is.finite(effect) || (is.finite(pc) &&
+        (is.na(alternative$pe) || alternative$pe < 0 || alternative$pe > 1)))
+      stop("The alternative effect implies an infeasible intervention risk.")
+    design <- .tsa.design(alternative, alternative.settings)
+    monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
+    row(label, effect, rrr, .tsa.summary(alternative, alternative.settings, design, monitored, path$lambda),
+      tail(monitored$looks, 1))
+  }, error=function(e) row(label, if (is.finite(effect) && (!prepared$ratio || effect > 0)) effect else NA_real_, rrr))
+}
+
 .tsa.sensitivity <- function(prepared, s, path, summary, looks) {
   primary <- if (is.null(s$anticipated.effect)) "Primary (default)" else "Primary (entered)"
   pc <- prepared$pc
@@ -567,26 +655,7 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     effect <- effects[i]
     if (isTRUE(signif(effect, 4) == signif(prepared$effect, 4))) next
     rrr <- if (prepared$ratio) 100*reduction[i] else NA_real_
-    alternative <- prepared
-    alternative$effect <- effect
-    alternative.settings <- s
-    alternative.settings$anticipated.effect <- effect
-    if (is.finite(pc)) {
-      alternative$pe <- switch(s$metric, RR=pc*effect, RD=pc+effect,
-        OR=if (effect > 0) plogis(qlogis(pc)+log(effect)) else NA_real_)
-      p.bar <- (pc + alternative$pe)/2
-      alternative$variance <- p.bar*(1-p.bar)
-    }
-    scenario <- tryCatch({
-      if (!is.finite(effect) || (is.finite(pc) &&
-          (is.na(alternative$pe) || alternative$pe < 0 || alternative$pe > 1)))
-        stop("The alternative effect implies an infeasible intervention risk.")
-      design <- .tsa.design(alternative, alternative.settings)
-      monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
-      row(labels[i], effect, rrr, .tsa.summary(alternative, alternative.settings, design, monitored, path$lambda),
-        tail(monitored$looks, 1))
-    }, error=function(e) row(labels[i], if (is.finite(effect) && (!prepared$ratio || effect > 0)) effect else NA_real_, rrr))
-    result[[length(result)+1L]] <- scenario
+    result[[length(result)+1L]] <- .tsa.sensitivity.scenario(prepared, s, path, labels[i], effect, rrr, row)
   }
   result
 }

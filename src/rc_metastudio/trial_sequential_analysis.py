@@ -5,11 +5,18 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+from uuid import uuid4
 
+from rc_metastudio import r_bridge
+from rc_metastudio.analysis_identity import plot_caption
 from rc_metastudio.analysis_results import AnalysisResult, ResultSection
-from rc_metastudio.dataset_table_model import DatasetTableModel
 from rc_metastudio.qt_object_guard import required
+from rc_metastudio.settings import analysis_output_path
+from rc_metastudio.small_study_effects import FUNNEL_STYLE_PRESETS, FunnelStyle
+
+if TYPE_CHECKING:
+    from rc_metastudio.dataset_table_model import DatasetTableModel
 
 TSA_TITLE = "Trial Sequential Analysis"
 TSA_SETTINGS = "trial_sequential_analysis"
@@ -95,7 +102,7 @@ class TsaRequest:
         return (_without_favours(left), _without_favours(right))
 
     @classmethod
-    def from_sheet(cls, model: DatasetTableModel, options: TsaOptions) -> "TsaRequest":
+    def from_sheet(cls, model: "DatasetTableModel", options: TsaOptions) -> "TsaRequest":
         sheet = required(model.current_sheet, "active sheet")
         saved = sheet.settings.get("analysis", {})
         method, params = sheet.last_meta_analysis or (str(saved.get("method", "")), saved.get("parameters", {}))
@@ -262,14 +269,25 @@ class TsaRun:
 
 
 class TsaService:
-    def preview(self, model: DatasetTableModel, request: TsaRequest) -> TsaPreview:
-        from rc_metastudio.r_bridge import preview_trial_sequential_analysis
-        return preview_trial_sequential_analysis(model, request)
+    def preview(self, model: "DatasetTableModel", request: TsaRequest) -> TsaPreview:
+        fields = r_bridge.preview_trial_sequential_analysis(
+            model, request.family, request.metric, request.to_mapping(),
+        )
+        return TsaPreview.from_mapping(fields)
 
-    def conclusion_command(self, model: DatasetTableModel, request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
-        from rc_metastudio.r_bridge import trial_sequential_conclusion_command
-        return trial_sequential_conclusion_command(model, request, directory)
+    def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
+        return r_bridge.trial_sequential_conclusion_command(
+            model, request.family, request.metric, request.to_mapping(), directory,
+        )
 
-    def run(self, model: DatasetTableModel, request: TsaRequest) -> TsaRun:
-        from rc_metastudio.r_bridge import run_trial_sequential_analysis
-        return run_trial_sequential_analysis(model, request)
+    def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
+        path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
+        params = {
+            **request.to_mapping(),
+            "plot_caption": plot_caption(model, "trial_sequential"),
+            "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT]["region_color"],
+        }
+        fields, sections = r_bridge.run_trial_sequential_analysis(
+            model, request.family, request.metric, params, path,
+        )
+        return TsaRun.from_mapping(fields, sections)

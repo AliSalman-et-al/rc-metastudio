@@ -84,39 +84,7 @@ class TrialSequentialAnalysisDialog(QDialog):
 
         fields = QFormLayout()
         outer.addLayout(fields)
-        self._section(fields, "Design assumptions")
-        left, right = self.base_request.favoured_labels()
-        self.test = self._choice("Test", [("Two-sided", "two-sided"),
-                                          (f"One-sided (favours {left})", "benefit"),
-                                          (f"One-sided (favours {right})", "harm")], saved.test)
-        self.alpha = self._percent("Type I error (α)", .01, 49.99, 100 * saved.alpha)
-        self.power = self._percent("Power", 50.01, 99.99, 100 * saved.power)
-        self.initial_alpha = self.alpha.value()
-        self.initial_power = self.power.value()
-        for widget in (self.alpha, self.power):
-            self._row(fields, widget.accessibleName(), widget)
-
-        self.effect = self._default_input(fields, f"Anticipated intervention effect ({self.base_request.measure})",
-                                          saved.anticipated_effect)
-        if self.binary:
-            self.control = self._default_input(
-                fields, "Control event proportion (%)",
-                None if saved.control_proportion is None else 100 * saved.control_proportion,
-            )
-        else:
-            self.control = None
-        self.variance = None
-        if self.base_request.metric == "MD":
-            self.variance, self.variance_source = self._input(fields, "Participant variance", saved.variance)
-        self.heterogeneity = self._choice("Heterogeneity adjustment", [("D²", "d2"), ("I²", "i2"),
-                                                                     ("None", "none")], saved.heterogeneity)
-        self.heterogeneity_value = _muted_label()
-        self._row(fields, "Heterogeneity adjustment", self.heterogeneity, self.heterogeneity_value)
-        if self.base_request.model != "random":
-            self.heterogeneity.setEnabled(False)
-        self.fixed_effect_notice = _muted_label()
-        fields.addRow(self.fixed_effect_notice)
-        self.fixed_effect_notice.hide()
+        self._setup_design_fields(fields, saved)
 
         self._section(fields, "Monitoring")
         self.order = self._choice("Add studies in", [("Publication year", "year"), ("Table order", "table")], saved.order)
@@ -167,6 +135,49 @@ class TrialSequentialAnalysisDialog(QDialog):
         buttons.rejected.connect(self.reject)
         buttons.accepted.connect(self._run)
 
+        self._connect_preview()
+        controller = adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.TRANSACTIONAL)
+        adaptive_window.set_content_preferred_width(self, 560, 700)
+        self._preview()
+        self.conclusion_timer.start()
+        controller.request_content_refit()
+
+    def _setup_design_fields(self, fields: QFormLayout, saved: TsaOptions) -> None:
+        self._section(fields, "Design assumptions")
+        left, right = self.base_request.favoured_labels()
+        self.test = self._choice("Test", [("Two-sided", "two-sided"),
+                                          (f"One-sided (favours {left})", "benefit"),
+                                          (f"One-sided (favours {right})", "harm")], saved.test)
+        self.alpha = self._percent("Type I error (α)", .01, 49.99, 100 * saved.alpha)
+        self.power = self._percent("Power", 50.01, 99.99, 100 * saved.power)
+        self.initial_alpha = self.alpha.value()
+        self.initial_power = self.power.value()
+        for widget in (self.alpha, self.power):
+            self._row(fields, widget.accessibleName(), widget)
+
+        self.effect = self._default_input(fields, f"Anticipated intervention effect ({self.base_request.measure})",
+                                          saved.anticipated_effect)
+        if self.binary:
+            self.control = self._default_input(
+                fields, "Control event proportion (%)",
+                None if saved.control_proportion is None else 100 * saved.control_proportion,
+            )
+        else:
+            self.control = None
+        self.variance = None
+        if self.base_request.metric == "MD":
+            self.variance, self.variance_source = self._input(fields, "Participant variance", saved.variance)
+        self.heterogeneity = self._choice("Heterogeneity adjustment", [("D²", "d2"), ("I²", "i2"),
+                                                                     ("None", "none")], saved.heterogeneity)
+        self.heterogeneity_value = _muted_label()
+        self._row(fields, "Heterogeneity adjustment", self.heterogeneity, self.heterogeneity_value)
+        if self.base_request.model != "random":
+            self.heterogeneity.setEnabled(False)
+        self.fixed_effect_notice = _muted_label()
+        fields.addRow(self.fixed_effect_notice)
+        self.fixed_effect_notice.hide()
+
+    def _connect_preview(self) -> None:
         self.preview_timer = QTimer(self)
         self.preview_timer.setSingleShot(True)
         self.preview_timer.setInterval(120)
@@ -193,11 +204,6 @@ class TrialSequentialAnalysisDialog(QDialog):
         for check in (self.futility, self.lil, self.manual):
             check.toggled.connect(self._schedule_preview)
         self.manual.toggled.connect(self.manual_ris.setEnabled)
-        controller = adaptive_window.register_adaptive_window(self, adaptive_window.WindowRole.TRANSACTIONAL)
-        adaptive_window.set_content_preferred_width(self, 560, 700)
-        self._preview()
-        self.conclusion_timer.start()
-        controller.request_content_refit()
 
     def _choice(self, name: str, choices: list[tuple[str, str]], selected: str) -> QComboBox:
         widget = QComboBox(self)
@@ -425,8 +431,7 @@ class TrialSequentialAnalysisDialog(QDialog):
         measure = "hazard" if self.hr else "risk"
         return f"≈ {abs(change):.{precision}%} relative {measure} {direction}{at_control}"
 
-    def _show_preview(self, request: TsaRequest, preview: TsaPreview) -> None:
-        options = request.options
+    def _show_design_defaults(self, options: TsaOptions, preview: TsaPreview) -> None:
         defaults = preview.defaults
         self._show_default(
             self.effect, "" if defaults.anticipated_effect is None else f"{defaults.anticipated_effect:.4g}",
@@ -443,6 +448,8 @@ class TrialSequentialAnalysisDialog(QDialog):
         if self.variance is not None:
             self.variance.setPlaceholderText("" if defaults.variance is None else f"{defaults.variance:.6g}")
             self.variance_source.setText("Entered" if options.variance is not None else "Fixed-effect-weighted pooled arm variance")
+
+    def _show_heterogeneity(self, options: TsaOptions, preview: TsaPreview) -> None:
         if self.heterogeneity.isEnabled():
             measure, value = ("I²", preview.i2) if options.heterogeneity == "i2" else ("D²", preview.d2)
             label = "" if value is None else f"{measure} = {value:.0%}"
@@ -465,6 +472,10 @@ class TrialSequentialAnalysisDialog(QDialog):
             notice = "Fixed-effect model: random effects estimate D² = 0%, so the size is unchanged."
         self.fixed_effect_notice.setText(notice)
         self.fixed_effect_notice.setVisible(bool(notice))
+
+    def _show_preview(self, request: TsaRequest, preview: TsaPreview) -> None:
+        self._show_design_defaults(request.options, preview)
+        self._show_heterogeneity(request.options, preview)
         ris, accrued = preview.ris, preview.accrued
         ready = preview.ready and ris is not None and isfinite(ris) and ris > 0 and accrued is not None
         self.run_button.setEnabled(ready)

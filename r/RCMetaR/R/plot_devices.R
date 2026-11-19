@@ -236,24 +236,36 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     invisible(ext)
 }
 
+.rcmetar.wrap.plot.caption <- function(caption, width, cex) {
+    rcmetar.forest.with.measurement.device({
+        words <- strsplit(caption, "[[:space:]]+")[[1]]
+        wrapped <- character(0)
+        line <- ""
+        for (word in words) {
+            candidate <- trimws(paste(line, word))
+            if (nzchar(line) && graphics::strwidth(candidate, units="inches", cex=cex) > width) {
+                wrapped <- c(wrapped, line)
+                line <- word
+            } else line <- candidate
+        }
+        c(wrapped, line)
+    })
+}
+
+.rcmetar.copy.plot.svg <- function(source, outpath, extension) {
+    input <- gzfile(source, open="rb")
+    svg <- tryCatch(readLines(input, warn=FALSE, encoding="UTF-8"), finally=close(input))
+    output <- if (identical(extension, "svgz")) gzfile(outpath, open="wb") else file(outpath, open="wb")
+    tryCatch(writeLines(svg, output, useBytes=TRUE), finally=close(output))
+}
+
 rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, caption=NULL) {
     if (length(caption) && !is.na(caption[[1]]) && nzchar(caption[[1]])) {
         caption <- gsub("[\r\n]+", " \u00b7 ", as.character(caption[[1]]))
         caption.cex <- size$caption.cex %||% 1.08
         compact <- !is.null(size$caption.cex)
-        lines <- rcmetar.forest.with.measurement.device({
-            words <- strsplit(caption, "[[:space:]]+")[[1]]
-            wrapped <- character(0)
-            line <- ""
-            for (word in words) {
-                candidate <- trimws(paste(line, word))
-                if (nzchar(line) && graphics::strwidth(candidate, units="inches", cex=caption.cex) > size$width - if (compact) .15 else .6) {
-                    wrapped <- c(wrapped, line)
-                    line <- word
-                } else line <- candidate
-            }
-            c(wrapped, line)
-        })
+        max.width <- size$width - if (compact) .15 else .6
+        lines <- .rcmetar.wrap.plot.caption(caption, max.width, caption.cex)
         caption.height <- if (compact) .13 * length(lines) + .09 else .24 * length(lines) + .4
         if (!isTRUE(size$caption.in.height)) size$height <- size$height + caption.height
         draw.plot <- draw
@@ -273,13 +285,8 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
         }
         dir.create(dirname(display.path), recursive=TRUE, showWarnings=FALSE)
         result <- rcmetar.render.plot_svg(display.path, size, draw)
-        if (!rcmetar.plot.paths.equal(display.path, outpath)) {
-            input <- gzfile(display.path, open="rb")
-            svg <- tryCatch(readLines(input, warn=FALSE, encoding="UTF-8"),
-                            finally=close(input))
-            output <- if (identical(ext, "svgz")) gzfile(outpath, open="wb") else file(outpath, open="wb")
-            tryCatch(writeLines(svg, output, useBytes=TRUE), finally=close(output))
-        }
+        if (!rcmetar.plot.paths.equal(display.path, outpath))
+            .rcmetar.copy.plot.svg(display.path, outpath, ext)
         return(invisible(result))
     }
 

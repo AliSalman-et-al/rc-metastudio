@@ -15,7 +15,7 @@ from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, Callable, Literal, ParamSpec, TypeVar, cast, overload
+from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
 
 from rc_metastudio import r_runtime
 from rc_metastudio.analysis_method_labels import (
@@ -36,10 +36,6 @@ from rc_metastudio.analysis_catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_
 from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.dataset_analysis_domain import fit_raw_rows, raw_data_is_complete
 from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
-
-if TYPE_CHECKING:
-    from rc_metastudio.dataset_table_model import DatasetTableModel
-    from rc_metastudio.trial_sequential_analysis import TsaPreview, TsaRequest, TsaRun
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
@@ -882,24 +878,24 @@ def run_small_study_effects(
 
 
 @serialized_r_call
-def preview_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaPreview":
-    from rc_metastudio.trial_sequential_analysis import TsaPreview
-
-    data = dataset_for_analysis(model, request.family, metric=request.metric)
-    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(request.to_mapping()))
-    return TsaPreview.from_mapping(_r_mapping_or_empty(raw))
+def preview_trial_sequential_analysis(
+    model: object, family: str, metric: str, params: Mapping[str, object],
+) -> Mapping[str, object]:
+    data = dataset_for_analysis(model, family, metric=metric)
+    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(params))
+    return _r_mapping_or_empty(raw)
 
 
 @serialized_r_call
 def trial_sequential_conclusion_command(
-    model: "DatasetTableModel", request: "TsaRequest", directory: Path,
+    model: object, family: str, metric: str, params: Mapping[str, object], directory: Path,
 ) -> tuple[str, list[str]]:
     # Embedded R is main-thread-only. Pass a typed, local snapshot to the
     # selected runtime instead of sharing rpy2 state with a Qt worker.
-    data = dataset_for_analysis(model, request.family, metric=request.metric)
-    params = _to_r_params({**request.to_mapping(), "preview.conclusion": True})
+    data = dataset_for_analysis(model, family, metric=metric)
+    r_params = _to_r_params({**params, "preview.conclusion": True})
     inputs = directory / "input.rds"
-    execute_r_function("saveRDS", ro.ListVector({"data": data, "params": params}), ro.StrVector([str(inputs)]))
+    execute_r_function("saveRDS", ro.ListVector({"data": data, "params": r_params}), ro.StrVector([str(inputs)]))
     bin_dir = Path(os.environ["R_HOME"]) / "bin"
     script = (
         "args <- commandArgs(TRUE); request <- readRDS(args[1L]); "
@@ -916,28 +912,19 @@ def trial_sequential_conclusion_command(
 
 
 @serialized_r_call
-def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaRequest") -> "TsaRun":
-    from uuid import uuid4
-    from rc_metastudio.analysis_identity import plot_caption
+def run_trial_sequential_analysis(
+    model: object, family: str, metric: str, params: Mapping[str, object], path: str,
+) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
     from rc_metastudio.plot_capabilities import PlotCapability
-    from rc_metastudio.settings import analysis_output_path
-    from rc_metastudio.small_study_effects import FUNNEL_STYLE_PRESETS, FunnelStyle
-    from rc_metastudio.trial_sequential_analysis import TsaRun
-    from rc_metastudio.manuscript_report import TSA_ADJUSTED_INTERVAL_NOTE
 
-    data = dataset_for_analysis(model, request.family, metric=request.metric)
-    path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
-    params = {
-        **request.to_mapping(),
-        "fp_outpath": path,
-        "plot_caption": plot_caption(model, "trial_sequential"),
-        "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT]["region_color"],
-    }
+    data = dataset_for_analysis(model, family, metric=metric)
+    params = {**params, "fp_outpath": path}
     raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(params))
+
     def table_section(key: str, title: str, order: int, matrix) -> ResultSection:
         identity = f"trial-sequential.{key}"
         table = _report_table_entry(_structured_matrix(title, matrix, None, first_row_headers=True))
-        notes = (TSA_ADJUSTED_INTERVAL_NOTE,) if any("—" in row for row in table.rows) else ()
+        notes = ("— Too little information for a finite TSA-adjusted interval.",) if any("—" in row for row in table.rows) else ()
         return ResultSection(identity, "text", order, title, "", identity, tables=(table,), paragraphs=notes)
 
     sections = [table_section("looks", "Trial sequential results", 0, raw.rx2("table"))]
@@ -957,7 +944,7 @@ def run_trial_sequential_analysis(model: "DatasetTableModel", request: "TsaReque
         for key, column in zip(looks.names, looks, strict=True)
     }
     fields["version"] = int(raw.rx2("version")[0])
-    return TsaRun.from_mapping(fields, (*sections, plot))
+    return fields, (*sections, plot)
 
 
 def _r_param_value(param):
