@@ -9,7 +9,7 @@ import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
 from rc_metastudio.application_metadata import CITATION_DOI, citation_text
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell, numeric_columns, table_html
+from rc_metastudio.result_formatting import numeric_cell, numeric_columns, report_numbers, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -743,7 +743,7 @@ class ManuscriptReport:
         parts = [self.title, self.comparison]
         for heading, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                parts.extend((heading, text))
+                parts.extend((heading, report_numbers(text) if heading == 'Results' else text))
         for number, figure in enumerate(self.figures, 1):
             if figure.paragraphs:
                 parts.extend((f'Figure {number}. {figure.title}', *figure.paragraphs))
@@ -754,8 +754,10 @@ class ManuscriptReport:
             for table in section.tables:
                 number += 1
                 parts.append(f'Table {number}. {table.title}')
-                parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
-            parts.extend(section.paragraphs)
+                parts.append('\t'.join(table.headers))
+                parts.extend('\t'.join(report_numbers(cell) if numeric_cell(cell) else cell for cell in row)
+                             for row in table.rows)
+            parts.extend(map(report_numbers, section.paragraphs))
         if self.configuration:
             parts.extend(('Model configuration', self.configuration))
         return '\n\n'.join(parts)
@@ -764,7 +766,7 @@ class ManuscriptReport:
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>'] if heading else []
         for name, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(text).replace('\n', '<br>')
+                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(report_numbers(text)).replace('\n', '<br>')
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
@@ -788,7 +790,7 @@ class ManuscriptReport:
             for table_number, table in tables:
                 parts.append(f'<a name="table-{table_number}"></a>')
                 parts.append(_table_html(table, table_number))
-            parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
+            parts.extend(f'<p>{escape(report_numbers(paragraph))}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
 
 
@@ -1036,7 +1038,7 @@ def _docx_sections(document, report, supplementary):
             _docx_table(document, table)
             document.add_paragraph()
         for paragraph in section.paragraphs:
-            document.add_paragraph(paragraph)
+            document.add_paragraph(report_numbers(paragraph))
 
 
 def _docx_styles(document):
@@ -1093,7 +1095,7 @@ def write_docx(report, path):
         if text.strip():
             document.add_heading(heading, 1)
             paragraph = document.add_paragraph()
-            for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((text, False),)):
+            for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((report_numbers(text), False),)):
                 paragraph.add_run(part).italic = italic
     _docx_sections(document, report, False)
     _docx_figures(document, report.figures)
@@ -1236,19 +1238,27 @@ def _docx_column_widths(table, available):
     lengths = [max(len(line) for row in (table.headers, *table.rows)
                    for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
     weights = [max(5, min(45, length)) for length in lengths]
-    widths = [round(available * weight / sum(weights)) for weight in weights]
-    return widths
+    minimums = [Pt(12 + 6 * max((len(row[column]) for row in table.rows
+                                if numeric_cell(row[column])), default=0))
+                for column in range(len(table.headers))]
+    remaining = max(0, available - sum(minimums))
+    return [round(minimum + remaining * weight / sum(weights))
+            for minimum, weight in zip(minimums, weights)]
 
 
 def _style_docx_cell(cell, value, width, numeric, heading):
-    cell.text = value.replace(' to ', '\u00a0to\u00a0')
+    from docx.oxml import OxmlElement
+    is_numeric = not heading and numeric_cell(value)
+    cell.text = report_numbers(value) if is_numeric else value
     cell.width = width
+    if is_numeric or (numeric and not heading):
+        cell._tc.get_or_add_tcPr().append(OxmlElement('w:noWrap'))
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     for paragraph in cell.paragraphs:
         paragraph.paragraph_format.space_before = Pt(2)
         paragraph.paragraph_format.space_after = Pt(2)
         paragraph.paragraph_format.line_spacing = 1
-        right = numeric if heading else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric)
+        right = numeric if heading else is_numeric or (value in ('', 'NA', '—', 'Not estimable') and numeric)
         paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
         if heading:
             paragraph.paragraph_format.keep_with_next = True

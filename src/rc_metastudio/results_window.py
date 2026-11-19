@@ -10,7 +10,7 @@ import re
 from html import escape
 from pathlib import Path
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
+from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns, report_numbers
 from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
 from typing import TYPE_CHECKING, Callable
@@ -790,7 +790,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         from rc_metastudio.result_formatting import table_html
         headers, rows = self._table_rows(selected=True)
         mime = QMimeData()
-        mime.setText(self._table_payload("\t", selected=True))
+        stream = io.StringIO(newline="")
+        writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
+        if headers:
+            writer.writerow(headers)
+        writer.writerows([report_numbers(cell) if _numeric_cell(cell) else cell for cell in row]
+                         for row in rows)
+        mime.setText(stream.getvalue())
         mime.setHtml(table_html(headers, rows))
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Table copied", 4000)

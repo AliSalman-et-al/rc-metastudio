@@ -111,7 +111,7 @@ rcmetar.compact.numeric.labels <- function(labels) {
     values <- suppressWarnings(as.numeric(labels))
     compact <- is.finite(values) & nchar(labels) > 12
     labels[compact] <- formatC(values[compact], digits=4, format="e")
-    labels
+    gsub("(^|[eE])-(?=[0-9.])", "\\1\u2212", labels, perl=TRUE)
 }
 
 rcmetar.forest.display.ilab <- function(values) {

@@ -29,6 +29,13 @@ def numeric_columns(rows: Sequence[Sequence[str]]) -> tuple[bool, ...]:
                  for values in columns)
 
 
+def report_numbers(text: str) -> str:
+    """Keep a sign, interval, or threshold with its number in a report."""
+    text = re.sub(r"(?<!\w)-[ \t]*(?=\d|\.\d)|(?<=\de)-(?=\d)", "−", text)
+    text = re.sub(r"(?<=\d) +to +(?=[+−]?\d)", "\u00a0to\u00a0", text)
+    return re.sub(r"([<>≤≥]) +(?=[+−]?\d)", r"\1" + "\u00a0", text)
+
+
 def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
     """Editable, content-sized table for clipboard and manuscript surfaces."""
     numeric = numeric_columns(rows)
@@ -43,9 +50,13 @@ def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
     for index, row in enumerate(rows):
         parts.append('<tr>')
         for column, value in enumerate(row):
-            align = 'right' if numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
+            is_numeric = numeric_cell(value)
+            align = 'right' if is_numeric or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
+            wrap = 'nowrap' if is_numeric or numeric[column] else 'pre-wrap'
+            if is_numeric:
+                value = report_numbers(value)
             border = 'border-bottom:1px solid black;' if index == len(rows) - 1 else ''
-            parts.append(f'<td align="{align}" style="white-space:pre-wrap; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
+            parts.append(f'<td align="{align}" style="white-space:{wrap}; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
         parts.append('</tr>')
     parts.append('</tbody></table>')
     return ''.join(parts)

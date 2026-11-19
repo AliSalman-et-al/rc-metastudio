@@ -326,10 +326,13 @@ def expected_fit_table(result, section, source):
 
 
 def assert_exports(view, data, *, pdf_ordered=True):
+    from rc_metastudio.result_formatting import numeric_cell, report_numbers
+
+    def rendered_row(row):
+        return [report_numbers(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
+
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
-    # Word keeps interval tokens together with nonbreaking spaces; only their
-    # layout whitespace differs from the producer's original cell text.
+    expected = [[list(table.headers), *[rendered_row(row) for row in table.rows]] for table in tables]
     observed = [[[cell.replace('\u00a0', ' ') for cell in row] for row in table]
                 for table in data['docx_tables']]
     assert observed == expected, (observed, expected)
@@ -338,12 +341,12 @@ def assert_exports(view, data, *, pdf_ordered=True):
     # every digit, sign and punctuation mark across those physical line breaks.
     pdf = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', (Path(data['directory']) / 'pdf.txt').read_text(encoding="utf-8")))
     cursor = 0
-    for number, table in enumerate(tables, 1):
+    for number, (table, rows) in enumerate(zip(tables, expected, strict=True), 1):
         caption = f'Table {number}. {table.title}'
-        block = '\n\n'.join([caption, *['\t'.join(row) for row in (table.headers, *table.rows)]])
+        block = '\n\n'.join([caption, *['\t'.join(row) for row in rows]])
         assert re.sub(r'\s+', '', block) in re.sub(r'\s+', '', copied), (caption, block)
         caption_tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', caption))
-        tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', ' '.join([caption, *[' '.join(row) for row in (table.headers, *table.rows)]])))
+        tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', ' '.join([caption, *[' '.join(row) for row in rows]])))
         starts = [i for i in range(cursor, len(pdf)) if pdf[i] == 'Table' and pdf[i:i + len(caption_tokens)] == caption_tokens]
         assert len(starts) == 1, (caption, 'PDF caption missing or repeated', data['directory'])
         start = starts[0]

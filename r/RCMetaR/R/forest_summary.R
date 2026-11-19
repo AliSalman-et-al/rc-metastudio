@@ -148,7 +148,7 @@ rcmetar.overall.test.heading <- function(res, params) {
 
 rcmetar.format.test.statistic <- function(value, digits) {
     if (length(value) == 1L && is.finite(value) && abs(value) >= 1e6) {
-        return(formatC(value, digits=max(1L, digits), format="e"))
+        return(rcmetar.compact.numeric.labels(formatC(value, digits=max(1L, digits), format="e")))
     }
     rcmetar.format.effect.number(value, digits)
 }
