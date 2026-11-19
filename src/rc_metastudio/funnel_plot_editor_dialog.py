@@ -9,11 +9,12 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
-from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch
+from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch, style_inline_error
 from rc_metastudio.qt_object_guard import required
+from rc_metastudio.plot_style_controls import plot_color
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -61,6 +62,12 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.setupUi(self)
         self._on_commit = on_commit
         self._configure_accessibility()
+        self._commit_error = QLabel(self)
+        self._commit_error.setWordWrap(True)
+        style_inline_error(self._commit_error)
+        layout = required(self.layout(), "funnel dialog layout")
+        layout.addWidget(self._commit_error)
+        self._commit_error.hide()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
         self.figure_caption = QLineEdit(self)
@@ -225,10 +232,19 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self._dirty = True
 
     def _commit(self) -> bool:
+        for field in (self.point_color_edit, self.reference_color_edit, self.region_color_edit, self.background_color_edit):
+            try:
+                plot_color(field.text())
+            except ValueError as error:
+                self._commit_error.setText(str(error))
+                self._commit_error.show()
+                field.setFocus()
+                return False
         try:
             params = self.plot_params()
         except ValueError as error:
-            QMessageBox.warning(self, "Invalid funnel settings", str(error))
+            self._commit_error.setText(str(error))
+            self._commit_error.show()
             return False
         try:
             if self._on_commit is not None:
@@ -238,6 +254,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             return False
         self._params = params
         self._dirty = False
+        self._commit_error.hide()
         return True
 
     def accept(self) -> None:
@@ -503,28 +520,21 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         params = dict(self._params)
         params.pop("resolved.funnel.ratio", None)
         params.pop("resolved.funnel.x", None)
+        style = next(code for code, label in FUNNEL_STYLE_LABELS.items()
+                     if label == self.style_combo.currentText())
+        preset = FUNNEL_STYLE_PRESETS[style]
         edits = {
             "plot_caption": self.figure_caption.text().strip(),
-            "funnel.style": next(
-                code.value
-                for code, label in FUNNEL_STYLE_LABELS.items()
-                if label == self.style_combo.currentText()
-            ),
+            "funnel.style": style.value,
             "funnel.label.policy": LABEL_VALUES[self.label_policy_combo.currentText()],
             "funnel.point.symbol": POINT_SYMBOL_VALUES[
                 self.point_symbol_combo.currentText()
             ],
             "funnel.point.size": self.point_size_spin.value(),
-            "funnel.point.color": qt_text.to_native_text(self.point_color_edit.text()),
-            "funnel.reference.color": qt_text.to_native_text(
-                self.reference_color_edit.text()
-            ),
-            "funnel.region.color": qt_text.to_native_text(
-                self.region_color_edit.text()
-            ),
-            "funnel.background.color": qt_text.to_native_text(
-                self.background_color_edit.text()
-            ),
+            "funnel.point.color": plot_color(self.point_color_edit.text()) or str(preset["point_color"]),
+            "funnel.reference.color": plot_color(self.reference_color_edit.text()) or str(preset["reference_color"]),
+            "funnel.region.color": plot_color(self.region_color_edit.text()) or str(preset["region_color"]),
+            "funnel.background.color": plot_color(self.background_color_edit.text()) or str(preset["background_color"]),
             "funnel.reference.visible": self.reference_visible_check.isChecked(),
             "funnel.regression.visible": self.regression_visible_check.isChecked(),
             "funnel.pooled.overlay.visible": self.pooled_overlay_check.isChecked(),

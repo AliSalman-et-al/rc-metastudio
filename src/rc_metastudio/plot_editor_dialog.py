@@ -29,7 +29,7 @@ from rc_metastudio.plot_defaults import BUBBLE_STYLE_ACCENTS, FOREST_ARM_LABELS,
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_style_controls import (
     configure_plot_style,
-    configure_tsa_x_axis, load_plot_style, selected_plot_style,
+    configure_tsa_x_axis, load_plot_style, plot_color, selected_plot_style,
 )
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -269,6 +269,16 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 return False
         if not self._validate_ticks():
             return False
+        colors = [self.accent_color]
+        if self.plot_type == "sroc":
+            colors.extend((self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color))
+        for field in colors:
+            try:
+                plot_color(field.text())
+            except ValueError as error:
+                self._show_commit_error(str(error))
+                field.setFocus()
+                return False
         try:
             params = self.plot_params()
             if self._on_commit is not None:
@@ -639,7 +649,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_weight": self.show_weight.isChecked(),
             "fp_show_headers": self.show_headers.isChecked(),
             "fp_show_annotation": self.show_annotation.isChecked(),
-            "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),
+            "fp_accent_color": plot_color(self.accent_color.text()) or self._style_accents[style],
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
             **plot_axis_label_params(self.x_lbl_le, "fp"),
             "fp_plot_lb": self._automatic_value(self.plot_lb_le),
@@ -657,7 +667,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         if self.plot_type == "regression":
             params = {
                 "bp_style": style,
-                "bp_accent_color": qt_text.to_native_text(self.accent_color.text()),
+                "bp_accent_color": plot_color(self.accent_color.text()) or BUBBLE_STYLE_ACCENTS[style],
                 "bp_point_size_multiplier": self.point_size_multiplier.value(),
                 **plot_axis_label_params(self.x_lbl_le, "bp"),
                 "bp_plot_lb": self._automatic_value(self.plot_lb_le),
@@ -685,9 +695,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     "fp_marker_area": self.sroc_marker_area.currentData(),
                     "fp_show_labels": self.sroc_show_labels.isChecked(),
                     "fp_extrapolate": self.sroc_extrapolate.isChecked(),
-                    "fp_curve_color": qt_text.to_native_text(self.sroc_curve_color.text()),
-                    "fp_confidence_color": qt_text.to_native_text(self.sroc_confidence_color.text()),
-                    "fp_prediction_color": qt_text.to_native_text(self.sroc_prediction_color.text()),
+                    "fp_curve_color": plot_color(self.sroc_curve_color.text()) or self._style_accents[style],
+                    "fp_confidence_color": plot_color(self.sroc_confidence_color.text()) or self._style_accents[style],
+                    "fp_prediction_color": plot_color(self.sroc_prediction_color.text()) or "#b45f06",
                     "fp_curve_lty": self.sroc_curve_lty.currentIndex() + 1,
                     "fp_confidence_lty": self.sroc_confidence_lty.currentIndex() + 1,
                     "fp_prediction_lty": self.sroc_prediction_lty.currentIndex() + 1,
