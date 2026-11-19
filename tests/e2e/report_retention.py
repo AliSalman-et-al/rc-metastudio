@@ -406,10 +406,12 @@ def assert_report(view):
         scales = {row[4] for row in expected_rows if row[3] not in ('', '—', 'NA')}
         compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
         indexes = [i for i in range(7) if (i != 4 or not compact_scale) and any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        statistic = 't' if any(
-            {'t', 't-value'}.intersection(source.headers)
-            for section in view.results.sections for source in section.tables
-        ) else 'z'
+        sources = [source for section in view.results.sections for source in section.tables]
+        statistic = 't' if any({'t', 't-value'}.intersection(source.headers) for source in sources) else 'z'
+        overall_df = next((source.rows[0][source.headers.index('df')] for source in sources
+                           if source.role == 'overall_test' and {'t', 'df'} <= set(source.headers)), '')
+        if statistic == 't' and overall_df:
+            statistic = f't (df = {overall_df})'
         label = 'Subgroup' if pooled.role == 'fitted' else 'Effect'
         headers = (label, 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE',
                    'SE scale', statistic, 'P')

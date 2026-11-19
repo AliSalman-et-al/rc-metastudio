@@ -35,3 +35,9 @@ uv run python -m pytest tests/e2e -n 3 -q -k 'results-values or reviewer-predict
 ```
 
 The hosted Windows R-stack checks on `e2d669bd` passed R CMD check, all 103 independent authority cases, 21 Reitsma visual cases, nine bridge tests and the frozen comparison. [Hosted R-stack transcript](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/44574508738/job/135738528061).
+
+The follow-up report check distinguishes the overall t-test heading, which includes its reported degrees of freedom, from the subgroup t heading. All seven affected desktop scenarios passed after strict typing. [Inference and report checks](../qualification/ratio-precision-inference-checks.log).
+
+```powershell
+uv run python -m pytest tests/e2e -n 3 -q -k 'options-binary or options-continuous or options-diagnostic or results-values or reviewer-predictions or (manuscript-export and not split)'
+```
