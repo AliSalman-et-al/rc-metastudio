@@ -2649,8 +2649,7 @@ def _format_numeric_table_cell(value, field_name):
             return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
         if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
             return str(int(value))
-        formatted = f"{value:.{digits}f}"
-        return f"{value:.{max(1, digits)}g}" if value != 0 and float(formatted) == 0 else formatted
+        return result_formatting.fixed_result_number(value, digits)
     if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
         if value < 0.001:
             return "< 0.001"
@@ -2675,7 +2674,7 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
 
 
 def _display_effect_values(values, digits):
-    effects = [result_formatting.format_effect_number(value, digits)
+    effects = [result_formatting.fixed_result_number(value, digits)
                if isinstance(value, (float, int)) and math.isfinite(value)
                else _format_r_table_cell(value)
                for value in values]

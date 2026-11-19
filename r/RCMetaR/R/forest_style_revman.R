@@ -5,10 +5,6 @@ rcmetar.revman.format.number <- function(values, digits) {
     rcmetar.format.metafor.numeric(values, digits)
 }
 
-rcmetar.revman.format.effect.number <- function(values, digits, scale=abs(values)) {
-    rcmetar.format.effect.number(values, digits, scale=scale)
-}
-
 rcmetar.revman.format.weight <- function(weights, n) {
     if (is.null(weights) || length(weights) == 0 || !any(is.finite(weights))) {
         weights <- rep(100 / max(n, 1), n)
@@ -176,7 +172,7 @@ rcmetar.revman.test.overall.label <- function(bundle) {
     paste0(
         rcmetar.overall.test.heading(res, bundle$params), ": ",
         if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) paste0("t (df = ", res$dfs, ")") else "Z",
-        " = ", rcmetar.format.test.statistic(res$zval, display.digits(bundle$params)),
+        " = ", rcmetar.format.effect.number(res$zval, display.digits(bundle$params)),
         " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
     )
 }
@@ -568,11 +564,11 @@ rcmetar.revman.summary.effect <- function(bundle) {
         weights=weights,
         psize=psize * rcmetar.point.size.multiplier(bundle$params),
         label=paste0(
-            rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.effect.number(pred[[1]], bundle$params$digits),
             " [",
-            rcmetar.revman.format.effect.number(pred[[2]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.effect.number(pred[[2]], bundle$params$digits),
             ", ",
-            rcmetar.revman.format.effect.number(pred[[3]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.effect.number(pred[[3]], bundle$params$digits),
             "]"
         )
     )
@@ -596,11 +592,10 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         y <- transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite])
         lower <- transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite])
         upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
-        scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
-            rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
-            " [", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
-            ", ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), "]"
+            rcmetar.format.effect.number(y, bundle$params$digits),
+            " [", rcmetar.format.effect.number(lower, bundle$params$digits),
+            ", ", rcmetar.format.effect.number(upper, bundle$params$digits), "]"
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, 0), cex=cex)

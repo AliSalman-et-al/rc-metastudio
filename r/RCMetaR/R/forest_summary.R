@@ -134,7 +134,7 @@ rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
     paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
            "Q = ", round.display(res$QE, digits), ", df = ", df,
            " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
-           round.display(res$I2, 1), "%")
+           round.display(res$I2, digits), "%")
 }
 
 rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
@@ -181,14 +181,6 @@ rcmetar.overall.test.heading <- function(res, params) {
     null <- rcmetar.overall.null.label(res, params)
     paste0("Test for overall effect", if (nzchar(null)) paste0(" (H\u2080: ", null, ")"))
 }
-
-rcmetar.format.test.statistic <- function(value, digits) {
-    if (length(value) == 1L && is.finite(value) && abs(value) >= 1e6) {
-        return(rcmetar.compact.numeric.labels(formatC(value, digits=max(1L, digits), format="e")))
-    }
-    rcmetar.format.effect.number(value, digits)
-}
-
 
 rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     if (!nzchar(label)) return(invisible(NULL))

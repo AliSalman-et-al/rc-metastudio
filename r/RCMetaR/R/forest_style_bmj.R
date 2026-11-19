@@ -270,7 +270,7 @@ rcmetar.bmj.heterogeneity.label <- function(bundle) {
         paste0("\u03c4\u00b2=", round.display(res$tau2, digits), "; ") else ""
     paste0("Test for heterogeneity: ", tau, "\u03c7\u00b2=", round.display(res$QE, digits),
            ", df=", df, ", ", rcmetar.bmj.p.label(res$QEp, digits),
-           "; I\u00b2=", round.display(res$I2, 1), "%")
+           "; I\u00b2=", round.display(res$I2, digits), "%")
 }
 
 rcmetar.bmj.test.overall.label <- function(bundle) {
@@ -280,7 +280,7 @@ rcmetar.bmj.test.overall.label <- function(bundle) {
     digits <- display.digits(bundle$params)
     test <- if (res$test %in% c("t", "knha", "adhoc")) paste0("t (df=", res$dfs, ")") else "Z"
     paste0(rcmetar.overall.test.heading(res, bundle$params), ": ", test, "=",
-           rcmetar.format.test.statistic(res$zval, digits), ", ",
+           rcmetar.format.effect.number(res$zval, digits), ", ",
            rcmetar.bmj.p.label(res$pval, digits))
 }
 
@@ -310,7 +310,7 @@ rcmetar.bmj.effect.values <- function(bundle) {
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
+            bundle$params$digits
         )
     }
     labels
@@ -326,7 +326,7 @@ rcmetar.bmj.summary.label.for.bundle <- function(bundle) {
         transform$display.scale(res$b, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.lb, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.ub, ni=bundle$sample_sizes),
-        bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
+        bundle$params$digits
     )
 }
 
@@ -686,7 +686,7 @@ rcmetar.bmj.summary.effect <- function(bundle) {
     summary <- rcmetar.revman.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
-    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure))
+    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits)
     finite.weights <- is.finite(summary$weights)
     if (any(finite.weights)) {
         scaled <- rep(NA_real_, length(summary$weights))
@@ -772,18 +772,13 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
     invisible(NULL)
 }
 
-rcmetar.bmj.format.effect.number <- function(values, digits, scale=abs(values)) {
-    rcmetar.format.effect.number(values, digits, scale=scale)
-}
-
-rcmetar.bmj.effect.label <- function(center, lower, upper, digits, ratio=FALSE) {
-    scale <- if (ratio) 0 else pmax(abs(center), abs(lower), abs(upper))
+rcmetar.bmj.effect.label <- function(center, lower, upper, digits) {
     paste0(
-        rcmetar.bmj.format.effect.number(center, digits, scale),
+        rcmetar.format.effect.number(center, digits),
         " (",
-        rcmetar.bmj.format.effect.number(lower, digits, scale),
+        rcmetar.format.effect.number(lower, digits),
         " to ",
-        rcmetar.bmj.format.effect.number(upper, digits, scale),
+        rcmetar.format.effect.number(upper, digits),
         ")"
     )
 }
@@ -798,7 +793,7 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits, ratio=metric.is.log.scale(bundle$params$measure)
+            bundle$params$digits
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, 0), cex=cex)

@@ -134,42 +134,12 @@ rcmetar.format.metafor.numeric <- function(values, digits) {
     ifelse(is.na(values), "", round.display(values, digits))
 }
 
-rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
-    values <- as.numeric(values)
-    # Eight machine epsilons of the row's effect/interval scale hide arithmetic
-    # residue. Scaling by the row, rather than one, preserves genuinely tiny rows.
-    values[is.finite(values) & abs(values) <= 8 * .Machine$double.eps * scale] <- 0
-    digits <- max(0L, as.integer(digits))
-    labels <- rep("", length(values))
-    finite <- is.finite(values)
-    labels[finite] <- formatC(values[finite], digits=digits, format="f")
-    small <- finite & values != 0 & abs(values) < 10^(-digits)
-    if (any(small)) {
-        required <- ceiling(-log10(abs(values[small]))) + 1L
-        use.scientific <- required > max.decimals
-        indexes <- which(small)
-        if (any(!use.scientific)) {
-            fixed.indexes <- indexes[!use.scientific]
-            fixed.digits <- required[!use.scientific]
-            labels[fixed.indexes] <- vapply(
-                seq_along(fixed.indexes),
-                function(i) formatC(
-                    values[fixed.indexes[[i]]], digits=fixed.digits[[i]], format="f"
-                ),
-                character(1)
-            )
-        }
-        if (any(use.scientific)) {
-            scientific.indexes <- indexes[use.scientific]
-            labels[scientific.indexes] <- formatC(
-                values[scientific.indexes], digits=max(1L, digits), format="e"
-            )
-        }
-    }
-    labels[small] <- sub("(\\.[0-9]*?)0+($|e)", "\\1\\2", labels[small])
-    labels[small] <- sub("\\.($|e)", "\\1", labels[small])
-    labels[is.na(values)] <- ""
-    rcmetar.compact.numeric.labels(labels)
+rcmetar.format.effect.number <- function(values, digits) {
+    labels <- round.display(as.numeric(values), digits)
+    displayed <- !is.na(labels) & nzchar(labels)
+    labels[displayed] <- sub("^-", "\u2212", prettyNum(labels[displayed], big.mark=",", preserve.width="none"))
+    labels[is.na(labels)] <- ""
+    labels
 }
 
 rcmetar.empty.forest.ilab <- function(n) {
@@ -220,9 +190,9 @@ rcmetar.sequential.i2 <- function(results) {
     values
 }
 
-rcmetar.sequential.i2.labels <- function(results) {
+rcmetar.sequential.i2.labels <- function(results, params) {
     values <- rcmetar.sequential.i2(results)
-    ifelse(is.finite(values), sprintf("%.1f%%", values), "\u2014")
+    ifelse(is.finite(values), paste0(rcmetar.format.effect.number(values, display.digits(params)), "%"), "\u2014")
 }
 
 rcmetar.sequential.ilab <- function(results, params) {
@@ -231,7 +201,7 @@ rcmetar.sequential.ilab <- function(results, params) {
     keys <- "k"
     headers <- "k"
     if (rcmetar.param.is.true(params, "fp_show_i2", TRUE)) {
-        values <- cbind(values, rcmetar.sequential.i2.labels(results))
+        values <- cbind(values, rcmetar.sequential.i2.labels(results, params))
         keys <- c(keys, "i2")
         headers <- c(headers, "I\u00b2")
     }
@@ -834,15 +804,14 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         lb <- transform$display.scale(c(bundle$res$ci.lb, bundle$res$ci.lb))
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
-    scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
     labels <- if (rcmetar.forest.style(bundle$params) == "bmj") {
-        rcmetar.bmj.effect.label(y, lb, ub, digits, ratio=metric.is.log.scale(bundle$params$measure))
+        rcmetar.bmj.effect.label(y, lb, ub, digits)
     } else paste0(
-        rcmetar.format.effect.number(y, digits, scale=scale),
+        rcmetar.format.effect.number(y, digits),
         " [",
-        rcmetar.format.effect.number(lb, digits, scale=scale),
+        rcmetar.format.effect.number(lb, digits),
         ", ",
-        rcmetar.format.effect.number(ub, digits, scale=scale),
+        rcmetar.format.effect.number(ub, digits),
         "]"
     )
     labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"

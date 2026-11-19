@@ -164,6 +164,10 @@ def _reference_key(reference: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", reference.lower()).strip()
 
 
+def fixed_result_number(value: float, digits: int) -> str:
+    return f"{value:z,.{digits}f}".replace("-", "\u2212", 1)
+
+
 def format_effect_number(value: float, digits: int) -> str:
     if value != 0 and abs(value) < 10 ** (-digits):
         # Keep `digits` significant figures so a small value stays nonzero.

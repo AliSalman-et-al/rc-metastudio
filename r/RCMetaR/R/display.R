@@ -25,7 +25,7 @@ create.repeat.string <- function(symbol, num.repeats) {
 RCMETAR_DEFAULT_DISPLAY_DIGITS <- 2L
 RCMETAR_MINIMUM_P_VALUE_DIGITS <- 3L
 
-display.digits <- function(params=NULL, minimum=0L) {
+display.digits <- function(params=NULL) {
   digits <- RCMETAR_DEFAULT_DISPLAY_DIGITS
   if (!is.null(params) && !is.null(params$digits) && length(params$digits) > 0) {
     candidate <- suppressWarnings(as.integer(params$digits[[1]]))
@@ -33,7 +33,7 @@ display.digits <- function(params=NULL, minimum=0L) {
       digits <- candidate
     }
   }
-  max(as.integer(minimum), digits)
+  digits
 }
 
 p.value.display.digits <- function(digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
@@ -48,7 +48,7 @@ round.display <- function(x, digits) {
   digits.str <- paste("%.", digits, "f", sep="")
   x.disp <- rep("", length(x))
   finite <- is.finite(x)
-  x.disp[finite] <- sprintf(digits.str, x[finite])
+  x.disp[finite] <- sub("^-(0(\\.0+)?)$", "\\1", sprintf(digits.str, x[finite]))
   x.disp[!finite & is.na(x)] <- NA_character_
   x.disp
 }
@@ -57,18 +57,11 @@ display.value.is.missing <- function(value) {
   is.null(value) || length(value) == 0 || all(is.na(value))
 }
 
-format.numeric.display <- function(value, digits.str) {
+format.percent.display <- function(value, digits) {
   if (display.value.is.missing(value)) {
     return("")
   }
-  sprintf(digits.str, value)
-}
-
-format.percent.display <- function(value, digits.str) {
-  if (display.value.is.missing(value)) {
-    return("")
-  }
-  paste(sprintf(digits.str, value), "%", sep="")
+  paste0(rcmetar.format.effect.number(value, digits), "%")
 }
 
 format.p.value.display <- function(value, digits) {
@@ -95,25 +88,6 @@ display.confidence.level <- function(params=NULL) {
 display.confidence.interval.labels <- function(params=NULL) {
   level <- trimws(formatC(display.confidence.level(params), format="fg", digits=4))
   c(paste0("Lower bound (", level, "% CI)"), paste0("Upper bound (", level, "% CI)"))
-}
-
-g.round.display.zval <- function(x, digits) {
-  if (display.value.is.missing(x)) {
-    return("")
-  }
-  digits.str <- paste("%.", digits, "f", sep="")
-  x.disp <- round.display(x, digits)
-
-  negative.small <- is.finite(x) & x < 0 & abs(x) < 10^(-digits)
-  negative <- is.finite(x) & x < 0 & abs(x) >= 10^(-digits)
-  x.disp[negative.small] <- paste(">","-",10^(-digits)," & <0",sep="")
-  x.disp[negative] <- sprintf(digits.str, x[negative])
-
-  positive.small <- is.finite(x) & x > 0 & x < 10^(-digits)
-  positive <- is.finite(x) & x > 0 & x >= 10^(-digits)
-  x.disp[positive.small] <- paste("< ", 10^(-digits), sep="")
-  x.disp[positive] <- sprintf(digits.str, x[positive])
-  x.disp
 }
 
 # Use the pooled PFT inverse for both prediction endpoints, never the two study-N

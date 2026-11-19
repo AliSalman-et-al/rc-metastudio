@@ -14,7 +14,6 @@
 \alias{g.get.scale}
 \alias{g.meta.regression}
 \alias{g.meta.regression.cond.means}
-\alias{g.round.display.zval}
 \alias{get.row.vector.cat.cat}
 \alias{get.row.vector.cat.cont}
 \alias{is.single.numeric.covariate}
@@ -54,7 +53,7 @@ model terms and conditional-mean metadata.
 
 \code{create.regression.display()}, \code{adjusted_means_display()},
 \code{g.create.plot.data.reg()}, \code{g.get.scale()},
-\code{g.round.display.zval()}, \code{meta.regression.plot()},
+\code{meta.regression.plot()},
 \code{categorical.meta.regression()}, and
 \code{random.meta.regression()} build model summaries and plots.
 }
