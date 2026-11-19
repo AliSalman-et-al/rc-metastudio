@@ -45,9 +45,7 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
         return(rcmetar.forest.with.measurement.device({
             cex <- plan$typography$cex
             panel.width <- diff(plan$x$alim) / diff(plan$x$xlim) * (plan$device$width - 0.6)
-            gap <- graphics::strwidth("M", units="inches", cex=cex, font=2)
-            lines <- lapply(labels, rcmetar.bmj.wrap.direction,
-                            available=(panel.width - gap) / 2, cex=cex, units="inches")
+            lines <- rcmetar.bmj.direction.lines(bundle, panel.width, cex, units="inches")
             list(lines=max(lengths(lines)), spacing=0.32)
         }))
     }

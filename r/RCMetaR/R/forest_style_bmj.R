@@ -183,11 +183,9 @@ rcmetar.bmj.not_estimable <- function(bundle) {
 rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)
 
 rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
-    labels <- rcmetar.bmj.direction.labels(bundle)
-    gap <- graphics::strwidth("M", cex=cex, font=2)
-    available <- (footer$right.x - footer$left.x - gap) / 2
+    directions <- rcmetar.bmj.direction.lines(bundle, footer$right.x - footer$left.x, cex)
     for (side in c("left", "right")) {
-        lines <- rcmetar.bmj.wrap.direction(labels[[side]], available, cex)
+        lines <- directions[[side]]
         if (!length(lines)) next
         leading <- graphics::strheight("Mg", cex=cex, font=2) * 1.60
         graphics::text(footer[[paste0(side, ".x")]], y - (seq_along(lines) - 1) * leading, lines,
@@ -348,6 +346,19 @@ rcmetar.bmj.wrap.header <- function(label, width=24) {
 rcmetar.bmj.header.lines <- function(label, width=24) {
     lines <- strsplit(rcmetar.bmj.wrap.header(label, width=width), "\n", fixed=TRUE)[[1]]
     lines[nzchar(lines)]
+}
+
+rcmetar.bmj.direction.lines <- function(bundle, width, cex, units="user") {
+    labels <- rcmetar.bmj.direction.labels(bundle)[c("left", "right")]
+    lines <- lapply(labels, rcmetar.bmj.wrap.direction, width / 2, cex, units)
+    widths <- vapply(lines, function(text) {
+        max(c(0, graphics::strwidth(text, units=units, cex=cex, font=2)))
+    }, numeric(1))
+    gap <- graphics::strwidth("M", units=units, cex=cex, font=2)
+    if (all(widths > 0) && sum(widths) + gap > width) {
+        lines <- lapply(labels, rcmetar.bmj.wrap.direction, (width - gap) / 2, cex, units)
+    }
+    lines
 }
 
 rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user") {
