@@ -36,7 +36,7 @@ rcmetar.create.metafor.bubble.bundle <- function(
     yi <- if (is(reg.data, "OMData")) reg.data@y else reg.data$yi
     sei <- if (is(reg.data, "OMData")) reg.data@SE else sqrt(reg.data$vi)
     scale.str <- if (!is.null(params$measure)) get.scale(params) else g.get.scale(params$measure)
-    xlabel <- params$bp_xlabel %||% as.character(cov.name)
+    xlabel <- params[["bp_xlabel"]] %||% as.character(cov.name)
     xlabel <- rcmetar.truncate.plot.display.text(xlabel, rcmetar.plot.text.input.limit)
     list(
         render_engine="metafor",
