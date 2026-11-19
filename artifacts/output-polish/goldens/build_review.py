@@ -1,22 +1,28 @@
 """Render the original and final frozen presentation changes for review."""
 
+import argparse
 from collections import Counter
 from difflib import unified_diff
 from hashlib import sha256
 from io import BytesIO
 import json
 from pathlib import Path
-import sys
 from zipfile import ZipFile
 
 from PIL import Image, ImageDraw
 
 
-folder = Path(__file__).resolve().parent
-root = folder.parents[2]
-baseline = root / "tests/analysis_regression/baseline/observed-golden-baseline.zip"
-original_report = folder.parent / "qualification/golden-final-report.json"
-original_capture, review_capture = map(Path, sys.argv[1:])
+evidence = Path(__file__).resolve().parent.parent
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("original_capture", type=Path)
+parser.add_argument("review_capture", type=Path)
+parser.add_argument("--reference", type=Path, required=True)
+parser.add_argument("--output", type=Path, default=Path("build/output-polish/golden-review"))
+args = parser.parse_args()
+folder = args.output
+folder.mkdir(parents=True, exist_ok=True)
+original_report = evidence / "qualification/golden-final-report.json"
+original_capture, review_capture = args.original_capture, args.review_capture
 review_report = review_capture / "compatibility-report.json"
 
 
@@ -45,8 +51,8 @@ def side_by_side(before, after, path):
     panel.save(path)
 
 
-def table_report(report, capture, heading, subfolder, archive, *, exclusions=frozenset()):
-    changes = sorted(drift(report) - exclusions)
+def table_report(report, capture, heading, subfolder, archive):
+    changes = sorted(drift(report))
     directory = folder / subfolder
     directory.mkdir(exist_ok=True)
     sections = [f"## {heading}", ""]
@@ -88,7 +94,7 @@ lines = ["# Frozen presentation review", "",
          "The archive update uses the second capture. It retains the numerical oracle and its tolerances.", "",
          f"The branch originally proposed 18 changes. The final capture proposes {len(final)}, "
          f"of which {len(final - original)} are additional case and output pairs.", ""]
-with ZipFile(baseline) as archive:
+with ZipFile(args.reference) as archive:
     lines += table_report(original_report, original_capture, "Original 18 proposed changes", "original", archive)
     lines += table_report(review_report, review_capture, "Final proposed changes", "final", archive)
 (folder / "REVIEW.md").write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")

@@ -1,0 +1,130 @@
+[
+  {
+    "captures": {
+      "results": {
+        "attempts": 1,
+        "capture_method": "QScreen.grabWindow(desktop); physical frame crop",
+        "device_pixel_ratio": 1.0,
+        "image_device_pixel_ratio": 1.0,
+        "logical_frame": {
+          "height": 752,
+          "width": 1344,
+          "x": 192,
+          "y": 64
+        },
+        "path": "results-1_0.png",
+        "physical_crop": {
+          "height": 752,
+          "width": 1344,
+          "x": 192,
+          "y": 64
+        },
+        "pixel_size": [
+          1344,
+          752
+        ],
+        "screen_geometry": {
+          "height": 1080,
+          "width": 1920,
+          "x": 0,
+          "y": 0
+        },
+        "sha256": "343174e6b17c591fab87529a1477ab69af07f58c7eb52398fb088f5ecd3e3c7a",
+        "size_bytes": 32817,
+        "varied_pixels": true
+      }
+    },
+    "device_pixel_ratio": 1.0,
+    "navigation": [
+      "Forest plot",
+      "Text report",
+      "Tables"
+    ],
+    "plot_actions": {
+      "edit_committed": true,
+      "export_path": "exported-1_0.svg",
+      "export_sha256": "e537ddd2392f3ec55473e8e77c75c981e9a4e73fbf0920b41b26fe244398832a"
+    },
+    "plot_artifact": "forest-1_0.svg",
+    "plot_artifact_sha256": "eb2e92280d045748d606b833f51e0e9dea784e4092e1e72a9a4146f88f2787f0",
+    "plot_artifact_size": 349,
+    "plot_capability": {
+      "composition": "single",
+      "editable": true,
+      "plot_kind": "forest",
+      "regenerator": "forest",
+      "styleable": true
+    },
+    "plot_ratio": 2.0,
+    "qpa": "windows",
+    "result_text": {
+      "references": "Maintained native Qt6 Results evidence.",
+      "summary": "Random-effects model\nEstimate  Lower bound  Upper bound"
+    },
+    "scale_factor": 1.0
+  },
+  {
+    "captures": {
+      "results": {
+        "attempts": 1,
+        "capture_method": "QScreen.grabWindow(desktop); physical frame crop",
+        "device_pixel_ratio": 1.5,
+        "image_device_pixel_ratio": 1.5,
+        "logical_frame": {
+          "height": 500,
+          "width": 896,
+          "x": 128,
+          "y": 43
+        },
+        "path": "results-1_5.png",
+        "physical_crop": {
+          "height": 750,
+          "width": 1344,
+          "x": 192,
+          "y": 65
+        },
+        "pixel_size": [
+          1344,
+          750
+        ],
+        "screen_geometry": {
+          "height": 720,
+          "width": 1280,
+          "x": 0,
+          "y": 0
+        },
+        "sha256": "c2f7a5103eadd6676a0782da0aa1f27f640d52008a99fa873e9cec651baaf804",
+        "size_bytes": 40941,
+        "varied_pixels": true
+      }
+    },
+    "device_pixel_ratio": 1.5,
+    "navigation": [
+      "Forest plot",
+      "Text report",
+      "Tables"
+    ],
+    "plot_actions": {
+      "edit_committed": true,
+      "export_path": "exported-1_5.svg",
+      "export_sha256": "e537ddd2392f3ec55473e8e77c75c981e9a4e73fbf0920b41b26fe244398832a"
+    },
+    "plot_artifact": "forest-1_5.svg",
+    "plot_artifact_sha256": "eb2e92280d045748d606b833f51e0e9dea784e4092e1e72a9a4146f88f2787f0",
+    "plot_artifact_size": 349,
+    "plot_capability": {
+      "composition": "single",
+      "editable": true,
+      "plot_kind": "forest",
+      "regenerator": "forest",
+      "styleable": true
+    },
+    "plot_ratio": 2.0,
+    "qpa": "windows",
+    "result_text": {
+      "references": "Maintained native Qt6 Results evidence.",
+      "summary": "Random-effects model\nEstimate  Lower bound  Upper bound"
+    },
+    "scale_factor": 1.5
+  }
+]

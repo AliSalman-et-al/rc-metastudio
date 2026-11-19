@@ -4,11 +4,22 @@ The frozen comparison passed all 416 numerical fields in both captures. The arch
 
 The branch originally proposed 18 changes. The final capture proposes 19, of which 1 are additional case and output pairs.
 
+## Replay the visual comparisons
+
+The paired PNGs are local evidence, regenerable with the commands below. The two capture directories are the historical original and final runs. The reference is the archive from immediately before the approved presentation update. The generator writes the full visual review under `build/output-polish/golden-review`.
+
+```powershell
+New-Item -ItemType Directory -Force build/output-polish | Out-Null
+git archive --format=zip --output=build/output-polish/golden-reference.zip 368c175d tests/analysis_regression/baseline/observed-golden-baseline.zip
+Expand-Archive -LiteralPath build/output-polish/golden-reference.zip -DestinationPath build/output-polish/golden-reference -Force
+uv run python artifacts/output-polish/goldens/build_review.py --reference build/output-polish/golden-reference/tests/analysis_regression/baseline/observed-golden-baseline.zip build/qt6-verification/golden-compatibility-r-stack-v2-5c9bcc10ead4/capture build/qt6-verification/golden-compatibility-output-polish-s2-review/capture
+```
+
 ## Original 18 proposed changes
 
 ### 1. amino-binary-cumulative · Cumulative forest plot
 
-![Frozen and proposed Cumulative forest plot for amino-binary-cumulative](original/01-amino-binary-cumulative.png)
+`original/01-amino-binary-cumulative.png` is local evidence, regenerable with the visual review command above.
 
 ### 2. amino-binary-cumulative · Cumulative summary
 
@@ -65,11 +76,11 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 3. amino-binary-leave-one-out · Leave-one-out forest plot
 
-![Frozen and proposed Leave-one-out forest plot for amino-binary-leave-one-out](original/03-amino-binary-leave-one-out.png)
+`original/03-amino-binary-leave-one-out.png` is local evidence, regenerable with the visual review command above.
 
 ### 4. amino-binary-meta-regression · Regression Plot
 
-![Frozen and proposed Regression Plot for amino-binary-meta-regression](original/04-amino-binary-meta-regression.png)
+`original/04-amino-binary-meta-regression.png` is local evidence, regenerable with the visual review command above.
 
 ### 5. amino-binary-meta-regression · Summary
 
@@ -118,7 +129,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 6. amino-binary-random · Forest plot
 
-![Frozen and proposed Forest plot for amino-binary-random](original/06-amino-binary-random.png)
+`original/06-amino-binary-random.png` is local evidence, regenerable with the visual review command above.
 
 ### 7. amino-binary-random · Summary
 
@@ -138,11 +149,11 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 8. amino-binary-subgroup · Subgroup forest plot
 
-![Frozen and proposed Subgroup forest plot for amino-binary-subgroup](original/08-amino-binary-subgroup.png)
+`original/08-amino-binary-subgroup.png` is local evidence, regenerable with the visual review command above.
 
 ### 9. continuous-cumulative · Cumulative forest plot
 
-![Frozen and proposed Cumulative forest plot for continuous-cumulative](original/09-continuous-cumulative.png)
+`original/09-continuous-cumulative.png` is local evidence, regenerable with the visual review command above.
 
 ### 10. continuous-cumulative · Cumulative summary
 
@@ -173,11 +184,11 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 11. continuous-leave-one-out · Leave-one-out forest plot
 
-![Frozen and proposed Leave-one-out forest plot for continuous-leave-one-out](original/11-continuous-leave-one-out.png)
+`original/11-continuous-leave-one-out.png` is local evidence, regenerable with the visual review command above.
 
 ### 12. continuous-meta-regression · Regression Plot
 
-![Frozen and proposed Regression Plot for continuous-meta-regression](original/12-continuous-meta-regression.png)
+`original/12-continuous-meta-regression.png` is local evidence, regenerable with the visual review command above.
 
 ### 13. continuous-meta-regression · Summary
 
@@ -226,7 +237,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 14. continuous-random · Forest plot
 
-![Frozen and proposed Forest plot for continuous-random](original/14-continuous-random.png)
+`original/14-continuous-random.png` is local evidence, regenerable with the visual review command above.
 
 ### 15. continuous-random · Summary
 
@@ -245,7 +256,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 16. continuous-subgroup · Subgroup forest plot
 
-![Frozen and proposed Subgroup forest plot for continuous-subgroup](original/16-continuous-subgroup.png)
+`original/16-continuous-subgroup.png` is local evidence, regenerable with the visual review command above.
 
 ### 17. continuous-subgroup · Subgroup summary
 
@@ -269,13 +280,13 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 18. lymph-diagnostic-random-dor · Diagnostic odds ratio forest plot
 
-![Frozen and proposed Diagnostic odds ratio forest plot for lymph-diagnostic-random-dor](original/18-lymph-diagnostic-random-dor.png)
+`original/18-lymph-diagnostic-random-dor.png` is local evidence, regenerable with the visual review command above.
 
 ## Final proposed changes
 
 ### 1. amino-binary-cumulative · Cumulative forest plot
 
-![Frozen and proposed Cumulative forest plot for amino-binary-cumulative](final/01-amino-binary-cumulative.png)
+`final/01-amino-binary-cumulative.png` is local evidence, regenerable with the visual review command above.
 
 ### 2. amino-binary-cumulative · Cumulative summary
 
@@ -332,11 +343,11 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 3. amino-binary-leave-one-out · Leave-one-out forest plot
 
-![Frozen and proposed Leave-one-out forest plot for amino-binary-leave-one-out](final/03-amino-binary-leave-one-out.png)
+`final/03-amino-binary-leave-one-out.png` is local evidence, regenerable with the visual review command above.
 
 ### 4. amino-binary-meta-regression · Regression Plot
 
-![Frozen and proposed Regression Plot for amino-binary-meta-regression](final/04-amino-binary-meta-regression.png)
+`final/04-amino-binary-meta-regression.png` is local evidence, regenerable with the visual review command above.
 
 ### 5. amino-binary-meta-regression · Summary
 
@@ -393,7 +404,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 6. amino-binary-random · Forest plot
 
-![Frozen and proposed Forest plot for amino-binary-random](final/06-amino-binary-random.png)
+`final/06-amino-binary-random.png` is local evidence, regenerable with the visual review command above.
 
 ### 7. amino-binary-random · Summary
 
@@ -418,7 +429,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 8. amino-binary-subgroup · Subgroup forest plot
 
-![Frozen and proposed Subgroup forest plot for amino-binary-subgroup](final/08-amino-binary-subgroup.png)
+`final/08-amino-binary-subgroup.png` is local evidence, regenerable with the visual review command above.
 
 ### 9. amino-binary-subgroup · Subgroup summary
 
@@ -442,7 +453,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 10. continuous-cumulative · Cumulative forest plot
 
-![Frozen and proposed Cumulative forest plot for continuous-cumulative](final/10-continuous-cumulative.png)
+`final/10-continuous-cumulative.png` is local evidence, regenerable with the visual review command above.
 
 ### 11. continuous-cumulative · Cumulative summary
 
@@ -473,11 +484,11 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 12. continuous-leave-one-out · Leave-one-out forest plot
 
-![Frozen and proposed Leave-one-out forest plot for continuous-leave-one-out](final/12-continuous-leave-one-out.png)
+`final/12-continuous-leave-one-out.png` is local evidence, regenerable with the visual review command above.
 
 ### 13. continuous-meta-regression · Regression Plot
 
-![Frozen and proposed Regression Plot for continuous-meta-regression](final/13-continuous-meta-regression.png)
+`final/13-continuous-meta-regression.png` is local evidence, regenerable with the visual review command above.
 
 ### 14. continuous-meta-regression · Summary
 
@@ -531,7 +542,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 15. continuous-random · Forest plot
 
-![Frozen and proposed Forest plot for continuous-random](final/15-continuous-random.png)
+`final/15-continuous-random.png` is local evidence, regenerable with the visual review command above.
 
 ### 16. continuous-random · Summary
 
@@ -550,7 +561,7 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 17. continuous-subgroup · Subgroup forest plot
 
-![Frozen and proposed Subgroup forest plot for continuous-subgroup](final/17-continuous-subgroup.png)
+`final/17-continuous-subgroup.png` is local evidence, regenerable with the visual review command above.
 
 ### 18. continuous-subgroup · Subgroup summary
 
@@ -574,4 +585,4 @@ The branch originally proposed 18 changes. The final capture proposes 19, of whi
 
 ### 19. lymph-diagnostic-random-dor · Diagnostic odds ratio forest plot
 
-![Frozen and proposed Diagnostic odds ratio forest plot for lymph-diagnostic-random-dor](final/19-lymph-diagnostic-random-dor.png)
+`final/19-lymph-diagnostic-random-dor.png` is local evidence, regenerable with the visual review command above.

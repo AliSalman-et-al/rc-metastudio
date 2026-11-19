@@ -1,6 +1,0 @@
-name                                 type              encoding         emb sub uni object ID
------------------------------------- ----------------- ---------------- --- --- --- ---------
-UBYDII+Arial-BoldMT                  TrueType          WinAnsi          yes yes yes      7  0
-PGIFYE+ArialMT                       TrueType          WinAnsi          yes yes yes      8  0
-HSDMUW+ArialMT                       CID TrueType      Identity-H       yes yes yes      9  0
- Test for overall effect: Z=−4.00, P<0.001                                      0.1                   1                  10
