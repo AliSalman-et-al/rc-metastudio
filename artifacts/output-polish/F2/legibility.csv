@@ -1,0 +1,25 @@
+plot,width (mm),minimum SVG font (pt),warning shown
+forest,85.0,2.79,True
+forest,180.0,5.91,True
+cumulative_forest,85.0,3.78,True
+cumulative_forest,180.0,8.01,False
+leave_one_out_forest,85.0,3.82,True
+leave_one_out_forest,180.0,8.08,False
+subgroup_forest,85.0,2.48,True
+subgroup_forest,180.0,5.26,True
+reitsma_coefficient,85.0,5.02,True
+reitsma_coefficient,180.0,10.63,False
+funnel,85.0,4.82,True
+funnel,180.0,10.2,False
+contour_funnel,85.0,3.86,True
+contour_funnel,180.0,8.16,False
+trimfill_funnel,85.0,4.82,True
+trimfill_funnel,180.0,10.2,False
+deeks_funnel,85.0,4.82,True
+deeks_funnel,180.0,10.2,False
+regression,85.0,3.37,True
+regression,180.0,7.13,False
+sroc,85.0,4.59,True
+sroc,180.0,9.72,False
+trial_sequential,85.0,outlined text,False
+trial_sequential,180.0,outlined text,False

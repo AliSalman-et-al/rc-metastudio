@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1160.02pt" height="872.81pt" viewBox="0 0 1160.02 872.81">
+  <g class="svglite">
+    <defs>
+      <style type="text/css"><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+    </defs>
+    <rect width="100%" height="100%" style="stroke: none; fill: #FFFFFF;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    <defs>
+      <clipPath id="cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx">
+        <rect x="0.00" y="0.00" width="1160.02" height="872.81" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx)">
+</g>
+    <defs>
+      <clipPath id="cpMC4wMHwxMTYwLjAyfDQ2LjA4fDg3Mi44MQ==">
+        <rect x="0.00" y="46.08" width="1160.02" height="826.73" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDQ2LjA4fDg3Mi44MQ==)">
+</g>
+    <defs>
+      <clipPath id="cpMC4wMHwxMTYwLjAyfDUxLjg0fDc4NC45Nw==">
+        <rect x="0.00" y="51.84" width="1160.02" height="733.13" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDUxLjg0fDc4NC45Nw==)">
+      <rect x="0.00" y="151.18" width="1160.02" height="27.92" style="stroke-width: 0.75; stroke: #EEEEEE; fill: #EEEEEE;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <rect x="0.00" y="207.02" width="1160.02" height="27.92" style="stroke-width: 0.75; stroke: #EEEEEE; fill: #EEEEEE;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <rect x="0.00" y="408.05" width="1160.02" height="27.92" style="stroke-width: 0.75; stroke: #EEEEEE; fill: #EEEEEE;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <rect x="0.00" y="463.89" width="1160.02" height="27.92" style="stroke-width: 0.75; stroke: #EEEEEE; fill: #EEEEEE;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx)">
+      <text x="856.86" y="832.49" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="59.75px" lengthAdjust="spacingAndGlyphs">Odds ratio</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDUxLjg0fDc4NC45Nw==)">
+      <line x1="899.32" y1="477.85" x2="941.10" y2="477.85" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="842.18" y1="422.01" x2="922.12" y2="422.01" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.29" y1="449.93" x2="936.72" y2="449.93" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="852.30" y1="220.98" x2="913.29" y2="220.98" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="821.63" y1="165.14" x2="908.09" y2="165.14" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.89" y1="193.06" x2="912.93" y2="193.06" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="915.69,482.37 924.73,482.37 924.73,473.33 915.69,473.33 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="878.26,425.90 886.04,425.90 886.04,418.12 878.26,418.12 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="878.97,453.46 886.04,453.46 886.04,446.40 878.97,446.40 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="878.60,225.17 886.98,225.17 886.98,216.79 878.60,216.79 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="861.06,168.94 868.66,168.94 868.66,161.34 861.06,161.34 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="867.07,196.90 874.74,196.90 874.74,189.23 867.07,189.23 " style="stroke-width: 1.01; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.89" y1="193.06" x2="912.93" y2="193.06" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="821.63" y1="165.14" x2="908.09" y2="165.14" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="852.30" y1="220.98" x2="913.29" y2="220.98" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.29" y1="449.93" x2="936.72" y2="449.93" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="842.18" y1="422.01" x2="922.12" y2="422.01" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="899.32" y1="477.85" x2="941.10" y2="477.85" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.89" y1="196.41" x2="828.89" y2="189.71" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="821.63" y1="168.49" x2="821.63" y2="161.79" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="852.30" y1="224.33" x2="852.30" y2="217.63" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="828.29" y1="453.28" x2="828.29" y2="446.58" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="842.18" y1="425.36" x2="842.18" y2="418.66" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="899.32" y1="481.20" x2="899.32" y2="474.50" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="912.93" y1="196.41" x2="912.93" y2="189.71" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="908.09" y1="168.49" x2="908.09" y2="161.79" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="913.29" y1="224.33" x2="913.29" y2="217.63" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="936.72" y1="453.28" x2="936.72" y2="446.58" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="922.12" y1="425.36" x2="922.12" y2="418.66" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="941.10" y1="481.20" x2="941.10" y2="474.50" style="stroke-width: 1.01; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="867.36,196.61 874.46,196.61 874.46,189.51 867.36,189.51 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="861.34,168.66 868.38,168.66 868.38,161.62 861.34,161.62 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="878.91,224.86 886.67,224.86 886.67,217.10 878.91,217.10 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="879.23,453.20 885.78,453.20 885.78,446.66 879.23,446.66 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="878.55,425.61 885.76,425.61 885.76,418.40 878.55,418.40 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="916.02,482.04 924.39,482.04 924.39,473.67 916.02,473.67 " style="stroke-width: 0.75; stroke: none; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="45.05" y="193.06" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="77.03px" lengthAdjust="spacingAndGlyphs">MRC-1, 1974</text>
+      <text x="45.05" y="165.14" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="61.69px" lengthAdjust="spacingAndGlyphs">CDP, 1976</text>
+      <text x="45.05" y="220.98" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="77.03px" lengthAdjust="spacingAndGlyphs">MRC-2, 1979</text>
+      <text x="45.05" y="449.93" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="70.33px" lengthAdjust="spacingAndGlyphs">GASP, 1979</text>
+      <text x="45.05" y="422.01" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="73.91px" lengthAdjust="spacingAndGlyphs">PARIS, 1980</text>
+      <text x="45.05" y="477.85" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="67.67px" lengthAdjust="spacingAndGlyphs">AMIS, 1980</text>
+      <text x="309.14" y="193.06" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">49</text>
+      <text x="309.14" y="165.14" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">44</text>
+      <text x="309.14" y="220.98" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">102</text>
+      <text x="309.14" y="449.93" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">32</text>
+      <text x="309.14" y="422.01" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">85</text>
+      <text x="309.14" y="477.85" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">246</text>
+      <text x="389.57" y="193.06" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">566</text>
+      <text x="389.57" y="165.14" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">714</text>
+      <text x="389.57" y="220.98" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">730</text>
+      <text x="389.57" y="449.93" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">285</text>
+      <text x="389.57" y="422.01" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">725</text>
+      <text x="389.57" y="477.85" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">2,021</text>
+      <text x="469.99" y="193.06" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">67</text>
+      <text x="469.99" y="165.14" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">64</text>
+      <text x="469.99" y="220.98" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">126</text>
+      <text x="469.99" y="449.93" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">38</text>
+      <text x="469.99" y="422.01" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="14.41px" lengthAdjust="spacingAndGlyphs">52</text>
+      <text x="469.99" y="477.85" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">219</text>
+      <text x="550.41" y="193.06" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">557</text>
+      <text x="550.41" y="165.14" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">707</text>
+      <text x="550.41" y="220.98" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">724</text>
+      <text x="550.41" y="449.93" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">271</text>
+      <text x="550.41" y="422.01" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">354</text>
+      <text x="550.41" y="477.85" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">2,038</text>
+      <text x="642.84" y="193.06" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">14.3%</text>
+      <text x="642.84" y="165.14" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">13.9%</text>
+      <text x="642.84" y="220.98" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">20.1%</text>
+      <text x="642.84" y="449.93" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">10.2%</text>
+      <text x="642.84" y="422.01" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">15.2%</text>
+      <text x="642.84" y="477.85" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">26.3%</text>
+      <line x1="906.66" y1="232.15" x2="906.66" y2="153.97" style="stroke-width: 0.75; stroke: #888888; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="906.66" y1="489.02" x2="906.66" y2="410.84" style="stroke-width: 0.75; stroke: #888888; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx)">
+      <line x1="731.71" y1="784.97" x2="982.00" y2="784.97" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="731.71" y1="784.97" x2="731.71" y2="792.17" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="831.31" y1="784.97" x2="831.31" y2="792.17" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="906.66" y1="784.97" x2="906.66" y2="792.17" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="982.00" y1="784.97" x2="982.00" y2="792.17" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="731.71" y="810.89" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="18.00px" lengthAdjust="spacingAndGlyphs">0.2</text>
+      <text x="831.31" y="810.89" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="18.00px" lengthAdjust="spacingAndGlyphs">0.5</text>
+      <text x="906.66" y="810.89" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="7.20px" lengthAdjust="spacingAndGlyphs">1</text>
+      <text x="982.00" y="810.89" text-anchor="middle" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="7.20px" lengthAdjust="spacingAndGlyphs">2</text>
+    </g>
+    <defs>
+      <clipPath id="cpMTQuNDB8MTE0NS42Mnw2Ni4yNHw3ODQuOTc=">
+        <rect x="14.40" y="66.24" width="1131.22" height="718.73" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMTQuNDB8MTE0NS42Mnw2Ni4yNHw3ODQuOTc=)">
+      <text x="1114.97" y="193.06" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">0.72 [0.49, 1.06]</text>
+      <text x="1114.97" y="165.14" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">0.68 [0.46, 1.01]</text>
+      <text x="1114.97" y="220.98" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">0.80 [0.61, 1.06]</text>
+      <text x="1114.97" y="449.93" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">0.80 [0.49, 1.32]</text>
+      <text x="1114.97" y="422.01" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">0.80 [0.55, 1.15]</text>
+      <text x="1114.97" y="477.85" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="93.58px" lengthAdjust="spacingAndGlyphs">1.13 [0.93, 1.37]</text>
+      <text x="52.25" y="140.31" style="font-size: 12.96px; font-weight: bold; font-style: italic; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="74.88px" lengthAdjust="spacingAndGlyphs">Earlier trials</text>
+      <polygon points="853.86,248.90 875.29,239.97 896.72,248.90 875.29,257.84 " style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="52.25" y="251.99" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="188.50px" lengthAdjust="spacingAndGlyphs">Random-effects model (REML)</text>
+      <text x="309.14" y="253.47" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">195</text>
+      <text x="389.57" y="252.53" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">2,010</text>
+      <text x="469.99" y="253.48" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">257</text>
+      <text x="550.41" y="252.53" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">1,988</text>
+      <text x="642.84" y="253.43" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">48.3%</text>
+      <text x="1114.97" y="248.90" text-anchor="end" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="95.02px" lengthAdjust="spacingAndGlyphs">0.75 [0.62, 0.91]</text>
+      <text x="52.25" y="279.91" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="361.50px" lengthAdjust="spacingAndGlyphs">Heterogeneity: τ² = 0.00; Q = 0.50, df = 2 (P = 0.780); I² = 0.0%</text>
+      <text x="52.25" y="307.84" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="249.62px" lengthAdjust="spacingAndGlyphs">Test for overall effect: Z = −2.87 (P = 0.004)</text>
+      <text x="52.25" y="335.76" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="202.98px" lengthAdjust="spacingAndGlyphs">95% prediction interval: [0.62, 0.91]</text>
+      <text x="52.25" y="397.18" style="font-size: 12.96px; font-weight: bold; font-style: italic; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="66.22px" lengthAdjust="spacingAndGlyphs">Later trials</text>
+      <polygon points="872.21,505.77 901.30,496.84 930.38,505.77 901.30,514.70 " style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="52.25" y="508.86" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="188.50px" lengthAdjust="spacingAndGlyphs">Random-effects model (REML)</text>
+      <text x="309.14" y="510.35" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">363</text>
+      <text x="389.57" y="509.39" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">3,031</text>
+      <text x="469.99" y="510.34" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">309</text>
+      <text x="550.41" y="509.39" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">2,663</text>
+      <text x="642.84" y="510.30" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="36.72px" lengthAdjust="spacingAndGlyphs">51.7%</text>
+      <text x="1114.97" y="505.77" text-anchor="end" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="95.02px" lengthAdjust="spacingAndGlyphs">0.95 [0.73, 1.24]</text>
+      <text x="52.25" y="536.78" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="368.70px" lengthAdjust="spacingAndGlyphs">Heterogeneity: τ² = 0.03; Q = 3.76, df = 2 (P = 0.153); I² = 48.3%</text>
+      <text x="52.25" y="564.70" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="249.62px" lengthAdjust="spacingAndGlyphs">Test for overall effect: Z = −0.36 (P = 0.718)</text>
+      <text x="52.25" y="592.62" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="202.98px" lengthAdjust="spacingAndGlyphs">95% prediction interval: [0.62, 1.45]</text>
+      <line x1="45.05" y1="617.45" x2="1160.02" y2="617.45" style="stroke-width: 0.86;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polygon points="867.80,645.37 888.30,636.44 908.80,645.37 888.30,654.31 " style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="52.25" y="648.46" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="188.50px" lengthAdjust="spacingAndGlyphs">Random-effects model (REML)</text>
+      <text x="309.14" y="649.94" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">558</text>
+      <text x="389.57" y="648.99" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">5,041</text>
+      <text x="469.99" y="649.95" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.61px" lengthAdjust="spacingAndGlyphs">566</text>
+      <text x="550.41" y="648.99" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="32.41px" lengthAdjust="spacingAndGlyphs">4,651</text>
+      <text x="642.84" y="649.90" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="43.92px" lengthAdjust="spacingAndGlyphs">100.0%</text>
+      <text x="1114.97" y="645.37" text-anchor="end" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="95.02px" lengthAdjust="spacingAndGlyphs">0.84 [0.70, 1.02]</text>
+      <text x="52.25" y="676.38" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="368.70px" lengthAdjust="spacingAndGlyphs">Heterogeneity: τ² = 0.03; Q = 9.93, df = 5 (P = 0.077); I² = 48.5%</text>
+      <text x="52.25" y="704.30" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="249.62px" lengthAdjust="spacingAndGlyphs">Test for overall effect: Z = −1.76 (P = 0.079)</text>
+      <text x="52.25" y="732.22" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="331.72px" lengthAdjust="spacingAndGlyphs">Test for subgroup differences: Q = 1.99, df = 1 (P = 0.158)</text>
+      <text x="52.25" y="760.14" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="202.98px" lengthAdjust="spacingAndGlyphs">95% prediction interval: [0.59, 1.22]</text>
+      <line x1="0.00" y1="109.30" x2="1160.02" y2="109.30" style="stroke-width: 0.60;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="309.14" y="99.03" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="42.47px" lengthAdjust="spacingAndGlyphs">Events</text>
+      <text x="389.57" y="99.03" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="70.52px" lengthAdjust="spacingAndGlyphs">Non-events</text>
+      <text x="469.99" y="99.03" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="42.47px" lengthAdjust="spacingAndGlyphs">Events</text>
+      <text x="550.41" y="99.03" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="70.52px" lengthAdjust="spacingAndGlyphs">Non-events</text>
+      <text x="642.84" y="97.82" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="66.64px" lengthAdjust="spacingAndGlyphs">Weight (%)</text>
+      <text x="349.36" y="76.40" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="44.61px" lengthAdjust="spacingAndGlyphs">Aspirin</text>
+      <text x="510.20" y="77.68" text-anchor="middle" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="46.03px" lengthAdjust="spacingAndGlyphs">Control</text>
+      <text x="52.25" y="97.56" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="61.12px" lengthAdjust="spacingAndGlyphs">Subgroup</text>
+      <text x="1107.77" y="97.56" text-anchor="end" style="font-size: 12.96px; font-weight: bold; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="108.67px" lengthAdjust="spacingAndGlyphs">Estimate (95% CI)</text>
+      <text x="52.25" y="642.88" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="100.78px" lengthAdjust="spacingAndGlyphs">Heterogeneity: —</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx)">
+      <text x="900.01" y="861.29" text-anchor="end" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="89.27px" lengthAdjust="spacingAndGlyphs">Favours Aspirin</text>
+      <text x="913.30" y="861.29" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="92.14px" lengthAdjust="spacingAndGlyphs">Favours Control</text>
+    </g>
+    <defs>
+      <clipPath id="cpNTkuMDR8MTEyOS43OHwxMDUuMTJ8Nzk5LjM3">
+        <rect x="59.04" y="105.12" width="1070.74" height="694.25" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpNTkuMDR8MTEyOS43OHwxMDUuMTJ8Nzk5LjM3)">
+</g>
+    <g clip-path="url(#cpMC4wMHwxMTYwLjAyfDAuMDB8ODcyLjgx)">
+      <text x="23.20" y="28.80" style="font-size: 12.96px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="565.75px" lengthAdjust="spacingAndGlyphs">Aspirin for Preventing Death after Myocardial Infarction · Odds ratio · Comparison: Aspirin / Control</text>
+    </g>
+  </g>
+</svg>
+
