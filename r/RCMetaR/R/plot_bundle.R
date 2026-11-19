@@ -56,6 +56,11 @@ rcmetar.plot.bundle.params <- function(prefix) {
             ticks=rcmetar.revman.axis.labels(data, plan$x$at),
             effect=rcmetar.metafor.effect.header(data))
     }
+    if (!is.null(params$funnel.kind)) {
+        x <- .small.study.funnel.x(bundle$om.data, params)
+        params$resolved.funnel.ratio <- .small.study.funnel.ratio(params)
+        params$resolved.funnel.x <- if (params$resolved.funnel.ratio) exp(x) else x
+    }
     params
 }
 

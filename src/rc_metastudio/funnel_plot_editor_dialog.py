@@ -84,7 +84,20 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.plot_type = str(plot_type)
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
+        self._ratio_axis = self._bool("resolved.funnel.ratio", False)
+        effects = self._params.get("resolved.funnel.x", ())
+        self._funnel_x = (effects,) if isinstance(effects, (float, int)) else tuple(effects or ())
+        self._bounds_warning = QLabel(self)
+        self._bounds_warning.setWordWrap(True)
+        self.axis_layout.addWidget(self._bounds_warning, self.axis_layout.rowCount(), 0, 1, 2)
         self._load_params(image_path)
+        if self._ratio_axis:
+            self.x_lower_label.setText("X-axis lower bound (ratio)")
+            self.x_upper_label.setText("X-axis upper bound (ratio)")
+            self.x_ticks_label.setText("X-axis ticks (ratios)")
+        self.x_lower_edit.textChanged.connect(self._refresh_bounds_warning)
+        self.x_upper_edit.textChanged.connect(self._refresh_bounds_warning)
+        self._refresh_bounds_warning()
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.x_label_edit)
@@ -334,17 +347,43 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         default_y_label = self._default_y_label()
         self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
         self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
-        self.x_lower_edit.setText(str(self._value("funnel.xlim.lower", "[default]")))
-        self.x_upper_edit.setText(str(self._value("funnel.xlim.upper", "[default]")))
+        self.x_lower_edit.setText(self._saved_axis_value("funnel.xlim.lower"))
+        self.x_upper_edit.setText(self._saved_axis_value("funnel.xlim.upper"))
         ticks = self._value("funnel.xticks", "[default]")
         if isinstance(ticks, (list, tuple)):
             ticks = ",".join(str(value) for value in ticks)
-        self.x_ticks_edit.setText(str(ticks))
+        self.x_ticks_edit.setText(self._display_saved_axis_value(str(ticks)))
         for field in (self.x_label_edit, self.x_lower_edit, self.x_upper_edit, self.x_ticks_edit):
             if field.text() == "[default]":
                 field.clear()
                 field.setPlaceholderText("Automatic")
                 field.setToolTip("Automatic: determined by the fitted plot range.")
+
+    def _saved_axis_value(self, key):
+        return self._display_saved_axis_value(str(self._value(key, "[default]")))
+
+    def _display_saved_axis_value(self, text):
+        if not self._ratio_axis or self._bool("funnel.xaxis.natural", False) or text in ("", "[default]"):
+            return text
+        try:
+            return ",".join(format(math.exp(value), ".15g") for value in self._finite_list(text, "X-axis"))
+        except (ValueError, OverflowError):
+            return ""
+
+    def _refresh_bounds_warning(self):
+        message = ""
+        try:
+            lower, upper = float(self.x_lower_edit.text()), float(self.x_upper_edit.text())
+        except ValueError:
+            pass
+        else:
+            if math.isfinite(lower) and math.isfinite(upper) and lower < upper:
+                hidden = sum(not lower <= float(effect) <= upper for effect in self._funnel_x)
+                if hidden:
+                    subject = "study falls" if hidden == 1 else "studies fall"
+                    message = f"{hidden} {subject} outside these bounds and will not be shown."
+        self._bounds_warning.setText(message)
+        self._bounds_warning.setVisible(bool(message))
 
     def _default_y_label(self):
         measure = self._value("measure", self._value("metric", ""))
@@ -462,6 +501,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         """Return the original run params plus presentation-only edits."""
         self._validate_plot_ranges()
         params = dict(self._params)
+        params.pop("resolved.funnel.ratio", None)
+        params.pop("resolved.funnel.x", None)
         edits = {
             "plot_caption": self.figure_caption.text().strip(),
             "funnel.style": next(
@@ -498,6 +539,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             "funnel.xlim.lower": qt_text.to_native_text(self.x_lower_edit.text()),
             "funnel.xlim.upper": qt_text.to_native_text(self.x_upper_edit.text()),
             "funnel.xticks": qt_text.to_native_text(self.x_ticks_edit.text()),
+            "funnel.xaxis.natural": True,
             "funnel.outpath": self._funnel_outpath,
         }
         for name, value in edits.items():
@@ -521,8 +563,12 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 raise ValueError("X-axis bounds must be finite numbers.") from error
             if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
                 raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
+            if self._ratio_axis and bounds[0] <= 0:
+                raise ValueError("Ratio bounds must be greater than zero.")
         if self.x_ticks_edit.text().strip():
-            self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+            ticks = self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+            if self._ratio_axis and any(tick <= 0 for tick in ticks):
+                raise ValueError("Ratio ticks must be greater than zero.")
         if self.contour_levels_edit.isEnabled():
             levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
             if any(not 0 < value < 100 for value in levels):
