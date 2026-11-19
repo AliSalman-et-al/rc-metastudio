@@ -46,6 +46,16 @@ integration rather than the one-method `AnalysisRequest`.
   not applied because the boundaries are normal-theory. D² uses the same τ².
 - The required information size is heterogeneity-adjusted without additional
   sequential-design inflation.
+- A calculated fixed-effect information size uses no heterogeneity adjustment.
+  For eligible fixed IV, Mantel–Haenszel and Peto analyses, fit random effects
+  once to the same studies with the sheet's τ² estimator (REML by default).
+  Show the resulting D²-adjusted size using the primary design inputs, as
+  described in the [methods note](../research/trial-sequential-analysis-methods.md#1-required-information-size-ris-and-the-information-axis).
+  The fixed-effect Z-curve, boundaries and primary information size stay fixed.
+  A manual size omits the comparison.
+- For a calculated size, use the same cumulative Z-curve to show sensitivity
+  to alternative anticipated effects (Wetterslev 2017). Recalculate the
+  information target, spending boundaries and conclusion for each effect.
 - For HR, accrued information is the sum of inverse squared log-HR standard
   errors. Required statistical information is the squared sum of the alpha
   and power quantiles divided by squared log anticipated HR, with heterogeneity

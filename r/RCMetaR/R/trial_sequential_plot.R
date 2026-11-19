@@ -282,7 +282,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         if (!is.na(crossing)) {
             z <- looks$z[crossing]
             off.panel <- abs(z) > limit
-            ring <- max(median.marker, 1.35*markers[crossing])
+            ring <- max(.16/marker.inches, median.marker, 1.35*markers[crossing])
             if (off.panel) ring <- max(ring, 1.35*triangle/marker.inches)
             graphics::points(x[crossing], if (off.panel) off.panel.y(z) else z,
                              col=charcoal, pch=1, cex=ring,

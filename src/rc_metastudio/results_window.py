@@ -354,18 +354,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.scene = QGraphicsScene(self)
 
-        results = normalize_analysis_result(results)
-        self.results = results
-
-        self.images = results.images
-        self.display_images = results.display_images
-        self.image_order = results.image_order
-        self.params_paths = results.image_params_paths
-        self.plot_capabilities = results.plot_capabilities
-
+        self._load_result(results)
         self.items_to_coords = {}
         self._wrapped_text_items = []
-        self.texts = results.texts
         self.add_result_sections()
         self._relayout_sections()
 
@@ -375,6 +366,42 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # proportions again after the native window receives its final geometry.
         self._apply_restored_splitter_proportions()
         self._setup_report_controls(source_sheet_name)
+
+    def _load_result(self, results: AnalysisResult) -> None:
+        self.results = results = normalize_analysis_result(results)
+        self.images = results.images
+        self.display_images = results.display_images
+        self.image_order = results.image_order
+        self.params_paths = results.image_params_paths
+        self.plot_capabilities = results.plot_capabilities
+        self.texts = results.texts
+
+    def replace_trial_sequential_result(self, results: AnalysisResult, manuscript: "ManuscriptReport") -> None:
+        # TSA has one figure. Keep its navigation item and replace its scene
+        # item and export artifact together so they always refer to the same run.
+        section, = (section for section in results.sections if section.kind == "image")
+        artifact = PlotArtifact.from_section(section)
+        nav = self.nav_tree.findItems(section.title, Qt.MatchFlag.MatchExactly)[0]
+        key = id(nav)
+        _, _, plot = self.create_plot_item(artifact, self.position())
+        previous = self._nav_items_to_sections.get(key)
+        if previous is not None:
+            self._layout_items.remove(previous)
+            if previous in self._svg_plot_items:
+                self._svg_plot_items.remove(previous)
+            if previous in self._raster_plot_items:
+                self._raster_plot_items.remove(previous)
+            self.scene.removeItem(previous)
+        self._nav_items_to_sections[key] = plot
+        self._nav_plot_artifacts[key] = artifact
+        self._load_result(results)
+        self.manuscript = manuscript
+        self._refresh_manuscript_theme()
+        self._load_report_tables()
+        self._update_sensitivity_navigation()
+        self._relayout_sections()
+        self._schedule_viewport_refit()
+        self.raise_()
 
     def _setup_report_controls(self, source_sheet_name: str | None):
         self._setup_identity(source_sheet_name)
@@ -404,6 +431,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         for title, anchor in sections:
             child = QTreeWidgetItem(report_item, [title])
             self._report_nav_anchors[id(child)] = anchor
+        if self.results.analysis_method == "trial-sequential":
+            self._sensitivity_nav = QTreeWidgetItem(["Sensitivity"])
+            self._sensitivity_nav.setToolTip(0, self._sensitivity_nav.text(0))
+            report_item.insertChild(3, self._sensitivity_nav)
+            self._report_nav_anchors[id(self._sensitivity_nav)] = "table-2"
+            self._update_sensitivity_navigation()
         report_item.setExpanded(True)
         self.nav_tree.currentItemChanged.connect(lambda item, _previous: self.item_clicked(item, 0) if item is not None else None)
         self.nav_tree.setMinimumWidth(min(self.nav_tree.sizeHintForColumn(0) + 12, self.fontMetrics().height() * 12))
@@ -429,6 +462,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.view_menu.addSeparator()
         self.view_menu.addActions((self.fit_page_action, self.fit_width_action, *self.zoom_actions))
         self._show_initial_result()
+
+    def _update_sensitivity_navigation(self) -> None:
+        self._sensitivity_nav.setHidden(not any(
+            section.semantic_id == "trial-sequential.sensitivity" for section in self.manuscript.primary_sections
+        ))
 
     def _refresh_navigation_palette(self):
         palette = QPalette(QApplication.palette())
@@ -579,16 +617,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             QTimer.singleShot(0, self._refresh_theme)
 
     def _setup_result_tables(self):
-        self._report_tables = [table for section in self.manuscript.sections for table in section.tables]
         self.tables_page = QWidget(self.content_stack)
         layout = QVBoxLayout(self.tables_page)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
         self.table_selector = QComboBox(self.tables_page)
         self.table_selector.setAccessibleName("Result table")
-        for section in self.manuscript.sections:
-            for table in section.tables:
-                self.table_selector.addItem(_report_heading(table.title if table.title == section.title or section.title.endswith(("Summary", "summary")) else section.title + " — " + table.title))
         self.table_selector.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.table_selector.setMinimumWidth(0)
         self.table_header_layout = QHBoxLayout()
@@ -613,6 +647,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.result_table.setAccessibleDescription("Read-only result cells with column headers. Ctrl+C copies selected cells, or the entire table when no cells are selected. Tab moves to the next control.")
         required(self.result_table.verticalHeader(), "result table row header").hide()
         layout.addWidget(self.result_table)
+        self.table_note = QLabel(self.tables_page)
+        qt_layout.configure_context_label(self.table_note)
+        layout.addWidget(self.table_note)
         self.copy_table_action = QAction("Copy table", self)
         self.copy_table_action.triggered.connect(self._copy_table)
         copy_shortcut = QAction(self.result_table)
@@ -634,12 +671,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         layout.addStretch()
         self.table_selector.currentIndexChanged.connect(self._select_result_table)
         self.content_stack.addWidget(self.tables_page)
-        self._select_result_table(0)
+        self._load_report_tables()
+
+    def _load_report_tables(self) -> None:
+        index = self.table_selector.currentIndex()
+        self._report_tables = []
+        self._report_table_notes = []
+        with QSignalBlocker(self.table_selector):
+            self.table_selector.clear()
+            for section in self.manuscript.sections:
+                for table in section.tables:
+                    self._report_tables.append(table)
+                    self._report_table_notes.append(
+                        " ".join(section.paragraphs) if section.semantic_id.startswith("trial-sequential.") else "")
+                    title = table.title if table.title == section.title or section.title.endswith(("Summary", "summary")) else section.title + " — " + table.title
+                    self.table_selector.addItem(_report_heading(title))
+            self.table_selector.setCurrentIndex(max(0, min(index, len(self._report_tables) - 1)))
+        self._select_result_table(self.table_selector.currentIndex())
 
     def _select_result_table(self, index):
         if not 0 <= index < len(self._report_tables):
             return
         table = self._report_tables[index]
+        note = self._report_table_notes[index]
+        self.table_note.setText(note)
+        self.table_note.setVisible(bool(note))
         self.export_values_action.setEnabled(bool(table.quantities))
         self.export_values_action.setStatusTip('Export unrounded values with their scales and confidence levels' if table.quantities else 'Only formatted values are available for this table.')
         self.export_values_action.setToolTip(self.export_values_action.statusTip())

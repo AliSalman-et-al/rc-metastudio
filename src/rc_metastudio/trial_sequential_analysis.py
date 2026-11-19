@@ -4,6 +4,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from rc_metastudio.analysis_results import AnalysisResult, ResultSection
@@ -120,6 +121,10 @@ class TsaRequest:
         )
 
     @property
+    def measure(self) -> str:
+        return "Peto OR" if self.model == "peto" else self.metric
+
+    @property
     def model_label(self) -> str:
         if self.model == "random":
             return f"random effects ({self.tau_method})"
@@ -144,6 +149,32 @@ def _validate_version(values: Mapping[str, object]) -> None:
 
 
 @dataclass(frozen=True, slots=True)
+class FixedEffectNote:
+    d2: float
+    ris: float
+
+    @classmethod
+    def from_result(cls, values: Mapping[str, object]) -> "FixedEffectNote | None":
+        note = values.get("fixed_effect_note")
+        if not isinstance(note, Mapping):
+            return None
+        d2, ris = number(note, "d2"), number(note, "ris")
+        return cls(d2, ris) if d2 is not None and ris is not None else None
+
+
+def preview_conclusion(category: str, look: str, study: str, accrued: float, ris: float) -> str:
+    if category in ("crossed-benefit", "crossed-harm"):
+        return f"Crosses the monitoring boundary at study {look} ({study})"
+    if category == "crossed-futility":
+        return f"Crosses the futility boundary at study {look} ({study})"
+    if category == "ris-reached":
+        return "Reaches the required information size without crossing"
+    if category == "none":
+        return f"Crosses no boundary (accrued {accrued / ris:.0%})"
+    return ""
+
+
+@dataclass(frozen=True, slots=True)
 class TsaPreview:
     ready: bool
     reason: str
@@ -153,6 +184,8 @@ class TsaPreview:
     accrued: float | None
     d2: float | None
     i2: float | None
+    fixed_effect_note: FixedEffectNote | None
+    fixed_effect_zero: bool
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, object]) -> "TsaPreview":
@@ -163,6 +196,7 @@ class TsaPreview:
             values.get("ready") is True, _setting_text(values, "reason", ""),
             TsaOptions.from_mapping(defaults), _setting_text(defaults, "anticipated.effect.source", ""),
             number(values, "ris"), number(values, "accrued"), number(values, "d2"), number(values, "i2"),
+            FixedEffectNote.from_result(values), values.get("fixed.effect.zero") is True,
         )
 
 
@@ -195,6 +229,7 @@ class TsaRun:
     i2: float
     lil_lambda: float | None
     excluded_studies: tuple[str, ...]
+    fixed_effect_note: FixedEffectNote | None
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, object], sections: tuple[ResultSection, ...]) -> "TsaRun":
@@ -222,6 +257,7 @@ class TsaRun:
             str(summary["control.proportion.source"]), number(summary, "variance"),
             str(summary["variance.source"]), float(summary["d2"]), float(summary["i2"]),
             number(summary, "lil.lambda"), (excluded,) if isinstance(excluded, str) else tuple(excluded),
+            FixedEffectNote.from_result(values),
         )
 
 
@@ -229,6 +265,10 @@ class TsaService:
     def preview(self, model: DatasetTableModel, request: TsaRequest) -> TsaPreview:
         from rc_metastudio.r_bridge import preview_trial_sequential_analysis
         return preview_trial_sequential_analysis(model, request)
+
+    def conclusion_command(self, model: DatasetTableModel, request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
+        from rc_metastudio.r_bridge import trial_sequential_conclusion_command
+        return trial_sequential_conclusion_command(model, request, directory)
 
     def run(self, model: DatasetTableModel, request: TsaRequest) -> TsaRun:
         from rc_metastudio.r_bridge import run_trial_sequential_analysis

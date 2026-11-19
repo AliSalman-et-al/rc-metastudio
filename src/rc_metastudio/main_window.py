@@ -735,10 +735,40 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         form.exec()
 
     def _trial_sequential_analysis(self) -> None:
-        form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
-            self.model, self, on_result=self.analysis, on_settings_saved=self.data_dirtied,
+        sheet = self.model.current_sheet
+        if sheet is None:
+            return
+        settings = trial_sequential_analysis.TSA_SETTINGS
+        saved = trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))
+        model = dataset_table_model.DatasetTableModel(
+            dataset=copy.deepcopy(self.model.dataset), add_blank_study=False, current_sheet_id=sheet.id,
         )
-        form.exec()
+        view: results_window.ResultsWindow | None = None
+
+        def save_options(options: trial_sequential_analysis.TsaOptions) -> None:
+            nonlocal saved
+            changed = options != saved
+            saved = options
+            if (changed and any(candidate is sheet for candidate in self.model.dataset.sheets)
+                    and options != trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))):
+                sheet.settings[settings] = options.to_mapping()
+                self.data_dirtied()
+
+        def show_result(result: AnalysisResult, manuscript: ManuscriptReport) -> None:
+            nonlocal view
+            if view is None:
+                view = self.analysis(result, source_sheet=sheet, change_settings=reopen, manuscript=manuscript)
+            else:
+                view.replace_trial_sequential_result(result, manuscript)
+
+        def reopen(_plot_parameters: dict[str, object]) -> None:
+            form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
+                model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
+            )
+            form.exec()
+            form.deleteLater()
+
+        reopen({})
 
     def data_dirtied(self):
         self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
@@ -890,7 +920,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self, result: AnalysisResult, *,
         source_sheet: analysis_dataset.Sheet | None = None,
         change_settings=None, manuscript: ManuscriptReport | None = None,
-    ) -> None:
+    ) -> results_window.ResultsWindow | None:
         sheet = source_sheet or self.model.current_sheet
 
         def save_favours_labels(left: str, right: str) -> None:
@@ -913,10 +943,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "The analysis completed, but RC MetaStudio could not display "
                 "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
             )
-            return
+            return None
         form.show()
         form.raise_()
         form.activateWindow()
+        return form
 
     def edit_arm_name(self, current_arm_name):
         original_arm_name = copy.copy(current_arm_name)

@@ -14,8 +14,10 @@ PERCENTAGE_DISPLAY_DIGITS = 1
 
 
 def numeric_cell(value: str) -> bool:
-    number = r'[+−-]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+−-]?\d+)?|inf|∞)%?'
-    return bool(re.fullmatch(rf'\s*(?:[<>≤≥]\s*)?{number}(?:\s*(?:to|,|–)\s*{number})?\s*', value, re.IGNORECASE))
+    digits = r'(?:\d{1,3}(?:,\d{3})+|\d+)'
+    number = rf'[+−±-]?(?:(?:{digits}(?:\.\d*)?|\.\d+)(?:[eE][+−-]?\d+)?|inf|∞)%?'
+    interval = rf'(?:[<>≤≥]\s*)?{number}(?:\s*(?:to|,|–)\s*{number})?'
+    return bool(re.fullmatch(rf'\s*(?:{interval}|{number}\s*\({interval}\))\s*', value, re.IGNORECASE))
 
 
 def numeric_columns(rows: Sequence[Sequence[str]]) -> tuple[bool, ...]:
