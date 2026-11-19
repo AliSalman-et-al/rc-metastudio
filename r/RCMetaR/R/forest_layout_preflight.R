@@ -352,7 +352,7 @@ rcmetar.forest.default.rows <- function(bundle) {
 rcmetar.forest.default.layout.preflight <- function(bundle, style="default", size.policy="export") {
     size <- rcmetar.forest.default.device.metrics(bundle)
     size$size_policy <- size.policy
-    alim <- if (metric.is.log.scale(as.character(bundle$params$measure))) {
+    alim <- if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         rcmetar.forest.journal.ratio.alim(bundle)
     } else {
         rcmetar.forest.journal.alim(bundle)
@@ -403,11 +403,6 @@ rcmetar.forest.has.explicit.axis.bound <- function(bundle, side=c("lower", "uppe
         !is.na(value[[1]]) && !identical(value[[1]], "[default]")
 }
 
-rcmetar.forest.has.explicit.axis.bounds <- function(bundle) {
-    rcmetar.forest.has.explicit.axis.bound(bundle, "lower") ||
-        rcmetar.forest.has.explicit.axis.bound(bundle, "upper")
-}
-
 rcmetar.forest.journal.effect.intervals <- function(bundle) {
     yi <- as.numeric(bundle$effect$yi)
     ci.lb <- as.numeric(bundle$effect$ci.lb)
@@ -440,30 +435,48 @@ rcmetar.forest.nonzero.axis.range <- function(alim) {
 
 rcmetar.forest.journal.alim <- function(bundle) {
     effect <- rcmetar.forest.journal.effect.intervals(bundle)
-    yi <- effect$yi[is.finite(effect$yi)]
-    lower <- effect$ci.lb[is.finite(effect$ci.lb)]
-    upper <- effect$ci.ub[is.finite(effect$ci.ub)]
-    summary.bounds <- numeric(0)
-    if (inherits(bundle$res, "rma")) {
-        summary.bounds <- c(bundle$res$ci.lb, bundle$res$ci.ub)
-        summary.bounds <- summary.bounds[is.finite(summary.bounds)]
+    proportion <- rcmetar.forest.proportion(bundle) && rcmetar.forest.natural.axis(bundle)
+    summary.bounds <- function(fit, group=bundle) {
+        bounds <- c(fit$ci.lb, fit$ci.ub)
+        if (!proportion) return(bounds)
+        group$display_sample_sizes <- NULL
+        vapply(bounds, function(value) rcmetar.forest.axis.values(group, value), numeric(1))
     }
+    values <- if (proportion) unlist(rcmetar.forest.axis.effect(bundle, effect)) else unlist(effect)
+    if (inherits(bundle$res, "rma")) values <- c(values, summary.bounds(bundle$res))
     if (identical(bundle$forest_variant, "subgroup")) {
-        summary.bounds <- c(summary.bounds, bundle$subgroups$overall$ci.lb, bundle$subgroups$overall$ci.ub,
-            unlist(lapply(bundle$subgroups$results, function(fit) c(fit$ci.lb, fit$ci.ub)), use.names=FALSE))
+        values <- c(values, summary.bounds(bundle$subgroups$overall),
+            unlist(lapply(seq_along(bundle$subgroups$results), function(index) {
+                group <- bundle
+                group$sample_sizes <- bundle$sample_sizes[bundle$study_groups == unique(bundle$study_groups)[[index]]]
+                summary.bounds(bundle$subgroups$results[[index]], group)
+            }), use.names=FALSE))
     }
-    values <- c(yi, lower, upper, summary.bounds)
-    values <- values[is.finite(values)]
-    if (length(values) < 2 || diff(range(values)) <= 0) {
-        return(rcmetar.metafor.alim(bundle))
-    }
-    alim <- range(values)
-    # Leave space for endpoint caps rather than truncation arrows at exact limits.
-    padding <- diff(alim) * 0.02
-    alim <- alim + c(-padding, padding)
     raw <- rcmetar.metafor.alim(bundle)
-    if (rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) alim[[1]] <- raw[[1]]
-    if (rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) alim[[2]] <- raw[[2]]
+    linear <- get.scale(bundle$params) == "standard"
+    if (linear && !rcmetar.forest.proportion(bundle)) {
+        values <- c(values, 0)
+    }
+    values <- values[is.finite(values)]
+    if (!linear && !proportion && (length(values) < 2 || diff(range(values)) <= 0)) return(raw)
+    alim <- if (length(values)) rcmetar.forest.nonzero.axis.range(range(values)) else
+        if (proportion) c(0, 1) else raw
+    # Keep endpoint caps inside the panel, then extend linear axes to nice ticks.
+    alim <- alim + c(-0.02, 0.02) * diff(alim)
+    if (linear || proportion) alim <- range(pretty(alim, n=5))
+    if (proportion) alim <- c(max(0, alim[[1]]), min(1, alim[[2]]))
+    for (index in 1:2) {
+        if (rcmetar.forest.has.explicit.axis.bound(bundle, c("lower", "upper")[[index]])) {
+            alim[[index]] <- if (proportion) {
+                as.numeric(bundle$params[[c("fp_plot_lb", "fp_plot_ub")[[index]]]])
+            } else raw[[index]]
+        }
+    }
+    if (alim[[1]] > alim[[2]]) {
+        if (!proportion) return(raw)
+        if (!rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) alim[[2]] <- 1
+        if (!rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) alim[[1]] <- 0
+    }
     rcmetar.forest.nonzero.axis.range(alim)
 }
 
@@ -505,7 +518,7 @@ rcmetar.forest.journal.ratio.ticks <- function(alim) {
 }
 
 rcmetar.forest.revman.layout.coordinates <- function(bundle) {
-    if (metric.is.log.scale(as.character(bundle$params$measure))) {
+    if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         alim <- rcmetar.forest.journal.ratio.alim(bundle)
     } else {
         alim <- rcmetar.forest.journal.alim(bundle)

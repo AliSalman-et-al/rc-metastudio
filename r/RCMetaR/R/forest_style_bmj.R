@@ -223,18 +223,6 @@ rcmetar.bmj.method.label <- function(bundle) {
 }
 
 
-rcmetar.bmj.axis.ticks <- function(bundle, alim) {
-    if (!metric.is.log.scale(as.character(bundle$params$measure)) &&
-            all(abs(alim - c(-1, 1)) < 1e-8)) {
-        return(c(-1, -0.5, 0, 0.5, 1))
-    }
-    rcmetar.revman.axis.ticks(bundle, alim)
-}
-
-rcmetar.bmj.axis.labels <- function(bundle, ticks) {
-    rcmetar.revman.axis.labels(bundle, ticks)
-}
-
 rcmetar.bmj.axis.footer.layout <- function(bundle, layout) {
     if (is.null(layout) || is.null(layout$alim)) {
         layout <- list(alim=graphics::par("usr")[1:2])
@@ -474,20 +462,10 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
 }
 
 rcmetar.forest.bmj.alim <- function(bundle) {
-    measure <- as.character(bundle$params$measure)
-    if (metric.is.log.scale(measure)) {
+    if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         return(rcmetar.forest.journal.ratio.alim(bundle))
     }
-    if (rcmetar.forest.has.explicit.axis.bounds(bundle)) {
-        return(rcmetar.forest.journal.alim(bundle))
-    }
-    if (identical(measure, "RD")) {
-        return(c(-1, 1))
-    }
-    alim <- rcmetar.forest.journal.alim(bundle)
-    alim <- range(c(alim, 0), finite=TRUE)
-    padding <- diff(alim) * 0.12
-    c(alim[[1]] - padding, alim[[2]] + padding)
+    rcmetar.forest.journal.alim(bundle)
 }
 
 
@@ -561,7 +539,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
         x=list(
             xlim=layout$xlim,
             alim=layout$alim,
-            at=rcmetar.bmj.axis.ticks(bundle, layout$alim),
+            at=rcmetar.revman.axis.ticks(bundle, layout$alim),
             refline=NA,
             xlab=""
         ),
@@ -810,9 +788,9 @@ rcmetar.draw.bmj.default_like.forest <- function(bundle, outpath) {
 }
 
 rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
-    ticks <- rcmetar.bmj.axis.ticks(bundle, layout$alim)
+    ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
     ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
-    labels <- rcmetar.bmj.axis.labels(bundle, ticks)
+    labels <- rcmetar.revman.axis.labels(bundle, ticks)
     y.axis <- -2.37
     y.tick <- -2.21
     y.label <- -2.83
