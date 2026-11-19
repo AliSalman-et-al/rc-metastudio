@@ -171,7 +171,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         left <- tick.width + if (compact) .52 else .72
         legend.cex <- max(6/(12*size$cex), rcmetar.bubble.legend.cex())
         inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
-        legend.width <- max(inches(labels, legend.cex)) + .39
+        legend.width <- max(inches(labels, legend.cex)) + if (compact) .39 else .51
         legend.below <- (size$width - left - legend.width)/size$width <
             if (size$width <= 89/25.4 + .01) .60 else .72
         conventional.cex <- max(.8, 6/(12*size$cex))
@@ -213,10 +213,10 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0)
         graphics::segments(0, -limit, 0, limit)
         graphics::segments(0, -limit, 1, -limit)
-        title.inset <- if (compact) .14 else .24
+        title.inset <- if (compact) .14 else .195
         graphics::mtext(ylabel, side=2, cex=size$cex,
                         line=(left - title.inset)/(graphics::par("csi") * graphics::par("mex")))
-        .tsa.draw.favours(favours, limit, tick.width + if (compact) .22 else .29, text.col, compact)
+        .tsa.draw.favours(favours, limit, tick.width + if (compact) .22 else .365, text.col, compact)
         rcmetar.draw.panel.caption(caption, cex=caption.cex, line=line + caption.spacing*length(outcome))
         if (length(outcome)) rcmetar.draw.panel.caption(outcome, cex=caption.cex, line=line)
 
@@ -248,20 +248,24 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
         added <- diff(c(0, looks$accrued))
         finite <- is.finite(looks$z)
         # The bubble renderer uses square-root scaling of point diameter.
-        # Bound the device symbol (one half-em) plus its outline in inches.
+        # The SVG device draws a circle with a diameter of 0.28 em.
         cap <- max(.01, (.06 * graphics::par("pin")[2] - .75/72) /
-                   (.5 * graphics::par("cin")[2] * size$cex))
+                   (.28 * 12/72 * size$cex))
         markers <- min(style$plim[2], cap) * sqrt(added/max(added[finite]))
         median.marker <- stats::median(markers[finite])
         inside <- which(finite & abs(looks$z) <= limit)
         graphics::points(x[inside], looks$z[inside], pch=style$pch, bg=style$bg,
                          col=accent, cex=markers[inside], lwd=1, xpd=TRUE)
         outside <- which(finite & abs(looks$z) > 10)
-        graphics::points(x[outside], sign(looks$z[outside])*10,
+        # Leave clearance from the axis stroke so the off-panel symbol reads
+        # as a triangle even for plots dominated by one very large study.
+        off.panel.y <- function(z) sign(z) * (limit + graphics::yinch(.03))
+        graphics::points(x[outside], off.panel.y(looks$z[outside]),
                          pch=ifelse(looks$z[outside] > 0, 24, 25),
                          bg=accent, col=accent, cex=median.marker, xpd=TRUE)
         if (!is.na(crossing)) {
-            graphics::points(x[crossing], max(-limit, min(limit, looks$z[crossing])),
+            z <- looks$z[crossing]
+            graphics::points(x[crossing], if (abs(z) > 10) off.panel.y(z) else z,
                              col=charcoal, pch=1, cex=max(median.marker, 1.35*markers[crossing]),
                              lwd=1.6, xpd=TRUE)
         }
