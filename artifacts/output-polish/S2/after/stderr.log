@@ -1,0 +1,20 @@
+R callback write-console: Loading required package: Matrix
+  
+R callback write-console: Loading required package: metadat
+  
+R callback write-console: Loading required package: numDeriv
+  
+R callback write-console: 
+Loading the 'metafor' package (version 5.2-1). For an
+introduction to the package please type: help(metafor)
+
+  
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+29 (frame: 1893x1110-9-9) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+29 (frame: 1893x1102-9-9) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)
+Qt QtWarningMsg: QWindowsWindow::setGeometry: Unable to set geometry 1875x1063+0+38 (frame: 1893x1110-9+0) on QWidgetWindow/"ResultsWindowWindow" on "\\.\DISPLAY1". Resulting geometry: 1875x1055+0+38 (frame: 1893x1102-9+0) margins: 9, 38, 9, 9)

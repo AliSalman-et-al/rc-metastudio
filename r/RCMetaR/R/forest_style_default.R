@@ -234,7 +234,7 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout) {
 rcmetar.draw.default.subgroup.estimate <- function(bundle, layout, row, index, cex) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) return(invisible(NULL))
     values <- c(bundle$effect_display$y.disp[[index]], bundle$effect_display$lb.disp[[index]], bundle$effect_display$ub.disp[[index]])
-    values <- rcmetar.format.effect.number(values, display.digits(bundle$params))
+    values <- rcmetar.format.effect.number(values, rcmetar.forest.effect.digits(bundle))
     label <- if (rcmetar.forest.style(bundle$params) == "bmj")
         paste0(values[[1]], " (", values[[2]], " to ", values[[3]], ")") else
         paste0(values[[1]], " [", values[[2]], ", ", values[[3]], "]")

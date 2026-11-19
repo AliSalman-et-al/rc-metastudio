@@ -782,8 +782,20 @@ rcmetar.metafor.alim <- function(bundle) {
     rcmetar.forest.nonzero.axis.range(range(values))
 }
 
+rcmetar.forest.effect.digits <- function(bundle) {
+    bounds <- bundle$effect_display
+    if (!is.null(bounds)) return(rcmetar.effect.digits(bundle$params, bounds$lb.disp, bounds$ub.disp))
+    lower <- rcmetar.forest.display.values(bundle, bundle$effect$ci.lb)
+    upper <- rcmetar.forest.display.values(bundle, bundle$effect$ci.ub)
+    if (inherits(bundle$res, "rma") && !isTRUE(bundle$single_study)) {
+        lower <- c(lower, rcmetar.forest.display.values(bundle, bundle$res$ci.lb))
+        upper <- c(upper, rcmetar.forest.display.values(bundle, bundle$res$ci.ub))
+    }
+    rcmetar.effect.digits(bundle$params, lower, upper)
+}
+
 rcmetar.metafor.effect.labels <- function(bundle) {
-    digits <- as.integer(bundle$params$digits)
+    digits <- rcmetar.forest.effect.digits(bundle)
     if (!is.null(bundle$forest_variant) && !identical(bundle$forest_variant, "standard")) {
         y <- rcmetar.forest.display.values(bundle, bundle$effect$yi)
         lb <- rcmetar.forest.display.values(bundle, bundle$effect$ci.lb)

@@ -550,6 +550,7 @@ rcmetar.revman.summary.effect <- function(bundle) {
     on.exit(options(old.options), add=TRUE)
     weights <- as.numeric(weights(res))
     transform <- rcmetar.bundle.transform(bundle)
+    digits <- rcmetar.forest.effect.digits(bundle)
     pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
     psize <- rep(NA_real_, length(weights))
     finite.weights <- is.finite(weights)
@@ -564,11 +565,11 @@ rcmetar.revman.summary.effect <- function(bundle) {
         weights=weights,
         psize=psize * rcmetar.point.size.multiplier(bundle$params),
         label=paste0(
-            rcmetar.format.effect.number(pred[[1]], bundle$params$digits),
+            rcmetar.format.effect.number(pred[[1]], digits),
             " [",
-            rcmetar.format.effect.number(pred[[2]], bundle$params$digits),
+            rcmetar.format.effect.number(pred[[2]], digits),
             ", ",
-            rcmetar.format.effect.number(pred[[3]], bundle$params$digits),
+            rcmetar.format.effect.number(pred[[3]], digits),
             "]"
         )
     )
@@ -585,6 +586,7 @@ rcmetar.revman.display.ilab <- function(bundle, weights) {
 
 rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows, cex) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) return(invisible(NULL))
+    digits <- rcmetar.forest.effect.digits(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
@@ -593,9 +595,9 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         lower <- transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite])
         upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
         labels[finite] <- paste0(
-            rcmetar.format.effect.number(y, bundle$params$digits),
-            " [", rcmetar.format.effect.number(lower, bundle$params$digits),
-            ", ", rcmetar.format.effect.number(upper, bundle$params$digits), "]"
+            rcmetar.format.effect.number(y, digits),
+            " [", rcmetar.format.effect.number(lower, digits),
+            ", ", rcmetar.format.effect.number(upper, digits), "]"
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, 0), cex=cex)

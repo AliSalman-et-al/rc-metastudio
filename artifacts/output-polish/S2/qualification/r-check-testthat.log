@@ -1,0 +1,41 @@
+
+R version 4.6.2 (2026-10-29 ucrt) -- "Diversified Portfolio"
+Copyright (C) 2026 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(testthat)
+> library(RCMetaR)
+> 
+> rcmetar.set.global.conf.level(95)
+[1] 95
+> test_check("RCMetaR")
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 99 iterations for an approximate permutation test.
+Running 64 iterations for an exact permutation test.
+Running 64 iterations for an exact permutation test.
+Running 64 iterations for an exact permutation test.
+[ FAIL 0 | WARN 15 | SKIP 0 | PASS 2614 ]
+
+[ FAIL 0 | WARN 15 | SKIP 0 | PASS 2614 ]
+> 
+> proc.time()
+   user  system elapsed 
+ 340.53   31.89  377.48 

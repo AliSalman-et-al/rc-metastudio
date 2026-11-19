@@ -1,0 +1,26 @@
+[20:38:49] $ C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+error[invalid-assignment]: Too many values to unpack
+  --> tests\e2e\results_values.py:31:5
+   |
+31 |     _, parsed, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
+   |     ^^^^^^^^^^^^   -------------------------------------------------------------------------------------------------------------------------- Got 4
+   |     |
+   |     Expected 3
+
+error[invalid-assignment]: Too many values to unpack
+  --> tests\e2e\results_values.py:47:5
+   |
+47 |     _, parsed_pft, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
+   |     ^^^^^^^^^^^^^^^^   ------------------------------------------------------------------------------------------------------------------------------- Got 4
+   |     |
+   |     Expected 3
+
+Found 2 diagnostics
+Typing evidence: C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\verification\typing\20261119T203849-26639e77
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from pathlib import Path; from scripts.verify import run_typing; run_typing(Path('build/qt6-verification').resolve())
+                                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\scripts\verify.py", line 255, in run_typing
+    raise VerificationError(f"strict typing failed; inspect {evidence}")
+scripts.verify.VerificationError: strict typing failed; inspect C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\verification\typing\20261119T203849-26639e77

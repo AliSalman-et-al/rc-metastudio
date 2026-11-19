@@ -296,7 +296,7 @@ rcmetar.bmj.effect.values <- function(bundle) {
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits
+            rcmetar.forest.effect.digits(bundle)
         )
     }
     labels
@@ -312,7 +312,7 @@ rcmetar.bmj.summary.label.for.bundle <- function(bundle) {
         transform$display.scale(res$b, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.lb, ni=bundle$sample_sizes),
         transform$display.scale(res$ci.ub, ni=bundle$sample_sizes),
-        bundle$params$digits
+        rcmetar.forest.effect.digits(bundle)
     )
 }
 
@@ -675,7 +675,7 @@ rcmetar.bmj.summary.effect <- function(bundle) {
     summary <- rcmetar.revman.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
-    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], bundle$params$digits)
+    summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], rcmetar.forest.effect.digits(bundle))
     finite.weights <- is.finite(summary$weights)
     if (any(finite.weights)) {
         scaled <- rep(NA_real_, length(summary$weights))
@@ -782,7 +782,7 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite]),
             transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite]),
-            bundle$params$digits
+            rcmetar.forest.effect.digits(bundle)
         )
     }
     graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, 0), cex=cex)

@@ -1,0 +1,2511 @@
+{
+  "RD-default-2": {
+    "annotations": [
+      [
+        "−0.05",
+        "−0.10",
+        "0.01"
+      ],
+      [
+        "−0.08",
+        "−0.11",
+        "−0.04"
+      ],
+      [
+        "−0.04",
+        "−0.07",
+        "0.00"
+      ],
+      [
+        "−0.01",
+        "−0.02",
+        "−0.01"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "−0.14",
+        "−0.17",
+        "−0.11"
+      ],
+      [
+        "−0.01",
+        "−0.02",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "−0.03",
+        "−0.04",
+        "−0.02"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "−0.01",
+        "−0.01",
+        "0.00"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (outcome scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Risk difference",
+            "−0.01",
+            "−0.01 to 0.00",
+            "0.00",
+            "−4.51",
+            "< 0.001"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ],
+          [
+            "Cochran’s Q",
+            "276.47"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "12"
+          ],
+          [
+            "Heterogeneity P",
+            "< 0.001"
+          ],
+          [
+            "I²",
+            "95.66%"
+          ],
+          [
+            "Between-study variance, τ²",
+            "0.00"
+          ],
+          [
+            "95% prediction interval",
+            "−0.02 to 0.00"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Aaronson",
+            "−0.05",
+            "−0.10 to 0.01",
+            "0.3%"
+          ],
+          [
+            "Ferguson & Simes",
+            "−0.08",
+            "−0.11 to −0.04",
+            "0.7%"
+          ],
+          [
+            "Rosenthal",
+            "−0.04",
+            "−0.07 to 0.00",
+            "0.8%"
+          ],
+          [
+            "Hart & Sutherland",
+            "−0.01",
+            "−0.02 to −0.01",
+            "11.9%"
+          ],
+          [
+            "Frimodt-Moller",
+            "0.00",
+            "0.00 to 0.00",
+            "11.4%"
+          ],
+          [
+            "Stein & Aaronson",
+            "−0.14",
+            "−0.17 to −0.11",
+            "1.1%"
+          ],
+          [
+            "Vandiviere",
+            "−0.01",
+            "−0.02 to 0.00",
+            "5.5%"
+          ],
+          [
+            "TB Prevention Trial",
+            "0.00",
+            "0.00 to 0.00",
+            "13.0%"
+          ],
+          [
+            "Coetzee & Berjak",
+            "0.00",
+            "0.00 to 0.00",
+            "12.2%"
+          ],
+          [
+            "Rosenthal61",
+            "−0.03",
+            "−0.04 to −0.02",
+            "5.2%"
+          ],
+          [
+            "Comstock",
+            "0.00",
+            "0.00 to 0.00",
+            "12.9%"
+          ],
+          [
+            "Comstock & Webster",
+            "0.00",
+            "0.00 to 0.00",
+            "12.2%"
+          ],
+          [
+            "Comstock76",
+            "0.00",
+            "0.00 to 0.00",
+            "12.9%"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). The pooled risk difference was −0.01 (95% CI −0.01 to 0.00; z = −4.51; P < 0.001). Heterogeneity: Q = 276.47 (df = 12; P < 0.001); I² = 95.66%; τ² = 0.00. The 95% prediction interval was −0.02 to 0.00.",
+    "footer": [
+      "Heterogeneity: τ² = 0.00; Q = 276.47, df = 12 (P < 0.001); I² = 95.66%",
+      "95% prediction interval: [−0.02, 0.00]"
+    ]
+  },
+  "RD-bmj-2": {
+    "annotations": [
+      [
+        "−0.01",
+        "−0.01",
+        "0.00"
+      ],
+      [
+        "−0.05",
+        "−0.10",
+        "0.01"
+      ],
+      [
+        "−0.08",
+        "−0.11",
+        "−0.04"
+      ],
+      [
+        "−0.04",
+        "−0.07",
+        "0.00"
+      ],
+      [
+        "−0.01",
+        "−0.02",
+        "−0.01"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "−0.14",
+        "−0.17",
+        "−0.11"
+      ],
+      [
+        "−0.01",
+        "−0.02",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "−0.03",
+        "−0.04",
+        "−0.02"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ],
+      [
+        "0.00",
+        "0.00",
+        "0.00"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (outcome scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Risk difference",
+            "−0.01",
+            "−0.01 to 0.00",
+            "0.00",
+            "−4.51",
+            "< 0.001"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ],
+          [
+            "Cochran’s Q",
+            "276.47"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "12"
+          ],
+          [
+            "Heterogeneity P",
+            "< 0.001"
+          ],
+          [
+            "I²",
+            "95.66%"
+          ],
+          [
+            "Between-study variance, τ²",
+            "0.00"
+          ],
+          [
+            "95% prediction interval",
+            "−0.02 to 0.00"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Aaronson",
+            "−0.05",
+            "−0.10 to 0.01",
+            "0.3%"
+          ],
+          [
+            "Ferguson & Simes",
+            "−0.08",
+            "−0.11 to −0.04",
+            "0.7%"
+          ],
+          [
+            "Rosenthal",
+            "−0.04",
+            "−0.07 to 0.00",
+            "0.8%"
+          ],
+          [
+            "Hart & Sutherland",
+            "−0.01",
+            "−0.02 to −0.01",
+            "11.9%"
+          ],
+          [
+            "Frimodt-Moller",
+            "0.00",
+            "0.00 to 0.00",
+            "11.4%"
+          ],
+          [
+            "Stein & Aaronson",
+            "−0.14",
+            "−0.17 to −0.11",
+            "1.1%"
+          ],
+          [
+            "Vandiviere",
+            "−0.01",
+            "−0.02 to 0.00",
+            "5.5%"
+          ],
+          [
+            "TB Prevention Trial",
+            "0.00",
+            "0.00 to 0.00",
+            "13.0%"
+          ],
+          [
+            "Coetzee & Berjak",
+            "0.00",
+            "0.00 to 0.00",
+            "12.2%"
+          ],
+          [
+            "Rosenthal61",
+            "−0.03",
+            "−0.04 to −0.02",
+            "5.2%"
+          ],
+          [
+            "Comstock",
+            "0.00",
+            "0.00 to 0.00",
+            "12.9%"
+          ],
+          [
+            "Comstock & Webster",
+            "0.00",
+            "0.00 to 0.00",
+            "12.2%"
+          ],
+          [
+            "Comstock76",
+            "0.00",
+            "0.00 to 0.00",
+            "12.9%"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). The pooled risk difference was −0.01 (95% CI −0.01 to 0.00; z = −4.51; P < 0.001). Heterogeneity: Q = 276.47 (df = 12; P < 0.001); I² = 95.66%; τ² = 0.00. The 95% prediction interval was −0.02 to 0.00.",
+    "footer": [
+      "Test for heterogeneity: τ²=0.00; χ²=276.47, df=12, P<0.001; I²=95.66%",
+      "95% prediction interval: (−0.02 to 0.00)"
+    ]
+  },
+  "RD-bmj-4": {
+    "annotations": [
+      [
+        "−0.0071",
+        "−0.0101",
+        "−0.0040"
+      ],
+      [
+        "−0.0466",
+        "−0.1014",
+        "0.0081"
+      ],
+      [
+        "−0.0761",
+        "−0.1127",
+        "−0.0395"
+      ],
+      [
+        "−0.0370",
+        "−0.0693",
+        "−0.0047"
+      ],
+      [
+        "−0.0147",
+        "−0.0173",
+        "−0.0121"
+      ],
+      [
+        "−0.0016",
+        "−0.0048",
+        "0.0016"
+      ],
+      [
+        "−0.1396",
+        "−0.1672",
+        "−0.1120"
+      ],
+      [
+        "−0.0128",
+        "−0.0228",
+        "−0.0027"
+      ],
+      [
+        "0.0001",
+        "−0.0006",
+        "0.0008"
+      ],
+      [
+        "−0.0023",
+        "−0.0046",
+        "0.0000"
+      ],
+      [
+        "−0.0291",
+        "−0.0395",
+        "−0.0187"
+      ],
+      [
+        "−0.0015",
+        "−0.0025",
+        "−0.0005"
+      ],
+      [
+        "0.0007",
+        "−0.0016",
+        "0.0030"
+      ],
+      [
+        "0.0000",
+        "−0.0009",
+        "0.0008"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (outcome scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Risk difference",
+            "−0.0071",
+            "−0.0101 to −0.0040",
+            "0.0016",
+            "−4.5128",
+            "< 1e-04"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ],
+          [
+            "Cochran’s Q",
+            "276.4737"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "12"
+          ],
+          [
+            "Heterogeneity P",
+            "< 1e-04"
+          ],
+          [
+            "I²",
+            "95.6596%"
+          ],
+          [
+            "Between-study variance, τ²",
+            "0.0000"
+          ],
+          [
+            "95% prediction interval",
+            "−0.0161 to 0.0020"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Aaronson",
+            "−0.0466",
+            "−0.1014 to 0.0081",
+            "0.3%"
+          ],
+          [
+            "Ferguson & Simes",
+            "−0.0761",
+            "−0.1127 to −0.0395",
+            "0.7%"
+          ],
+          [
+            "Rosenthal",
+            "−0.0370",
+            "−0.0693 to −0.0047",
+            "0.8%"
+          ],
+          [
+            "Hart & Sutherland",
+            "−0.0147",
+            "−0.0173 to −0.0121",
+            "11.9%"
+          ],
+          [
+            "Frimodt-Moller",
+            "−0.0016",
+            "−0.0048 to 0.0016",
+            "11.4%"
+          ],
+          [
+            "Stein & Aaronson",
+            "−0.1396",
+            "−0.1672 to −0.1120",
+            "1.1%"
+          ],
+          [
+            "Vandiviere",
+            "−0.0128",
+            "−0.0228 to −0.0027",
+            "5.5%"
+          ],
+          [
+            "TB Prevention Trial",
+            "0.0001",
+            "−0.0006 to 0.0008",
+            "13.0%"
+          ],
+          [
+            "Coetzee & Berjak",
+            "−0.0023",
+            "−0.0046 to 0.0000",
+            "12.2%"
+          ],
+          [
+            "Rosenthal61",
+            "−0.0291",
+            "−0.0395 to −0.0187",
+            "5.2%"
+          ],
+          [
+            "Comstock",
+            "−0.0015",
+            "−0.0025 to −0.0005",
+            "12.9%"
+          ],
+          [
+            "Comstock & Webster",
+            "0.0007",
+            "−0.0016 to 0.0030",
+            "12.2%"
+          ],
+          [
+            "Comstock76",
+            "0.0000",
+            "−0.0009 to 0.0008",
+            "12.9%"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). The pooled risk difference was −0.0071 (95% CI −0.0101 to −0.0040; z = −4.5128; P < 1e-04). Heterogeneity: Q = 276.4737 (df = 12; P < 1e-04); I² = 95.6596%; τ² = 0.0000. The 95% prediction interval was −0.0161 to 0.0020.",
+    "footer": [
+      "Test for heterogeneity: τ²=0.0000; χ²=276.4737, df=12, P<1e-04; I²=95.6596%",
+      "95% prediction interval: (−0.0161 to 0.0020)"
+    ]
+  },
+  "RR-bmj-2": {
+    "annotations": [
+      [
+        "0.49",
+        "0.34",
+        "0.70"
+      ],
+      [
+        "0.41",
+        "0.13",
+        "1.26"
+      ],
+      [
+        "0.20",
+        "0.09",
+        "0.49"
+      ],
+      [
+        "0.26",
+        "0.07",
+        "0.92"
+      ],
+      [
+        "0.24",
+        "0.18",
+        "0.31"
+      ],
+      [
+        "0.80",
+        "0.52",
+        "1.25"
+      ],
+      [
+        "0.46",
+        "0.39",
+        "0.54"
+      ],
+      [
+        "0.20",
+        "0.08",
+        "0.50"
+      ],
+      [
+        "1.01",
+        "0.89",
+        "1.14"
+      ],
+      [
+        "0.63",
+        "0.39",
+        "1.00"
+      ],
+      [
+        "0.25",
+        "0.15",
+        "0.43"
+      ],
+      [
+        "0.71",
+        "0.57",
+        "0.89"
+      ],
+      [
+        "1.56",
+        "0.37",
+        "6.53"
+      ],
+      [
+        "0.98",
+        "0.58",
+        "1.66"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Risk ratio",
+            "0.49",
+            "0.34 to 0.70",
+            "0.18",
+            "−4.00",
+            "< 0.001"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ],
+          [
+            "Cochran’s Q",
+            "152.23"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "12"
+          ],
+          [
+            "Heterogeneity P",
+            "< 0.001"
+          ],
+          [
+            "I²",
+            "92.12%"
+          ],
+          [
+            "Between-study variance, τ² (squared log scale)",
+            "0.31"
+          ],
+          [
+            "95% prediction interval",
+            "0.16 to 1.54"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Aaronson",
+            "0.41",
+            "0.13 to 1.26",
+            "5.0%"
+          ],
+          [
+            "Ferguson & Simes",
+            "0.20",
+            "0.09 to 0.49",
+            "6.3%"
+          ],
+          [
+            "Rosenthal",
+            "0.26",
+            "0.07 to 0.92",
+            "4.4%"
+          ],
+          [
+            "Hart & Sutherland",
+            "0.24",
+            "0.18 to 0.31",
+            "9.7%"
+          ],
+          [
+            "Frimodt-Moller",
+            "0.80",
+            "0.52 to 1.25",
+            "8.9%"
+          ],
+          [
+            "Stein & Aaronson",
+            "0.46",
+            "0.39 to 0.54",
+            "10.1%"
+          ],
+          [
+            "Vandiviere",
+            "0.20",
+            "0.08 to 0.50",
+            "6.0%"
+          ],
+          [
+            "TB Prevention Trial",
+            "1.01",
+            "0.89 to 1.14",
+            "10.2%"
+          ],
+          [
+            "Coetzee & Berjak",
+            "0.63",
+            "0.39 to 1.00",
+            "8.7%"
+          ],
+          [
+            "Rosenthal61",
+            "0.25",
+            "0.15 to 0.43",
+            "8.4%"
+          ],
+          [
+            "Comstock",
+            "0.71",
+            "0.57 to 0.89",
+            "9.9%"
+          ],
+          [
+            "Comstock & Webster",
+            "1.56",
+            "0.37 to 6.53",
+            "3.8%"
+          ],
+          [
+            "Comstock76",
+            "0.98",
+            "0.58 to 1.66",
+            "8.4%"
+          ]
+        ]
+      },
+      "Summary — Calculation scale (log)": {
+        "headers": [
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "−0.71",
+            "−1.06",
+            "−0.36",
+            "0.18"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nRR = 1 means equal risks in BCG vaccine and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). The pooled risk ratio was 0.49 (95% CI 0.34 to 0.70; z = −4.00; P < 0.001). Heterogeneity: Q = 152.23 (df = 12; P < 0.001); I² = 92.12%; τ² = 0.31. The 95% prediction interval was 0.16 to 1.54.",
+    "footer": [
+      "Test for heterogeneity: τ²=0.31; χ²=152.23, df=12, P<0.001; I²=92.12%",
+      "95% prediction interval: (0.16 to 1.54)"
+    ]
+  },
+  "OR-bmj-2": {
+    "annotations": [
+      [
+        "0.47",
+        "0.32",
+        "0.69"
+      ],
+      [
+        "0.39",
+        "0.12",
+        "1.26"
+      ],
+      [
+        "0.19",
+        "0.08",
+        "0.46"
+      ],
+      [
+        "0.25",
+        "0.07",
+        "0.91"
+      ],
+      [
+        "0.23",
+        "0.18",
+        "0.31"
+      ],
+      [
+        "0.80",
+        "0.51",
+        "1.26"
+      ],
+      [
+        "0.38",
+        "0.32",
+        "0.47"
+      ],
+      [
+        "0.20",
+        "0.08",
+        "0.50"
+      ],
+      [
+        "1.01",
+        "0.89",
+        "1.15"
+      ],
+      [
+        "0.62",
+        "0.39",
+        "1.00"
+      ],
+      [
+        "0.25",
+        "0.14",
+        "0.42"
+      ],
+      [
+        "0.71",
+        "0.57",
+        "0.89"
+      ],
+      [
+        "1.56",
+        "0.37",
+        "6.55"
+      ],
+      [
+        "0.98",
+        "0.58",
+        "1.66"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Odds ratio",
+            "0.47",
+            "0.32 to 0.69",
+            "0.19",
+            "−3.89",
+            "< 0.001"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ],
+          [
+            "Cochran’s Q",
+            "163.16"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "12"
+          ],
+          [
+            "Heterogeneity P",
+            "< 0.001"
+          ],
+          [
+            "I²",
+            "92.65%"
+          ],
+          [
+            "Between-study variance, τ² (squared log scale)",
+            "0.37"
+          ],
+          [
+            "95% prediction interval",
+            "0.14 to 1.64"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Aaronson",
+            "0.39",
+            "0.12 to 1.26",
+            "5.1%"
+          ],
+          [
+            "Ferguson & Simes",
+            "0.19",
+            "0.08 to 0.46",
+            "6.4%"
+          ],
+          [
+            "Rosenthal",
+            "0.25",
+            "0.07 to 0.91",
+            "4.6%"
+          ],
+          [
+            "Hart & Sutherland",
+            "0.23",
+            "0.18 to 0.31",
+            "9.6%"
+          ],
+          [
+            "Frimodt-Moller",
+            "0.80",
+            "0.51 to 1.26",
+            "8.8%"
+          ],
+          [
+            "Stein & Aaronson",
+            "0.38",
+            "0.32 to 0.47",
+            "9.8%"
+          ],
+          [
+            "Vandiviere",
+            "0.20",
+            "0.08 to 0.50",
+            "6.2%"
+          ],
+          [
+            "TB Prevention Trial",
+            "1.01",
+            "0.89 to 1.15",
+            "10.0%"
+          ],
+          [
+            "Coetzee & Berjak",
+            "0.62",
+            "0.39 to 1.00",
+            "8.7%"
+          ],
+          [
+            "Rosenthal61",
+            "0.25",
+            "0.14 to 0.42",
+            "8.4%"
+          ],
+          [
+            "Comstock",
+            "0.71",
+            "0.57 to 0.89",
+            "9.8%"
+          ],
+          [
+            "Comstock & Webster",
+            "1.56",
+            "0.37 to 6.55",
+            "4.1%"
+          ],
+          [
+            "Comstock76",
+            "0.98",
+            "0.58 to 1.66",
+            "8.4%"
+          ]
+        ]
+      },
+      "Summary — Calculation scale (log)": {
+        "headers": [
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "−0.75",
+            "−1.12",
+            "−0.37",
+            "0.19"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nOR = 1 means equal odds in BCG vaccine and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). The pooled odds ratio was 0.47 (95% CI 0.32 to 0.69; z = −3.89; P < 0.001). Heterogeneity: Q = 163.16 (df = 12; P < 0.001); I² = 92.65%; τ² = 0.37. The 95% prediction interval was 0.14 to 1.64.",
+    "footer": [
+      "Test for heterogeneity: τ²=0.37; χ²=163.16, df=12, P<0.001; I²=92.65%",
+      "95% prediction interval: (0.14 to 1.64)"
+    ]
+  },
+  "loo-2": {
+    "annotations": [
+      [
+        "0.49",
+        "0.34",
+        "0.70"
+      ],
+      [
+        "0.49",
+        "0.34",
+        "0.71"
+      ],
+      [
+        "0.52",
+        "0.36",
+        "0.74"
+      ],
+      [
+        "0.50",
+        "0.35",
+        "0.72"
+      ],
+      [
+        "0.54",
+        "0.39",
+        "0.74"
+      ],
+      [
+        "0.47",
+        "0.32",
+        "0.68"
+      ],
+      [
+        "0.49",
+        "0.33",
+        "0.73"
+      ],
+      [
+        "0.52",
+        "0.36",
+        "0.74"
+      ],
+      [
+        "0.45",
+        "0.33",
+        "0.62"
+      ],
+      [
+        "0.48",
+        "0.33",
+        "0.69"
+      ],
+      [
+        "0.52",
+        "0.36",
+        "0.75"
+      ],
+      [
+        "0.47",
+        "0.31",
+        "0.70"
+      ],
+      [
+        "0.47",
+        "0.33",
+        "0.67"
+      ],
+      [
+        "0.46",
+        "0.32",
+        "0.66"
+      ]
+    ],
+    "tables": {
+      "Leave-one-out results": {
+        "headers": [
+          "Study omitted",
+          "k",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "P",
+          "I²"
+        ],
+        "rows": [
+          [
+            "All studies",
+            "13",
+            "0.49",
+            "0.34 to 0.70",
+            "0.18",
+            "< 0.001",
+            "92.12%"
+          ],
+          [
+            "Aaronson, 1948",
+            "12",
+            "0.49",
+            "0.34 to 0.71",
+            "0.18",
+            "< 0.001",
+            "92.74%"
+          ],
+          [
+            "Ferguson & Simes, 1949",
+            "12",
+            "0.52",
+            "0.36 to 0.74",
+            "0.18",
+            "< 0.001",
+            "92.43%"
+          ],
+          [
+            "Rosenthal, 1960",
+            "12",
+            "0.50",
+            "0.35 to 0.72",
+            "0.18",
+            "< 0.001",
+            "92.68%"
+          ],
+          [
+            "Hart & Sutherland, 1977",
+            "12",
+            "0.54",
+            "0.39 to 0.74",
+            "0.16",
+            "< 0.001",
+            "88.61%"
+          ],
+          [
+            "Frimodt-Moller, 1973",
+            "12",
+            "0.47",
+            "0.32 to 0.68",
+            "0.19",
+            "< 0.001",
+            "92.73%"
+          ],
+          [
+            "Stein & Aaronson, 1953",
+            "12",
+            "0.49",
+            "0.33 to 0.73",
+            "0.21",
+            "< 0.001",
+            "91.42%"
+          ],
+          [
+            "Vandiviere, 1973",
+            "12",
+            "0.52",
+            "0.36 to 0.74",
+            "0.18",
+            "< 0.001",
+            "92.46%"
+          ],
+          [
+            "TB Prevention Trial, 1980",
+            "12",
+            "0.45",
+            "0.33 to 0.62",
+            "0.16",
+            "< 0.001",
+            "83.82%"
+          ],
+          [
+            "Coetzee & Berjak, 1968",
+            "12",
+            "0.48",
+            "0.33 to 0.69",
+            "0.19",
+            "< 0.001",
+            "92.77%"
+          ],
+          [
+            "Rosenthal61, 1961",
+            "12",
+            "0.52",
+            "0.36 to 0.75",
+            "0.18",
+            "< 0.001",
+            "92.13%"
+          ],
+          [
+            "Comstock, 1974",
+            "12",
+            "0.47",
+            "0.31 to 0.70",
+            "0.21",
+            "< 0.001",
+            "92.74%"
+          ],
+          [
+            "Comstock & Webster, 1969",
+            "12",
+            "0.47",
+            "0.33 to 0.67",
+            "0.18",
+            "< 0.001",
+            "92.70%"
+          ],
+          [
+            "Comstock76, 1976",
+            "12",
+            "0.46",
+            "0.32 to 0.66",
+            "0.19",
+            "< 0.001",
+            "92.66%"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nEach omission row excludes the named study; compare with the all-studies estimate.\nRR = 1 means equal risks in BCG vaccine and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). With all studies, the pooled risk ratio was 0.49 (95% CI 0.34 to 0.70; I² = 92.12%). Across all 13 omission fits, pooled estimates ranged from 0.45 (omitting TB Prevention Trial, 1980) to 0.54 (omitting Hart & Sutherland, 1977). I² after omission ranged from 83.82% (omitting TB Prevention Trial, 1980) to 92.77% (omitting Coetzee & Berjak, 1968). Table 1 gives every omission fit.",
+    "footer": [
+      "Heterogeneity: τ² = 0.31; Q = 152.23, df = 12 (P < 0.001); I² = 92.12%",
+      "95% prediction interval: [0.16, 1.54]",
+      "I²"
+    ]
+  },
+  "loo-4": {
+    "annotations": [
+      [
+        "0.4896",
+        "0.3449",
+        "0.6950"
+      ],
+      [
+        "0.4940",
+        "0.3443",
+        "0.7089"
+      ],
+      [
+        "0.5197",
+        "0.3634",
+        "0.7432"
+      ],
+      [
+        "0.5042",
+        "0.3524",
+        "0.7213"
+      ],
+      [
+        "0.5386",
+        "0.3905",
+        "0.7430"
+      ],
+      [
+        "0.4658",
+        "0.3201",
+        "0.6778"
+      ],
+      [
+        "0.4903",
+        "0.3278",
+        "0.7333"
+      ],
+      [
+        "0.5191",
+        "0.3631",
+        "0.7421"
+      ],
+      [
+        "0.4538",
+        "0.3296",
+        "0.6247"
+      ],
+      [
+        "0.4775",
+        "0.3281",
+        "0.6948"
+      ],
+      [
+        "0.5207",
+        "0.3636",
+        "0.7457"
+      ],
+      [
+        "0.4673",
+        "0.3119",
+        "0.7002"
+      ],
+      [
+        "0.4677",
+        "0.3271",
+        "0.6686"
+      ],
+      [
+        "0.4589",
+        "0.3169",
+        "0.6645"
+      ]
+    ],
+    "tables": {
+      "Leave-one-out results": {
+        "headers": [
+          "Study omitted",
+          "k",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "P",
+          "I²"
+        ],
+        "rows": [
+          [
+            "All studies",
+            "13",
+            "0.4896",
+            "0.3449 to 0.6950",
+            "0.1787",
+            "< 1e-04",
+            "92.1173%"
+          ],
+          [
+            "Aaronson, 1948",
+            "12",
+            "0.4940",
+            "0.3443 to 0.7089",
+            "0.1843",
+            "< 0.001",
+            "92.7432%"
+          ],
+          [
+            "Ferguson & Simes, 1949",
+            "12",
+            "0.5197",
+            "0.3634 to 0.7432",
+            "0.1825",
+            "< 0.001",
+            "92.4304%"
+          ],
+          [
+            "Rosenthal, 1960",
+            "12",
+            "0.5042",
+            "0.3524 to 0.7213",
+            "0.1828",
+            "< 0.001",
+            "92.6763%"
+          ],
+          [
+            "Hart & Sutherland, 1977",
+            "12",
+            "0.5386",
+            "0.3905 to 0.7430",
+            "0.1641",
+            "< 0.001",
+            "88.6084%"
+          ],
+          [
+            "Frimodt-Moller, 1973",
+            "12",
+            "0.4658",
+            "0.3201 to 0.6778",
+            "0.1914",
+            "< 1e-04",
+            "92.7306%"
+          ],
+          [
+            "Stein & Aaronson, 1953",
+            "12",
+            "0.4903",
+            "0.3278 to 0.7333",
+            "0.2054",
+            "< 0.001",
+            "91.4188%"
+          ],
+          [
+            "Vandiviere, 1973",
+            "12",
+            "0.5191",
+            "0.3631 to 0.7421",
+            "0.1824",
+            "< 0.001",
+            "92.4570%"
+          ],
+          [
+            "TB Prevention Trial, 1980",
+            "12",
+            "0.4538",
+            "0.3296 to 0.6247",
+            "0.1631",
+            "< 1e-04",
+            "83.8202%"
+          ],
+          [
+            "Coetzee & Berjak, 1968",
+            "12",
+            "0.4775",
+            "0.3281 to 0.6948",
+            "0.1914",
+            "< 0.001",
+            "92.7729%"
+          ],
+          [
+            "Rosenthal61, 1961",
+            "12",
+            "0.5207",
+            "0.3636 to 0.7457",
+            "0.1833",
+            "< 0.001",
+            "92.1331%"
+          ],
+          [
+            "Comstock, 1974",
+            "12",
+            "0.4673",
+            "0.3119 to 0.7002",
+            "0.2063",
+            "< 0.001",
+            "92.7376%"
+          ],
+          [
+            "Comstock & Webster, 1969",
+            "12",
+            "0.4677",
+            "0.3271 to 0.6686",
+            "0.1824",
+            "< 1e-04",
+            "92.7049%"
+          ],
+          [
+            "Comstock76, 1976",
+            "12",
+            "0.4589",
+            "0.3169 to 0.6645",
+            "0.1889",
+            "< 1e-04",
+            "92.6563%"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "13"
+          ],
+          [
+            "Participants in BCG vaccine",
+            "191064"
+          ],
+          [
+            "Participants in Control",
+            "166283"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: DerSimonian–Laird\nConfidence level: 95%\nEach omission row excludes the named study; compare with the all-studies estimate.\nRR = 1 means equal risks in BCG vaccine and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 13 studies were included (191,064 participants in BCG vaccine, 166,283 in Control). With all studies, the pooled risk ratio was 0.4896 (95% CI 0.3449 to 0.6950; I² = 92.1173%). Across all 13 omission fits, pooled estimates ranged from 0.4538 (omitting TB Prevention Trial, 1980) to 0.5386 (omitting Hart & Sutherland, 1977). I² after omission ranged from 83.8202% (omitting TB Prevention Trial, 1980) to 92.7729% (omitting Coetzee & Berjak, 1968). Table 1 gives every omission fit.",
+    "footer": [
+      "Heterogeneity: τ² = 0.3088; Q = 152.2330, df = 12 (P < 1e-04); I² = 92.1173%",
+      "95% prediction interval: [0.1560, 1.5371]",
+      "I²"
+    ]
+  },
+  "MD-bmj-2": {
+    "annotations": [
+      [
+        "1.00",
+        "0.10",
+        "1.90"
+      ],
+      [
+        "1.00",
+        "−0.36",
+        "2.36"
+      ],
+      [
+        "1.00",
+        "−0.92",
+        "2.92"
+      ],
+      [
+        "1.00",
+        "−1.46",
+        "3.46"
+      ],
+      [
+        "1.00",
+        "−1.97",
+        "3.97"
+      ],
+      [
+        "1.00",
+        "−2.46",
+        "4.46"
+      ],
+      [
+        "1.00",
+        "−2.94",
+        "4.94"
+      ]
+    ],
+    "tables": {
+      "Pooled effect": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (outcome scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Mean difference",
+            "1.00",
+            "0.10 to 1.90",
+            "0.46",
+            "2.18",
+            "0.029"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "6"
+          ],
+          [
+            "Participants in Intervention",
+            "135"
+          ],
+          [
+            "Participants in Control",
+            "147"
+          ],
+          [
+            "Cochran’s Q",
+            "0.00"
+          ],
+          [
+            "Heterogeneity degrees of freedom",
+            "5"
+          ],
+          [
+            "Heterogeneity P",
+            "1.000"
+          ],
+          [
+            "I²",
+            "0.00%"
+          ],
+          [
+            "Between-study variance, τ²",
+            "0.00"
+          ],
+          [
+            "95% prediction interval",
+            "0.10 to 1.90"
+          ]
+        ]
+      },
+      "Study results": {
+        "headers": [
+          "Study",
+          "Effect",
+          "95% CI",
+          "Weight"
+        ],
+        "rows": [
+          [
+            "Fixture 1",
+            "1.00",
+            "−0.36 to 2.36",
+            "43.5%"
+          ],
+          [
+            "Fixture 2",
+            "1.00",
+            "−0.92 to 2.92",
+            "21.9%"
+          ],
+          [
+            "Fixture 3",
+            "1.00",
+            "−1.46 to 3.46",
+            "13.4%"
+          ],
+          [
+            "Fixture 4",
+            "1.00",
+            "−1.97 to 3.97",
+            "9.2%"
+          ],
+          [
+            "Fixture 5",
+            "1.00",
+            "−2.46 to 4.46",
+            "6.7%"
+          ],
+          [
+            "Fixture 6",
+            "1.00",
+            "−2.94 to 4.94",
+            "5.2%"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects\nEstimator: Restricted maximum likelihood (REML)\nConfidence level: 95%\nMD: Intervention minus Control, in outcome units; 0 indicates no difference.\nInference: Normal approximation",
+    "results": "In total, 6 studies were included (135 participants in Intervention, 147 in Control). The pooled mean difference was 1.00 (95% CI 0.10 to 1.90; z = 2.18; P = 0.029). Heterogeneity: Q = 0.00 (df = 5; P = 1.000); I² = 0.00%; τ² = 0.00. The 95% prediction interval was 0.10 to 1.90.",
+    "footer": [
+      "Test for heterogeneity: τ²=0.00; χ²=0.00, df=5, P=1.000; I²=0.00%",
+      "95% prediction interval: (0.10 to 1.90)"
+    ]
+  },
+  "factor-2": {
+    "annotations": [],
+    "tables": {
+      "Model coefficients (log odds ratio scale)": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "−0.29",
+            "−0.52 to −0.07",
+            "0.12",
+            "−2.55",
+            "0.011"
+          ],
+          [
+            "Subgroup: Later trials vs Earlier trials (reference)",
+            "0.28",
+            "−0.03 to 0.58",
+            "0.16",
+            "1.79",
+            "0.074"
+          ]
+        ]
+      },
+      "Fitted subgroup effects (odds ratio)": {
+        "headers": [
+          "Subgroup",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "Earlier trials (reference)",
+            "0.75",
+            "0.59 to 0.93",
+            "0.12"
+          ],
+          [
+            "Later trials",
+            "0.98",
+            "0.80 to 1.21",
+            "0.11"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "6"
+          ],
+          [
+            "Participants in Aspirin",
+            "5599"
+          ],
+          [
+            "Participants in Control",
+            "5217"
+          ],
+          [
+            "Cochran’s Q",
+            "4.25"
+          ],
+          [
+            "Heterogeneity P",
+            "0.373"
+          ],
+          [
+            "Between-study variance, τ² (squared log scale)",
+            "0.01"
+          ],
+          [
+            "Studies analyzed",
+            "6"
+          ],
+          [
+            "Model coefficients",
+            "2"
+          ],
+          [
+            "Residual degrees of freedom",
+            "4"
+          ],
+          [
+            "Heterogeneity estimator",
+            "Restricted Maximum Likelihood"
+          ],
+          [
+            "Inference Method",
+            "Normal approximation"
+          ],
+          [
+            "Residual heterogeneity (τ²)",
+            "0.01"
+          ],
+          [
+            "SE of τ²",
+            "0.03"
+          ],
+          [
+            "Residual heterogeneity (τ)",
+            "0.09"
+          ],
+          [
+            "Residual I²",
+            "22.15%"
+          ],
+          [
+            "Residual H²",
+            "1.28"
+          ],
+          [
+            "Heterogeneity explained (R²)",
+            "65.77%"
+          ],
+          [
+            "Test statistic (Overall moderators (Qₘ))",
+            "3.20"
+          ],
+          [
+            "Test degrees of freedom (Overall moderators (Qₘ))",
+            "1"
+          ],
+          [
+            "Test P (Overall moderators (Qₘ))",
+            "0.074"
+          ],
+          [
+            "Test statistic (Subgroup (joint))",
+            "3.20"
+          ],
+          [
+            "Test degrees of freedom (Subgroup (joint))",
+            "1"
+          ],
+          [
+            "Test P (Subgroup (joint))",
+            "0.074"
+          ],
+          [
+            "Test statistic (Residual heterogeneity (Qₑ))",
+            "4.25"
+          ],
+          [
+            "Test degrees of freedom (Residual heterogeneity (Qₑ))",
+            "4"
+          ],
+          [
+            "Test P (Residual heterogeneity (Qₑ))",
+            "0.373"
+          ]
+        ]
+      },
+      "Summary — Regression coefficients": {
+        "headers": [
+          "Term",
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE",
+          "z",
+          "p-value"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "−0.29",
+            "−0.52",
+            "−0.07",
+            "0.12",
+            "−2.55",
+            "0.011"
+          ],
+          [
+            "Subgroup: Later trials vs Earlier trials (reference)",
+            "0.28",
+            "−0.03",
+            "0.58",
+            "0.16",
+            "1.79",
+            "0.074"
+          ]
+        ]
+      },
+      "Summary — Model overview": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies analyzed",
+            "6"
+          ],
+          [
+            "Model coefficients",
+            "2"
+          ],
+          [
+            "Residual degrees of freedom",
+            "4"
+          ],
+          [
+            "Heterogeneity estimator",
+            "Restricted Maximum Likelihood"
+          ],
+          [
+            "Inference Method",
+            "Normal approximation"
+          ]
+        ]
+      },
+      "Summary — Model specification": {
+        "headers": [
+          "Term",
+          "Specification"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "Estimated effect at continuous moderator value zero and categorical reference levels"
+          ],
+          [
+            "Subgroup",
+            "Categorical; reference level: Earlier trials"
+          ]
+        ]
+      },
+      "Summary — Residual model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Residual heterogeneity (τ²)",
+            "0.01"
+          ],
+          [
+            "SE of τ²",
+            "0.03"
+          ],
+          [
+            "Residual heterogeneity (τ)",
+            "0.09"
+          ],
+          [
+            "Residual I²",
+            "22.15%"
+          ],
+          [
+            "Residual H²",
+            "1.28"
+          ],
+          [
+            "Heterogeneity explained (R²)",
+            "65.77%"
+          ]
+        ]
+      },
+      "Summary — Model tests": {
+        "headers": [
+          "Test",
+          "Statistic",
+          "df",
+          "p-value"
+        ],
+        "rows": [
+          [
+            "Overall moderators (Qₘ)",
+            "3.20",
+            "1",
+            "0.074"
+          ],
+          [
+            "Subgroup (joint)",
+            "3.20",
+            "1",
+            "0.074"
+          ],
+          [
+            "Residual heterogeneity (Qₑ)",
+            "4.25",
+            "4",
+            "0.373"
+          ]
+        ]
+      },
+      "Adjusted mean — Adjusted Means": {
+        "headers": [
+          "Subgroup",
+          "Studies",
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "Earlier trials (reference)",
+            "3",
+            "0.75",
+            "0.59",
+            "0.93",
+            "0.12"
+          ],
+          [
+            "Later trials",
+            "3",
+            "0.98",
+            "0.80",
+            "1.21",
+            "0.11"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects meta-regression\nEstimator: Restricted maximum likelihood (REML)\nConfidence level: 95%\nModerators: Subgroup\nBubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.\nOR = 1 means equal odds in Aspirin and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 6 studies were included (5,599 participants in Aspirin, 5,217 in Control); 1 study was excluded. For Subgroup: Later trials vs Earlier trials (reference), the coefficient was 0.28 (95% CI −0.03 to 0.58; z = 1.79; P = 0.074). Residual heterogeneity: Q = 4.25 (df = 4; P = 0.373); I² = 22.15%; τ² = 0.01. In Earlier trials (reference), the pooled odds ratio was 0.75 (95% CI 0.59 to 0.93). In Later trials, the pooled odds ratio was 0.98 (95% CI 0.80 to 1.21).",
+    "footer": []
+  },
+  "factor-4": {
+    "annotations": [],
+    "tables": {
+      "Model coefficients (log odds ratio scale)": {
+        "headers": [
+          "Effect",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)",
+          "z",
+          "P"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "−0.2940",
+            "−0.5201 to −0.0680",
+            "0.1153",
+            "−2.5491",
+            "0.0108"
+          ],
+          [
+            "Subgroup: Later trials vs Earlier trials (reference)",
+            "0.2789",
+            "−0.0268 to 0.5846",
+            "0.1560",
+            "1.7879",
+            "0.0738"
+          ]
+        ]
+      },
+      "Fitted subgroup effects (odds ratio)": {
+        "headers": [
+          "Subgroup",
+          "Estimate",
+          "95% CI",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "Earlier trials (reference)",
+            "0.7453",
+            "0.5945 to 0.9343",
+            "0.1153"
+          ],
+          [
+            "Later trials",
+            "0.9850",
+            "0.8018 to 1.2101",
+            "0.1050"
+          ]
+        ]
+      },
+      "Model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies (k)",
+            "6"
+          ],
+          [
+            "Participants in Aspirin",
+            "5599"
+          ],
+          [
+            "Participants in Control",
+            "5217"
+          ],
+          [
+            "Cochran’s Q",
+            "4.2540"
+          ],
+          [
+            "Heterogeneity P",
+            "0.3727"
+          ],
+          [
+            "Between-study variance, τ² (squared log scale)",
+            "0.0088"
+          ],
+          [
+            "Studies analyzed",
+            "6"
+          ],
+          [
+            "Model coefficients",
+            "2"
+          ],
+          [
+            "Residual degrees of freedom",
+            "4"
+          ],
+          [
+            "Heterogeneity estimator",
+            "Restricted Maximum Likelihood"
+          ],
+          [
+            "Inference Method",
+            "Normal approximation"
+          ],
+          [
+            "Residual heterogeneity (τ²)",
+            "0.0088"
+          ],
+          [
+            "SE of τ²",
+            "0.0276"
+          ],
+          [
+            "Residual heterogeneity (τ)",
+            "0.0937"
+          ],
+          [
+            "Residual I²",
+            "22.1520%"
+          ],
+          [
+            "Residual H²",
+            "1.2846"
+          ],
+          [
+            "Heterogeneity explained (R²)",
+            "65.7730%"
+          ],
+          [
+            "Test statistic (Overall moderators (Qₘ))",
+            "3.1967"
+          ],
+          [
+            "Test degrees of freedom (Overall moderators (Qₘ))",
+            "1"
+          ],
+          [
+            "Test P (Overall moderators (Qₘ))",
+            "0.0738"
+          ],
+          [
+            "Test statistic (Subgroup (joint))",
+            "3.1967"
+          ],
+          [
+            "Test degrees of freedom (Subgroup (joint))",
+            "1"
+          ],
+          [
+            "Test P (Subgroup (joint))",
+            "0.0738"
+          ],
+          [
+            "Test statistic (Residual heterogeneity (Qₑ))",
+            "4.2540"
+          ],
+          [
+            "Test degrees of freedom (Residual heterogeneity (Qₑ))",
+            "4"
+          ],
+          [
+            "Test P (Residual heterogeneity (Qₑ))",
+            "0.3727"
+          ]
+        ]
+      },
+      "Summary — Regression coefficients": {
+        "headers": [
+          "Term",
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE",
+          "z",
+          "p-value"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "−0.2940",
+            "−0.5201",
+            "−0.0680",
+            "0.1153",
+            "−2.5491",
+            "0.0108"
+          ],
+          [
+            "Subgroup: Later trials vs Earlier trials (reference)",
+            "0.2789",
+            "−0.0268",
+            "0.5846",
+            "0.1560",
+            "1.7879",
+            "0.0738"
+          ]
+        ]
+      },
+      "Summary — Model overview": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Studies analyzed",
+            "6"
+          ],
+          [
+            "Model coefficients",
+            "2"
+          ],
+          [
+            "Residual degrees of freedom",
+            "4"
+          ],
+          [
+            "Heterogeneity estimator",
+            "Restricted Maximum Likelihood"
+          ],
+          [
+            "Inference Method",
+            "Normal approximation"
+          ]
+        ]
+      },
+      "Summary — Model specification": {
+        "headers": [
+          "Term",
+          "Specification"
+        ],
+        "rows": [
+          [
+            "Intercept",
+            "Estimated effect at continuous moderator value zero and categorical reference levels"
+          ],
+          [
+            "Subgroup",
+            "Categorical; reference level: Earlier trials"
+          ]
+        ]
+      },
+      "Summary — Residual model fit": {
+        "headers": [
+          "Statistic",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Residual heterogeneity (τ²)",
+            "0.0088"
+          ],
+          [
+            "SE of τ²",
+            "0.0276"
+          ],
+          [
+            "Residual heterogeneity (τ)",
+            "0.0937"
+          ],
+          [
+            "Residual I²",
+            "22.1520%"
+          ],
+          [
+            "Residual H²",
+            "1.2846"
+          ],
+          [
+            "Heterogeneity explained (R²)",
+            "65.7730%"
+          ]
+        ]
+      },
+      "Summary — Model tests": {
+        "headers": [
+          "Test",
+          "Statistic",
+          "df",
+          "p-value"
+        ],
+        "rows": [
+          [
+            "Overall moderators (Qₘ)",
+            "3.1967",
+            "1",
+            "0.0738"
+          ],
+          [
+            "Subgroup (joint)",
+            "3.1967",
+            "1",
+            "0.0738"
+          ],
+          [
+            "Residual heterogeneity (Qₑ)",
+            "4.2540",
+            "4",
+            "0.3727"
+          ]
+        ]
+      },
+      "Adjusted mean — Adjusted Means": {
+        "headers": [
+          "Subgroup",
+          "Studies",
+          "Estimate",
+          "Lower bound (95% CI)",
+          "Upper bound (95% CI)",
+          "SE (log scale)"
+        ],
+        "rows": [
+          [
+            "Earlier trials (reference)",
+            "3",
+            "0.7453",
+            "0.5945",
+            "0.9343",
+            "0.1153"
+          ],
+          [
+            "Later trials",
+            "3",
+            "0.9850",
+            "0.8018",
+            "1.2101",
+            "0.1050"
+          ]
+        ]
+      }
+    },
+    "configuration": "Model: Random-effects meta-regression\nEstimator: Restricted maximum likelihood (REML)\nConfidence level: 95%\nModerators: Subgroup\nBubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.\nOR = 1 means equal odds in Aspirin and Control; estimates are fitted on the log scale.\nInference: Normal approximation",
+    "results": "In total, 6 studies were included (5,599 participants in Aspirin, 5,217 in Control); 1 study was excluded. For Subgroup: Later trials vs Earlier trials (reference), the coefficient was 0.2789 (95% CI −0.0268 to 0.5846; z = 1.7879; P = 0.0738). Residual heterogeneity: Q = 4.2540 (df = 4; P = 0.3727); I² = 22.1520%; τ² = 0.0088. In Earlier trials (reference), the pooled odds ratio was 0.7453 (95% CI 0.5945 to 0.9343). In Later trials, the pooled odds ratio was 0.9850 (95% CI 0.8018 to 1.2101).",
+    "footer": []
+  }
+}

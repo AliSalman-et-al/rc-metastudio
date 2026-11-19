@@ -1,0 +1,104 @@
+[
+  {
+    "scenario": "tsa-md",
+    "evidence": "20261119T155004Z-48b86fc1-tsa-md",
+    "passed": true,
+    "manifest_sha256": "f25e4d3da522a934f601ec66c6e5ebd89d3cbb327fff0fe7aa5a5ed90bdb2034"
+  },
+  {
+    "scenario": "manuscript-export-direct",
+    "evidence": "20261119T155004Z-879cb116-manuscript-export-direct",
+    "passed": true,
+    "manifest_sha256": "0c532f57d5de6f75516e3be8acf4bada4ecedfb024543f584f9d6fd8ec0fb84c"
+  },
+  {
+    "scenario": "plot-workflow-mh-rd",
+    "evidence": "20261119T155004Z-e67e9454-plot-workflow-mh-rd",
+    "passed": true,
+    "manifest_sha256": "c327afdf2b88f38e7ab997c8693e4a03cfb368248b293d098795fffe4c49f9c2"
+  },
+  {
+    "scenario": "tsa-hr",
+    "evidence": "20261119T155038Z-f3d5a661-tsa-hr",
+    "passed": true,
+    "manifest_sha256": "0467d44fafb4cabca7427e1f90bed3bd23c4d3d2e97ce3e0a0d9fc6d176585c6"
+  },
+  {
+    "scenario": "plot-workflow-forest",
+    "evidence": "20261119T155044Z-5cc73691-plot-workflow-forest",
+    "passed": true,
+    "manifest_sha256": "8a96319eb63fd61424ee31bd91b93bcfa6b98fdfcbd4a00a17ab461d82e660fa"
+  },
+  {
+    "scenario": "plot-workflow-cumulative",
+    "evidence": "20261119T155112Z-991198d4-plot-workflow-cumulative",
+    "passed": true,
+    "manifest_sha256": "385b4821ca4018dd5f5bfdc046be26b57c8e43adbf552026f7837fbc44c80b84"
+  },
+  {
+    "scenario": "manuscript-export",
+    "evidence": "20261119T155158Z-749fdc7a-manuscript-export",
+    "passed": true,
+    "manifest_sha256": "3c29ce0e31cf67cf380e8e549a419051dc38f42cf33f6528ac758f97fed1dd5e"
+  },
+  {
+    "scenario": "plot-workflow-leave-one-out",
+    "evidence": "20261119T155218Z-a754307a-plot-workflow-leave-one-out",
+    "passed": true,
+    "manifest_sha256": "b09fac792f200078baf44a8e1a7e2e9723b627c2918f1f7862f60448b6c5a4b0"
+  },
+  {
+    "scenario": "plot-workflow-subgroup",
+    "evidence": "20261119T155250Z-949ba9b6-plot-workflow-subgroup",
+    "passed": true,
+    "manifest_sha256": "91de362e6e0f7b365ae5caeb5bb57c00d665597c9c3286a9d347789cf399b200"
+  },
+  {
+    "scenario": "plot-workflow-regression",
+    "evidence": "20261119T155348Z-436c6448-plot-workflow-regression",
+    "passed": true,
+    "manifest_sha256": "6cfa87053bb6e305359860c3898e54ffa3ef4955057d3954ed07c7e520801540"
+  },
+  {
+    "scenario": "plot-workflow-sroc",
+    "evidence": "20261119T155354Z-64f92646-plot-workflow-sroc",
+    "passed": true,
+    "manifest_sha256": "4006e921e80ceee4ef4e73f041fbb9ac14a0812e96ec78b3a717b7a4cf8316ab"
+  },
+  {
+    "scenario": "plot-workflow-coefficient",
+    "evidence": "20261119T155410Z-c5f62050-plot-workflow-coefficient",
+    "passed": true,
+    "manifest_sha256": "e51c6f896d2dcf75ad4ef5494b59c2b2f4445740f8ff739d8f602b1760729f97"
+  },
+  {
+    "scenario": "plot-workflow-trimfill",
+    "evidence": "20261119T155452Z-d33deba5-plot-workflow-trimfill",
+    "passed": true,
+    "manifest_sha256": "c88a28d36d5b0ed18e3a97b23c8c80d0aa8ee16ac021d76e9cffc04e90095eea"
+  },
+  {
+    "scenario": "plot-workflow-funnel",
+    "evidence": "20261119T155458Z-0aa145c5-plot-workflow-funnel",
+    "passed": true,
+    "manifest_sha256": "45bf5e81c45e96a2560c4200dbb2f26c177a67b1451b547f9514b3990c6abe77"
+  },
+  {
+    "scenario": "plot-workflow-contour",
+    "evidence": "20261119T155502Z-fc5880ac-plot-workflow-contour",
+    "passed": true,
+    "manifest_sha256": "0b7d719a4a128b8ac4c50594aacb57ef91a0b949c3379b22f8d5e7ab53806668"
+  },
+  {
+    "scenario": "plot-workflow-deeks",
+    "evidence": "20261119T155550Z-22a61c09-plot-workflow-deeks",
+    "passed": true,
+    "manifest_sha256": "cc09681cfe8da6669d6a529c83f8d1c8b4e13fde18dfdb0019e76feb11728a6f"
+  },
+  {
+    "scenario": "plot-workflow-trial-sequential",
+    "evidence": "20261119T155551Z-bcf55a0b-plot-workflow-trial-sequential",
+    "passed": true,
+    "manifest_sha256": "3657806c5a309038da9b2a3f914c74ac1d6e41e5af2ce19cde2b3eda31e771e2"
+  }
+]

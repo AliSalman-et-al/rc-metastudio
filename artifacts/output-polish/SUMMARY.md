@@ -162,3 +162,45 @@ uv run python scripts/verify.py r-stack --skip-desktop
 The first R-stack run detected the lost TSA outline behavior. The renderer now keeps outlined text for the publication output and measures a text-bearing render before outlining. [First R-stack transcript](R8/r-stack-first.log)
 
 An R1 heading that exactly matches an old generated string is treated as automatic because the stored value contains no origin information. In R2, counts stay integers, P retains its reporting threshold and study weights retain their percentage convention. In R3, a probability interval beyond the probability domain stops at the domain edge, with the existing clipping indication. R7 preserves each figure’s aspect ratio on white paper. The TSA publication SVG retains outlined lettering. Selecting the suggested width changes both dimensions proportionally and saving at 85 mm remains available. The review packet includes four additional text sections found during the revised comparison.
+
+## Precision follow-ups · S1–S2
+
+| Item | Commit | Root cause and change | Evidence |
+| --- | --- | --- | --- |
+| S1 | `4d53f595` | R2 passed the analysis precision into I². A shared formatter now gives I² and residual I² one decimal. Q and τ² retain the requested precision. | [Plan](S1/PLAN.md), [native and export evidence](S1/EVIDENCE.md), [before Word](S1/before/word-results.jpg), [after Word](S1/after/word-results.jpg) |
+| S2 | `Keep narrow confidence intervals distinguishable` | Two-decimal rounding collapsed positive-width intervals. Select one precision from the displayed CI bounds and use it for the estimates, their intervals and prediction limits. Increase from the request up to four decimals and disclose the increase in Model configuration. | [Plan](S2/PLAN.md), [native and export evidence](S2/EVIDENCE.md), [checked output values](S2/qualification/compare-receipts.log), [updated frozen review](goldens/REVIEW.md) |
+
+BCG RD uses three decimals in Default and BMJ at requested digits 2. All 13 study CIs and the pooled CI have distinct displayed bounds. The RR, OR and MD effect annotations and matching report tables are identical at two decimals. The automatic increase stops at four decimals. Higher explicit requests are retained. The four-decimal ceiling can leave narrower intervals with identical displayed bounds. The configuration note reports that limit when precision had to increase to reach it.
+
+For the updated frozen review, the first section retains the original 18 proposals. The second section replaces the e0d7919f proposal with 19 current changes. The separate final commit updates the presentation archive and its hash bindings. All expected numeric values and tolerances remain identical. [Comparison before replacement](S2/qualification/frozen-before-update.json), [identity check](S2/qualification/oracle-identity.log)
+
+### Follow-up qualification commands
+
+```powershell
+. ./artifacts/output-polish/runtime.ps1
+$env:PATH = 'C:/Users/Ali-Salman/Documents/Code/rc-metastudio/.tmp/poppler-tsa/poppler-26.09.0/Library/bin;' + $env:PATH
+uv run python -c "from pathlib import Path; from scripts.verify import run_typing; run_typing(Path('build/qt6-verification').resolve())"
+uv run python -m pytest tests/python/fast/test_plot_service.py tests/python/fast/test_plot_capabilities.py tests/python/gui/test_results_workspace_layout.py tests/python/gui/test_funnel_plot_editor.py tests/analysis_regression/golden/test_analysis_regression_compare.py -q --tb=short
+& (Join-Path $env:RCMS_R_HOME 'bin/Rscript.exe') --vanilla -e "library(RCMetaR); print(testthat::test_local('r/RCMetaR', filter='summary-display|forest-subgroup-range|forest-metafor-renderer', reporter='summary'))"
+uv run python -m pytest tests/e2e/test_desktop_workflows.py -n 3 -k 'plot-workflow or tsa-hr or tsa-md or report-retention or manuscript-export' -q --tb=short
+uv run python scripts/verify.py r-stack --skip-desktop
+```
+
+The frozen proposal was captured with the original archive restored and the reinstalled worktree package selected. An exit for presentation drift is expected at that stage. The R-stack command uses a fresh package build and the replacement archive.
+
+```powershell
+$env:R_HOME = $env:RCMS_R_HOME
+$env:R_LIBS = $env:RCMS_R_LIBS
+$env:R_LIBS_USER = $env:RCMS_R_LIBS
+$env:PATH = "$env:R_HOME/bin/x64;$env:R_HOME/bin;$env:PATH"
+uv run python scripts/verify_golden_compatibility.py --root . --output-root build/qt6-verification/golden-compatibility-output-polish-s2-review
+uv run python artifacts/output-polish/goldens/build_review.py build/qt6-verification/golden-compatibility-r-stack-v2-5c9bcc10ead4/capture build/qt6-verification/golden-compatibility-output-polish-s2-review/capture
+uv run python scripts/regenerate_golden_presentation.py build/qt6-verification/golden-compatibility-output-polish-s2-review/capture
+uv run python artifacts/output-polish/goldens/check_numeric_identity.py
+```
+
+| Check | Result and transcripts |
+| --- | --- |
+| Strict Windows typing and focused tests | Strict Ty passed before the focused and desktop runs and at the final frozen gate. All 166 focused Python tests and the focused R suite passed. [Final typing command](S2/qualification/typing-final-command.json), [typing log](S2/qualification/typing-final.log), [focused Python](S2/qualification/focused-python-final.log), [focused R](S2/qualification/focused-R-summary.log) |
+| Affected desktop scenarios | All 17 passed. Refreshing the archive during the first desktop run invalidated its verification context. The rerun held the inputs fixed. [Initial result](S2/qualification/affected-desktop-first.log), [passing run](S2/qualification/affected-desktop.log), [manifest identities](S2/qualification/desktop-runs.json) |
+| R-stack and frozen comparison | R CMD check passed, 103 statistical authority comparisons passed, 21 Reitsma visual cases reproduced, and nine bridge tests passed. The replacement archive passed all 416 frozen numerical fields and the presentation comparison under the existing exception policy. [R-stack](S2/qualification/r-stack.log), [R CMD check](S2/qualification/r-check.log), [final comparison](S2/qualification/frozen-after-update.json) |

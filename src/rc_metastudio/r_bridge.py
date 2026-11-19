@@ -2593,6 +2593,7 @@ def _structured_summary_display(value, study_names):
         "paragraphs": paragraphs,
         "tables": _summary_display_tables(fields, study_names),
         "prediction_notes": _r_text_values(fields.get("prediction.notes")),
+        "configuration_notes": _r_text_values(fields.get("display.precision.note")),
     }
 
 

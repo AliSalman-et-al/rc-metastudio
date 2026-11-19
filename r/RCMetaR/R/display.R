@@ -69,6 +69,29 @@ format.i2.display <- function(value, missing="") {
   ifelse(is.finite(value), format.percent.display(value, 1L), missing)
 }
 
+rcmetar.collapsed.intervals <- function(lower, upper, digits) {
+  finite <- is.finite(lower) & is.finite(upper) & lower < upper
+  any(round.display(lower[finite], digits) == round.display(upper[finite], digits))
+}
+
+rcmetar.effect.digits <- function(params, lower, upper) {
+  digits <- display.digits(params)
+  while (digits < 4L && rcmetar.collapsed.intervals(lower, upper, digits)) {
+    digits <- digits + 1L
+  }
+  digits
+}
+
+rcmetar.effect.precision.note <- function(params, digits, lower, upper) {
+  if (digits <= display.digits(params)) return(NULL)
+  suffix <- if (rcmetar.collapsed.intervals(lower, upper, digits)) {
+    "to help distinguish narrow intervals. Some bounds still round to the same value at 4 decimals."
+  } else {
+    "so intervals are distinguishable."
+  }
+  paste("Effect estimates displayed with", digits, "decimals", suffix)
+}
+
 format.p.value.display <- function(value, digits) {
   if (display.value.is.missing(value)) {
     return("")
