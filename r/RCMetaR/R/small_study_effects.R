@@ -1424,13 +1424,13 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
 
 .small.study.funnel.args <- function(settings, center, ratio=FALSE) {
     args <- list(
-        refline=if (settings$show.reference && settings$show.pooled) center else NULL,
+        refline=center,
         yaxis="sei", digits=2, level=settings$sampling.level, addtau2=settings$include.tau2,
         xlab=settings$xlab, ylab=settings$ylab, atransf=if (ratio) exp else NULL,
         pch=settings$point.symbol, cex=settings$point.size, col=settings$point.color,
         bg=settings$point.color, back=settings$background.color,
         shade=if (settings$show.region) settings$region.color else NA,
-        colref=settings$reference.color,
+        colref=NA,
         colci=if (settings$show.region) settings$reference.color else NA,
         label=identical(settings$label.policy, "all"))
     if (!is.null(settings$xlim)) args$xlim <- settings$xlim
@@ -1449,6 +1449,11 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     if (!identical(settings$label.policy, "outside-pseudo-confidence-region")) return()
     outside <- abs(y-center) > stats::qnorm((1 + settings$sampling.level/100)/2) * se
     text(y[outside], se[outside], labels=labels[outside], pos=4, cex=.7)
+}
+
+.small.study.draw.guides <- function(settings, center) {
+    if (settings$show.reference) graphics::abline(v=0, col=settings$reference.color)
+    if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
 .small.study.draw.deeks <- function(om.data, params, settings, y, se, keep) {
@@ -1479,8 +1484,12 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
         args$pch <- ifelse(params$trimfill.imputed[keep], 1L, settings$point.symbol)
     }
     do.call(metafor::funnel, c(list(model), args))
+    .small.study.draw.guides(settings, center)
     .small.study.draw.ratio.axis(settings, ratio)
     .small.study.label.outside(y, se, center, settings, om.data@study.names)
+    if (identical(settings$kind, "trimfill"))
+        graphics::legend("topright", c("Observed", "Imputed"), pch=c(settings$point.symbol, 1),
+                         col=settings$point.color, bty="n")
 }
 
 .small.study.draw.contour.funnel <- function(om.data, res, params, settings,
@@ -1490,27 +1499,29 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     raw <- .small.study.plot.setting(params, "funnel.contour.levels",
                                      .small.study.funnel.index(params), "90,95,99")
     levels <- as.numeric(strsplit(as.character(raw), ",", fixed=TRUE)[[1L]])
-    levels <- levels[is.finite(levels) & levels > 0 & levels < 100]
+    levels <- sort(unique(levels[is.finite(levels) & levels > 0 & levels < 100]))
     if (!length(levels)) levels <- c(90, 95, 99)
     ratio <- .small.study.funnel.ratio(params)
     args <- .small.study.funnel.args(settings, center, ratio)
-    args$refline <- if (settings$show.reference) 0 else NULL
+    args$refline <- 0
     args$level <- levels
     # Match metafor 5.0-1's scalar-shade expansion on our white device.
     args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#7F7F7F"))(length(levels))
     if (length(levels) > 1L) args$shade[-1L] <- rev(args$shade[-1L])
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
+    .small.study.draw.guides(settings, center)
     .small.study.draw.ratio.axis(settings, ratio)
     .small.study.label.outside(y, se, 0, settings, om.data@study.names)
-    if (settings$show.pooled)
-        abline(v=center, col=settings$reference.color, lwd=2, lty=2)
-    legend("topright", legend=c(paste0(levels, "% null contours"),
-                                 if (settings$show.pooled) "Pooled display"),
-           pch=c(rep(22, length(levels)), if (settings$show.pooled) NA),
-           pt.bg=c(args$shade, if (settings$show.pooled) NA),
-           col=settings$reference.color,
-           lty=c(rep(NA, length(levels)), if (settings$show.pooled) 2), bty="n")
+    thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
+    bands <- c(paste0("P > ", thresholds[[1L]]),
+               if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
+               paste0("P \u2264 ", tail(thresholds, 1)))
+    graphics::legend("topright", legend=bands, fill=c(args$shade, settings$background.color),
+                     border=settings$reference.color, bty="n")
+    if (any(levels != display.confidence.level(params)))
+        graphics::mtext(sprintf("Analysis CI %g%%.", display.confidence.level(params)),
+                        side=1, line=4.3, adj=0, cex=.8)
 }
 
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120) {
@@ -1521,18 +1532,25 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     settings <- .small.study.funnel.settings(params)
     size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     rcmetar.render.plot_file(path, size, function() {
+        graphics::par(yaxs="i", xpd=FALSE, mar=c(6.2, 4.8, 3, 2))
         if (!is.null(settings$xlim)) graphics::par(xaxs="i")
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
             .small.study.draw.deeks(om.data, params, settings, y, se, keep)
         else if (identical(settings$kind, "contour"))
             .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
         else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
+        analysis.level <- display.confidence.level(params)
+        if (!settings$kind %in% c("deeks", "contour") && settings$show.region &&
+                settings$sampling.level != analysis.level) {
+            graphics::mtext(sprintf("%g%% sampling region; analysis CI %g%%.",
+                settings$sampling.level, analysis.level), side=1, line=4.3, adj=0, cex=.8)
+        }
         if (!is.null(settings$xlim)) {
             x <- .small.study.funnel.x(om.data, params)
             hidden <- sum(x < settings$xlim[[1L]] | x > settings$xlim[[2L]], na.rm=TRUE)
             if (hidden > 0) graphics::mtext(sprintf("%d %s outside the displayed bounds.",
                 hidden, if (hidden == 1L) "study falls" else "studies fall"),
-                side=1, line=4.3, adj=0, cex=.8)
+                side=1, line=5.3, adj=0, cex=.8)
         }
     }, caption=params$plot_caption)
     path
