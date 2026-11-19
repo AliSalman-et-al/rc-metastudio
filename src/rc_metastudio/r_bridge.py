@@ -2716,16 +2716,3 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
     execute_r_function("rcmetar.export.svg.artwork", source, destination, width, height, dpi)
-    if destination.lower().endswith('.png'):
-        from PyQt6.QtCore import Qt
-        from PyQt6.QtGui import QImage, QPainter
-        source_image = QImage(destination)
-        image = QImage(source_image.size(), QImage.Format.Format_RGB32)
-        image.fill(Qt.GlobalColor.white)
-        painter = QPainter(image)
-        painter.drawImage(0, 0, source_image)
-        painter.end()
-        image.setDotsPerMeterX(round(dpi / .0254))
-        image.setDotsPerMeterY(round(dpi / .0254))
-        if not image.save(destination, 'PNG'):
-            raise OSError('Could not write PNG resolution metadata')
