@@ -149,7 +149,7 @@ rcmetar.bubble.measure.device <- function(bundle) {
     })
 }
 
-rcmetar.bubble.style.args <- function(bundle) {
+rcmetar.bubble.style.args <- function(bundle, revman.accent=rcmetar.default.plot.accent("revman", "bubble")) {
     accent <- rcmetar.bubble.accent.color(bundle)
     point.bg <- grDevices::adjustcolor(accent, alpha.f=0.28)
     ci.shade <- grDevices::adjustcolor(accent, alpha.f=0.12)
@@ -158,9 +158,9 @@ rcmetar.bubble.style.args <- function(bundle) {
         bundle$bp_style,
         revman=list(
             pch=21,
-            col="#111111",
-            bg=grDevices::adjustcolor("#111111", alpha.f=0.18),
-            lcol="#111111",
+            col=revman.accent,
+            bg=grDevices::adjustcolor(revman.accent, alpha.f=0.18),
+            lcol=revman.accent,
             lwd=1.6,
             lty=c("solid", "dashed", "dotted"),
             shade=c(grDevices::adjustcolor("#888888", alpha.f=0.16), grDevices::adjustcolor("#888888", alpha.f=0.08)),
@@ -254,6 +254,14 @@ rcmetar.bubble.refline <- function(bundle, ylim=NULL) {
     refline
 }
 
+rcmetar.bubble.draw.refline <- function(null) {
+    if (is.finite(null)) {
+        panel <- graphics::par("usr")
+        graphics::segments(panel[[1]], null, panel[[2]], null,
+                           col="gray50", lty="dotted", xpd=FALSE)
+    }
+}
+
 rcmetar.bubble.compact.args <- function(args) {
     args[!vapply(args, is.null, logical(1))]
 }
@@ -279,10 +287,6 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
     if (!rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) {
         return(invisible(NULL))
     }
-    usr <- graphics::par("usr")
-    x.span <- diff(usr[1:2])
-    x <- usr[[2]] + 0.012 * x.span
-    y <- usr[[4]]
     labels <- rcmetar.bubble.legend.labels(bundle)
     lty <- c(NA, "solid", style.args$lty[[2]])
     lwd <- c(NA, style.args$lwd, style.args$lwd)
@@ -300,28 +304,38 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args) {
         rcmetar.bubble.param.is.true(bundle, "bp_show_regression_line", TRUE),
         rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
         if (length(lty) == 4) TRUE)
-    lty <- lty[visible]
-    lwd <- lwd[visible]
-    pch <- pch[visible]
-    col <- col[visible]
-    pt.bg <- pt.bg[visible]
+    rcmetar.bubble.legend(labels, pch=pch[visible], pt.bg=pt.bg[visible],
+                          col=col[visible], lty=lty[visible], lwd=lwd[visible])
+}
+
+rcmetar.bubble.legend <- function(labels, ..., cex=rcmetar.bubble.legend.cex()) {
+    usr <- graphics::par("usr")
     graphics::legend(
-        x=x,
-        y=y,
+        x=usr[[2]] + 0.012 * diff(usr[1:2]),
+        y=usr[[4]],
         legend=labels,
-        pch=pch,
-        pt.bg=pt.bg,
-        col=col,
-        lty=lty,
-        lwd=lwd,
+        ...,
         bty="n",
         xpd=NA,
-        cex=max(0.68, graphics::par("cex") * 0.74),
+        cex=cex,
         xjust=0,
         yjust=1,
         text.col="#222222"
     )
-    invisible(NULL)
+}
+
+rcmetar.bubble.legend.cex <- function(panel.cex=graphics::par("cex")) {
+    max(0.68, panel.cex * 0.74)
+}
+
+rcmetar.bubble.panel <- function(size, show.legend, top=1.1) {
+    graphics::par(
+        mar=c(4.6, 5.2, top, if (show.legend) 7.2 else 1.1),
+        mgp=c(2.9, 0.75, 0),
+        cex=size$cex,
+        family="sans",
+        xpd=FALSE
+    )
 }
 
 rcmetar.bubble.tick.labels <- function(bundle, ticks) {
@@ -344,13 +358,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
     rcmetar.render.plot_file(outpath, size, function() {
         old.par <- graphics::par(no.readonly=TRUE)
         on.exit(graphics::par(old.par), add=TRUE)
-        graphics::par(
-            mar=c(4.6, 5.2, 1.1, if (rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) 7.2 else 1.1),
-            mgp=c(2.9, 0.75, 0),
-            cex=size$cex,
-            family="sans",
-            xpd=FALSE
-        )
+        rcmetar.bubble.panel(size, rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE))
         args <- rcmetar.bubble.style.args(bundle)
         ylim <- rcmetar.bubble.ylim(bundle)
         automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], "[default]")
@@ -404,11 +412,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
         # regplot owns the range, including fitted CI/PI. Choose ticks after it
         # draws so they cover that actual range rather than only study estimates.
         panel <- graphics::par("usr")
-        null <- rcmetar.bubble.refline(bundle, panel[3:4])
-        if (is.finite(null)) {
-            graphics::segments(panel[[1]], null, panel[[2]], null,
-                               col="gray50", lty="dotted", xpd=FALSE)
-        }
+        rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)

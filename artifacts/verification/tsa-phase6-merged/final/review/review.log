@@ -1,0 +1,7 @@
+Command: uv ["run","python","C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\tsa-phase6-merged/audit.py","C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\tsa-phase6-merged\\final"]
+Git revision: 82bf2cf2cab7cf740ff291f0921126dd4e5fe680
+Native plot captures all use source revision 82bf2cf2cab7cf740ff291f0921126dd4e5fe680.
+Peto Default crossing diameter: 0.0344 in before, 0.1600 in merged.
+Checked 36 native captures, 54 print layouts and 12 off-panel layouts.
+Opened BCG PDF, DOCX, copied HTML and both CSV exports from C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\tsa-phase6-merged\final\native100\plot-workflow-trial-sequential\workflow\reports\90ae0862111b1056-2065304c
+Exit: 0

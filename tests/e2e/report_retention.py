@@ -1,4 +1,5 @@
 """Retain real held/presented tables and compare exported report data."""
+from collections import Counter
 from dataclasses import asdict
 import hashlib
 import json
@@ -106,9 +107,16 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
         history = ' '.join(word.text or '' for word in words)
         current_table = re.split(r'\bTable\s+\d+\.\s', history)[-1]
         for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
-            expected = ' '.join(headers).split()
-            if expected and [word.text for word in visible[:len(expected)]] == expected and ' '.join(expected) in current_table:
-                del visible[:len(expected)]
+            expected = re.findall(r'\w+|[^\w\s]', ' '.join(headers))
+            if not expected:
+                continue
+            tokens = []
+            for count, word in enumerate(visible, 1):
+                tokens.extend(re.findall(r'\w+|[^\w\s]', word.text or ''))
+                if len(tokens) >= len(expected):
+                    break
+            if tokens == expected and ' '.join(expected) in ' '.join(re.findall(r'\w+|[^\w\s]', current_table)):
+                del visible[:count]
                 break
         words.extend(visible)
         previous_page, previous_height = visible, height
@@ -317,7 +325,7 @@ def expected_fit_table(result, section, source):
     return rows
 
 
-def assert_exports(view, data):
+def assert_exports(view, data, *, pdf_ordered=True):
     tables = [table for section in view.manuscript.sections for table in section.tables]
     expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
     # Word keeps interval tokens together with nonbreaking spaces; only their
@@ -339,7 +347,11 @@ def assert_exports(view, data):
         starts = [i for i in range(cursor, len(pdf)) if pdf[i] == 'Table' and pdf[i:i + len(caption_tokens)] == caption_tokens]
         assert len(starts) == 1, (caption, 'PDF caption missing or repeated', data['directory'])
         start = starts[0]
-        assert pdf[start:start + len(tokens)] == tokens, (caption, 'PDF table differs from complete ordered held/presented rows', data['directory'])
+        observed = pdf[start:start + len(tokens)]
+        if pdf_ordered:
+            assert observed == tokens, (caption, 'PDF table differs from held/presented rows', data['directory'])
+        else:
+            assert Counter(observed) == Counter(tokens), (caption, 'PDF table tokens differ', data['directory'])
         cursor = start + len(tokens)
 
 

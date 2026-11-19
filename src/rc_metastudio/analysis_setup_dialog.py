@@ -926,6 +926,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
         finally:
             progress_dialog.dispose(bar)
+        if (
+            source_sheet is not None and self._rerun_source_sheet is None
+            and self.analysis_type is None and not self.model.is_diagnostic()
+        ):
+            parameters = {
+                key: self.current_param_vals[key]
+                for key in ("rm.method", "inference.method", "adjust", "to", "correction.policy", "drop00")
+                if key in self.current_param_vals
+            }
+            source_sheet.last_meta_analysis = self.current_method, parameters
         self.done(QDialog.DialogCode.Accepted.value)
         on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
 

@@ -1,6 +1,6 @@
 Package: RCMetaR
-Version: 0.5.6
-Date: 2026-11-16
+Version: 0.6.0
+Date: 2026-11-19
 Type: Package
 Title: R Component for RC MetaStudio
 Authors@R: c(
@@ -22,6 +22,7 @@ Imports:
     ellipse,
     grDevices,
     graphics,
+    gsDesign,
     mada,
     meta,
     methods,

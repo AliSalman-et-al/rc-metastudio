@@ -206,6 +206,9 @@ class _ControlStyle(QProxyStyle):
 def configure_application_controls(app):
     if app.property("rcms_controls_configured"):
         return
+    if app.platformName() == "windows":
+        # Qt's animated combo popup can disappear or fault while opening.
+        app.setEffectEnabled(Qt.UIEffect.UI_AnimateCombo, False)
     font = app.font()
     app.setStyle(_ControlStyle(app.style().objectName()))
     app.setFont(font)

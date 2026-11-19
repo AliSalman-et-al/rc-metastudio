@@ -66,6 +66,7 @@ from rc_metastudio import add_new_dialogs
 from rc_metastudio import results_window, analysis_setup_dialog
 from rc_metastudio import small_study_effects_dialog
 from rc_metastudio import small_study_effects
+from rc_metastudio import trial_sequential_analysis, trial_sequential_analysis_dialog
 from rc_metastudio import diagnostic_metrics_dialog
 from rc_metastudio import subgroup_analysis_dialog
 from rc_metastudio import edit_name_dialogs
@@ -271,6 +272,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.action_go, "meta-analysis"),
             (self.action_cum_ma, "cumulative-analysis"),
             (self.action_loo_ma, "leave-one-out-analysis"),
+            (self.action_trial_sequential_analysis, "trial-sequential-analysis"),
             (self.action_subgroup_ma, "subgroup-analysis"),
             (self.action_meta_regression, "meta-regression"),
             (self.action_publication_bias, "publication-bias"),
@@ -286,7 +288,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_button.setToolTip("Choose an analysis")
         self.analysis_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.toolBar.insertWidget(self.action_go, self.analysis_button)
-        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_subgroup_ma,
+        for action in (self.action_go, self.action_cum_ma, self.action_loo_ma, self.action_trial_sequential_analysis, self.action_subgroup_ma,
                        self.action_meta_regression, self.action_publication_bias, self.action_change_confidence_level):
             self.toolBar.removeAction(action)
         self.action_new_dataset.setText("New project…")
@@ -530,6 +532,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             enabled, tooltip = _pooled_analysis_availability(label, minimum, included, r_ready)
             action.setEnabled(enabled)
             action.setToolTip(tooltip + shortcut)
+        tsa_enabled, tsa_tooltip = _pooled_analysis_availability(
+            trial_sequential_analysis.TSA_TITLE, 2, included, r_ready,
+        )
+        if sheet is not None and self.model.current_effect not in trial_sequential_analysis.SUPPORTED.get(sheet.family, ()):
+            tsa_enabled = False
+            tsa_tooltip = "Trial sequential analysis supports two-arm RR, OR, RD, Peto OR, MD and reported HR."
+        self.action_trial_sequential_analysis.setEnabled(tsa_enabled)
+        self.action_trial_sequential_analysis.setToolTip(tsa_tooltip)
         self.action_meta_regression.setToolTip(
             "Meta-regression" if covariates else "Add a covariate to run meta-regression."
         )
@@ -656,6 +666,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             _connect_action(self.action_go, self._launch_analysis)
             _connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
             _connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
+            _connect_action(self.action_trial_sequential_analysis, self._trial_sequential_analysis)
 
             _connect_action(self.action_undo, self.undo)
             _connect_action(self.action_redo, self.redo)
@@ -722,6 +733,42 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             on_result=self.analysis,
         )
         form.exec()
+
+    def _trial_sequential_analysis(self) -> None:
+        sheet = self.model.current_sheet
+        if sheet is None:
+            return
+        settings = trial_sequential_analysis.TSA_SETTINGS
+        saved = trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))
+        model = dataset_table_model.DatasetTableModel(
+            dataset=copy.deepcopy(self.model.dataset), add_blank_study=False, current_sheet_id=sheet.id,
+        )
+        view: results_window.ResultsWindow | None = None
+
+        def save_options(options: trial_sequential_analysis.TsaOptions) -> None:
+            nonlocal saved
+            changed = options != saved
+            saved = options
+            if (changed and any(candidate is sheet for candidate in self.model.dataset.sheets)
+                    and options != trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))):
+                sheet.settings[settings] = options.to_mapping()
+                self.data_dirtied()
+
+        def show_result(result: AnalysisResult, manuscript: ManuscriptReport) -> None:
+            nonlocal view
+            if view is None:
+                view = self.analysis(result, source_sheet=sheet, change_settings=reopen, manuscript=manuscript)
+            else:
+                view.replace_trial_sequential_result(result, manuscript)
+
+        def reopen(_plot_parameters: dict[str, object]) -> None:
+            form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
+                model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
+            )
+            form.exec()
+            form.deleteLater()
+
+        reopen({})
 
     def data_dirtied(self):
         self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
@@ -873,7 +920,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self, result: AnalysisResult, *,
         source_sheet: analysis_dataset.Sheet | None = None,
         change_settings=None, manuscript: ManuscriptReport | None = None,
-    ) -> None:
+    ) -> results_window.ResultsWindow | None:
         sheet = source_sheet or self.model.current_sheet
 
         def save_favours_labels(left: str, right: str) -> None:
@@ -896,10 +943,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 "The analysis completed, but RC MetaStudio could not display "
                 "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
             )
-            return
+            return None
         form.show()
         form.raise_()
         form.activateWindow()
+        return form
 
     def edit_arm_name(self, current_arm_name):
         original_arm_name = copy.copy(current_arm_name)

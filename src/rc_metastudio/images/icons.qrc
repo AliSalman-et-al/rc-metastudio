@@ -40,6 +40,7 @@
   <qresource prefix="icons/analyses">
     <file alias="cumulative-analysis.svg">icons/analyses/cumulative-analysis.svg</file>
     <file alias="leave-one-out-analysis.svg">icons/analyses/leave-one-out-analysis.svg</file>
+    <file alias="trial-sequential-analysis.svg">icons/analyses/trial-sequential-analysis.svg</file>
     <file alias="meta-analysis.svg">icons/analyses/meta-analysis.svg</file>
     <file alias="meta-regression.svg">icons/analyses/meta-regression.svg</file>
     <file alias="publication-bias.svg">icons/analyses/publication-bias.svg</file>
@@ -48,6 +49,7 @@
   <qresource prefix="icons/analyses/compact">
     <file alias="cumulative-analysis.svg">icons/analyses/compact/cumulative-analysis.svg</file>
     <file alias="leave-one-out-analysis.svg">icons/analyses/compact/leave-one-out-analysis.svg</file>
+    <file alias="trial-sequential-analysis.svg">icons/analyses/compact/trial-sequential-analysis.svg</file>
     <file alias="meta-analysis.svg">icons/analyses/compact/meta-analysis.svg</file>
     <file alias="meta-regression.svg">icons/analyses/compact/meta-regression.svg</file>
     <file alias="publication-bias.svg">icons/analyses/compact/publication-bias.svg</file>

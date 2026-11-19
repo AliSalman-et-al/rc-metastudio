@@ -11,6 +11,11 @@ PLOT_STYLE_ACCENTS = {
     "revman": "#000000",
     "bmj": "#6b58a6"
 }
+BUBBLE_STYLE_ACCENTS = {
+    "default": "#2f5597",
+    "revman": "#111111",
+    "bmj": "#6b58a6"
+}
 
 
 def apply_default_forest_arm_labels(surface):

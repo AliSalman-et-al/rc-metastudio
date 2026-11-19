@@ -156,6 +156,7 @@ PLOT_PRODUCERS = {
     "contour": "small-study-binary-extended",
     "trimfill": "small-study-binary-extended",
     "deeks": "small-study-diagnostic",
+    "trial-sequential": "tsa-bcg",
 }
 
 def advanced(timeout_seconds: int = 120) -> Scenario:
@@ -212,6 +213,12 @@ SCENARIOS = {
         "audit-round3-" + family: Scenario(external("analysis_presentation_workflows", presentation_args), 600)
         for family in AUDIT_FAMILIES
     },
+    # The BCG plot workflow also drives the dialog, report exports and in-place reruns.
+    **{f"tsa-{case}": Scenario(skill("advanced_workflows"), 240,
+                              qualifies=f"tsa-{case}" not in PLOT_PRODUCERS.values())
+       for case in ("bcg", "rr-mh", "md", "hr", "smd")},
+    "tsa-stress": Scenario(skill("advanced_workflows"), 240, qualifies=False),
+    "tsa-peto": Scenario(skill("advanced_workflows"), 240),
     "review1-design": Scenario(external("desktop_navigation_workflows", standard_args)),
     "ui-fine-tuning": Scenario(external("ui_fine_tuning", standard_args), 240),
     "ui-fable-polish": Scenario(external("ui_fable_polish", standard_args)),

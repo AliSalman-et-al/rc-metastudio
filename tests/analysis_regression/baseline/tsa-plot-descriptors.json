@@ -1,0 +1,17 @@
+{
+  "schema_version": 6,
+  "identity": "Trial sequential plot",
+  "kind": "trial_sequential",
+  "regeneration": "trial_sequential",
+  "accents": {"default": "#2F5597", "revman": "#111111", "bmj": "#6B58A6"},
+  "axis_titles": {
+    "participants": "Cumulative number of participants",
+    "hr": "Cumulative statistical information",
+    "percent": "Information (% of required information size)"
+  },
+  "labels": ["RIS", "Cumulative Z-score", "Cumulative Z-curve", "Monitoring boundary", "Conventional boundary"],
+  "peto": {
+    "z_limit": 16,
+    "join_tick": {"participants": "8,507", "percent": "150%"}
+  }
+}

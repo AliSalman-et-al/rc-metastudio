@@ -1,0 +1,87 @@
+Command: uv ["run","python","scripts/verify_rcms.py","tsa-peto","--native"]
+Git revision: c0c0409cb33a5d5945705cacbd9a726f66d8c853
+[06:28:18] $ C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+All checks passed!
+Typing evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\typing\20261119T062818-cc58c32c
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261119T012821Z-d45ab8e4-tsa-peto
+stdout.log (last 20000 characters):
+
+stderr.log (last 20000 characters):
+R callback write-console: Loading required package: Matrix
+
+
+
+R callback write-console: Loading required package: metadat
+
+
+
+R callback write-console: Loading required package: numDeriv
+
+
+
+R callback write-console:
+
+Loading the 'metafor' package (version 5.2-1). For an
+
+introduction to the package please type: help(metafor)
+
+
+
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_scenarios.py", line 30, in run
+
+    import_module(module).run(app, window, name, driver.record_step)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2207, in run
+
+    view = tsa(app, window, Path(sys.argv[2]), record, producer.removeprefix("tsa-"))
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\trial_sequential_workflows.py", line 330, in run
+
+    assert len(view._report_tables) == 1
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_driver.py", line 2523, in <module>
+
+    SCENARIOS[scenario].run(sys.modules[__name__], app, window, scenario)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\desktop_scenarios.py", line 30, in run
+
+    import_module(module).run(app, window, name, driver.record_step)
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.agents\skills\verify-rcms\scripts\advanced_workflows.py", line 2207, in run
+
+    view = tsa(app, window, Path(sys.argv[2]), record, producer.removeprefix("tsa-"))
+
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\tests\e2e\trial_sequential_workflows.py", line 330, in run
+
+    assert len(view._report_tables) == 1
+
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+AssertionError
+
+
+Exit: 1

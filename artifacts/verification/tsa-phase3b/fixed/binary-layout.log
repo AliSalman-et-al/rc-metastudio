@@ -1,0 +1,59 @@
+Command: uv 'run' 'python' '-m' 'pytest' 'tests/python/gui/test_binary_data_transactional_layout.py' '-q' '--basetemp' '.tmp/tsa-phase3b-layout'
+.....F........                                                           [100%]
+================================== FAILURES ===================================
+_____ test_binary_data_is_screen_bounded_with_large_font_and_long_metric ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002022069D250>
+
+    def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypatch):
+        app = cast(
+            QtWidgets.QApplication,
+            required(
+                QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
+                "application",
+            ),
+        )
+        old_font = app.font()
+        enlarged = QtGui.QFont(old_font)
+        enlarged.setPointSize(max(16, old_font.pointSize() + 6))
+        app.setFont(enlarged)
+        app, window, dialog = _open_binary_dialog(monkeypatch)
+        try:
+            longest_index = max(
+                range(dialog.effect_combo_box.count()),
+                key=lambda index: len(dialog.effect_combo_box.itemText(index)),
+            )
+            dialog.effect_combo_box.setCurrentIndex(longest_index)
+            dialog.show()
+            app.processEvents()
+
+            available = AVAILABLE
+            frame = dialog.frameGeometry()
+            assert available.contains(frame)
+            assert frame.width() <= int(available.width() * 0.9) + 2
+            assert frame.height() <= int(available.height() * 0.9) + 2
+            assert dialog.effect_combo_box.sizePolicy().horizontalPolicy() in (
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+            )
+            assert dialog.effect_combo_box.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
+            full_metric = dialog.effect_combo_box.currentText()
+            assert dialog.effect_combo_box.toolTip() == full_metric
+            assert dialog.effect_combo_box.view().minimumWidth() >= (
+                dialog.effect_combo_box.fontMetrics().horizontalAdvance(full_metric)
+            )
+            dialog.effect_combo_box.showPopup()
+            app.processEvents()
+>           assert dialog.effect_combo_box.view().isVisible()
+E           assert False
+E            +  where False = <built-in method isVisible of QListView object at 0x0000020220B59BD0>()
+E            +    where <built-in method isVisible of QListView object at 0x0000020220B59BD0> = <PyQt6.QtWidgets.QListView object at 0x0000020220B59BD0>.isVisible
+E            +      where <PyQt6.QtWidgets.QListView object at 0x0000020220B59BD0> = <built-in method view of QComboBox object at 0x0000020220B5A990>()
+E            +        where <built-in method view of QComboBox object at 0x0000020220B5A990> = <PyQt6.QtWidgets.QComboBox object at 0x0000020220B5A990>.view
+E            +          where <PyQt6.QtWidgets.QComboBox object at 0x0000020220B5A990> = <rc_metastudio.binary_data_dialog.BinaryDataDialog object at 0x0000020220B59270>.effect_combo_box
+
+tests\python\gui\test_binary_data_transactional_layout.py:216: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/python/gui/test_binary_data_transactional_layout.py::test_binary_data_is_screen_bounded_with_large_font_and_long_metric
+1 failed, 13 passed in 27.53s
+Exit: 1

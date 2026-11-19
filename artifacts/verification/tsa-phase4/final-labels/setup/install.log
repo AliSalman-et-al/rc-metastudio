@@ -1,0 +1,55 @@
+Command: C:\Users\Ali-Salman/Downloads/RCMetaStudio-0.5.6-windows-x64/R/bin/Rscript.exe '--vanilla' 'C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\tsa-phase4/install.R'
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+* installing *source* package 'RCMetaR' ...
+** this is package 'RCMetaR' version '0.5.6'
+** using staged installation
+** R
+Warning in parse(...) :
+  unable to translate 'Zhou<U+2013>Dendukuri' to native encoding
+Warning in parse(...) :
+  unable to translate 'Zhou<U+2013>Dendukuri' to native encoding
+** inst
+** byte-compile and prepare package for lazy loading
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+Warning in parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE) :
+  unable to translate 'Zhou<U+2013>Dendukuri' to native encoding
+Warning in parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE) :
+  unable to translate 'Zhou<U+2013>Dendukuri' to native encoding
+** help
+*** installing help indices
+Warning in file.copy(file.path(R.home("doc"), "html", "R.css"), outman) :
+  problem copying C:\Users\ALI-SA~1\DOWNLO~1\RCMETA~1.6-W\R\doc\html\R.css to C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.tmp\tsa-phase4-library\00LOCK-RCMetaR\00new\RCMetaR\html\R.css: No such file or directory
+** building package indices
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+** testing if installed package can be loaded from temporary location
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+** testing if installed package can be loaded from final location
+During startup - Warning messages:
+1: Setting LC_COLLATE=C.UTF-8 failed
+2: Setting LC_CTYPE=C.UTF-8 failed
+3: Setting LC_MONETARY=C.UTF-8 failed
+4: Setting LC_TIME=C.UTF-8 failed
+** testing if installed package keeps a record of temporary installation path
+* DONE (RCMetaR)
+Exit: 0

@@ -2,9 +2,11 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## 0.5.6 - Unreleased
+## 0.6.0 - 2026-11-19
 
 ### Added
+
+- Added Trial Sequential Analysis for two-arm binary outcomes, mean differences and reported hazard ratios, with live conclusion previews, editable monitoring plots, per-look and sensitivity report exports, and reruns from Results.
 
 - Added persistent System, Light and Dark appearance choices.
 - Added a shared plot-export dialog with format, proportional dimensions, units and raster resolution controls.
@@ -27,6 +29,8 @@ All notable RC MetaStudio changes will be recorded in this file.
 - Removed application-specific statistical limits and restored package defaults, singleton inference and Mantel–Haenszel pooling.
 - Made small-study minimum studies configurable, retained package warnings and corrected report summaries and citations.
 - Kept Results navigation compact across repeated opens while preserving manual resizing.
+- Stabilized Windows drop-downs by disabling Qt combo-box popup animation.
+- Updated sheet-tab and Results resize tests for font-relative tab sizing and plot fit limits, and repaired the Results cleanup test double.
 
 ### Corrected results
 

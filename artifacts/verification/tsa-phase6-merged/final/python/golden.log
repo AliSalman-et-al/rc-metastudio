@@ -1,0 +1,5 @@
+Git revision: 82bf2cf2cab7cf740ff291f0921126dd4e5fe680
+Command: uv ["run","python","-m","pytest","-q","tests/analysis_regression/golden","--basetemp",".tmp/tsa-phase6-golden","--tb=short"]
+....................................................................     [100%]
+68 passed in 4.66s
+Exit: 0

@@ -1,0 +1,7 @@
+Command: uv ["run","python","scripts/verify_rcms.py","doctor","--native"]
+Git revision: c0c0409cb33a5d5945705cacbd9a726f66d8c853
+[06:24:39] $ C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+All checks passed!
+Typing evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\typing\20261119T062439-cde6a03d
+Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts\verification\rcms\20261119T012441Z-f4f6da59-doctor
+Exit: 0

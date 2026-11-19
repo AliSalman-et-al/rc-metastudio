@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys; from pathlib import Path; sys.path.insert(0, 'artifacts/verification/tsa-phase6-merged'); from audit import check_report; p=Path('artifacts/verification/tsa-phase6-merged/qualification'); check_report(p/'native100'/'plot-workflow-trial-sequential',p/'review')
+                                                                                                                                                                                                            ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ali-Salman\Documents\Code\rc-metastudio\artifacts/verification/tsa-phase6-merged\audit.py", line 72, in check_report
+    assert image.crop(box).convert("L").getextrema()[0] < 128, ("Invisible PDF note", i)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('Invisible PDF note', 4)

@@ -58,6 +58,9 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         def get_current_data_type(self):
             return "binary"
 
+        def is_diagnostic(self):
+            return False
+
         def included_studies_have_raw_data(self):
             return True
 

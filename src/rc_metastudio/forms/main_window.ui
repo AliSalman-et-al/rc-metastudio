@@ -128,6 +128,7 @@
     <addaction name="separator" />
     <addaction name="action_cum_ma" />
     <addaction name="action_loo_ma" />
+    <addaction name="action_trial_sequential_analysis" />
     <addaction name="separator" />
     <addaction name="action_subgroup_ma" />
     <addaction name="action_meta_regression" />
@@ -195,6 +196,7 @@
    <addaction name="action_go" />
    <addaction name="action_cum_ma" />
    <addaction name="action_loo_ma" />
+   <addaction name="action_trial_sequential_analysis" />
    <addaction name="action_subgroup_ma" />
    <addaction name="action_meta_regression" />
    <addaction name="action_publication_bias" />
@@ -261,6 +263,15 @@
    </property>
    <property name="text">
     <string>Leave-one-out meta-analysis…</string>
+   </property>
+  </action>
+  <action name="action_trial_sequential_analysis">
+   <property name="icon">
+    <iconset resource="../images/icons.qrc">
+     <normaloff>:/icons/analyses/trial-sequential-analysis.svg</normaloff>:/icons/analyses/trial-sequential-analysis.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Trial Sequential Analysis…</string>
    </property>
   </action>
   <action name="action_new_dataset">

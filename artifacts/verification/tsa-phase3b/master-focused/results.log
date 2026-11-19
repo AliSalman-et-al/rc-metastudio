@@ -1,0 +1,66 @@
+Command: uv 'run' 'python' '-m' 'pytest' 'tests/python/gui/test_main_window_automation_launch.py' '-k' 'test_results_window_refits_svg_plots_and_reflows_sections_on_resize or test_results_window_refits_svg_after_viewport_geometry_settles or test_results_window_refits_raster_fallback_from_original_source' '-q' '--basetemp' '.tmp/tsa-phase3b-results'
+..F                                                                      [100%]
+================================== FAILURES ===================================
+_______ test_results_window_refits_raster_fallback_from_original_source _______
+
+tmp_path = WindowsPath('C:/Users/Ali-Salman/Documents/Code/rc-metastudio-tsa-phase3b-master/.tmp/tsa-phase3b-results/test_results_window_refits_ras0')
+
+    def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
+        from rc_metastudio import r_bridge
+
+        r_bridge.initialize_r()
+        from rc_metastudio import results_window
+
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        plot_path = tmp_path / "legacy-plot.png"
+        image = results_window.QImage(1600, 800, results_window.QImage.Format.Format_ARGB32)
+        image.fill(0xFFFFFFFF)
+        assert image.save(str(plot_path), "PNG")
+        window = results_window.ResultsWindow(
+            _analysis_result(
+                {
+                    "texts": {},
+                    "images": {"Legacy Plot": str(plot_path)},
+                    "image_order": ["Legacy Plot"],
+                    "plot_capabilities": {
+                        "Legacy Plot": _plot_capability(
+                            plot_kind="other",
+                            editable=False,
+                            styleable=False,
+                            regenerator="none",
+                        ),
+                    },
+                }
+            )
+        )
+
+        try:
+            window.resize(700, 500)
+            window.report_action.setChecked(False)
+            window.show()
+            for _ in range(3):
+                app.processEvents()
+            plot_item = next(
+                item
+                for item in window.scene.items()
+                if isinstance(item, results_window.QGraphicsPixmapItem)
+            )
+            initial_width = plot_item.sceneBoundingRect().width()
+            initial_window_width = window.width()
+            initial_available_width = (
+                _viewport_width(window.graphics_view)
+                - window.x_coord
+                - results_window.padding
+            )
+>           assert initial_width == pytest.approx(initial_available_width, abs=5)
+E           assert 1024.64 == 1343.0 ± 5
+E
+E             comparison failed
+E             Obtained: 1024.64
+E             Expected: 1343.0 ± 5
+
+tests\python\gui\test_main_window_automation_launch.py:1160: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/python/gui/test_main_window_automation_launch.py::test_results_window_refits_raster_fallback_from_original_source
+1 failed, 2 passed, 52 deselected in 1.88s
+Exit: 1

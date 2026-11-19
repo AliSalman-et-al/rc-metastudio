@@ -1,0 +1,256 @@
+Command: uv 'run' 'python' '-m' 'pytest' 'tests/python' '-q' '--basetemp' '.tmp/tsa-phase3b-python'
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+........................................................................ [ 33%]
+..........................................................s............. [ 41%]
+........................................................................ [ 49%]
+........................................................................ [ 57%]
+...................................................................F.... [ 66%]
+..................................FF.................................... [ 74%]
+......................................F......................F.......... [ 82%]
+.................................s...................................... [ 90%]
+........................................................................ [ 99%]
+.......                                                                  [100%]
+================================== FAILURES ===================================
+_____ test_binary_data_is_screen_bounded_with_large_font_and_long_metric ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002581F08D470>
+
+    def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypatch):
+        app = cast(
+            QtWidgets.QApplication,
+            required(
+                QtWidgets.QApplication.instance() or QtWidgets.QApplication([]),
+                "application",
+            ),
+        )
+        old_font = app.font()
+        enlarged = QtGui.QFont(old_font)
+        enlarged.setPointSize(max(16, old_font.pointSize() + 6))
+        app.setFont(enlarged)
+        app, window, dialog = _open_binary_dialog(monkeypatch)
+        try:
+            longest_index = max(
+                range(dialog.effect_combo_box.count()),
+                key=lambda index: len(dialog.effect_combo_box.itemText(index)),
+            )
+            dialog.effect_combo_box.setCurrentIndex(longest_index)
+            dialog.show()
+            app.processEvents()
+
+            available = AVAILABLE
+            frame = dialog.frameGeometry()
+            assert available.contains(frame)
+            assert frame.width() <= int(available.width() * 0.9) + 2
+            assert frame.height() <= int(available.height() * 0.9) + 2
+            assert dialog.effect_combo_box.sizePolicy().horizontalPolicy() in (
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+            )
+            assert dialog.effect_combo_box.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
+            full_metric = dialog.effect_combo_box.currentText()
+            assert dialog.effect_combo_box.toolTip() == full_metric
+            assert dialog.effect_combo_box.view().minimumWidth() >= (
+                dialog.effect_combo_box.fontMetrics().horizontalAdvance(full_metric)
+            )
+            dialog.effect_combo_box.showPopup()
+            app.processEvents()
+>           assert dialog.effect_combo_box.view().isVisible()
+E           assert False
+E            +  where False = <built-in method isVisible of QListView object at 0x000002587FE99B30>()
+E            +    where <built-in method isVisible of QListView object at 0x000002587FE99B30> = <PyQt6.QtWidgets.QListView object at 0x000002587FE99B30>.isVisible
+E            +      where <PyQt6.QtWidgets.QListView object at 0x000002587FE99B30> = <built-in method view of QComboBox object at 0x000002587FE99770>()
+E            +        where <built-in method view of QComboBox object at 0x000002587FE99770> = <PyQt6.QtWidgets.QComboBox object at 0x000002587FE99770>.view
+E            +          where <PyQt6.QtWidgets.QComboBox object at 0x000002587FE99770> = <rc_metastudio.binary_data_dialog.BinaryDataDialog object at 0x000002587FF2A0D0>.effect_combo_box
+
+tests\python\gui\test_binary_data_transactional_layout.py:216: AssertionError
+________ test_continuous_long_metric_choice_is_fully_accessible[size0] ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002581F1B2AC0>
+size = (1024, 640)
+
+    @pytest.mark.parametrize("size", [(1024, 640), (800, 600)])
+    def test_continuous_long_metric_choice_is_fully_accessible(monkeypatch, size):
+        from rc_metastudio import continuous_data_dialog
+
+        long_label = (
+            "Standardized Mean Difference with small-sample bias correction and "
+            "complete confidence interval reporting across every treatment arm, "
+            "follow-up, subgroup, estimator, and sensitivity-analysis scenario"
+        )
+        monkeypatch.setitem(
+            continuous_data_dialog.CONTINUOUS_METRIC_NAMES, "SMD", long_label
+        )
+        available = QtCore.QRect(20, 30, *size)
+        app, dialog = _open_continuous_dialog(monkeypatch, available)
+        try:
+            dialog.show()
+            app.processEvents()
+            smd_index = next(
+                index
+                for index in range(dialog.effect_combo_box.count())
+                if dialog.effect_combo_box.itemData(index) == "SMD"
+            )
+            dialog.effect_combo_box.setCurrentIndex(smd_index)
+            app.processEvents()
+
+            full_value = dialog.effect_combo_box.currentText()
+            assert long_label in full_value
+            assert dialog.effect_combo_box.toolTip() == full_value
+            assert available.contains(dialog.frameGeometry())
+            dialog.effect_combo_box.showPopup()
+            app.processEvents()
+            view = dialog.effect_combo_box.view()
+            popup = view.window()
+>           assert view.isVisible()
+E           assert False
+E            +  where False = <built-in method isVisible of QTreeView object at 0x000002587FE807D0>()
+E            +    where <built-in method isVisible of QTreeView object at 0x000002587FE807D0> = <PyQt6.QtWidgets.QTreeView object at 0x000002587FE807D0>.isVisible
+
+tests\python\gui\test_continuous_data_transactional_layout.py:710: AssertionError
+________ test_continuous_long_metric_choice_is_fully_accessible[size1] ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002581F1B2DD0>
+size = (800, 600)
+
+    @pytest.mark.parametrize("size", [(1024, 640), (800, 600)])
+    def test_continuous_long_metric_choice_is_fully_accessible(monkeypatch, size):
+        from rc_metastudio import continuous_data_dialog
+
+        long_label = (
+            "Standardized Mean Difference with small-sample bias correction and "
+            "complete confidence interval reporting across every treatment arm, "
+            "follow-up, subgroup, estimator, and sensitivity-analysis scenario"
+        )
+        monkeypatch.setitem(
+            continuous_data_dialog.CONTINUOUS_METRIC_NAMES, "SMD", long_label
+        )
+        available = QtCore.QRect(20, 30, *size)
+        app, dialog = _open_continuous_dialog(monkeypatch, available)
+        try:
+            dialog.show()
+            app.processEvents()
+            smd_index = next(
+                index
+                for index in range(dialog.effect_combo_box.count())
+                if dialog.effect_combo_box.itemData(index) == "SMD"
+            )
+            dialog.effect_combo_box.setCurrentIndex(smd_index)
+            app.processEvents()
+
+            full_value = dialog.effect_combo_box.currentText()
+            assert long_label in full_value
+            assert dialog.effect_combo_box.toolTip() == full_value
+            assert available.contains(dialog.frameGeometry())
+            dialog.effect_combo_box.showPopup()
+            app.processEvents()
+            view = dialog.effect_combo_box.view()
+            popup = view.window()
+>           assert view.isVisible()
+E           assert False
+E            +  where False = <built-in method isVisible of QTreeView object at 0x000002587FE837F0>()
+E            +    where <built-in method isVisible of QTreeView object at 0x000002587FE837F0> = <PyQt6.QtWidgets.QTreeView object at 0x000002587FE837F0>.isVisible
+
+tests\python\gui\test_continuous_data_transactional_layout.py:710: AssertionError
+_______ test_results_window_refits_raster_fallback_from_original_source _______
+
+tmp_path = WindowsPath('C:/Users/Ali-Salman/Documents/Code/rc-metastudio-tsa-phase3b-master/.tmp/tsa-phase3b-python/test_results_window_refits_ras0')
+
+    def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
+        from rc_metastudio import r_bridge
+
+        r_bridge.initialize_r()
+        from rc_metastudio import results_window
+
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        plot_path = tmp_path / "legacy-plot.png"
+        image = results_window.QImage(1600, 800, results_window.QImage.Format.Format_ARGB32)
+        image.fill(0xFFFFFFFF)
+        assert image.save(str(plot_path), "PNG")
+        window = results_window.ResultsWindow(
+            _analysis_result(
+                {
+                    "texts": {},
+                    "images": {"Legacy Plot": str(plot_path)},
+                    "image_order": ["Legacy Plot"],
+                    "plot_capabilities": {
+                        "Legacy Plot": _plot_capability(
+                            plot_kind="other",
+                            editable=False,
+                            styleable=False,
+                            regenerator="none",
+                        ),
+                    },
+                }
+            )
+        )
+
+        try:
+            window.resize(700, 500)
+            window.report_action.setChecked(False)
+            window.show()
+            for _ in range(3):
+                app.processEvents()
+            plot_item = next(
+                item
+                for item in window.scene.items()
+                if isinstance(item, results_window.QGraphicsPixmapItem)
+            )
+            initial_width = plot_item.sceneBoundingRect().width()
+            initial_window_width = window.width()
+            initial_available_width = (
+                _viewport_width(window.graphics_view)
+                - window.x_coord
+                - results_window.padding
+            )
+>           assert initial_width == pytest.approx(initial_available_width, abs=5)
+E           assert 1024.64 == 1343.0 ± 5
+E
+E             comparison failed
+E             Obtained: 1024.64
+E             Expected: 1343.0 ± 5
+
+tests\python\gui\test_main_window_automation_launch.py:1160: AssertionError
+_______ test_data_type_page_buttons_center_icons_inside_declared_slots ________
+
+    def test_data_type_page_buttons_center_icons_inside_declared_slots():
+        from PyQt6 import QtWidgets
+        from rc_metastudio import main_wizard
+        from rc_metastudio.qt6_resources import ensure_application_resources
+
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        ensure_application_resources()
+        wizard = main_wizard.MainWizard(path="new_dataset")
+        try:
+            wizard.restart()
+            wizard.show()
+            app.processEvents()
+
+            data_type_page = cast(
+                main_wizard.DataTypePage,
+                required(wizard.page(main_wizard.Page_DataType), "data type page"),
+            )
+            icon_sizes = {
+                button.objectName(): (
+                    button.icon().pixmap(button.iconSize()).size(),
+                    button.iconSize(),
+                )
+                for button in data_type_page._data_type_buttons()
+            }
+>           assert all(
+                rendered == declared for rendered, declared in icon_sizes.values()
+            ), icon_sizes
+E           AssertionError: {'onearm_proportion_Button': (PyQt6.QtCore.QSize(50, 50), PyQt6.QtCore.QSize(40, 40)), 'onearm_mean_Button': (PyQt6.Qt...ore.QSize(40, 40)), 'onearm_generic_effect_size_Button': (PyQt6.QtCore.QSize(67, 50), PyQt6.QtCore.QSize(54, 40)), ...}
+E           assert False
+E            +  where False = all(<generator object test_data_type_page_buttons_center_icons_inside_declared_slots.<locals>.<genexpr> at 0x000002580A27FCA0>)
+
+tests\python\gui\test_main_window_automation_launch.py:2203: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/python/gui/test_binary_data_transactional_layout.py::test_binary_data_is_screen_bounded_with_large_font_and_long_metric
+FAILED tests/python/gui/test_continuous_data_transactional_layout.py::test_continuous_long_metric_choice_is_fully_accessible[size0]
+FAILED tests/python/gui/test_continuous_data_transactional_layout.py::test_continuous_long_metric_choice_is_fully_accessible[size1]
+FAILED tests/python/gui/test_main_window_automation_launch.py::test_results_window_refits_raster_fallback_from_original_source
+FAILED tests/python/gui/test_main_window_automation_launch.py::test_data_type_page_buttons_center_icons_inside_declared_slots
+5 failed, 864 passed, 2 skipped in 518.28s (0:08:38)
+Exit: 1

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="252.28pt" height="141.91pt" viewBox="0 0 252.28 141.91">
+  <g class="svglite">
+    <defs>
+      <style type="text/css"><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+    </defs>
+    <rect width="100%" height="100%" style="stroke: none; fill: #FFFFFF;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    <defs>
+      <clipPath id="cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=">
+        <rect x="0.00" y="0.00" width="252.28" height="141.91" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+</g>
+    <defs>
+      <clipPath id="cpMC4wMHwyNTIuMjh8MjUuMjB8MTQxLjkx">
+        <rect x="0.00" y="25.20" width="252.28" height="116.71" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MjUuMjB8MTQxLjkx)">
+      <text x="138.46" y="121.41" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="122.67px" lengthAdjust="spacingAndGlyphs">Cumulative statistical information</text>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <line x1="47.02" y1="100.87" x2="213.61" y2="100.87" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="100.87" x2="47.02" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="88.67" y1="100.87" x2="88.67" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="130.32" y1="100.87" x2="130.32" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="171.97" y1="100.87" x2="171.97" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="213.61" y1="100.87" x2="213.61" y2="102.61" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="47.02" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">0</text>
+      <text x="88.67" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.02px" lengthAdjust="spacingAndGlyphs">1,000</text>
+      <text x="130.32" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.02px" lengthAdjust="spacingAndGlyphs">2,000</text>
+      <text x="171.97" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.02px" lengthAdjust="spacingAndGlyphs">3,000</text>
+      <text x="213.61" y="112.56" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="21.02px" lengthAdjust="spacingAndGlyphs">4,000</text>
+      <line x1="47.02" y1="96.47" x2="47.02" y2="61.28" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="96.47" x2="45.28" y2="96.47" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="87.67" x2="45.28" y2="87.67" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="78.87" x2="45.28" y2="78.87" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="70.08" x2="45.28" y2="70.08" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="61.28" x2="45.28" y2="61.28" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="43.39" y="99.47" text-anchor="end" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="9.58px" lengthAdjust="spacingAndGlyphs">−8</text>
+      <text x="43.39" y="90.68" text-anchor="end" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="9.58px" lengthAdjust="spacingAndGlyphs">−4</text>
+      <text x="43.39" y="81.88" text-anchor="end" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">0</text>
+      <text x="43.39" y="73.08" text-anchor="end" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">4</text>
+      <text x="43.39" y="64.28" text-anchor="end" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="4.67px" lengthAdjust="spacingAndGlyphs">8</text>
+    </g>
+    <defs>
+      <clipPath id="cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==">
+        <rect x="47.02" y="56.88" width="182.88" height="43.99" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==)">
+      <line x1="47.02" y1="100.87" x2="47.02" y2="56.88" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="100.87" x2="229.90" y2="100.87" style="stroke-width: 0.75;" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text transform="translate(8.06,78.87) rotate(-90)" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="72.78px" lengthAdjust="spacingAndGlyphs">Cumulative Z-score</text>
+      <text transform="translate(19.14,89.87) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.64px" lengthAdjust="spacingAndGlyphs">Fa…</text>
+      <text transform="translate(28.45,89.87) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.64px" lengthAdjust="spacingAndGlyphs">tre…</text>
+      <line x1="12.24" y1="85.55" x2="12.24" y2="93.11" style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="10.08,89.37 12.24,93.11 14.40,89.37 " style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text transform="translate(19.14,67.88) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.64px" lengthAdjust="spacingAndGlyphs">Fa…</text>
+      <text transform="translate(28.45,67.88) rotate(-90)" text-anchor="middle" style="font-size: 6.30px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.64px" lengthAdjust="spacingAndGlyphs">tre…</text>
+      <line x1="12.24" y1="72.20" x2="12.24" y2="64.64" style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="14.40,68.38 12.24,64.64 10.08,68.38 " style="stroke-width: 0.75; stroke: #4A4A4A;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="138.46" y="33.17" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="187.12px" lengthAdjust="spacingAndGlyphs">Required information 4,222 · Accrued 1,775 (42%)</text>
+      <text x="138.46" y="43.37" text-anchor="middle" style="font-size: 8.40px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="184.81px" lengthAdjust="spacingAndGlyphs">Monitoring boundary crossed at 42% (Bavaria 89)</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==)">
+      <polygon points="126.80,78.84 127.93,78.81 129.06,78.77 130.20,78.73 131.35,78.69 132.50,78.65 133.67,78.61 134.84,78.56 136.02,78.51 137.21,78.47 138.40,78.42 139.61,78.37 140.82,78.32 142.04,78.26 143.26,78.21 144.50,78.15 145.74,78.10 146.99,78.04 148.25,77.98 149.52,77.92 150.79,77.86 152.07,77.80 153.36,77.74 154.66,77.68 155.97,77.61 157.28,77.55 158.60,77.48 159.93,77.42 161.27,77.35 162.61,77.29 163.96,77.22 165.33,77.15 166.69,77.08 168.07,77.01 169.46,76.94 170.85,76.87 172.25,76.80 173.66,76.73 175.07,76.66 176.49,76.59 177.93,76.52 179.37,76.45 180.81,76.38 182.27,76.31 183.73,76.24 185.20,76.17 186.68,76.09 188.17,76.02 189.66,75.95 191.16,75.88 192.67,75.81 194.19,75.74 195.72,75.67 197.25,75.60 198.79,75.53 200.34,75.46 201.90,75.39 203.47,75.32 205.04,75.25 206.62,75.19 208.21,75.12 209.81,75.05 211.41,74.99 213.02,74.92 214.64,74.86 216.27,74.79 217.91,74.73 219.55,74.67 221.21,74.61 222.87,74.55 222.87,83.20 221.21,83.14 219.55,83.08 217.91,83.02 216.27,82.96 214.64,82.89 213.02,82.83 211.41,82.76 209.81,82.70 208.21,82.63 206.62,82.56 205.04,82.50 203.47,82.43 201.90,82.36 200.34,82.29 198.79,82.22 197.25,82.15 195.72,82.08 194.19,82.01 192.67,81.94 191.16,81.87 189.66,81.80 188.17,81.73 186.68,81.66 185.20,81.58 183.73,81.51 182.27,81.44 180.81,81.37 179.37,81.30 177.93,81.23 176.49,81.16 175.07,81.09 173.66,81.01 172.25,80.94 170.85,80.87 169.46,80.80 168.07,80.74 166.69,80.67 165.33,80.60 163.96,80.53 162.61,80.46 161.27,80.40 159.93,80.33 158.60,80.26 157.28,80.20 155.97,80.14 154.66,80.07 153.36,80.01 152.07,79.95 150.79,79.89 149.52,79.83 148.25,79.77 146.99,79.71 145.74,79.65 144.50,79.60 143.26,79.54 142.04,79.49 140.82,79.43 139.61,79.38 138.40,79.33 137.21,79.28 136.02,79.24 134.84,79.19 133.67,79.14 132.50,79.10 131.35,79.06 130.20,79.02 129.06,78.98 127.93,78.94 126.80,78.90 " style="stroke-width: 0.60; stroke: #2F5597; stroke-opacity: 0.60; fill: #DDE6F4;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="78.87" x2="229.90" y2="78.87" style="stroke-width: 0.75; stroke: #9A9A9A; stroke-dasharray: 1.00,3.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="47.02" y1="83.19" x2="222.87" y2="83.19" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="232.42" y="85.59" style="font-size: 6.72px;fill: #808080; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="16.98px" lengthAdjust="spacingAndGlyphs">−1.96</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==)">
+      <line x1="47.02" y1="74.56" x2="222.87" y2="74.56" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="232.42" y="76.97" style="font-size: 6.72px;fill: #808080; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="16.98px" lengthAdjust="spacingAndGlyphs">+1.96</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==)">
+      <line x1="222.87" y1="100.87" x2="222.87" y2="56.88" style="stroke-width: 0.75; stroke: #8C8C8C;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <text x="222.87" y="54.33" text-anchor="middle" style="font-size: 8.40px;fill: #4A4A4A; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="13.98px" lengthAdjust="spacingAndGlyphs">RIS</text>
+    </g>
+    <g clip-path="url(#cpNDcuMDJ8MjI5LjkwfDU2Ljg4fDEwMC44Nw==)">
+      <polyline points="55.81,100.78 56.03,100.49 56.13,100.38 56.38,100.11 56.74,99.74 57.10,99.37 57.48,99.02 57.85,98.67 58.24,98.33 58.63,97.99 59.03,97.66 59.43,97.34 59.85,97.02 60.26,96.71 60.69,96.41 61.12,96.11 61.37,95.94 61.56,95.82 62.01,95.56 62.46,95.32 62.54,95.28 62.92,95.09 63.10,95.01 63.38,94.87 63.85,94.64 64.33,94.40 64.82,94.17 65.31,93.95 65.73,93.77 65.81,93.74 66.32,93.54 66.83,93.36 66.96,93.32 67.35,93.19 67.66,93.09 67.87,93.01 68.41,92.82 68.95,92.63 69.18,92.55 69.49,92.46 70.05,92.30 70.25,92.25 70.61,92.15 71.01,92.05 71.17,92.00 71.74,91.84 71.83,91.82 72.32,91.68 72.76,91.58 72.91,91.55 73.13,91.51 73.50,91.43 73.63,91.40 74.10,91.27 74.71,91.11 75.01,91.04 75.32,91.00 75.57,90.96 75.94,90.89 76.57,90.75 77.20,90.59 77.84,90.43 78.49,90.28 79.15,90.16 79.41,90.11 79.81,90.08 80.22,90.04 80.47,90.01 81.07,89.91 81.15,89.90 81.83,89.77 82.51,89.64 83.04,89.56 83.21,89.53 83.91,89.46 84.07,89.44 84.62,89.39 84.74,89.37 85.33,89.26 86.05,89.10 86.67,89.05 86.78,89.07 86.89,89.09 87.51,89.01 87.96,88.94 88.25,88.94 88.35,88.94 89.00,88.85 89.76,88.70 90.29,88.65 90.52,88.69 90.57,88.69 90.94,88.66 91.19,88.65 91.29,88.64 91.87,88.54 92.06,88.55 92.20,88.55 92.55,88.52 92.84,88.48 93.14,88.45 93.63,88.38 94.42,88.29 94.81,88.27 95.09,88.30 95.23,88.29 95.31,88.27 95.61,88.26 96.02,88.25 96.03,88.25 96.45,88.23 96.85,88.20 97.67,88.11 98.35,88.03 98.50,88.01 99.33,87.89 100.18,87.74 101.02,87.59 101.88,87.49 102.74,87.47 103.40,87.53 103.59,87.61 103.61,87.61 104.49,87.62 105.37,87.49 106.26,87.37 106.35,87.36 107.15,87.35 107.36,87.34 108.05,87.29 108.96,87.21 109.08,87.20 109.88,87.12 110.80,87.02 111.73,86.94 112.38,86.92 112.67,86.94 112.88,86.96 113.57,86.92 113.61,86.92 114.56,86.83 114.89,86.82 115.36,86.83 115.51,86.82 115.86,86.80 116.48,86.74 117.11,86.68 117.45,86.66 118.29,86.62 118.42,86.61 119.20,86.58 119.41,86.56 120.40,86.50 120.45,86.50 120.96,86.49 121.39,86.49 122.39,86.47 123.40,86.46 124.42,86.45 125.44,86.43 126.47,86.41 127.51,86.39 128.55,86.37 129.60,86.35 130.66,86.33 131.72,86.30 132.79,86.28 133.87,86.25 134.96,86.22 136.05,86.19 137.14,86.16 138.25,86.13 139.36,86.10 140.47,86.07 141.60,86.03 142.73,86.00 143.87,85.96 145.01,85.92 146.16,85.89 147.32,85.85 148.48,85.81 149.65,85.77 150.83,85.73 152.02,85.68 153.21,85.64 154.41,85.60 155.61,85.56 156.82,85.51 158.04,85.47 159.26,85.42 160.50,85.37 161.73,85.33 162.98,85.28 164.23,85.23 165.49,85.19 166.75,85.14 168.03,85.09 169.30,85.04 170.59,84.99 171.88,84.94 173.18,84.89 174.49,84.84 175.80,84.79 177.12,84.74 178.44,84.69 179.77,84.64 181.11,84.59 182.46,84.54 183.81,84.49 185.17,84.44 186.54,84.39 187.91,84.33 189.29,84.28 190.67,84.23 192.07,84.18 193.47,84.13 194.87,84.08 196.28,84.03 197.70,83.98 199.13,83.93 200.56,83.88 202.00,83.84 203.45,83.79 204.90,83.74 206.36,83.69 207.83,83.64 209.30,83.60 210.78,83.55 212.27,83.51 213.76,83.46 215.26,83.42 216.77,83.37 218.28,83.33 219.80,83.29 221.33,83.24 222.87,83.20 " style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="55.81,56.97 56.03,57.26 56.13,57.37 56.38,57.64 56.74,58.01 57.10,58.38 57.48,58.73 57.85,59.08 58.24,59.42 58.63,59.76 59.03,60.09 59.43,60.41 59.85,60.73 60.26,61.04 60.69,61.34 61.12,61.64 61.37,61.81 61.56,61.93 62.01,62.19 62.46,62.43 62.54,62.47 62.92,62.66 63.10,62.74 63.38,62.88 63.85,63.11 64.33,63.35 64.82,63.58 65.31,63.80 65.73,63.98 65.81,64.01 66.32,64.21 66.83,64.39 66.96,64.43 67.35,64.56 67.66,64.66 67.87,64.73 68.41,64.93 68.95,65.12 69.18,65.20 69.49,65.29 70.05,65.45 70.25,65.50 70.61,65.60 71.01,65.70 71.17,65.75 71.74,65.91 71.83,65.93 72.32,66.06 72.76,66.17 72.91,66.20 73.13,66.24 73.50,66.32 73.63,66.35 74.10,66.48 74.71,66.64 75.01,66.71 75.32,66.75 75.57,66.78 75.94,66.86 76.57,67.00 77.20,67.16 77.84,67.32 78.49,67.46 79.15,67.59 79.41,67.64 79.81,67.67 80.22,67.71 80.47,67.74 81.07,67.84 81.15,67.85 81.83,67.98 82.51,68.11 83.04,68.19 83.21,68.21 83.91,68.29 84.07,68.31 84.62,68.36 84.74,68.38 85.33,68.49 86.05,68.65 86.67,68.70 86.78,68.68 86.89,68.66 87.51,68.74 87.96,68.81 88.25,68.81 88.35,68.81 89.00,68.90 89.76,69.05 90.29,69.10 90.52,69.06 90.57,69.06 90.94,69.09 91.19,69.10 91.29,69.11 91.87,69.21 92.06,69.20 92.20,69.20 92.55,69.23 92.84,69.27 93.14,69.30 93.63,69.37 94.42,69.46 94.81,69.48 95.09,69.45 95.23,69.46 95.31,69.48 95.61,69.49 96.02,69.50 96.03,69.50 96.45,69.51 96.85,69.55 97.67,69.64 98.35,69.72 98.50,69.73 99.33,69.86 100.18,70.01 101.02,70.16 101.88,70.26 102.74,70.28 103.40,70.22 103.59,70.14 103.61,70.14 104.49,70.13 105.37,70.26 106.26,70.38 106.35,70.39 107.15,70.40 107.36,70.41 108.05,70.46 108.96,70.54 109.08,70.55 109.88,70.63 110.80,70.73 111.73,70.81 112.38,70.83 112.67,70.81 112.88,70.79 113.57,70.83 113.61,70.83 114.56,70.91 114.89,70.93 115.36,70.92 115.51,70.93 115.86,70.95 116.48,71.01 117.11,71.07 117.45,71.09 118.29,71.13 118.42,71.14 119.20,71.17 119.41,71.19 120.40,71.25 120.45,71.25 120.96,71.26 121.39,71.26 122.39,71.27 123.40,71.29 124.42,71.30 125.44,71.32 126.47,71.34 127.51,71.36 128.55,71.38 129.60,71.40 130.66,71.42 131.72,71.45 132.79,71.47 133.87,71.50 134.96,71.53 136.05,71.56 137.14,71.59 138.25,71.62 139.36,71.65 140.47,71.68 141.60,71.72 142.73,71.75 143.87,71.79 145.01,71.83 146.16,71.86 147.32,71.90 148.48,71.94 149.65,71.98 150.83,72.02 152.02,72.06 153.21,72.11 154.41,72.15 155.61,72.19 156.82,72.24 158.04,72.28 159.26,72.33 160.50,72.37 161.73,72.42 162.98,72.47 164.23,72.52 165.49,72.56 166.75,72.61 168.03,72.66 169.30,72.71 170.59,72.76 171.88,72.81 173.18,72.86 174.49,72.91 175.80,72.96 177.12,73.01 178.44,73.06 179.77,73.11 181.11,73.16 182.46,73.21 183.81,73.26 185.17,73.31 186.54,73.36 187.91,73.41 189.29,73.47 190.67,73.52 192.07,73.57 193.47,73.62 194.87,73.67 196.28,73.72 197.70,73.77 199.13,73.82 200.56,73.86 202.00,73.91 203.45,73.96 204.90,74.01 206.36,74.06 207.83,74.10 209.30,74.15 210.78,74.20 212.27,74.24 213.76,74.29 215.26,74.33 216.77,74.38 218.28,74.42 219.80,74.46 221.33,74.50 222.87,74.55 " style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <polyline points="47.02,78.87 47.62,79.91 50.00,77.08 53.36,78.52 53.71,79.94 53.98,79.72 54.34,79.25 54.55,79.25 55.81,79.70 56.13,79.67 61.37,79.55 62.54,79.27 63.10,79.64 65.73,79.64 66.96,80.54 67.66,79.89 69.18,79.61 70.25,79.78 71.01,79.96 71.83,79.29 72.76,79.04 73.13,78.94 73.63,78.90 75.01,79.21 75.57,79.23 79.41,79.54 80.22,79.40 81.07,79.84 83.04,80.45 84.07,80.98 84.74,81.43 86.67,81.78 86.89,82.05 87.96,82.21 88.35,81.82 90.29,82.31 90.57,82.37 90.94,82.32 91.19,82.00 91.87,82.45 92.20,82.31 92.55,82.59 93.14,83.39 94.81,83.33 95.09,83.53 95.31,83.37 95.61,83.62 96.02,83.76 96.45,84.16 98.35,83.90 103.40,84.47 103.59,84.76 106.35,84.88 107.36,84.77 109.08,85.01 112.38,84.73 112.88,84.60 113.57,84.97 114.89,85.31 115.36,85.45 115.86,85.51 117.11,85.92 118.29,86.15 119.20,86.53 120.45,86.93 120.96,87.18 " style="stroke-width: 1.50; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MjUuMjB8MTQxLjkx)">
+      <circle cx="47.62" cy="79.91" r="0.32" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="50.00" cy="77.08" r="0.64" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="53.36" cy="78.52" r="0.76" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="53.71" cy="79.94" r="0.25" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="53.98" cy="79.72" r="0.21" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="54.34" cy="79.25" r="0.25" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="54.55" cy="79.25" r="0.19" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="55.81" cy="79.70" r="0.46" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="56.13" cy="79.67" r="0.24" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="61.37" cy="79.55" r="0.94" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="62.54" cy="79.27" r="0.44" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="63.10" cy="79.64" r="0.31" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="65.73" cy="79.64" r="0.67" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="66.96" cy="80.54" r="0.46" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="67.66" cy="79.89" r="0.34" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="69.18" cy="79.61" r="0.51" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="70.25" cy="79.78" r="0.43" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="71.01" cy="79.96" r="0.36" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="71.83" cy="79.29" r="0.37" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="72.76" cy="79.04" r="0.40" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="73.13" cy="78.94" r="0.25" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="73.63" cy="78.90" r="0.29" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="75.01" cy="79.21" r="0.49" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="75.57" cy="79.23" r="0.31" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="79.41" cy="79.54" r="0.81" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="80.22" cy="79.40" r="0.37" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="81.07" cy="79.84" r="0.38" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="83.04" cy="80.45" r="0.58" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="84.07" cy="80.98" r="0.42" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="84.74" cy="81.43" r="0.34" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="86.67" cy="81.78" r="0.57" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="86.89" cy="82.05" r="0.19" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="87.96" cy="82.21" r="0.43" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="88.35" cy="81.82" r="0.26" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="90.29" cy="82.31" r="0.57" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="90.57" cy="82.37" r="0.22" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="90.94" cy="82.32" r="0.25" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="91.19" cy="82.00" r="0.20" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="91.87" cy="82.45" r="0.34" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="92.20" cy="82.31" r="0.24" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="92.55" cy="82.59" r="0.24" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="93.14" cy="83.39" r="0.32" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="94.81" cy="83.33" r="0.53" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="95.09" cy="83.53" r="0.22" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="95.31" cy="83.37" r="0.20" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="95.61" cy="83.62" r="0.22" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="96.02" cy="83.76" r="0.26" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="96.45" cy="84.16" r="0.27" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="98.35" cy="83.90" r="0.57" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="103.40" cy="84.47" r="0.93" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="103.59" cy="84.76" r="0.18" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="106.35" cy="84.88" r="0.69" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="107.36" cy="84.77" r="0.42" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="109.08" cy="85.01" r="0.54" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="112.38" cy="84.73" r="0.75" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="112.88" cy="84.60" r="0.29" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="113.57" cy="84.97" r="0.34" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="114.89" cy="85.31" r="0.47" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="115.36" cy="85.45" r="0.28" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="115.86" cy="85.51" r="0.29" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="117.11" cy="85.92" r="0.46" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="118.29" cy="86.15" r="0.45" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="119.20" cy="86.53" r="0.39" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="120.45" cy="86.93" r="0.46" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="120.96" cy="87.18" r="0.30" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="120.45" cy="86.93" r="0.62" style="stroke-width: 1.20; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+    </g>
+    <g clip-path="url(#cpMC4wMHwyNTIuMjh8MC4wMHwxNDEuOTE=)">
+      <line x1="56.51" y1="129.67" x2="64.61" y2="129.67" style="stroke-width: 1.50; stroke: #2F5597;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <line x1="126.41" y1="129.67" x2="134.51" y2="129.67" style="stroke-width: 1.50; stroke: #333333;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <circle cx="60.56" cy="129.67" r="1.35" style="stroke-width: 0.75; stroke: #2F5597; fill: #2F5597; fill-opacity: 0.28;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="70.01" y="131.82" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="52.06px" lengthAdjust="spacingAndGlyphs">Cumulative Z-curve</text>
+      <text x="139.91" y="131.82" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="54.78px" lengthAdjust="spacingAndGlyphs">Monitoring boundary</text>
+      <line x1="126.41" y1="138.31" x2="134.51" y2="138.31" style="stroke-width: 0.75; stroke: #A6A6A6; stroke-dasharray: 4.00,4.00;" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <rect x="52.35" y="137.11" width="2.39" height="2.39" style="stroke-width: 0.60; stroke: #2F5597; stroke-opacity: 0.60; fill: #DDE6F4;" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10.00"/>
+      <text x="62.99" y="140.46" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="35.72px" lengthAdjust="spacingAndGlyphs">Futility region</text>
+      <text x="139.91" y="140.46" style="font-size: 6.00px;fill: #222222; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="61.80px" lengthAdjust="spacingAndGlyphs">Conventional boundary</text>
+      <text x="5.05" y="13.37" style="font-size: 6.60px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="239.52px" lengthAdjust="spacingAndGlyphs">Mortality · Time-to-event · Hazard ratio · Comparison: Locoregional treatment plus</text>
+      <text x="5.05" y="21.29" style="font-size: 6.60px; font-family: &quot;Arial&quot;, &quot;Segoe UI Symbol&quot;, sans-serif;" textLength="132.81px" lengthAdjust="spacingAndGlyphs">chemotherapy / Locoregional treatment alone</text>
+    </g>
+  </g>
+</svg>

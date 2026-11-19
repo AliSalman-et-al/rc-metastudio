@@ -28,7 +28,7 @@ rcmetar.supporting.table <- function(value) {
   metadata <- attr(value, "rcms.table")
   roles <- c("pooled", "coefficients", "heterogeneity", "residual_heterogeneity",
     "overall_test", "subgroup_test", "model_fit", "model_tests", "model_specification",
-    "calculation", "study_results", "cumulative", "leave_one_out", "prediction", "supporting")
+    "calculation", "study_results", "cumulative", "leave_one_out", "trial_sequential", "prediction", "supporting")
   if (!is.null(metadata)) {
     if (length(metadata$role) != 1L || !(metadata$role %in% roles))
       stop("Missing or unknown result table role.", call.=FALSE)

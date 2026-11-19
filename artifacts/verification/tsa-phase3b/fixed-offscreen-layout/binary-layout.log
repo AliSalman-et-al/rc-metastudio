@@ -1,0 +1,4 @@
+Command: uv 'run' 'python' '-m' 'pytest' 'tests/python/gui/test_binary_data_transactional_layout.py' '-q' '--basetemp' '.tmp/tsa-phase3b-layout'
+..............                                                           [100%]
+14 passed in 21.81s
+Exit: 0

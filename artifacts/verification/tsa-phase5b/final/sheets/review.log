@@ -1,0 +1,7 @@
+Command: uv ["run","python","C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\artifacts\\verification\\tsa-phase5b/contact_sheets.py","final"]
+Verified 36 native captures and 54 print layouts with no text collisions or clipping.
+Verified rotated Favours line spacing, whole first-line labels, integer join ticks and filled swatches.
+Verified both solid marker orientations and the centred 1.35× ring in 12 off-panel layouts.
+Every print layout passed the PDF font, SVG outline, and 300 dpi LZW TIFF checks.
+The 600 dpi LZW TIFF passed. The 18 SVG pairs match across native scales.
+Exit: 0

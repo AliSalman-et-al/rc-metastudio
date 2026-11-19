@@ -24,7 +24,7 @@ from rc_metastudio.analysis_method_labels import (
 )
 from rc_metastudio import result_formatting
 from rc_metastudio.analysis_errors import DiagnosticExecutionError
-from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, TableRole, parse_analysis_result
+from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, ResultSection, TableRole, _report_table_entry, parse_analysis_result
 from typing import get_args
 from rc_metastudio.study_effect_shapes import (
     effect_triplet as effect_triplet,
@@ -877,6 +877,76 @@ def run_small_study_effects(
     return parse_out_results(result)
 
 
+@serialized_r_call
+def preview_trial_sequential_analysis(
+    model: object, family: str, metric: str, params: Mapping[str, object],
+) -> Mapping[str, object]:
+    data = dataset_for_analysis(model, family, metric=metric)
+    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(params))
+    return _r_mapping_or_empty(raw)
+
+
+@serialized_r_call
+def trial_sequential_conclusion_command(
+    model: object, family: str, metric: str, params: Mapping[str, object], directory: Path,
+) -> tuple[str, list[str]]:
+    # Embedded R is main-thread-only. Pass a typed, local snapshot to the
+    # selected runtime instead of sharing rpy2 state with a Qt worker.
+    data = dataset_for_analysis(model, family, metric=metric)
+    r_params = _to_r_params({**params, "preview.conclusion": True})
+    inputs = directory / "input.rds"
+    execute_r_function("saveRDS", ro.ListVector({"data": data, "params": r_params}), ro.StrVector([str(inputs)]))
+    bin_dir = Path(os.environ["R_HOME"]) / "bin"
+    script = (
+        "args <- commandArgs(TRUE); request <- readRDS(args[1L]); "
+        "result <- RCMetaR::rcmetar.preview.trial.sequential.analysis(request$data, request$params); "
+        "outcome <- result$outcome; "
+        "if (!is.null(outcome$category)) writeBin(charToRaw(enc2utf8("
+        "paste(outcome$category, outcome$look, outcome$study, sep='\\n'))), args[2L])"
+    )
+    paths = [str(inputs), str(directory / "outcome.txt")]
+    if os.name == "nt":
+        # Launch the actual R process so cancelling it leaves no child behind.
+        return str(bin_dir / "x64" / "Rterm.exe"), ["--vanilla", "--slave", "-e", script, "--args", *paths]
+    return str(bin_dir / "Rscript"), ["--vanilla", "-e", script, *paths]
+
+
+@serialized_r_call
+def run_trial_sequential_analysis(
+    model: object, family: str, metric: str, params: Mapping[str, object], path: str,
+) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
+    from rc_metastudio.plot_capabilities import PlotCapability
+
+    data = dataset_for_analysis(model, family, metric=metric)
+    params = {**params, "fp_outpath": path}
+    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(params))
+
+    def table_section(key: str, title: str, order: int, matrix) -> ResultSection:
+        identity = f"trial-sequential.{key}"
+        table = _report_table_entry(_structured_matrix(title, matrix, None, first_row_headers=True))
+        notes = ("— Too little information for a finite TSA-adjusted interval.",) if any("—" in row for row in table.rows) else ()
+        return ResultSection(identity, "text", order, title, "", identity, tables=(table,), paragraphs=notes)
+
+    sections = [table_section("looks", "Trial sequential results", 0, raw.rx2("table"))]
+    if "sensitivity.table" in raw.names:
+        sections.append(table_section("sensitivity", "Sensitivity to the anticipated intervention effect",
+                                      1, raw.rx2("sensitivity.table")))
+    plot_title = "Trial sequential plot"
+    plot = ResultSection(
+        "trial-sequential.plot", "image", 2, plot_title, path, plot_title,
+        plot_data=str(raw.rx2("plot.prefix")[0]), capability=PlotCapability(
+            "trial_sequential", True, True, "trial_sequential"),
+    )
+    fields = {key: r_object_to_python(raw.rx2(key)) for key in ("summary", "package.versions", "fixed_effect_note")}
+    looks = raw.rx2("looks")
+    fields["looks"] = {
+        key: [_r_na_to_none(value) for value in column]
+        for key, column in zip(looks.names, looks, strict=True)
+    }
+    fields["version"] = int(raw.rx2("version")[0])
+    return fields, (*sections, plot)
+
+
 def _r_param_value(param):
     _require_initialized_r()
     if isinstance(param, ro.ListVector):
@@ -1090,8 +1160,9 @@ def prepare_plot_edit(
 
 
 @serialized_r_call
-def render_plot_bundle(prefix: str, regenerator: str, output: str) -> bool:
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output)
+def render_plot_bundle(prefix: str, regenerator: str, output: str,
+                       *dimensions: float) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions)
     return not _r_is_null(result)
 
 

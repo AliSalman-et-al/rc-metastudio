@@ -15,6 +15,7 @@
     "required_normal_packages": [
       "mada",
       "metafor",
+      "gsDesign",
       "rsvg",
       "svglite",
       "png",
@@ -203,6 +204,21 @@
       ],
       "reason": "Core binary, continuous, diagnostic, and meta-regression methods call metafor analysis functions.",
       "installed_version": "5.2-1"
+    },
+    {
+      "name": "gsDesign",
+      "source": "cran",
+      "scope": [
+        "runtime"
+      ],
+      "declared_in": [
+        "r/RCMetaR/DESCRIPTION"
+      ],
+      "evidence": [
+        "r/RCMetaR/R/trial_sequential_analysis.R: gsDesign::gsBound and gsDesign::sfLDPocock"
+      ],
+      "reason": "Lan-DeMets spending boundaries for trial sequential analysis.",
+      "installed_version": "3.11.0"
     },
     {
       "name": "meta",

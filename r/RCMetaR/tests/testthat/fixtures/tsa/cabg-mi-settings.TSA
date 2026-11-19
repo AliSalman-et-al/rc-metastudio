@@ -1,0 +1,88 @@
+#METAANALYSIS BEGIN
+identifier	CABG MI settings probe (synthetic trials)
+outcomeType	1
+trialType	1
+effectModel	11
+effectMeasure	1
+zeroEventHandling	Empirical
+zeroEventValue	0.01
+ignoreZeroEventsTrials	true
+confidenceInterval	CI_950
+group1	Intervention
+group2	Control
+#METAANALYSIS END
+
+#TRIAL BEGIN
+sort	dichotomous
+year	2000
+study	Early
+interventionEvent	1.0
+interventionTotal	25.0
+controlEvent	2.0
+controlTotal	25.0
+isHighQuality	true
+isForcefullyIgnored	false
+#TRIAL END
+
+#TRIAL BEGIN
+sort	dichotomous
+year	2001
+study	Mid
+interventionEvent	26.0
+interventionTotal	1000.0
+controlEvent	39.0
+controlTotal	1000.0
+isHighQuality	true
+isForcefullyIgnored	false
+#TRIAL END
+
+#TRIAL BEGIN
+sort	dichotomous
+year	2002
+study	Overrun
+interventionEvent	78.0
+interventionTotal	3000.0
+controlEvent	117.0
+controlTotal	3000.0
+isHighQuality	true
+isForcefullyIgnored	false
+#TRIAL END
+
+#TRIAL BEGIN
+sort	dichotomous
+year	2003
+study	After
+interventionEvent	26.0
+interventionTotal	1000.0
+controlEvent	39.0
+controlTotal	1000.0
+isHighQuality	true
+isForcefullyIgnored	false
+#TRIAL END
+
+#BOUNDARY BEGIN
+sort	sequential dichotome
+identifier	Manual section 5.4 printed settings
+type	103
+type1error	5.0
+oisType	603
+manualOIS	0.0
+type2error	20.0
+interventionEffectType	204
+interventionEffect	2.613
+controlEffect	3.9
+timeAxisScaling	302
+heterogeneityCorrection	404
+heterogeneityCorrectionValue	0.0
+alphaSpendingFunction	501
+betaSpendingFunction	802
+trials	(2000)Early	(2001)Mid	(2002)Overrun	(2003)After
+#GRAPH BEGIN
+id	Manual section 5.4 printed settings
+color	255	0	0
+graphLineType	Full
+graphIconType	Diamond Fill
+graphIconSize	6
+doShow	true
+#GRAPH END
+#BOUNDARY END

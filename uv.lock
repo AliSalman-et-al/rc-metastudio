@@ -1076,6 +1076,12 @@ name = "pyqt6-pdf-qt6"
 version = "6.140.0"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/7d/fc5506615925f805c6ae70366e8ede07831be2b637f4230c78c7b1145bf1/pyqt6_pdf_qt6-6.140.0-1-py3-none-macosx_10_14_x86_64.whl", hash = "sha256:8e647e66c153691fb86ff633f9f66936e5e82631fe1dd4fccbb1ad020dbacabc", size = 4449726, upload-time = "2026-11-13T14:59:09.689Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/9f/5646457474722f6d867512a6e47cc149a1841737a21dc335498fc67e09eb/pyqt6_pdf_qt6-6.140.0-1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:39c7ac2bd439f03c1f09471a9b89ece078cc6cfcedec9eaf71c2f7ea623ed430", size = 3896104, upload-time = "2026-11-13T14:59:12.436Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/ff/947da321a7087c0a8602ab13ee9022cd2dcdcb832faef11be7232febf7d2/pyqt6_pdf_qt6-6.140.0-1-py3-none-manylinux_2_34_x86_64.whl", hash = "sha256:306a60c62bdf01b658da9617fe343bccf0c8c3146d62d9a29327cc42302f6e88", size = 2688837, upload-time = "2026-11-13T14:59:15.063Z" },
+    { url = "https://files.pythonhosted.org/packages/58/2a/2ef600ed1531b8245f70cb0aeda3f6c5b0f96dca04228e3dbcd10535d71b/pyqt6_pdf_qt6-6.140.0-1-py3-none-manylinux_2_39_aarch64.whl", hash = "sha256:2e836cb5ebe3683da7e8b8d90004c2a8a45da7a6c3414b453abb3953aab130de", size = 2684047, upload-time = "2026-11-13T14:59:17.502Z" },
+    { url = "https://files.pythonhosted.org/packages/98/e9/a4131b48e254f941e3d0bc03fe4960bbf6ddac6d8d426da2f97a788483f9/pyqt6_pdf_qt6-6.140.0-1-py3-none-win_amd64.whl", hash = "sha256:710b9615284e3f614a0a780f1e45b3aadf91534cf8fc32f4c1bb693d502b4e56", size = 2751644, upload-time = "2026-11-13T14:59:20.195Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/30/cf0c98ae31dbb06a22c4320b73e183f095e88630c6c0383e650e94ad27d0/pyqt6_pdf_qt6-6.140.0-1-py3-none-win_arm64.whl", hash = "sha256:b8b067123d23b0fd6bab5055c64a82afc377433db0f9778948fdc96ca317c909", size = 2537480, upload-time = "2026-11-13T14:59:26.537Z" },
     { url = "https://files.pythonhosted.org/packages/6a/e9/2545c2004fa7f9b0021efe34532e17122632beff903d77a47fda3f8d5690/pyqt6_pdf_qt6-6.140.0-py3-none-macosx_10_14_x86_64.whl", hash = "sha256:a287b3f860125c2d9305f53f5d7456c7fe535179f4f9151bb84a5163783aba7f", size = 4447578, upload-time = "2026-11-02T17:01:57.491Z" },
     { url = "https://files.pythonhosted.org/packages/ba/e0/f81f403f7a888d239ae12df2966aede42efc851d864f4db891ce25f38de3/pyqt6_pdf_qt6-6.140.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:cf562f27d7eb8d5a7cf6f71b18162e5669e14684ec897a862d812e1d12344de9", size = 3903123, upload-time = "2026-11-02T17:01:59.457Z" },
     { url = "https://files.pythonhosted.org/packages/02/07/34b8c3ba139a366cdfab45326097ee09a981466538fbb299327af8064483/pyqt6_pdf_qt6-6.140.0-py3-none-manylinux_2_34_x86_64.whl", hash = "sha256:4accb6ef9b3b674e1a0adc782e9c9d79647ca7dd52f8f951d413a850f6b83d5b", size = 2688349, upload-time = "2026-11-02T17:02:01.26Z" },
@@ -1226,7 +1232,7 @@ wheels = [
 
 [[package]]
 name = "rc-metastudio"
-version = "0.5.6"
+version = "0.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },

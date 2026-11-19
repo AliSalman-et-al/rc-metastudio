@@ -41,7 +41,8 @@ def rendered_targets() -> dict[Path, str]:
             '"""Generated user-facing forest-plot defaults. Do not edit directly."""\n\n'
             f"FOREST_ARM_LABELS = ({intervention}, {control})\n"
             f"PLOT_STYLE_LABELS = {json.dumps(labels, indent=4)}\n"
-            f"PLOT_STYLE_ACCENTS = {json.dumps(accents, indent=4)}\n\n\n"
+            f"PLOT_STYLE_ACCENTS = {json.dumps(accents, indent=4)}\n"
+            f"BUBBLE_STYLE_ACCENTS = {json.dumps(bubble_accents, indent=4)}\n\n\n"
             "def apply_default_forest_arm_labels(surface):\n"
             "    surface.col3_str_edit.setText(FOREST_ARM_LABELS[0])\n"
             "    surface.col4_str_edit.setText(FOREST_ARM_LABELS[1])\n"

@@ -28,7 +28,7 @@
 #' Read, edit, and render persisted plot bundles
 #'
 #' @param prefix The base path of an existing RCMetaR plot bundle.
-#' @param regenerator One of `forest`, `regression`, `sroc`, or `funnel`.
+#' @param regenerator One of `forest`, `regression`, `sroc`, `funnel`, or `trial_sequential`.
 #' @param changed A named list of edited plot parameters.
 #' @param output.path The requested plot destination.
 #' @param staging.directory A caller-owned directory for staged files.
@@ -63,6 +63,7 @@ rcmetar.plot.bundle.params <- function(prefix) {
         forest=list(draw=rcmetar.draw.forest.plot, build=rcmetar.regenerate.plot.data, prefix="fp"),
         regression=list(draw=rcmetar.draw.regression.plot, build=rcmetar.regenerate.regression.plot.data, prefix="bp"),
         sroc=list(draw=rcmetar.draw.sroc.plot, build=rcmetar.regenerate.plot.data, prefix="fp"),
+        trial_sequential=list(draw=rcmetar.draw.tsa.plot, build=rcmetar.tsa.plot.data, prefix="fp"),
         stop(sprintf("Unknown plot regenerator: %s", regenerator), call.=FALSE))
 }
 
@@ -115,7 +116,7 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 
 #' @rdname rcmetar-plot-bundle
 #' @export
-rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path) {
+rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
@@ -124,7 +125,11 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path) {
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
-    .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
+    if (identical(regenerator, "trial_sequential")) {
+        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=TRUE)
+    } else {
+        .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
+    }
     output.path
 }
 

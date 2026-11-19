@@ -31,6 +31,8 @@ class Sheet:
     covariates: list[dict] = field(default_factory=list)
     settings: dict = field(default_factory=dict)
     rows: list[StudyRow] = field(default_factory=list)
+    # The last fit supplies TSA defaults for this open sheet without editing the project.
+    last_meta_analysis: tuple[str, dict[str, object]] | None = field(default=None, repr=False, compare=False)
 
 @dataclass
 class Dataset:

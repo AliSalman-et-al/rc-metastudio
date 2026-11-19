@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 from rc_metastudio.qt_object_guard import required
 from dataclasses import dataclass, replace
+from decimal import Decimal
 import re
 import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
@@ -22,6 +23,7 @@ from rc_metastudio import __version__
 if TYPE_CHECKING:
     from rc_metastudio.analysis_dataset import Sheet
     from rc_metastudio.analysis_results import AnalysisResult
+    from rc_metastudio.trial_sequential_analysis import TsaRequest, TsaRun
 
 
 class AnalysisResultHandler(Protocol):
@@ -29,7 +31,7 @@ class AnalysisResultHandler(Protocol):
         self, result: "AnalysisResult", /, *, source_sheet: "Sheet | None" = None,
         change_settings: Callable[[dict[str, object]], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
-    ) -> None: ...
+    ) -> object: ...
 
 
 _PACKAGE_REFERENCES = {
@@ -708,6 +710,11 @@ class ManuscriptReport:
     def sections(self) -> tuple[ResultSection, ...]:
         return self.primary_sections + self.supplementary_sections
 
+    @property
+    def has_supplementary_details(self) -> bool:
+        return any(section.source_key != "References" and (section.tables or section.paragraphs)
+                   for section in self.supplementary_sections)
+
     @classmethod
     def from_result(cls, result):
         summary = [result.manuscript_context] if result.manuscript_context else []
@@ -737,6 +744,9 @@ class ManuscriptReport:
         for heading, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
                 parts.extend((heading, text))
+        for number, figure in enumerate(self.figures, 1):
+            if figure.paragraphs:
+                parts.extend((f'Figure {number}. {figure.title}', *figure.paragraphs))
         number = 0
         for section in self.sections:
             if section.source_key == "References":
@@ -758,6 +768,11 @@ class ManuscriptReport:
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
+        else:
+            for number, figure in enumerate(self.figures, 1):
+                if figure.paragraphs:
+                    parts.append(f'<p><b>Figure {number}. {escape(figure.title)}</b><br>'
+                                 + '<br>'.join(map(escape, figure.paragraphs)) + '</p>')
         configuration = ''
         if supplementary and self.configuration:
             configuration = '<a name="model-configuration"></a><h2>Model configuration</h2><p>' + escape(self.configuration).replace('\n', '<br>') + '</p>'
@@ -765,15 +780,186 @@ class ManuscriptReport:
 
     def tables_html(self, supplementary=False):
         parts = ['<a name="report-tables"></a>'] if not supplementary else []
-        if supplementary and self.supplementary_sections:
+        if supplementary and self.has_supplementary_details:
             parts.append('<h2>Supplementary details</h2>')
         for section, tables in self.numbered_sections(supplementary):
             if section.source_key == 'References':
                 parts.append('<a name="references"></a><h2>References</h2>')
             for table_number, table in tables:
+                parts.append(f'<a name="table-{table_number}"></a>')
                 parts.append(_table_html(table, table_number))
             parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
+
+
+def _tsa_accrued_number(value: float, hr: bool) -> str:
+    number = Decimal(f"{value:.6g}" if hr else str(value)).normalize()
+    return f"{number:,f}"
+
+
+def _tsa_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    from rc_metastudio.trial_sequential_analysis import EFFECT_SOURCES, HKSJ_NOTE
+
+    options = request.options
+    hr = request.metric == "HR"
+    units = "units of statistical information" if hr else "participants"
+    order = {"year": "publication-year order", "table": "table order"}[options.order]
+    left, right = request.favoured_labels()
+    test = {"two-sided": "two-sided test", "benefit": f"one-sided test favouring {left}",
+            "harm": f"one-sided test favouring {right}"}[options.test]
+    measure_name = {"RR": "risk ratios", "OR": "odds ratios", "RD": "risk differences",
+                    "MD": "mean differences", "HR": "hazard ratios"}[request.metric]
+
+    effect = f"{run.anticipated_effect:.4g}"
+    effect_phrase = {"OR": "an OR", "RR": "an RR", "RD": "an RD", "MD": "a mean difference",
+                     "HR": "an HR", "Peto OR": "a Peto OR"}[request.measure]
+    source = (" (entered)" if run.effect_source == "user" else
+              f", the {EFFECT_SOURCES[run.effect_source]}")
+    ris_label = "entered required information size" if options.manual_ris is not None else "required information size"
+    model = (f"random-effects model with the {request.tau_method} estimator of between-study variance"
+             if request.model == "random" else request.model_label.replace("fixed", "fixed-effect") + " model")
+    method = [
+        f"We pooled {measure_name} ({request.metric}) using a {model} and the Wald z statistic.",
+        f"Studies were added in {order}.",
+        f"The {ris_label} was {_tsa_accrued_number(run.ris, hr)} {units} using a {test} "
+        f"with α = {options.alpha:g} and {options.power:.0%} power. "
+        f"The anticipated intervention effect was {effect_phrase} of {effect}{source}.",
+    ]
+    if request.inference in {"knha", "adhoc"}:
+        method.insert(1, HKSJ_NOTE)
+    if run.control_proportion is not None:
+        control = "entered" if run.control_source == "user" else "unweighted mean of control arms"
+        method.append(f"The control event proportion was {run.control_proportion:.2%} ({control}).")
+    if request.metric == "MD" and run.variance is not None:
+        variance = "entered" if run.variance_source == "user" else "fixed-effect-weighted pooled arm variance"
+        method.append(f"The participant variance was {run.variance:.4g} ({variance}).")
+    method.append(_tsa_heterogeneity_prose(run, request, units))
+    method.extend(_tsa_monitoring_methods(run, request))
+    return method
+
+
+def _tsa_heterogeneity_prose(run: "TsaRun", request: "TsaRequest", units: str) -> str:
+    hr = request.metric == "HR"
+    options = request.options
+    if request.model != "random":
+        if run.fixed_effect_note is None:
+            return "Heterogeneity adjustment was inapplicable to the fixed-effect model."
+        d2, ris = run.fixed_effect_note.d2, _tsa_accrued_number(run.fixed_effect_note.ris, hr)
+        size, note_units = ("required information", "units of information") if hr else ("required information size", units)
+        return (f"The fixed-effect model does not adjust the information size for heterogeneity; "
+                f"a random-effects model gave D² = {d2:.1%} and a {size} of {ris} "
+                f"{note_units} (Wetterslev 2017).")
+    if options.heterogeneity == "none":
+        return "The analysis used no heterogeneity adjustment."
+    measure, value = ("D²", run.d2) if options.heterogeneity == "d2" else ("I²", run.i2)
+    return f"The information size was adjusted for {measure} = {value:.1%}."
+
+
+def _tsa_monitoring_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    options = request.options
+    method: list[str] = []
+    spending = "O’Brien-Fleming" if options.spending == "obf" else "Pocock"
+    method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
+    method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
+    if run.lil_lambda is not None:
+        method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g} (Hu 2007).")
+    if run.excluded_studies:
+        method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
+    if options.manual_ris is None:
+        method.append("Sensitivity analyses repeated the analysis with alternative anticipated intervention effects.")
+    method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
+
+    return method
+
+
+def _tsa_crossing_prose(run: "TsaRun", request: "TsaRequest") -> list[str]:
+    hr = request.metric == "HR"
+    units = "units of statistical information" if hr else "participants"
+    left, right = request.favoured_labels()
+    effect = f"{run.anticipated_effect:.4g}"
+    crossing = run.crossing
+    results: list[str] = []
+    if crossing is not None:
+        at = f"when {crossing.study} was added ({_tsa_accrued_number(crossing.accrued, hr)} {units}, {crossing.fraction:.0%} of the required information size)."
+        if run.conclusion == "crossed-futility":
+            results.append(f"The cumulative Z-curve crossed the futility boundary {at}")
+            results.append(f"This suggests that an intervention effect of {effect} is unlikely, "
+                           "without establishing its absence.")
+        else:
+            favoured = left if run.conclusion == "crossed-benefit" else right
+            results.append(f"The cumulative Z-curve crossed the monitoring boundary favouring {favoured} {at}")
+    elif run.conclusion == "ris-reached":
+        results.append("Accrued information reached the required information size without the cumulative Z-curve crossing a monitoring boundary.")
+    elif run.conclusion == "none":
+        results.append("The cumulative Z-curve crossed neither a monitoring nor a futility boundary.")
+    else:
+        raise ValueError("Trial sequential analysis returned an invalid conclusion.")
+    return results
+
+
+def _tsa_interval_prose(run: "TsaRun", confidence: float) -> list[str]:
+    final = run.final
+    results: list[str] = []
+    if run.crossing != final:
+        results.append(f"Accrued information is {final.fraction:.0%} of the required information size.")
+    results.append(f"The conventional {confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
+    if final.fraction >= 1:
+        results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
+    elif final.adjusted_lower is not None and final.adjusted_upper is not None:
+        results.append(f"The TSA-adjusted CI was {final.adjusted_lower:.4g} to {final.adjusted_upper:.4g}.")
+    elif final.adjusted_lower is not None:
+        results.append(f"The one-sided TSA-adjusted lower limit was {final.adjusted_lower:.4g}.")
+    elif final.adjusted_upper is not None:
+        results.append(f"The one-sided TSA-adjusted upper limit was {final.adjusted_upper:.4g}.")
+    if run.lil_lambda is not None:
+        results.append(f"The final penalised Z-score was {final.penalised_z:.4g}." if final.penalised_z is not None
+                       else "The final penalised Z-score was unavailable at the accrued statistical information.")
+    return results
+
+
+def _tsa_results(run: "TsaRun", request: "TsaRequest") -> tuple[str, ...]:
+    effect = f"{run.anticipated_effect:.4g}"
+    results = _tsa_crossing_prose(run, request)
+    results.extend(_tsa_interval_prose(run, request.confidence))
+    if run.conclusion in {"crossed-benefit", "crossed-harm"}:
+        results.append("Because the cumulative Z-curve crossed the monitoring boundary, the result remains "
+                       "statistically significant after accounting for repeated significance testing.")
+    elif run.conclusion == "ris-reached":
+        results.append(f"The required information size was reached without demonstrating an intervention effect of {effect}.")
+    elif run.conclusion == "none":
+        results.append(f"More information is needed before an intervention effect of {effect} can be confirmed or rejected.")
+
+    return tuple(results)
+
+
+def _tsa_references(run: "TsaRun", request: "TsaRequest") -> ResultSection:
+    references = [
+        "Wetterslev J, Thorlund K, Brok J, Gluud C. J Clin Epidemiol. 2008;61:64–75.",
+        "Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol. 2009;9:86.",
+        "Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70:659–663.",
+    ]
+    if (request.options.manual_ris is None or run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
+            or run.variance_source.startswith("wetterslev-2017")):
+        references.append("Wetterslev J, Jakobsen JC, Gluud C. BMC Med Res Methodol. 2017;17:39.")
+    if run.effect_source == "imberger-2016-10-percent-rrr":
+        references.append("Imberger G, Thorlund K, Gluud C, Wetterslev J. BMJ Open. 2016;6:e011890.")
+    if run.lil_lambda is not None:
+        references.append("Hu M, Cappelleri JC, Lan KKG. Clin Trials. 2007;4:329–340.")
+    return ResultSection("trial-sequential.references", "text", 2, "References",
+                         "\n".join(references), "References", paragraphs=tuple(references))
+
+
+def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
+    from rc_metastudio.trial_sequential_analysis import TSA_TITLE
+
+    return ManuscriptReport(
+        TSA_TITLE, " ".join(_tsa_methods(run, request)), tuple(section for section in run.result.sections if section.tables),
+        (_tsa_references(run, request),), tuple(
+            replace(section, paragraphs=("Marker area is proportional to the information each trial added.",))
+            for section in run.result.sections if section.kind == "image"
+        ),
+        _tsa_results(run, request), comparison=context.replace("\n", " · "),
+    )
 
 
 def figure_source(path, clip_bounds=None):
@@ -839,7 +1025,7 @@ def _docx_table(document, table):
 
 
 def _docx_sections(document, report, supplementary):
-    if supplementary and report.supplementary_sections:
+    if supplementary and report.has_supplementary_details:
         document.add_heading('Supplementary details', 1)
     for section, tables in report.numbered_sections(supplementary):
         if section.source_key == 'References':
@@ -889,6 +1075,9 @@ def _docx_figures(document, figures):
             document.add_page_break()
             document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
             document.add_paragraph(f'Figure {number}. {figure.title}' + (' (continued)' if top else ''))
+            if not top:
+                for note in figure.paragraphs:
+                    document.add_paragraph(note)
 
 
 
@@ -953,7 +1142,8 @@ def write_pdf(report, path):
         h = w / ratio
         caption = _print_document()
         caption.setTextWidth(width)
-        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>')
+        note = ''.join('<br><span>' + escape(line) + '</span>' for line in figure.paragraphs)
+        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>' + note)
         # Lay out captions in the same 96-DPI coordinates as table captions.
         available = page.height() - (caption.size().height() + 12) * scale
         import math
@@ -977,7 +1167,8 @@ def write_pdf(report, path):
             painter.save()
             painter.scale(scale, scale)
             caption_y = min(h - part * available, available) / scale + 12
-            caption.setHtml(f'<b>Figure {number}. {escape(title)}' + (' (continued)' if part else '') + '</b>')
+            caption.setHtml(f'<b>Figure {number}. {escape(title)}'
+                            + (' (continued)</b>' if part else '</b>' + note))
             painter.translate(0, caption_y)
             caption.drawContents(painter)
             painter.restore()

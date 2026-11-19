@@ -1,6 +1,6 @@
 [project]
 name = "rc-metastudio"
-version = "0.5.6"
+version = "0.6.0"
 description = "RC MetaStudio is open-source software for advanced meta-analysis."
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
