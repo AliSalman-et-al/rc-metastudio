@@ -1186,7 +1186,8 @@ def verify_sheet_strip(app, window, screens):
         rect.moveTopLeft(tabs.mapTo(window.sheet_tab_scroll.viewport(), rect.topLeft()))
         assert window.sheet_tab_scroll.viewport().rect().contains(rect), (index, rect, window.sheet_tab_scroll.viewport().rect())
         assert tabs.tabToolTip(index) == window.model.current_sheet.name
-        assert 96 <= rect.width() <= 200
+        em = tabs.fontMetrics().height()
+        assert 4 * em <= rect.width() <= 12 * em, (index, rect.width(), em)
     original_size = window.size()
     window._rename_sheet(tabs.currentIndex())
     window.resize(1000, 700)

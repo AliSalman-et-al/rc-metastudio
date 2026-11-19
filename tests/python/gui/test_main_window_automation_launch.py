@@ -962,10 +962,10 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
     )
 
     try:
-        window.resize(1200, 800)
         window.report_action.setChecked(False)
         window.show()
         app.processEvents()
+        window.resize(1200, 800)
         app.processEvents()
         app.processEvents()
 
@@ -994,8 +994,8 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
         def assert_plot_fills_viewport(plot_item):
             plot_width = plot_item.sceneBoundingRect().width()
-            assert plot_width >= _viewport_width(window.graphics_view) * 0.9
-            assert plot_width <= _viewport_width(window.graphics_view)
+            available = _viewport_width(window.graphics_view) - window.x_coord - results_window.padding
+            assert plot_width == pytest.approx(min(available, 1600))
 
         assert len(svg_items) == 2
         first_width = svg_items[0].sceneBoundingRect().width()
@@ -1065,9 +1065,10 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
     )
 
     try:
-        window.resize(700, 500)
         window.report_action.setChecked(False)
         window.show()
+        app.processEvents()
+        window.resize(1000, 700)
         for _ in range(3):
             app.processEvents()
         plot_item = next(
@@ -1102,7 +1103,7 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
         )
         assert plot_item.sceneBoundingRect().width() > shrunken_width
         assert plot_item.sceneBoundingRect().width() == pytest.approx(
-            grown_available_width
+            min(grown_available_width, 1600)
         )
     finally:
         window.close()
@@ -1140,9 +1141,10 @@ def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
     )
 
     try:
-        window.resize(700, 500)
         window.report_action.setChecked(False)
         window.show()
+        app.processEvents()
+        window.resize(1000, 800)
         for _ in range(3):
             app.processEvents()
         plot_item = next(

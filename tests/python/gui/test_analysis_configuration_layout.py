@@ -813,7 +813,9 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         )
         assert subgroup.covariate_combo_box.currentText() == long_name
         choice = subgroup.covariate_combo_box
-        subgroup.move(available.right() - 20, available.top() + 40)
+        subgroup.move(
+            available.right() - subgroup.frameGeometry().width() + 1, available.top() + 40
+        )
         choice_view = required(choice.view(), "choice view")
         original_column_width = choice_view.sizeHintForColumn(0)
         enlarged = QtGui.QFont(choice.font())
@@ -823,6 +825,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         qapp.processEvents()
         qapp.processEvents()
         popup = required(choice_view.window(), "choice popup")
+        assert choice_view.isVisible()
         assert available.contains(popup.frameGeometry())
         assert choice_view.textElideMode() == QtCore.Qt.TextElideMode.ElideNone
         assert (
@@ -950,13 +953,14 @@ def test_native_windows_promoted_choice_popup_is_bounded_at_real_right_edge():
 import json
 from rc_metastudio import app_error_handler
 from PyQt6 import QtCore, QtWidgets
-from rc_metastudio import adaptive_controls
+from rc_metastudio import adaptive_controls, qt_layout
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 from rc_metastudio.forms.ui_subgroup_analysis_dialog import Ui_SubgroupAnalysisDialog
 
 app = app_error_handler.get_or_create_application([])
+qt_layout.configure_application_controls(app)
 dialog = QtWidgets.QDialog()
 ui = Ui_SubgroupAnalysisDialog()
 ui.setupUi(dialog)
@@ -984,6 +988,7 @@ QtCore.QTimer.singleShot(50, settle.quit)
 settle.exec()
 result = {
     "platform": app.platformName(),
+    "visible": popup.isVisible(),
     "contained": available.contains(popup.frameGeometry()),
     "horizontal_access": combo.view().horizontalScrollBar().maximum() > 0,
     "tooltip_complete": combo.itemData(
@@ -1020,6 +1025,7 @@ app.processEvents()
     result = json.loads(marker.split("=", 1)[1])
     assert result == {
         "platform": "windows",
+        "visible": True,
         "contained": True,
         "horizontal_access": True,
         "tooltip_complete": True,
