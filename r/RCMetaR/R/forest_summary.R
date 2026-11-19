@@ -17,10 +17,22 @@ rcmetar.forest.model.label <- function(res) {
 rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim, color) {
     left <- max(lower, alim[[1]])
     right <- min(upper, alim[[2]])
-    if (!all(is.finite(c(center, left, right))) || left >= right) return(invisible(NULL))
+    if (!all(is.finite(c(center, left, right))) || lower >= upper) return(invisible(NULL))
+    arrow.length <- diff(alim) * 0.026
+    if (left >= right) {
+        edge <- if (upper <= alim[[1]]) alim[[1]] else alim[[2]]
+        base <- edge + if (edge == alim[[1]]) arrow.length else -arrow.length
+        graphics::polygon(c(edge, base, base), row + c(0, height / 2, -height / 2),
+                          col=color, border=color)
+        return(invisible(NULL))
+    }
     # Bound the vertices themselves: the desktop SVG renderer ignores clip paths.
-    x <- sort(unique(c(left, center[center > left & center < right], right)))
+    inset <- min(arrow.length, (right - left) / 3)
+    left.base <- left + if (lower < left) inset else 0
+    right.base <- right - if (upper > right) inset else 0
+    x <- sort(unique(c(left, left.base, center[center > left.base & center < right.base], right.base, right)))
     rise <- height * pmin((x - lower) / (center - lower), (upper - x) / (upper - center))
+    rise[c(1, length(rise))] <- 0
     bottom <- rev(which(rise > 0))
     graphics::polygon(c(x, x[bottom]), c(row + rise, row - rise[bottom]), col=color, border=color)
     invisible(NULL)
