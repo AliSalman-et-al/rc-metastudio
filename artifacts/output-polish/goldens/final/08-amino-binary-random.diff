@@ -1,0 +1,23 @@
+--- frozen
++++ proposed
+@@ -7,16 +7,16 @@
+  0.770                    0.485                 1.222    0.267
+ 
+ Heterogeneity
+- Q       df  p-value     I²     τ²
+- 33.360  18    0.015  46.0%  0.378
++ Q       df  p-value       I²     τ²
++ 33.360  18    0.015  46.044%  0.378
+ 
+ Test for overall effect
+  Z       p-value
+- -1.111    0.267
++ −1.111    0.267
+ 
+ Prediction interval
+  Lower bound (95% PI)  Upper bound (95% PI)
+  0.212                                2.799
+ 
+-Calculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236
++Calculation scale: log - estimate: −0.262, lower: −0.724, upper: 0.200, std. error: 0.236
+ 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.

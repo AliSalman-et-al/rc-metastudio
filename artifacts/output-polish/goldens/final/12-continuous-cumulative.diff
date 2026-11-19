@@ -1,0 +1,22 @@
+--- frozen
++++ proposed
+@@ -2,11 +2,11 @@
+ 
+ Metric: Standardized mean difference
+ 
+-Model Results
+- Study added (k)        Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value
+- Carroll, 1997 (k = 1)     0.095                -0.264                 0.453                    0.183         
+- Grant, 1981 (k = 2)       0.189                -0.059                 0.438                    0.127    0.136
+- Peck, 1987 (k = 3)        0.232                 0.015                 0.449                    0.111    0.036
+- Donat, 2003 (k = 4)       0.376                 0.091                 0.660                    0.145    0.010
+- Stewart, 1990 (k = 5)     0.397                 0.169                 0.626                    0.116  < 0.001
+- Young, 1995 (k = 6)       0.358                 0.152                 0.565                    0.105  < 0.001
++Cumulative results
++ Step  Study added    k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  p-value  I²     
++ 1     Carroll, 1997  1     0.095  −0.264                               0.453                    0.183    0.605  —      
++ 2     Grant, 1981    2     0.189  −0.059                               0.438                    0.127    0.136  0.000% 
++ 3     Peck, 1987     3     0.232  0.015                                0.449                    0.111    0.036  0.000% 
++ 4     Donat, 2003    4     0.376  0.091                                0.660                    0.145    0.010  67.407%
++ 5     Stewart, 1990  5     0.397  0.169                                0.626                    0.116  < 0.001  56.543%
++ 6     Young, 1995    6     0.358  0.152                                0.565                    0.105  < 0.001  58.032%

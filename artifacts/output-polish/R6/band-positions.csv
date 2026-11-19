@@ -1,0 +1,13 @@
+plot,displayed rows,grey bands,shaded labels
+02-0-leave_one_out_forest-default-table.svg,14,7,"Aaronson, 1948 | Rosenthal, 1960 | Frimodt-Moller, 1973 | Vandiviere, 1973 | Coetzee & Berjak, 1968 | Comstock, 1974 | Comstock76, 1976"
+03-0-leave_one_out_forest-default-year.svg,14,7,"Aaronson, 1948 | Stein & Aaronson, 1953 | Rosenthal61, 1961 | Comstock & Webster, 1969 | Vandiviere, 1973 | Comstock76, 1976 | TB Prevention Trial, 1980"
+04-0-leave_one_out_forest-default-effect.svg,14,7,"TB Prevention Trial, 1980 | Frimodt-Moller, 1973 | Comstock, 1974 | Stein & Aaronson, 1953 | Rosenthal, 1960 | Ferguson & Simes, 1949 | Hart & Sutherland, 1977"
+05-0-leave_one_out_forest-default-i2.svg,14,7,"TB Prevention Trial, 1980 | Stein & Aaronson, 1953 | Rosenthal61, 1961 | Vandiviere, 1973 | Comstock & Webster, 1969 | Rosenthal, 1960 | Aaronson, 1948"
+06-0-leave_one_out_forest-revman-table.svg,14,0,
+07-0-leave_one_out_forest-revman-year.svg,14,0,
+08-0-leave_one_out_forest-revman-effect.svg,14,0,
+09-0-leave_one_out_forest-revman-i2.svg,14,0,
+10-0-leave_one_out_forest-bmj-table.svg,14,0,
+11-0-leave_one_out_forest-bmj-year.svg,14,0,
+12-0-leave_one_out_forest-bmj-effect.svg,14,0,
+13-0-leave_one_out_forest-bmj-i2.svg,14,0,

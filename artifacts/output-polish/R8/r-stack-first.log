@@ -1,0 +1,112 @@
+[20:00:47] Skipping dependency sync for warm local R verification
+[20:00:47] Delegating Full R Stack Evidence
+[20:00:47] $ C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\Program Files\R\R-4.6.2\bin\Rscript.exe --r-library-cache-root C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\r-library-cache --skip-desktop
+[20:00:47] $ C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe scripts/build_qt6.py generate --build-root C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\build\qt6-verification
+{"form": "C:\\Users\\Ali-Salman\\.t3\\worktrees\\rc-metastudio\\t3-a0740df2-c0c05d8270517046\\build\\qt6-verification\\generated\\rc_metastudio\\forms\\ui_about_legal.py", "resource": "C:\\Users\\Ali-Salman\\.t3\\worktrees\\rc-metastudio\\t3-a0740df2-c0c05d8270517046\\build\\qt6-verification\\resources\\icons.rcc"}
+[20:01:00] $ C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
+All checks passed!
+Typing evidence: C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\verification\typing\20261119T200100-51ef9257
+[RCMetaR-r-stack] C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe -c import json; from importlib.metadata import version; print(json.dumps({name: version(name) for name in ['rpy2', 'rpy2-rinterface', 'rpy2-robjects']}))
+[RCMetaR-r-stack] Locked rpy2 identities verified: {"rpy2": "3.6.9", "rpy2-rinterface": "3.6.7", "rpy2-robjects": "3.6.6"}
+[RCMetaR-r-stack] C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046
+validated RCMetaR R dependency and drift manifests
+[RCMetaR-r-stack] C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe scripts\validate_rcmetar_r_manifests.py --root C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046 --report-installed-versions --rscript C:\Program Files\R\R-4.6.2\bin\Rscript.exe
+[RCMetaR-r-stack] Manifest dependency versions are installed: {"packages": {"R": "4.6.2", "boot": "1.3-32", "grDevices": "4.6.2", "graphics": "4.6.2", "gsDesign": "3.11.0", "mada": "0.5.12", "meta": "8.5-0", "metafor": "5.2-1", "methods": "4.6.2", "png": "0.1-9", "roxygen2": "8.1.1", "rsvg": "2.7.0", "stats": "4.6.2", "svglite": "2.2.2", "testthat": "3.3.2", "tiff": "0.1-12", "utils": "4.6.2"}, "r_version": "4.6.2"}
+[RCMetaR-r-stack] C:\Program Files\R\R-4.6.2\bin\Rscript.exe --vanilla C:\Users\ALI-SA~1\AppData\Local\Temp\rcms-closure-m140gojh\closure.R CompQuadForm Formula Hmisc MatrixModels RColorBrewer Rcpp RcppEigen S7 SparseM acepack ape cli colorspace data.table ellipse farver ggplot2 glue gridExtra gsDesign gtable htmlTable htmltools htmlwidgets irlba isoband knitr labeling latticeExtra lifecycle mada magrittr meta metabook metafor mgcv mice minqa mixmeta mvmeta mvtnorm nloptr png quantreg rlang rmarkdown roxygen2 rsvg scales stringi stringr svglite testthat tiff vctrs viridis viridisLite withr xml2
+Registered S3 method overwritten by 'ape':
+  method    from   
+  print.ace acepack
+Target-local dependency closure verified: 174 packages
+[RCMetaR-r-stack] Using cached R dependency library at C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\r-library-cache\R-4.6.2-x86_64-win.binary-rdeps-87f8bc695062\library
+[RCMetaR-r-stack] Using isolated R verification library at C:\Users\ALI-SA~1\AppData\Local\Temp\RCMetaR-r-stack-4u0xv03z\library
+[RCMetaR-r-stack] C:\Program Files\R\R-4.6.2\bin\x64\R.exe CMD build --no-build-vignettes C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\r\RCMetaR
+* checking for file 'C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\r\RCMetaR/DESCRIPTION' ... OK
+* preparing 'RCMetaR':
+* checking DESCRIPTION meta-information ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory 'RCMetaR/tests/testthat/_snaps'
+* building 'RCMetaR_0.6.0.tar.gz'
+
+[RCMetaR-r-stack] C:\Program Files\R\R-4.6.2\bin\x64\R.exe CMD check --no-manual --no-build-vignettes --library=C:\Users\ALI-SA~1\AppData\Local\Temp\RCMetaR-r-stack-4u0xv03z\library C:\Users\ALI-SA~1\AppData\Local\Temp\RCMetaR-r-stack-4u0xv03z\RCMetaR_0.6.0.tar.gz
+* using log directory 'C:/Users/ALI-SA~1/AppData/Local/Temp/RCMetaR-r-stack-4u0xv03z/RCMetaR.Rcheck'
+* using R version 4.6.2 (2026-10-29 ucrt)
+* using platform: x86_64-w64-mingw32
+* R was compiled by
+    gcc.exe (GCC) 14.3.0
+    GNU Fortran (GCC) 14.3.0
+* running under: Windows 11 x64 (build 26300)
+* using session charset: UTF-8
+* current time: 2026-11-19 15:01:33 UTC
+* using options '--no-manual --no-build-vignettes'
+* checking for file 'RCMetaR/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'RCMetaR' version '0.6.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking whether package 'RCMetaR' can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking for unstated dependencies in 'tests' ... OK
+* checking tests ...
+  Running 'testthat.R'
+ ERROR
+Running the tests in 'tests/testthat.R' failed.
+Last 13 lines of output:
+  Saving _problems/test-trial-sequential-analysis-185.R
+  [ FAIL 1 | WARN 15 | SKIP 0 | PASS 2613 ]
+  
+  ══ Failed tests ════════════════════════════════════════════════════════════════
+  ── Failure ('test-trial-sequential-analysis.R:185:3'): trial sequential artwork regenerates from its saved bundle ──
+  Expected `any(grepl("<text", readLines(output), fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  
+  [ FAIL 1 | WARN 15 | SKIP 0 | PASS 2613 ]
+  Error:
+  ! Test failures.
+  Execution halted
+* DONE
+
+Status: 1 ERROR
+See
+  'C:/Users/ALI-SA~1/AppData/Local/Temp/RCMetaR-r-stack-4u0xv03z/RCMetaR.Rcheck/00check.log'
+for details.
+
+error: command failed with exit code 1: C:\Program Files\R\R-4.6.2\bin\x64\R.exe CMD check --no-manual --no-build-vignettes --library=C:\Users\ALI-SA~1\AppData\Local\Temp\RCMetaR-r-stack-4u0xv03z\library C:\Users\ALI-SA~1\AppData\Local\Temp\RCMetaR-r-stack-4u0xv03z\RCMetaR_0.6.0.tar.gz
+verification failed: command failed with exit code 1: C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\.venv\Scripts\python.exe scripts/verify_rcmetar_r_stack.py --rscript C:\Program Files\R\R-4.6.2\bin\Rscript.exe --r-library-cache-root C:\Users\Ali-Salman\.t3\worktrees\rc-metastudio\t3-a0740df2-c0c05d8270517046\artifacts\r-library-cache --skip-desktop

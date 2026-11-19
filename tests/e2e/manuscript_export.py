@@ -357,7 +357,13 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 for actual, expected_table in zip(doc.tables, expected_tables):
                     # Nonbreaking spaces keep each interval together in Word.
                     actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
-                    assert actual_text == (expected_table.headers, *expected_table.rows), expected_table.title
+                    from rc_metastudio.result_formatting import report_cell
+                    expected_rows = tuple(tuple(report_cell(value).replace('\u00a0', ' ')
+                                                if numeric_export_cell(value) else value for value in row)
+                                          for row in expected_table.rows)
+                    assert actual_text == (expected_table.headers, *expected_rows), (
+                        expected_table.title, actual_text, expected_rows
+                    )
                 from docx.enum.text import WD_ALIGN_PARAGRAPH
                 for exported_table in doc.tables:
                     properties = exported_table.rows[0]._tr.trPr

@@ -1,0 +1,36 @@
+{
+  "r": "R version 4.6.2 (2026-10-29 ucrt)",
+  "r_libraries": [
+    "C:/Users/Ali-Salman/.t3/worktrees/rc-metastudio/t3-a0740df2-c0c05d8270517046/build/output-polish/r-library",
+    "C:/Program Files/R/R-4.6.2/library"
+  ],
+  "r_home": "C:/PROGRA~1/R/R-46~1.2",
+  "authorities": {
+    "mada": "0.5.12",
+    "metafor": "5.2-1",
+    "gsDesign": "3.11.0",
+    "meta": "8.5-0",
+    "svglite": "2.2.2",
+    "rsvg": "2.7.0",
+    "tiff": "0.1-12"
+  },
+  "rcmetar": "0.6.0",
+  "installed_revman_footer": "{\n    axis.footer <- rcmetar.revman.axis.footer.layout(bundle, \n        layout)\n    if (nzchar(bundle$style_blocks$axis_label)) {\n        graphics::text(axis.footer$axis.x, axis.footer$axis.label.y, \n            bundle$style_blocks$axis_label, cex = cex)\n    }\n    spacing <- graphics::strheight(\"M\", cex = cex) * 2.2\n    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, \n        axis.footer$axis.label.y - spacing, cex)\n    invisible(NULL)\n}",
+  "rpy2": "3.6.9",
+  "qt": "6.12.0",
+  "pyqt": "6.12.0",
+  "platform_plugin": "windows",
+  "font": {
+    "family": "Segoe UI",
+    "style": "Regular",
+    "family_count": 360,
+    "required_glyphs": "Aa012\u03c4\u2026",
+    "glyph_families": [
+      "Segoe UI"
+    ],
+    "directory": null
+  },
+  "application": "RCMetaStudio",
+  "qt_build_root": "C:\\Users\\Ali-Salman\\.t3\\worktrees\\rc-metastudio\\t3-a0740df2-c0c05d8270517046\\build\\qt6-verification",
+  "application_base_path": "C:/Users/Ali-Salman/.t3/worktrees/rc-metastudio/t3-a0740df2-c0c05d8270517046/build/verification/rcms/desktop-m9p97k40"
+}

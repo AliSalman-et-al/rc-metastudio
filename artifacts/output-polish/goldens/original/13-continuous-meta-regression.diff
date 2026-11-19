@@ -1,0 +1,40 @@
+--- frozen
++++ proposed
+@@ -1,6 +1,6 @@
+ Meta-Regression
+ 
+-Metric: Standardized Mean Difference
++Metric: Standardized mean difference
+ 
+ Model overview
+  Statistic                    Value               
+@@ -16,22 +16,22 @@
+  golden_year  Continuous; observed range 1990.00 to 1995.00                                                                                         
+ 
+ Coefficient estimates
+- Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  Std. error       z  p-value
+- Intercept      -69.90               -330.97                191.16     133.199  -0.525    0.600
+- golden_year      0.04                 -0.10                  0.17       0.067   0.527    0.598
++ Covariate    Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  z       p-value
++ Intercept    −69.90    −330.97                             191.16                  133.199  −0.525    0.600
++ golden_year  0.04      −0.10                                 0.17                    0.067  0.527     0.598
+ 
+ Residual heterogeneity
+  Statistic                     Value
+- Residual heterogeneity (t²)    0.05
+- SE of t²                      0.055
+- Residual heterogeneity (t)     0.22
++ Residual heterogeneity (τ²)    0.05
++ SE of τ²                      0.055
++ Residual heterogeneity (τ)     0.22
+  Residual I²                   64.4%
+  Residual H²                    2.81
+  Heterogeneity explained (R²)   0.0%
+ 
+ Model tests
+  Test                         Statistic  df  p-value
+- Overall moderators (Qₘ)       0.28   1    0.598
++ Overall moderators (Qₘ)           0.28   1    0.598
+  Residual heterogeneity (Qₑ)      11.22   4    0.024
+ 
+ Heterogeneity explained (R²) is the proportional reduction in estimated between-study heterogeneity relative to the corresponding model without moderators.

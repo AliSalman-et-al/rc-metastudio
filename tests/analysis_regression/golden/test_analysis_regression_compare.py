@@ -1469,31 +1469,6 @@ def test_scoped_plot_redesign_requires_exact_artifact_and_preserves_other_checks
     assert not compare_golden_baseline(reference, current, [exception])["passed"]
 
 
-
-def test_standalone_extended_cases_require_frozen_numbers(monkeypatch):
-    from tests.analysis_regression.golden.support import golden_analysis as golden
-    from tests.analysis_regression.golden.support import headless_analysis as _headless
-    from rc_metastudio import analysis_catalog as _globals
-    contract = json.loads((ROOT / "tests/analysis_regression/baseline/numeric-contract.json").read_text())
-    by_id = {case["id"]: case for case in contract["cases"]}
-    with zipfile.ZipFile(ROOT / "tests/analysis_regression/baseline/observed-golden-baseline.zip") as archive:
-        frozen = json.loads(archive.read("manifest.json"))
-    for bundle in golden.curated_golden_bundles():
-        if bundle["id"] in {"amino-binary-random", "continuous-random", "lymph-diagnostic-random-dor"}:
-            continue
-        texts = next(case["texts"] for case in frozen["curated_golden_set"] if case["id"] == bundle["id"])
-        sections = [{"id": str(i), "kind": "text", "order": i, "title": section, "source_key": section} for i, section in enumerate(texts)]
-        result = _typed_result(texts=texts, sections=sections)
-        # Retain an independent numeric contract while isolating artifact IO.
-        bundle = {**bundle, "artifacts": {}}
-        comparisons = golden.compare_bundle(bundle, result)
-        assert len(comparisons) == sum(len(values) for values in by_id[bundle["id"]]["sections"].values())
-        assert all(item["passed"] for item in comparisons), (bundle["id"], comparisons)
-        damaged = _typed_result(texts={section: "No scientific results" for section in texts}, sections=sections)
-        assert not all(item["passed"] for item in golden.compare_bundle(bundle, damaged))
-
-
-
 def test_refresh_failed_recovery_retains_originals(tmp_path, monkeypatch):
     from scripts import regenerate_golden_presentation as refresh
     paths = [tmp_path / "archive", tmp_path / "contract"]

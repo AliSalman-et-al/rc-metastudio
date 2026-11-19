@@ -1,0 +1,9 @@
+M	.github/workflows/candidate.yml
+M	.github/workflows/code-health.yml
+M	.github/workflows/package-target.yml
+M	docs/release.md
+M	scripts/build-macos-package.sh
+A	scripts/macos_build_cache.py
+M	scripts/verify.py
+A	tests/packaging/contract/test_macos_build_cache.py
+M	tests/python/fast/test_verification_contracts.py

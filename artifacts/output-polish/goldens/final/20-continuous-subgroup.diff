@@ -1,0 +1,26 @@
+--- frozen
++++ proposed
+@@ -9,16 +9,16 @@
+  Overall         6     0.358                 0.152                 0.565                    0.105  < 0.001    3.400
+ 
+ Heterogeneity
+- Subgroups            Q  df  p-value     I²     τ²
+- Subgroup early   1.939   2    0.379   0.0%  0.000
+- Subgroup late    8.209   2    0.016  75.6%  0.062
+- Overall         11.914   5    0.036  58.0%  0.037
++ Subgroups            Q  df  p-value       I²     τ²
++ Subgroup early   1.939   2    0.379   0.000%  0.000
++ Subgroup late    8.209   2    0.016  75.636%  0.062
++ Overall         11.914   5    0.036  58.032%  0.037
+ 
+ Prediction interval
+  Subgroups       Lower bound (95% PI)  Upper bound (95% PI)
+- Subgroup early                 0.055                 0.515
+- Subgroup late                 -0.194                 0.983
+- Overall                       -0.072                 0.789
++ Subgroup early  0.055                                0.515
++ Subgroup late   −0.194                               0.983
++ Overall         −0.072                               0.789
+ 
+ Test of subgroup differences
+  Test                      Statistic  df  p-value
