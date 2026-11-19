@@ -425,6 +425,8 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
     rows <- plan$rows$study_rows
     groups <- if (identical(bundle$forest_variant, "subgroup")) {
         split(rows, bundle$study_groups)
+    } else if (isTRUE(bundle$has_overall)) {
+        list(rows[-1L])
     } else {
         list(rows)
     }
