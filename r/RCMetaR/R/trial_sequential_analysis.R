@@ -496,7 +496,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   path <- rcmetar.plot.scalar_path(s$fp_outpath)
   if (!is.null(path)) {
     s$fp_style <- s$fp_style %||% "default"
-    res <- list(summary=summary, looks=looks, curves=.tsa.plot.curves(bounds$path, s))
+    res <- list(summary=summary, looks=looks, boundary=bounds$path)
     plot.data <- rcmetar.tsa.plot.data(data, res, s)
     rcmetar.draw.tsa.plot(plot.data, path)
     result$plot.prefix <- save.data(data, res, s, plot.data, tools::file_path_sans_ext(path))

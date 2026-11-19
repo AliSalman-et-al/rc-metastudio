@@ -1140,8 +1140,9 @@ def prepare_plot_edit(
 
 
 @serialized_r_call
-def render_plot_bundle(prefix: str, regenerator: str, output: str) -> bool:
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output)
+def render_plot_bundle(prefix: str, regenerator: str, output: str,
+                       *dimensions: float) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions)
     return not _r_is_null(result)
 
 

@@ -12,6 +12,13 @@ from rc_metastudio.app_error_handler import safe_slot
 from rc_metastudio.plot_defaults import PLOT_STYLE_ACCENTS, PLOT_STYLE_LABELS
 
 
+def configure_tsa_x_axis(selector: QComboBox, saved_units: object, *, statistical: bool) -> None:
+    selector.setAccessibleName("X-axis")
+    selector.addItem("Statistical information" if statistical else "Participants", "participants")
+    selector.addItem("% of required information size", "percent")
+    selector.setCurrentIndex(max(0, selector.findData(saved_units)))
+
+
 def selected_plot_style(selector: QComboBox) -> str:
     return str(selector.currentData() or "default")
 

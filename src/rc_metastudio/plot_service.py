@@ -86,7 +86,11 @@ class PlotService:
     @serialized_r_call
     def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
                      output_path: str, width: float, height: float, dpi: int) -> None:
-        """Scale vector artwork without reflowing labels or changing analysis state."""
+        """Render at publication dimensions without changing analysis state."""
+        if regenerator == "trial_sequential":
+            if not r_bridge.render_plot_bundle(params_path, regenerator, output_path, width, height, dpi):
+                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+            return
         from xml.etree import ElementTree as ET
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'

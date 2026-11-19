@@ -28,7 +28,8 @@ from rc_metastudio import adaptive_window, analysis_identity, app_error_handler,
 from rc_metastudio.plot_defaults import BUBBLE_STYLE_ACCENTS, FOREST_ARM_LABELS, PLOT_STYLE_ACCENTS
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_style_controls import (
-    configure_plot_style, load_plot_style, selected_plot_style,
+    configure_plot_style,
+    configure_tsa_x_axis, load_plot_style, selected_plot_style,
 )
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -68,6 +69,11 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._option_groups = plot_capabilities.option_groups(plot_type)
         self._setup_study_order()
         self._setup_axis_scale()
+        self.tsa_x_axis = QComboBox(self.axis_group)
+        if "tsa_axis" in self._option_groups:
+            self._setup_tsa_x_axis()
+        else:
+            self.tsa_x_axis.hide()
         self.default_panel.setTitle("Forest options")
         self._setup_direction_labels()
         self.figure_caption = QLineEdit(self)
@@ -177,8 +183,22 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         row = self.style_layout.rowCount()
         self.style_layout.addWidget(axis_label, row, 0)
         self.style_layout.addWidget(self.axis_scale, row, 1)
-        axis_label.setVisible((ratio or proportion) and self.plot_type != "regression" and self.plot_type != "sroc")
+        axis_label.setVisible((ratio or proportion) and self.plot_type not in {"regression", "sroc", "trial_sequential"})
         self.axis_scale.setVisible(not axis_label.isHidden())
+
+    def _setup_tsa_x_axis(self):
+        configure_tsa_x_axis(
+            self.tsa_x_axis, self._scalar(self._params.get("tsa_x_axis", "participants")),
+            statistical=self._scalar(self._params.get("metric")) == "HR",
+        )
+        for field in (self.label_12, self.x_lbl_le, self.label_13, self.x_ticks_le,
+                      self.label_14, self.plot_lb_le, self.label_15, self.plot_ub_le):
+            field.hide()
+        label = QLabel("X-axis", self.axis_group)
+        label.setBuddy(self.tsa_x_axis)
+        row = self.gridLayout_4.rowCount()
+        self.gridLayout_4.addWidget(label, row, 0)
+        self.gridLayout_4.addWidget(self.tsa_x_axis, row, 1)
 
     def _configure_accessibility(self):
         """Name static controls and expose an inline commit error region."""
@@ -626,7 +646,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:
             params["fp_display_path"] = forest_display_path
-        if self.plot_type == "trial_sequential":
+        if "tsa_axis" in self._option_groups:
+            params["tsa_x_axis"] = self.tsa_x_axis.currentData()
             params["funnel.region.color"] = FUNNEL_STYLE_PRESETS[FunnelStyle(style)]["region_color"]
         if self.plot_type == "regression":
             params = {

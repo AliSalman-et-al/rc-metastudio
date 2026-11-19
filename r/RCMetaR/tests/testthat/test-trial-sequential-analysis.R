@@ -162,16 +162,18 @@ test_that("trial sequential artwork regenerates from its saved bundle", {
     favours=c("Favours Intervention", "Favours Control"), fp_outpath=path))
   expect_true(file.exists(path))
   expect_match(paste(readLines(path), collapse=" "),
-    "Required information size: 500 participants (entered)", fixed=TRUE)
+    "Required information size 500 participants (entered)", fixed=TRUE)
   expect_match(paste(readLines(path), collapse=" "), "Favours Intervention")
   params <- rcmetar.plot.bundle.params(result$plot.prefix)
   expect_identical(params$fp_style, "default")
   output <- file.path(directory, "regenerated.svg")
   expect_equal(rcmetar.render.plot.bundle(result$plot.prefix, "trial_sequential", output), output)
   expect_true(file.exists(output))
+  expect_false(any(grepl("<text", readLines(output), fixed=TRUE)))
+  expect_true(any(grepl("Cumulative number of participants", readLines(path), fixed=TRUE)))
   staging <- withr::local_tempdir()
   staged <- rcmetar.prepare.plot.bundle.edit(result$plot.prefix, "trial_sequential",
-    list(fp_style="revman", fp_xlabel_literal=FALSE), output, staging)
+    list(fp_style="revman", tsa_x_axis="percent"), output, staging)
   expect_true(any(grepl("Information (% of required information size)",
     readLines(staged[[output]]), fixed=TRUE)))
 })

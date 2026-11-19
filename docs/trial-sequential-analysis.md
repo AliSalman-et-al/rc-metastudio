@@ -64,46 +64,39 @@ The CSV values export retains the exact numbers behind the displayed limits.
 
 ## Plot design
 
-Use the shared standalone figure title for the outcome and comparison. Center
-the required and accrued information above the panel in the SROC caption
-treatment. Label participant counts as such, show continuous information for
-HR, include the accrued percentage and append `(entered)` to a manually set RIS.
+The plot uses the same title and device proportions as the bubble plot. Above
+the panel, it shows the required and accrued information and, when applicable,
+the first crossing or that RIS was reached without crossing.
 
-Use the bubble plot's device sizing, axis layout and unboxed right-side legend.
-Use open L-shaped axes, horizontal tick labels and no grid. Use regular weight
-for information-axis ticks. Use 25 percentage-point steps when the axis maximum
-is at most 200% and 50 percentage-point steps throughout otherwise. Mark the cumulative
-Z axis every two units. Set the favours labels horizontally at the upper and
-lower left inside the panel in regular `#595959` at tick-label size. Wrap long
-labels to two lines and draw each on a padded panel-background rectangle.
-Put `RIS` above its 100% line.
+The x-axis shows cumulative participants or, for HR, cumulative statistical
+information. Choose **% of required information size** in **Edit plot → Axes**
+to display percentages. The choice is saved with the plot and regenerates it.
+Both scales show at most six tick labels and mark required information with
+a vertical RIS line. If accrual exceeds 250% of RIS, the first 150% uses
+80% of the panel width and the remainder uses the compressed section marked //.
 
-Draw the funnel-style tint and dotted accent border for the futility wedge
-first (`lty=3`, `lwd=1`). Follow with conventional lines (`#A6A6A6`, dashed,
-`lwd=1`) and the bubble's dotted zero line. Draw the favours labels and their
-rectangles before the charcoal monitoring boundaries (`#333333`, `lwd=2`, solid
-to 100% and dotted during overrun). Draw the RIS
-line at 100% (`#4A4A4A`, `lty="84"`, `lwd=1.1`). End the wedge there.
+The cumulative Z-curve begins at zero, breaks at non-estimable looks and uses
+the style accent. Bubble area is proportional to the information each trial
+added. A charcoal ring identifies the first crossing. A triangle at the panel
+edge represents a Z-score beyond ±10. The optional penalised curve is dashed
+and has no bubbles. Direction labels and outward arrows sit in the left margin.
 
-Use the bubble style accent and translucent markers for the cumulative curve
-(`lwd=2`).
-Scale marker area by added information within the bubble plot's size limits.
-Start the curve at zero and break it at non-estimable looks. Draw the optional
-penalty curve in dashed accent (`lwd=1.4`) with small open markers. Above the
-curves and bubbles, draw a charcoal ring just outside the first crossing marker
-(`lwd=1.6`), then solid accent triangles at clipped Z values. List only visible
-marks in the legend. Use the standard bubble legend text size for every plot
-and wrap labels that need extra room. Use a tinted
-futility swatch with the wedge's dotted accent outline. Use the curves' line
-types at a legend segment length of 2.5 characters. Keep the same layout
-in Default, RevMan and BMJ, using the style typography and existing funnel
-region preset, including RevMan's grey.
+The monitoring boundary connects the exact look and RIS values with a
+monotone Hermite spline on the square-root information scale. It starts at
+the first look at or above 1% of RIS, with portions beyond the visible y-range
+omitted. The solid terminal value continues through overrun. Conventional
+references stop at RIS. The futility region uses the funnel tint and a solid,
+translucent accent outline. The underlying values and inference are unchanged.
+
+The legend follows the bubble plot and moves below the panel when a narrow
+export needs the space. Sized exports reflow the plot at the requested print
+dimensions. PDF embeds fonts, SVG outlines them and TIFF uses LZW compression.
 
 ## Differences from Copenhagen Trial Unit TSA
 
 RC MetaStudio uses every estimable early look. CTU's tested program can exclude
 looks below 1% from boundary spending while still showing their Z values.
-CTU's boundary curves stop at RIS. RC MetaStudio adds a dotted terminal reference
+CTU's boundary curves stop at RIS. RC MetaStudio adds a solid terminal reference
 while the cumulative curve continues past 100%. Both applications offer RR, OR,
 RD and MD. RC MetaStudio also supports Peto OR and reported HR, and leaves SMD and
 incidence rate ratios unavailable. Participant-based analyses use accrued
@@ -129,6 +122,7 @@ uv run python scripts/verify_rcms.py plot-workflow-trial-sequential --native
 uv run python scripts/verify_rcms.py tsa-rr-mh --native
 uv run python scripts/verify_rcms.py tsa-md --native
 uv run python scripts/verify_rcms.py tsa-hr --native
+uv run python scripts/verify_rcms.py tsa-peto --native
 uv run python scripts/verify_rcms.py tsa-smd --native
 ```
 

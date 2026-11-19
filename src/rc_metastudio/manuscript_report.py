@@ -743,6 +743,9 @@ class ManuscriptReport:
         for heading, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
                 parts.extend((heading, text))
+        for number, figure in enumerate(self.figures, 1):
+            if figure.paragraphs:
+                parts.extend((f'Figure {number}. {figure.title}', *figure.paragraphs))
         number = 0
         for section in self.sections:
             if section.source_key == "References":
@@ -764,6 +767,11 @@ class ManuscriptReport:
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
+        else:
+            for number, figure in enumerate(self.figures, 1):
+                if figure.paragraphs:
+                    parts.append(f'<p><b>Figure {number}. {escape(figure.title)}</b><br>'
+                                 + '<br>'.join(map(escape, figure.paragraphs)) + '</p>')
         configuration = ''
         if supplementary and self.configuration:
             configuration = '<a name="model-configuration"></a><h2>Model configuration</h2><p>' + escape(self.configuration).replace('\n', '<br>') + '</p>'
@@ -886,7 +894,10 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
                               "\n".join(references), "References", paragraphs=tuple(references))
     return ManuscriptReport(
         TSA_TITLE, " ".join(method), tuple(section for section in run.result.sections if section.tables),
-        (citations,), tuple(section for section in run.result.sections if section.kind == "image"),
+        (citations,), tuple(
+            replace(section, paragraphs=("Marker area is proportional to the information each trial added.",))
+            for section in run.result.sections if section.kind == "image"
+        ),
         tuple(results), comparison=context.replace("\n", " · "),
     )
 
@@ -1004,6 +1015,9 @@ def _docx_figures(document, figures):
             document.add_page_break()
             document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
             document.add_paragraph(f'Figure {number}. {figure.title}' + (' (continued)' if top else ''))
+            if not top:
+                for note in figure.paragraphs:
+                    document.add_paragraph(note)
 
 
 
@@ -1068,7 +1082,8 @@ def write_pdf(report, path):
         h = w / ratio
         caption = _print_document()
         caption.setTextWidth(width)
-        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>')
+        note = ''.join('<br>' + escape(line) for line in figure.paragraphs)
+        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>' + note)
         # Lay out captions in the same 96-DPI coordinates as table captions.
         available = page.height() - (caption.size().height() + 12) * scale
         import math
@@ -1092,7 +1107,8 @@ def write_pdf(report, path):
             painter.save()
             painter.scale(scale, scale)
             caption_y = min(h - part * available, available) / scale + 12
-            caption.setHtml(f'<b>Figure {number}. {escape(title)}' + (' (continued)' if part else '') + '</b>')
+            caption.setHtml(f'<b>Figure {number}. {escape(title)}'
+                            + (' (continued)</b>' if part else '</b>' + note))
             painter.translate(0, caption_y)
             caption.drawContents(painter)
             painter.restore()

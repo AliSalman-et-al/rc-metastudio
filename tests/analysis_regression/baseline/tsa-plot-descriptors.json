@@ -1,27 +1,13 @@
 {
-  "accents": {
-    "bmj": "#6B58A6",
-    "default": "#2F5597",
-    "revman": "#111111"
-  },
+  "schema_version": 5,
   "identity": "Trial sequential plot",
   "kind": "trial_sequential",
-  "favours_color": "#595959",
-  "legend_font_size": "9.79px",
-  "legend_min_dash_periods": 1.2,
-  "information_ticks": {
-    "bcg": [0, 50, 100, 150, 200, 250, 300],
-    "through_200_percent": [0, 25, 50, 75, 100]
-  },
-  "labels": [
-    "Cumulative Z-curve",
-    "Monitoring boundary",
-    "Futility region",
-    "Conventional boundary",
-    "Required information size",
-    "Cumulative Z-score",
-    "Information (% of required information size)"
-  ],
   "regeneration": "trial_sequential",
-  "schema_version": 4
+  "accents": {"default": "#2F5597", "revman": "#111111", "bmj": "#6B58A6"},
+  "axis_titles": {
+    "participants": "Cumulative number of participants",
+    "hr": "Cumulative statistical information",
+    "percent": "Information (% of required information size)"
+  },
+  "labels": ["RIS", "Cumulative Z-score", "Cumulative Z-curve", "Monitoring boundary", "Conventional boundary"]
 }

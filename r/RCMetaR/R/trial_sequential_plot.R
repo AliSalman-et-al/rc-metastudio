@@ -1,225 +1,307 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-.tsa.plot.curves <- function(path, s) {
-    actual <- head(path$fraction, -1)
-    grid <- seq_len(200)/200
-    sides <- if (s$alternative == "two-sided") 2 else 1
-    boundary.at <- function(t) {
-        known <- match(t, path$fraction)
-        if (!is.na(known)) return(c(path$upper[known], path$wedge[known]))
-        timing <- c(actual[actual < t], t)
-        upper <- tail(.tsa.critical(timing, timing, s$alpha/sides, s$spending, sides == 2)$upper, 1)
-        wedge <- if (s$futility) {
-            beta <- tail(.tsa.critical(timing, timing, 1-s$power, "obf", TRUE)$upper, 1)
-            # Recover the design drift from the terminal wedge and beta boundary.
-            drift*sqrt(t) - beta
-        } else NA_real_
-        c(upper, wedge)
-    }
-    if (s$futility) {
-        beta.end <- tail(.tsa.critical(path$fraction, path$fraction, 1-s$power, "obf", TRUE)$upper, 1)
-        drift <- tail(path$upper, 1) + beta.end
-    }
-    bounds <- vapply(grid, boundary.at, numeric(2))
-    data.frame(x=100*grid, monitoring=bounds[1, ], futility=bounds[2, ])
-}
-
 rcmetar.tsa.plot.data <- function(om.data, res, params) {
-    if (is.null(res$curves)) {
+    if (is.null(res$boundary)) {
         actual <- with(res$looks, fraction[is.finite(z) & fraction < 1])
-        res$curves <- .tsa.plot.curves(.tsa.boundary.path(c(actual, 1), params), params)
+        res$boundary <- .tsa.boundary.path(c(actual, 1), res$summary)
     }
     list(analysis=res, params=params)
 }
 
-.tsa.plot.triangles <- function(x, z, limit, col, cex) {
-    outside <- which(abs(z) > limit)
-    graphics::points(x[outside], sign(z[outside])*limit, pch=ifelse(z[outside] > 0, 24, 25),
-                     bg=col, col=col, xpd=TRUE, cex=cex[outside])
+.tsa.plot.spline <- function(fraction, values, from) {
+    valid <- is.finite(values)
+    timing <- sqrt(fraction[valid])
+    if (length(timing) < 2L || from >= 1) return(list(fraction=1, z=tail(values, 1)))
+    # Include the knots so the rendered path passes through the reported values.
+    grid <- sort(unique(c(seq(sqrt(from), 1, length.out=200), timing[timing >= sqrt(from)])))
+    grid <- grid[grid >= timing[1]]
+    interpolate <- stats::splinefun(timing, values[valid], method="monoH.FC")
+    list(fraction=grid^2, z=interpolate(grid))
 }
 
-.tsa.favours.label <- function(label, available) {
-    if (graphics::strwidth(label) <= available) return(label)
-    cuts <- gregexpr(" ", label, fixed=TRUE)[[1]]
-    if (cuts[1] == -1L) cuts <- seq_len(nchar(label) - 1L)
-    start <- trimws(substring(label, 1L, cuts))
-    end <- trimws(substring(label, cuts + 1L))
-    i <- which.min(pmax(graphics::strwidth(start), graphics::strwidth(end)))
-    c(start[i], end[i])
+.tsa.plot.axis <- function(ris, accrued, percent) {
+    unit <- if (percent) 100 else ris
+    last <- accrued / ris
+    end <- 1.04 * max(1, last)
+    compressed <- last > 2.5
+    join <- 1.5
+    x <- if (compressed) function(fraction) {
+        pmin(fraction/join, 1)*.8 + pmax(fraction - join, 0)/(end - join)*.2
+    } else function(fraction) fraction/end
+    cutoff <- if (compressed) join else end
+    max.ticks <- if (compressed) 4 else 6
+    n <- max.ticks - 1L
+    repeat {
+        ticks <- pretty(c(0, cutoff*unit), n=n)/unit
+        ticks <- ticks[ticks >= 0 & ticks <= cutoff]
+        if (compressed) ticks <- c(ticks[ticks < join], join, last)
+        if (length(ticks) <= 6 || n == 1L) break
+        n <- n - 1L
+    }
+    labels <- format(signif(ticks*unit, 8), trim=TRUE, scientific=FALSE, big.mark=",")
+    labels <- sub("(\\.[0-9]*?)0+$", "\\1", labels)
+    labels <- sub("\\.$", "", labels)
+    list(x=x, ticks=ticks, labels=if (percent) paste0(labels, "%") else labels,
+         join=if (compressed) join)
 }
 
-.tsa.draw.favours <- function(favours) {
-    usr <- graphics::par("usr")
-    padding <- graphics::xyinch(.3 * graphics::par("cin") * graphics::par("cex"))
-    line.height <- 1.5 * graphics::strheight("Mg")
-    left <- usr[1] + padding[1]
-    x <- left + padding[1]
-    # Wrap within the left third so the labels stay close to the axis.
-    available <- diff(usr[1:2])/3 - 3 * padding[1]
+.tsa.draw.favours <- function(favours, limit, offset, col, compact) {
+    panel <- graphics::par("pin")
+    available <- panel[2]/2 - if (compact) .08 else .26
+    x <- -graphics::xinch(offset)
     for (i in seq_along(favours)) {
-        lines <- .tsa.favours.label(favours[i], available)
-        height <- length(lines) * line.height + 2 * padding[2]
-        bottom <- if (i == 1L) usr[3] + padding[2] else usr[4] - padding[2] - height
-        graphics::rect(left, bottom, x + max(graphics::strwidth(lines)) + padding[1],
-                       bottom + height, col=graphics::par("bg"), border=NA)
-        y <- bottom + padding[2] + (rev(seq_along(lines)) - .5) * line.height
-        graphics::text(x, y, lines, adj=c(0, .5), font=1, col="#595959")
+        cex <- .9
+        label <- favours[i]
+        width <- function(s) graphics::strwidth(s, units="inches", cex=cex)
+        lines <- label
+        if (width(label) > available) {
+            cuts <- gregexpr(" ", label, fixed=TRUE)[[1]]
+            if (cuts[1] > 0) {
+                first <- substring(label, 1, cuts - 1)
+                second <- substring(label, cuts + 1)
+                best <- which.min(pmax(width(first), width(second)))
+                lines <- c(first[best], second[best])
+            }
+            cex <- max(.75, .9 * min(1, available/max(width(lines))))
+            truncated <- width(lines) > available
+            lines[truncated] <- paste0(lines[truncated], "\u2026")
+            while (any(width(lines[truncated]) > available) && any(nchar(lines[truncated]) > 1L)) {
+                lines[truncated] <- paste0(trimws(substr(lines[truncated], 1, nchar(lines[truncated]) - 2)), "\u2026")
+                truncated <- width(lines) > available
+            }
+        }
+        direction <- if (i == 1L) -1 else 1
+        center <- direction * limit/2
+        left <- x + graphics::xinch(.055 * (seq_along(lines)*2 - length(lines) - 1))
+        graphics::text(left, center, lines, srt=90, cex=cex, col=col, xpd=NA)
+        arrow.x <- x - graphics::xinch(if (compact) .13 else 0)
+        start <- center + direction*graphics::yinch(if (compact) -.06 else max(width(lines))/2 + .025)
+        graphics::arrows(arrow.x, start, arrow.x, start + direction*graphics::yinch(.105),
+                         length=.06, lwd=1, col=col, xpd=NA)
     }
 }
 
-rcmetar.draw.tsa.plot <- function(plot.data, path) {
+rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=600, export=FALSE) {
     params <- plot.data$params
     res <- plot.data$analysis
     looks <- res$looks
     design <- res$summary
-    curves <- res$curves %||% rcmetar.tsa.plot.data(NULL, res, params)$analysis$curves
-
-    xlabel <- rcmetar.plot.axis.label(params, "fp") %||% "Information (% of required information size)"
+    boundary <- res$boundary %||% rcmetar.tsa.plot.data(NULL, res, params)$analysis$boundary
+    ris <- design$ris
+    last <- tail(looks$fraction, 1)
+    hr <- design$metric == "HR"
+    percent <- identical(params$tsa_x_axis, "percent")
+    xlabel <- if (percent) "Information (% of required information size)" else
+        if (hr) "Cumulative statistical information" else "Cumulative number of participants"
     ylabel <- "Cumulative Z-score"
     bundle <- list(params=list(bp_show_legend=TRUE, bp_accent_color=params$fp_accent_color,
-                                bp_point_size_multiplier=rcmetar.point.size.multiplier(params)),
+                               bp_point_size_multiplier=rcmetar.point.size.multiplier(params)),
                    bp_style=rcmetar.bubble.style(params), slab=looks$study, xlabel=xlabel, ylabel=ylabel)
-    style <- rcmetar.bubble.style.args(bundle, revman.accent=rcmetar.bubble.accent.color(bundle))
+    style <- rcmetar.bubble.style.args(bundle)
     size <- rcmetar.bubble.measure.device(bundle)
+    if (!is.null(width)) {
+        size$width <- width
+        size$height <- height %||% (width * 9/16)
+        size$cex <- max(.70, min(size$cex, width/7))
+        if (width < 7) size$caption.cex <- if (width <= 89/25.4 + .01) .55 else size$cex
+        size$caption.in.height <- TRUE
+    }
+    size$dpi <- dpi
+    compact <- size$width < 7
     accent <- style$col
+    revman <- bundle$bp_style == "revman"
     typography <- rcmetar.forest.plot.font(list(fp_style=bundle$bp_style))
-    region <- .small.study.funnel.settings(params)$region.color
+    region <- if (revman) "#EEEEEE" else .small.study.funnel.settings(params)$region.color
+    border <- grDevices::adjustcolor(accent, alpha.f=if (revman) .4 else .6)
     charcoal <- "#333333"
     conventional.col <- "#A6A6A6"
-    conventional.lty <- "dashed"
-    ris.col <- "#4A4A4A"
-    ris.lty <- "84"
-    legend.segment <- 2.5
-    # Use the standard bubble panel size even when study count scales the panel text.
-    legend.cex <- 1.05 * rcmetar.bubble.legend.cex(1.05) / size$cex
+    text.col <- "#4A4A4A"
 
-    x <- 100*looks$fraction
-    xlim <- c(0, max(110, 1.05*tail(x, 1)))
-    for (i in seq_along(xlim)) {
-        edit <- params[[c("fp_plot_lb", "fp_plot_ub")[i]]]
-        if (!rcmetar.is.plot.default.text(edit)) xlim[i] <- as.numeric(edit)
-    }
-    ticks <- if (rcmetar.is.plot.default.text(params$fp_xticks)) {
-        seq(0, max(0, xlim[2]), by=if (xlim[2] > 200) 50 else 25)
-    } else rcmetar.numeric.values(params$fp_xticks)
-    ticks <- ticks[ticks >= xlim[1] & ticks <= xlim[2]]
-    limit <- max(4, min(8, ceiling(max(abs(looks$z), na.rm=TRUE) + .5)))
-    yticks <- seq(-2*floor(limit/2), 2*floor(limit/2), by=2)
+    axis <- .tsa.plot.axis(ris, tail(looks$accrued, 1), percent)
+    x <- axis$x(looks$fraction)
+    ris.x <- axis$x(1)
+    first <- which(looks$fraction >= .01)[1]
+    from <- if (is.na(first)) 1 else min(looks$fraction[first], 1)
+    at.five <- which(looks$fraction >= .05 & is.finite(looks$z))[1]
+    boundary.five <- abs(c(looks$efficacy.upper[at.five], looks$efficacy.lower[at.five]))
+    limit <- min(10, 2*ceiling(max(4, abs(looks$z), boundary.five, na.rm=TRUE)/2))
+    step <- if (limit <= 6) 2 else 4
+    yticks <- seq(-step*floor(limit/step), step*floor(limit/step), by=step)
     conventional <- qnorm(.tsa.tail.alpha(design), lower.tail=FALSE)
     directions <- c(if (design$alternative != "upper") -1,
                     if (design$alternative != "lower") 1)
-    format.information <- function(value) {
-        if (design$metric == "HR") formatC(value, format="f", digits=1, big.mark=",") else
-            .tsa.format.accrued(value, design$metric)
-    }
-    ris <- format.information(design$ris)
-    required <- if (design$axis == "participants") paste0("Required information size: ", ris, " participants") else
-        paste0("Required information: ", ris)
-    if (design$ris.source == "manual") required <- paste0(required, " (entered)")
-    accrued <- format.information(tail(looks$accrued, 1))
-    caption <- sprintf("%s \u00b7 Accrued: %s (%.0f%%)", required, accrued, tail(x, 1))
+    monitor <- .tsa.plot.spline(boundary$fraction, boundary$upper, from)
+    monitor$z[monitor$z > limit] <- NA_real_
+    held <- tail(boundary$upper, 1)
+    wedge <- .tsa.plot.spline(boundary$fraction, boundary$wedge, min(boundary$fraction))
+    in.wedge <- which(is.finite(wedge$z) & wedge$z >= 0)
+    show.wedge <- length(in.wedge) > 1L
+    show.monitor <- sum(is.finite(monitor$z)) > 1L || (last > 1 && held <= limit)
+    lil <- any(is.finite(looks$lil.z))
+    shown <- c(TRUE, show.monitor, show.wedge, conventional <= limit, lil)
+    labels <- c("Cumulative Z-curve", "Monitoring boundary", "Futility region",
+                "Conventional boundary", "Penalised Z-curve")[shown]
+
+    format.information <- function(value) formatC(round(value), format="f", digits=0, big.mark=",")
+    required <- paste0(if (hr) "Required information " else "Required information size ",
+                       format.information(ris), if (!hr) " participants",
+                       if (design$ris.source == "manual") " (entered)")
+    caption <- sprintf("%s \u00b7 Accrued %s (%.0f%%)", required,
+                       format.information(tail(looks$accrued, 1)), 100*last)
+    crossing <- design$crossing.look
+    outcome <- if (!is.na(crossing)) {
+        sprintf("%s boundary crossed at %.0f%% (%s)",
+                if (design$conclusion == "crossed-futility") "Futility" else "Monitoring",
+                100*looks$fraction[crossing], looks$study[crossing])
+    } else if (design$conclusion == "ris-reached") "Required information size reached without crossing"
     favours <- params$favours %||% paste("Favours", rcmetar.default.arm.labels())
+    title <- params$plot_caption
+    if (length(title) && !is.na(title)) substr(title, 1, 1) <- toupper(substr(title, 1, 1))
 
-    last <- tail(x, 1)
-    ris.visible <- xlim[1] <= 100 && xlim[2] >= 100
-    monitor <- tail(curves$monitoring, 1)
-    overrun <- last > 100
-    wedge <- which(curves$futility >= 0)
-    wedge.visible <- length(wedge) > 1 && xlim[1] < 100 && xlim[2] > curves$x[wedge[1]]
-    monitoring.visible <- monitor <= limit &&
-        ((xlim[1] < 100 && any(curves$x <= xlim[2] & curves$monitoring <= limit)) ||
-         (overrun && xlim[1] < last && xlim[2] > 100))
-    cumulative.visible <- xlim[2] >= 0 && xlim[1] <= last
-    lil <- cumulative.visible && any(is.finite(looks$lil.z))
-    shown <- c(cumulative.visible, monitoring.visible, wedge.visible, conventional <= limit, ris.visible, lil)
-    labels <- c("Cumulative Z-curve\n(markers sized by\ninformation added)", "Monitoring boundary",
-                "Futility region", "Conventional boundary", "Required information size",
-                "Penalised Z-curve")[shown]
-    added <- diff(c(0, looks$accrued))
-    markers <- pmax(style$plim[1], style$plim[2] * sqrt(added/max(added[is.finite(looks$z)])))
-    lil.markers <- rep(style$plim[1], length(x))
-    in.range <- x >= xlim[1] & x <= xlim[2]
-
-    rcmetar.render.plot_file(path, size, function() {
-        rcmetar.bubble.panel(size, TRUE, top=3.2)
+    draw <- function() {
+        rcmetar.bubble.panel(size, TRUE)
         graphics::par(family=typography$family, font.axis=typography$axis, xaxs="i", yaxs="i")
-        tick.width <- max(graphics::strwidth(yticks, units="inches", font=typography$axis))
-        label.line <- (tick.width + 0.40) / graphics::par("csi")
-        margins <- graphics::par("mai")
-        if (length(labels)) {
-            legend.width <- max(graphics::strwidth(paste0("MMMMMM", labels), units="inches",
-                                                   cex=legend.cex))
-            margins[4] <- max(margins[4], legend.width)
-        }
-        graphics::par(mai=margins)
-        graphics::plot(NA_real_, xlim=xlim, ylim=c(-limit, limit), xaxt="n", yaxt="n",
-                       ylab="", xlab=xlabel, bty=style$bty)
-        graphics::axis(1, at=ticks, labels=paste0(ticks, "%"), las=style$las, font=1)
-        graphics::axis(2, at=yticks, las=style$las)
-        graphics::mtext(ylabel, side=2, line=label.line)
-        rcmetar.draw.panel.caption(caption, line=1.6)
+        if (compact) graphics::par(mgp=c(1.65, .48, 0), mex=.75, tcl=-.23)
+        tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
+        tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis))
+        left <- tick.width + if (compact) .52 else .72
+        legend.cex <- max(6/(12*size$cex), rcmetar.bubble.legend.cex())
+        inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
+        legend.width <- max(inches(labels, legend.cex)) + .39
+        legend.below <- (size$width - left - legend.width)/size$width <
+            if (size$width <= 89/25.4 + .01) .60 else .72
+        right <- if (legend.below) max(.27, inches(tail(axis$labels, 1)) / 2) else legend.width
+        bottom <- if (legend.below) (if (compact) .57 else .96) else (if (compact) .34 else .92)
+        center <- (size$width + left - right)/2
+        caption.width <- 2*min(center, size$width - center) - .12
+        caption.cex <- max(.5, min(.8, .8 * caption.width /
+                                   max(inches(c(caption, outcome), .8/size$cex))))
+        conventional.cex <- max(.8, 6/(12*size$cex))
+        line <- if (compact) 1.19 else 1.15
+        top <- if (compact) {
+            if (length(outcome)) .38 else .26
+        } else graphics::par("csi") * (line + if (length(outcome)) 2.1 else 1.2)
+        graphics::par(mai=c(bottom, left, top, right))
+        graphics::plot(NA_real_, xlim=c(0, 1), ylim=c(-limit, limit), xaxt="n", yaxt="n",
+                       ylab="", xlab=xlabel, bty="n")
 
-        if (wedge.visible) {
-            graphics::polygon(c(curves$x[wedge], rev(curves$x[wedge])),
-                              c(curves$futility[wedge], -rev(curves$futility[wedge])),
-                              col=region, border=accent, lty=3, lwd=1)
+        at <- axis$x(axis$ticks)
+        keep <- rep(TRUE, length(at))
+        half <- graphics::xinch(inches(axis$labels)/2 + .026)
+        for (i in rev(seq_along(at)[-1])) {
+            if (!keep[i]) next
+            earlier <- seq_len(i - 1L)
+            keep[earlier[at[earlier] + half[earlier] > at[i] - half[i]]] <- FALSE
         }
-        graphics::abline(h=directions*conventional, col=conventional.col, lty=conventional.lty, lwd=1)
-        rcmetar.bubble.draw.refline(0)
-        .tsa.draw.favours(favours)
+        graphics::axis(1, at=at[keep], labels=axis$labels[keep], las=style$las, font=1, gap.axis=0)
+        graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0)
+        graphics::segments(0, -limit, 0, limit)
+        graphics::segments(0, -limit, 1, -limit)
+        title.inset <- if (compact) .14 else .24
+        graphics::mtext(ylabel, side=2, cex=size$cex,
+                        line=(left - title.inset)/(graphics::par("csi") * graphics::par("mex")))
+        .tsa.draw.favours(favours, limit, tick.width + if (compact) .23 else .32, text.col, compact)
+        rcmetar.draw.panel.caption(caption, cex=caption.cex, line=line + length(outcome))
+        if (length(outcome)) rcmetar.draw.panel.caption(outcome, cex=caption.cex, line=line)
+
+        if (show.wedge) {
+            xx <- axis$x(wedge$fraction[in.wedge])
+            zz <- wedge$z[in.wedge]
+            graphics::polygon(c(xx, rev(xx)), c(zz, -rev(zz)), col=region, border=border, lwd=.8)
+        }
+        graphics::abline(h=0, col="#9A9A9A", lty=3, lwd=1)
         for (direction in directions) {
-            graphics::lines(curves$x, direction*curves$monitoring, col=charcoal, lwd=2)
-            if (overrun) {
-                graphics::segments(100, direction*monitor, last, direction*monitor,
-                                   col=charcoal, lty=3, lwd=2)
+            y <- direction*conventional
+            if (abs(y) <= limit) {
+                graphics::segments(0, y, ris.x, y, col=conventional.col, lty=2, lwd=1)
+                graphics::text(1 + graphics::xinch(.035), y,
+                               paste0(if (direction > 0) "+" else "\u2212", sprintf("%.2f", conventional)),
+                               adj=c(0, .5), col="#808080", cex=conventional.cex, xpd=NA)
             }
         }
-        if (ris.visible) {
-            graphics::abline(v=100, col=ris.col, lty=ris.lty, lwd=1.1)
-            graphics::mtext("RIS", side=3, line=.25, at=100, cex=.8, col=ris.col)
+        graphics::abline(v=ris.x, col="#8C8C8C", lwd=1)
+        graphics::mtext("RIS", side=3, line=if (compact) .07 else .16, at=ris.x, cex=size$cex, col=text.col)
+        for (direction in directions) {
+            graphics::lines(axis$x(monitor$fraction), direction*monitor$z, col=charcoal, lwd=2)
+            if (last > 1 && held <= limit)
+                graphics::segments(ris.x, direction*held, axis$x(last), direction*held, col=charcoal, lwd=2)
         }
-
+        if (lil) graphics::lines(c(0, x), c(0, looks$lil.z), col=accent, lwd=1.2, lty=2)
         graphics::lines(c(0, x), c(0, looks$z), col=accent, lwd=2)
-        if (lil) {
-            graphics::lines(c(0, x), c(0, looks$lil.z), col=accent, lwd=1.4, lty=2)
-            inside <- which(in.range & abs(looks$lil.z) <= limit)
-            graphics::points(x[inside], looks$lil.z[inside], pch=1, col=accent,
-                             cex=lil.markers[inside], xpd=TRUE)
-        }
-        inside <- which(in.range & abs(looks$z) <= limit)
-        graphics::points(x[inside], looks$z[inside], pch=style$pch, bg=style$bg, col=accent,
-                         cex=markers[inside], xpd=TRUE)
-        crossing <- design$crossing.look
-        if (!is.na(crossing) && in.range[crossing]) {
-            graphics::points(x[crossing], pmax(-limit, pmin(limit, looks$z[crossing])),
-                             col=charcoal, pch=1, cex=markers[crossing] + .4, lwd=1.6, xpd=TRUE)
-        }
-        if (lil) {
-            .tsa.plot.triangles(x[in.range], looks$lil.z[in.range], limit, accent, lil.markers[in.range])
-        }
-        .tsa.plot.triangles(x[in.range], looks$z[in.range], limit, accent, markers[in.range])
 
-        if (length(labels)) {
-            legend <- rcmetar.bubble.legend(
-                labels,
-                col=c(accent, charcoal, accent, conventional.col, ris.col, accent)[shown],
-                lwd=c(2, 2, 1, 1, 1.1, 1.4)[shown],
-                lty=c("solid", "solid", NA, conventional.lty, ris.lty, "dashed")[shown],
-                pch=c(style$pch, NA, NA, NA, NA, 1)[shown],
-                pt.bg=c(style$bg, NA, NA, NA, NA, NA)[shown],
-                merge=TRUE, seg.len=legend.segment, cex=legend.cex)
-            if (wedge.visible) {
-                row <- match("Futility region", labels)
-                # Centre the swatch in the sample slot. Plotting symbols have solid outlines.
-                char.width <- graphics::par("cin")[1] * graphics::par("cex") * legend.cex
-                half <- graphics::xyinch(rep(.8 * char.width, 2))
-                x <- legend$text$x[row] - graphics::xinch((1 + legend.segment/2) * char.width)
-                y <- legend$text$y[row]
-                graphics::rect(x - half[1], y - half[2], x + half[1], y + half[2],
-                               col=region, border=accent, lty=3, lwd=1, xpd=NA)
-            }
+        added <- diff(c(0, looks$accrued))
+        finite <- is.finite(looks$z)
+        # The bubble renderer uses square-root scaling of point diameter.
+        # Bound the device symbol (one half-em) plus its outline in inches.
+        cap <- max(.01, (.06 * graphics::par("pin")[2] - .75/72) /
+                   (.5 * graphics::par("cin")[2] * size$cex))
+        markers <- min(style$plim[2], cap) * sqrt(added/max(added[finite]))
+        median.marker <- stats::median(markers[finite])
+        inside <- which(finite & abs(looks$z) <= limit)
+        graphics::points(x[inside], looks$z[inside], pch=style$pch, bg=style$bg,
+                         col=accent, cex=markers[inside], lwd=1, xpd=TRUE)
+        outside <- which(finite & abs(looks$z) > 10)
+        graphics::points(x[outside], sign(looks$z[outside])*10,
+                         pch=ifelse(looks$z[outside] > 0, 24, 25),
+                         bg=accent, col=accent, cex=median.marker, xpd=TRUE)
+        if (!is.na(crossing)) {
+            graphics::points(x[crossing], max(-limit, min(limit, looks$z[crossing])),
+                             col=charcoal, pch=1, cex=max(median.marker, 1.35*markers[crossing]),
+                             lwd=1.6, xpd=TRUE)
         }
-    }, caption=params$plot_caption)
+        if (length(axis$join)) {
+            center <- axis$x(axis$join)
+            gap <- graphics::xinch(inches("//")/2 + .014)
+            graphics::rect(center - gap, -limit - graphics::yinch(.018),
+                           center + gap, -limit + graphics::yinch(.018),
+                           col="white", border=NA, xpd=NA)
+            graphics::text(center, -limit, "//", col=text.col, cex=1, xpd=NA)
+        }
+
+        legend.args <- list(col=c(accent, charcoal, border, conventional.col, accent)[shown],
+                            lwd=c(2, 2, .8, 1, 1.2)[shown], lty=c(1, 1, NA, 2, 2)[shown],
+                            pch=c(style$pch, NA, 22, NA, NA)[shown],
+                            pt.bg=c(style$bg, NA, region, NA, NA)[shown],
+                            pt.lwd=c(1, 1, .8, 1, 1)[shown],
+                            merge=TRUE, seg.len=1.5, cex=legend.cex)
+        if (legend.below) {
+            # Pack at most two rows against the device width, centring each row.
+            widths <- inches(labels, legend.cex) + .23
+            split <- if (sum(widths) <= size$width - .12) length(labels) else
+                which.min(abs(cumsum(widths) - sum(widths)/2))
+            rows <- list(seq_len(split))
+            if (split < length(labels)) rows[[2]] <- seq.int(split + 1, length(labels))
+            for (i in seq_along(rows)) {
+                row <- rows[[i]]
+                args <- legend.args
+                for (key in c("col", "lwd", "lty", "pch", "pt.bg", "pt.lwd")) args[[key]] <- args[[key]][row]
+                center <- (size$width/2 - left)/graphics::par("pin")[1]
+                y <- -limit - graphics::yinch(bottom - .27 + (i - 1)*.12)
+                do.call(graphics::legend,
+                        c(list(x=center, y=y, legend=labels[row], xjust=.5, bty="n",
+                               xpd=NA, horiz=TRUE, text.col="#222222"), args))
+            }
+        } else do.call(rcmetar.bubble.legend, c(list(labels=labels), legend.args))
+    }
+
+    extension <- rcmetar.plot.file.extension(path)
+    if (export && extension %in% c("svg", "svgz")) {
+        source <- tempfile(fileext=".svg")
+        outlined <- if (extension == "svg") path else tempfile(fileext=".svg")
+        on.exit(unlink(c(source, if (extension == "svgz") outlined)), add=TRUE)
+        rcmetar.render.plot_file(source, size, draw, caption=title)
+        rsvg::rsvg_svg(source, outlined)
+        # Cairo writes unitless sizes. Restore the SVG's physical print size.
+        original <- xml2::read_xml(source)
+        document <- xml2::read_xml(outlined)
+        xml2::xml_set_attrs(document, xml2::xml_attrs(original)[c("width", "height")])
+        xml2::write_xml(document, outlined)
+        if (extension == "svgz") {
+            output <- gzfile(path, "wb")
+            tryCatch(writeBin(readBin(outlined, "raw", n=file.size(outlined)), output),
+                     finally=close(output))
+        }
+    } else rcmetar.render.plot_file(path, size, draw, caption=title)
     invisible(path)
 }

@@ -25,8 +25,8 @@ NAMESPACE = "{http://www.w3.org/2000/svg}"
 
 
 def input_project(work, case):
-    if case in ("bcg", "hr"):
-        return ROOT / "sample_projects" / ("BCG.rcms" if case == "bcg" else "Pignon2000-HR.rcms")
+    if case in ("bcg", "peto", "hr"):
+        return ROOT / "sample_projects" / ("BCG.rcms" if case != "hr" else "Pignon2000-HR.rcms")
     binary = case == "rr-mh"
     stress = case == "stress"
     metric = "RR" if binary else "MD" if stress else case.upper()
@@ -74,94 +74,45 @@ def compare_numeric(table, case, record, view):
     record("tsa-numeric-contract", view, case=case, expected=expected, actual=actual)
 
 
-def check_artwork(path, case, style, contract):
+def check_artwork(path, case, style, contract, *, percent=False):
     svg = ET.parse(path).getroot()
     text_nodes = list(svg.iter(NAMESPACE + "text"))
-    labels = {"".join(node.itertext()) for node in text_nodes}
-    assert set(contract["labels"]) <= labels, labels
+    labels = [node.text or "" for node in text_nodes]
+    assert set(contract["labels"]) <= set(labels), labels
     assert ("Penalised Z-curve" in labels) == (case == "bcg")
-    assert any(label.startswith("Required information") and "Accrued:" in label for label in labels)
+    xlabel = contract["axis_titles"]["percent" if percent else "hr" if case == "hr" else "participants"]
+    axis_index = labels.index(xlabel)
+    assert any(label.startswith("Required information") and " · Accrued " in label for label in labels)
     if case == "hr":
-        assert "Required information: 4,222.1 · Accrued: 1,775.3 (42%)" in labels
-    ticks = [node for node in text_nodes if (node.text or "").endswith("%")]
-    assert ticks and all("font-weight" not in node.attrib["style"] for node in ticks)
-    expected_ticks = contract["information_ticks"]["bcg" if case == "bcg" else "through_200_percent"]
-    assert [node.text for node in ticks] == [f"{value}%" for value in expected_ticks]
-    favours = [node for node in text_nodes if f'fill: {contract["favours_color"]};' in node.attrib["style"]]
-    assert sum((node.text or "").startswith("Favours ") for node in favours) == 2
-    assert all("transform" not in node.attrib and "font-weight" not in node.attrib["style"]
-               and node.attrib.get("text-anchor", "start") == "start" for node in favours)
-    if case == "stress":
-        lines = sorted(favours, key=lambda node: float(node.attrib["y"]))
-        assert len(lines) == 4
-        assert " ".join(node.text or "" for node in lines[:2]) == "Favours conventional outpatient management"
-        assert " ".join(node.text or "" for node in lines[2:]) == "Favours the new extended therapy programme"
-    assert "100%" in labels and "RIS" in labels
-    accent = contract["accents"][style]
-    assert accent.lower() in path.read_text(encoding="utf-8").lower()
-    _, _, width, height = map(float, svg.attrib["viewBox"].split())
-    assert 1.5 < width / height < 2.2
-    for node in text_nodes:
-        if "x" in node.attrib and "fill: #222222;" in node.attrib["style"]:
-            assert node.attrib["style"].startswith(f'font-size: {contract["legend_font_size"]};')
-            end = float(node.attrib["x"]) + float(node.attrib["textLength"].removesuffix("px"))
-            assert end <= width, (node.text, end, width)
+        assert "Required information 4,222 · Accrued 1,775 (42%)" in labels
+    if case == "peto":
+        assert any("(6301%)" in label for label in labels), labels
+    axis_end = next(i for i in range(axis_index + 1, len(labels)) if labels[i].startswith("−"))
+    ticks = labels[axis_index + 1:axis_end]
+    assert 1 <= len(ticks) <= 6, ticks
+    assert ("//" in labels) == (case in ("bcg", "peto"))
+    if case == "peto":
+        assert "−8" in labels and "8" in labels, labels
+    favours = [node for node in text_nodes if (node.text or "").startswith("Favours")]
+    assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
+    assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
                   if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
-    assert monitoring and len(monitoring[0].attrib["points"].split()) >= 100
+    assert monitoring and len(monitoring[0].attrib["points"].split()) >= 2
     panel, = [group for group in svg.iter(NAMESPACE + "g") if monitoring[0] in list(group)]
     clip = panel.attrib["clip-path"].removeprefix("url(#").removesuffix(")")
     bounds = svg.find(f".//{NAMESPACE}clipPath[@id='{clip}']/{NAMESPACE}rect")
     assert bounds is not None
-    left, top, wide, tall = (float(bounds.attrib[key]) for key in ("x", "y", "width", "height"))
-    panel_end = left + wide
-    for node in favours:
-        x, y = (float(node.attrib[key]) for key in ("x", "y"))
-        size = float(node.attrib["textLength"].removesuffix("px"))
-        assert left < x < left + .05 * wide and x + size < panel_end
-        assert top < y < top + tall and min(y - top, top + tall - y) < .20 * tall
-    lines = list(svg.iter(NAMESPACE + "line"))
-    legend_samples = []
-    for color in ("#A6A6A6", "#4A4A4A"):
-        plotted = [node for node in lines if node in list(panel) and color in node.attrib["style"]]
-        sample, = [node for node in lines if color in node.attrib["style"]
-                   and float(node.attrib["x1"]) > panel_end]
-        assert plotted and sample.attrib["style"] == plotted[0].attrib["style"]
-        dash = sample.attrib["style"].split("stroke-dasharray: ")[1].split(";")[0]
-        length = float(sample.attrib["x2"]) - float(sample.attrib["x1"])
-        assert length >= sum(map(float, dash.split(","))) * contract["legend_min_dash_periods"]
-        legend_samples.append(dash)
-    assert len(set(legend_samples)) == 2
-    wedge = [node for node in panel.findall(NAMESPACE + "polygon")
-             if accent in node.attrib["style"] and "stroke-dasharray" in node.attrib["style"]]
-    boxes = [node for node in panel.findall(NAMESPACE + "rect")
-             if "stroke: none" in node.attrib.get("style", "")]
-    assert len(boxes) == 2
-    paint_order = list(svg.iter())
-    assert max(map(paint_order.index, wedge)) < min(map(paint_order.index, boxes))
-    assert max(map(paint_order.index, favours)) < min(map(paint_order.index, monitoring))
-    if case == "stress":
-        bottom = max(boxes, key=lambda node: float(node.attrib["y"]))
-        x, y, w, h = (float(bottom.attrib[key]) for key in ("x", "y", "width", "height"))
-        bubbles = [node for node in svg.iter(NAMESPACE + "circle") if f"fill: {accent};" in node.attrib["style"]
-                   and x < float(node.attrib["cx"]) < x + w and y < float(node.attrib["cy"]) < y + h]
-        assert bubbles and all(paint_order.index(node) > paint_order.index(bottom) for node in bubbles)
-    swatch, = [node for node in svg.iter(NAMESPACE + "rect")
-               if wedge and node.attrib.get("style") == wedge[0].attrib["style"]]
-    assert float(swatch.attrib["x"]) > panel_end and float(swatch.attrib["width"]) >= 8
-    crossings = [node for node in svg.iter(NAMESPACE + "circle") if "#333333" in node.attrib.get("style", "")]
-    if case != "stress":
-        assert bool(crossings) == (case != "md")
-    if case == "bcg":
-        held = [node for node in svg.iter(NAMESPACE + "line")
-                if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" in node.attrib["style"]]
-        tip = monitoring[0].attrib["points"].split()[-1]
-        assert any(f"{node.attrib['x1']},{node.attrib['y1']}" == tip for node in held), tip
-        assert any(tip in node.attrib["points"].split() for node in wedge), tip
+    _, _, width, _ = map(float, svg.attrib["viewBox"].split())
+    assert float(bounds.attrib["width"]) / width >= .72, bounds.attrib
+    if case == "peto":
+        assert any("#333333" in node.attrib.get("style", "")
+                   for node in svg.iter(NAMESPACE + "circle")), "Missing crossing ring"
+    return ticks
 
 
 def run(app, window, work, record, case):
-    from advanced_workflows import click, export_formats, modal
+    from advanced_workflows import click, modal
 
     path = input_project(work, case)
     assert window.open(str(path), raise_on_error=True)
@@ -194,7 +145,7 @@ def run(app, window, work, record, case):
         return None
 
     assert action.isEnabled() and not action.icon().isNull()
-    if case == "bcg":
+    if case in ("bcg", "peto"):
         window.action_go.trigger()
         app.processEvents()
         setup, = [widget for widget in app.topLevelWidgets()
@@ -218,9 +169,10 @@ def run(app, window, work, record, case):
         methods = default_view.manuscript.methods
         assert "fixed-effect (Peto) model" in methods
         record("tsa-default-run", default_view, project_dirty=window.workspace.is_dirty, methods=methods)
-        default_view.close()
         assert not window.workspace.is_dirty, "Default TSA changed the project"
-        assert window.open(str(path), raise_on_error=True)
+        if case == "bcg":
+            default_view.close()
+            assert window.open(str(path), raise_on_error=True)
 
     comparison = {
         "bcg": "crossed the monitoring boundary favouring",
@@ -271,12 +223,13 @@ def run(app, window, work, record, case):
         dialog.run_button.click()
         assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
-    modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
+    if case != "peto":
+        modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
     view, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
     table, = view._report_tables
     if case == "stress":
         assert len(table.rows) == 36
-    else:
+    elif case != "peto":
         compare_numeric(table, case, record, view)
     if case == "rr-mh":
         assert len(table.rows) == 5 and all(row[1] != "Double zero" for row in table.rows)
@@ -291,6 +244,7 @@ def run(app, window, work, record, case):
         assert comparison in view.manuscript.results, view.manuscript.results
     assert "Accrued information is" in view.manuscript.results
     assert "Supplementary details" not in view.manuscript.html(supplementary=True)
+    assert "Marker area is proportional to the information each trial added." in view.manuscript.html()
 
     section, = [s for s in view.results.sections if s.kind == "image"]
     nav, = view.nav_tree.findItems(section.title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
@@ -310,6 +264,24 @@ def run(app, window, work, record, case):
     assert artifact.capability.plot_kind == descriptor["kind"]
     assert artifact.capability.regenerator == descriptor["regeneration"]
     assert artifact.capability.styleable and artifact.capability.editable
+    if case == "peto":
+        original_report = view.manuscript.plain_text()
+        for before, after in (("participants", "percent"), ("percent", "participants")):
+            def edit_axis(dialog):
+                assert dialog.tsa_x_axis.currentData() == before
+                dialog.tsa_x_axis.setCurrentIndex(dialog.tsa_x_axis.findData(after))
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+                assert dialog.result() == dialog.DialogCode.Accepted
+            modal(app, EditPlotDialog, edit_axis, view.edit_plot_action.trigger)
+            artifact, _ = view._selected_plot()
+            params = view.plot_service.load_params(artifact.params_path)
+            assert params and params["tsa_x_axis"] == after
+            axis_artwork = work / f"peto-axis-{after}.svg"
+            axis_artwork.write_bytes(Path(artifact.display_path()).read_bytes())
+            ticks = check_artwork(axis_artwork, case, "default", descriptor, percent=after == "percent")
+            assert view.manuscript.plain_text() == original_report
+            record("tsa-axis-choice", view, units=after, ticks=ticks, plots={artifact.title: str(axis_artwork)})
+
     for style in ("default", "revman", "bmj"):
         if style != "default":
             def edit(dialog):
@@ -321,9 +293,11 @@ def run(app, window, work, record, case):
         view.fit_width_action.trigger()
         wait(150)
         rendered = work / f"{case}-{style}.svg"
-        view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path,
-                                 output_path=str(rendered))
-        check_artwork(rendered, case, style, descriptor)
+        rendered.write_bytes(Path(artifact.display_path()).read_bytes())
+        ticks = check_artwork(rendered, case, style, descriptor)
+        for suffix in ("res", "params", "plotdata", "data"):
+            bundle = Path(f"{artifact.params_path}.{suffix}")
+            (work / f"{case}-{style}.{suffix}").write_bytes(bundle.read_bytes())
         _, item = view._selected_plot()
         assert item.sceneBoundingRect().width() >= .95 * view._plot_viewport_width()
         screen_plot = work / f"{case}-{style}-viewport.png"
@@ -340,12 +314,31 @@ def run(app, window, work, record, case):
         assert viewport.rect().adjusted(-1, -1, 1, 1).contains(bounds), (viewport.rect(), bounds)
         assert viewport.grab(bounds.intersected(viewport.rect())).save(str(screen_plot))
         record(f"tsa-{case}-{style}", view, style=style, dpi_scale=view.devicePixelRatio(),
-               input=str(path), viewport=str(screen_plot),
+               input=str(path), viewport=str(screen_plot), ticks=ticks,
                plots={artifact.title: str(rendered)})
-        if os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
-            export_formats(app, view, work / "design-exports", f"{case}-{style}", record)
+        if case == "peto" and style == "default" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
+            from PIL import Image
+            from rc_metastudio.plot_export_dialog import PlotExportDialog
 
-    if case == "stress":
+            export = work / "peto-89mm-300dpi.tiff"
+
+            def configure_export(dialog):
+                dialog.format_control.setCurrentIndex(dialog.format_control.findData("tiff"))
+                dialog.units.setCurrentText("cm")
+                dialog.width_control.setValue(8.9)
+                dialog.dpi.setValue(300)
+                record("tsa-print-options", dialog, dimensions=dialog.dimensions())
+                dialog.accept()
+
+            with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(export), "")):
+                modal(app, PlotExportDialog, configure_export, view.export_plot_action.trigger)
+            with Image.open(export) as image:
+                assert abs(image.width - 89/25.4*300) <= 1
+                assert image.tag_v2[259] == 5 and image.info["dpi"] == (300.0, 300.0)
+                record("tsa-print-export", view, pixels=image.size, dpi=image.info["dpi"],
+                       exports={"tiff": str(export)})
+
+    if case in ("stress", "peto"):
         window.workspace.mark_saved()
         return view
 

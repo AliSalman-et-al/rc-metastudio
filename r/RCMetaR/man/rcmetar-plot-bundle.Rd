@@ -18,7 +18,14 @@ rcmetar.prepare.plot.bundle.edit(
   staging.directory
 )
 
-rcmetar.render.plot.bundle(prefix, regenerator, output.path)
+rcmetar.render.plot.bundle(
+  prefix,
+  regenerator,
+  output.path,
+  width = NULL,
+  height = NULL,
+  dpi = 600
+)
 
 rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 }

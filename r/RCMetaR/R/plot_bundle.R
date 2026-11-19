@@ -116,7 +116,7 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 
 #' @rdname rcmetar-plot-bundle
 #' @export
-rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path) {
+rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
@@ -125,7 +125,11 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path) {
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
-    .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
+    if (identical(regenerator, "trial_sequential")) {
+        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=TRUE)
+    } else {
+        .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
+    }
     output.path
 }
 

@@ -407,3 +407,12 @@ persistent appearance menu, Zenodo citation copy and three exports, and About
 with debug copy. `export_formats` drives the shared dialog before decoding all
 four file formats. Its `export-options` evidence records physical dimensions
 and resolution. Native OS picker presentation remains a separate manual check.
+
+## Trial sequential plot
+
+The TSA desktop scenarios retain the actual preflight, report, plot bundle,
+render and editor steps. `tsa-peto` uses the default TSA design on BCG after a
+Peto fixed-effect fit. It checks the 6301% overrun and switches from participants
+to percentages and back through Edit Plot, reopening the editor each time.
+The complete native and print replay is in
+[the TSA redesign evidence](../../../../artifacts/verification/tsa-phase5/README.md).

@@ -57,7 +57,7 @@ _PLOT_RULES: dict[str, tuple[PlotRegenerator, frozenset[str]]] = {
     ),
     "roc": ("none", frozenset()),
     "sroc": ("sroc", frozenset(("style", "appearance", "axis", "sroc"))),
-    "trial_sequential": ("trial_sequential", frozenset(("style", "appearance", "axis"))),
+    "trial_sequential": ("trial_sequential", frozenset(("style", "appearance", "tsa_axis"))),
     "funnel": ("funnel", _FUNNEL_OPTIONS),
     "contour_funnel": ("funnel", _FUNNEL_OPTIONS),
     "deeks_funnel": ("funnel", _FUNNEL_OPTIONS),
