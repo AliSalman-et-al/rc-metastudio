@@ -355,9 +355,9 @@
   .tsa.table(headers, display, columns, roles, values, scale, level, s)
 }
 
-.tsa.table <- function(headers, display, columns, roles, values, scale, level, s) {
-  optional <- headers %in% c("Futility boundary", "TSA-adjusted CI", "Penalised Z")
-  visible <- !optional | colSums(display != "") > 0
+.tsa.table <- function(headers, display, columns, roles, values, scale, level, s,
+                       optional=c("Futility boundary", "TSA-adjusted CI", "Penalised Z")) {
+  visible <- !(headers %in% optional) | colSums(display != "") > 0
   keep <- visible[columns]
   table <- rcmetar.table(rbind(headers, display)[, visible, drop=FALSE], "trial_sequential", list(measure=s$metric),
     inference="z", label.column=1L)
@@ -548,15 +548,12 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
 .tsa.sensitivity <- function(prepared, s, path, summary, looks) {
   primary <- if (is.null(s$anticipated.effect)) "Primary (default)" else "Primary (entered)"
   pc <- prepared$pc
-  if (is.finite(pc)) {
-    change <- prepared$pe/pc - 1
-    primary <- paste0(primary, sprintf(", %.1f%% %s", abs(100*change),
-      if (change < 0) "RRR" else "risk increase"))
+  primary.rr <- if (s$metric %in% c("RR", "OR")) prepared$pe/pc else prepared$effect
+  primary.rrr <- if (prepared$ratio) 100*(1-min(primary.rr, 1/primary.rr)) else NA_real_
+  row <- function(label, effect, rrr, summary=NULL, look=tail(looks, 1)[NA_integer_, ]) {
+    list(label=label, effect=effect, rrr=rrr, summary=summary, look=look)
   }
-  row <- function(label, effect, summary=NULL, look=tail(looks, 1)[NA_integer_, ]) {
-    list(label=label, effect=effect, summary=summary, look=look)
-  }
-  result <- list(row(primary, prepared$effect, summary, tail(looks, 1)))
+  result <- list(row(primary, prepared$effect, primary.rrr, summary, tail(looks, 1)))
   # Wetterslev 2017 discusses sensitivity to design inputs. Keep all fitted
   # looks fixed while changing the effect that sets the information target.
   reduction <- c(.1, .2, .3)
@@ -565,10 +562,11 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   effects <- switch(s$metric, RR=rr, HR=rr, OR=rr*(1-pc)/(1-pc*rr),
     RD=pc*reduction*(if (increase) 1 else -1), MD=prepared$effect*c(.5, 1.5))
   labels <- if (s$metric == "MD") c("50% of primary", "150% of primary") else
-    paste0(100*reduction, if (increase) "% (reciprocal RRR)" else "% RRR")
+    paste0("RRR ", 100*reduction, "%")
   for (i in seq_along(effects)) {
     effect <- effects[i]
     if (isTRUE(signif(effect, 4) == signif(prepared$effect, 4))) next
+    rrr <- if (prepared$ratio) 100*reduction[i] else NA_real_
     alternative <- prepared
     alternative$effect <- effect
     alternative.settings <- s
@@ -585,9 +583,9 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
         stop("The alternative effect implies an infeasible intervention risk.")
       design <- .tsa.design(alternative, alternative.settings)
       monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
-      row(labels[i], effect, .tsa.summary(alternative, alternative.settings, design, monitored, path$lambda),
+      row(labels[i], effect, rrr, .tsa.summary(alternative, alternative.settings, design, monitored, path$lambda),
         tail(monitored$looks, 1))
-    }, error=function(e) row(labels[i], if (is.finite(effect) && (!prepared$ratio || effect > 0)) effect else NA_real_))
+    }, error=function(e) row(labels[i], if (is.finite(effect) && (!prepared$ratio || effect > 0)) effect else NA_real_, rrr))
     result[[length(result)+1L]] <- scenario
   }
   result
@@ -598,21 +596,30 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   effect <- vapply(rows, `[[`, numeric(1), "effect")
   label <- vapply(rows, `[[`, character(1), "label")
   ris <- vapply(rows, function(row) row$summary$ris %||% NA_real_, numeric(1))
+  arms <- trimws(sub("^Favours ", "", s$favours %||% rcmetar.default.arm.labels(), ignore.case=TRUE))
+  if (s$benefit.direction == "upper") arms <- rev(arms)
   conclusions <- vapply(rows, function(row) {
     if (is.null(row$summary)) return("Not estimable")
-    switch(row$summary$conclusion, "crossed-benefit"="Crosses monitoring boundary (benefit)",
-      "crossed-harm"="Crosses monitoring boundary (harm)", "crossed-futility"="Crosses futility boundary",
+    switch(row$summary$conclusion, "crossed-benefit"=paste("Crosses monitoring boundary favouring", arms[1]),
+      "crossed-harm"=paste("Crosses monitoring boundary favouring", arms[2]), "crossed-futility"="Crosses futility boundary",
       "ris-reached"="Reaches required information size without crossing", "none"="Crosses no boundary")
   }, character(1))
   percent <- 100*looks$fraction
-  display <- cbind(ifelse(is.na(effect), label, paste0(.tsa.number(effect), " (", label, ")")),
+  measure <- if (s$model == "peto") "Peto OR" else s$metric
+  has.rrr <- s$metric %in% c("RR", "OR", "HR")
+  headers <- c("Scenario", measure, if (has.rrr) "RRR", "Required information size",
+    "Accrued (% of required)", "Conclusion", "TSA-adjusted CI")
+  rrr <- vapply(rows, `[[`, numeric(1), "rrr")
+  display <- cbind(label, .tsa.number(effect),
+    if (has.rrr) paste0(sub("\\.0$", "", sprintf("%.1f", rrr)), "%"),
     ifelse(is.na(ris), "", .tsa.format.accrued(ris, s$metric)),
     ifelse(is.na(percent), "", sprintf("%.1f%%", percent)), conclusions, .tsa.adjusted.display(looks, s))
-  .tsa.table(c("Anticipated effect", "Required information size", "Accrued (% of required)",
-    "Conclusion", "TSA-adjusted CI"), display, c(1, 2, 3, 5, 5),
-    c("estimate", "value", "value", "ci_lower", "ci_upper"),
-    cbind(effect, ris, percent, looks$adjusted.lower, looks$adjusted.upper),
-    c("display", "", "percent", "display", "display"), c(rep(NA_real_, 3), rep(100*(1-s$alpha), 2)), s)
+  .tsa.table(headers, display, match(c(measure, if (has.rrr) "RRR", "Required information size",
+    "Accrued (% of required)", rep("TSA-adjusted CI", 2)), headers),
+    c("estimate", if (has.rrr) "value", "value", "value", "ci_lower", "ci_upper"),
+    cbind(effect, if (has.rrr) rrr, ris, percent, looks$adjusted.lower, looks$adjusted.upper),
+    c("display", if (has.rrr) "percent", "", "percent", "display", "display"),
+    c(rep(NA_real_, 3+has.rrr), rep(100*(1-s$alpha), 2)), s, optional=character())
 }
 
 #' @rdname RCMetaR-trial-sequential-analysis

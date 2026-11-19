@@ -53,14 +53,17 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   navigation and exports, and in-place power changes followed by a clean
   unchanged rerun while the background conclusion is running. The BCG and HR
   drives record seven warm RIS preview timings and the asynchronous conclusion
-  time from the start of the debounce.
+  time from the start of the debounce. They capture the checking line and
+  completed conclusion and check that setup sections share one editor column.
 - `tsa-rr-mh` checks a fixed MH risk ratio with a dropped double-zero study,
   a futility crossing and blank terminal futility limits. `tsa-md` checks the
   required entered MD and no crossing below RIS. `tsa-hr` checks missing-year
   recovery with table order and validates the continuous information axis.
   Those cases also check numerical quantity exports and decoded reports.
-  The MD drive saves its entered design, reopens it and reruns it without
-  another project edit.
+  The MD drive captures the calculated-size sensitivity table, then saves its
+  manual-size design, reopens it and reruns it without another project edit.
+  The OR, HR and MD sensitivity drives check the scenario and measure columns
+  and numeric alignment in the DOCX export.
 - `tsa-smd` checks the disabled Analysis action and its explanatory tooltip.
 - `tsa-stress` drives 36 looks with long favours labels. It compares the
   SVG geometry of the wrapped labels inside the panel and captures the full figure at Fit width.

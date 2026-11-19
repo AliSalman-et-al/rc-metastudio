@@ -39,6 +39,7 @@ TOOLTIPS = {
     "Futility boundaries": "Shows the region where the anticipated effect becomes unlikely. Non-binding: crossing it does not stop the analysis.",
     "Penalised Z-curve": "An alternative to monitoring boundaries that penalises the Z-score for repeated testing (law of the iterated logarithm). Binary measures only.",
 }
+CHECKING_BOUNDARIES = "Checking boundary crossings…"
 
 
 class _DesignPercent(QDoubleSpinBox):
@@ -81,7 +82,9 @@ class TrialSequentialAnalysisDialog(QDialog):
         if self.base_request.inference in {"knha", "adhoc"}:
             outer.addWidget(_muted_label(HKSJ_NOTE))
 
-        fields = self._group(outer, "Design assumptions")
+        fields = QFormLayout()
+        outer.addLayout(fields)
+        self._section(fields, "Design assumptions")
         left, right = self.base_request.favoured_labels()
         self.test = self._choice("Test", [("Two-sided", "two-sided"),
                                           (f"One-sided (favours {left})", "benefit"),
@@ -115,7 +118,7 @@ class TrialSequentialAnalysisDialog(QDialog):
         fields.addRow(self.fixed_effect_notice)
         self.fixed_effect_notice.hide()
 
-        fields = self._group(outer, "Monitoring")
+        self._section(fields, "Monitoring")
         self.order = self._choice("Add studies in", [("Publication year", "year"), ("Table order", "table")], saved.order)
         for widget in (self.order, self.test):
             self._row(fields, widget.accessibleName(), widget)
@@ -151,8 +154,11 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.status.setAccessibleName("Trial sequential analysis preview")
         qt_layout.configure_context_label(self.status)
         self.status.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        self.status.setMinimumHeight(2 * self.status.fontMetrics().lineSpacing())
         outer.addWidget(self.status)
+        self.conclusion = _muted_label()
+        self.conclusion.setAccessibleName("Trial sequential analysis preview conclusion")
+        self.conclusion.setMinimumHeight(self.conclusion.fontMetrics().lineSpacing())
+        outer.addWidget(self.conclusion)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.run_button = required(buttons.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
         self.run_button.setText("Run analysis")
@@ -266,15 +272,12 @@ class TrialSequentialAnalysisDialog(QDialog):
         reset.setVisible(entered)
 
     @staticmethod
-    def _group(outer: QVBoxLayout, title: str) -> QFormLayout:
+    def _section(fields: QFormLayout, title: str) -> None:
         heading = QLabel(title)
         font = heading.font()
         font.setBold(True)
         heading.setFont(font)
-        outer.addWidget(heading)
-        fields = QFormLayout()
-        outer.addLayout(fields)
-        return fields
+        fields.addRow(heading)
 
     @staticmethod
     def _row(layout: QFormLayout, name: str, editor: QWidget, source: QLabel | None = None, reset: QPushButton | None = None) -> None:
@@ -335,6 +338,7 @@ class TrialSequentialAnalysisDialog(QDialog):
 
     def _stop_conclusion(self) -> None:
         self.conclusion_timer.stop()
+        self.conclusion.clear()
         self.ready_preview = None
         self.active_preview = None
         if self.conclusion_process.state() != QProcess.ProcessState.NotRunning:
@@ -351,6 +355,7 @@ class TrialSequentialAnalysisDialog(QDialog):
             self.conclusion_process.start(program, arguments)
         except Exception as error:
             self._release_conclusion_files()
+            self.conclusion.clear()
             app_error_handler.log_exception(type(error), error, error.__traceback__)
 
     def _release_conclusion_files(self) -> None:
@@ -360,25 +365,30 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.active_preview = None
 
     def _conclusion_finished(self, code: int, status: QProcess.ExitStatus) -> None:
+        active = self.active_preview
+        text = ""
         try:
             if (code != 0 or status != QProcess.ExitStatus.NormalExit
-                    or self.active_preview is None or self.conclusion_dir is None):
+                    or active is None or self.conclusion_dir is None):
                 return
             outcome = Path(self.conclusion_dir.name) / "outcome.txt"
             if outcome.is_file():
                 category, look, study = outcome.read_text(encoding="utf-8").split("\n", 2)
-                _, accrued, ris = self.active_preview
+                _, accrued, ris = active
                 text = preview_conclusion(category, look, study, accrued, ris)
-                if text:
-                    self.status.setText(f"{self.status.text()}\n{text}")
         except (OSError, ValueError) as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
         finally:
             self._release_conclusion_files()
+            if active is not None:
+                self.conclusion.setText(text)
+            elif self.ready_preview is not None and not self.conclusion_timer.isActive():
+                self._start_conclusion()
 
     def _conclusion_error(self, error: QProcess.ProcessError) -> None:
         if error == QProcess.ProcessError.FailedToStart:
             self._release_conclusion_files()
+            self.conclusion.clear()
 
     def _preview(self) -> None:
         two_sided = self.test.currentData() == "two-sided"
@@ -389,6 +399,7 @@ class TrialSequentialAnalysisDialog(QDialog):
             self._show_preview(request, preview)
         except Exception as error:
             self.ready_preview = None
+            self.conclusion.clear()
             self.run_button.setEnabled(False)
             self.fixed_effect_notice.hide()
             self.status.setText(str(error).strip())
@@ -435,8 +446,12 @@ class TrialSequentialAnalysisDialog(QDialog):
         if self.heterogeneity.isEnabled():
             measure, value = ("I²", preview.i2) if options.heterogeneity == "i2" else ("D²", preview.d2)
             label = "" if value is None else f"{measure} = {value:.0%}"
-            if options.heterogeneity != "none" and value is not None and value < 1:
-                label += f" (size ×{1 / (1 - value):.1f})"
+            if options.heterogeneity != "none" and value is not None:
+                percent = f"{value:.1%}"
+                remainder = 100 - float(percent.removesuffix("%"))
+                label = f"{measure} = {percent}"
+                if remainder > 0:
+                    label += f" (size ×{100 / remainder:.1f})"
             self.heterogeneity_value.setText(label)
         note = preview.fixed_effect_note
         size, units = ("required information", "units of information") if self.hr else (
@@ -462,6 +477,9 @@ class TrialSequentialAnalysisDialog(QDialog):
             self.status.setText(f"Required information size: {ris:,.0f} participants · accrued {accrued:,.0f} ({accrued / ris:.0%})")
         if ready and ris is not None and accrued is not None:
             self.ready_preview = request, accrued, ris
+            self.conclusion.setText(CHECKING_BOUNDARIES)
+        else:
+            self.conclusion.clear()
 
     def _run(self) -> None:
         self._stop_conclusion()

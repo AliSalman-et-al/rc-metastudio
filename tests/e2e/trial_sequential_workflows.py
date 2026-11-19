@@ -9,6 +9,8 @@ from time import perf_counter
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
+from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import analysis_catalog, analysis_dataset, project_adapter, project_format
@@ -24,6 +26,36 @@ from tests.python.gui.qt_test_support import key_clicks, wait
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = ROOT / "tests/analysis_regression/baseline"
 NAMESPACE = "{http://www.w3.org/2000/svg}"
+
+
+def capture_sensitivity(view, record, case, report):
+    table = view._report_tables[1]
+    measure = {"bcg": "OR", "hr": "HR", "md": "MD"}[case]
+    assert table.title == "Sensitivity to the anticipated intervention effect"
+    assert table.headers == (
+        "Scenario", measure, *(("RRR",) if case != "md" else ()),
+        "Required information size", "Accrued (% of required)", "Conclusion", "TSA-adjusted CI",
+    )
+    assert [row[0] for row in table.rows] == (
+        ["Primary (entered)", "50% of primary", "150% of primary"] if case == "md" else
+        ["Primary (default)", "RRR 10%", "RRR 20%", "RRR 30%"]
+    )
+    assert "Sensitivity analyses repeated the analysis with alternative anticipated intervention effects." in view.manuscript.methods
+    if case == "bcg":
+        assert table.rows[0][:3] == ("Primary (default)", "0.6835", "30.7%")
+        assert "Crosses monitoring boundary favouring BCG vaccine" in table.rows[0]
+        assert "1,232,589" in table.rows[1]
+    columns = [i for i, header in enumerate(table.headers) if header not in ("Scenario", "Conclusion")]
+    document = Document(str(Path(report["directory"]) / "report.docx"))
+    for row in document.tables[1].rows[1:]:
+        for column in columns:
+            cell = row.cells[column]
+            if cell.text and cell.text != "—":
+                assert cell.paragraphs[0].alignment == WD_ALIGN_PARAGRAPH.RIGHT, cell.text
+    item, = view.nav_tree.findItems("Sensitivity", QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+    assert not item.isHidden()
+    view.nav_tree.setCurrentItem(item)
+    record("tsa-sensitivity-report", view, caption=f"Table 2. {table.title}", headers=table.headers, rows=table.rows)
 
 
 def input_project(work, case):
@@ -228,6 +260,26 @@ def run(app, window, work, record, case):
         assert not window.workspace.is_dirty, "Default TSA changed the project"
         assert window.open(str(path), raise_on_error=True)
 
+    if case == "md":
+        def run_calculated(dialog):
+            key_clicks(dialog.effect, "-1")
+            wait(300)
+            assert dialog.run_button.isEnabled(), dialog.status.text()
+            dialog.run_button.click()
+            assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
+
+        modal(app, TrialSequentialAnalysisDialog, run_calculated, action.trigger)
+        calculated, = [widget for widget in app.topLevelWidgets()
+                       if isinstance(widget, ResultsWindow) and widget.isVisible()]
+        calculated.report_action.setChecked(True)
+        app.processEvents()
+        report = capture(calculated, work / "calculated-reports")
+        assert_exports(calculated, report)
+        capture_sensitivity(calculated, record, case, report)
+        calculated.close()
+        window.workspace.mark_saved()
+        assert window.open(str(path), raise_on_error=True)
+
     comparison = {
         "bcg": "crossed the monitoring boundary favouring",
         "rr-mh": "crossed the futility boundary",
@@ -278,6 +330,15 @@ def run(app, window, work, record, case):
             wait(300)
         assert dialog.run_button.isEnabled(), dialog.status.text()
         assert dialog.alpha.text() == "5.0%" and dialog.power.text() == "80.0%"
+        editors = (dialog.alpha, dialog.effect, dialog.heterogeneity, dialog.order, dialog.test, dialog.spending)
+        editor_x = [editor.mapTo(dialog, QtCore.QPoint()).x() for editor in editors]
+        assert len(set(editor_x)) == 1, editor_x
+        inflation = dialog.heterogeneity_value.text()
+        if " (size ×" in inflation:
+            percent, factor = inflation.partition(" (size ×")[::2]
+            percent = percent.split(" = ")[1]
+            assert len(percent.partition(".")[2]) == 2, percent
+            assert factor == f"{100 / (100 - float(percent.rstrip('%'))):.1f})", inflation
         samples = []
         if case in ("bcg", "hr"):
             for _ in range(7):
@@ -285,14 +346,21 @@ def run(app, window, work, record, case):
                 dialog._preview()
                 samples.append(round((perf_counter() - start) * 1000, 2))
         start = perf_counter()
-        dialog._schedule_preview()
+        dialog.power.setValue(81)
+        assert dialog.conclusion.text() == ""
+        dialog.power.setValue(80)
         wait(300)
-        assert dialog.run_button.isEnabled() and "\n" not in dialog.status.text(), dialog.status.text()
-        while "\n" not in dialog.status.text() and perf_counter() - start < 20:
+        pending = "Checking boundary crossings…"
+        assert dialog.run_button.isEnabled() and dialog.conclusion.text() == pending, dialog.conclusion.text()
+        if samples:
+            record("tsa-preview-pending", dialog, status=dialog.status.text(), conclusion=pending)
+        while dialog.conclusion.text() == pending and perf_counter() - start < 20:
             wait(30)
-        assert "\nCrosses " in dialog.status.text(), dialog.status.text()
+        conclusion = dialog.conclusion.text()
+        assert conclusion.startswith("Crosses "), conclusion
         elapsed = round((perf_counter() - start) * 1000, 2)
-        record("tsa-configured", dialog, input=str(path), status=dialog.status.text(), dpi_scale=dialog.devicePixelRatio())
+        record("tsa-configured", dialog, input=str(path), status=dialog.status.text(), conclusion=conclusion,
+               editor_x=editor_x, inflation=inflation, dpi_scale=dialog.devicePixelRatio())
         if samples:
             record("tsa-preview-timings", dialog, case=case, milliseconds=samples,
                    median_ms=median(samples), conclusion_elapsed_ms=elapsed, dpi_scale=dialog.devicePixelRatio())
@@ -302,12 +370,7 @@ def run(app, window, work, record, case):
     modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
     view, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
     table = view._report_tables[0]
-    if case in ("bcg", "hr"):
-        sensitivity = view._report_tables[1]
-        assert sensitivity.title == "Sensitivity to the anticipated intervention effect"
-        assert "Primary (default)" in sensitivity.rows[0][0]
-        assert "Sensitivity analyses repeated the analysis with alternative anticipated intervention effects." in view.manuscript.methods
-    else:
+    if case not in ("bcg", "hr"):
         assert len(view._report_tables) == 1
         assert "Sensitivity analyses repeated" not in view.manuscript.methods
     if case == "stress":
@@ -396,11 +459,7 @@ def run(app, window, work, record, case):
     # clipboard and CSV still compare every cell in table order.
     assert_exports(view, report, pdf_ordered=case != "hr")
     if case in ("bcg", "hr"):
-        caption = "Table 2. Sensitivity to the anticipated intervention effect"
-        item, = view.nav_tree.findItems(caption, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
-        assert not item.isHidden()
-        view.nav_tree.setCurrentItem(item)
-        record("tsa-sensitivity-report", view, caption=caption, rows=sensitivity.rows)
+        capture_sensitivity(view, record, case, report)
     view.tables_action.trigger()
     for index, exported_table in enumerate(view._report_tables):
         view.table_selector.setCurrentIndex(index)
@@ -468,7 +527,7 @@ def run(app, window, work, record, case):
                 while dialog.conclusion_process.state() != QtCore.QProcess.ProcessState.Running and perf_counter() < deadline:
                     wait(20)
                 assert dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running
-                assert dialog.run_button.isEnabled() and "\n" not in dialog.status.text()
+                assert dialog.run_button.isEnabled() and dialog.conclusion.text() == "Checking boundary crossings…"
             record("tsa-change-settings-dialog", dialog, power=dialog.power.text(),
                    effect=dialog.effect.text(), status=dialog.status.text(),
                    background_running=dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running)

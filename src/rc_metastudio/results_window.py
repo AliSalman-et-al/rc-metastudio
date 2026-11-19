@@ -432,7 +432,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             child = QTreeWidgetItem(report_item, [title])
             self._report_nav_anchors[id(child)] = anchor
         if self.results.analysis_method == "trial-sequential":
-            self._sensitivity_nav = QTreeWidgetItem(["Table 2. Sensitivity to the anticipated intervention effect"])
+            self._sensitivity_nav = QTreeWidgetItem(["Sensitivity"])
             self._sensitivity_nav.setToolTip(0, self._sensitivity_nav.text(0))
             report_item.insertChild(3, self._sensitivity_nav)
             self._report_nav_anchors[id(self._sensitivity_nav)] = "table-2"
