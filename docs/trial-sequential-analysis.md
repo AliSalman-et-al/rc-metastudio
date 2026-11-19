@@ -145,6 +145,7 @@ uv run python scripts/verify_rcms.py tsa-rr-mh --native
 uv run python scripts/verify_rcms.py tsa-md --native
 uv run python scripts/verify_rcms.py tsa-hr --native
 uv run python scripts/verify_rcms.py tsa-peto --native
+uv run python scripts/verify_rcms.py tsa-stress --native
 uv run python scripts/verify_rcms.py tsa-smd --native
 ```
 

@@ -326,7 +326,13 @@ def run(app, window, work, record, case):
         modal(app, TrialSequentialAnalysisDialog, configure, action.trigger)
     view, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
     table = view._report_tables[0]
-    if case not in ("bcg", "hr"):
+    if case == "peto":
+        assert len(view._report_tables) == 2
+        sensitivity = view._report_tables[1]
+        assert sensitivity.title == "Sensitivity to the anticipated intervention effect"
+        assert sensitivity.rows[0][0] == "Primary (default)"
+        assert "Sensitivity analyses repeated" in view.manuscript.methods
+    elif case not in ("bcg", "hr"):
         assert len(view._report_tables) == 1
         assert "Sensitivity analyses repeated" not in view.manuscript.methods
     if case == "stress":

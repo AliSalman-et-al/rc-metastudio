@@ -65,6 +65,8 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   The OR, HR and MD sensitivity drives check the scenario and measure columns
   and numeric alignment in the DOCX export.
 - `tsa-smd` checks the disabled Analysis action and its explanatory tooltip.
+- `tsa-peto` keeps the calculated fixed-effect design, checks its sensitivity
+  table and uses the crossing at 68% of RIS to exercise the visible ring.
 - `tsa-stress` drives 36 looks with long favours labels. It compares the
   SVG geometry of the wrapped labels inside the panel and captures the full figure at Fit width.
   The [design verification](../../../../artifacts/verification/tsa-phase4b/README.md)
