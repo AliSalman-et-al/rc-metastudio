@@ -355,7 +355,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         for control in (self.label_5, self.col3_str_edit, self.show_3,
                         self.label_6, self.col4_str_edit, self.show_4, self.show_raw_counts):
             control.setVisible(has_arms)
-        self.show_annotation.hide()
         self.default_panel.setVisible("forest" in self._option_groups)
         pooled_guide = self.plot_type == "forest" and selected_plot_style(self.style_cbo) == "bmj"
         self.label_16.setVisible(pooled_guide)
@@ -521,9 +520,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._bool_param("fp_show_raw_counts", True)
         )
         self.show_headers.setChecked(self._bool_param("fp_show_headers", True))
-        self.show_annotation.setChecked(
-            self._bool_param("fp_show_annotation", True)
-        )
         self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
         self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
         xlabel = self._params.get(self._param_name("xlabel"))

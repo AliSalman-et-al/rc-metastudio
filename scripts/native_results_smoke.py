@@ -494,7 +494,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
         )
         return {f"{prefix}.params": str(pending_params), output: str(pending_svg)}
 
-    def render(_prefix, _regenerator, output):
+    def render(_prefix, _regenerator, output, *, include_title=True, outline_text=True):
         Path(output).write_bytes(svg.read_bytes())
         return True
 
