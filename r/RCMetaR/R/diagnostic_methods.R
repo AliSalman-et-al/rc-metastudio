@@ -15,31 +15,9 @@ diagnostic.summary.metric.name <- function(metric) {
 rcmetar.corrected.diagnostic.counts <- function(diagnostic.data, params) {
     values <- list(TP=diagnostic.data@TP, FN=diagnostic.data@FN,
                    TN=diagnostic.data@TN, FP=diagnostic.data@FP)
-    if (length(values$TP) == 0) return(values)
-    target <- if (!is.null(params$to)) as.character(params$to) else "only0"
-    if (!is.null(params$correction.policy)) target <- as.character(params$correction.policy)
-    target <- switch(target,
-        "Studies with any zero cell"="only0",
-        "All studies"="all",
-        "All studies if any zero exists"="if0all",
-        target
-    )
-    adjust <- if (!is.null(params$adjust)) as.numeric(params$adjust) else 0
-    zero <- (values$TP * values$FN * values$TN * values$FP) == 0
-    apply.correction <- switch(target,
-        only0=zero,
-        all=rep(TRUE, length(zero)),
-        if0all=if (any(zero)) rep(TRUE, length(zero)) else rep(FALSE, length(zero)),
-        rep(FALSE, length(zero))
-    )
-    for (name in names(values)) {
-        values[[name]][apply.correction] <- values[[name]][apply.correction] + adjust
-    }
-    values
-}
-
-adjust.raw.data <- function(diagnostic.data, params) {
-    rcmetar.corrected.diagnostic.counts(diagnostic.data, params)
+    if (length(values$TP) == 0L) return(values)
+    .rcmetar.correct.counts(values, as.numeric(params$adjust %||% 0),
+                           .rcmetar.correction.target(params))
 }
 
 compute.diag.point.estimates <- function(diagnostic.data, params) {
@@ -50,7 +28,7 @@ compute.diag.point.estimates <- function(diagnostic.data, params) {
         stop("Diagnostic point estimates require either TP/FN/TN/FP counts or entered effect estimates and standard errors.")
     }
 
-    data.adj <- adjust.raw.data(diagnostic.data, params)
+    data.adj <- rcmetar.corrected.diagnostic.counts(diagnostic.data, params)
     terms <- compute.diagnostic.terms(raw.data=data.adj, params)
     metric <- params$measure
     TP <- data.adj$TP

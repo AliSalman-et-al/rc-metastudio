@@ -23,7 +23,7 @@ def run_groups(app, window, work, record):
                 window.workspace.mark_saved()
                 view = matrix(app, window, 'analysis-data-' + family, record, keep_results=True,
                               group_names=(group,), parameters={'fp_style':style})
-                artifact = next(iter(view._nav_plot_artifacts.values()))
+                artifact = next(iter(view._plots.values())).artifact
                 text = labels(artifact.display_path())
                 view.report_action.setChecked(False)
                 view._show_report(False)
@@ -46,8 +46,8 @@ def run_groups(app, window, work, record):
     load_serialized_object(str(legacy / 'default-0.4.2.params'))
     old_style = str(r_bridge.execute_r_string('as.character(params$fp_style)')[0])
     assert old_style == 'default'
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results.window import ResultsWindow
     from analysis_matrix import set_parameter
     window.action_go.trigger()
     app.processEvents()

@@ -12,8 +12,8 @@ def _display_number(cell):
 
 
 def check_report(app, view, work, record):
-    from rc_metastudio import results_window
-    from rc_metastudio.result_formatting import report_numbers
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.results.formatting import report_numbers
 
     assert "Model configuration\n" in view.manuscript_text.toPlainText()
     scene_text = [item.toPlainText() for item in view.scene.items() if hasattr(item, "toPlainText")]

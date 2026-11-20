@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 from typing import cast
 
-from rc_metastudio.project_format import load_project, save_project, JsonObject
+from rc_metastudio.project.archive import load_project, save_project, JsonObject
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "sample_projects"

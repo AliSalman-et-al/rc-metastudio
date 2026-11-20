@@ -37,6 +37,28 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
                                  results=fits, row.indices=lapply(membership, which)))
 }
 
+.rcmetar.repeated.model.title <- function(method, metric.label) {
+    title <- switch(method,
+        binary.fixed.inv.var="Binary Fixed-Effect Model - Inverse Variance",
+        binary.fixed.mh="Binary Fixed-Effect Model - Mantel-Haenszel",
+        binary.fixed.peto="Binary Fixed-Effect Model - Peto",
+        binary.random="Binary Random-Effects Model",
+        continuous.fixed="Continuous Fixed-Effect Model - Inverse Variance",
+        continuous.random="Continuous Random-Effects Model",
+        diagnostic.fixed.inv.var="Diagnostic Fixed-Effect Inverse Variance",
+        diagnostic.fixed.mh="Diagnostic Fixed-Effect Mantel-Haenszel",
+        diagnostic.fixed.peto="Diagnostic Fixed-Effect Peto",
+        diagnostic.random="Diagnostic Random-Effects")
+    paste0(title, "\n\nMetric: ", metric.label)
+}
+
+.rcmetar.publish.repeated.forest <- function(data, fit, params, plot.data) {
+    path <- as.character(params$fp_outpath)
+    rcmetar.draw.forest.plot(plot.data, path)
+    params <- update.changed.plot.params(params, plot.data$changed.params)
+    list(path=path, prefix=save.data(data, fit, params, plot.data))
+}
+
 cum.ma.binary <- function(fname, binary.data, params){
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
 
@@ -51,26 +73,19 @@ cum.ma.binary <- function(fname, binary.data, params){
 
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "cumulative", FALSE)
     metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
-	model.title <- switch(fname,
-                          binary.fixed.inv.var=paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-                          binary.fixed.mh=paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
-                          binary.fixed.peto=paste("Binary Fixed-Effect Model - Peto\n\nMetric: ", metric.name, sep=""),
-                          binary.random=paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
                          binary.fixed.inv.var = cumul.rma.uni.value.info(),
                          binary.fixed.mh      = cumul.rma.mh.value.info(),
                          binary.fixed.peto    = cumul.rma.mh.value.info(),
                          binary.random        = cumul.rma.uni.value.info())
     cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow="cumulative", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), "cumulative"))
-    forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
     plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
-    rcmetar.draw.forest.plot(plot.data, forest.path)
-    params <- update.changed.plot.params(params, plot.data$changed.params)
-    forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
-    plot.params.paths <- c("Cumulative forest plot"=forest.plot.params.path)
-    images <- c("Cumulative forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(binary.data, res, params, plot.data)
+    plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
+    images <- c("Cumulative forest plot"=plot$path)
     plot.names <- c("cumulative forest plot"="cumulative_forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -136,27 +151,17 @@ construct.subgroup.value.info <- function(value.info, subgroup.list) {
 }
 
 
-bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
-    if (identical(as.character(params$bootstrap.type), "boot.meta.reg.cond.means"))
-        stop("Conditional means are not supported by this analysis interface.", call.=FALSE)
-
-
-	omdata.rows <- seq(1:length(omdata@y))
-
-
-	conf.level <- params$conf.level
-	max.extra.attempts <- 5*params$num.bootstrap.replicates
-	bootstrap.type <- as.character(params$bootstrap.type)
-	bootstrap.plot.path <- as.character(params$bootstrap.plot.path)
-	if (is.null(bootstrap.plot.path)) {
-		bootstrap.plot.path <- "./r_tmp/bootstrap.png"
-	}
+bootstrap <- function(fname, omdata, params) {
+    omdata.rows <- seq_along(omdata@y)
+    max.extra.attempts <- 5 * params$num.bootstrap.replicates
+    bootstrap.type <- as.character(params$bootstrap.type)
+    bootstrap.plot.path <- as.character(params$bootstrap.plot.path %||%
+        tempfile("bootstrap-", tmpdir=rcmetar.scratch.path(), fileext=".png"))
 
 	if (length(omdata@covariates) > 0) {
 		cov.data <- extract.cov.data(omdata, dont.make.array=TRUE)
 		factor.n.levels <- cov.data$display.data$factor.n.levels
 		n.cont.covs <- cov.data$display.data$n.cont.covs
-		cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
 		expected.coeff.count <- 1 + n.cont.covs + sum(factor.n.levels - 1)
 	}
 
@@ -180,7 +185,6 @@ bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
 			subset.cov.data <- extract.cov.data(data.subset, dont.make.array=TRUE)
 			subset.factor.n.levels <- subset.cov.data$display.data$factor.n.levels
 			subset.n.cont.covs <- subset.cov.data$display.data$n.cont.covs
-			subset.cat.ref.var.and.levels <- subset.cov.data$cat.ref.var.and.levels
 
 			if (!(all(factor.n.levels==subset.factor.n.levels) && all(n.cont.covs==subset.n.cont.covs)))
 				return(FALSE)
@@ -227,26 +231,14 @@ bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
 		res$b
 	}
 
-	if (bootstrap.type == "boot.meta.reg.cond.means")
-		a.matrix <- generate.a.matrix(omdata, cat.ref.var.and.levels, cond.means.data)
-	meta.reg.cond.means.statistic <- function(data, indices) {
-		unconditional.b <- meta.reg.statistic(data, indices)
-		new_betas  <- a.matrix %*% matrix(unconditional.b, ncol=1)
-		new_betas
-	}
-
-	statistic <- switch(bootstrap.type,
-						boot.ma = vanilla.statistic,
-						boot.meta.reg = meta.reg.statistic,
-						boot.meta.reg.cond.means = meta.reg.cond.means.statistic)
+    statistic <- switch(bootstrap.type, boot.ma=vanilla.statistic, boot.meta.reg=meta.reg.statistic)
 	extra.attempts <- 0
 	boot.res <- boot(omdata.rows, statistic=statistic, R=params$num.bootstrap.replicates)
 	params$extra.attempts <- extra.attempts
 
-	results <- switch(bootstrap.type,
-			boot.ma = boot.ma.output.results(boot.res, params, bootstrap.plot.path),
-			boot.meta.reg = boot.meta.reg.output.results(boot.res, params, bootstrap.plot.path, cov.data),
-			boot.meta.reg.cond.means = boot.meta.reg.cond.means.output.results(omdata, boot.res, params, bootstrap.plot.path, cov.data, cond.means.data))
+    results <- switch(bootstrap.type,
+        boot.ma=boot.ma.output.results(boot.res, params, bootstrap.plot.path),
+        boot.meta.reg=boot.meta.reg.output.results(boot.res, params, bootstrap.plot.path, cov.data))
 
 	textfile.data <- construct.boot.res.and.value.info.for.results(results, boot.res, bootstrap.type)
 	results <- c(results, textfile.data)
@@ -257,27 +249,13 @@ bootstrap <- function(fname, omdata, params, cond.means.data=FALSE) {
 }
 
 construct.boot.res.and.value.info.for.results <- function(results, boot.res, bootstrap.type) {
-	summary <- switch(bootstrap.type,
-					  boot.ma = results$Summary,
-				      boot.meta.reg = results$Summary,
-					  boot.meta.reg.cond.means = results[["Bootstrapped Meta-Regression Based Conditional Means"]])
-	summary.name <- switch(bootstrap.type,
-			          boot.ma = "Summary",
-					  boot.meta.reg = "Summary",
-					  boot.meta.reg.cond.means = "Bootstrapped Meta-Regression Based Conditional Means Summary")
-	xlabels <- switch(bootstrap.type,
-					  boot.ma = NA,
-					  boot.meta.reg = results$gui.ignore.xlabels,
-					  boot.meta.reg.cond.means = results$gui.ignore.xlabels)
-	res <- list()
-	res.info <- list()
-	res[[summary.name]] <- summary
-	res.info[[summary.name]] <- list(type="blob", description="")
-
-	if (any(isnt.na(xlabels))) {
-		res[['coefficient_labels']] = xlabels
-		res.info[['coefficient_labels']] = list(type="vector", description="Coefficients in t given in the following order")
-	}
+    res <- list(Summary=results$Summary)
+    res.info <- list(Summary=list(type="blob", description=""))
+    if (bootstrap.type == "boot.meta.reg") {
+        res$coefficient_labels <- results$gui.ignore.xlabels
+        res.info$coefficient_labels <- list(type="vector",
+            description="Coefficients in t given in the following order")
+    }
 
 	res$t <- boot.res$t
 	res.info$t <- list(type="matrix", description="A matrix with #replicates rows, each of which is a bootstrap replicate")
@@ -294,12 +272,11 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% Confidence Interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
 	mean.msg <- paste("The observed value of the effect size was ", round(boot.results$t0, digits=params$digits), ", while the mean over the replicates was ", round(mean_boot,digits=params$digits), ".", sep="")
 	summary.msg <- paste(conf.interval.msg, "\n", mean.msg, sep="")
-	png(filename=bootstrap.plot.path)
-	plot.custom.boot(boot.results, title=as.character(params$histogram.title), xlabs=c(as.character(params$histogram.xlab)), ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
-	graphics.off()
+	rcmetar.draw.bootstrap.histogram(bootstrap.plot.path, boot.results,
+		title=as.character(params$histogram.title), xlabs=as.character(params$histogram.xlab),
+		ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
 
 	images <- c("Histogram"=bootstrap.plot.path)
-	plot.names <- c("histogram"="histogram")
 	results <- list("images"=images,
 			"Summary"=summary.msg)
 	results
@@ -346,47 +323,23 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 	xlabels.clean <- xlabels
 	xlabels <- paste(xlabels, "Coefficient")
 
-	png(filename=bootstrap.plot.path, width = 480, height = 480*length(xlabels))
-	plot.custom.boot(boot.results,
-					 title=as.character(params$histogram.title),
-					 xlabs=xlabels,
-					 ci.lb=coeffs.and.cis$ci.lb,
-					 ci.ub=coeffs.and.cis$ci.ub)
-	graphics.off()
+	rcmetar.draw.bootstrap.histogram(bootstrap.plot.path, boot.results,
+		title=as.character(params$histogram.title), xlabs=xlabels,
+		ci.lb=coeffs.and.cis$ci.lb, ci.ub=coeffs.and.cis$ci.ub,
+		height=480 * length(xlabels))
 
 	images <- c("Histograms"=bootstrap.plot.path)
-	plot.names <- c("histograms"="histograms")
 	output.results <- list("images"=images,
 						   "Summary"=reg.disp,
 						   "gui.ignore.xlabels"=xlabels.clean)
 	output.results
 }
 
-boot.meta.reg.cond.means.output.results <- function(omdata, boot.results, params, bootstrap.plot.path, cov.data, cond.means.data) {
-	coeffs.and.cis <- calc.meta.reg.coeffs.and.cis(boot.results, params$conf.level)
-	cat.ref.var.and.levels <- cov.data$cat.ref.var.and.levels
-	chosen.cov.name = as.character(cond.means.data$chosen.cov.name)
-
-	boot.cond.means.disp <- boot.cond.means.display(omdata, coeffs.and.cis, params, cat.ref.var.and.levels, cond.means.data)
-
-	xlabels <- cat.ref.var.and.levels[[chosen.cov.name]]
-	xlabels.clean <- xlabels
-	xlabels <- paste("Conditional Mean of", xlabels)
-
-	png(filename=bootstrap.plot.path, width = 480, height = 480*length(xlabels))
-	plot.custom.boot(boot.results,
-			title=as.character(params$histogram.title),
-			xlabs=xlabels,
-			ci.lb=coeffs.and.cis$ci.lb,
-			ci.ub=coeffs.and.cis$ci.ub)
-	graphics.off()
-
-	images <- c("Histograms"=bootstrap.plot.path)
-	plot.names <- c("histograms"="histograms")
-	output.results <- list("images"=images,
-						   "Bootstrapped Meta-Regression Based Conditional Means"=boot.cond.means.disp,
-						   "gui.ignore.xlabels"=xlabels.clean)
-	output.results
+rcmetar.draw.bootstrap.histogram <- function(path, boot.results, title, xlabs, ci.lb, ci.ub, height=480) {
+    grDevices::png(filename=path, width=480, height=height)
+    device <- grDevices::dev.cur()
+    on.exit(grDevices::dev.off(device))
+    plot.custom.boot(boot.results, title, ci.lb, ci.ub, xlabs)
 }
 
 plot.custom.boot <- function(boot.out, title="Bootstrap Histogram", ci.lb, ci.ub, xlabs=c("Effect Size")) {
@@ -425,26 +378,17 @@ loo.ma.binary <- function(fname, binary.data, params){
 
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-	model.title <- switch(fname,
-			binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-			binary.fixed.mh = paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
-			binary.fixed.peto = paste("Binary Fixed-Effect Model - Peto\n\nMetric: ", metric.name, sep=""),
-			binary.random = paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
 			binary.fixed.inv.var = loo.rma.uni.value.info(),
 			binary.fixed.mh      = loo.rma.mh.value.info(),
 			binary.fixed.peto    = loo.rma.mh.value.info(),
 			binary.random        = loo.rma.uni.value.info())
 	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow="leave-one-out", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), "leave-one-out", TRUE))
-    forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
-    changed.params <- plot.data$changed.params
-    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    changed.params <- c(changed.params, params.changed.in.forest.plot)
-    params <- update.changed.plot.params(params, changed.params)
-    forest.plot.params.path <- save.data(binary.data, res=loo.results, params, plot.data)
-    plot.params.paths <- c("Leave-one-out forest plot"=forest.plot.params.path)
-    images <- c("Leave-one-out forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(binary.data, loo.results, params, plot.data)
+    plot.params.paths <- c("Leave-one-out forest plot"=plot$prefix)
+    images <- c("Leave-one-out forest plot"=plot$path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- res$References
     results <- list("images"=images,
@@ -480,23 +424,18 @@ cum.ma.continuous <- function(fname, cont.data, params){
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "cumulative", FALSE)
 
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-	model.title <- switch(fname,
-                          continuous.fixed  = paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-						  continuous.random = paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
     value.info <- switch(fname,
 						 continuous.fixed  = cumul.rma.uni.value.info(),
 	                     continuous.random = cumul.rma.uni.value.info())
 
 	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="continuous", workflow="cumulative")
-    forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
     plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
-    rcmetar.draw.forest.plot(plot.data, forest.path)
-    params <- update.changed.plot.params(params, plot.data$changed.params)
-    forest.plot.params.path <- save.data(cont.data, res=cum.results, params, plot.data)
-    plot.params.paths <- c("Cumulative forest plot"=forest.plot.params.path)
-    images <- c("Cumulative forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(cont.data, cum.results, params, plot.data)
+    plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
+    images <- c("Cumulative forest plot"=plot$path)
     plot.names <- c("cumulative forest plot"="cumulative forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -532,21 +471,14 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 
 	study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "cumulative", FALSE)
 	metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
-	model.title <- switch(fname,
-                          diagnostic.fixed.inv.var = paste("Diagnostic Fixed-Effect Inverse Variance\n\nMetric: ", metric.name, sep=""),
-                          diagnostic.fixed.mh      = paste("Diagnostic Fixed-Effect Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
-                          diagnostic.fixed.peto    = paste("Diagnostic Fixed-Effect Peto\n\nMetric: ", metric.name, sep=""),
-                          diagnostic.random        = paste("Diagnostic Random-Effects\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic", workflow="cumulative")
-	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
 	params.cum$fp_col1_str <- "Study added"
 	plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
-	rcmetar.draw.forest.plot(plot.data, forest.path)
-	params <- update.changed.plot.params(params, plot.data$changed.params)
-	forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-	plot.params.paths <- c("Cumulative forest plot"=forest.plot.params.path)
-	images <- c("Cumulative forest plot"=forest.path)
+	plot <- .rcmetar.publish.repeated.forest(diagnostic.data, res, params, plot.data)
+	plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
+	images <- c("Cumulative forest plot"=plot$path)
 	plot.names <- c("cumulative forest plot"="cumulative_forest_plot")
 
 	references <- c(res$References, cum_meta_analysis_ref)
@@ -572,22 +504,15 @@ loo.ma.continuous <- function(fname, cont.data, params){
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "leave-one-out", TRUE)
     params$data.type <- "continuous"
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-	model.title <- switch(fname,
-			continuous.fixed=paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-			continuous.random=paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
 			continuous.fixed  = loo.rma.uni.value.info(),
 			continuous.random = loo.rma.uni.value.info())
 	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="continuous", workflow="leave-one-out")
-    forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
-    changed.params <- plot.data$changed.params
-    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    changed.params <- c(changed.params, params.changed.in.forest.plot)
-    params <- update.changed.plot.params(params, changed.params)
-    forest.plot.params.path <- save.data(cont.data, res=loo.results, params, plot.data)
-    plot.params.paths <- c("Leave-one-out forest plot"=forest.plot.params.path)
-    images <- c("Leave-one-out forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(cont.data, loo.results, params, plot.data)
+    plot.params.paths <- c("Leave-one-out forest plot"=plot$prefix)
+    images <- c("Leave-one-out forest plot"=plot$path)
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- res$References
     results <- list("images"=images,
@@ -631,11 +556,7 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
     subgroup.names <- c(subgroup.names, "Overall")
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-	model.title <- switch(fname,
-		binary.fixed.inv.var = paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-		binary.fixed.mh = paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep=""),
-		binary.fixed.peto = paste("Binary Fixed-Effect Model - Peto\n\nMetric: ", metric.name, sep=""),
-		binary.random = paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
 		binary.fixed.inv.var = binary.fixed.inv.var.value.info(),
 		binary.fixed.mh	     = binary.fixed.mh.value.info(),
@@ -645,16 +566,11 @@ subgroup.ma.binary <- function(fname, binary.data, params){
         binary.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
         data.type="binary", sample.sizes=lapply(grouped.data, rcmetar.pft.sample.sizes, params=params), studies=studies)
-    forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.subgroup.metafor.bundle(binary.data, params, subgroup.data)
     subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
-    changed.params <- plot.data$changed.params
-    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    changed.params <- c(changed.params, params.changed.in.forest.plot)
-    params <- update.changed.plot.params(params, changed.params)
-    forest.plot.params.path <- save.data(binary.data, res, params, plot.data)
-    plot.params.paths <- c("Subgroup forest plot"=forest.plot.params.path)
-    images <- c("Subgroup forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(binary.data, res, params, plot.data)
+    plot.params.paths <- c("Subgroup forest plot"=plot$prefix)
+    images <- c("Subgroup forest plot"=plot$path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 	references <- res$References
     results <- list("images"=images,
@@ -684,9 +600,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     subgroup.names <- paste("Subgroup ", subgroup.list, sep="")
     subgroup.names <- c(subgroup.names, "Overall")
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- switch(fname,
-						  continuous.fixed = paste("Continuous Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep=""),
-						  continuous.random = paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep=""))
+    model.title <- .rcmetar.repeated.model.title(fname, metric.name)
     value.info <- switch(fname,
 						 continuous.fixed  = continuous.fixed.value.info(),
 						 continuous.random = continuous.random.value.info())
@@ -694,16 +608,11 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
         cont.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
         data.type="continuous", studies=studies)
-    forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.subgroup.metafor.bundle(cont.data, params, subgroup.data)
     subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
-    changed.params <- plot.data$changed.params
-    params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-    changed.params <- c(changed.params, params.changed.in.forest.plot)
-    params <- update.changed.plot.params(params, changed.params)
-    forest.plot.params.path <- save.data(cont.data, res, params, plot.data)
-    plot.params.paths <- c("Subgroup forest plot"=forest.plot.params.path)
-    images <- c("Subgroup forest plot"=forest.path)
+    plot <- .rcmetar.publish.repeated.forest(cont.data, res, params, plot.data)
+    plot.params.paths <- c("Subgroup forest plot"=plot$prefix)
+    images <- c("Subgroup forest plot"=plot$path)
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 
 	references <- res$References
@@ -748,14 +657,9 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 
     if (!identical(params$create.plot, FALSE)) {
         plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
-        forest.path <- paste(params$fp_outpath, sep="")
-        changed.params <- plot.data$changed.params
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-        changed.params <- c(changed.params, params.changed.in.forest.plot)
-        params <- update.changed.plot.params(params, changed.params)
-        forest.plot.params.path <- save.data(diagnostic.data, res=loo.results, params, plot.data)
-        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-        images <- c("Leave-one-out forest plot"=forest.path)
+        plot <- .rcmetar.publish.repeated.forest(diagnostic.data, loo.results, params, plot.data)
+        plot.params.paths <- c("Forest plot"=plot$prefix)
+        images <- c("Leave-one-out forest plot"=plot$path)
         plot.names <- c("loo forest plot"="loo_forest_plot")
         results <- list("images"=images, "Summary"=loo.disp,
                         "plot_names"=plot.names,
@@ -825,17 +729,12 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
         diagnostic.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
         data.type="diagnostic", studies=studies)
-    forest.path <- paste(params$fp_outpath, sep="")
     if (is.null(params$create.plot)) {
         plot.data <- rcmetar.build.subgroup.metafor.bundle(diagnostic.data, params, subgroup.data)
         subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
-        changed.params <- plot.data$changed.params
-        params.changed.in.forest.plot <- rcmetar.draw.forest.plot(plot.data, forest.path)
-        changed.params <- c(changed.params, params.changed.in.forest.plot)
-        params <- update.changed.plot.params(params, changed.params)
-        forest.plot.params.path <- save.data(diagnostic.data, res, params, plot.data)
-        plot.params.paths <- c("Forest plot"=forest.plot.params.path)
-        images <- c("Subgroup forest plot"=forest.path)
+        plot <- .rcmetar.publish.repeated.forest(diagnostic.data, res, params, plot.data)
+        plot.params.paths <- c("Forest plot"=plot$prefix)
+        images <- c("Subgroup forest plot"=plot$path)
         plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
         results <- list("images"=images, "Summary"=subgroup.disp,
                     "plot_names"=plot.names,

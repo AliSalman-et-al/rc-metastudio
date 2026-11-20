@@ -8,10 +8,15 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import app_error_handler, funnel_plot_editor_dialog, plot_service, results_window
-from rc_metastudio.analysis_results import empty_analysis_result
-from rc_metastudio.plot_capabilities import PlotCapability
-from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+from rc_metastudio import app_error_handler
+from rc_metastudio.results import (
+    funnel_editor as funnel_plot_editor_dialog,
+    plot_service,
+    window as results_window,
+)
+from rc_metastudio.results.contract import empty_analysis_result
+from rc_metastudio.results.plot_capabilities import PlotCapability
+from rc_metastudio.results.funnel_editor import FunnelPlotEditorDialog
 
 
 def _params(kind):

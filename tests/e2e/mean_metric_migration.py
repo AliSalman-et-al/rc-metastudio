@@ -33,7 +33,7 @@ def reopen_legacy_mean_project(app, window, record):
             archive.writestr(name, data)
     assert window.open(str(legacy_path), raise_on_error=True)
     assert window.model.current_effect == "Mean"
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
     assert dataset_to_project(window.model.dataset) == canonical
     record("legacy-mean-reopened", window, metric=window.model.current_effect,
            exports={"legacy_input": str(legacy_path), "canonical_input": str(canonical_path)})
@@ -46,7 +46,7 @@ def reopen_legacy_mean_project(app, window, record):
 def open_mean_sample(app, window, record, root, work):
     """Prove sample measurements and archive round trips before real analysis."""
     import shutil
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
 
     source = work / "Illustrative-Mean.rcms"
     shutil.copy2(root / "sample_projects/Illustrative-Mean.rcms", source)
@@ -60,7 +60,7 @@ def open_mean_sample(app, window, record, root, work):
     before = dataset_to_project(window.model.dataset)
     from PyQt6 import QtWidgets
     from advanced_workflows import click, modal
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 
     def inspect_calculator(dialog):
         assert dialog.arm_names == ["Participants"]

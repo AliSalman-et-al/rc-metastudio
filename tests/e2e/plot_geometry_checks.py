@@ -191,7 +191,7 @@ def check_excluding_null(app, view, record):
     from advanced_workflows import click, modal
     from PyQt6 import QtWidgets
     from rc_metastudio import r_bridge
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
 
     def exclude_null(dialog):
         dialog.plot_lb_le.setText("0.5")

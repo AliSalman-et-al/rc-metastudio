@@ -7,10 +7,10 @@ from tests.python.gui.qt_test_support import required, wait
 
 def run(app, window, work, root, record, analyze):
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
-    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
+    from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
 
     observations = {}
     failures = []

@@ -159,8 +159,8 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
     destination = Path(output_path).with_suffix(".docx")
     _reject_output_aliases([output_path, destination], [project_path, xlsx_path, rm5_path])
     _reject_output_aliases([output_path], [destination])
-    from rc_metastudio import csv_import, rm5_import
-    from rc_metastudio.manuscript_report import ManuscriptReport, write_docx
+    from rc_metastudio.importing import tabular as csv_import, revman as rm5_import
+    from rc_metastudio.results.report import ManuscriptReport, write_docx
     from docx import Document
 
     headers, rows, names, selected = csv_import.read_xlsx(xlsx_path)
@@ -196,7 +196,7 @@ def _configure_package_locale() -> None:
 
 
 def _run_analysis(window, analysis_method: str, *, estimator: str | None = None):
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 
     dialog = AnalysisSetupDialog(window.model, parent=window, confidence_level=window.model.get_confidence_level())
     try:
@@ -223,7 +223,8 @@ def start_package_runtime_probe(output_path: str) -> int:
     """Observe the concrete runtime loaded by the packaged executable."""
     from PyQt6 import QtCore, sip
 
-    from rc_metastudio import project_format, r_runtime
+    from rc_metastudio.project import archive as project_format
+    from rc_metastudio import r_runtime
 
     for member in ("manifest.json", "project.json", "state.json"):
         project_format._schema(1, member)

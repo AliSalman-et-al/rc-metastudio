@@ -117,6 +117,37 @@ test_that("public bootstrap uses selected output coverage", {
  expect_match(x$Summary,"90% Confidence",fixed=TRUE)
 })
 
+test_that("bootstrap without an explicit output keeps each histogram in owned scratch", {
+ scratch <- tempfile("bootstrap-scratch-")
+ withr::local_envvar(c(RCMS_ANALYSIS_SCRATCH_DIR=scratch))
+ withr::local_seed(52)
+ p <- s2_params(bootstrap.type="boot.ma", num.bootstrap.replicates=99,
+                histogram.title="Proof", histogram.xlab="Effect")
+ existing.devices <- grDevices::dev.list()
+ grDevices::pdf(tempfile(fileext=".pdf"))
+ caller.device <- grDevices::dev.cur()
+ withr::defer({
+  for (device in setdiff(grDevices::dev.list(), existing.devices)) grDevices::dev.off(device)
+ })
+ run <- function() rcmetar.run.analysis(s2_data(), method="continuous.fixed",
+                                      params=p, workflow="bootstrap")$images[["Histogram"]]
+ first <- run()
+ second <- run()
+ expect_false(identical(first, second))
+ for (path in c(first, second)) {
+  expect_identical(normalizePath(dirname(path), winslash="/"),
+                        normalizePath(scratch, winslash="/"))
+  expect_length(dim(png::readPNG(path)), 3L)
+ }
+ expect_identical(grDevices::dev.list(), c(existing.devices, caller.device))
+ expect_identical(grDevices::dev.cur(), caller.device)
+
+ p$histogram.xlab <- character()
+ expect_error(run(), "mfcol")
+ expect_identical(grDevices::dev.list(), c(existing.devices, caller.device))
+ expect_identical(grDevices::dev.cur(), caller.device)
+})
+
 test_that("binary and diagnostic subgroup selections resolve at the public boundary", {
  cov <- s2_data()@covariates
  b <- rcmetar.create.binary.data(y=c(.1,.2,.3,.4,.5,.6),SE=rep(.1,6),study.names=letters[1:6],covariates=cov)

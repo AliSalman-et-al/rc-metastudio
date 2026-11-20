@@ -3,59 +3,36 @@
 \name{RCMetaR-meta-regression}
 \alias{RCMetaR-meta-regression}
 \alias{adjusted_means_display}
-\alias{categorical.meta.regression}
-\alias{coded.cat.mod.level}
-\alias{cond.means.info}
 \alias{create.regression.display}
 \alias{extract.cov.data}
-\alias{g.bootstrap.meta.regression}
-\alias{g.bootstrap.meta.regression.cond.means}
-\alias{g.create.plot.data.reg}
 \alias{g.get.scale}
-\alias{g.meta.regression}
-\alias{g.meta.regression.cond.means}
-\alias{get.row.vector.cat.cat}
-\alias{get.row.vector.cat.cont}
-\alias{is.single.numeric.covariate}
-\alias{make.design.matrix}
 \alias{make.mods.formula}
 \alias{meta.regression}
 \alias{meta.regression.plot}
-\alias{random.meta.regression}
 \alias{regression.wrapper}
 \title{Meta-regression and covariate-model helpers}
 \description{
 Functions that build model matrices, call \pkg{metafor} regression routines,
-compute conditional means, and format model output for rc-metastudio.
+and format model output for RC MetaStudio.
 }
 \section{Regression wrappers}{
 
 The desktop adapter uses a private \code{meta.regression()} workflow.
 Use the exported \code{rcmetar.run.analysis()} with
-\code{workflow = "meta-regression"}; the method wrappers below are private.
-\code{regression.wrapper()}, \code{g.meta.regression()},
-\code{g.meta.regression.cond.means()},
-\code{g.bootstrap.meta.regression()}, and
-\code{g.bootstrap.meta.regression.cond.means()} provide lower-level wrappers
-around model fitting and resampling.
+\code{workflow = "meta-regression"}. Permutation regression uses the
+private \code{regression.wrapper()} to fit its reference model.
 }
 
 \section{Covariate design}{
 
-\code{make.mods.formula()}, \code{make.design.matrix()},
-\code{get.row.vector.cat.cat()}, \code{get.row.vector.cat.cont()},
-\code{coded.cat.mod.level()}, \code{is.single.numeric.covariate()},
-\code{extract.cov.data()}, and \code{cond.means.info()} prepare covariate
-model terms and conditional-mean metadata.
+\code{make.mods.formula()} and \code{extract.cov.data()} prepare
+covariate model terms.
 }
 
 \section{Display and plotting}{
 
 \code{create.regression.display()}, \code{adjusted_means_display()},
-\code{g.create.plot.data.reg()}, \code{g.get.scale()},
-\code{meta.regression.plot()},
-\code{categorical.meta.regression()}, and
-\code{random.meta.regression()} build model summaries and plots.
+and \code{meta.regression.plot()} build model summaries and plots.
 }
 
 \section{References}{

@@ -199,7 +199,8 @@ def options(app, window, family, record):
 
 
 def confidence_inclusion(app, window, record):
-    from rc_metastudio import analysis_setup_dialog, results_window
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
@@ -264,7 +265,7 @@ def confidence_inclusion(app, window, record):
 def mh_rd(app, window, record):
     from xml.etree import ElementTree as ET
     import re
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     def prepare_rd(target):
         model = target.model
         for column in (model.RAW_DATA[0], model.RAW_DATA[2]):
@@ -272,7 +273,7 @@ def mh_rd(app, window, record):
         metric_action(target.menuMetric, "RD").trigger()
     view = matrix(app, window, "analysis-binary.fixed.mh", record, keep_results=True,
                   prepare=prepare_rd, parameters={"digits": 6, "fp_style": "revman"})
-    artifact = next(iter(view._nav_plot_artifacts.values()))
+    artifact = next(iter(view._plots.values())).artifact
     figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
     weight_nodes = [n for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text")
                     if re.fullmatch(r"[\d.]+%", "".join(n.itertext()))]
@@ -417,7 +418,7 @@ def plots(app, window, family, record, *, view=None):
     path = Path(artifact.display_path())
     before = path.read_bytes()
     from tests.e2e.plot_geometry_checks import check_caption
-    from rc_metastudio.analysis_identity import plot_caption, metric_label
+    from rc_metastudio.analysis.identity import plot_caption, metric_label
     initial_svg = path
     if path.suffix != ".svg":
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
@@ -433,8 +434,8 @@ def plots(app, window, family, record, *, view=None):
         assert metric_label(window.model).casefold() in {label.casefold() for label in labels}, labels
 
     record("review1-caption-initial", view, family=family, plots={artifact.title: str(path)}, exports={"svg": str(initial_svg)})
-    from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.funnel_editor import FunnelPlotEditorDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
 
     funnel = artifact.capability.regenerator == "funnel"
     key = (
@@ -820,7 +821,7 @@ def plots(app, window, family, record, *, view=None):
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
                            lambda extension, action_label: context("Export plot…"), include_title=True)
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
-        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        from rc_metastudio.results.plot_export import PlotExportDialog
         modal(app, PlotExportDialog, lambda dialog: dialog.accept(), lambda: context("Export plot…"))
     assert path.read_bytes() == applied
     assert snapshot() == accepted["files"]
@@ -892,7 +893,7 @@ def plots(app, window, family, record, *, view=None):
         # The missing bundle contains different data from the live R globals.
         # Presence validation must fail before any component is loaded.
         from rc_metastudio import r_bridge as r
-        from rc_metastudio.plot_service import PlotServiceError
+        from rc_metastudio.results.plot_service import PlotServiceError
         import shutil
         incomplete = Path(sys.argv[2]) / (family + "-incomplete")
         load_saved_analysis(artifact.params_path)
@@ -913,16 +914,16 @@ def plots(app, window, family, record, *, view=None):
         record("funnel-missing-bundle-blocked", view, family=family, prefix=str(incomplete), study_names=names)
         if family == "trimfill" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
             def capture_funnel_styles(dialog):
-                from rc_metastudio.small_study_effects import FUNNEL_STYLE_LABELS
+                from rc_metastudio.results.plot_defaults import PLOT_STYLE_LABELS
 
                 dialog.figure_caption.setText("Edited outcome / comparison / follow-up")
-                for style, label in FUNNEL_STYLE_LABELS.items():
+                for style, label in PLOT_STYLE_LABELS.items():
                     dialog.style_combo.setCurrentText(label)
                     click(app, dialog.button_box.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
-                    export = Path(sys.argv[2]) / f"trimfill-{style.value}.svg"
+                    export = Path(sys.argv[2]) / f"trimfill-{style}.svg"
                     view.plot_service.export(regenerator="funnel", params_path=artifact.params_path,
                                              output_path=str(export))
-                    record("funnel-style-reference", view, style=style.value, plots={artifact.title: str(export)})
+                    record("funnel-style-reference", view, style=style, plots={artifact.title: str(export)})
                 dialog.reject()
 
             modal(app, FunnelPlotEditorDialog, capture_funnel_styles, lambda: context("Edit plot…"))
@@ -953,7 +954,7 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
             "getSaveFileName",
             return_value=(str(destination), ""),
         ) as picker:
-            from rc_metastudio.plot_export_dialog import PlotExportDialog
+            from rc_metastudio.results.plot_export import PlotExportDialog
             def accept_export(dialog):
                 assert not dialog.include_title.isChecked()
                 dialog.include_title.setChecked(include_title)
@@ -1021,9 +1022,9 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
 
 def calculators(app, window, mode, record):
     from rc_metastudio import r_bridge
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
-    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
 
     family = (
         "continuous"
@@ -1220,8 +1221,8 @@ def calculators(app, window, mode, record):
                     dialog.arm_names
                 ) == [80, 20, 10, 90]
             else:
-                from rc_metastudio.binary_data_dialog import BinaryBackCalculationDialog
-                from rc_metastudio.continuous_data_dialog import (
+                from rc_metastudio.calculators.binary_dialog import BinaryBackCalculationDialog
+                from rc_metastudio.calculators.continuous_dialog import (
                     ContinuousBackCalculationDialog,
                 )
 
@@ -1373,8 +1374,6 @@ def calculators(app, window, mode, record):
             z = r_bridge.get_confidence_multiplier_from_r(95)
             observed["authority_entered"] = [point, (upper - point) / z]
             if family in {"binary", "continuous"}:
-                from rc_metastudio import calculator_effect_readout
-                calculator_effect_readout.update_calculator_readout(dialog, family)
                 expected_se = (upper - point) / z
                 assert f"{expected_se:.4f}" in dialog.wald_readout.text(), dialog.wald_readout.text()
                 record("asymmetric-entered-wald-source", dialog, estimate=point, lower=lower,
@@ -1719,8 +1718,9 @@ def calculators(app, window, mode, record):
         raw=unit.get_raw_data_for_arms(window.model.arm_names),
         entered=observed.get("accepted_entered"),
     )
-    from rc_metastudio import analysis_setup_dialog, results_window
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     window.action_go.trigger()
     app.processEvents()
@@ -1745,9 +1745,7 @@ def calculators(app, window, mode, record):
     from analysis_matrix import set_parameter
 
     method = family + ".random"
-    setup.method_cbo_box.setCurrentText(
-        next(label for label, key in setup.available_method_d.items() if key == method)
-    )
+    setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData(method))
     app.processEvents()
     set_parameter(app, setup, "digits", 6)
     set_parameter(app, setup, "rm.method", "DL")
@@ -1937,8 +1935,10 @@ def table_covariates(app, window, record):
     )
     from analysis_matrix import set_parameter
 
-    from rc_metastudio import analysis_setup_dialog, r_bridge, results_window
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio import r_bridge
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from tests.analysis_regression.golden.support.golden_analysis import (
         parsed_numeric_sections,
     )
@@ -1975,13 +1975,7 @@ def table_covariates(app, window, record):
                 checkbox.setChecked(covariate["name"] == "Dose")
             setup.fixed_effects_radio.setChecked(False)
         else:
-            setup.method_cbo_box.setCurrentText(
-                next(
-                    label
-                    for label, method in setup.available_method_d.items()
-                    if method == "binary.random"
-                )
-            )
+            setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData("binary.random"))
         app.processEvents()
         set_parameter(app, setup, "digits", 6)
         set_parameter(app, setup, "rm.method", "DL")

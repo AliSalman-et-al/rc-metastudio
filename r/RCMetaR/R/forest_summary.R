@@ -40,7 +40,7 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
 
 rcmetar.forest.direction.metrics <- function(bundle, plan) {
     if (!is.null(plan$footer$axis) && !is.finite(plan$footer$axis$split.x)) return(list(lines=0, spacing=0))
-    labels <- unlist(rcmetar.revman.direction.labels(bundle)[c("left", "right")], use.names=FALSE)
+    labels <- unlist(rcmetar.forest.direction.labels(bundle)[c("left", "right")], use.names=FALSE)
     if (rcmetar.forest.style(bundle$params) == "bmj" && any(nzchar(labels))) {
         return(rcmetar.forest.with.measurement.device({
             cex <- plan$typography$cex
@@ -54,7 +54,7 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
 
 rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
-    labels <- rcmetar.revman.direction.labels(bundle)
+    labels <- rcmetar.forest.direction.labels(bundle)
     # Qt trims outer SVG whitespace, so reserve the space in coordinates.
     gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     for (side in c("left", "right")) {
@@ -69,7 +69,7 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     # mtext cex is absolute; measure with the same scale, independent of forest().
     previous <- graphics::par(cex=1)
     on.exit(graphics::par(previous), add=TRUE)
-    labels <- rcmetar.revman.direction.labels(bundle)
+    labels <- rcmetar.forest.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
     if (rcmetar.forest.style(bundle$params) == "bmj") {
         limits <- graphics::par("usr")[3:4]
@@ -105,7 +105,7 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
 }
 
 rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
-    label <- rcmetar.forest.model.label(rcmetar.revman.summary.result(bundle))
+    label <- rcmetar.forest.model.label(rcmetar.forest.summary.result(bundle))
     keys <- vapply(bundle$ilab$columns, function(column) column$key, character(1))
     indexes <- which(keys %in% names(bundle$style_blocks$totals))
     if (length(indexes)) {
@@ -131,7 +131,7 @@ rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
     fixed <- inherits(res, "rma.mh") || inherits(res, "rma.peto") || res$method %in% c("FE", "EE", "CE")
     paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
            "Q = ", round.display(res$QE, digits), ", df = ", df,
-           " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
+           " (", rcmetar.forest.p.value.label(res$QEp, digits), "); I\u00b2 = ",
            format.i2.display(res$I2))
 }
 
@@ -154,7 +154,7 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
 
 rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {
     labels <- c(rcmetar.forest.heterogeneity.label(res, bundle$params),
-                rcmetar.revman.test.overall.label(list(res=res, single_study=FALSE, params=bundle$params)),
+                rcmetar.forest.test.overall.label(list(res=res, single_study=FALSE, params=bundle$params)),
                 if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
@@ -200,7 +200,7 @@ rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
         rcmetar.draw.forest.header(layout$ilab.xpos[[index]], y, headers[[index]])
     }
     for (index in seq_along(layout$group.xpos)) {
-        label <- rcmetar.revman.wrap.header(names(layout$group.xpos)[[index]])
+        label <- rcmetar.forest.wrap.header(names(layout$group.xpos)[[index]])
         # Reserve both multiline blocks before placing the arm above its columns.
         group.y <- y + (raw.height + lines(label)) / 2 * leading + leading * 0.4
         rcmetar.draw.forest.header(layout$group.xpos[[index]], group.y, label)
@@ -248,4 +248,83 @@ rcmetar.draw.forest.effect.header <- function(x, rule.y, label, adj=0.5) {
     lines <- length(strsplit(label, "\n", fixed=TRUE)[[1]])
     y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.65
     rcmetar.draw.forest.header(x, y, label, adj=adj)
+}
+
+rcmetar.forest.test.overall.label <- function(bundle) {
+    res <- rcmetar.forest.summary.result(bundle)
+    if ((isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) ||
+            is.null(res$zval)) {
+        return("")
+    }
+    paste0(
+        rcmetar.overall.test.heading(res, bundle$params), ": ",
+        if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) paste0("t (df = ", res$dfs, ")") else "Z",
+        " = ", rcmetar.format.effect.number(res$zval, display.digits(bundle$params)),
+        " (", rcmetar.forest.p.value.label(res$pval, display.digits(bundle$params)), ")"
+    )
+}
+
+rcmetar.forest.summary.result <- function(bundle) {
+    if (identical(bundle$forest_variant, "subgroup") && !is.null(bundle$subgroups$overall)) {
+        return(bundle$subgroups$overall)
+    }
+    bundle$res
+}
+
+rcmetar.forest.wrap.header <- function(label, width=18) {
+    label <- as.character(label)
+    wrapped <- strwrap(label, width=width)
+    if (length(wrapped) <= 1) {
+        return(label)
+    }
+    paste(wrapped, collapse="\n")
+}
+
+rcmetar.forest.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
+    if (display.value.is.missing(p.value)) {
+        return("P = NA")
+    }
+    value <- format.p.value.display(p.value, digits)
+    if (startsWith(value, "<")) return(paste("P", value))
+    paste("P =", value)
+}
+
+rcmetar.forest.journal.method.label <- function(bundle) {
+    if (inherits(bundle$res, "rma.mh")) return("M\u2013H, Fixed")
+    if (inherits(bundle$res, "rma.peto")) return("Peto, Fixed")
+    if (!is.null(bundle$res$method) && !bundle$res$method %in% c("FE", "EE", "CE")) {
+        return("IV, Random")
+    }
+    "IV, Fixed"
+}
+
+rcmetar.forest.journal.summary.effect <- function(bundle) {
+    res <- bundle$res
+    old.options <- options(na.action="na.pass")
+    on.exit(options(old.options), add=TRUE)
+    weights <- as.numeric(weights(res))
+    transform <- rcmetar.bundle.transform(bundle)
+    digits <- rcmetar.forest.effect.digits(bundle)
+    pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
+    psize <- rep(NA_real_, length(weights))
+    finite.weights <- is.finite(weights)
+    if (any(finite.weights)) {
+        psize[finite.weights] <- 0.55 + 0.85 * sqrt(weights[finite.weights] / max(weights[finite.weights]))
+    }
+    list(
+        res=res,
+        yi=as.numeric(res$b),
+        ci.lb=as.numeric(res$ci.lb),
+        ci.ub=as.numeric(res$ci.ub),
+        weights=weights,
+        psize=psize * rcmetar.point.size.multiplier(bundle$params),
+        label=paste0(
+            rcmetar.format.effect.number(pred[[1]], digits),
+            " [",
+            rcmetar.format.interval.bound(pred[[2]], digits, bundle$params),
+            ", ",
+            rcmetar.format.interval.bound(pred[[3]], digits, bundle$params),
+            "]"
+        )
+    )
 }

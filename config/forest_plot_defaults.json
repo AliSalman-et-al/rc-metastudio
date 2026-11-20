@@ -1,8 +1,22 @@
 {
   "arm_labels": ["Intervention", "Control"],
   "styles": {
-    "default": {"label": "Default", "accent": "#2f5597"},
-    "revman": {"label": "RevMan", "accent": "#000000", "bubble_accent": "#111111"},
-    "bmj": {"label": "BMJ", "accent": "#5f4c9a", "bubble_accent": "#6b58a6"}
+    "default": {
+      "label": "Default",
+      "accent": "#2f5597",
+      "funnel": {"point_symbol": 19, "point_color": "#2F5597", "reference_color": "#2F5597", "region_color": "#DDE6F4", "background_color": "#FFFFFF"}
+    },
+    "revman": {
+      "label": "RevMan",
+      "accent": "#000000",
+      "bubble_accent": "#111111",
+      "funnel": {"point_symbol": 15, "point_color": "#111111", "reference_color": "#000000", "region_color": "#D9D9D9", "background_color": "#FFFFFF"}
+    },
+    "bmj": {
+      "label": "BMJ",
+      "accent": "#5f4c9a",
+      "bubble_accent": "#6b58a6",
+      "funnel": {"point_symbol": 18, "point_color": "#6B58A6", "reference_color": "#6B58A6", "region_color": "#E8E2F4", "background_color": "#FFFFFF"}
+    }
   }
 }

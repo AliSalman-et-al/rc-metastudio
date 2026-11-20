@@ -30,6 +30,7 @@ from rc_metastudio.r_runtime import macos_r_framework_version
 
 if __name__ == "__main__":
     import packaged_smoke_contract as smoke_contract
+    from dependency_lock import packaged_stack
     from macos_direct_build_contract import (
         DIRECT_BUILD_INPUT_MEMBERS,
         DIRECT_R_OFFICIAL_INPUTS,
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     )
 else:
     from scripts import packaged_smoke_contract as smoke_contract
+    from scripts.dependency_lock import packaged_stack
     from scripts.macos_direct_build_contract import (
         DIRECT_BUILD_INPUT_MEMBERS,
         DIRECT_R_OFFICIAL_INPUTS,
@@ -45,16 +47,7 @@ else:
         RCMETAR_VERSION,
     )
 
-EXPECTED_VERSIONS = {
-    "python": "3.14.10",
-    "pyqt6": "6.12.0",
-    "qt": "6.12.0",
-    "sip": "13.13.1",
-    "sip_runtime": "6.17.3",
-    "r": "4.6.2",
-    "rpy2": "3.6.9",
-    "pyinstaller": "6.22.3",
-}
+EXPECTED_VERSIONS = packaged_stack()
 EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
     "amino.rcms": "87ef67051c447aed371facf763cfae4bbf058b16f58a04131d7e8bebffffe949",
     "BCG.rcms": "a58ee7bbe22b1e1571cb9e2bccad8560ecfd9873f86ae5154e1b535df9f8c8cc",
@@ -2179,7 +2172,7 @@ def _validate_preflight(preflight: dict, manifest: dict, target: str) -> None:
     expected = {
         "schema_version": 1,
         "source_commit": manifest["source_commit"],
-        "pyinstaller_version": "6.22.3",
+        "pyinstaller_version": EXPECTED_VERSIONS["pyinstaller"],
         "system": "Darwin",
         "machine": TARGET_CONTRACTS[target]["architecture"],
         "aliases": {

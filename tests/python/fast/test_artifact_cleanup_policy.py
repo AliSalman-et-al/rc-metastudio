@@ -39,7 +39,7 @@ def test_scratch_override_remains_exact_and_cleanup_does_not_touch_siblings(
 
 
 @pytest.mark.parametrize("relative", [False, True])
-def test_scratch_setup_preserves_caller_files_across_cwd_change(tmp_path, monkeypatch, relative):
+def test_scratch_setup_preserves_caller_directory_and_files(tmp_path, monkeypatch, relative):
     from rc_metastudio import settings
 
     invocation = tmp_path / "invocation"
@@ -52,6 +52,7 @@ def test_scratch_setup_preserves_caller_files_across_cwd_change(tmp_path, monkey
     monkeypatch.setenv(settings.ANALYSIS_SCRATCH_ENV_VAR, "scratch" if relative else str(override))
     monkeypatch.setattr(settings, "get_base_path", lambda **kwargs: str(base))
     settings.setup_directories()
+    assert Path.cwd() == invocation
     assert Path(settings.get_r_tmp_path()).resolve() == override
     assert Path(settings.analysis_output_path("new.svg")).parent == override
     settings.clear_r_tmp()

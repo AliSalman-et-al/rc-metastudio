@@ -51,7 +51,7 @@ def run_colours(app, window, work, record):
     from analysis_matrix import run as matrix
     from advanced_workflows import export_formats, modal, click
     from rc_metastudio import r_bridge
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
     cases = [('analysis-amino-binary-' + workflow, None) for workflow in ('cumulative','leave-one-out','subgroup')]
@@ -66,11 +66,11 @@ def run_colours(app, window, work, record):
             view = analyze_existing(app,window,'standard','time_to_event.random' if scenario == 'HR' else 'event_rates.random',record,{'fp_style':'default','digits':3})
         else:
             view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})
-        for index,artifact in enumerate(view._nav_plot_artifacts.values()):
+        for index, entry in enumerate(view._plots.values()):
+            artifact = entry.artifact
             if artifact.capability.regenerator != 'forest':
                 continue
-            nav = [item for item in view.nav_tree.findItems('',QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if view._nav_plot_artifacts.get(id(item)) is artifact]
-            view.nav_tree.setCurrentItem(nav[0])
+            view.nav_tree.setCurrentItem(entry.navigation_item)
             view.report_action.setChecked(False)
             view._show_report(False)
             app.processEvents()

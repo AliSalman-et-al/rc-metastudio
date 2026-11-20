@@ -25,11 +25,6 @@ RCMetaR_PACKAGE = Path("r") / "RCMetaR"
 R_DEP_INSTALLER = Path("scripts") / "install-r-deps.R"
 R_REITSMA_VISUAL_QA = Path("scripts") / "verify_reitsma_visual_qa.R"
 R_MANIFEST_VALIDATOR = Path("scripts") / "validate_rcmetar_r_manifests.py"
-REQUIRED_RPY2_IDENTITIES = {
-    "rpy2": "3.6.9",
-    "rpy2-rinterface": "3.6.7",
-    "rpy2-robjects": "3.6.6",
-}
 REITSMA_VISUAL_CASE_COUNT = 21
 REITSMA_VISUAL_DETERMINISTIC_EXTENSIONS = {"svg", "svgz", "png", "tif", "tiff"}
 
@@ -43,13 +38,14 @@ def step(message: str) -> None:
 
 
 def verify_rpy2_identities(python: str = sys.executable) -> dict[str, str]:
+    required_versions = r_support.locked_rpy2_versions()
     observed = run_json(
         [python, "-c", "import json; from importlib.metadata import version; "
          "print(json.dumps({name: version(name) for name in "
-         + repr(list(REQUIRED_RPY2_IDENTITIES)) + "}))"],
+         + repr(list(required_versions)) + "}))"],
         cwd=Path(__file__).resolve().parents[1],
     )
-    for distribution, required in REQUIRED_RPY2_IDENTITIES.items():
+    for distribution, required in required_versions.items():
         if observed.get(distribution) != required:
             raise VerificationError(
                 f"{distribution} identity mismatch: expected {required}, observed {observed.get(distribution)}"
@@ -110,20 +106,6 @@ def resolve_rscript(name: str, env: dict[str, str] | None = None) -> Path:
     return resolved
 
 
-def resolve_r_exe(rscript: Path, root: Path, env: dict[str, str]) -> Path:
-    try:
-        return r_support.resolve_r_exe(rscript, root, env)
-    except r_support.RVerificationSupportError as exc:
-        raise VerificationError(str(exc)) from exc
-
-
-def resolve_r_home(rscript: Path, root: Path, env: dict[str, str]) -> Path:
-    try:
-        return r_support.resolve_r_home(rscript, root, env)
-    except r_support.RVerificationSupportError as exc:
-        raise VerificationError(str(exc)) from exc
-
-
 def isolated_r_env(
     base_env: dict[str, str], library: Path, r_home: Path | None = None
 ) -> dict[str, str]:
@@ -143,29 +125,6 @@ def isolated_r_env(
     env.setdefault("RPY2_CFFI_MODE", "API")
     env.setdefault("_R_CHECK_FORCE_SUGGESTS_", "false")
     return env
-
-
-def dependency_cache_key(
-    root: Path, rscript: Path, env: dict[str, str], cran_repo: str
-) -> str:
-    try:
-        return r_support.dependency_cache_key(
-            root,
-            rscript,
-            env,
-            cran_repo,
-            R_DEP_INSTALLER,
-            "rdeps",
-        )
-    except r_support.RVerificationSupportError as exc:
-        raise VerificationError(str(exc)) from exc
-
-
-def binary_dependency_policy(root: Path) -> dict:
-    try:
-        return r_support.load_binary_dependency_policy(root)
-    except r_support.RVerificationSupportError as exc:
-        raise VerificationError(str(exc)) from exc
 
 
 def copy_library(source: Path, destination: Path) -> None:
@@ -195,7 +154,9 @@ def ensure_dependency_library(
         return r_library
 
     cache_library = (
-        cache_root / dependency_cache_key(root, rscript, env, cran_repo) / "library"
+        cache_root
+        / r_support.dependency_cache_key(root, rscript, env, cran_repo, R_DEP_INSTALLER, "rdeps")
+        / "library"
     )
     if cache_library.exists():
         try:
@@ -205,7 +166,7 @@ def ensure_dependency_library(
             verify_manifest_versions(root, python, rscript, cache_env)
             verify_dependency_closure(root, rscript, cache_env)
             step(f"Using cached R dependency library at {cache_library}")
-        except VerificationError:
+        except (VerificationError, r_support.RVerificationSupportError):
             shutil.rmtree(cache_library)
         else:
             r_library = work_dir / "library"
@@ -246,7 +207,7 @@ def verify_dependency_closure(root: Path, rscript: Path, env: dict[str, str]) ->
     with tempfile.TemporaryDirectory(prefix="rcms-closure-") as temporary:
         script = Path(temporary) / "closure.R"
         script.write_text(expression, encoding="utf-8")
-        run([rscript, "--vanilla", script, *binary_dependency_policy(root)["normal_packages"]], cwd=root, env=env)
+        run([rscript, "--vanilla", script, *r_support.load_binary_dependency_policy(root)["normal_packages"]], cwd=root, env=env)
 
 
 def built_RCMetaR_tarball(work_dir: Path) -> Path:
@@ -444,15 +405,7 @@ def verify(args: argparse.Namespace) -> None:
     base_env = r_support.verification_base_env(prepared_env)
     base_env[source_verifier.TYPING_RECEIPT_ENV] = str(receipt)
     base_env["RCMS_RSCRIPT"] = str(rscript)
-    policy = binary_dependency_policy(root)
-    configured_repo = args.cran_repo or base_env.get("RCMS_CRAN_REPO")
-    if configured_repo and configured_repo != policy["repository"]:
-        raise VerificationError(
-            f"R dependency repository must match the manifest snapshot: {policy['repository']}"
-        )
-    cran_repo = policy["repository"]
-    base_env["RCMS_CRAN_REPO"] = cran_repo
-    base_env["RCMS_POLICY_PYTHON"] = python
+    cran_repo = r_support.configure_binary_repository(root, base_env, python, args.cran_repo)
 
     verify_rpy2_identities(python)
 
@@ -469,9 +422,9 @@ def verify(args: argparse.Namespace) -> None:
         bootstrap_library = work_dir / "bootstrap-library"
         bootstrap_library.mkdir(parents=True)
         env = isolated_r_env(base_env, bootstrap_library)
-        r_home = resolve_r_home(rscript, root, env)
+        r_home = r_support.resolve_r_home(rscript, root, env)
         env = isolated_r_env(base_env, bootstrap_library, r_home)
-        r_exe = resolve_r_exe(rscript, root, env)
+        r_exe = r_support.resolve_r_exe(rscript, root, env)
         cache_root = (
             args.r_library_cache_root.resolve() if args.r_library_cache_root else None
         )
@@ -568,7 +521,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     try:
         verify(parse_args(argv))
-    except VerificationError as exc:
+    except (VerificationError, r_support.RVerificationSupportError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0

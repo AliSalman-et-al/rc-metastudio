@@ -11,7 +11,7 @@ from tests.python.gui.qt_test_support import key_click, key_clicks
 def run(app, window, work, record):
     from advanced_workflows import modal, click
     from rc_metastudio import r_bridge
-    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     from tests.fit_observations import observe_fit
     root = Path(__file__).resolve().parents[2]
@@ -119,7 +119,7 @@ def run(app, window, work, record):
                     if mode == 'ratio':
                         from statistics import NormalDist
                         from zipfile import ZipFile
-                        from rc_metastudio.manuscript_report import write_docx
+                        from rc_metastudio.results.report import write_docx
 
                         fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
                         displayed = f'{fitted_lower:.1e}'.replace('e-', 'e−')

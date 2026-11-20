@@ -233,7 +233,6 @@ def _finish_startup_project(app, window, project_path, opened, *, completion_mar
     """Finish the positional startup path and optionally write its marker."""
     if not opened or window.tableView.model().rowCount() < 1:
         raise SystemExit("startup project did not open: %s" % project_path)
-    _mark_startup_workspace_saved(window)
     window.close()
     app.processEvents()
     if completion_marker:
@@ -254,12 +253,6 @@ def _finish_startup_project(app, window, project_path, opened, *, completion_mar
         )
     app.quit()
     return 0
-
-
-def _mark_startup_workspace_saved(window):
-    workspace = getattr(window, "workspace", None)
-    if workspace is not None and workspace.document is not None:
-        workspace.mark_saved()
 
 
 def start(startup_argv: list[str]):
@@ -294,19 +287,17 @@ def compose_application(
     main_window_loader=None, r_loader=None
 ):
     """Compose the application shell used by startup and qualification hooks."""
-    qt6_resources.ensure_application_resources()
     app_error_handler.install_global_exception_handler()
     app, main_window = _prepare_composition(app, main_window_loader)
     _emit_automation_phase(phase_callback, "application:configured")
     baseline_ids = _top_level_ids(app)
     splash = None
-    previous_directory = os.getcwd()
     try:
         if getattr(sys, "frozen", False):
             from rc_metastudio import r_runtime
 
             # Frozen bootstrap changes HOME, which Qt uses for AppDataLocation.
-            # Configure it before creating the shared Python/R working directory.
+            # Configure it before resolving the application data directory.
             r_runtime.configure_bundled_r_environment()
         if not getattr(sys, "frozen", False):
             for name in ("RCMS_R_HOME", "RCMS_R_LIBS"):
@@ -323,8 +314,6 @@ def compose_application(
                 raise
             runtime_error = error
         meta = _finish_composition(app, main_window, splash=splash)
-        # Windows cannot remove an application base directory while it is cwd.
-        meta.destroyed.connect(lambda: os.chdir(previous_directory))
         _emit_automation_phase(phase_callback, "window:visible")
         if runtime_error is not None:
             app.processEvents()
@@ -332,7 +321,6 @@ def compose_application(
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))
-        os.chdir(previous_directory)
         raise
 
 
@@ -358,8 +346,6 @@ def _load_composition_runtime(
             app.processEvents()
             _emit_automation_phase(phase_callback, "splash:visible")
         _invoke_r_loader(r_loader or load_R_libraries, app, splash, phase_callback)
-        from rc_metastudio import r_bridge
-        r_bridge.reset_r_working_directory()
         r_runtime.mark_ready()
         return splash
     except BaseException:
@@ -377,7 +363,6 @@ def _invoke_r_loader(loader, app, splash, phase_callback):
 
 def _finish_composition(app, main_window, *, splash):
     meta = main_window.MainWindow()
-    meta.workspace.mark_saved()
     settings.restore_main_window_placement(meta)
     if splash is not None:
         splash.finish(meta)
@@ -419,6 +404,7 @@ def _set_application_icon(app):
 
 def configure_application(app):
     """Apply the complete process-wide application identity exactly once."""
+    qt6_resources.ensure_application_resources()
     app.setApplicationName(application_metadata.APPLICATION_NAME)
     app.setApplicationDisplayName(application_metadata.APPLICATION_DISPLAY_NAME)
     app.setApplicationVersion(application_metadata.VERSION)

@@ -160,12 +160,12 @@ def selected_rscript(args: argparse.Namespace) -> str:
     return "Rscript"
 
 
-def run_default_r_evidence(args: argparse.Namespace) -> None:
+def run_default_r_evidence(args: argparse.Namespace, rscript: str, env: dict[str, str]) -> None:
     command = [
         sys.executable,
         "scripts/verify_rcmetar_r_default.py",
         "--rscript",
-        selected_rscript(args),
+        rscript,
     ]
     if args.require_r_evidence:
         command += [
@@ -176,7 +176,7 @@ def run_default_r_evidence(args: argparse.Namespace) -> None:
             str(args.r_library_cache_root or DEFAULT_R_LIBRARY_CACHE),
         ]
     write_step("Verifying Default R Evidence")
-    run(command)
+    run(command, env=env)
 
 
 def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
@@ -186,10 +186,13 @@ def run_source_lane(args: argparse.Namespace, *, smoke: bool) -> None:
         write_step("Skipping dependency sync for warm local verification")
     build_root = (REPO_ROOT / args.build_root).resolve()
     env = prepare_qt_environment(build_root)
+    rscript = selected_rscript(args)
+    if rscript != "Rscript":
+        env["RCMS_RSCRIPT"] = rscript
     run_typing(build_root)
     run_source_tests(env, smoke=smoke, fast_workers=0 if smoke else args.fast_workers)
     if not args.skip_r_evidence:
-        run_default_r_evidence(args)
+        run_default_r_evidence(args, rscript, env)
 
 
 def run_source_tests(env: dict[str, str], *, smoke: bool, fast_workers: int) -> None:

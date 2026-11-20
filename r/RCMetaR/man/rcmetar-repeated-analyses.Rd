@@ -3,7 +3,6 @@
 \name{RCMetaR-repeated-analyses}
 \alias{RCMetaR-repeated-analyses}
 \alias{boot.ma.output.results}
-\alias{boot.meta.reg.cond.means.output.results}
 \alias{boot.meta.reg.output.results}
 \alias{bootstrap}
 \alias{calc.meta.reg.coeffs.and.cis}
@@ -54,7 +53,6 @@ format subgroup results.
 
 \code{bootstrap()}, \code{boot.ma.output.results()},
 \code{boot.meta.reg.output.results()},
-\code{boot.meta.reg.cond.means.output.results()},
 \code{construct.boot.res.and.value.info.for.results()},
 \code{calc.meta.reg.coeffs.and.cis()}, and \code{plot.custom.boot()} handle
 resampling summaries and bootstrap plots.

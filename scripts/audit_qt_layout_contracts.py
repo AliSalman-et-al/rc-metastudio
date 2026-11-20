@@ -72,8 +72,8 @@ SOURCE_EXCEPTION_RULES = {
     "bounded-native-popup": {
         "paths": {
             "adaptive_controls.py",
-            "binary_data_dialog.py",
-            "continuous_data_dialog.py",
+            "calculators/binary_dialog.py",
+            "calculators/continuous_dialog.py",
         },
         "methods": {
             "move",
@@ -87,9 +87,9 @@ SOURCE_EXCEPTION_RULES = {
     },
     "compact-table-overflow": {
         "paths": {
-            "binary_data_dialog.py",
-            "continuous_data_dialog.py",
-            "diagnostic_data_dialog.py",
+            "calculators/binary_dialog.py",
+            "calculators/continuous_dialog.py",
+            "calculators/diagnostic_dialog.py",
             "qt_layout.py",
         },
         "methods": {
@@ -101,24 +101,24 @@ SOURCE_EXCEPTION_RULES = {
     "content-overflow-control": {
         "paths": {
             "adaptive_controls.py",
-            "binary_data_dialog.py",
-            "continuous_data_dialog.py",
-            "diagnostic_data_dialog.py",
-            "analysis_setup_dialog.py",
+            "calculators/binary_dialog.py",
+            "calculators/continuous_dialog.py",
+            "calculators/diagnostic_dialog.py",
+            "analysis/setup_dialog.py",
             "main_window.py",
-            "results_window.py",
+            "results/window.py",
         },
         "methods": {"setMaximumWidth", "setMinimumWidth"},
     },
     "intrinsic-ratio": {
-        "paths": {"results_window.py"},
+        "paths": {"results/window.py"},
         "methods": {"fitInView", "setSceneRect"},
     },
     "numeric-domain-control": {
         "paths": {
-            "calculator_controls.py",
-            "continuous_data_dialog.py",
-            "diagnostic_data_dialog.py",
+            "calculators/controls.py",
+            "calculators/continuous_dialog.py",
+            "calculators/diagnostic_dialog.py",
         },
         "methods": {"setMaximumWidth", "setMinimumWidth"},
     },

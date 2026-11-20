@@ -232,52 +232,46 @@ jobs:
         run: |
           set -euo pipefail
           test -s "artifacts/$ARTIFACT"
-      - name: Inventory and describe candidate
+      - name: Extract Windows candidate
         if: matrix.target == 'windows-x64'
         shell: pwsh
         env:
-          TARGET: ${{ matrix.target }}
           ARTIFACT: ${{ matrix.artifact }}
-          SOURCE_SHA: ${{ inputs.source_sha }}
-          VERSION: ${{ inputs.version }}
         run: |
           Expand-Archive -LiteralPath "artifacts/$env:ARTIFACT" -DestinationPath candidate/tree
-          uv run python scripts/delivery.py inventory --root candidate/tree --output "candidate/$env:TARGET.inventory.json"
-          uv run python scripts/delivery.py sbom --inventory "candidate/$env:TARGET.inventory.json" --version "$env:VERSION" --output "candidate/$env:TARGET.cdx.json"
-          $identity = uv run python scripts/delivery.py digest --json candidate/release-set.json --release-identity
-          uv run python scripts/delivery.py stage-result --target "$env:TARGET" --stage assembled --commit "$env:SOURCE_SHA" --input-digest "$identity" --output-file "artifacts/$env:ARTIFACT" --output-file "candidate/$env:TARGET.inventory.json" --output-file "candidate/$env:TARGET.cdx.json" --result "candidate/$env:TARGET.assembled.json"
-      - name: Inventory and describe native macOS candidate
+      - name: Extract macOS candidate
         if: startsWith(matrix.target, 'macos-')
         shell: bash
         env:
-          TARGET: ${{ matrix.target }}
           ARTIFACT: ${{ matrix.artifact }}
-          SOURCE_SHA: ${{ inputs.source_sha }}
-          VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           mkdir -p candidate/tree
           ditto -x -k "artifacts/$ARTIFACT" candidate/tree
-          uv run python scripts/delivery.py inventory --root candidate/tree --output "candidate/$TARGET.inventory.json"
-          uv run python scripts/delivery.py sbom --inventory "candidate/$TARGET.inventory.json" --version "$VERSION" --output "candidate/$TARGET.cdx.json"
-          identity="$(uv run python scripts/delivery.py digest --json candidate/release-set.json --release-identity)"
-          uv run python scripts/delivery.py stage-result --target "$TARGET" --stage assembled --commit "$SOURCE_SHA" --input-digest "$identity" --output-file "artifacts/$ARTIFACT" --output-file "candidate/$TARGET.inventory.json" --output-file "candidate/$TARGET.cdx.json" --result "candidate/$TARGET.assembled.json"
-      - name: Inventory and describe Linux candidate
+      - name: Extract Linux candidate
         if: matrix.target == 'linux-x64'
         shell: bash
         env:
-          TARGET: ${{ matrix.target }}
           ARTIFACT: ${{ matrix.artifact }}
-          SOURCE_SHA: ${{ inputs.source_sha }}
-          VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           mkdir -p candidate/tree
           tar -xzf "artifacts/$ARTIFACT" -C candidate/tree
-          python3 scripts/delivery.py inventory --root candidate/tree --output "candidate/$TARGET.inventory.json"
-          python3 scripts/delivery.py sbom --inventory "candidate/$TARGET.inventory.json" --version "$VERSION" --output "candidate/$TARGET.cdx.json"
-          identity="$(python3 scripts/delivery.py digest --json candidate/release-set.json --release-identity)"
-          python3 scripts/delivery.py stage-result --target "$TARGET" --stage assembled --commit "$SOURCE_SHA" --input-digest "$identity" --output-file "artifacts/$ARTIFACT" --output-file "candidate/$TARGET.inventory.json" --output-file "candidate/$TARGET.cdx.json" --result "candidate/$TARGET.assembled.json"
+      - name: Record assembled candidate
+        shell: bash
+        env:
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          TARGET: ${{ matrix.target }}
+          ARTIFACT: ${{ matrix.artifact }}
+        run: |
+          set -euo pipefail
+          # The selected historical source may predate this workflow's recorder.
+          recorder=candidate/recorder
+          mkdir -p "$recorder/scripts" "$recorder/delivery"
+          git fetch --no-tags --depth=1 origin "$WORKFLOW_SHA"
+          git show "$WORKFLOW_SHA:scripts/delivery.py" > "$recorder/scripts/delivery.py"
+          cp delivery/targets.json "$recorder/delivery/targets.json"
+          uv run --no-project python "$recorder/scripts/delivery.py" record-assembled --target "$TARGET" --archive "artifacts/$ARTIFACT" --manifest candidate/release-set.json --tree candidate/tree
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: candidate-${{ matrix.target }}

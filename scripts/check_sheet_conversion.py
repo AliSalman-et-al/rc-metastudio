@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 import tempfile
 import zipfile
-from rc_metastudio.project_format import load_project, save_project
-from rc_metastudio.project_adapter import project_to_dataset, dataset_to_project
+from rc_metastudio.project.archive import load_project, save_project
+from rc_metastudio.project.adapter import project_to_dataset, dataset_to_project
 
 ROOT = Path(__file__).resolve().parents[1]
 

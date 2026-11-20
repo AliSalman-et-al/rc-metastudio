@@ -188,7 +188,7 @@ def run(app, window, work, root, record, analyze):
         QTest.mouseMove(window.add_sheet_button, window.add_sheet_button.rect().center())
         wait(150)
         record('polish-add-outcome-hover-' + name, window)
-        from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+        from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
         with patch.dict(window.model.current_sheet.settings, {}, clear=True):
             setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95)
         setup.show()
@@ -237,7 +237,7 @@ def run(app, window, work, root, record, analyze):
     assert app.focusWidget() is not window.tableView, "Ctrl+Tab cannot leave the study grid"
     record("round5-grid-keyboard-exit", window)
 
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     button = window.analysis_button
     menu = required(button.menu(), "analysis button menu")
     menu_errors = []

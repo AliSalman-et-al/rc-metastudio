@@ -213,24 +213,21 @@
 }
 
 .small.study.normalize.params <- function(om.data, params) {
-    if (is.null(params$correction.policy)) {
-        if (is(om.data, "BinaryData"))
-            params$correction.policy <- "Studies with any zero cell"
-        else if (is(om.data, "DiagnosticData"))
-            params$correction.policy <- "Studies with any zero cell"
+    if (is.null(params$correction.policy) &&
+            (is(om.data, "BinaryData") || is(om.data, "DiagnosticData"))) {
+        params$correction.policy <- "Studies with any zero cell"
     }
     params
 }
 
 .small.study.eligibility <- function(om.data, params=list(), prepared=NULL) {
-    if (!is(om.data, "OMData")) stop("RCMetaR data expected.")
-    params <- .small.study.normalize.params(om.data, params)
     metric <- as.character(params$metric %||% "")
     data.type <- as.character(params$data.type %||% .rcmetar.data.type(om.data))
     confidence.level <- .small.study.confidence.level(params)
     if (is.null(prepared)) prepared <- tryCatch(
         .small.study.reconstruct(om.data, metric, params),
-        error=function(e) list(y=om.data@y, se=om.data@SE, raw=FALSE)
+        error=function(e) list(y=om.data@y, se=om.data@SE, raw=FALSE,
+                               warning=paste("Raw effect reconstruction failed:", conditionMessage(e)))
     )
     included <- which(is.finite(prepared$y) & is.finite(prepared$se) & prepared$se > 0)
     standard.error <- prepared$se[included]
@@ -245,6 +242,7 @@
     methods <- routed$methods
     warnings <- .small.study.eligibility.warnings(
         metric, data.type, routed$predictor)
+    warnings <- c(warnings, prepared$warning)
     if (is(om.data, "RatioData")) warnings <- c(warnings, om.data@notes)
     list(`data.type`=data.type, metric=metric, `usable.studies`=length(standard.error),
          `included.indices`=included, `raw.data.available`=isTRUE(prepared$raw),
@@ -721,7 +719,8 @@
     result
 }
 
-.small.study.fit.report <- function(om.data, params, prepared) {
+.small.study.fit.report <- function(om.data, prepared) {
+    params <- prepared$params
     selected <- .small.study.select.methods(
         prepared$eligibility, params, prepared$metric, prepared$diagnostic
     )
@@ -742,11 +741,6 @@
         prepared, fitted$tests, fitted$failures, primary, trimfill,
         extrapolation, plots
     )
-}
-
-publication.bias.effects <- function(om.data, params) {
-    prepared <- .small.study.prepare(om.data, params)
-    .small.study.fit.report(om.data, prepared$params, prepared)
 }
 
 .small.study.native.model <- function(om.data, params, metric, keep, y, se) {
@@ -800,11 +794,7 @@ publication.bias.effects <- function(om.data, params) {
 }
 
 .small.study.correction.method <- function(params) {
-    switch(as.character(params$correction.policy %||% ""),
-        "Studies with any zero cell"="only0",
-        "All studies"="all",
-        "All studies if any zero exists"="if0all",
-        "only0")
+    .rcmetar.correction.policy.target(params$correction.policy, "only0")
 }
 
 .small.study.asd.model <- function(om.data, params, keep) {
@@ -839,57 +829,67 @@ publication.bias.effects <- function(om.data, params) {
             function(x) length(x) == n && all(is.finite(x)), logical(1)))
 }
 
+.small.study.count.effects <- function(data, metric, params, n) {
+    if (is(data, "BinaryData") && metric %in% c("OR", "RR", "RD")) {
+        counts <- list(data@g1O1, data@g1O2, data@g2O1, data@g2O2)
+    } else if (is(data, "DiagnosticData") && metric == "DOR") {
+        counts <- list(data@TP, data@FN, data@FP, data@TN)
+    } else {
+        return(NULL)
+    }
+    if (!all(lengths(counts) == n) || !all(is.finite(unlist(counts, use.names=FALSE)))) return(NULL)
+
+    double.zero <- (counts[[1]] == 0 & counts[[3]] == 0) | (counts[[2]] == 0 & counts[[4]] == 0)
+    target <- .rcmetar.correction.policy.target(params$correction.policy, "none")
+    corrected <- .rcmetar.correct.counts(counts, .5, target)
+    a <- corrected[[1]]
+    b <- corrected[[2]]
+    c <- corrected[[3]]
+    d <- corrected[[4]]
+    if (metric %in% c("OR", "DOR")) {
+        y <- log((a * d) / (b * c))
+        se <- sqrt(1 / a + 1 / b + 1 / c + 1 / d)
+        if (metric == "OR") {
+            y[double.zero] <- NA_real_
+            se[double.zero] <- NA_real_
+        }
+        return(list(y=y, se=se, raw=TRUE))
+    }
+    n1 <- a + b
+    n2 <- c + d
+    if (metric == "RR") {
+        return(list(y=log((a / n1) / (c / n2)),
+                    se=sqrt(1 / a - 1 / n1 + 1 / c - 1 / n2), raw=TRUE))
+    }
+    list(y=a / n1 - c / n2, se=sqrt(a * b / n1^3 + c * d / n2^3), raw=TRUE)
+}
+
 .small.study.reconstruct <- function(om.data, metric, params) {
     n <- length(om.data@study.names)
-    confidence.level <- .small.study.confidence.level(params)
-    y <- if (length(om.data@y) == n) om.data@y else rep(NA_real_, n)
-    se <- if (length(om.data@SE) == n) om.data@SE else rep(NA_real_, n)
-    raw <- FALSE
-    if (is(om.data, "BinaryData") && metric %in% c("OR", "RR", "RD") && all(vapply(list(om.data@g1O1, om.data@g1O2, om.data@g2O1, om.data@g2O2), function(x) length(x) == n && all(is.finite(x)), logical(1)))) {
-        a <- om.data@g1O1; b <- om.data@g1O2; c <- om.data@g2O1; d <- om.data@g2O2
-        double.zero <- if (identical(metric, "OR")) ((a == 0 & c == 0) | (b == 0 & d == 0)) else rep(FALSE, length(a))
-        policy <- as.character(params$correction.policy %||% "")
-        zero <- (a == 0 | b == 0 | c == 0 | d == 0)
-        apply.correction <- if (policy == "All studies") rep(TRUE, length(y)) else if (policy == "All studies if any zero exists" && any(zero)) rep(TRUE, length(y)) else if (policy == "Studies with any zero cell") zero else rep(FALSE, length(y))
-        for (index in which(apply.correction)) { a[index] <- a[index] + .5; b[index] <- b[index] + .5; c[index] <- c[index] + .5; d[index] <- d[index] + .5 }
-        n1 <- a + b; n2 <- c + d
-        if (metric == "OR") {
-            y <- log((a*d)/(b*c)); se <- sqrt(1/a + 1/b + 1/c + 1/d)
-            y[double.zero] <- NA_real_; se[double.zero] <- NA_real_
-        }
-        if (metric == "RR") { y <- log((a/n1)/(c/n2)); se <- sqrt(1/a - 1/n1 + 1/c - 1/n2) }
-        if (metric == "RD") { y <- a/n1-c/n2; se <- sqrt(a*b/n1^3+c*d/n2^3) }
-        raw <- TRUE
-    }
-    if (is(om.data, "ContinuousData") && metric %in% c("MD", "SMD") && isTRUE(.small.study.has.continuous.raw(om.data, metric))) {
+    level <- .small.study.meta.level(.small.study.confidence.level(params))
+    effects <- .small.study.count.effects(om.data, metric, params, n)
+    if (!is.null(effects)) return(effects)
+    if (is(om.data, "ContinuousData") && metric %in% c("MD", "SMD") &&
+            .small.study.has.continuous.raw(om.data, metric)) {
         model <- meta::metacont(
             n.e=om.data@N1, mean.e=om.data@mean1, sd.e=om.data@sd1,
             n.c=om.data@N2, mean.c=om.data@mean2, sd.c=om.data@sd2,
-            studlab=om.data@study.names, sm=metric, common=TRUE, random=TRUE, method.tau="REML", level=.small.study.meta.level(confidence.level)
+            studlab=om.data@study.names, sm=metric, common=TRUE, random=TRUE,
+            method.tau="REML", level=level
         )
-        y <- model$TE
-        se <- model$seTE
-        raw <- TRUE
+        return(list(y=model$TE, se=model$seTE, raw=TRUE))
     }
-    if (is(om.data, "BinaryData") && metric %in% c("PR", "PLN", "PLO", "PAS", "PFT") && isTRUE(.small.study.has.one.arm.raw(om.data))) {
+    if (metric %in% binary.one.arm.metrics && .small.study.has.one.arm.raw(om.data)) {
         model <- meta::metaprop(
             event=om.data@g1O1, n=om.data@g1O1 + om.data@g1O2,
             studlab=om.data@study.names, sm=metric, method="Inverse",
-            common=TRUE, random=TRUE, method.tau="REML", level=.small.study.meta.level(confidence.level)
+            common=TRUE, random=TRUE, method.tau="REML", level=level
         )
-        y <- model$TE
-        se <- model$seTE
-        raw <- TRUE
+        return(list(y=model$TE, se=model$seTE, raw=TRUE))
     }
-    if (is(om.data, "DiagnosticData") && all(vapply(list(om.data@TP, om.data@FN, om.data@FP, om.data@TN), function(x) length(x) == n && all(is.finite(x)), logical(1))) && metric == "DOR") {
-        a <- om.data@TP; b <- om.data@FN; c <- om.data@FP; d <- om.data@TN
-        zero <- (a == 0 | b == 0 | c == 0 | d == 0)
-        policy <- as.character(params$correction.policy %||% "")
-        apply.correction <- if (policy == "All studies") rep(TRUE, length(y)) else if (policy == "All studies if any zero exists" && any(zero)) rep(TRUE, length(y)) else if (policy == "Studies with any zero cell") zero else rep(FALSE, length(y))
-        for (index in which(apply.correction)) { a[index] <- a[index] + .5; b[index] <- b[index] + .5; c[index] <- c[index] + .5; d[index] <- d[index] + .5 }
-        y <- log((a*d)/(b*c)); se <- sqrt(1/a + 1/b + 1/c + 1/d); raw <- TRUE
-    }
-    list(y=y, se=se, raw=raw)
+    y <- if (length(om.data@y) == n) om.data@y else rep(NA_real_, n)
+    se <- if (length(om.data@SE) == n) om.data@SE else rep(NA_real_, n)
+    list(y=y, se=se, raw=FALSE)
 }
 
 .small.study.tests.text <- function(tests, confidence.level=95) {
@@ -1062,10 +1062,10 @@ publication.bias.effects <- function(om.data, params) {
     }, error=function(e) paste0(failure.prefix, ": ", conditionMessage(e)))
     if (!is.null(failure)) return(list(failure=failure))
     plot.kind <- .small.study.plot.kind(kind)
-    capability <- list(plot_kind=plot.kind, editable=TRUE, styleable=TRUE,
-                       composition="single", regenerator="funnel")
+    capability <- .rcmetar.plot.descriptor(plot.kind, editable=TRUE, styleable=TRUE,
+                                           regenerator="funnel")
     base <- sub("\\.(png|svg)$", "", path)
-    .small.study.save(plot.data, fit, params, base)
+    save.data(plot.data, fit, params, out.path=base)
     list(key=key, title=title, path=path, kind=plot.kind, capability=capability,
          params.path=base, failure=character())
 }
@@ -1118,7 +1118,7 @@ publication.bias.effects <- function(om.data, params) {
     if (kind == "deeks") run.params <- .small.study.deeks.params(
         run.params, plot.data, prepared, diagnostic.model)
     key <- paste0("small-study.", .small.study.plot.kind(kind), ".", index)
-    path <- tempfile(pattern=paste0("small-study-", kind, "-"), fileext=".svg")
+    path <- tempfile(paste0("small-study-", kind, "-"), tmpdir=rcmetar.scratch.path(), fileext=".svg")
     .small.study.plot.artifact(key, title, kind, path, plot.data, pooled, run.params)
 }
 
@@ -1146,7 +1146,7 @@ publication.bias.effects <- function(om.data, params) {
     run.params$funnel.ylab <- as.character(
         .small.study.plot.setting(params, "funnel.ylab", 1L, .small.study.standard.error.label(params)))
     key <- paste0("small-study.trim-and-fill.", tolower(name))
-    path <- tempfile(pattern="small-study-trimfill-", fileext=".svg")
+    path <- tempfile("small-study-trimfill-", tmpdir=rcmetar.scratch.path(), fileext=".svg")
     .small.study.plot.artifact(
         key, name, "trimfill", path, augmented, scenario$fit, run.params,
         paste0(name, " plot"))
@@ -1170,8 +1170,7 @@ publication.bias.effects <- function(om.data, params) {
 }
 
 .small.study.plots <- function(om.data, pooled, params, metric, common.center=0,
-                               prepared=NULL, trimfill=NULL, diagnostic.model=NULL) {
-    if (is.null(prepared)) prepared <- .small.study.reconstruct(om.data, metric, params)
+                               prepared, trimfill=NULL, diagnostic.model=NULL) {
     plot.data <- om.data
     plot.data@y <- prepared$y
     plot.data@SE <- prepared$se
@@ -1187,15 +1186,6 @@ publication.bias.effects <- function(om.data, params) {
             name, scenario, plot.data, params, metric),
             names(trimfill$scenarios), trimfill$scenarios))
     .small.study.collect.plots(artifacts)
-}
-
-.small.study.save <- function(data.object, result.object, params.object, base) {
-    om.data <- data.object
-    res <- result.object
-    params <- params.object
-    save(om.data, file=.rcmetar.plot.bundle.paths(base, "om.data"))
-    save(res, file=.rcmetar.plot.bundle.paths(base, "res"))
-    save(params, file=.rcmetar.plot.bundle.paths(base, "params"))
 }
 
 .small.study.trimfill <- function(pooled, params, metric, prepared=NULL) {
@@ -1347,11 +1337,14 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     data.type <- as.character(params$data.type %||% if (is(om.data, "DiagnosticData")) "diagnostic" else "")
     metric <- as.character(params$metric %||% "")
     if (data.type == "diagnostic" && metric != "DOR") stop("diagnostic small-study effects analysis is DOR-only")
-    params <- .small.study.normalize.params(om.data, params)
+    if (!is(om.data, "OMData")) stop("RCMetaR data expected.")
     if (is(om.data, "RatioData")) om.data <- ratio.prepare(om.data, params)
-    eligibility <- .small.study.eligibility(om.data, params)
-    if (isTRUE(params$preview)) return(list(eligibility=eligibility))
-    publication.bias.effects(om.data, params)
+    if (isTRUE(params$preview)) {
+        params <- .small.study.normalize.params(om.data, params)
+        return(list(eligibility=.small.study.eligibility(om.data, params)))
+    }
+    prepared <- .small.study.prepare(om.data, params)
+    .small.study.fit.report(om.data, prepared)
 }
 
 .small.study.funnel.index <- function(params) {
@@ -1526,7 +1519,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
 }
 
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120) {
-    path <- output.path %||% tempfile(pattern="small-study-funnel-", fileext=".svg")
+    path <- output.path %||% tempfile("small-study-funnel-", tmpdir=rcmetar.scratch.path(), fileext=".svg")
     y <- om.data@y
     se <- om.data@SE
     keep <- is.finite(y) & is.finite(se) & se > 0

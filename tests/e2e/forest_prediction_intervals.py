@@ -28,7 +28,7 @@ def run_predictions(app, window, work, record):
             view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
                           metric_override=measure, workflow_override=workflow, prepare=prepare,
                           parameters={'fp_style':style, 'digits':3})
-            artifact = next(iter(view._nav_plot_artifacts.values()))
+            artifact = next(iter(view._plots.values())).artifact
             load_saved_analysis(artifact.params_path, include_plot_data=True)
             # Independent package fit from the exact entered counts, never the app inverse.
             reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
@@ -88,8 +88,7 @@ def run_predictions(app, window, work, record):
                 exported = work / f'reviewer-{measure}-{workflow}-{style}.svg'
                 view.plot_service.export(regenerator='forest', params_path=artifact.params_path, output_path=str(exported))
                 assert [x for x in labels(exported) if 'prediction interval:' in x] == footer
-                plot_item = next(item for item in view.nav_tree.findItems('',QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive)
-                                 if view._nav_plot_artifacts.get(id(item)) is artifact)
+                plot_item = next(entry.navigation_item for entry in view._plots.values() if entry.artifact is artifact)
                 view.nav_tree.scrollToItem(plot_item)
                 mouse_click(view.nav_tree.viewport(),QtCore.Qt.MouseButton.LeftButton,
                                  pos=view.nav_tree.visualItemRect(plot_item).center())

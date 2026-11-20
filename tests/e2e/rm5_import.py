@@ -7,12 +7,12 @@ from unittest.mock import patch
 from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import mouse_click
 
-from rc_metastudio.project_adapter import dataset_to_project
+from rc_metastudio.project.adapter import dataset_to_project
 from scripts.verification_evidence import desktop_tool_executable
 
 
 def run(app, window, ROOT, WORK, record_step):
-    from rc_metastudio.rm5_import import read_rm5
+    from rc_metastudio.importing.revman import read_rm5
     rscript = desktop_tool_executable("Rscript")
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
@@ -48,7 +48,7 @@ def run(app, window, ROOT, WORK, record_step):
                     [int(r.attrib[k]) for k in ('TP', 'FN', 'FP', 'TN')])
                     for r in t.findall('TEST_DATA/TEST_DATA_ENTRY')])
                     for t in dta_xml.findall('ANALYSES_AND_DATA/TESTS/TEST')]
-    from rc_metastudio.rm5_review_dialog import review_rm5
+    from rc_metastudio.importing.revman_review import review_rm5
     def dta_review():
         dialog = app.activeModalWidget()
         table = dialog.findChild(QtWidgets.QTableWidget)
@@ -63,9 +63,9 @@ def run(app, window, ROOT, WORK, record_step):
         assert sheet.name == name
         assert [(r.label, next(iter(r.analysis_unit.arms.values())).raw_data) for r in sheet.rows] == rows
     assert len(window.model.dataset.sheets) == len(expected_dta)
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results.window import ResultsWindow
     window.action_go.trigger()
     app.processEvents()
     metrics = next(w for w in app.topLevelWidgets() if isinstance(w, DiagnosticMetricsDialog) and w.isVisible())
@@ -112,9 +112,9 @@ def run(app, window, ROOT, WORK, record_step):
     record_step('rm5-subgroup-covariate-imported', window, groups=groups,
                 reference=str(subgroup_reference))
     from tests.fit_observations import observe_fit
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.results.window import ResultsWindow
     # read.rm5 omits the ungrouped row: compare identical study sets.
     for row in subgroup_sheet.rows:
         row.include = bool(row.covariate_values[covariate])
@@ -128,7 +128,7 @@ def run(app, window, ROOT, WORK, record_step):
     selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
     app.processEvents()
     setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
-    setup.method_cbo_box.setCurrentText(next(label for label, method in setup.available_method_d.items() if method == 'binary.fixed.inv.var'))
+    setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData('binary.fixed.inv.var'))
     assert setup.current_method == 'binary.fixed.inv.var'
     with observe_fit() as fit:
         setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
@@ -153,7 +153,7 @@ def run(app, window, ROOT, WORK, record_step):
     assert all(abs(delta) <= 1e-6 for delta in differences[6:]), differences
     view.close()
     failures = []
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     window.set_model(read_rm5(source).dataset)
     for index, method in enumerate(('binary.fixed.mh', 'continuous.fixed')):
         window.sheet_tabs.setCurrentIndex(index)
@@ -285,7 +285,7 @@ def run(app, window, ROOT, WORK, record_step):
                 assert row.analysis_unit.arms[arm.name].raw_data == [float(ref[f'{field}.{suffix}']) for field in fields]
         window.sheet_tabs.setCurrentIndex(index - 1)
         record_step(f'rm5-sheet-{index}', window, reference=str(reference), pooled_reference=str(pooled))
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.results.window import ResultsWindow
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     for index, method in enumerate(('binary.fixed.mh', 'continuous.fixed')):
         window.sheet_tabs.setCurrentIndex(index)

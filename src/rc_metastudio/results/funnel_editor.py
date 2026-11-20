@@ -1,0 +1,606 @@
+# SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Edit presentation-only parameters for a persisted funnel artifact."""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
+
+from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch, style_inline_error
+from rc_metastudio.qt_object_guard import required
+from rc_metastudio.results.plot_style_controls import plot_color
+from rc_metastudio.results.plot_text import (
+    configure_plot_text_inputs,
+    size_plot_text_editor,
+    plot_text_value,
+)
+from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, PLOT_STYLE_LABELS, FunnelStyle
+
+if TYPE_CHECKING:
+    from ui_funnel_plot_editor_dialog import Ui_FunnelPlotEditorDialog
+else:
+    from rc_metastudio.forms import (
+        ui_funnel_plot_editor_dialog as _ui_funnel_plot_editor_dialog,
+    )
+
+    Ui_FunnelPlotEditorDialog = _ui_funnel_plot_editor_dialog.Ui_FunnelPlotEditorDialog
+
+
+LABEL_VALUES = {
+    "None": "none",
+    "Outside pseudo-confidence region": "outside-pseudo-confidence-region",
+    "All": "all",
+}
+POINT_SYMBOL_VALUES = {
+    "Filled circle": 19,
+    "Open circle": 1,
+    "Square": 15,
+    "Triangle": 17,
+    "Diamond": 18,
+}
+POINT_SYMBOL_LABELS = {value: label for label, value in POINT_SYMBOL_VALUES.items()}
+
+
+class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
+    """Keep funnel editing separate from forest and regression controls."""
+
+    def __init__(
+        self, plot_params, image_path, parent=None, plot_type="funnel",
+        *, on_commit: Callable[[dict[str, object]], None] | None = None,
+        default_params: dict[str, object] | None = None,
+    ):
+        super().__init__(parent)
+        self.setupUi(self)
+        for code, label in PLOT_STYLE_LABELS.items():
+            self.style_combo.addItem(label, code)
+        self._on_commit = on_commit
+        self._configure_accessibility()
+        self._commit_error = QLabel(self)
+        self._commit_error.setWordWrap(True)
+        style_inline_error(self._commit_error)
+        layout = required(self.layout(), "funnel dialog layout")
+        layout.addWidget(self._commit_error)
+        self._commit_error.hide()
+        configure_plot_text_inputs(self)
+        self._params = dict(plot_params or {})
+        self._default_params = dict(default_params or {})
+        self.figure_caption = QLineEdit(self)
+        self.figure_caption.setAccessibleName("Figure caption")
+        self.figure_caption.setToolTip("Shown under the figure when exported alone. Clear it to omit the caption.")
+        self.figure_caption.setMaxLength(1000)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
+        caption_label = QLabel("Figure caption", self)
+        caption_label.setBuddy(self.figure_caption)
+        caption_row = self.appearance_layout.rowCount()
+        caption_columns = self.appearance_layout.columnCount()
+        self.appearance_layout.addWidget(caption_label, caption_row, 0)
+        self.appearance_layout.addWidget(self.figure_caption, caption_row, 1, 1, caption_columns - 1)
+        self._dirty = False
+        try:
+            self._funnel_index = max(
+                1, int(self._scalar(self._params.get("funnel.index", 1)))
+            )
+        except (TypeError, ValueError):
+            self._funnel_index = 1
+        self.plot_type = str(plot_type)
+        self._validate_kind_descriptor()
+        self.kind = self._kind_from_params()
+        self._ratio_axis = self._bool("resolved.funnel.ratio", False)
+        effects = self._params.get("resolved.funnel.x", ())
+        if isinstance(effects, (int, float)):
+            effects = (effects,)
+        self._funnel_x = tuple(value for value in effects if isinstance(value, (int, float))) if isinstance(effects, (list, tuple)) else ()
+        self._bounds_warning = QLabel(self)
+        self._bounds_warning.setWordWrap(True)
+        self.axis_layout.addWidget(self._bounds_warning, self.axis_layout.rowCount(), 0, 1, 2)
+        self._load_params(image_path)
+        if self._ratio_axis:
+            self.x_lower_label.setText("X-axis lower bound (ratio)")
+            self.x_upper_label.setText("X-axis upper bound (ratio)")
+            self.x_ticks_label.setText("X-axis ticks (ratios)")
+        self.x_lower_edit.textChanged.connect(self._refresh_bounds_warning)
+        self.x_upper_edit.textChanged.connect(self._refresh_bounds_warning)
+        self._refresh_bounds_warning()
+        self._configure_kind()
+        self.setTabOrder(self.background_color_button, self.figure_caption)
+        self.setTabOrder(self.figure_caption, self.x_label_edit)
+        self.style_combo.currentIndexChanged.connect(self._apply_style)
+        for edit, button, title in (
+            (self.point_color_edit, self.point_color_button, "Choose point color"),
+            (
+                self.reference_color_edit,
+                self.reference_color_button,
+                "Choose reference or regression color",
+            ),
+            (
+                self.region_color_edit,
+                self.region_color_button,
+                "Choose confidence or contour color",
+            ),
+            (
+                self.background_color_edit,
+                self.background_color_button,
+                "Choose plot background color",
+            ),
+        ):
+            edit.setMaximumWidth(edit.fontMetrics().height() * 6)
+            button.setText("Choose…")
+            button.setMaximumWidth(self.fontMetrics().height() * 12)
+            color_layout = getattr(self, edit.objectName().replace("_edit", "_layout"))
+            add_color_swatch(edit, color_layout)
+            button.clicked.connect(
+                lambda _checked=False, color_edit=edit, color_button=button, dialog_title=title: (
+                    self._choose_color(color_edit, color_button, dialog_title)
+                )
+            )
+        apply_button = required(self.button_box.button(QDialogButtonBox.StandardButton.Apply), "funnel Apply button")
+        apply_button.clicked.connect(self._commit)
+        reset = self.button_box.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
+        required(reset, "funnel reset button").clicked.connect(self._reset_to_defaults)
+        self._connect_dirty_signals()
+        align_field_columns((self.appearance_layout, self.confidence_layout, self.axis_layout))
+        size_plot_text_editor(self)
+        self._scroll_settings_filter = protect_scroll_settings(self.content_scroll)
+        adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+
+    def _configure_accessibility(self):
+        """Keep the editor's static controls useful to screen readers."""
+        controls = {
+            self.style_combo: ("Funnel plot style", "Choose the visual style used to draw the funnel plot."),
+            self.label_policy_combo: ("Study label policy", "Choose which study labels appear on the funnel plot."),
+            self.point_symbol_combo: ("Funnel plot point symbol", "Choose the symbol used for study points."),
+            self.point_size_spin: ("Funnel plot point size", "Scale the study points in the funnel plot."),
+            self.point_color_edit: ("Funnel plot point color", "Enter the color used for study points."),
+            self.reference_color_edit: ("Reference or regression line color", "Enter the color used for the reference or regression line."),
+            self.region_color_edit: ("Confidence or contour region color", "Enter the color used for confidence or contour regions."),
+            self.background_color_edit: ("Funnel plot background color", "Enter the plot background color."),
+            self.reference_visible_check: ("Show reference line", "Show or hide the reference line."),
+            self.regression_visible_check: ("Show regression line", "Show or hide the regression line when available."),
+            self.pooled_overlay_check: ("Show pooled estimate", "Show or hide the pooled estimate overlay."),
+            self.sampling_confidence_spin: ("Sampling confidence level", "Choose the confidence level for the pseudo-confidence region."),
+            self.include_tau2_check: ("Include between-study variance", "Include τ², the estimated between-study variance, in the pseudo-confidence region."),
+            self.sampling_region_check: ("Show pseudo-confidence region", "Show or hide the sampling-error pseudo-confidence region."),
+            self.contour_levels_edit: ("Null contour levels", "Enter contour confidence levels (%) separated by commas, for example 90, 95, 99."),
+            self.x_label_edit: ("Funnel plot X-axis label", "Leave empty to use the automatic label."),
+            self.y_label_edit: ("Funnel plot Y-axis label", "Set the Y-axis label."),
+            self.x_lower_edit: ("X-axis lower bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
+            self.x_upper_edit: ("X-axis upper bound", "Set both X-axis bounds, or leave both empty for automatic bounds."),
+            self.x_ticks_edit: ("X-axis ticks", "Set optional comma-separated X-axis tick values."),
+        }
+        for control, (name, description) in controls.items():
+            control.setAccessibleName(name)
+            control.setAccessibleDescription(description)
+            control.setToolTip(description)
+        for label, control in (
+            (self.style_label, self.style_combo),
+            (self.label_policy_label, self.label_policy_combo),
+            (self.point_symbol_label, self.point_symbol_combo),
+            (self.point_size_label, self.point_size_spin),
+            (self.point_color_label, self.point_color_edit),
+            (self.reference_color_label, self.reference_color_edit),
+            (self.region_color_label, self.region_color_edit),
+            (self.background_color_label, self.background_color_edit),
+            (self.sampling_confidence_label, self.sampling_confidence_spin),
+            (self.contour_levels_label, self.contour_levels_edit),
+            (self.x_label_label, self.x_label_edit),
+            (self.y_label_label, self.y_label_edit),
+            (self.x_lower_label, self.x_lower_edit),
+            (self.x_upper_label, self.x_upper_edit),
+            (self.x_ticks_label, self.x_ticks_edit),
+        ):
+            label.setBuddy(control)
+
+    def _connect_dirty_signals(self):
+        for control in (
+            self.figure_caption,
+            self.style_combo,
+            self.label_policy_combo,
+            self.point_symbol_combo,
+            self.point_size_spin,
+            self.point_color_edit,
+            self.reference_color_edit,
+            self.region_color_edit,
+            self.background_color_edit,
+            self.reference_visible_check,
+            self.regression_visible_check,
+            self.pooled_overlay_check,
+            self.sampling_confidence_spin,
+            self.include_tau2_check,
+            self.sampling_region_check,
+            self.contour_levels_edit,
+            self.x_label_edit,
+            self.y_label_edit,
+            self.x_lower_edit,
+            self.x_upper_edit,
+            self.x_ticks_edit,
+        ):
+            signal = getattr(control, "currentTextChanged", None)
+            if signal is None:
+                signal = getattr(control, "textChanged", None)
+            if signal is None:
+                signal = getattr(control, "valueChanged", None)
+            if signal is None:
+                signal = getattr(control, "toggled", None)
+            if signal is not None:
+                signal.connect(self._mark_dirty)
+
+    def _mark_dirty(self, *_args):
+        self._dirty = True
+
+    def _reset_to_defaults(self):
+        self._params = dict(self._default_params)
+        self._load_params(self._funnel_outpath)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
+        self._refresh_bounds_warning()
+        self._dirty = True
+
+    def _commit(self) -> bool:
+        for field in (self.point_color_edit, self.reference_color_edit, self.region_color_edit, self.background_color_edit):
+            try:
+                plot_color(field.text())
+            except ValueError as error:
+                self._commit_error.setText(str(error))
+                self._commit_error.show()
+                field.setFocus()
+                return False
+        try:
+            params = self.plot_params()
+        except ValueError as error:
+            QMessageBox.warning(self, "Invalid funnel settings", str(error))
+            return False
+        try:
+            if self._on_commit is not None:
+                self._on_commit(params)
+        except Exception as error:
+            app_error_handler.handle_exception(type(error), error, error.__traceback__, parent=self)
+            return False
+        self._params = params
+        self._dirty = False
+        self._commit_error.hide()
+        return True
+
+    def accept(self) -> None:
+        if not self._dirty or self._commit():
+            super().accept()
+
+    def _kind_from_params(self):
+        kind = self._scalar(self._params.get("funnel.kind"))
+        if kind:
+            return str(kind)
+        return {
+            "contour_funnel": "contour",
+            "deeks_funnel": "deeks",
+            "trimfill_funnel": "trimfill",
+        }.get(self.plot_type, "ordinary")
+
+    def _validate_kind_descriptor(self):
+        expected = {
+            "funnel": "ordinary",
+            "contour_funnel": "contour",
+            "deeks_funnel": "deeks",
+            "trimfill_funnel": "trimfill",
+        }.get(self.plot_type)
+        if expected is None:
+            raise ValueError(f"unsupported funnel plot descriptor: {self.plot_type}")
+        persisted = self._scalar(self._params.get("funnel.kind"))
+        if persisted is not None and str(persisted) != expected:
+            raise ValueError(
+                f"funnel plot descriptor kind {persisted!r} does not match {expected!r}"
+            )
+
+    def _load_params(self, image_path):
+        try:
+            style_code = FunnelStyle(str(self._value("funnel.style", "default")))
+        except ValueError:
+            style_code = FunnelStyle.DEFAULT
+        style = FUNNEL_STYLE_PRESETS[style_code]
+        self.style_combo.setCurrentIndex(self.style_combo.findData(style_code.value))
+        self.label_policy_combo.setCurrentText(
+            {
+                "none": "None",
+                "outside-pseudo-confidence-region": "Outside pseudo-confidence region",
+                "all": "All",
+            }.get(str(self._value("funnel.label.policy", "none")), "None")
+        )
+        symbol = self._value("funnel.point.symbol", style.point_symbol)
+        try:
+            symbol = int(symbol)
+        except (TypeError, ValueError):
+            symbol = 19
+        self.point_symbol_combo.setCurrentText(
+            next(
+                (
+                    label
+                    for label, value in POINT_SYMBOL_VALUES.items()
+                    if value == symbol
+                ),
+                "Filled circle",
+            )
+        )
+        self.point_size_spin.setValue(
+            self._float("funnel.point.size", self._float("point.size", 1.0))
+        )
+        self.point_color_edit.setText(
+            str(self._value("funnel.point.color", style.point_color))
+        )
+        self.reference_color_edit.setText(
+            str(self._value("funnel.reference.color", style.reference_color))
+        )
+        self.region_color_edit.setText(
+            str(self._value("funnel.region.color", style.region_color))
+        )
+        self.background_color_edit.setText(
+            str(self._value("funnel.background.color", style.background_color))
+        )
+        self.reference_visible_check.setChecked(
+            self._bool("funnel.reference.visible", True)
+        )
+        self.regression_visible_check.setChecked(
+            self._bool("funnel.regression.visible", True)
+        )
+        self.pooled_overlay_check.setChecked(
+            self._bool("funnel.pooled.overlay.visible", True)
+        )
+        self.sampling_confidence_spin.setValue(
+            self._float("funnel.sampling.conf.level", self._float("conf.level", 95.0))
+        )
+        self.include_tau2_check.setChecked(self._bool("funnel.include.tau2", False))
+        self.sampling_region_check.setChecked(
+            self._bool("funnel.sampling.region.visible", True)
+        )
+        levels = self._value("funnel.contour.levels", "90,95,99")
+        if isinstance(levels, (list, tuple)):
+            levels = ",".join(str(value) for value in levels)
+        self.contour_levels_edit.setText(str(levels))
+        self._load_axis_params()
+        persisted_outpath = self._value("funnel.outpath", "")
+        self._funnel_outpath = str(persisted_outpath or image_path or "")
+
+    def _load_axis_params(self):
+        default_x_label = (
+            "1/sqrt(ESS)"
+            if self.kind == "deeks"
+            else self._value("axis.label", "[default]")
+        )
+        default_y_label = self._default_y_label()
+        self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
+        self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
+        self.x_lower_edit.setText(self._saved_axis_value("funnel.xlim.lower"))
+        self.x_upper_edit.setText(self._saved_axis_value("funnel.xlim.upper"))
+        ticks = self._value("funnel.xticks", "[default]")
+        if isinstance(ticks, (list, tuple)):
+            ticks = ",".join(str(value) for value in ticks)
+        self.x_ticks_edit.setText(self._display_saved_axis_value(str(ticks)))
+        for field in (self.x_label_edit, self.x_lower_edit, self.x_upper_edit, self.x_ticks_edit):
+            if field.text() == "[default]":
+                field.clear()
+                field.setPlaceholderText("Automatic")
+                field.setToolTip("Automatic: determined by the fitted plot range.")
+
+    def _saved_axis_value(self, key):
+        return self._display_saved_axis_value(str(self._value(key, "[default]")))
+
+    def _display_saved_axis_value(self, text):
+        if not self._ratio_axis or self._bool("funnel.xaxis.natural", False) or text in ("", "[default]"):
+            return text
+        try:
+            return ",".join(format(math.exp(value), ".15g") for value in self._finite_list(text, "X-axis"))
+        except (ValueError, OverflowError):
+            return ""
+
+    def _refresh_bounds_warning(self):
+        message = ""
+        try:
+            lower, upper = float(self.x_lower_edit.text()), float(self.x_upper_edit.text())
+        except ValueError:
+            pass
+        else:
+            if math.isfinite(lower) and math.isfinite(upper) and lower < upper:
+                hidden = sum(not lower <= float(effect) <= upper for effect in self._funnel_x)
+                if hidden:
+                    subject = "study falls" if hidden == 1 else "studies fall"
+                    message = f"{hidden} {subject} outside these bounds and will not be shown."
+        self._bounds_warning.setText(message)
+        self._bounds_warning.setVisible(bool(message))
+
+    def _default_y_label(self):
+        measure = self._value("measure", self._value("metric", ""))
+        scale = ("log" if measure in {"OR", "RR", "HR", "IRR", "PLR", "NLR", "DOR", "PLN"} else
+                 "logit" if measure in {"PLO", "Sens", "Spec", "PPV", "NPV", "Acc"} else
+                 "arcsine" if measure == "PAS" else "Freeman-Tukey" if measure == "PFT" else
+                 "standardized" if measure == "SMD" else "outcome")
+        return ("Log diagnostic odds ratio" if self.kind == "deeks" else
+                           f"Standard error ({scale} scale)")
+
+    def _configure_kind(self):
+        contour = self.kind == "contour"
+        deeks = self.kind == "deeks"
+        trimfill = self.kind == "trimfill"
+        if deeks:
+            outside_index = self.label_policy_combo.findText(
+                "Outside pseudo-confidence region"
+            )
+            if outside_index >= 0:
+                self.label_policy_combo.removeItem(outside_index)
+            if self.label_policy_combo.currentText() not in ("None", "All"):
+                self.label_policy_combo.setCurrentText("None")
+            self.label_policy_combo.setToolTip(
+                "The Deeks funnel has no pseudo-confidence region; choose None or All."
+            )
+        self.contour_levels_edit.setEnabled(contour)
+        self.contour_levels_label.setEnabled(contour)
+        self.contour_levels_edit.setVisible(contour)
+        self.contour_levels_label.setVisible(contour)
+        self.contour_levels_edit.setToolTip(
+            "Available only for contour-enhanced funnels."
+            if not contour
+            else "Null-centered contour confidence percentages strictly between 0 and 100, comma separated."
+        )
+        self.sampling_confidence_spin.setEnabled(not deeks)
+        self.sampling_confidence_label.setEnabled(not deeks)
+        self.sampling_confidence_spin.setVisible(not deeks)
+        self.sampling_confidence_label.setVisible(not deeks)
+        self.sampling_region_check.setEnabled(not deeks and not contour)
+        self.sampling_region_check.setVisible(not deeks and not contour)
+        self.sampling_region_check.setToolTip(
+            "Contour levels replace the single pseudo-confidence region."
+            if contour
+            else "Show or hide the sampling-error pseudo-confidence region."
+        )
+        self.include_tau2_check.setEnabled(not deeks)
+        self.include_tau2_check.setVisible(not deeks)
+        self.include_tau2_check.setToolTip(
+            "Not applicable to the Deeks effective-sample-size funnel."
+            if deeks
+            else "Include τ² in the pseudo-confidence region."
+        )
+        self.pooled_overlay_check.setEnabled(not deeks)
+        self.pooled_overlay_label.setEnabled(not deeks)
+        self.pooled_overlay_check.setVisible(not deeks)
+        self.pooled_overlay_label.setVisible(not deeks)
+        self.reference_visible_check.setVisible(not deeks)
+        self.reference_visible_label.setVisible(not deeks)
+        self.regression_visible_check.setEnabled(deeks)
+        self.regression_visible_label.setEnabled(deeks)
+        self.regression_visible_check.setVisible(deeks)
+        self.regression_visible_label.setVisible(deeks)
+        self.regression_visible_check.setToolTip(
+            "Deeks regression line visibility; statistical fitting is unchanged."
+            if deeks
+            else "Only the Deeks funnel has an editable regression-line setting."
+        )
+        if trimfill:
+            self.rerun_note.setText(
+                "Rerun the analysis to change statistical settings."
+            )
+
+
+    def _apply_style(self):
+        preset = FUNNEL_STYLE_PRESETS[str(self.style_combo.currentData())]
+        self.point_symbol_combo.setCurrentText(POINT_SYMBOL_LABELS[preset.point_symbol])
+        self.point_color_edit.setText(preset.point_color)
+        self.reference_color_edit.setText(preset.reference_color)
+        self.region_color_edit.setText(preset.region_color)
+        self.background_color_edit.setText(preset.background_color)
+
+    def _choose_color(self, edit, button, title):
+        initial = QColor(qt_text.to_native_text(edit.text()))
+        color = QColorDialog.getColor(
+            initial if initial.isValid() else QColor("black"), self, title
+        )
+        if color.isValid():
+            edit.setText(color.name(QColor.NameFormat.HexRgb).upper())
+
+    @staticmethod
+    def _scalar(value):
+        if isinstance(value, (list, tuple)) and value:
+            return value[0]
+        return value
+
+    def _value(self, name, default):
+        value = self._params.get(name, default)
+        if isinstance(value, (list, tuple)) and value:
+            return value[min(self._funnel_index - 1, len(value) - 1)]
+        return value
+
+    def _bool(self, name, default):
+        value = self._value(name, default)
+        if isinstance(value, str):
+            return value.lower() in ("true", "t", "1", "yes")
+        return bool(value)
+
+    def _float(self, name, default):
+        try:
+            return float(self._value(name, default))
+        except (TypeError, ValueError):
+            return float(default)
+
+    def plot_params(self):
+        """Return the original run params plus presentation-only edits."""
+        self._validate_plot_ranges()
+        params = dict(self._params)
+        params.pop("resolved.funnel.ratio", None)
+        params.pop("resolved.funnel.x", None)
+        style = str(self.style_combo.currentData())
+        preset = FUNNEL_STYLE_PRESETS[style]
+        edits = {
+            "plot_caption": self.figure_caption.text().strip(),
+            "funnel.style": style,
+            "funnel.label.policy": LABEL_VALUES[self.label_policy_combo.currentText()],
+            "funnel.point.symbol": POINT_SYMBOL_VALUES[
+                self.point_symbol_combo.currentText()
+            ],
+            "funnel.point.size": self.point_size_spin.value(),
+            "funnel.point.color": plot_color(self.point_color_edit.text()) or preset.point_color,
+            "funnel.reference.color": plot_color(self.reference_color_edit.text()) or preset.reference_color,
+            "funnel.region.color": plot_color(self.region_color_edit.text()) or preset.region_color,
+            "funnel.background.color": plot_color(self.background_color_edit.text()) or preset.background_color,
+            "funnel.reference.visible": self.reference_visible_check.isChecked(),
+            "funnel.regression.visible": self.regression_visible_check.isChecked(),
+            "funnel.pooled.overlay.visible": self.pooled_overlay_check.isChecked(),
+            "funnel.sampling.conf.level": self.sampling_confidence_spin.value(),
+            "funnel.sampling.region.visible": self.sampling_region_check.isChecked(),
+            "funnel.include.tau2": self.include_tau2_check.isChecked(),
+            "funnel.contour.levels": qt_text.to_native_text(
+                self.contour_levels_edit.text()
+            ),
+            "funnel.xlab": qt_text.to_native_text(plot_text_value(self.x_label_edit)),
+            "funnel.ylab": qt_text.to_native_text(plot_text_value(self.y_label_edit)),
+            "funnel.xlim.lower": qt_text.to_native_text(self.x_lower_edit.text()),
+            "funnel.xlim.upper": qt_text.to_native_text(self.x_upper_edit.text()),
+            "funnel.xticks": qt_text.to_native_text(self.x_ticks_edit.text()),
+            "funnel.xaxis.natural": True,
+            "funnel.outpath": self._funnel_outpath,
+        }
+        for name, value in edits.items():
+            previous = self._params.get(name)
+            if isinstance(previous, (list, tuple)) and previous:
+                values = list(previous)
+                values[min(self._funnel_index - 1, len(values) - 1)] = value
+                params[name] = values
+            else:
+                params[name] = value
+        return params
+
+    def _validate_plot_ranges(self):
+        self._validate_x_bounds()
+        if self.x_ticks_edit.text().strip():
+            ticks = self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+            if self._ratio_axis and any(tick <= 0 for tick in ticks):
+                raise ValueError("Ratio ticks must be greater than zero.")
+        if self.contour_levels_edit.isEnabled():
+            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
+            if any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+
+    def _validate_x_bounds(self):
+        lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
+        if bool(lower) != bool(upper):
+            raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
+        if lower:
+            try:
+                bounds = (float(lower), float(upper))
+            except ValueError as error:
+                raise ValueError("X-axis bounds must be finite numbers.") from error
+            if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
+                raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
+            if self._ratio_axis and bounds[0] <= 0:
+                raise ValueError("Ratio bounds must be greater than zero.")
+
+    @staticmethod
+    def _finite_list(text, label):
+        try:
+            values = [float(value.strip()) for value in text.split(",")]
+        except ValueError as error:
+            raise ValueError(f"{label} must be comma-separated finite numbers.") from error
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError(f"{label} must be comma-separated finite numbers.")
+        return values

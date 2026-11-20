@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.results.contract import parse_analysis_result
 from rc_metastudio.r_bridge import _text_section_metadata
 
 

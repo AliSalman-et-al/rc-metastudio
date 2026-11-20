@@ -6,8 +6,8 @@ from PyQt6 import QtWidgets
 
 def run(app, window, work, record):
     from advanced_workflows import modal, click
-    from rc_metastudio import results_window
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     root = Path(__file__).resolve().parents[2]
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)

@@ -17,10 +17,10 @@ REPO_ROOT = os.getcwd()
 ROOT = Path(__file__).resolve().parents[3]
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio.analysis_results import NO_RESULTS_MESSAGE, parse_analysis_result
+from rc_metastudio.results.contract import NO_RESULTS_MESSAGE, parse_analysis_result
 
 prepare_generated_ui_imports()
-from rc_metastudio import progress_dialog
+from rc_metastudio.analysis import progress_dialog
 
 
 def _set_backend(
@@ -34,7 +34,7 @@ def _set_backend(
 def test_result_owner_exception_still_deletes_real_specs_and_progress(
     qapp, monkeypatch
 ):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     class Model:
         current_effect = "OR"
@@ -138,9 +138,9 @@ def _create_binary_dataset(window):
 @pytest.mark.parametrize('failure', ['identity', 'report'])
 @pytest.mark.parametrize('content', ['inference', 'empty'])
 def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkeypatch, failure, content):
-    from rc_metastudio import analysis_setup_dialog
-    from rc_metastudio.manuscript_report import ManuscriptReport
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results.report import ManuscriptReport
+    from rc_metastudio.results.window import ResultsWindow
 
     build_report = ManuscriptReport.from_result
 
@@ -153,7 +153,6 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         monkeypatch.setattr(backend, 'get_available_methods', lambda **k: {'Random': 'binary.random'})
         monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
         monkeypatch.setattr(backend, 'get_analysis_plot_capabilities', lambda *a, **k: [])
-        monkeypatch.setattr(backend, 'reset_r_working_directory', lambda: None)
         def unexpected_result(*args, **_kwargs):
             delivered.append(args)
         deliver = unexpected_result
@@ -173,7 +172,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         result = replace(parse_analysis_result({'version': 1, 'texts': texts, 'images': {}, 'sections': sections}),
                          identity='Binary analysis', details='Confidence level: 95%\nInference: stale',
                          software='metafor 5.2-1', manuscript_methods='Executed methods.', inference_methods=('z',))
-        monkeypatch.setattr(form.analysis_service, 'execute', lambda *_args: result)
+        monkeypatch.setattr(backend, 'run_model_analysis', lambda *_args: result)
         form.run_ma()
         QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         qapp.processEvents()
@@ -217,7 +216,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
 
 
 def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -228,7 +227,6 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
             "get_params",
             "dataset_to_simple_binary_r_object",
             "run_model_analysis",
-            "reset_r_working_directory",
         )
     }
     shown = []
@@ -265,7 +263,6 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
                 RuntimeError("simulated R failure")
             ),
         )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox,
@@ -297,7 +294,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
 def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_results(
     monkeypatch,
 ):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -308,7 +305,6 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
             "get_params",
             "dataset_to_simple_continuous_r_object",
             "run_model_analysis",
-            "reset_r_working_directory",
         )
     }
     shown = []
@@ -357,7 +353,6 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
                 RuntimeError("simulated recompute failure")
             ),
         )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox,
@@ -388,7 +383,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
 
 
 def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
@@ -478,7 +473,7 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
 
 
 def test_method_parameters_build_failure_reports_preparation_error(monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio import main_window
 
     app, window = automation.start_automation()
@@ -538,7 +533,7 @@ def test_method_parameters_backend_unavailable_keeps_backend_error(monkeypatch):
 def test_results_window_adds_no_results_message_to_valid_empty_payload():
     from PyQt6.QtWidgets import QApplication
 
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     app = QApplication.instance() or QApplication([])
     window = results_window.ResultsWindow(
@@ -546,7 +541,7 @@ def test_results_window_adds_no_results_message_to_valid_empty_payload():
     )
     try:
         assert window.texts == {"No Results": NO_RESULTS_MESSAGE}
-        assert window.images == {}
+        assert window.results.images == {}
     finally:
         window.close()
         app.processEvents()
@@ -681,7 +676,7 @@ def test_global_exception_handler_logs_trace_and_shows_recoverable_dialog(
     app.processEvents()
 
 
-def test_safe_signal_connection_replaces_and_disconnects_wrapped_slots():
+def test_safe_signal_connection_disconnects_wrapped_slots():
     from PyQt6.QtCore import QObject, pyqtSignal
 
     from rc_metastudio import app_error_handler
@@ -697,13 +692,10 @@ def test_safe_signal_connection_replaces_and_disconnects_wrapped_slots():
     )
     emitter.fired.emit()
 
-    connection.replace(lambda: calls.append("second"))
-    emitter.fired.emit()
-
     connection.disconnect()
     emitter.fired.emit()
 
-    assert calls == ["first", "second"]
+    assert calls == ["first"]
 
 
 def test_safe_slot_discards_surplus_signal_arguments(monkeypatch):
@@ -748,7 +740,6 @@ def test_main_window_action_exceptions_are_recoverable(monkeypatch, tmp_path):
     from PyQt6.QtGui import QAction
 
     from rc_metastudio import app_error_handler
-    from rc_metastudio import main_window
 
     app, window = automation.start_automation()
     log_path = tmp_path / "rc-metastudio-error.log"
@@ -763,7 +754,7 @@ def test_main_window_action_exceptions_are_recoverable(monkeypatch, tmp_path):
             lambda *args, **kwargs: shown.append(args),
         )
         action = QAction(window)
-        main_window._connect_action(
+        app_error_handler.connect_action(
             action,
             lambda: (_ for _ in ()).throw(RuntimeError("action exploded")),
         )

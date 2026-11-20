@@ -23,7 +23,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.
     plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
     # Reserve device space beyond the null for full-size direction labels.
     if (direction$lines > 0 && rcmetar.forest.style(bundle$params) != "bmj") {
-        labels <- rcmetar.revman.direction.labels(bundle)
+        labels <- rcmetar.forest.direction.labels(bundle)
         widths <- rcmetar.forest.with.measurement.device(
             strwidth(paste0(unlist(labels[c("left", "right")]), "  "), units="inches",
                      cex=plan$typography$cex.axis, font=if (style == "bmj") 2 else 1))
@@ -603,7 +603,7 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
         x=list(
             xlim=layout$xlim,
             alim=layout$alim,
-            at=rcmetar.revman.axis.ticks(bundle, layout$alim),
+            at=rcmetar.forest.journal.axis.ticks(bundle, layout$alim),
             refline=NA,
             xlab=""
         ),
@@ -617,8 +617,8 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
         headers=list(
             show=rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE),
             study=rcmetar.revman.study.header(bundle),
-            effect=rcmetar.revman.metric.label(bundle),
-            method=rcmetar.revman.method.label(bundle),
+            effect=rcmetar.forest.journal.metric.label(bundle),
+            method=rcmetar.forest.journal.method.label(bundle),
             groups=if (length(layout$group.xpos) > 0) names(layout$group.xpos) else character(0)
         ),
         footer=list(axis=rcmetar.forest.revman.axis.footer(bundle, layout)),

@@ -21,7 +21,6 @@ def create() -> SimpleNamespace:
     backend.get_r_library_paths = lambda: []
     backend.get_r_version_string = lambda: None
     backend.get_r_package_version = lambda _name: None
-    backend.reset_r_working_directory = lambda: None
     backend.execute_r_string = lambda _expression: [95.0]
     backend.execute_r_function = lambda _name, *_args, **_kwargs: [95.0]
     backend.binary_convert_scale = _identity

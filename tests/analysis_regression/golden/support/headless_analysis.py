@@ -1,10 +1,10 @@
 import os
 from dataclasses import dataclass
 
-from rc_metastudio import dataset_table_model
-from rc_metastudio import analysis_adapter
-from rc_metastudio import project_adapter
-from rc_metastudio import project_format
+from rc_metastudio.workspace import table_model as dataset_table_model
+from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio.project import adapter as project_adapter
+from rc_metastudio.project import archive as project_format
 from rc_metastudio import settings
 
 

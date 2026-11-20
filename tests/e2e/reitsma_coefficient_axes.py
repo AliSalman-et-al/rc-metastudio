@@ -10,8 +10,10 @@ from tests.e2e.plot_observations import load_saved_analysis
 def run_coefficients(app, window, work, record):
     from analysis_matrix import run as matrix, set_parameter
     from advanced_workflows import modal, click, export_formats
-    from rc_metastudio import analysis_setup_dialog, r_bridge, results_window
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio import r_bridge
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.e2e.axis_conventions import check_axis
     def prepare(target):
         for row in range(6):

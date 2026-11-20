@@ -744,7 +744,8 @@ rcmetar.reitsma.render.standard <- function(plot.data, diagnostic.data, fit, par
     empty <- list(images=character(), paths=character(), capabilities=list(),
                   sections=list(), warnings=character())
     if (!isTRUE(params$create.plot %||% TRUE) || is.null(plot.data)) return(empty)
-    path <- as.character(params$fp_outpath %||% params$roc_outpath %||% params$sroc_outpath %||% "./r_tmp/reitsma_sroc.svg")
+    path <- as.character(params$fp_outpath %||% params$roc_outpath %||% params$sroc_outpath %||%
+        tempfile("reitsma-sroc-", tmpdir=rcmetar.scratch.path(), fileext=".svg"))
     capture <- rcmetar.reitsma.capture.warnings(rcmetar.reitsma.draw(plot.data, path))
     warnings <- rcmetar.reitsma.operation.messages(capture, "SROC plot")
     if (is.null(capture$value)) {
@@ -1154,7 +1155,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
         images=character(), image_order=character(), plot_names=character(),
         plot_params_paths=character(), plot_capabilities=list(), sections=list()))
     output <- as.character(
-        params$fp_outpath %||% rcmetar.scratch.path("reitsma_coefficients.svg"))
+        params$fp_outpath %||% tempfile("reitsma-coefficients-", tmpdir=rcmetar.scratch.path(), fileext=".svg"))
     specifications <- list(
         Sensitivity=list(data=sensitivity, suffix="sensitivity"),
         Specificity=list(data=specificity, suffix="specificity"))

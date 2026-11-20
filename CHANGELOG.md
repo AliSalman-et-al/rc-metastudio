@@ -2,6 +2,19 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.6.1 - 2026-11-21
+
+### Changed
+
+- Refined Results figures, report tables, and plot exports.
+- Grouped application code by analysis, calculators, import, projects, Results, and workspace. Consolidated shared workflow and verification logic.
+- Removed generated verification artifacts from version control.
+
+### Fixed
+
+- Made project and sheet replacement consistent across opening, importing, and undoing changes. Results edits use the sheet that produced the analysis.
+- Preserved more precision when saving, restoring, and exporting plot style settings.
+
 ## 0.6.0 - 2026-11-19
 
 ### Added

@@ -134,8 +134,8 @@ def export_destination_case(view, work, record, kind):
         elif kind == "regenerated":
             view.save_image_as(view._selected_plot()[0], format="png")
         else:
-            from rc_metastudio.plot_capabilities import PlotCapability
-            from rc_metastudio.results_window import PlotArtifact
+            from rc_metastudio.results.plot_capabilities import PlotCapability
+            from rc_metastudio.results.window import PlotArtifact
 
             image = QtGui.QPixmap(24, 24)
             image.fill(QtGui.QColor("#336699"))
@@ -197,7 +197,7 @@ def _run(app, window, work, root, record, analyze):
     lower_column = window.model.OUTCOMES[1]
     lower = str(window.model.data(window.model.index(2, lower_column)))
     assert window.tableView.columnWidth(lower_column) >= window.tableView.fontMetrics().horizontalAdvance(lower) + 8
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     window.action_go.trigger()
     app.processEvents()
     setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
@@ -220,7 +220,7 @@ def _run(app, window, work, root, record, analyze):
     setup.current_param_vals["rm.method"] = "DL"
     mouse_click(required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.results.window import ResultsWindow
     recovered = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible())
     assert recovered.results.images
     record("ux-analysis-recovered", recovered, plots=dict(recovered.results.display_images), texts=dict(recovered.texts))
@@ -366,7 +366,7 @@ def _run(app, window, work, root, record, analyze):
     assert view.result_table.item(0, 0).text() == table.rows[0][0]
     key_click(view.result_table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
-    from rc_metastudio.result_formatting import numeric_cell, report_cell
+    from rc_metastudio.results.formatting import numeric_cell, report_cell
     clipboard_rows = [[report_cell(cell) if numeric_cell(cell) else cell for cell in row] for row in table.rows]
     assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *clipboard_rows]
     csv_path = work / "model-results.csv"
@@ -408,7 +408,7 @@ def _run(app, window, work, root, record, analyze):
     assert plot_item.sceneBoundingRect().width() <= view.graphics_view.viewport().width()
     plot_path = work / "toolbar-forest.pdf"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(plot_path), "PDF")):
-        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        from rc_metastudio.results.plot_export import PlotExportDialog
         def accept_export():
             dialog = app.activeModalWidget()
             if not isinstance(dialog, PlotExportDialog):
@@ -439,7 +439,7 @@ def _run(app, window, work, root, record, analyze):
     for custom in (False, True):
         if custom:
             edited = analyze(app, window, "binary.random")
-            from rc_metastudio.plot_editor_dialog import EditPlotDialog
+            from rc_metastudio.results.plot_editor import EditPlotDialog
             editor_errors = []
             editor_driven = []
             waiting_callbacks = []
@@ -585,7 +585,7 @@ def _run(app, window, work, root, record, analyze):
     assert window.model.current_sheet.rows[0].label == "Alpha, München"
     assert window.model.current_sheet.rows[1].covariate_values[next(c["id"] for c in window.model.current_sheet.covariates if c["name"] == "Dose")] == 7.0
     assert window.model.get_current_raw_data_for_study(0) == [1, 10, 2, 12]
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
     mapped_project = dataset_to_project(window.model.dataset)
     assert window.save(destination=work / "mapped.rcms")
     assert window.open(window.workspace.path, raise_on_error=True)
@@ -624,7 +624,7 @@ def _run(app, window, work, root, record, analyze):
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     from advanced_workflows import modal
     from analysis_matrix import run as matrix
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
     continuous = analyze(app, window, 'continuous.random')
@@ -720,7 +720,8 @@ def workspace_safety_case(app, window, work, root, record, case):
     """Workspace-02 proofs use disposable projects and real Qt transactions."""
     import os
     from rc_metastudio import automation, main_window
-    from rc_metastudio.dataset_table_model import DatasetTableModel
+    from rc_metastudio.importing.tabular import CsvImportResult
+    from rc_metastudio.workspace.table_model import DatasetTableModel
     source = work / 'source.rcms'
     source.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
     original = source.read_bytes()
@@ -777,9 +778,10 @@ def workspace_safety_case(app, window, work, root, record, case):
         assert window.open(str(destination), raise_on_error=True)
         assert window.model.current_effect == 'RR'
     elif case in ('csv', 'csv-failure'):
-        payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': {'data': [['Imported study', '2020', '1', '10', '2', '20']], 'covariate_names': [], 'covariate_types': []}}
+        payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': CsvImportResult((), (('Imported study', '2020', '1', '10', '2', '20'),), (), (), ())}
         if case == 'csv-failure':
-            from rc_metastudio.workspace_editing import RawCell, WorkspaceEditingService
+            from rc_metastudio.workspace.columns import RawCell
+            from rc_metastudio.workspace.editing import WorkspaceEditingService
             before = window.workspace.runtime_digest
             write = WorkspaceEditingService.apply_edit
             def fail(self, dataset, row, field, context, value, **kwargs):
@@ -839,8 +841,7 @@ def workspace_safety_case(app, window, work, root, record, case):
         window._handle_wizard_results({
             "path": "csv_import",
             "outcome_info": {"data_type": "binary", "sub_type": "proportions", "effect": "OR", "name": "Imported"},
-            "csv_data": {"data": [["Progress study", "2022", "2", "10", "3", "20"]],
-                         "covariate_names": [], "covariate_types": []},
+            "csv_data": CsvImportResult((), (("Progress study", "2022", "2", "10", "3", "20"),), (), (), ()),
         })
         assert during_writes == [(False, True, True)]
         assert window.model.current_sheet.rows[0].label == 'Progress study'

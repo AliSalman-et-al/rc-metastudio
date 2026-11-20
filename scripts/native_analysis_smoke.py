@@ -11,7 +11,7 @@ from typing import Callable, cast
 
 from PyQt6 import QtCore, QtWidgets, sip
 
-from rc_metastudio.analysis_results import AnalysisResult
+from rc_metastudio.results.contract import AnalysisResult
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 
@@ -114,10 +114,10 @@ def main() -> int:
         setattr(r_bridge, name, implementation)
     _phase("backend-installed")
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
-    from rc_metastudio import analysis_setup_dialog, progress_dialog
-    from rc_metastudio.dataset_table_model import DatasetTableModel
-    from rc_metastudio.project_adapter import document_to_runtime_project
-    from rc_metastudio.project_format import load_project
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog, progress_dialog
+    from rc_metastudio.workspace.table_model import DatasetTableModel
+    from rc_metastudio.project.adapter import document_to_runtime_project
+    from rc_metastudio.project.archive import load_project
 
     progress_class = progress_dialog.AnalysisProgressDialog
     created_progress_dialogs = []
@@ -204,7 +204,6 @@ def main() -> int:
         return result
 
     _install_backend_test_double(backend, "run_model_analysis", run_backend)
-    _install_backend_test_double(backend, "reset_r_working_directory", lambda: None)
 
     def deferred_delete() -> None:
         QtCore.QCoreApplication.sendPostedEvents(

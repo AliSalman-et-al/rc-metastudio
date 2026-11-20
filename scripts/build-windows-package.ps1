@@ -138,11 +138,8 @@ function Invoke-PackagedAppSmokeTest {
     $surfaceDirectory = Join-Path $Root "qualification\surface-records"
     $sampleObservationsPath = Join-Path $Root "qualification\sample-observations.json"
     $smokeLogPath = Join-Path $Root "qualification\packaged-smoke.log"
-    $smokeStdoutPath = Join-Path $Root "qualification\packaged-smoke.stdout.log"
-    $smokeStderrPath = Join-Path $Root "qualification\packaged-smoke.stderr.log"
     $hangTracePath = Join-Path $Root "qualification\packaged-smoke.hang-trace.log"
     $quotedSamplePath = '"{0}"' -f $samplePath
-    $quotedSmokeEvidencePath = '"{0}"' -f $smokeEvidencePath
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $smokeEvidencePath) | Out-Null
     $previousEnv = @{
         R_HOME = $env:R_HOME
@@ -157,7 +154,6 @@ function Invoke-PackagedAppSmokeTest {
         RCMS_AUTOMATION_SMOKE_LOG = $env:RCMS_AUTOMATION_SMOKE_LOG
         RCMS_AUTOMATION_HANG_TRACE = $env:RCMS_AUTOMATION_HANG_TRACE
         QT_SCALE_FACTOR = $env:QT_SCALE_FACTOR
-        RCMS_PACKAGE_BASELINE_DPR = $env:RCMS_PACKAGE_BASELINE_DPR
     }
     try {
         Remove-Item Env:R_HOME,Env:R_LIBS,Env:R_LIBS_USER,Env:RCMS_R_HOME,Env:RCMS_R_LIBS -ErrorAction SilentlyContinue
@@ -167,24 +163,10 @@ function Invoke-PackagedAppSmokeTest {
         $env:RCMS_AUTOMATION_SMOKE_LOG = $smokeLogPath
         $env:RCMS_AUTOMATION_HANG_TRACE = $hangTracePath
         $runtimeProbePath = Join-Path $Root "qualification\runtime-probe.json"
-        $env:RCMS_PACKAGE_BASELINE_DPR = (& $PythonExe -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8'))['qt']['baseline_device_pixel_ratio'])" $runtimeProbePath).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $env:RCMS_PACKAGE_BASELINE_DPR) { throw "Could not read packaged baseline DPR." }
-        $surfaceScales = & $PythonExe (Join-Path $repoRoot "scripts\packaged_smoke_contract.py")
-        if ($LASTEXITCODE -ne 0 -or -not $surfaceScales) { throw "Could not read packaged display scales." }
-        foreach ($scale in $surfaceScales) {
-            $env:QT_SCALE_FACTOR = $scale
-            $surfacePath = Join-Path $surfaceDirectory ("surface-{0}.json" -f $scale)
-            New-Item -ItemType Directory -Force -Path $surfaceDirectory | Out-Null
-            $surfaceExitCode = Invoke-BoundedPackageProcess -FilePath $exePath -ArgumentList @(
-                "--automation-package-surface-smoke", ('"{0}"' -f $surfacePath), $scale
-            )
-            if ($surfaceExitCode -ne 0) {
-                throw "Packaged Qt surface smoke failed at scale $scale with exit code $surfaceExitCode."
-            }
-        }
-
+        Remove-Item Env:QT_SCALE_FACTOR -ErrorAction SilentlyContinue
         $env:RCMS_STARTUP_PROJECT_SMOKE = "1"
         $startupExitCode = Invoke-BoundedPackageProcess -FilePath $exePath -ArgumentList @($quotedSamplePath)
+        Remove-Item Env:RCMS_STARTUP_PROJECT_SMOKE -ErrorAction SilentlyContinue
         if ($startupExitCode -ne 0) { throw "Packaged startup project smoke test failed while opening '$samplePath' with exit code $startupExitCode." }
         & $PythonExe (Join-Path $repoRoot "scripts\assemble_packaged_smoke_evidence.py") `
             --workflow-observation $workflowObservationPath `
@@ -549,7 +531,13 @@ $archiveInspectionPath = Join-Path $artifactDir "$artifactName-archive-inspectio
 $tmpZipPath = "$zipPath.tmp"
 $archiveRootDir = Join-Path $archiveStagingRoot $archiveRootName
 
-$requiredPyInstallerVersion = "6.22.3"
+$lockedStackJson = & $PythonExe (Join-Path $repoRoot "scripts\dependency_lock.py")
+if ($LASTEXITCODE -ne 0) { throw "Could not read the locked Windows deployment stack." }
+$lockedStack = @{}
+($lockedStackJson | ConvertFrom-Json).PSObject.Properties | ForEach-Object {
+    $lockedStack[$_.Name] = $_.Value
+}
+$requiredPyInstallerVersion = $lockedStack.pyinstaller
 $installedPyInstallerVersion = & $PythonExe -c "import PyInstaller; print(PyInstaller.__version__)" 2>$null
 if ($LASTEXITCODE -ne 0 -or $installedPyInstallerVersion.Trim() -ne $requiredPyInstallerVersion) {
     throw "Locked environment does not contain PyInstaller $requiredPyInstallerVersion. Run the package command without -SkipDependencyInstall so uv sync --locked can repair it."
@@ -563,8 +551,7 @@ if ($QualifyExistingArchive) {
     if ($existingName -ne $artifactName) { throw "Existing archive name '$existingName' does not match the project version-derived '$artifactName'." }
     $existingEvidence = Join-Path $artifactDir "$artifactName-evidence.json"
     $existingInspection = Join-Path $artifactDir "$artifactName-archive-inspection.json"
-    $versionEvidence = @{ python = "3.14.10"; pyqt6 = "6.12.0"; qt = "6.12.0"; sip = "13.13.1"; sip_runtime = "6.17.3"; r = "4.6.2"; rpy2 = "3.6.9"; pyinstaller = $requiredPyInstallerVersion }
-    $exactQualification = Expand-AndQualifyExactArchive -Archive $existingArchive -ArchiveRootName $artifactName -LockedQtRoot (Join-Path $repoRoot ".venv\Lib\site-packages\PyQt6\Qt6") -Versions $versionEvidence
+    $exactQualification = Expand-AndQualifyExactArchive -Archive $existingArchive -ArchiveRootName $artifactName -LockedQtRoot (Join-Path $repoRoot ".venv\Lib\site-packages\PyQt6\Qt6") -Versions $lockedStack
     $input = $exactQualification.ArchiveInputs
     $archivedSourceProvenance = Get-Content -Raw -LiteralPath (Join-Path $input "source-provenance.json") | ConvertFrom-Json
     if (($archivedSourceProvenance | ConvertTo-Json -Compress) -ne ($initialSourceProvenance | ConvertTo-Json -Compress)) {

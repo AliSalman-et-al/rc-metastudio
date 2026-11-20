@@ -13,13 +13,18 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import analysis_catalog, analysis_dataset, project_adapter, project_format
-from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.analysis import catalog as analysis_catalog
+from rc_metastudio.project import (
+    model as analysis_dataset,
+    adapter as project_adapter,
+    archive as project_format,
+)
+from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import ArmId, RowId, SheetId
-from rc_metastudio.plot_editor_dialog import EditPlotDialog
-from rc_metastudio.results_window import ResultsWindow
-from rc_metastudio.trial_sequential_analysis_dialog import TrialSequentialAnalysisDialog
+from rc_metastudio.results.plot_editor import EditPlotDialog
+from rc_metastudio.results.window import ResultsWindow
+from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
 from tests.e2e.report_retention import assert_exports, capture
 from tests.python.gui.qt_test_support import key_clicks, wait
 
@@ -187,9 +192,7 @@ def run(app, window, work, record, case):
         app.processEvents()
         setup, = [widget for widget in app.topLevelWidgets()
                   if isinstance(widget, AnalysisSetupDialog) and widget.isVisible()]
-        setup.method_cbo_box.setCurrentText(next(
-            label for label, method in setup.available_method_d.items() if method == "binary.fixed.peto"
-        ))
+        setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData("binary.fixed.peto"))
         click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         fit, = [widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible()]
         fit.close()
@@ -429,7 +432,7 @@ def run(app, window, work, record, case):
                plots={artifact.title: str(rendered)})
         if case == "peto" and style == "default" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
             from PIL.TiffImagePlugin import TiffImageFile
-            from rc_metastudio.plot_export_dialog import PlotExportDialog
+            from rc_metastudio.results.plot_export import PlotExportDialog
 
             export = work / "peto-89mm-300dpi.tiff"
 
@@ -542,6 +545,16 @@ def run(app, window, work, record, case):
         assert visible is view
         assert view._report_tables[0].rows[-1][3] != original_table.rows[-1][3]
         assert "90% power" in view.manuscript.methods and view.manuscript.methods != original_methods
+        clipboard = app.clipboard()
+        assert clipboard is not None
+        for section in ("methods", "results"):
+            action = next(action for action in view.edit_menu.actions()
+                          if action.text() == "Copy " + section + " section")
+            clipboard.clear()
+            action.trigger()
+            expected = getattr(view.manuscript, section)
+            assert clipboard.text() == expected, (section, clipboard.text(), expected)
+        record("tsa-copy-updated-report", view, methods=view.manuscript.methods, results=view.manuscript.results)
         assert window.workspace.is_dirty
         modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, "effect"), view.change_settings_action.trigger)
         entered_rows = view._report_tables[0].rows

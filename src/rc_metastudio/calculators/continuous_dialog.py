@@ -1,0 +1,1613 @@
+# SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Continuous outcome data entry dialog."""
+
+# This dialog edits the analysis unit directly because most displayed fields
+# are transient imputation inputs rather than stored raw data.
+from contextlib import ExitStack
+from typing import TYPE_CHECKING, TypeGuard, cast
+
+from rc_metastudio.qt_layout import style_inline_error
+from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
+from PyQt6.QtGui import QAction, QKeySequence, QPalette
+from PyQt6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QHeaderView,
+    QLabel,
+    QMessageBox,
+    QSizePolicy,
+    QStyle,
+    QTableWidgetItem,
+    QTreeView,
+    QWidget,
+    QWIDGETSIZE_MAX,
+)
+from rc_metastudio.calculators import (
+    controls as calculator_controls,
+    edit_history as calculator_edit_history,
+    effect_readout as calculator_effect_readout,
+)
+
+from rc_metastudio import app_error_handler
+from rc_metastudio import adaptive_window
+from rc_metastudio.calculators.service import (
+    CalculatorService,
+)
+from rc_metastudio.analysis.catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
+from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
+from rc_metastudio.qt_object_guard import required
+
+if TYPE_CHECKING:
+    import ui_continuous_back_calculation_dialog as _ui_continuous_back_calculation_dialog
+    import ui_continuous_data_dialog as _ui_continuous_data_dialog
+else:
+    from rc_metastudio.forms import (
+        ui_continuous_back_calculation_dialog as _ui_continuous_back_calculation_dialog,
+    )
+    from rc_metastudio.forms import (
+        ui_continuous_data_dialog as _ui_continuous_data_dialog,
+    )
+
+CONTINUOUS_IMPUTATION_FIELD_NAMES = {
+    "n": "n",
+    "N": "n",
+    "Mean": "mean",
+    "mean": "mean",
+    "sd": "sd",
+    "SD": "sd",
+    "se": "se",
+    "SE": "se",
+    "Variance": "var",
+    "var": "var",
+    "Lower": "low",
+    "low": "low",
+    "Upper": "high",
+    "high": "high",
+    "P-Value": "pval",
+    "p-value": "pval",
+    "pval": "pval",
+}
+
+
+def continuous_imputation_field_name(visible_header):
+    return CONTINUOUS_IMPUTATION_FIELD_NAMES.get(
+        str(visible_header), str(visible_header)
+    )
+
+
+class _BackCalculationCancelled(Exception):
+    """Internal control flow for a nested choice that rejects the transaction."""
+
+
+
+
+def is_list(x: object) -> TypeGuard[list[float | int | None] | tuple[float | int | None, ...]]:
+    return isinstance(x, (list, tuple))
+
+
+class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousDataDialog):
+    def __init__(
+        self,
+        analysis_unit,
+        arm_names,
+        arm_key,
+        current_effect,
+        confidence_level=None,
+        calculator: CalculatorService | None = None,
+        parent=None,
+    ):
+        super(ContinuousDataDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.simple_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._configure_tables()
+        self._configure_semantic_fields()
+        self._configure_focus_revelation()
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+        self.setup_signals_and_slots()
+
+        if confidence_level is None:
+            QMessageBox.critical(
+                self, "Missing confidence level", "Confidence level is missing."
+            )
+            raise ValueError("Confidence level is missing.")
+        self.confidence_level = confidence_level
+        self.calculator = calculator or CalculatorService()
+        self.confidence_multiplier = normal_confidence_multiplier(
+            self.confidence_level
+        )
+
+        self.analysis_unit = analysis_unit
+        self.arm_names = arm_names
+        self.current_effect = current_effect
+        self.arm_key = arm_key
+        self.metric_parameter = None
+        self._effect_fields = calculator_controls.CalculatorEffectFields(
+            self.effect_text_box, self.lower_text_box, self.upper_text_box,
+        )
+        self.wald_readout = calculator_effect_readout.make_wald_readout(self.dialog_layout, self.buttonBox)
+        for editor in self._effect_fields.editors.values():
+            editor.editingFinished.connect(app_error_handler.safe_slot(self._refresh_readout, parent=self))
+        self._validation_failed = False
+        self.entry_widgets = [
+            self.simple_table,
+            self.g1_pre_post_table,
+            self.g2_pre_post_table,
+            self.effect_text_box,
+            self.lower_text_box,
+            self.upper_text_box,
+            self.correlation_pre_post,
+        ]
+        self.text_boxes = [
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+            self.correlation_pre_post,
+        ]
+        self.ci_label.setText(
+            f"{self.confidence_level:g}% confidence interval"
+        )
+        self._configure_readable_ci_label()
+        self.current_item_data = {}
+
+        groups_names = [str(group_name) for group_name in self.arm_names]
+        self.simple_table.setVerticalHeaderLabels(groups_names)
+
+        self.tables = [
+            self.simple_table,
+            self.g1_pre_post_table,
+            self.g2_pre_post_table,
+        ]
+        self.group_one_label.setText(str(self.arm_names[0]))
+        self.group_two_label.setText(str(self.arm_names[1]) if len(self.arm_names) > 1 else "")
+        for table, group in zip((self.g1_pre_post_table, self.g2_pre_post_table), self.arm_names):
+            table.setAccessibleName(f"{group} pre/post summaries")
+            table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
+
+        self.setup_clear_button_palettes()  # Color for clear_button_pallette
+        self.initialize_form()
+        self._field_history = calculator_edit_history.TransientEditHistory()
+
+        self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} or self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "summary"
+        self.update_raw_data()
+        self._populate_effect_data()
+        self.set_current_effect()
+        self.impute_data()
+        self.update_effect_from_raw_data()
+        self.update_back_calculation_button()
+
+        if self.analysis_unit.sheet.sub_type not in {"reg_coef", "generic_effect"}:
+            self.input_mode_combo.addItem("Arm summaries", "summary")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
+        self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
+        self._update_input_modes()
+
+        self.current_correlation = self._get_correlation_str()
+        self.simple_table.setCurrentCell(0, 0)
+        self.simple_table.setFocus()
+        required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "continuous calculator OK button",
+        ).setDefault(True)
+        self._request_content_refit()
+
+    def _update_input_modes(self):
+        index = self.input_mode_combo.findData("pre-post")
+        if self.current_effect in {"MD", "SMD"}:
+            if index < 0:
+                self.input_mode_combo.insertItem(1, "Pre/post summaries", "pre-post")
+        elif index >= 0:
+            self.input_mode_combo.removeItem(index)
+        self._input_mode_changed()
+
+    def _input_mode_changed(self):
+        mode = self.input_mode_combo.currentData()
+        mode_changed = mode != getattr(self, "_active_input_mode", None)
+        previous_mode = getattr(self, "_active_input_mode", None)
+        if mode_changed and previous_mode is not None:
+            self._effect_fields.commit_pending(self.val_changed)
+            if self._validation_failed:
+                with QSignalBlocker(self.input_mode_combo):
+                    self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous_mode))
+                return
+        self._active_input_mode = mode
+        self.content_scroll.setVisible(mode != "estimate")
+        self.simple_group.setVisible(mode == "summary")
+        self.pre_post_group_box.setVisible(mode == "pre-post")
+        if mode_changed and previous_mode is not None:
+            self._refresh_active_inputs()
+        self._content_layout_changed(mode_changed=mode_changed)
+        if mode_changed:
+            QTimer.singleShot(0, lambda: required(self.content_scroll.verticalScrollBar(),
+                                                "continuous input scrollbar").setValue(0))
+
+    def _refresh_active_inputs(self):
+        mode = self.input_mode_combo.currentData()
+        if mode == "estimate":
+            self.set_current_effect()
+            return
+        self.analysis_unit.set_derived_effect_preview(
+            self.current_effect, self.arm_key, None, None, None,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        if mode == "pre-post":
+            # Selecting a method does not replace an existing arm summary.
+            self.impute_pre_post_data(self.g1_pre_post_table, 0)
+            self.impute_pre_post_data(self.g2_pre_post_table, 1)
+            self.update_effect_from_raw_data()
+        else:
+            self._copy_raw_data_from_table_to_analysis_unit()
+            self.update_effect_from_raw_data()
+        self.set_current_effect()
+
+    def _configure_tables(self):
+        """Give each data grid its own overflow and user-adjustable columns."""
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.simple_group.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        for table in (
+            self.simple_table,
+            self.g1_pre_post_table,
+            self.g2_pre_post_table,
+        ):
+            # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+            if not isinstance(table.itemDelegate(), calculator_controls.NumericSummaryDelegate):
+                table.setItemDelegate(calculator_controls.NumericSummaryDelegate(table))
+            table.setMinimumWidth(0)
+            table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            header = table.horizontalHeader()
+            header = required(header, "continuous table header")
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+            header.setStretchLastSection(False)
+            table.resizeColumnsToContents()
+            table.resizeRowsToContents()
+            height = (
+                header.sizeHint().height()
+                + sum(table.rowHeight(row) for row in range(table.rowCount()) if not table.isRowHidden(row))
+                + 2 * table.frameWidth()
+                + required(table.horizontalScrollBar(), "continuous table scrollbar")
+                .sizeHint()
+                .height()
+            )
+            # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+            table.setMinimumHeight(height)
+            # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+            table.setMaximumHeight(height)
+
+    def _configure_readable_ci_label(self):
+        """Keep the confidence heading on one line at normal scaling."""
+        self.ci_label.setWordWrap(False)
+
+    def _configure_semantic_fields(self):
+        # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
+        self.effect_combo_box.setMinimumWidth(0)
+        # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
+        self.effect_combo_box.setMaximumWidth(QWIDGETSIZE_MAX)
+        self.effect_combo_box.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        effect_view = QTreeView(self.effect_combo_box)
+        effect_view.setHeaderHidden(True)
+        effect_view.setRootIsDecorated(False)
+        self.effect_combo_box.setView(effect_view)
+        effect_view.setTextElideMode(Qt.TextElideMode.ElideNone)
+        effect_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._effect_popup = required(effect_view.window(), "continuous metric popup")
+        self._effect_popup.installEventFilter(self)
+        correlation_width = self.correlation_pre_post.fontMetrics().height() * 10
+        self.correlation_pre_post.setFixedWidth(correlation_width)
+
+    def _configure_focus_revelation(self):
+        for widget in self.content_widget.findChildren(QWidget):
+            widget.installEventFilter(self)
+
+    def eventFilter(
+        self, watched: QObject | None, event: QEvent | None
+    ) -> bool:
+        if event is None:
+            return super(ContinuousDataDialog, self).eventFilter(watched, event)
+        if watched is self._effect_popup and event.type() == QEvent.Type.Show:
+            QTimer.singleShot(0, self._bound_effect_popup_to_screen)
+        if (
+            isinstance(watched, QWidget)
+            and event.type() == QEvent.Type.FocusIn
+            and self.content_widget.isAncestorOf(watched)
+        ):
+            self.content_scroll.ensureWidgetVisible(watched)
+            QTimer.singleShot(
+                0, lambda target=watched: self._ensure_content_widget_visible(target)
+            )
+        return super(ContinuousDataDialog, self).eventFilter(watched, event)
+
+    def _ensure_content_widget_visible(self, widget):
+        try:
+            self.content_scroll.ensureWidgetVisible(widget)
+            center = widget.mapTo(self.content_widget, widget.rect().center())
+            self.content_scroll.ensureVisible(center.x(), center.y(), 12, 12)
+        except RuntimeError:
+            pass
+
+    def _request_content_refit(self, *, mode_changed=False):
+        controller = self.__dict__.get("_layout_controller")
+        if controller is not None and (mode_changed or not self.isVisible()):
+            height = self.dialog_layout.sizeHint().height()
+            if not self.content_scroll.isHidden():
+                height += (
+                    self.content_layout.sizeHint().height()
+                    - self.content_scroll.sizeHint().height()
+                    + 2 * self.content_scroll.frameWidth()
+                )
+            adaptive_window.set_content_preferred_width(
+                self, 480, self.fontMetrics().horizontalAdvance("-9999.9999") * 8 + 140, height
+            )
+            controller.request_content_refit()
+
+    def _content_layout_changed(self, *, mode_changed=False):
+        """Refit the active inputs within the screen bounds."""
+        content_layout = self.__dict__.get("content_layout")
+        content_widget = self.__dict__.get("content_widget")
+        if content_layout is not None:
+            content_layout.invalidate()
+        if content_widget is not None:
+            content_widget.updateGeometry()
+            self.content_scroll.setMaximumHeight(content_widget.sizeHint().height() + 2 * self.content_scroll.frameWidth())
+        self._request_content_refit(mode_changed=mode_changed)
+
+    def _update_effect_choice_accessibility(self):
+        combo = self.effect_combo_box
+        if combo.count() == 0:
+            return
+        full_text = combo.currentText()
+        combo.setToolTip(full_text)
+        for index in range(combo.count()):
+            combo.setItemData(index, combo.itemText(index), Qt.ItemDataRole.ToolTipRole)
+        view = combo.view()
+        if not isinstance(view, QTreeView):
+            raise RuntimeError("Continuous metric combo requires a tree view")
+        view.resizeColumnToContents(0)
+
+    def _bound_effect_popup_to_screen(self):
+        """Keep the native metric popup local to the dialog's owning screen."""
+        try:
+            combo = self.effect_combo_box
+            view = combo.view()
+            if not isinstance(view, QTreeView):
+                raise RuntimeError("Continuous metric combo requires a tree view")
+            popup = view.window()
+            popup = required(popup, "continuous metric popup")
+            available = adaptive_window.available_geometry_for_window(self)
+            content_width = view.columnWidth(0) + 2 * required(
+                self.effect_combo_box.style(), "continuous metric combo style"
+            ).pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
+            popup_width = min(available.width(), max(combo.width(), content_width))
+            popup_height = min(available.height(), popup.height())
+            # layout-audit: allow=bounded-native-popup; reason=native choice popup is bounded to the owning screen
+            popup.setMaximumSize(available.size())
+            # layout-audit: allow=bounded-native-popup; reason=native choice popup is bounded to the owning screen
+            popup.resize(popup_width, popup_height)
+
+            frame = popup.frameGeometry()
+            bounded_x = min(
+                max(frame.x(), available.left()),
+                available.right() - frame.width() + 1,
+            )
+            bounded_y = min(
+                max(frame.y(), available.top()),
+                available.bottom() - frame.height() + 1,
+            )
+            # layout-audit: allow=bounded-native-popup; reason=native choice popup is bounded to the owning screen
+            popup.move(bounded_x, bounded_y)
+        except RuntimeError:
+            pass
+
+    def _grow_table_column_to_contents(self, table, column):
+        header = required(table.horizontalHeader(), "continuous table header")
+        required_width = max(
+            header.sectionSizeHint(column), table.sizeHintForColumn(column)
+        )
+        if header.sectionResizeMode(column) != QHeaderView.ResizeMode.Stretch and required_width > table.columnWidth(column):
+            header.resizeSection(column, required_width)
+
+    def _fit_tables_to_contents(self):
+        for table in self.__dict__.get("tables", (self.simple_table,)):
+            for column in range(table.columnCount()):
+                self._grow_table_column_to_contents(table, column)
+        self._content_layout_changed()
+
+    def initialize_form(self, table=None):
+        """Initialize all cells to empty items
+        If table is specified, only clear that table, leave the others alone
+        """
+        if table is None:
+            for target in (
+                self.simple_table,
+                self.g1_pre_post_table,
+                self.g2_pre_post_table,
+            ):
+                for row in range(target.rowCount()):
+                    for col in range(target.columnCount()):
+                        self._set_val(row, col, None, target)
+        else:
+            for row in range(table.rowCount()):
+                for col in range(table.columnCount()):
+                    self._set_val(row, col, None, table)
+
+        for txt_box in self.text_boxes:
+            txt_box.setText("")
+            if txt_box == self.correlation_pre_post:
+                txt_box.setText("0.0")
+
+    def setup_signals_and_slots(self):
+        self.simple_table.cellChanged.connect(
+            app_error_handler.safe_slot(self._cell_changed, parent=self)
+        )
+        self.simple_table.currentCellChanged.connect(
+            app_error_handler.safe_slot(
+                self.on_simple_table_currentCellChanged, parent=self
+            )
+        )
+        self.g1_pre_post_table.cellChanged.connect(
+            app_error_handler.safe_slot(
+                lambda row, col: self.impute_pre_post_data(
+                    self.g1_pre_post_table, 0, row, col
+                ),
+                parent=self,
+            )
+        )
+        self.g1_pre_post_table.currentCellChanged.connect(
+            app_error_handler.safe_slot(
+                self.on_g1_pre_post_table_currentCellChanged, parent=self
+            )
+        )
+        self.g2_pre_post_table.cellChanged.connect(
+            app_error_handler.safe_slot(
+                lambda row, col: self.impute_pre_post_data(
+                    self.g2_pre_post_table, 1, row, col
+                ),
+                parent=self,
+            )
+        )
+        self.g2_pre_post_table.currentCellChanged.connect(
+            app_error_handler.safe_slot(
+                self.on_g2_pre_post_table_currentCellChanged, parent=self
+            )
+        )
+
+        self.effect_combo_box.currentTextChanged.connect(
+            app_error_handler.safe_slot(
+                lambda _text: self.effect_changed(), parent=self
+            )
+        )
+        self.clear_button.clicked.connect(
+            app_error_handler.safe_slot(self.clear_form, parent=self)
+        )
+        self.back_calculate_button.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda: self.update_back_calculation_button(engage=True), parent=self
+            )
+        )
+
+        self.effect_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("est"), parent=self)
+        )
+        self.lower_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("lower"), parent=self)
+        )
+        self.upper_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("upper"), parent=self)
+        )
+        self.correlation_pre_post.editingFinished.connect(
+            app_error_handler.safe_slot(
+                lambda: self.val_changed("correlation_pre_post"), parent=self
+            )
+        )
+
+        undo = QAction(self)
+        redo = QAction(self)
+        undo.setShortcut(QKeySequence.StandardKey.Undo)
+        redo.setShortcut(QKeySequence.StandardKey.Redo)
+        self.addAction(undo)
+        self.addAction(redo)
+        undo.triggered.connect(
+            app_error_handler.safe_slot(lambda _checked=False: self.undo(), parent=self)
+        )
+        redo.triggered.connect(
+            app_error_handler.safe_slot(lambda _checked=False: self.redo(), parent=self)
+        )
+
+    def _populate_effect_data(self):
+        metric_family = (
+            CONTINUOUS_ONE_ARM_METRICS
+            if self.current_effect in CONTINUOUS_ONE_ARM_METRICS
+            else CONTINUOUS_TWO_ARM_METRICS
+        )
+        q_effects = list(metric_family)
+        if self.current_effect not in q_effects:
+            q_effects.append(str(self.current_effect))
+        with QSignalBlocker(self.effect_combo_box):
+            self.effect_combo_box.clear()
+            for effect in q_effects:
+                self.effect_combo_box.addItem(
+                    self._effect_display_label(effect), userData=effect
+                )
+            self.effect_combo_box.setCurrentIndex(
+                q_effects.index(str(self.current_effect))
+            )
+        self._update_effect_choice_accessibility()
+
+    def effect_changed(self):
+        self.current_effect = self._selected_effect()
+
+        self._update_input_modes()
+        self._update_effect_choice_accessibility()
+        self._content_layout_changed()
+
+        self.arm_key = self.get_current_arm_key()
+
+        self.update_effect_from_raw_data()
+        self.set_current_effect()
+
+        self.metric_parameter = None
+        self.update_back_calculation_button()
+
+    def accept(self):
+        if self._validation_failed:
+            return
+        self._effect_fields.commit_pending(self.val_changed)
+        if not self._validation_failed:
+            self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self._active_input_mode == "estimate" else "derived_preview")
+            self._refresh_active_inputs()
+            super().accept()
+
+    def val_changed(self, val_str):
+        field = self._effect_fields.editors.get(val_str)
+        if field is not None and not self._effect_fields.is_pending(val_str) and not self._validation_failed:
+            return
+        old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
+            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        old_correlation = self.current_correlation
+
+        editor = field if field is not None else self.correlation_pre_post
+        new_text = editor.text()
+        with ExitStack() as signal_blockers:
+            for widget in self.entry_widgets:
+                signal_blockers.enter_context(QSignalBlocker(widget))
+            try:
+                if field is None:
+                    correlation = calculator_controls.parse_calculator_value(new_text)
+                    if correlation is not None and not -1 <= correlation <= 1:
+                        raise calculator_controls.CalculatorInputError("Correlation must be between −1 and 1.")
+                    display_scale_val = None
+                else:
+                    display_scale_val = calculator_effect_readout.parse_effect_draft(
+                        new_text, val_str, self.analysis_unit, self.current_effect, self.arm_key,
+                        "continuous", self.confidence_multiplier, self._effect_source(), self.calculator,
+                    )
+            except calculator_controls.CalculatorInputError as error:
+                QMessageBox.warning(self, "Warning", str(error))
+                self.restore_analysis_unit_and_tables(old_analysis_unit, old_tables_data, old_correlation)
+                self._validation_failed = True
+                editor.setText(new_text)
+                editor.setFocus()
+                return
+
+        self._validation_failed = False
+        if field is not None:
+            self._effect_fields.mark_committed(val_str)
+
+        calculation_scale_value = self.calculator.continuous_convert_scale(
+            display_scale_val, self.current_effect, convert_to="calc.scale"
+        )
+
+        if val_str == "est":
+            self.analysis_unit.set_effect(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+        elif val_str == "lower":
+            self.analysis_unit.set_lower(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+        elif val_str == "upper":
+            self.analysis_unit.set_upper(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+        elif val_str == "correlation_pre_post":
+            try:
+                succeeded = self.impute_pre_post_data(
+                    self.g1_pre_post_table, 0
+                ) and self.impute_pre_post_data(self.g2_pre_post_table, 1)
+            except Exception:
+                self.restore_analysis_unit_and_tables(
+                    old_analysis_unit, old_tables_data, old_correlation
+                )
+                raise
+            if not succeeded:
+                self.restore_analysis_unit_and_tables(
+                    old_analysis_unit, old_tables_data, old_correlation
+                )
+                return
+
+        self.impute_data()
+
+        new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
+            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        new_correlation = self._get_correlation_str()
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_tables,
+            old_state=(old_analysis_unit, old_tables_data, old_correlation),
+            new_state=(new_analysis_unit, new_tables_data, new_correlation),
+        )
+        self.update_back_calculation_button()
+
+        self.current_correlation = new_correlation
+
+    def setup_clear_button_palettes(self):
+        self.orig_palette = self.clear_button.palette()
+        self.pushme_palette = QPalette()
+        self.pushme_palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.red)
+        self.update_clear_button_color()
+
+    def update_clear_button_color(self):
+        if calculator_controls.calculator_inputs_disabled(
+            self.simple_table,
+            [self.effect_text_box, self.lower_text_box, self.upper_text_box],
+        ):
+            self.clear_button.setPalette(self.pushme_palette)
+        else:
+            self.clear_button.setPalette(self.orig_palette)
+
+    def _effect_source(self):
+        return "entered" if self._active_input_mode == "estimate" else "derived_preview"
+
+    def _refresh_readout(self):
+        calculator_effect_readout.update_wald_readout(
+            self.wald_readout, self.analysis_unit, self.current_effect, self.arm_key,
+            self.confidence_multiplier, "continuous", self._effect_source(),
+        )
+
+    def set_current_effect(self):
+        calculator_effect_readout.populate_effect_ci_fields(
+            self.analysis_unit, self._effect_fields, self.current_effect,
+            self.arm_key, "continuous", self.confidence_multiplier,
+            source=self._effect_source(), calculator=self.calculator,
+        )
+        self._refresh_readout()
+
+        self.change_row_color_according_to_metric()
+
+    def change_row_color_according_to_metric(self):
+        """Expose only the data rows that participate in the selected metric."""
+        current_effect_is_one_arm = self.current_effect in CONTINUOUS_ONE_ARM_METRICS
+        self.simple_table.setRowHidden(1, current_effect_is_one_arm)
+        self._configure_tables()
+
+    def update_raw_data(self):
+        """Updates table widget with data from analysis_unit"""
+        with QSignalBlocker(self.simple_table):
+            for row_index, group_name in enumerate(self.arm_names):
+                group_raw_data = self.analysis_unit.get_raw_data_for_arm(group_name)
+                for col in range(len(group_raw_data)):
+                    self._set_val(
+                        row_index, col, group_raw_data[col], self.simple_table, supplied=True
+                    )
+        self.impute_data()
+
+    def _cell_data_not_valid(self, celldata_string, cell_header=None):
+        if calculator_controls.cell_text_is_blank(celldata_string):
+            return None
+
+        try:
+            value = calculator_controls.numeric_value(celldata_string)
+        except ValueError:
+            return "Enter a number."
+
+        field_name = continuous_imputation_field_name(cell_header)
+        if field_name == "n" and (value <= 0 or not value.is_integer()):
+            return "N must be a positive whole number."
+        if field_name == "sd" and value <= 0:
+            return "SD must be greater than zero."
+        if field_name in ["se", "var", "pval"] and value < 0:
+            label = {"se": "Standard error", "var": "Variance", "pval": "p-value"}[field_name]
+            return f"{label} cannot be negative."
+
+        if field_name == "pval" and not (0 <= value <= 1):
+            return "p-value must be between 0 and 1."
+        return None
+
+    def _get_correlation_str(self):
+        return str(self.correlation_pre_post.text())
+
+    def _summary_table_error(self, table):
+        headers = self.get_column_header_strs(table)
+        for row in range(table.rowCount()):
+            if table.isRowHidden(row):
+                continue
+            for col in range(table.columnCount()):
+                item = table.item(row, col)
+                if item is None:
+                    continue
+                message = self._cell_data_not_valid(item.text(), headers[col])
+                if message:
+                    return message
+        return None
+
+    def _validate_summary_tables(self):
+        warning_msg = None
+        for table in self.tables:
+            if table.isHidden():
+                continue
+            warning_msg = self._summary_table_error(table)
+            if warning_msg:
+                break
+        self._validation_failed = bool(warning_msg)
+        if not hasattr(self, "summary_error"):
+            self.summary_error = QLabel(self)
+            self.summary_error.setWordWrap(True)
+            self.content_layout.insertWidget(1, self.summary_error)
+        style_inline_error(self.summary_error)
+        self.summary_error.setText(warning_msg or "")
+        self.summary_error.setVisible(bool(warning_msg))
+        required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "calculator OK").setEnabled(not warning_msg)
+        return not warning_msg
+
+    def _cell_changed(self, row, col):
+
+        old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
+            tables=self.tables,
+            analysis_unit=self.analysis_unit,
+            table=self.simple_table,
+            row=row,
+            col=col,
+            old_value=self.current_item_data[self.simple_table],
+            use_old_value=True,
+        )
+        old_correlation = self._get_correlation_str()
+
+        try:
+            if not self._validate_summary_tables():
+                return
+            with QSignalBlocker(self.simple_table):
+                required(self.simple_table.item(row, col), "edited summary cell").setData(Qt.ItemDataRole.UserRole, True)
+                required(self.simple_table.item(row, 0), "summary source cell").setData(Qt.ItemDataRole.UserRole + 1, False)
+            self.impute_data()
+        except Exception as e:
+            msg = e.args[0]
+            QMessageBox.warning(self, "Warning", msg)
+            self.restore_analysis_unit_and_tables(
+                old_analysis_unit, old_tables_data, old_correlation
+            )
+            return
+
+        try:
+            self._copy_raw_data_from_table_to_analysis_unit()  # table --> analysis_unit
+            self.update_effect_from_raw_data()
+        except Exception as e:
+            msg = "Could not compute study effects from the edited raw data: %s" % e
+            QMessageBox.warning(self, "Warning", msg)
+            self.restore_analysis_unit_and_tables(
+                old_analysis_unit, old_tables_data, old_correlation
+            )
+            return
+
+        new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
+            tables=self.tables,
+            analysis_unit=self.analysis_unit,
+            table=self.simple_table,
+            row=row,
+            col=col,
+            use_old_value=False,
+        )
+        new_correlation = self._get_correlation_str()
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_tables,
+            old_state=(old_analysis_unit, old_tables_data, old_correlation),
+            new_state=(new_analysis_unit, new_tables_data, new_correlation),
+        )
+        self.update_back_calculation_button()
+
+    def _set_val(self, row_index, var_index, val, table=None, *, supplied=None):
+        if table is None:
+            table = self.simple_table
+
+        row, col = row_index, var_index
+        header = table.horizontalHeaderItem(col)
+        if header is not None and self._imputation_field_name(header.text()) == "pval":
+            item = table.item(row, col)
+            if supplied is not True:
+                if item is not None and item.data(Qt.ItemDataRole.UserRole):
+                    return
+                val = None
+        if is_nan(val):
+            return
+
+        with QSignalBlocker(table):
+            str_val = "" if val in EMPTY_VALS else self.float_to_str(float(val))
+            if table.item(row, col) is None:
+                table.setItem(row, col, QTableWidgetItem(str_val))
+            else:
+                required(
+                    table.item(row, col), f"continuous table cell ({row}, {col})"
+                ).setText(str_val)
+            item = required(table.item(row, col), "summary cell")
+            item.setToolTip(str_val + (" · Computed from the entered values" if str_val and supplied is False else ""))
+            if supplied is not None or not str_val:
+                item.setData(Qt.ItemDataRole.UserRole, bool(supplied and str_val))
+
+
+    def _copy_raw_data_from_table_to_analysis_unit(self):
+        for row_index, group_name in enumerate(self.arm_names):
+            current_values = [
+                self._get_float(row_index, col_index)
+                for col_index in range(
+                    len(self.analysis_unit.get_raw_data_for_arm(group_name))
+                )
+            ]
+            self.analysis_unit.set_raw_data_for_arm(group_name, current_values)
+
+    def restore_analysis_unit(self, old_analysis_unit):
+        """Restores the analysis_unit data and resets the form"""
+        self.analysis_unit = old_analysis_unit.copy_for_edit()
+
+        self.initialize_form()
+        self.update_raw_data()
+        self.set_current_effect()
+        self.impute_data()
+        self.update_back_calculation_button()
+
+    def restore_tables(self, old_tables_data):
+        """Assumes old tables data given in follow order:
+        simple_table, g1_pre_post_table, g2_pre_post_table
+        """
+        for i, old_table_data in enumerate(old_tables_data):
+            if not old_table_data:
+                continue
+            table = self.tables[i]
+            nrows = min(len(old_table_data), table.rowCount())
+            ncols = min(len(old_table_data[0]), table.columnCount())
+
+            for row in range(nrows):
+                for col in range(ncols):
+                    value, supplied, pre_post_derived = old_table_data[row][col]
+                    self._set_val(row, col, value, table=table, supplied=supplied)
+                    with QSignalBlocker(table):
+                        required(table.item(row, col), "restored summary cell").setData(Qt.ItemDataRole.UserRole + 1, pre_post_derived)
+        self._fit_tables_to_contents()
+        self._validate_summary_tables()
+
+    def restore_analysis_unit_and_tables(
+        self, old_analysis_unit, old_tables_data, old_correlation
+    ):
+        self.restore_analysis_unit(old_analysis_unit)
+        self.restore_tables(old_tables_data)
+        self.correlation_pre_post.setText(old_correlation)
+
+    def save_tables_data(self):
+        old_tables_data = []
+        for table in self.tables:
+            rows = []
+            for row in range(table.rowCount()):
+                cells = []
+                for col in range(table.columnCount()):
+                    item = required(table.item(row, col), "summary snapshot cell")
+                    cells.append((item.text(), bool(item.data(Qt.ItemDataRole.UserRole)), bool(item.data(Qt.ItemDataRole.UserRole + 1))))
+                rows.append(cells)
+            old_tables_data.append(rows)
+        return old_tables_data
+
+    def _save_analysis_unit_and_table_states(
+        self,
+        tables,
+        analysis_unit,
+        table=None,
+        row=None,
+        col=None,
+        old_value=None,
+        use_old_value=True,
+    ):
+        old_tables_data = self.save_tables_data()
+        if use_old_value:
+            old_cell = old_tables_data[self._get_index_of_table(table)][row][col]
+            old_tables_data[self._get_index_of_table(table)][row][col] = (old_value, old_cell[1], old_cell[2])
+
+        old_analysis_unit = analysis_unit.copy_for_edit()
+        return old_analysis_unit, old_tables_data
+
+    def _get_index_of_table(self, table):
+        index = -1
+        for i, x in enumerate(self.tables):
+            if table is x:
+                index = i
+        return index
+
+    def impute_data(self):
+        """Fill derivable study fields from the entered values."""
+        var_names = self.get_column_header_strs()
+        for row_index, group_name in enumerate(self.arm_names):
+            current_values = {}
+            for var_index, var_name in enumerate(var_names):
+                var_value = self._get_float(row_index, var_index)
+                if var_value is not None and required(self.simple_table.item(row_index, var_index), "summary input cell").data(Qt.ItemDataRole.UserRole):
+                    current_values[self._imputation_field_name(var_name)] = var_value
+
+            alpha = self.confidence_level_to_alpha()
+            results_from_r = self.calculator.impute_continuous_data(current_values, alpha)
+
+            if results_from_r["succeeded"]:
+                computed_vals = results_from_r["output"]
+                for var_index, var_name in enumerate(var_names):
+                    self._set_val(
+                        row_index,
+                        var_index,
+                        computed_vals[self._imputation_field_name(var_name)],
+                    )
+                self._copy_raw_data_from_table_to_analysis_unit()
+        self._fit_tables_to_contents()
+
+    def confidence_level_to_alpha(self):
+        alpha = 1 - self.confidence_level / 100.0
+        return alpha
+
+    def _imputation_field_name(self, visible_header):
+        return continuous_imputation_field_name(visible_header)
+
+    def impute_pre_post_data(self, table, group_index, row=None, col=None):
+        old_analysis_unit = old_tables_data = old_correlation = None
+        if not (row, col) == (
+            None,
+            None,
+        ):  # means this was called through user interaction, not programmatically
+            old_analysis_unit, old_tables_data = (
+                self._save_analysis_unit_and_table_states(
+                    tables=self.tables,
+                    analysis_unit=self.analysis_unit,
+                    table=table,
+                    row=row,
+                    col=col,
+                    old_value=self.current_item_data[table],
+                    use_old_value=True,
+                )
+            )
+            old_correlation = self._get_correlation_str()
+
+            if not self._validate_summary_tables():
+                return False
+
+        if row is not None and col is not None:
+            with QSignalBlocker(table):
+                table.item(row, col).setData(Qt.ItemDataRole.UserRole, True)
+        var_names = self.get_column_header_strs_pre_post()
+        params_dict = {}
+        for a_b_index, a_b_name in enumerate(["A", "B"]):
+            for var_index, var_name in enumerate(var_names):
+                var_value = self._get_float(a_b_index, var_index, table)
+                if var_value is not None and table.item(a_b_index, var_index).data(Qt.ItemDataRole.UserRole):
+                    params_dict[
+                        "%s.%s" % (self._imputation_field_name(var_name), a_b_name)
+                    ] = var_value
+        params_dict["metric"] = self.current_effect
+
+        results_from_r = self.calculator.impute_pre_post_continuous_data(
+            params_dict,
+            calculator_controls.numeric_value(self.correlation_pre_post.text()),
+            self.confidence_level_to_alpha(),
+        )
+
+        if not results_from_r["succeeded"]:
+            if (
+                old_analysis_unit is not None
+                and old_tables_data is not None
+                and old_correlation is not None
+            ):
+                self.restore_analysis_unit_and_tables(
+                    old_analysis_unit, old_tables_data, old_correlation
+                )
+            self._fit_tables_to_contents()
+            return False
+
+        computed_vals = results_from_r["output"]
+
+        output_is_complete = not any(
+            computed_vals[field_name] is None
+            for field_name in ("n", "mean", "sd")
+        )
+        if output_is_complete:
+            for var_index, var_name in enumerate(self.get_column_header_strs()):
+                field_name = self._imputation_field_name(var_name)
+                val = computed_vals[field_name]
+                self._set_val(group_index, var_index, val, supplied=field_name in {"n", "mean", "sd"})
+            with QSignalBlocker(self.simple_table):
+                required(self.simple_table.item(group_index, 0), "derived arm source").setData(Qt.ItemDataRole.UserRole + 1, True)
+        elif required(self.simple_table.item(group_index, 0), "derived arm source").data(Qt.ItemDataRole.UserRole + 1):
+            for var_index in range(self.simple_table.columnCount()):
+                self._set_val(group_index, var_index, None, supplied=False)
+            self.analysis_unit.set_effect_for_source(
+                "derived_preview", self.current_effect, self.arm_key, None, None, None
+            )
+            self.set_current_effect()
+
+        pre_vals = results_from_r["pre"]
+        post_vals = results_from_r["post"]
+        for var_index, var_name in enumerate(var_names):
+            field_name = self._imputation_field_name(var_name)
+            pre_val = pre_vals[field_name]
+            post_val = post_vals[field_name]
+            self._set_val(0, var_index, pre_val, table)
+            self._set_val(1, var_index, post_val, table)
+
+        self._copy_raw_data_from_table_to_analysis_unit()
+        try:
+            self.update_effect_from_raw_data()
+        except Exception as e:
+            if (
+                old_analysis_unit is not None
+                and old_tables_data is not None
+                and old_correlation is not None
+            ):
+                msg = "Could not compute study effects from the edited raw data: %s" % e
+                QMessageBox.warning(self, "Warning", msg)
+                self.restore_analysis_unit_and_tables(
+                    old_analysis_unit, old_tables_data, old_correlation
+                )
+                return False
+            raise
+        self.update_clear_button_color()
+        self._fit_tables_to_contents()
+
+        # function was invoked as a result of user interaction, not
+        # programmatically
+        if not (row, col) == (None, None):
+            new_analysis_unit, new_tables_data = (
+                self._save_analysis_unit_and_table_states(
+                    tables=self.tables,
+                    analysis_unit=self.analysis_unit,
+                    table=table,
+                    row=row,
+                    col=col,
+                    use_old_value=False,
+                )
+            )
+            new_correlation = self._get_correlation_str()
+
+            self._field_history.record(
+                restore_state=self.restore_analysis_unit_and_tables,
+                old_state=(old_analysis_unit, old_tables_data, old_correlation),
+                new_state=(new_analysis_unit, new_tables_data, new_correlation),
+            )
+            self.update_back_calculation_button()
+        return True
+
+    def float_to_str(self, float_val):
+        float_str = ""
+        if not is_nan(float_val):
+            float_str = str(float_val)
+        return float_str
+
+    def get_column_header_strs(self, table=None):
+        if table is None:
+            table = self.simple_table
+
+        return [
+            str(required(h_item, "continuous table header item").text())
+            for h_item in [
+                table.horizontalHeaderItem(col) for col in range(table.columnCount())
+            ]
+        ]
+
+    def get_column_header_strs_pre_post(self):
+        return self.get_column_header_strs(table=self.g1_pre_post_table)
+
+    def on_simple_table_currentCellChanged(
+        self, currentRow, currentColumn, previousRow, previousColumn
+    ):
+        self.current_item_data[self.simple_table] = self._get_float(
+            currentRow, currentColumn
+        )
+
+    def on_g1_pre_post_table_currentCellChanged(
+        self, currentRow, currentColumn, previousRow, previousColumn
+    ):
+        self.current_item_data[self.g1_pre_post_table] = self._get_float(
+            currentRow, currentColumn, self.g1_pre_post_table
+        )
+
+    def on_g2_pre_post_table_currentCellChanged(
+        self, currentRow, currentColumn, previousRow, previousColumn
+    ):
+        self.current_item_data[self.g2_pre_post_table] = self._get_float(
+            currentRow, currentColumn, self.g2_pre_post_table
+        )
+
+    def _is_empty(self, i, j, table):
+        val = table.item(i, j)
+        return val is None or val.text() == ""
+
+    def _get_float(self, i, j, table=None):
+        if table is None:
+            table = self.simple_table
+        item = table.item(i, j)
+        if item is None:
+            return None
+        try:
+            return calculator_controls.numeric_value(item.text())
+        except ValueError:
+            return None
+
+    def _is_empty_value(self, x):
+        return x is None or x == ""
+
+    def update_effect_from_raw_data(self):
+        raw_data = self.analysis_unit.get_raw_data_for_arms(self.arm_names)
+        n1, m1, sd1 = raw_data[:3]
+        if self.current_effect in CONTINUOUS_TWO_ARM_METRICS:
+            n2, m2, sd2 = raw_data[3:]
+            se1, se2 = self._get_float(0, 3), self._get_float(1, 3)
+            complete_summaries = not any(self._is_empty_value(value) for value in raw_data)
+            complete_mean_se = self.current_effect == "MD" and not any(
+                self._is_empty_value(value) for value in (m1, se1, m2, se2)
+            )
+            if not (complete_summaries or complete_mean_se):
+                return
+            est_and_ci_d = self.calculator.continuous_effect_for_study(
+                    n1,
+                    m1,
+                    sd1,
+                    # Use SE only to reconstruct a missing SD; SE cells may be derived.
+                    se1=se1 if self._is_empty_value(sd1) else None,
+                    n2=n2,
+                    m2=m2,
+                    sd2=sd2,
+                    se2=se2 if self._is_empty_value(sd2) else None,
+                    metric=self.current_effect,
+                    confidence_level=self.confidence_level,
+                )
+        else:
+            if any(self._is_empty_value(value) for value in (n1, m1, sd1)):
+                return
+            est_and_ci_d = self.calculator.continuous_effect_for_study(
+                n1, m1, sd1, two_arm=False, metric=self.current_effect,
+                confidence_level=self.confidence_level,
+            )
+        est, low, high = self.calculator.effect_triplet(
+            est_and_ci_d, "calc_scale", metric=self.current_effect
+        )
+        self.analysis_unit.set_derived_effect_preview(
+            self.current_effect, self.arm_key, est, low, high,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        self.set_current_effect()
+
+    def _capture_dialog_state(self):
+        return {
+            "analysis_unit": self.analysis_unit.copy_for_edit(),
+            "tables": self.save_tables_data(),
+            "correlation": self.correlation_pre_post.text(),
+            "metric_parameter": self.metric_parameter,
+            "button": {
+                "enabled": self.back_calculate_button.isEnabled(),
+                "text": self.back_calculate_button.text(),
+                "hidden": self.back_calculate_button.isHidden(),
+                "checked": self.back_calculate_button.isChecked(),
+                "down": self.back_calculate_button.isDown(),
+            },
+        }
+
+    def _restore_dialog_state(self, state):
+        """Restore directly without invoking R, imputation, or calculator setters."""
+        self.analysis_unit = state["analysis_unit"].copy_for_edit()
+        for table, rows in zip(self.tables, state["tables"]):
+            blocked = table.blockSignals(True)
+            try:
+                for row_index, row in enumerate(rows):
+                    for column_index, (text, supplied, pre_post_derived) in enumerate(row):
+                        item = table.item(row_index, column_index)
+                        if item is None:
+                            item = QTableWidgetItem()
+                            table.setItem(row_index, column_index, item)
+                        item.setText(text)
+                        item.setData(Qt.ItemDataRole.UserRole, supplied)
+                        item.setData(Qt.ItemDataRole.UserRole + 1, pre_post_derived)
+            finally:
+                table.blockSignals(blocked)
+
+        blocked = self.correlation_pre_post.blockSignals(True)
+        try:
+            self.correlation_pre_post.setText(state["correlation"])
+        finally:
+            self.correlation_pre_post.blockSignals(blocked)
+        self.metric_parameter = state["metric_parameter"]
+        button = state["button"]
+        blocked = self.back_calculate_button.blockSignals(True)
+        try:
+            self.back_calculate_button.setText(button["text"])
+            self.back_calculate_button.setEnabled(button["enabled"])
+            self.back_calculate_button.setVisible(not button["hidden"])
+            self.back_calculate_button.setChecked(button["checked"])
+            self.back_calculate_button.setDown(button["down"])
+        finally:
+            self.back_calculate_button.blockSignals(blocked)
+
+    def update_back_calculation_button(self, engage=False):
+        if not engage:
+            return self._update_back_calculation_button(engage=False)
+        state = self._capture_dialog_state()
+        try:
+            return self._update_back_calculation_button(
+                engage=True, transaction_state=state
+            )
+        except _BackCalculationCancelled:
+            self._restore_dialog_state(state)
+            return None
+        except Exception:
+            self._restore_dialog_state(state)
+            raise
+
+    def _update_back_calculation_button(self, engage=False, transaction_state=None):
+        if (
+            engage
+            and self.metric_parameter is None
+            and self.current_effect in ["MD", "SMD"]
+        ):
+            if self.current_effect == "MD":
+                info = (
+                    "Back-calculation depends on the relationship between the "
+                    "two population standard deviations.\n\n"
+                    "Should RC MetaStudio assume they are equal?"
+                )
+                option0_txt = "Yes (default)"
+                option1_txt = "No"
+                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
+                dialog.setWindowTitle("Population standard deviations")
+                if not dialog.exec():
+                    raise _BackCalculationCancelled()
+                self.metric_parameter = True if dialog.get_choice() == 0 else False
+            elif self.current_effect == "SMD":
+                info = (
+                    "Which standardized mean difference should RC MetaStudio use "
+                    "for back-calculation?"
+                )
+                option0_txt = "Hedges' g (default)"
+                option1_txt = "Cohen's d"
+                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
+                dialog.setWindowTitle("Standardized mean difference")
+                if not dialog.exec():
+                    raise _BackCalculationCancelled()
+                self.metric_parameter = True if dialog.get_choice() == 0 else False
+
+        def build_data_dicts():
+            var_names = self.get_column_header_strs()
+            tmp = []
+            for row_index in range(2):
+
+                def value(x):
+                    return self._get_float(row_index, x)
+
+                tmp.append(
+                    [
+                        (self._imputation_field_name(var_name), value(i))
+                        for i, var_name in enumerate(var_names)
+                        if value(i) is not None
+                    ]
+                )
+            group1_data = dict(tmp[0])
+            group2_data = dict(tmp[1])
+
+            tmp = self.analysis_unit.get_effect_and_ci_for_source(
+                "entered",
+                self.current_effect,
+                self.arm_key,
+                self.confidence_multiplier,
+            )
+            effect_data = {
+                "est": tmp[0],
+                "low": tmp[1],
+                "high": tmp[2],
+                "metric": self.current_effect,
+                "met.param": self.metric_parameter,
+            }
+
+            return (group1_data, group2_data, effect_data)
+
+        def new_data(g1_data, g2_data, imputed):
+            changed = False
+
+            new_data = (
+                imputed["n1"],
+                imputed["sd1"],
+                imputed["mean1"],
+                imputed["n2"],
+                imputed["sd2"],
+                imputed["mean2"],
+            )
+            old_data = (
+                g1_data["n"] if "n" in g1_data else None,
+                g1_data["sd"] if "sd" in g1_data else None,
+                g1_data["mean"] if "mean" in g1_data else None,
+                g2_data["n"] if "n" in g2_data else None,
+                g2_data["sd"] if "sd" in g2_data else None,
+                g2_data["mean"] if "mean" in g2_data else None,
+            )
+
+            def new_item_available(old, new):
+                return (old is None) and (new is not None)
+
+            comparison = [
+                new_item_available(old_data[i], new_data[i])
+                for i in range(len(new_data))
+            ]
+            if any(comparison):
+                changed = True
+            else:
+                changed = False
+            return changed
+
+        if self.current_effect not in ["MD", "SMD"]:
+            was_hidden = self.back_calculate_button.isHidden()
+            self.back_calculate_button.setVisible(False)
+            if not was_hidden:
+                self._content_layout_changed()
+            return None
+        else:
+            was_hidden = self.back_calculate_button.isHidden()
+            self.back_calculate_button.setVisible(True)
+            if was_hidden:
+                self._content_layout_changed()
+
+        (group1_data, group2_data, effect_data) = build_data_dicts()
+
+        # The metric-specific assumption is chosen only after the user clicks.
+        # Probe both choices here so the button can become reachable without
+        # prematurely committing either assumption to the form.
+        if not engage and self.metric_parameter is None:
+            for candidate in (True, False):
+                candidate_effect_data = dict(effect_data)
+                candidate_effect_data["met.param"] = candidate
+                candidate_imputed = self.calculator.back_calculate_continuous_data(
+                    group1_data,
+                    group2_data,
+                    candidate_effect_data,
+                    self.confidence_level,
+                )
+                if "FAIL" not in candidate_imputed and new_data(
+                    group1_data, group2_data, candidate_imputed
+                ):
+                    self.back_calculate_button.setEnabled(True)
+                    self.update_clear_button_color()
+                    return None
+            self.back_calculate_button.setEnabled(False)
+            self.update_clear_button_color()
+            return None
+
+        imputed = self.calculator.back_calculate_continuous_data(
+            group1_data, group2_data, effect_data, self.confidence_level
+        )
+
+        if "FAIL" in imputed:
+            self.back_calculate_button.setEnabled(False)
+            return None
+
+        if new_data(group1_data, group2_data, imputed):
+            self.back_calculate_button.setEnabled(True)
+        else:
+            self.back_calculate_button.setEnabled(False)
+        self.update_clear_button_color()
+
+        if not engage:
+            return None
+
+        keys_to_names = {
+            f"{field}{index}": f"{name} {label}"
+            for index, name in enumerate(self.arm_names, start=1)
+            for field, label in (("n", "sample size"), ("sd", "standard deviation"), ("mean", "mean"))
+        }
+        for key, value in imputed.items():
+            # The R imputation code can theoretically yield up to four values
+            # for n1 and n2, but empirical testing shows that path is unused.
+            # ContinuousBackCalculationDialog options can be generated dynamically if
+            # multi-value n1/n2 results are later exposed.
+
+            if is_list(value):
+                info = (
+                    "More than one "
+                    + keys_to_names[key]
+                    + " matches the entered values. Choose one:"
+                )
+                option0_txt = keys_to_names[key] + " = " + str(value[0])
+                option1_txt = keys_to_names[key] + " = " + str(value[1])
+
+                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
+                if dialog.exec():
+                    imputed[key] = value[0] if dialog.get_choice() == 0 else value[1]
+                else:  # pressed cancel
+                    raise _BackCalculationCancelled()
+
+        var_names = self.get_column_header_strs()
+        group1_data = {
+            "n": cast(float | int | None, imputed["n1"]),
+            "sd": cast(float | int | None, imputed["sd1"]),
+            "mean": cast(float | int | None, imputed["mean1"]),
+        }
+        group2_data = {
+            "n": cast(float | int | None, imputed["n2"]),
+            "sd": cast(float | int | None, imputed["sd2"]),
+            "mean": cast(float | int | None, imputed["mean2"]),
+        }
+        for row in range(len(self.arm_names)):
+            for var_index, var_name in enumerate(var_names):
+                field_name = self._imputation_field_name(var_name)
+                if field_name not in ["n", "sd", "mean"]:
+                    continue
+                val = group1_data[field_name] if row == 0 else group2_data[field_name]
+                if field_name == "n" and val not in EMPTY_VALS:
+                    val = int(round(val))  # convert float to integer
+                self._set_val(row, var_index, val, self.simple_table, supplied=True)
+
+        self.impute_data()
+        self._copy_raw_data_from_table_to_analysis_unit()
+
+        # The committed result has filled every value exposed by this
+        # back-calculation, so no second R probe is needed to refresh the button.
+        self.back_calculate_button.setEnabled(False)
+        new_state = self._capture_dialog_state()
+
+        self._field_history.record(
+            restore_state=self._restore_dialog_state,
+            old_state=(transaction_state,),
+            new_state=(new_state,),
+        )
+
+    def clear_form(self):
+        self._validation_failed = False
+        old_analysis_unit, old_tables_data = self._save_analysis_unit_and_table_states(
+            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        old_correlation = self._get_correlation_str()
+
+        self.metric_parameter = None
+
+        with ExitStack() as signal_blockers:
+            for widget in self.entry_widgets:
+                signal_blockers.enter_context(QSignalBlocker(widget))
+            for table in self.tables:
+                for row_index in range(len(self.arm_names)):
+                    for var_index in range(table.columnCount()):
+                        self._set_val(row_index, var_index, "", table=table)
+
+        self._copy_raw_data_from_table_to_analysis_unit()
+
+        for metric in CONTINUOUS_ONE_ARM_METRICS + CONTINUOUS_TWO_ARM_METRICS:
+            if (
+                self.current_effect in CONTINUOUS_TWO_ARM_METRICS
+                and metric in CONTINUOUS_TWO_ARM_METRICS
+            ) or (
+                self.current_effect in CONTINUOUS_ONE_ARM_METRICS
+                and metric in CONTINUOUS_ONE_ARM_METRICS
+            ):
+                self.analysis_unit.set_effect_for_source(
+                    "entered", metric, self.arm_key, None, None, None
+                )
+        self.set_current_effect()
+        with ExitStack() as signal_blockers:
+            for widget in self.entry_widgets:
+                signal_blockers.enter_context(QSignalBlocker(widget))
+            self.correlation_pre_post.setText("0.0")
+
+        self.update_back_calculation_button()
+        self._validate_summary_tables()
+        new_analysis_unit, new_tables_data = self._save_analysis_unit_and_table_states(
+            tables=[self.simple_table, self.g1_pre_post_table, self.g2_pre_post_table],
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        new_correlation = self._get_correlation_str()
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_tables,
+            old_state=(old_analysis_unit, old_tables_data, old_correlation),
+            new_state=(new_analysis_unit, new_tables_data, new_correlation),
+        )
+        self.update_back_calculation_button()
+
+    def _effect_display_label(self, effect):
+        if effect == "Mean":
+            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.sheet.sub_type, "Mean")
+        return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
+
+    def _selected_effect(self):
+        effect = self.effect_combo_box.currentData()
+        if effect is None:
+            effect = self.effect_combo_box.currentText()
+        return str(effect)
+
+    def get_current_arm_key(self):
+        names = self.arm_names[:1] if self.current_effect in CONTINUOUS_ONE_ARM_METRICS else self.arm_names
+        return tuple(self.analysis_unit.arms[name].stable_id for name in names)
+
+    def undo(self):
+        self._field_history.undo()
+
+    def redo(self):
+        self._field_history.redo()
+
+
+class ContinuousBackCalculationDialog(
+    QDialog,
+    _ui_continuous_back_calculation_dialog.Ui_ContinuousBackCalculationDialog,
+):
+    def __init__(
+        self, info_text, op1_txt, op2_txt, parent=None
+    ):
+        super(ContinuousBackCalculationDialog, self).__init__(parent)
+        self.setupUi(self)
+
+        for widget in self.content_widget.findChildren(QWidget):
+            widget.installEventFilter(self)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 80,
+            preferred_height=self.fontMetrics().lineSpacing() * 30,
+        )
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+
+        self.choice1_label.setText(op1_txt)
+        self.choice2_label.setText(op2_txt)
+
+        self.info_label.setText(info_text)
+        self._layout_controller.request_content_refit()
+
+    def eventFilter(
+        self, watched: QObject | None, event: QEvent | None
+    ) -> bool:
+        if event is None:
+            return super(ContinuousBackCalculationDialog, self).eventFilter(
+                watched, event
+            )
+        if event.type() == QEvent.Type.MouseButtonRelease:
+            if watched is self.choice1_label:
+                self.choice1_btn.setChecked(True)
+                return True
+            if watched is self.choice2_label:
+                self.choice2_btn.setChecked(True)
+                return True
+        if (
+            isinstance(watched, QWidget)
+            and event.type() == QEvent.Type.FocusIn
+            and self.content_widget.isAncestorOf(watched)
+        ):
+            self.content_scroll.ensureWidgetVisible(watched)
+            QTimer.singleShot(
+                0, lambda target=watched: self._ensure_content_widget_visible(target)
+            )
+        return super(ContinuousBackCalculationDialog, self).eventFilter(watched, event)
+
+    def _ensure_content_widget_visible(self, widget):
+        try:
+            self.content_scroll.ensureWidgetVisible(widget)
+            center = widget.mapTo(self.content_widget, widget.rect().center())
+            self.content_scroll.ensureVisible(center.x(), center.y(), 12, 12)
+        except RuntimeError:
+            pass
+
+    def get_choice(self):
+        if self.choice1_btn.isChecked():
+            return 0
+        else:
+            return 1

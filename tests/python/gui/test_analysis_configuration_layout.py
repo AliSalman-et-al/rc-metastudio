@@ -1,4 +1,4 @@
-from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import RowId, SheetId
 import json
 import os
@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
-from rc_metastudio import analysis_dataset
+from rc_metastudio.project import model as analysis_dataset
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -89,9 +89,9 @@ def _install_analysis_backend(monkeypatch, analysis_setup_dialog):
         backend,
         "available_methods",
         lambda _self, **kwargs: (
-            diagnostic_methods
+            {method: label for label, method in diagnostic_methods.items()}
             if kwargs.get("for_data_type") == "diagnostic"
-            else methods
+            else {method: label for label, method in methods.items()}
         ),
     )
     monkeypatch.setattr(
@@ -115,9 +115,6 @@ def _install_analysis_backend(monkeypatch, analysis_setup_dialog):
             ],
             {},
         ),
-    )
-    monkeypatch.setattr(
-        backend, "prepare_method_dataset", lambda *_args, **_kwargs: None
     )
     monkeypatch.setattr(
         backend,
@@ -162,7 +159,7 @@ def test_analysis_setup_plot_accent_control_exposes_accessibility_metadata(qapp)
 def test_configuration_controls_have_accessible_label_associations(
     qapp, monkeypatch
 ):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
@@ -212,7 +209,7 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
     expected_title,
     expected_method_label,
 ):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
@@ -261,7 +258,11 @@ def test_method_dialog_wording_is_scoped_to_its_analysis_family(
 def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
     monkeypatch, qapp, analysis_type, expected_title, expected_method_label
 ):
-    from rc_metastudio import adaptive_window, analysis_adapter, analysis_setup_dialog
+    from rc_metastudio import adaptive_window
+    from rc_metastudio.analysis import (
+        requests as analysis_adapter,
+        setup_dialog as analysis_setup_dialog,
+    )
 
     covariate = {'id': 'quality', 'name': 'quality', 'data_type': 4}
     model = _AnalysisModel("diagnostic", (covariate,))
@@ -395,7 +396,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
         if analysis_type is None:
             return
 
-        from rc_metastudio.analysis_results import empty_analysis_result
+        from rc_metastudio.results.contract import empty_analysis_result
 
         requests = []
         monkeypatch.setattr(
@@ -423,7 +424,7 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     monkeypatch, qapp
 ):
     """Joint Reitsma regression must not expose univariate model controls."""
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     continuous = {'id': 'threshold', 'name': 'threshold', 'data_type': 0}
     factor = {'id': 'reader', 'name': 'reader', 'data_type': 1}
@@ -496,7 +497,10 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
 def test_meta_regression_missing_moderator_confirmation_names_excluded_studies(
     monkeypatch, qapp
 ):
-    from rc_metastudio import analysis_adapter, analysis_setup_dialog
+    from rc_metastudio.analysis import (
+        requests as analysis_adapter,
+        setup_dialog as analysis_setup_dialog,
+    )
 
     covariate = {'id': 'quality', 'name': 'quality', 'data_type': 0}
     model = _AnalysisModel("continuous", (covariate,))
@@ -531,7 +535,7 @@ def test_meta_regression_missing_moderator_confirmation_names_excluded_studies(
 
 def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
     from rc_metastudio import adaptive_window
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     monkeypatch.setattr(
@@ -678,7 +682,7 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
 
 def test_method_parameters_opens_at_its_content_preferred_width(qapp, monkeypatch):
     from rc_metastudio import adaptive_window
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     monkeypatch.setattr(
@@ -714,7 +718,7 @@ def test_method_parameters_opens_at_its_content_preferred_width(qapp, monkeypatc
 def test_meta_regression_estimator_stays_inside_viewport(
     qapp, monkeypatch
 ):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     backend = analysis_setup_dialog.analysis_adapter.AnalysisService
@@ -762,8 +766,8 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
     from rc_metastudio import adaptive_controls
     from rc_metastudio import adaptive_window
     from rc_metastudio import covariate_type_dialog
-    from rc_metastudio import subgroup_analysis_dialog
-    from rc_metastudio.analysis_catalog import FACTOR
+    from rc_metastudio.analysis import subgroup_dialog as subgroup_analysis_dialog
+    from rc_metastudio.analysis.catalog import FACTOR
 
     long_name = "A factor covariate " + ("complete-value-" * 80)
     available = QtCore.QRect(100, 50, 800, 600)
@@ -1033,7 +1037,7 @@ app.processEvents()
 
 
 def test_method_parameters_default_and_cancel_keyboard_actions(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
 
@@ -1072,8 +1076,8 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 from rc_metastudio import app_error_handler
-from rc_metastudio import analysis_adapter
-from rc_metastudio import analysis_setup_dialog
+from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
 class Model:
     current_outcome_name = "Outcome"
@@ -1157,7 +1161,7 @@ print("LOCALE_ANALYSIS_REQUESTS=" + json.dumps({
 
 
 def test_rebuilding_method_does_not_accumulate_effect_labels(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(_AnalysisModel("binary"), confidence_level=95.0)
     try:
@@ -1172,7 +1176,7 @@ def test_rebuilding_method_does_not_accumulate_effect_labels(qapp, monkeypatch):
 
 @pytest.mark.parametrize("workflow, prefix", [(None, "fp"), ("meta-regression", "bp")])
 def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, workflow, prefix):
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     dialog = analysis_setup_dialog.AnalysisSetupDialog(_AnalysisModel("binary"), analysis_type=workflow, confidence_level=95.0)
     try:
@@ -1189,7 +1193,7 @@ def test_plot_bound_zero_survives_selected_configuration(qapp, monkeypatch, work
 
 
 def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, monkeypatch):
-    from rc_metastudio import analysis_setup_dialog, analysis_catalog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog, catalog as analysis_catalog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     model = _AnalysisModel("binary")
     sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", analysis_catalog.BINARY)

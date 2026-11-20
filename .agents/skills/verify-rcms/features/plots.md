@@ -153,10 +153,9 @@ The shared Export as dialog exports each offered PDF/PNG/TIFF/SVG format to a te
 
 The phase 2 native export drive compares the requested physical width and height
 in every offered format at 85 and 180 mm. The figure title is opt-in for a
-standalone export. The size receipts and replay are in
-[`artifacts/output-polish/SUMMARY.md`](../../../../artifacts/output-polish/SUMMARY.md).
-The same evidence records the three-preset pooled-tip geometry and representative
-appearance edits after project save, reopen and analysis rerun.
+standalone export. Use the live `plot-workflow-forest` drive for forest editing
+and decoded exports. For targeted native sizing, record the requested dimensions,
+the decoded file dimensions, and the selected preset in the run evidence.
 
 `ui-fine-tuning` requires all five funnel variants to be vector Results items and
 renders them through both Results and manuscript loaders at 1× and 2×. It checks
@@ -421,5 +420,5 @@ The TSA desktop scenarios retain the actual preflight, report, plot bundle,
 render and editor steps. `tsa-peto` uses the default TSA design on BCG after a
 Peto fixed-effect fit. It checks the 6301% overrun and switches from participants
 to percentages and back through Edit Plot, reopening the editor each time.
-The complete native and print replay is in
-[the TSA redesign evidence](../../../../artifacts/verification/tsa-phase5/README.md).
+Replay `tsa-peto` and `plot-workflow-trial-sequential` with `--native` for native
+coverage. Retain the plot, report exports, and verification manifests locally.

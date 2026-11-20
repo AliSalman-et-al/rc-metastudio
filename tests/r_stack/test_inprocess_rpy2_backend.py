@@ -31,7 +31,7 @@ _DRIVER = textwrap.dedent(
     r_bridge.initialize_r()
     try:
         from rc_metastudio import r_bridge
-        from rc_metastudio.analysis_catalog import FACTOR
+        from rc_metastudio.analysis.catalog import FACTOR
         try:
             r_bridge.load_required_packages()
         except Exception:
@@ -44,7 +44,7 @@ _DRIVER = textwrap.dedent(
 
     ro = r_bridge.ro
 
-    from rc_metastudio.plot_service import PlotService
+    from rc_metastudio.results.plot_service import PlotService
     from rc_metastudio.r_call_serialization import r_transaction
     from tests.fit_observations import observe_fit
 
@@ -91,9 +91,9 @@ _DRIVER = textwrap.dedent(
         assert callbacks._CCHAR_ENCODING == locale.getpreferredencoding(False)
 
 
-    from rc_metastudio.analysis_dataset import Arm, Dataset, Sheet, StudyRow
-    from rc_metastudio.analysis_unit import AnalysisUnit
-    from rc_metastudio import analysis_catalog
+    from rc_metastudio.project.model import Arm, Dataset, Sheet, StudyRow
+    from rc_metastudio.project.study import AnalysisUnit
+    from rc_metastudio.analysis import catalog as analysis_catalog
 
     class FakeModel:
         def __init__(self, data_type, raw_data, effect="OR"):
@@ -237,7 +237,7 @@ _DRIVER = textwrap.dedent(
     )
 
     from PyQt6 import QtWidgets, QtCore
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
     QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope,
@@ -349,7 +349,7 @@ _DRIVER = textwrap.dedent(
     )
     assert_text_survived("issue146_diagnostic")
 
-    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis import requests as analysis_adapter
 
     class FilteredDiagnosticModel:
         def __init__(self):

@@ -1,10 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.revman.format.number <- function(values, digits) {
-    rcmetar.format.metafor.numeric(values, digits)
-}
-
 rcmetar.revman.format.weight <- function(weights, n) {
     if (is.null(weights) || length(weights) == 0 || !any(is.finite(weights))) {
         weights <- rep(100 / max(n, 1), n)
@@ -37,7 +33,7 @@ rcmetar.revman.ilab <- function(columns, n) {
 
 rcmetar.revman.binary.ilab <- function(binary.data, params, res=NULL) {
     n <- length(binary.data@study.names)
-    groups <- rcmetar.revman.arm.labels(params)
+    groups <- rcmetar.forest.arm.labels(params)
     columns <- list()
     if (rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
             rcmetar.has.binary.raw.columns(binary.data, n, params)) {
@@ -68,22 +64,22 @@ rcmetar.revman.binary.ilab <- function(binary.data, params, res=NULL) {
 rcmetar.revman.continuous.ilab <- function(cont.data, params, res=NULL) {
     n <- length(cont.data@study.names)
     digits <- as.integer(params$digits)
-    groups <- rcmetar.revman.arm.labels(params)
+    groups <- rcmetar.forest.arm.labels(params)
     columns <- list()
     if (rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
             rcmetar.has.continuous.raw.columns(cont.data, n, params)) {
         if (rcmetar.param.is.true(params, "fp_show_col3", TRUE)) {
             columns <- list(
-                list(key="experimental_mean", group=groups[[1]], header="Mean", values=rcmetar.revman.format.number(cont.data@mean1, digits)),
-                list(key="experimental_sd", group=groups[[1]], header="SD", values=rcmetar.revman.format.number(cont.data@sd1, digits)),
+                list(key="experimental_mean", group=groups[[1]], header="Mean", values=rcmetar.format.metafor.numeric(cont.data@mean1, digits)),
+                list(key="experimental_sd", group=groups[[1]], header="SD", values=rcmetar.format.metafor.numeric(cont.data@sd1, digits)),
                 list(key="experimental_total", group=groups[[1]], header="Total", values=rcmetar.format.metafor.raw(cont.data@N1))
             )
         }
         if (as.character(params$measure) %in% continuous.two.arm.metrics &&
                 rcmetar.param.is.true(params, "fp_show_col4", TRUE)) {
             columns <- c(columns, list(
-                list(key="control_mean", group=groups[[2]], header="Mean", values=rcmetar.revman.format.number(cont.data@mean2, digits)),
-                list(key="control_sd", group=groups[[2]], header="SD", values=rcmetar.revman.format.number(cont.data@sd2, digits)),
+                list(key="control_mean", group=groups[[2]], header="Mean", values=rcmetar.format.metafor.numeric(cont.data@mean2, digits)),
+                list(key="control_sd", group=groups[[2]], header="SD", values=rcmetar.format.metafor.numeric(cont.data@sd2, digits)),
                 list(key="control_total", group=groups[[2]], header="Total", values=rcmetar.format.metafor.raw(cont.data@N2))
             ))
         }
@@ -112,28 +108,13 @@ rcmetar.revman.diagnostic.ilab <- function(diagnostic.data, params, res=NULL) {
     rcmetar.revman.ilab(columns, n)
 }
 
-rcmetar.revman.arm.labels <- function(params) {
-    labels <- rcmetar.default.arm.labels()
-    experimental <- labels[[1]]
-    control <- labels[[2]]
-    if (!is.null(params$fp_col3_str) && params$fp_col3_str != "[default]") {
-        experimental <- as.character(params$fp_col3_str)
-    }
-    if (!is.null(params$fp_col4_str) && params$fp_col4_str != "[default]") {
-        control <- as.character(params$fp_col4_str)
-    }
-    if (as.character(params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics) &&
-            experimental == "Group") experimental <- ""
-    c(experimental, control)
-}
-
 rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
     if (is(om.data, "RatioData")) {
         n <- length(om.data@study.names)
         columns <- list()
         if (om.data@metric == "IRR" && rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
                 any(is.finite(om.data@t1) & is.finite(om.data@t2))) {
-            arms <- rcmetar.revman.arm.labels(params)
+            arms <- rcmetar.forest.arm.labels(params)
             units <- unique(as.character(om.data@unit))
             time.header <- if (length(units) == 1) paste0("Person-time\n(", units, ")") else "Person-time (unit)"
             for (arm in 1:2) {
@@ -163,70 +144,23 @@ rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
     rcmetar.empty.forest.ilab(length(om.data@study.names))
 }
 
-rcmetar.revman.test.overall.label <- function(bundle) {
-    res <- rcmetar.revman.summary.result(bundle)
-    if ((isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) ||
-            is.null(res$zval)) {
-        return("")
-    }
-    paste0(
-        rcmetar.overall.test.heading(res, bundle$params), ": ",
-        if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) paste0("t (df = ", res$dfs, ")") else "Z",
-        " = ", rcmetar.format.effect.number(res$zval, display.digits(bundle$params)),
-        " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
-    )
-}
-
-rcmetar.revman.summary.result <- function(bundle) {
-    if (identical(bundle$forest_variant, "subgroup") && !is.null(bundle$subgroups$overall)) {
-        return(bundle$subgroups$overall)
-    }
-    bundle$res
-}
-
 rcmetar.revman.heterogeneity.label <- function(bundle) {
     if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup"))
         return(if (rcmetar.forest.is.sequential.variant(bundle)) "" else "Heterogeneity: \u2014")
-    rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle), bundle$params)
+    rcmetar.forest.heterogeneity.label(rcmetar.forest.summary.result(bundle), bundle$params)
 }
 
-rcmetar.revman.direction.labels <- function(bundle) {
-    list(left=if (is.null(bundle$params$fp_favours_left)) "" else as.character(bundle$params$fp_favours_left),
-         right=if (is.null(bundle$params$fp_favours_right)) "" else as.character(bundle$params$fp_favours_right),
-         axis=if (identical(bundle$data_type, "diagnostic") ||
-             as.character(bundle$params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics))
-             rcmetar.display.metric.name(bundle$params) else "")
-}
-
-rcmetar.revman.wrap.header <- function(label, width=18) {
-    label <- as.character(label)
-    wrapped <- strwrap(label, width=width)
-    if (length(wrapped) <= 1) {
-        return(label)
-    }
-    paste(wrapped, collapse="\n")
-}
-
-
-rcmetar.revman.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
-    if (display.value.is.missing(p.value)) {
-        return("P = NA")
-    }
-    value <- format.p.value.display(p.value, digits)
-    if (startsWith(value, "<")) return(paste("P", value))
-    paste("P =", value)
-}
 
 rcmetar.revman.decorate.bundle <- function(bundle) {
-    directions <- rcmetar.revman.direction.labels(bundle)
+    directions <- rcmetar.forest.direction.labels(bundle)
     bundle$slab <- gsub(", ([0-9]{4})$", " \\1", bundle$slab)
     if (!is.null(bundle$effect$slab)) {
         bundle$effect$slab <- gsub(", ([0-9]{4})$", " \\1", bundle$effect$slab)
     }
-    not.estimable <- rcmetar.revman.not_estimable(bundle)
+    not.estimable <- rcmetar.forest.not.estimable(bundle)
     bundle$style_blocks <- list(
         heterogeneity = rcmetar.revman.heterogeneity.label(bundle),
-        test_overall = rcmetar.revman.test.overall.label(bundle),
+        test_overall = rcmetar.forest.test.overall.label(bundle),
         totals = rcmetar.revman.total.values(bundle),
         total_events = rcmetar.revman.total.events(bundle),
         not_estimable = not.estimable,
@@ -271,36 +205,10 @@ rcmetar.revman.total.events <- function(bundle) {
     events
 }
 
-rcmetar.revman.not_estimable <- function(bundle) {
-    n <- length(bundle$slab)
-    if (!is.null(bundle$effect)) {
-        yi <- bundle$effect$yi
-        vi <- bundle$effect$vi %||% bundle$effect$sei^2
-    } else {
-        yi <- if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi
-        vi <- if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi
-    }
-    missing <- if (length(yi) == n && length(vi) == n) {
-        !is.finite(yi) | !is.finite(vi)
-    } else rep(FALSE, n)
-    missing
-}
-
 rcmetar.revman.xlab <- function(bundle) {
     xlabel <- rcmetar.plot.axis.label(bundle$params, "fp")
     if (!is.null(xlabel)) return(xlabel)
     rcmetar.forest.axis.title(bundle)
-}
-
-rcmetar.revman.metric.label <- function(bundle) {
-    label <- rcmetar.display.metric.name(bundle$params)
-    if (identical(label, "Odds Ratio")) {
-        return("Odds ratio")
-    }
-    if (identical(label, "Risk Ratio")) {
-        return("Risk ratio")
-    }
-    label
 }
 
 rcmetar.revman.study.header <- function(bundle) {
@@ -338,13 +246,13 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     )
 
     layout <- plan$layout
-    effect <- rcmetar.revman.study.effects(bundle)
-    summary <- rcmetar.revman.summary.effect(bundle)
+    effect <- rcmetar.forest.study.effects(bundle)
+    summary <- rcmetar.forest.journal.summary.effect(bundle)
     bundle$style_blocks$heterogeneity <- rcmetar.revman.heterogeneity.label(within(bundle, res <- summary$res))
-    bundle$style_blocks$test_overall <- rcmetar.revman.test.overall.label(within(bundle, res <- summary$res))
+    bundle$style_blocks$test_overall <- rcmetar.forest.test.overall.label(within(bundle, res <- summary$res))
     ilab <- rcmetar.revman.display.ilab(bundle, summary$weights)
-    method <- rcmetar.revman.method.label(bundle)
-    metric <- rcmetar.revman.metric.label(bundle)
+    method <- rcmetar.forest.journal.method.label(bundle)
+    metric <- rcmetar.forest.journal.metric.label(bundle)
     k <- plan$rows$k
     rows <- plan$rows$study_rows
     show.headers <- plan$headers$show
@@ -432,7 +340,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
     op <- graphics::par(no.readonly=TRUE)
     on.exit(graphics::par(op), add=TRUE)
     bottom.margin <- if (nzchar(plan$x$xlab)) 3.1 else 2.15
-    directions <- rcmetar.revman.direction.labels(bundle)
+    directions <- rcmetar.forest.direction.labels(bundle)
     if (nzchar(directions$left) || nzchar(directions$right)) {
         bottom.margin <- max(6, 4.5 + size$direction_lines * 1.6)
     }
@@ -490,90 +398,13 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, outpath) {
         pch=compact.pch
     )
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
-    graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
+    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, k, plan$typography$cex)
     rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)
     invisible(bundle$changed.params)
     }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
-rcmetar.revman.method.label <- function(bundle) {
-    if (inherits(bundle$res, "rma.mh")) return("M\u2013H, Fixed")
-    if (inherits(bundle$res, "rma.peto")) return("Peto, Fixed")
-    if (!is.null(bundle$res$method) && !bundle$res$method %in% c("FE", "EE", "CE")) {
-        return("IV, Random")
-    }
-    "IV, Fixed"
-}
-
-rcmetar.revman.axis.ticks <- function(bundle, alim) {
-    params <- bundle$params
-    if (!is.null(params$fp_xticks) &&
-            !identical(params$fp_xticks[1], "[default]") &&
-            !all(is.na(params$fp_xticks))) {
-        return(rcmetar.metafor.axis.ticks(bundle, alim))
-    }
-    if (metric.is.log.scale(as.character(bundle$params$measure)) &&
-            !rcmetar.forest.proportion(bundle) && !rcmetar.forest.natural.axis(bundle)) {
-        return(rcmetar.forest.journal.ratio.ticks(alim))
-    }
-    ticks <- rcmetar.metafor.axis.ticks(bundle, alim)
-    ticks[ticks >= alim[1] & ticks <= alim[2]]
-}
-
-
-rcmetar.revman.study.effects <- function(bundle) {
-    if (!is.null(bundle$effect)) return(bundle$effect)
-    n <- length(bundle$slab)
-    yi <- as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
-    vi <- as.numeric(if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi)
-    z <- stats::qnorm(1 - (1 - as.numeric(bundle$params$conf.level) / 100) / 2)
-    effect <- list(
-        yi=yi,
-        vi=vi,
-        ci.lb=yi - z * sqrt(vi),
-        ci.ub=yi + z * sqrt(vi)
-    )
-    not.estimable <- bundle$style_blocks$not_estimable
-    if (length(not.estimable) == length(effect$yi) && any(not.estimable)) {
-        effect$yi[not.estimable] <- NA
-        effect$vi[not.estimable] <- NA
-        effect$ci.lb[not.estimable] <- NA
-        effect$ci.ub[not.estimable] <- NA
-    }
-    effect
-}
-
-rcmetar.revman.summary.effect <- function(bundle) {
-    res <- bundle$res
-    old.options <- options(na.action="na.pass")
-    on.exit(options(old.options), add=TRUE)
-    weights <- as.numeric(weights(res))
-    transform <- rcmetar.bundle.transform(bundle)
-    digits <- rcmetar.forest.effect.digits(bundle)
-    pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
-    psize <- rep(NA_real_, length(weights))
-    finite.weights <- is.finite(weights)
-    if (any(finite.weights)) {
-        psize[finite.weights] <- 0.55 + 0.85 * sqrt(weights[finite.weights] / max(weights[finite.weights]))
-    }
-    list(
-        res=res,
-        yi=as.numeric(res$b),
-        ci.lb=as.numeric(res$ci.lb),
-        ci.ub=as.numeric(res$ci.ub),
-        weights=weights,
-        psize=psize * rcmetar.point.size.multiplier(bundle$params),
-        label=paste0(
-            rcmetar.format.effect.number(pred[[1]], digits),
-            " [",
-            rcmetar.format.interval.bound(pred[[2]], digits, bundle$params),
-            ", ",
-            rcmetar.format.interval.bound(pred[[3]], digits, bundle$params),
-            "]"
-        )
-    )
-}
 
 rcmetar.revman.display.ilab <- function(bundle, weights) {
     ilab <- bundle$ilab
@@ -608,9 +439,9 @@ rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
 }
 
 rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
-    ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
+    ticks <- rcmetar.forest.journal.axis.ticks(bundle, layout$alim)
     ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
-    labels <- rcmetar.revman.axis.labels(bundle, ticks)
+    labels <- rcmetar.forest.axis.labels(bundle, ticks)
     y.axis <- -2.3
     y.tick <- -2.12
     y.label <- -2.78
@@ -623,24 +454,6 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
     graphics::text(ticks, y.label - graphics::strheight("0", cex=cex) / 2,
                    labels, cex=cex, adj=c(0.5, 0))
     invisible(NULL)
-}
-
-rcmetar.revman.axis.labels <- function(bundle, ticks) {
-    if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
-        return(rcmetar.compact.numeric.labels(vapply(ticks, function(value)
-            format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1))))
-    }
-    measure <- as.character(bundle$params$measure)
-    if (metric.is.log.scale(measure)) {
-        return(rcmetar.compact.numeric.labels(trimws(formatC(exp(ticks), digits=3, format="fg"))))
-    }
-    values <- vapply(ticks, function(value)
-        rcmetar.bundle.transform(bundle)$display.scale(value, ni=bundle$sample_sizes), numeric(1))
-    if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) || metric.is.freeman_tukey.scale(measure)) {
-        return(trimws(formatC(values, digits=3, format="fg")))
-    }
-    rcmetar.compact.numeric.labels(vapply(values, function(value)
-        format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1)))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {

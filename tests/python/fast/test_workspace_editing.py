@@ -3,10 +3,10 @@ from rc_metastudio.domain_ids import RowId, SheetId
 # SPDX-License-Identifier: GPL-3.0-or-later
 from dataclasses import dataclass
 
-from rc_metastudio.workspace_editing import WorkspaceEditingService
-from rc_metastudio.workspace_editing import WorkspaceEditingContext
-from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
-from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.workspace.editing import WorkspaceEditingService
+from rc_metastudio.workspace.editing import WorkspaceEditingContext
+from rc_metastudio.project.model import Dataset, Sheet, StudyRow
+from rc_metastudio.project.study import AnalysisUnit
 
 
 class FakeBridge:
@@ -34,7 +34,7 @@ class Study:
 def test_single_arm_binary_preview_needs_no_fabricated_control():
     # A valid single-arm row must calculate without inventing control values;
     # comparative metrics still require their complete second arm.
-    from rc_metastudio.dataset_analysis_domain import calculate_raw_effects
+    from rc_metastudio.analysis.study_selection import calculate_raw_effects
 
     result, sample_size = calculate_raw_effects(FakeBridge(), 0, "PLO", [4, 20], 95)
     assert result == (0.5, None, None)

@@ -7,8 +7,8 @@ import zipfile
 
 import pytest
 
-from rc_metastudio import project_adapter
-from rc_metastudio.project_format import (
+from rc_metastudio.project import adapter as project_adapter
+from rc_metastudio.project.archive import (
     JsonObject, JsonValue, ProjectDocument, ProjectFormatError, load_project, migrate_to_latest, save_project,
 )
 from tests.python.fast.test_project_format import (

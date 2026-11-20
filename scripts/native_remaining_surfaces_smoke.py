@@ -692,12 +692,12 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
         launch,
         main_wizard,
         main_window,
-        progress_dialog,
     )
+    from rc_metastudio.analysis import progress_dialog
 
     def covariate_factory():
         import copy
-        from rc_metastudio import project_format, project_adapter
+        from rc_metastudio.project import archive as project_format, adapter as project_adapter
         sheet = project_adapter.project_to_dataset(project_format.load_project(ROOT / "sample_projects/amino.rcms").project).sheets[0]
         covariate = {"id": "native-dose", "name": "Dose", "data_type": 1}
         sheet.covariates.append(covariate)

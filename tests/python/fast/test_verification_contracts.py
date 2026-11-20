@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import verify, verify_rcmetar_r_stack as stack, verify_rcms
+from scripts import r_verification_support, verify, verify_rcmetar_r_stack as stack, verify_rcms
 from scripts import audit_report_retention as audit
 from scripts.code_health import build_evidence, git_as_of, load_config
 
@@ -19,7 +19,7 @@ def test_selected_python_rpy2_identity(tmp_path):
     # A real different interpreter (stdlib-only venv) cannot inherit our metadata.
     subprocess.run([sys.executable, '-m', 'venv', '--without-pip', str(tmp_path / 'python')], check=True)
     python = tmp_path / 'python/Scripts/python.exe' if sys.platform == 'win32' else tmp_path / 'python/bin/python'
-    assert stack.verify_rpy2_identities(sys.executable) == stack.REQUIRED_RPY2_IDENTITIES
+    assert stack.verify_rpy2_identities(sys.executable) == r_verification_support.locked_rpy2_versions()
     with pytest.raises(stack.VerificationError):
         stack.verify_rpy2_identities(str(python))
 
@@ -73,6 +73,20 @@ def test_explicit_rscript_cannot_be_overridden(tmp_path):
     other.touch()
     with pytest.raises(verify.VerificationError, match='conflict'):
         verify.selected_rscript(argparse.Namespace(rscript=str(other), r_runtime_root=str(root)))
+
+
+def test_source_lane_passes_one_selected_rscript_to_pytest_and_r_evidence(monkeypatch, tmp_path):
+    selected = tmp_path / "selected-Rscript"
+    selected.touch()
+    monkeypatch.setenv("RCMS_RSCRIPT", str(tmp_path / "ambient-Rscript"))
+    monkeypatch.setattr(verify, "prepare_qt_environment", lambda _root: {})
+    monkeypatch.setattr(verify, "run_typing", lambda _root: None)
+    children = []
+    monkeypatch.setattr(verify, "run", lambda command, **options: children.append((command, options)))
+    assert verify.main(["fast", "--rscript", str(selected)]) == 0
+    environments = [options["env"] for _, options in children]
+    assert all(env["RCMS_RSCRIPT"] == str(selected.resolve()) for env in environments)
+    assert str(selected.resolve()) in children[-1][0]
 
 
 @pytest.mark.parametrize(
@@ -333,7 +347,11 @@ def test_code_health_real_history(tmp_path):
     source = tmp_path / 'src/rc_metastudio'
     source.mkdir(parents=True)
     (source / '__init__.py').touch()
-    (source / 'project_fixture.py').write_text('import PyQt6\n')
+    project = source / 'project'
+    project.mkdir()
+    (project / '__init__.py').touch()
+    project_fixture = project / 'fixture.py'
+    project_fixture.write_text('import PyQt6\n')
     r = tmp_path / 'r/RCMetaR/R/check.R'
     r.parent.mkdir(parents=True)
     r.write_text('text <- "first\nsecond\nthird"\nchoose <- function(x) {\n  x <- x + 1\n  if (x) x else 0\n}\n')
@@ -345,12 +363,12 @@ def test_code_health_real_history(tmp_path):
     before = build_evidence(tmp_path, trend, trend, git_as_of(tmp_path, None, trend), config)
     baseline = tmp_path / 'trend.json'
     baseline.write_text(json.dumps(before))
-    (source / 'project_fixture.py').write_text('')
+    project_fixture.write_text('')
     git('add', '.')
     git('commit', '-qm', 'base removes forbidden import')
     base = git('rev-parse', 'HEAD')
     r.write_text(r.read_text().replace('  x <- x + 1\n', ''))
-    (source / 'project_fixture.py').write_text('import PyQt6\n')
+    project_fixture.write_text('import PyQt6\n')
     git('add', '.')
     git('commit', '-qm', 'delete in function and reintroduce forbidden import')
     head = git('rev-parse', 'HEAD')

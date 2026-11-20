@@ -90,7 +90,7 @@ def drive(app, window, work, record):
 def run(app, window, work, root, record, analyze):
     import sys
     from unittest.mock import patch
-    from rc_metastudio.plot_export_dialog import PlotExportDialog
+    from rc_metastudio.results.plot_export import PlotExportDialog
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     from advanced_workflows import export_formats, modal
     drive(app, window, work, record)

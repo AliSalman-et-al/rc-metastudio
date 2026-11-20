@@ -2,9 +2,9 @@
 from rc_metastudio.domain_ids import RowId, SheetId
 import copy
 
-from rc_metastudio.analysis_dataset import Dataset, Sheet, StudyRow
-from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio.analysis_catalog import BINARY
+from rc_metastudio.project.model import Dataset, Sheet, StudyRow
+from rc_metastudio.project.study import AnalysisUnit
+from rc_metastudio.analysis.catalog import BINARY
 
 
 def _dataset():

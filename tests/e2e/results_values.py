@@ -27,7 +27,7 @@ def run(app, window, work, root, record, analyze):
         c("display", "display", "display", "", ""), c(NA, 90, 90, NA, NA))
       RCMetaR:::rcmetar.table(x, "supporting")
     })''')
-    from rc_metastudio.analysis_results import _report_content
+    from rc_metastudio.results.contract import _report_content
     _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
     cells = parsed[0].quantities[0]
     assert [q[0].value for q in cells] == [2.2e-17, 1e-19, math.inf, 1e-8, None]

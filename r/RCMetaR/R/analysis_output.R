@@ -101,28 +101,6 @@ invarcsine.sqrt <- function(x) {
   metafor::transf.iarcsin(x)
 }
 
-freeman_tukey <- function(x,n) {
-  if (length(x)==1) {
-    hm <- 1/mean(1/n)
-    y <- transf.pft(xi=x, ni=hm)
-  } else {
-    y <- transf.pft(xi=x, ni=n)
-  }
-  y
-}
-
-invfreeman_tukey <- function(x, n) {
-   if (length(x)==1) {
-     y <- transf.ipft.hm(xi=x, targs=list(ni=n))
-   } else {
-     y <- transf.ipft(x, n)
-   }
-
-   y
-
-}
-
-
 rma.uni.value.info <- function() {
   list(
     b    = list(type="vector", description='estimated coefficients of the model.'),

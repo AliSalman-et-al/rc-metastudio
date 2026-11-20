@@ -96,11 +96,14 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
 
 
 def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
-    from rc_metastudio import analysis_dataset, dataset_table_model
-    from rc_metastudio import main_window, project_adapter, workspace_session
-    from rc_metastudio.analysis_catalog import BINARY
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.workspace import table_model as dataset_table_model
+    from rc_metastudio import main_window
+    from rc_metastudio.project import adapter as project_adapter
+    from rc_metastudio.workspace import session as workspace_session
+    from rc_metastudio.analysis.catalog import BINARY
 
-    from rc_metastudio.analysis_unit import AnalysisUnit
+    from rc_metastudio.project.study import AnalysisUnit
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[
         analysis_dataset.Arm(ArmId("a"), "Group A"), analysis_dataset.Arm(ArmId("b"), "Group B")])
     sheet.rows = [analysis_dataset.StudyRow(RowId(str(i)), label, AnalysisUnit(sheet, arm_names=["Group A", "Group B"], arm_stable_ids=["a", "b"]))
@@ -139,10 +142,10 @@ def test_direct_table_view_mutation_is_checkpointed_for_one_undo(qapp):
 
 def test_navigating_to_a_sheet_with_default_confidence_keeps_project_clean(qapp, tmp_path):
     from rc_metastudio.main_window import MainWindow
-    from rc_metastudio.project_adapter import RuntimeProject, runtime_project_to_document
-    from rc_metastudio.project_format import save_project
-    from rc_metastudio.analysis_dataset import Dataset, Sheet
-    from rc_metastudio.analysis_catalog import BINARY
+    from rc_metastudio.project.adapter import RuntimeProject, runtime_project_to_document
+    from rc_metastudio.project.archive import save_project
+    from rc_metastudio.project.model import Dataset, Sheet
+    from rc_metastudio.analysis.catalog import BINARY
 
     first = Sheet(SheetId("first"), "First", BINARY, settings={"confidence_level": 90.0})
     second = Sheet(SheetId("second"), "Second", BINARY)
@@ -219,7 +222,7 @@ def test_main_inherits_fonts_and_navigation_icons_from_active_style(qapp):
 
 def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
     from rc_metastudio import main_window
-    from rc_metastudio.workspace_column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
+    from rc_metastudio.workspace.column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
 
     window = main_window.MainWindow()
     try:
@@ -279,7 +282,7 @@ def test_failed_workspace_operation_restores_model_and_existing_history(qapp):
 
 def test_deleted_covariate_keeps_identity_and_width_through_undo_redo(qapp):
     from rc_metastudio import main_window
-    from rc_metastudio.workspace_column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
+    from rc_metastudio.workspace.column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
 
     window = main_window.MainWindow()
     try:

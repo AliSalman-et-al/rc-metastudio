@@ -47,8 +47,8 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    from rc_metastudio import diagnostic_metrics_dialog
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import diagnostic_metrics_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     original_specs = analysis_setup_dialog.AnalysisSetupDialog
     original_critical = main_window.QMessageBox.critical
@@ -91,7 +91,7 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
 def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
 
     app, window = automation.start_automation()
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     saved = {
@@ -101,7 +101,6 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             "get_params",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
-            "reset_r_working_directory",
         )
     }
     shown = []
@@ -140,7 +139,6 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
                 RuntimeError("simulated diagnostic failure")
             ),
         )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox,
             "critical",
@@ -171,7 +169,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
 
 def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
     app, window = automation.start_automation()
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     saved = {
@@ -181,7 +179,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             "get_params",
             "dataset_to_simple_diagnostic_r_object",
             "run_versioned_analysis_requests",
-            "reset_r_working_directory",
         )
     }
     shown = []
@@ -213,7 +210,6 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             lambda *args, **kwargs: [],
             raising=False,
         )
-        _set_backend(monkeypatch, backend, "reset_r_working_directory", lambda: None)
 
         def run_metric(requests, data):
             assert [request["metric"] for request in requests] == ["Sens", "NLR", "PLR", "DOR"]
@@ -275,7 +271,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
 def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
 
     app, window = automation.start_automation()
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     saved = {
@@ -325,9 +321,9 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             built_metrics.append(metric)
             return {"y": [-0.1] if metric == "Sens" else [0.7], "SE": [0.2]}
 
-        def run_metric(requests, data):
+        def run_metric(requests, *, metric_data):
             multi_calls.append([request["params"]["measure"] for request in requests])
-            assert [entry["y"] for entry in data] == [[-0.1], [0.7]]
+            assert [entry["y"] for entry in metric_data] == [[-0.1], [0.7]]
             texts = {f"{metric} Summary": "ok" for metric in multi_calls[-1]}
             return {
                 "version": 1, "texts": texts, "images": {},
@@ -373,7 +369,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
 def test_diagnostic_metric_dialog_does_not_run_without_selected_metrics(monkeypatch):
 
     app, window = automation.start_automation()
-    from rc_metastudio import diagnostic_metrics_dialog
+    from rc_metastudio.analysis import diagnostic_metrics_dialog
 
     warnings = []
     captured = []
@@ -421,7 +417,7 @@ def test_diagnostic_metric_dialog_does_not_run_without_selected_metrics(monkeypa
 def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch):
 
     app, window = automation.start_automation()
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = analysis_setup_dialog.analysis_adapter.r_bridge
     saved = {
@@ -497,7 +493,7 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
     from PyQt6 import QtCore, QtWidgets
 
     app, window = automation.start_automation()
-    from rc_metastudio import analysis_setup_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = sys.modules.get(
         "rc_metastudio.r_bridge", analysis_setup_dialog.analysis_adapter.r_bridge

@@ -1,3 +1,0 @@
-Command: uv 'run' 'python' 'scripts/build_qt6.py' 'generate' '--build-root' 'build/qt6-verification'
-{"form": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio-tsa-phase3b-master\\build\\qt6-verification\\generated\\rc_metastudio\\forms\\ui_about_legal.py", "resource": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio-tsa-phase3b-master\\build\\qt6-verification\\resources\\icons.rcc"}
-Exit: 0

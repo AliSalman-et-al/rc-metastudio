@@ -9,12 +9,8 @@ from pathlib import Path
 
 
 def main() -> int:
-    from rc_metastudio.qt6_ui import prepare_generated_ui_imports
+    from rc_metastudio import app_error_handler, launch
 
-    prepare_generated_ui_imports()
-    from rc_metastudio import app_error_handler, launch, qt6_resources
-
-    qt6_resources.ensure_application_resources()
     app_error_handler.install_global_exception_handler()
     arguments = launch.resolve_startup_argv()
     pid_path = launch.startup_argument_value(arguments, "--automation-pid-file") or os.environ.get(

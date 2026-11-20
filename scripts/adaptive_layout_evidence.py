@@ -16,7 +16,7 @@ from pathlib import Path
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from rc_metastudio import adaptive_window
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.results.contract import parse_analysis_result
 
 
 EVIDENCE_SCHEMA_VERSION = 2
@@ -140,8 +140,8 @@ def run_native_adaptive_layout_evidence(app, main_window, sample_path, output_di
 
     from rc_metastudio import about_legal_dialog
     from rc_metastudio import main_wizard
-    from rc_metastudio import progress_dialog
-    from rc_metastudio import results_window
+    from rc_metastudio.analysis import progress_dialog
+    from rc_metastudio.results import window as results_window
     from rc_metastudio import settings
 
     plot_path, results = _create_results_surface(results_window, main_window, output)

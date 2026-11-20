@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TARGETS_PATH = ROOT / "delivery" / "targets.json"
 POLICY_INPUTS = (
+    ".python-version",
     ".github/workflows/candidate.yml",
     ".github/workflows/community-release-candidate.yml",
     ".github/workflows/macos-trusted-release-candidate.yml",
@@ -40,6 +41,7 @@ POLICY_INPUTS = (
     "packaging/pyinstaller/rc-metastudio.spec",
     "scripts/build-macos-package.sh",
     "scripts/build_macos_direct_provenance.py",
+    "scripts/dependency_lock.py",
     "scripts/package-macos.sh",
     "scripts/package-linux.sh",
     "scripts/build-linux-package.sh",
@@ -140,30 +142,42 @@ def check_output(record: dict, path: Path) -> None:
 
 
 def verify_archive(args: argparse.Namespace) -> None:
-    manifest = load(Path(args.manifest))
-    record = load(Path(args.result))
+    check_candidate_archive(
+        load(Path(args.manifest)), load(Path(args.result)), args.target, Path(args.archive),
+        source_sha=getattr(args, "source_sha", None),
+        repository=getattr(args, "repository", None),
+        trust_profile=getattr(args, "trust_profile", None),
+        version=getattr(args, "version", None),
+    )
+
+
+def check_candidate_archive(
+    manifest: dict, record: dict, target: str, archive: Path, *,
+    source_sha: str | None = None, repository: str | None = None,
+    trust_profile: str | None = None, version: str | None = None,
+) -> None:
     for actual, expected in (
-        (manifest["source"]["commit"], getattr(args, "source_sha", None)),
-        (manifest["source"]["repository"], getattr(args, "repository", None)),
-        (manifest["trust_profile"], getattr(args, "trust_profile", None)),
-        (manifest["version"], getattr(args, "version", None)),
+        (manifest["source"]["commit"], source_sha),
+        (manifest["source"]["repository"], repository),
+        (manifest["trust_profile"], trust_profile),
+        (manifest["version"], version),
     ):
         if expected is not None and actual != expected:
             raise ValueError(
                 "candidate manifest does not match selected release identity"
             )
-    configured = targets().get(args.target)
-    if configured is None or Path(args.archive).name != candidate_artifact(configured):
+    configured = targets().get(target)
+    if configured is None or archive.name != candidate_artifact(configured):
         raise ValueError("candidate archive name does not match target")
     if record["stage"] != "assembled":
         raise ValueError("candidate archive requires assembled record")
     validate_record(
         record,
-        args.target,
+        target,
         manifest["source"]["commit"],
         chain_identity_digest(manifest),
     )
-    check_output(record, Path(args.archive))
+    check_output(record, archive)
 
 
 def load(path: Path) -> dict:
@@ -246,7 +260,10 @@ def init_release(args: argparse.Namespace) -> None:
 
 
 def inventory(args: argparse.Namespace) -> None:
-    root = Path(args.root).resolve()
+    write(Path(args.output), inventory_tree(Path(args.root).resolve()))
+
+
+def inventory_tree(root: Path) -> dict:
     if not root.is_dir():
         raise ValueError(f"inventory root does not exist: {root}")
     files = []
@@ -258,11 +275,14 @@ def inventory(args: argparse.Namespace) -> None:
                 "sha256": digest(path),
             }
         )
-    write(Path(args.output), {"schema_version": 1, "root": root.name, "files": files})
+    return {"schema_version": 1, "root": root.name, "files": files}
 
 
 def sbom(args: argparse.Namespace) -> None:
-    source = load(Path(args.inventory))
+    write(Path(args.output), cyclonedx(load(Path(args.inventory)), args.version))
+
+
+def cyclonedx(source: dict, version: str) -> dict:
     components = [
         {
             "type": "file",
@@ -271,7 +291,7 @@ def sbom(args: argparse.Namespace) -> None:
         }
         for item in source["files"]
     ]
-    document = {
+    return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.5",
         "serialNumber": "urn:uuid:"
@@ -282,36 +302,99 @@ def sbom(args: argparse.Namespace) -> None:
             "component": {
                 "type": "application",
                 "name": "RC MetaStudio",
-                "version": args.version,
+                "version": version,
             },
         },
         "components": components,
     }
-    write(Path(args.output), document)
 
 
-def stage_result(args: argparse.Namespace) -> None:
-    assert_commit(args.commit)
-    if args.target not in targets():
-        raise ValueError(f"unsupported target: {args.target}")
+def make_stage_record(
+    target: str, stage: str, commit: str, input_digest: str, paths: list[Path]
+) -> dict:
+    assert_commit(commit)
+    if target not in targets():
+        raise ValueError(f"unsupported target: {target}")
     outputs = []
-    for value in args.output_file:
-        path = Path(value)
+    for path in paths:
         if not path.is_file() or path.stat().st_size == 0:
             raise ValueError(f"stage output is missing or empty: {path}")
         outputs.append(
             {"name": path.name, "sha256": digest(path), "size": path.stat().st_size}
         )
-    record = {
+    return {
         "schema_version": 1,
-        "target": args.target,
-        "stage": args.stage,
-        "source_commit": args.commit,
-        "input_digest": args.input_digest,
+        "target": target,
+        "stage": stage,
+        "source_commit": commit,
+        "input_digest": input_digest,
         "outputs": outputs,
         "completed_at": now(),
     }
+
+
+def stage_result(args: argparse.Namespace) -> None:
+    record = make_stage_record(
+        args.target, args.stage, args.commit, args.input_digest,
+        [Path(value) for value in args.output_file],
+    )
     write(Path(args.result), record)
+
+
+def write_distribution_metadata(
+    tree: Path, output: Path, target: str, version: str
+) -> list[Path]:
+    inventory_path = output / f"{target}.inventory.json"
+    sbom_path = output / f"{target}.cdx.json"
+    source = inventory_tree(tree.resolve())
+    write(inventory_path, source)
+    write(sbom_path, cyclonedx(source, version))
+    return [inventory_path, sbom_path]
+
+
+def record_assembled(args: argparse.Namespace) -> None:
+    target = args.target
+    manifest = load(args.manifest)
+    if manifest["channel"] != "candidate" or target not in manifest["release_targets"]:
+        raise ValueError("assembled record requires a selected candidate target")
+    if args.archive.name != candidate_artifact(targets()[target]):
+        raise ValueError("candidate archive name does not match target")
+    output = args.manifest.parent
+    metadata = write_distribution_metadata(args.tree, output, target, manifest["version"])
+    record = make_stage_record(
+        target, "assembled", manifest["source"]["commit"],
+        release_identity_digest(manifest), [args.archive, *metadata],
+    )
+    write(output / f"{target}.assembled.json", record)
+
+
+def record_unsigned_qualification(args: argparse.Namespace) -> None:
+    target, commit = args.target, args.commit
+    archive = args.candidate / "artifacts" / candidate_artifact(targets()[target])
+    candidate_records = args.candidate / "candidate"
+    manifest = load(candidate_records / "release-set.json")
+    assembled_path = candidate_records / f"{target}.assembled.json"
+    assembled = load(assembled_path)
+    check_candidate_archive(manifest, assembled, target, archive, source_sha=commit, version=args.version)
+    if required_stages(manifest, target)[1:3] != ["unsigned-qualified", "verified"]:
+        raise ValueError(f"{target} requires a different qualification path")
+
+    output = args.qualified
+    metadata = write_distribution_metadata(output / "tree", output, target, args.version)
+    carried = output / archive.name
+    shutil.copyfile(archive, carried)
+    check_output(assembled, carried)
+    records = output / "records"
+    records.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(assembled_path, records / assembled_path.name)
+    unsigned = make_stage_record(
+        target, "unsigned-qualified", commit, canonical_digest(assembled), [carried]
+    )
+    verified = make_stage_record(
+        target, "verified", commit, canonical_digest(unsigned), [carried, *metadata]
+    )
+    write(records / f"{target}.unsigned-qualified.json", unsigned)
+    write(records / f"{target}.verified.json", verified)
 
 
 def attach(args: argparse.Namespace) -> None:
@@ -528,6 +611,19 @@ def parser() -> argparse.ArgumentParser:
     stage.add_argument("--output-file", action="append", required=True)
     stage.add_argument("--result", required=True)
     stage.set_defaults(func=stage_result)
+    assembled = commands.add_parser("record-assembled")
+    assembled.add_argument("--target", required=True, choices=tuple(targets()))
+    assembled.add_argument("--archive", required=True, type=Path)
+    assembled.add_argument("--manifest", required=True, type=Path)
+    assembled.add_argument("--tree", required=True, type=Path)
+    assembled.set_defaults(func=record_assembled)
+    unsigned = commands.add_parser("record-unsigned-qualification")
+    unsigned.add_argument("--target", required=True, choices=tuple(targets()))
+    unsigned.add_argument("--commit", required=True)
+    unsigned.add_argument("--version", required=True)
+    unsigned.add_argument("--candidate", required=True, type=Path)
+    unsigned.add_argument("--qualified", required=True, type=Path)
+    unsigned.set_defaults(func=record_unsigned_qualification)
     attach_parser = commands.add_parser("attach")
     attach_parser.add_argument("--manifest", required=True)
     attach_parser.add_argument("--result", required=True)

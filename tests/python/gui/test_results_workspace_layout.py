@@ -4,9 +4,9 @@ from qt_test_support import key_click, key_clicks, required
 
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
-from rc_metastudio.analysis_results import parse_analysis_result
-from rc_metastudio.plot_capabilities import PlotCapability
-from rc_metastudio.plot_text import normalize_plot_text_value
+from rc_metastudio.results.contract import parse_analysis_result
+from rc_metastudio.results.plot_capabilities import PlotCapability
+from rc_metastudio.results.plot_text import normalize_plot_text_value
 
 pytestmark = pytest.mark.qsettings
 
@@ -17,7 +17,11 @@ os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verificat
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
-from rc_metastudio import plot_editor_dialog, plot_service, results_window
+from rc_metastudio.results import (
+    plot_editor as plot_editor_dialog,
+    plot_service,
+    window as results_window,
+)
 
 
 def _empty_results(summary="Summary text"):
@@ -117,7 +121,7 @@ def test_plot_editor_preserves_saved_literal_default_label(qapp, label):
 
 
 def test_plot_graphics_items_paint_an_opaque_white_canvas(qapp, tmp_path):
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     svg_path = tmp_path / "svglite-shaped-transparent.svg"
     svg_path.write_text(
@@ -224,7 +228,7 @@ def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
     qapp, tmp_path
 ):
     from rc_metastudio import adaptive_window
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
     from rc_metastudio import settings
 
     _use_isolated_settings(tmp_path)
@@ -280,7 +284,7 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
 
 
 def test_results_refit_does_not_dispatch_unrelated_layout_requests(qapp, tmp_path):
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     class LayoutRequestProbe(QtWidgets.QWidget):
         def __init__(self):
@@ -408,7 +412,7 @@ def test_sroc_plot_editor_keeps_dynamic_controls_inside_scrollable_content(
 
 
 def test_reitsma_coefficient_editor_hides_inapplicable_forest_controls(qapp):
-    from rc_metastudio import plot_editor_dialog
+    from rc_metastudio.results import plot_editor as plot_editor_dialog
 
     dialog = plot_editor_dialog.EditPlotDialog(
         {
@@ -474,7 +478,7 @@ def test_plot_editor_omits_unedited_default_axis_label_sentinel(
 def test_plot_context_menu_follows_capabilities_and_available_data(
     qapp, tmp_path, monkeypatch, title, plot_kind, regenerator, editable, has_params
 ):
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     _use_isolated_settings(tmp_path)
     window = results_window.ResultsWindow(_empty_results())
@@ -572,7 +576,7 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
 def test_results_plot_geometry_preserves_fractional_logical_coordinates(
     qapp, tmp_path, scale
 ):
-    from rc_metastudio import results_window
+    from rc_metastudio.results import window as results_window
 
     _use_isolated_settings(tmp_path)
     window = results_window.ResultsWindow(_empty_results())

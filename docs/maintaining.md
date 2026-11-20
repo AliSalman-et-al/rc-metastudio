@@ -183,6 +183,11 @@ responsibilities, relocation rules and public contracts.
 - `config`: machine-readable policy used by builds and tests
 - `tests`: executable behavior and distribution contracts
 
+Generated verification evidence, dependency caches, and release bundles go
+under the ignored `artifacts/` directory. Share run evidence through CI
+artifacts when needed. Keep reusable test inputs and frozen expectations under
+`tests/` and document replay commands alongside the verification workflows.
+
 Keep machine-readable contracts beside their consumer. Keep frozen test data under `tests`, not under `docs`.
 
 ## Where a change belongs
@@ -191,11 +196,12 @@ Use the same map for human and agent work. Start at the boundary responsible for
 
 | Responsibility | Main owners | Contract to preserve |
 | --- | --- | --- |
-| Workspace changes and undo/redo | `workspace_session.py`, `workspace_editing.py`, `dataset_table_model.py` | Stable sheet and row identities, atomic edits and rollback. |
-| Project persistence | `project_format.py`, `project_adapter.py`, project schemas | Safe archives, durable saves and supported older-project migration. |
-| Analysis configuration and execution | `analysis_setup_dialog.py`, `analysis_adapter.py`, `r_bridge.py`, `r/RCMetaR` | Included data, selected inputs and methods, real R execution and package authority. |
-| Results and written output | `analysis_results.py`, `result_formatting.py`, `manuscript_report.py` | Exact numerical quantities, interval levels, interpretation and complete report content. |
-| Plot editing and export | `plot_service.py`, plot editor dialogs and RCMetaR plot producers | Saved plot parameters, original output preservation on failure, readable decoded exports. |
+| Workspace changes and undo/redo | `workspace/session.py`, `workspace/editing.py`, `workspace/table_model.py` | Stable sheet and row identities, atomic edits and rollback. |
+| Project persistence | `project/archive.py`, `project/adapter.py`, project schemas | Safe archives, durable saves and supported older-project migration. |
+| Import | `importing/tabular.py`, `importing/revman.py` | Validated rows, import previews and atomic publication. |
+| Analysis configuration and execution | `analysis/setup_dialog.py`, `analysis/requests.py`, `r_bridge.py`, `r/RCMetaR` | Included data, selected inputs and methods, real R execution and package authority. |
+| Results and written output | `results/contract.py`, `results/formatting.py`, `results/report.py` | Exact numerical quantities, interval levels, interpretation and complete report content. |
+| Plot editing and export | `results/plot_service.py`, plot editor dialogs and RCMetaR plot producers | Saved plot parameters, original output preservation on failure, readable decoded exports. |
 | Qt forms and shared behavior | `forms/*.ui`, `qt_layout.py`, form manifest and generator | Editable Designer sources, generated files outside source, keyboard and native layout behavior. |
 | Verification and releases | `scripts/verify.py`, verification feature maps, `packaging/`, workflows | Repeatable inputs and commands, pinned runtime identity and platform-specific qualification. |
 

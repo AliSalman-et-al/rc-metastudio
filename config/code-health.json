@@ -11,9 +11,13 @@
     ".venv/*"
   ],
   "forbidden_imports": {
-    "src/rc_metastudio/project_*.py": ["PyQt6", "rpy2"],
+    "src/rc_metastudio/project/*.py": ["PyQt6", "rpy2"],
     "src/rc_metastudio/*domain*.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/workspace_*.py": ["PyQt6", "rpy2"]
+    "src/rc_metastudio/analysis/study_selection.py": ["PyQt6", "rpy2"],
+    "src/rc_metastudio/workspace/session.py": ["PyQt6", "rpy2"],
+    "src/rc_metastudio/workspace/editing.py": ["PyQt6", "rpy2"],
+    "src/rc_metastudio/workspace/column_identity.py": ["PyQt6", "rpy2"],
+    "src/rc_metastudio/workspace/columns.py": ["PyQt6", "rpy2"]
   },
   "complexity_exceptions": {
     "scripts/code_health.py": {
@@ -50,23 +54,23 @@
     "scripts/resolve_macos_package_target.py": {
       "load_target": "validates the single supported native target and its dependency record"
     },
-    "src/rc_metastudio/analysis_dataset.py": {
+    "src/rc_metastudio/project/model.py": {
       "cmp_studies": "orders heterogeneous study rows using the released comparison contract"
     },
-    "src/rc_metastudio/analysis_unit.py": {
+    "src/rc_metastudio/project/study.py": {
       "__init__": "constructs one validated domain unit for all supported data families"
     },
-    "src/rc_metastudio/project_adapter.py": {
+    "src/rc_metastudio/project/adapter.py": {
       "project_to_dataset": "decodes and validates every released dataset family before live mutation"
     },
-    "src/rc_metastudio/small_study_effects.py": {
+    "src/rc_metastudio/analysis/small_study_effects.py": {
       "__post_init__": "validates the immutable small-study request's cross-field contract"
     },
     "src/rc_metastudio/automation.py": {
       "start_automation_smoke": "hidden packaged qualification hook coordinates startup and teardown at one boundary",
       "dispatch": "the hidden packaged hook has one explicit command boundary for shell and project smoke modes"
     },
-    "src/rc_metastudio/continuous_data_dialog.py": {
+    "src/rc_metastudio/calculators/continuous_dialog.py": {
       "val_changed": "Qt table validation dispatches family-specific fields and feedback",
       "_cell_data_not_valid": "one validation boundary maps the supported continuous input fields to their distinct user-facing errors",
       "impute_pre_post_data": "pre/post imputation preserves the authority package's distinct input paths",
@@ -74,20 +78,20 @@
       "_update_back_calculation_button": "calculator coordinates authority imputation, validation, and visible state",
       "clear_form": "clearing a calculator preserves each supported effect and imputation field contract"
     },
-    "src/rc_metastudio/plot_capabilities.py": {
+    "src/rc_metastudio/results/plot_capabilities.py": {
       "_validate_descriptor": "boundary validation checks independent capability fields before immutable construction"
     },
-    "src/rc_metastudio/dataset_table_view.py": {
+    "src/rc_metastudio/workspace/table_view.py": {
       "paste_contents": "Qt clipboard parsing coordinates a rectangular edit across visible adapter cells",
       "_preflight_paste": "clipboard validation checks rectangular shape, bounds, and every candidate cell before mutation",
       "row_header_clicked": "the Qt adapter selects one isolated family editor and publishes its accepted snapshot",
       "keyPressEvent": "Qt keyboard dispatch preserves the table's standard navigation and clipboard commands"
     },
-    "src/rc_metastudio/binary_data_dialog.py": {
+    "src/rc_metastudio/calculators/binary_dialog.py": {
       "update_back_calculation_button": "binary calculator coordinates authority imputation, validation, and visible state",
       "val_changed": "Qt table validation dispatches raw-count and effect fields with family-specific feedback"
     },
-    "src/rc_metastudio/diagnostic_data_dialog.py": {
+    "src/rc_metastudio/calculators/diagnostic_dialog.py": {
       "val_changed": "Qt diagnostic validation dispatches raw-count and effect fields with family-specific feedback",
       "update_back_calculation_button": "diagnostic calculator coordinates authority imputation, validation, and visible state"
     },
@@ -96,16 +100,16 @@
       "open": "interface boundary coordinates prompt, decode, replacement, and recent-project updates",
       "save": "interface boundary coordinates save-as prompts, serialization, and recent-project updates"
     },
-    "src/rc_metastudio/csv_import.py": {
+    "src/rc_metastudio/importing/tabular.py": {
       "parse_csv": "the CSV boundary coordinates dialect handling, strict schema validation, row normalization, and typed result construction"
     },
     "src/rc_metastudio/main_wizard.py": {
       "_rebuild_display": "the Qt import-preview boundary coordinates cached-state reset, parser feedback, and visible table updates"
     },
-    "src/rc_metastudio/plot_service.py": {
+    "src/rc_metastudio/results/plot_service.py": {
       "_apply_standard_edits": "the transaction boundary stages R parameters and artifacts before atomic promotion with rollback"
     },
-    "src/rc_metastudio/qt_workspace_columns.py": {
+    "src/rc_metastudio/workspace/column_widths.py": {
       "fit_available_width": "the Qt layout adapter reconciles persisted user widths, automatic columns, and current viewport geometry"
     },
     "src/rc_metastudio/adaptive_window.py": {

@@ -220,7 +220,6 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
   expect_equal(bundle$data_type, "binary")
   expect_equal(bundle$fp_style, "default")
   expect_true("effect_display" %in% names(bundle))
-  expect_false("legacy_plot_data" %in% names(bundle))
   expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
   expect_equal(unname(bundle$ilab$matrix[1, 1:4]), c("4", "119", "11", "128"))
   expect_equal(bundle$ilab$groups, c("Intervention", "Control"))

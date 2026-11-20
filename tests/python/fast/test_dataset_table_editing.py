@@ -16,10 +16,10 @@ r_bridge.initialize_r()
 from PyQt6.QtCore import QPersistentModelIndex, Qt
 from PyQt6.QtGui import QColor
 
-from rc_metastudio import dataset_table_model
-from rc_metastudio import analysis_dataset
-from rc_metastudio.analysis_unit import AnalysisUnit
-from rc_metastudio import analysis_catalog
+from rc_metastudio.workspace import table_model as dataset_table_model
+from rc_metastudio.project import model as analysis_dataset
+from rc_metastudio.project.study import AnalysisUnit
+from rc_metastudio.analysis import catalog as analysis_catalog
 from rc_metastudio import r_bridge
 
 
@@ -184,8 +184,8 @@ def test_blank_entry_row_stays_out_of_the_durable_dataset_until_named():
 
 
 def test_bulk_exclusion_does_not_turn_empty_grid_rows_into_saved_studies(tmp_path):
-    from rc_metastudio.project_adapter import dataset_to_project, project_to_dataset
-    from rc_metastudio.project_format import CURRENT_FORMAT_VERSION, load_project, save_project
+    from rc_metastudio.project.adapter import dataset_to_project, project_to_dataset
+    from rc_metastudio.project.archive import CURRENT_FORMAT_VERSION, load_project, save_project
 
     model = _model_with_real_study_and_empty_new_entry_row(analysis_catalog.BINARY)
     assert model.setData(model.index(4, model.NAME), "Beta")
@@ -212,9 +212,9 @@ def test_bulk_exclusion_does_not_turn_empty_grid_rows_into_saved_studies(tmp_pat
 
 
 def test_open_display_refresh_does_not_edit_archived_study_data(tmp_path):
-    from rc_metastudio.project_adapter import RuntimeProject, runtime_project_to_document
-    from rc_metastudio.workspace_session import WorkspaceSession
-    from rc_metastudio.project_format import save_project
+    from rc_metastudio.project.adapter import RuntimeProject, runtime_project_to_document
+    from rc_metastudio.workspace.session import WorkspaceSession
+    from rc_metastudio.project.archive import save_project
 
     model = _model_with_real_study_and_empty_new_entry_row(analysis_catalog.BINARY)
     model.current_sheet.rows[0].analysis_unit.entered_effects.clear()

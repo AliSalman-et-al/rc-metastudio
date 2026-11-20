@@ -34,6 +34,8 @@ from tests.python.gui.qt_test_support import key_click, key_clicks, mouse_click,
 
 ROOT = Path(__file__).resolve().parents[2]
 WORK = Path(sys.argv[2])
+INVOCATION_DIR = Path.cwd()
+APPLICATION_DATA = WORK / "appdata"
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
 
 # Keep preferences and working artifacts out of the user's normal workspace.
@@ -51,7 +53,9 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import analysis_setup_dialog, automation, results_window, settings
+from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+from rc_metastudio import automation, settings
+from rc_metastudio.results import window as results_window
 if os.environ.get('RCMS_REPORT_AUDIT_DIR'):
     from tests.e2e.report_retention import install_capture
     install_capture(os.environ['RCMS_REPORT_AUDIT_DIR'])
@@ -237,7 +241,10 @@ def doctor(app, window):
     )
     assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
     assert window.isVisible()
-    assert Path(settings.get_base_path()).resolve() == WORK.resolve()
+    assert Path(settings.get_base_path()).resolve() == APPLICATION_DATA.resolve()
+    assert Path.cwd() == INVOCATION_DIR
+    r_working_directory = Path(str(r_bridge.execute_r_function("getwd")[0])).resolve()
+    assert r_working_directory == INVOCATION_DIR
     font_families = QtGui.QFontDatabase.families()
     font = QtGui.QRawFont.fromFont(app.font())
     assert font_families and font.isValid(), ("Qt has no usable fonts", app.font().toString())
@@ -259,9 +266,6 @@ def doctor(app, window):
         "r_home": os.environ.get("R_HOME"),
         "authorities": versions,
         "rcmetar": rcmetar_version,
-        "installed_revman_footer": str(r_bridge.execute_r_string(
-            'paste(deparse(body(RCMetaR:::rcmetar.draw.revman.axis.footer)), collapse="\\n")'
-        )[0]),
         "rpy2": metadata.version("rpy2"),
         "qt": QtCore.qVersion(),
         "pyqt": QtCore.PYQT_VERSION_STR,
@@ -277,6 +281,9 @@ def doctor(app, window):
         "application": app.applicationName(),
         "qt_build_root": os.environ.get("RCMS_QT6_BUILD_ROOT"),
         "application_base_path": settings.get_base_path(),
+        "working_directory": str(INVOCATION_DIR),
+        "r_working_directory": str(r_working_directory),
+        "analysis_scratch_path": settings.get_r_tmp_path(),
     }
     if EVIDENCE is not None:
         (EVIDENCE / "runtime.json").write_text(
@@ -286,7 +293,7 @@ def doctor(app, window):
 
 
 def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None):
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
     record_step("analysis-action", window, method=method)
@@ -319,11 +326,9 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
         for w in app.topLevelWidgets()
         if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible()
     )
-    label = next(
-        label for label, key in dialog.available_method_d.items() if key == method
-    )
-    assert dialog.method_cbo_box.findText(label) >= 0, (method, label)
-    dialog.method_cbo_box.setCurrentText(label)
+    index = dialog.method_cbo_box.findData(method)
+    assert index >= 0, method
+    dialog.method_cbo_box.setCurrentIndex(index)
     app.processEvents()
     if confidence is not None or estimator is not None:
         sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
@@ -658,7 +663,8 @@ def sample_analysis(app, window, sample):
 
 
 def add_named_sheet(app, window, name, diagnostic=False):
-    from rc_metastudio import main_wizard, analysis_catalog
+    from rc_metastudio import main_wizard
+    from rc_metastudio.analysis import catalog as analysis_catalog
     def finish():
         wizard = app.activeModalWidget()
         assert isinstance(wizard, main_wizard.MainWizard)
@@ -715,7 +721,7 @@ def rename_sheet_inline(app, window, name, invalid=False):
 
 def sheets_persist(app, window):
     import copy
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     add_named_sheet(app, window, "Third")
     tabs = window.sheet_tabs
@@ -927,7 +933,7 @@ def sheets(app, window):
                 assert table.columnWidth(column) >= metrics.horizontalAdvance(text) + 8, text
         record_step("sheets-full-arm-headers", window)
     import copy
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
     def project(dataset):
         return dataset_to_project(dataset)
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
@@ -1374,7 +1380,7 @@ def xlsx_import(app, window):
     sheet.column_dimensions["D"].hidden = True
     path = WORK / "studies.xlsx"
     book.save(path)
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
     unchanged = dataset_to_project(window.model.dataset)
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=("", "")):
         window.action_import_csv.trigger()
@@ -1431,11 +1437,11 @@ def xlsx_import(app, window):
         writer = csv_module.writer(stream)
         writer.writerow([c.value for c in sheet[1]])
         writer.writerows(rows)
-    from rc_metastudio.csv_import import parse_csv
+    from rc_metastudio.importing.tabular import parse_csv
     equivalent = parse_csv(csv_path, expected_headers=page.required_header_labels, has_headers=True, from_excel=True, header_aliases=page._legacy_header_aliases())
-    assert len(payload["data"]) == 2
-    assert payload == equivalent.to_payload()
-    from rc_metastudio.project_adapter import dataset_to_project
+    assert len(payload.rows) == 2
+    assert payload == equivalent
+    from rc_metastudio.project.adapter import dataset_to_project
     before = dataset_to_project(window.model.dataset)
     def select(candidate):
         with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(candidate), "")):
@@ -1483,11 +1489,11 @@ def xlsx_import(app, window):
     select(cached_path)
     assert page.isComplete(), page.import_status.text()
     assert "1 formula cells use their saved values" in page.import_status.text()
-    assert required(page.csv_data(), "import preview")["data"][0][2] == "2"
+    assert required(page.csv_data(), "import preview").rows[0][2] == "2"
     select(path)
 
-    assert payload["data"][0][:6] == ["Alpha", "2020", "1", "10", "2", "12"]
-    record_step("xlsx-preview", wizard, file=str(path), data=payload)
+    assert payload.rows[0][:6] == ("Alpha", "2020", "1", "10", "2", "12")
+    record_step("xlsx-preview", wizard, file=str(path), headers=payload.headers, data=payload.rows)
     page.worksheet_combo.setCurrentText("Empty")
     assert not page.isComplete()
     page.worksheet_combo.setCurrentText("Binary")
@@ -1547,9 +1553,10 @@ def xlsx_import(app, window):
     with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(precision_path), "")):
         mouse_click(precision_page.select_file_btn, QtCore.Qt.MouseButton.LeftButton)
     assert precision_page.isComplete(), precision_page.import_status.text()
-    assert required(precision_page.csv_data(), "import preview")["data"][0][1:5] == ["2022", "12", "0.1", repr(1/3)]
+    precision_rows = required(precision_page.csv_data(), "precision preview").rows
+    assert precision_rows[0][1:5] == ("2022", "12", "0.1", repr(1/3))
     assert "Continuous!C3" in precision_page.import_status.text()
-    record_step("xlsx-precision", precision_wizard, data=precision_page.csv_data())
+    record_step("xlsx-precision", precision_wizard, data=precision_rows)
     precision_wizard.close()
 
 
@@ -1598,14 +1605,15 @@ def csv_import(app, window):
     record_step("csv-unmapped-preview", wizard, message=page.import_status.text())
     page.mapping_controls[2].setCurrentIndex(page.mapping_controls[2].findData(2))
     assert page.isComplete(), page.import_status.text()
-    assert len(required(page.csv_data(), "import preview")["data"]) == 3
+    assert len(required(page.csv_data(), "import preview").rows) == 3
     headerless = WORK / "headerless-counts.csv"
     headerless.write_text("Alpha,2020,1,10,2,12\nBeta,2021,3,11,4,13\n")
     page.file_path = str(headerless)
     page.has_headers_chkbx.setChecked(False)
     assert page.isComplete(), page.import_status.text()
-    assert len(required(page.csv_data(), "import preview")["data"]) == 2
-    record_step("csv-headerless-counts", wizard, data=page.csv_data())
+    headerless_rows = required(page.csv_data(), "headerless preview").rows
+    assert len(headerless_rows) == 2
+    record_step("csv-headerless-counts", wizard, data=headerless_rows)
     page.file_path = str(csv)
     page.has_headers_chkbx.setChecked(True)
     assert page.isComplete(), page.import_status.text()
@@ -1655,7 +1663,7 @@ def csv_import(app, window):
     effects_page.load_file(str(effects_path))
     assert all(control.currentData() is None for control in effects_page.mapping_controls[2:6])
     assert effects_page.isComplete(), effects_page.import_status.text()
-    assert required(effects_page.csv_data(), "import preview")["data"][0][2:9] == ["", "", "", "", "0.5", "0.2", "1.25"]
+    assert required(effects_page.csv_data(), "import preview").rows[0][2:9] == ("", "", "", "", "0.5", "0.2", "1.25")
     record_step("csv-effects-only-preview", effects_wizard, file=str(effects_path))
     window._handle_wizard_results(effects_wizard.get_results())
     effects_wizard.close()
@@ -1666,7 +1674,7 @@ def csv_import(app, window):
 
 
 def plot_edit(app, window):
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random", estimator="DL")
@@ -1751,7 +1759,7 @@ def plot_edit(app, window):
 
 
 def small_study_effects(app, window):
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
     assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
     callback_errors = []
@@ -1787,7 +1795,7 @@ def small_study_effects(app, window):
                 dialog.ordinary_funnel_check.setChecked(True)
             record_step("small-study-configured", dialog, ordinary_funnel=True)
             from unittest.mock import patch
-            from rc_metastudio.progress_dialog import AnalysisProgressDialog
+            from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
             execute = dialog.analysis_service.execute
             observed_progress = []
 
@@ -1852,10 +1860,10 @@ def small_study_effects(app, window):
 
 
 def calculator(app, window, family):
-    from rc_metastudio import (
-        binary_data_dialog,
-        continuous_data_dialog,
-        diagnostic_data_dialog,
+    from rc_metastudio.calculators import (
+        binary_dialog as binary_data_dialog,
+        continuous_dialog as continuous_data_dialog,
+        diagnostic_dialog as diagnostic_data_dialog,
     )
 
     sample, dialog_type, table_name, column = {
@@ -1971,7 +1979,7 @@ def calculator(app, window, family):
             record_step("calculator-ci-label-fit", dialog, family=family, **sizes)
             assert text_width <= contents.width() and text_height <= contents.height(), sizes
             if accept:
-                from rc_metastudio.calculator_controls import CALC_NUM_DIGITS
+                from rc_metastudio.calculators.controls import CALC_NUM_DIGITS
                 for field in (dialog.effect_text_box, dialog.lower_text_box, dialog.upper_text_box):
                     assert len(field.text().partition(".")[2]) <= CALC_NUM_DIGITS, field.text()
                 if family == "continuous":
@@ -2169,9 +2177,9 @@ def hillclimb(app, window):
     """Fixed effort route; setup/cleanup outside task boundaries is not counted."""
     import time
     from rc_metastudio import main_wizard, add_new_dialogs
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
     measures = {}
     counts = {}
@@ -2400,7 +2408,7 @@ def subgroup_image(app, window, scenario):
         font = app.font()
         font.setPointSize(font.pointSize() + 6)
         app.setFont(font)
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from unittest.mock import patch
     assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
     def visible_result(kind):
@@ -2420,7 +2428,7 @@ def subgroup_image(app, window, scenario):
     assert view._svg_plot_items
     assert view.manuscript_text.toPlainText()
     record_step("meantime-subgroup-loaded", view, plots=dict(view.results.display_images))
-    artifact = next(iter(view._nav_plot_artifacts.values()))
+    artifact = next(iter(view._plots.values())).artifact
     preview = QtGui.QImage(artifact.image_path)
     assert not preview.isNull(), artifact.image_path
     assert preview.width() * preview.height() * 4 <= 256 * 1024**2
@@ -2460,7 +2468,7 @@ def subgroup_image(app, window, scenario):
 
 
 base_path_patch = patch(
-    "rc_metastudio.settings.get_base_path", return_value=WORK.as_posix()
+    "rc_metastudio.settings.get_base_path", return_value=APPLICATION_DATA.as_posix()
 )
 base_path_patch.start()
 try:

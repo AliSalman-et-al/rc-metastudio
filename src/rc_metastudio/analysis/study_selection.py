@@ -1,0 +1,225 @@
+# SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Domain operations shared by the dataset table adapter."""
+
+import math
+from rc_metastudio.analysis.catalog import (
+    BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM,
+    RATIO_DATA_TYPES,
+)
+
+from collections.abc import Buffer, Callable, Mapping, Sequence
+from typing import Protocol, SupportsFloat, SupportsIndex, TypeAlias, cast, runtime_checkable
+
+from rc_metastudio.project.model import StudyRow
+from rc_metastudio.project.study import AnalysisUnit
+from rc_metastudio.analysis.catalog import BINARY, BINARY_TWO_ARM_METRICS, CONTINUOUS, CONTINUOUS_TWO_ARM_METRICS, DIAGNOSTIC, DIAGNOSTIC_METRICS
+from rc_metastudio.analysis.validation import EMPTY_VALS
+
+Scalar: TypeAlias = float | int | str | None
+
+
+@runtime_checkable
+class ScaleBridge(Protocol):
+    def binary_convert_scale(self, value: object, effect: object, *, convert_to: str, n1: object = None) -> object: ...
+    def continuous_convert_scale(self, value: object, effect: object, *, convert_to: str) -> object: ...
+    def diagnostic_convert_scale(self, value: object, effect: object, *, convert_to: str) -> object: ...
+    def effect_for_study(self, *args: object, **kwargs: object) -> object: ...
+    def continuous_effect_for_study(self, *args: object, **kwargs: object) -> object: ...
+    def effect_triplet(self, value: object, scale: str, *, metric: object) -> tuple[Scalar, Scalar, Scalar]: ...
+    def diagnostic_effects_for_study(self, *args: object, **kwargs: object) -> Mapping[str, object]: ...
+
+
+def _checked_bridge(value: object) -> ScaleBridge:
+    if not isinstance(value, ScaleBridge):
+        raise TypeError("analysis boundary requires a scale bridge")
+    return value
+
+
+
+
+
+def make_display_scale_converter(
+    bridge: object, data_type: object, effect: str | None, n1: object = None
+) -> Callable[[object], object]:
+    """Build the calculation-to-display conversion for one outcome family."""
+    if data_type in RATIO_DATA_TYPES:
+        def ratio_to_display(value):
+            if value in (None, ""):
+                return None
+            return math.exp(float(cast(str | Buffer | SupportsFloat | SupportsIndex, value)))
+        return ratio_to_display
+    checked = _checked_bridge(bridge)
+    if data_type == BINARY:
+        return lambda value: checked.binary_convert_scale(
+            value, effect, convert_to="display.scale", n1=n1
+        )
+    if data_type == CONTINUOUS:
+        return lambda value: checked.continuous_convert_scale(
+            value, effect, convert_to="display.scale"
+        )
+    if data_type == DIAGNOSTIC:
+        return lambda value: checked.diagnostic_convert_scale(
+            value, effect, convert_to="display.scale"
+        )
+    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
+def to_calculation_scale(
+    bridge: object,
+    value: object,
+    data_type: object,
+    effect: str | None,
+    n1: object = None,
+) -> object:
+    """Convert a user-facing value to the backend's calculation scale."""
+    if data_type in RATIO_DATA_TYPES:
+        if value in (None, ""):
+            return None
+        if not isinstance(value, (str, int, float)):
+            raise TypeError("A numerical ratio is required.")
+        return math.log(float(value))
+    checked = _checked_bridge(bridge)
+    if data_type == BINARY:
+        return checked.binary_convert_scale(
+            value, effect, convert_to="calc.scale", n1=n1
+        )
+    if data_type == CONTINUOUS:
+        return checked.continuous_convert_scale(value, effect, convert_to="calc.scale")
+    if data_type == DIAGNOSTIC:
+        return checked.diagnostic_convert_scale(value, effect, convert_to="calc.scale")
+    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
+def calculate_raw_effects(
+    bridge: object,
+    data_type: object,
+    effect: str | None,
+    raw_data: Sequence[object],
+    confidence_level: float,
+) -> tuple[tuple[Scalar, Scalar, Scalar], object] | dict[str, tuple[Scalar, Scalar, Scalar]]:
+    """Calculate backend effects from one study's raw data."""
+    checked = _checked_bridge(bridge)
+    if data_type == BINARY:
+        return _binary_raw_effect(checked, effect, raw_data, confidence_level)
+    if data_type == CONTINUOUS:
+        return _continuous_raw_effect(checked, effect, raw_data, confidence_level)
+    if data_type == DIAGNOSTIC:
+        return _diagnostic_raw_effect(checked, raw_data, confidence_level)
+    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
+def _effect_triplet(checked: ScaleBridge, result: object, effect: str | None) -> tuple[Scalar, Scalar, Scalar]:
+    if result is None:
+        return (None, None, None)
+    return checked.effect_triplet(result, "calc_scale", metric=effect)
+
+
+def _binary_raw_effect(
+    checked: ScaleBridge,
+    effect: str | None,
+    raw_data: Sequence[object],
+    confidence_level: float,
+) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
+    e1, n1 = raw_data[:2]
+    if effect in BINARY_TWO_ARM_METRICS:
+        e2, n2 = raw_data[2:]
+        result = checked.effect_for_study(e1, n1, e2, n2, metric=effect, confidence_level=confidence_level)
+    else:
+        result = checked.effect_for_study(e1, n1, two_arm=False, metric=effect, confidence_level=confidence_level)
+    return _effect_triplet(checked, result, effect), n1
+
+
+def _continuous_raw_effect(
+    checked: ScaleBridge,
+    effect: str | None,
+    raw_data: Sequence[object],
+    confidence_level: float,
+) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
+    n1, m1, sd1 = raw_data[:3]
+    if effect in CONTINUOUS_TWO_ARM_METRICS:
+        n2, m2, sd2 = raw_data[3:]
+        result = checked.continuous_effect_for_study(
+            n1, m1, sd1, n2=n2, m2=m2, sd2=sd2, metric=effect, confidence_level=confidence_level
+        )
+    else:
+        result = checked.continuous_effect_for_study(
+            n1, m1, sd1, two_arm=False, metric=effect, confidence_level=confidence_level
+        )
+    return _effect_triplet(checked, result, effect), n1
+
+
+def _diagnostic_raw_effect(
+    checked: ScaleBridge,
+    raw_data: Sequence[object],
+    confidence_level: float,
+) -> dict[str, tuple[Scalar, Scalar, Scalar]]:
+    tp, fn, fp, tn = raw_data
+    results = checked.diagnostic_effects_for_study(
+        tp, fn, fp, tn, metrics=DIAGNOSTIC_METRICS, confidence_level=confidence_level
+    )
+    return {
+        metric: checked.effect_triplet(results[metric], "calc_scale", metric=metric)
+        for metric in DIAGNOSTIC_METRICS
+    }
+
+
+def raw_data_is_complete(raw_data: Sequence[object]) -> bool:
+    return all(value not in ("", None) for value in raw_data)
+
+
+def raw_data_is_empty(raw_data: Sequence[object]) -> bool:
+    return all(value in EMPTY_VALS for value in raw_data)
+
+
+def has_entered_data(analysis_unit: AnalysisUnit) -> bool:
+    return any(
+        value not in EMPTY_VALS
+        for group in analysis_unit.arms_by_id.values()
+        for value in group.raw_data
+    ) or any(
+        value not in EMPTY_VALS
+        for effect_groups in analysis_unit.entered_effects.values()
+        for effect_data in effect_groups.values()
+        for key, value in effect_data.items()
+        if key != "calculator_source"
+    )
+
+
+def has_study_entered_data(study):
+    return bool(study.label.strip() or study.year or any(v not in EMPTY_VALS for v in study.covariate_values.values()) or has_entered_data(study.analysis_unit))
+
+
+_FIRST_ARM_FIELDS = (
+    dict.fromkeys(BINARY_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM[BINARY])
+    | dict.fromkeys(CONTINUOUS_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM[CONTINUOUS])
+)
+
+
+def fit_raw_rows(
+    studies: Sequence[StudyRow],
+    raw_rows: Sequence[Sequence[object]],
+    metric: str,
+    arm_key: tuple[str, ...],
+) -> Sequence[Sequence[object]] | None:
+    """Return complete raw inputs for the selected studies when raw data has authority."""
+    if len(raw_rows) != len(studies) or any(
+        study.analysis_unit.calculator_source(metric, arm_key) == "entered"
+        for study in studies
+    ):
+        return None
+    arm_fields = _FIRST_ARM_FIELDS.get(metric)
+    if arm_fields is not None:
+        raw_rows = [row[:arm_fields] for row in raw_rows]
+    return raw_rows if all(raw_data_is_complete(row) for row in raw_rows) else None
+
+
+def included_studies_have_effects(
+    studies: Sequence[StudyRow],
+    effect_for_study: Callable[[int], Sequence[object]],
+) -> bool:
+    return all(
+        all(value is not None for value in effect_for_study(index))
+        for index, study in enumerate(studies)
+        if study.include
+    )

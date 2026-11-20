@@ -13,12 +13,17 @@ These owners are under `src/rc_metastudio/`:
 | Owner | Responsibility |
 | --- | --- |
 | `application_metadata.py` | Application/organization identity and the version derived from the package version |
-| `analysis_catalog.py` | Data-family IDs, supported metrics, labels and default arm names |
-| `analysis_validation.py` | Numeric analysis parameter limits, validation and input predicates |
-| `result_formatting.py` | Result numbers, labels, references, precision defaults and plain-text tables |
-| `calculator_controls.py` | Calculator input widgets, table controls, validation and field sizing |
-| `calculator_effect_readout.py` | Selected effect source, display-scale conversion and readout presentation |
-| `calculator_edit_history.py` | Dialog-local edit commands and undo/redo history |
+| `project/` | Project archive, migration, semantic validation and live study data |
+| `workspace/` | Session history, sheet editing, column rules and Qt table |
+| `importing/` | CSV, XLSX and RevMan project ingestion |
+| `analysis/catalog.py` | Data-family IDs, supported metrics, labels and default arm names |
+| `analysis/validation.py` | Numeric analysis parameter limits, validation and input predicates |
+| `analysis/requests.py` | Validated analysis requests and dispatch to the R bridge |
+| `results/` | Result sections, written reports, plot editors and export |
+| `results/formatting.py` | Result numbers, labels, references, precision defaults and plain-text tables |
+| `calculators/controls.py` | Calculator input widgets, table controls, validation and field sizing |
+| `calculators/effect_readout.py` | Selected effect source, display-scale conversion and readout presentation |
+| `calculators/edit_history.py` | Dialog-local edit commands and undo/redo history |
 
 Catalogue and validation remain independent of Qt. Metadata imports the canonical
 package version. Calculator readouts depend on controls; controls do not depend

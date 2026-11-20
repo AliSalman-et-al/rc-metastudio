@@ -225,46 +225,13 @@ jobs:
           retention-days: 30
           compression-level: 0
       - name: Record unsigned qualification and final evidence
-        if: matrix.target != 'linux-x64'
         shell: pwsh
         env:
           TARGET: ${{ matrix.target }}
-          ARTIFACT: ${{ matrix.artifact }}
           SOURCE_SHA: ${{ inputs.source_sha }}
           VERSION: ${{ inputs.version }}
         run: |
-          New-Item -ItemType Directory -Force qualified/records | Out-Null
-          Copy-Item "candidate/artifacts/$env:ARTIFACT" "qualified/$env:ARTIFACT"
-          $assembled = Get-ChildItem candidate -Recurse -Filter "$env:TARGET.assembled.json" | Select-Object -First 1
-          if (-not $assembled) { throw "Missing assembled stage result." }
-          Copy-Item $assembled.FullName "qualified/records/$env:TARGET.assembled.json"
-          uv run python scripts/delivery.py inventory --root qualified/tree --output "qualified/$env:TARGET.inventory.json"
-          uv run python scripts/delivery.py sbom --inventory "qualified/$env:TARGET.inventory.json" --version "$env:VERSION" --output "qualified/$env:TARGET.cdx.json"
-          $input = uv run python scripts/delivery.py digest --json $assembled.FullName
-          uv run python scripts/delivery.py stage-result --target "$env:TARGET" --stage unsigned-qualified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file "qualified/$env:ARTIFACT" --result "qualified/records/$env:TARGET.unsigned-qualified.json"
-          $input = uv run python scripts/delivery.py digest --json "qualified/records/$env:TARGET.unsigned-qualified.json"
-          uv run python scripts/delivery.py stage-result --target "$env:TARGET" --stage verified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file "qualified/$env:ARTIFACT" --output-file "qualified/$env:TARGET.inventory.json" --output-file "qualified/$env:TARGET.cdx.json" --result "qualified/records/$env:TARGET.verified.json"
-      - name: Record Linux unsigned qualification and final evidence
-        if: matrix.target == 'linux-x64'
-        shell: bash
-        env:
-          TARGET: ${{ matrix.target }}
-          ARTIFACT: ${{ matrix.artifact }}
-          SOURCE_SHA: ${{ inputs.source_sha }}
-          VERSION: ${{ inputs.version }}
-        run: |
-          set -euo pipefail
-          mkdir -p qualified/records
-          cp "candidate/artifacts/$ARTIFACT" "qualified/$ARTIFACT"
-          assembled="$(find candidate -name "$TARGET.assembled.json" -print -quit)"
-          test -n "$assembled"
-          cp "$assembled" "qualified/records/$TARGET.assembled.json"
-          python3 scripts/delivery.py inventory --root qualified/tree --output "qualified/$TARGET.inventory.json"
-          python3 scripts/delivery.py sbom --inventory "qualified/$TARGET.inventory.json" --version "$VERSION" --output "qualified/$TARGET.cdx.json"
-          input="$(python3 scripts/delivery.py digest --json "$assembled")"
-          python3 scripts/delivery.py stage-result --target "$TARGET" --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$ARTIFACT" --result "qualified/records/$TARGET.unsigned-qualified.json"
-          input="$(python3 scripts/delivery.py digest --json "qualified/records/$TARGET.unsigned-qualified.json")"
-          python3 scripts/delivery.py stage-result --target "$TARGET" --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$ARTIFACT" --output-file "qualified/$TARGET.inventory.json" --output-file "qualified/$TARGET.cdx.json" --result "qualified/records/$TARGET.verified.json"
+          uv run --no-project python scripts/delivery.py record-unsigned-qualification --target "$env:TARGET" --commit "$env:SOURCE_SHA" --version "$env:VERSION" --candidate candidate --qualified qualified
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: qualified-${{ matrix.target }}

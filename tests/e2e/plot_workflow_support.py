@@ -18,7 +18,7 @@ def check_table_surface(app, view, work, record, title, label):
     import csv
     import io
     from unittest.mock import patch
-    from rc_metastudio.result_formatting import numeric_cell, report_cell
+    from rc_metastudio.results.formatting import numeric_cell, report_cell
     from tests.e2e.report_retention import assert_report, assert_retained_table
     assert_report(view)
     held = [(section, table) for section in view.results.sections for table in section.tables if table.title == title]

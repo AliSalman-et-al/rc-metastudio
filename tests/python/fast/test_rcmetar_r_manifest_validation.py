@@ -96,10 +96,10 @@ def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_pa
     checked_roots = []
     monkeypatch.setattr(source_verifier, "run_typing", lambda root: checked_roots.append(root) or receipt)
     monkeypatch.setattr(stack_verifier, "resolve_rscript", lambda name: r_home / "bin" / name)
-    monkeypatch.setattr(stack_verifier, "resolve_r_home", lambda *_args: r_home)
-    monkeypatch.setattr(stack_verifier, "resolve_r_exe", lambda *_args: r_home / "bin/R")
+    monkeypatch.setattr(r_verification_support, "resolve_r_home", lambda *_args: r_home)
+    monkeypatch.setattr(r_verification_support, "resolve_r_exe", lambda *_args: r_home / "bin/R")
     monkeypatch.setattr(stack_verifier, "verify_rpy2_identities", lambda _python: {})
-    monkeypatch.setattr(stack_verifier, "binary_dependency_policy", lambda _root: {"repository": "fixed"})
+    monkeypatch.setattr(r_verification_support, "load_binary_dependency_policy", lambda _root: {"repository": "fixed"})
     monkeypatch.setattr(stack_verifier, "ensure_dependency_library", lambda *_args: tmp_path / "library")
     monkeypatch.setattr(stack_verifier, "built_RCMetaR_tarball", lambda _work: tmp_path / "archive.tar.gz")
     monkeypatch.delenv("RCMS_CRAN_REPO", raising=False)
@@ -153,8 +153,8 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
 
         with monkeypatch.context() as patch:
             patch.setattr(
-                module,
-                "binary_dependency_policy",
+                r_verification_support,
+                "load_binary_dependency_policy",
                 lambda _root: {
                     "repository": "https://packagemanager.posit.co/cran/2026-11-13"
                 },
@@ -411,7 +411,7 @@ def test_default_r_RCMetaR_install_preserves_dependency_libraries(
     r_exe.write_text("", encoding="utf-8")
     captured_envs = []
 
-    monkeypatch.setattr(verifier, "resolve_r_exe", lambda root, rscript, env: r_exe)
+    monkeypatch.setattr(r_verification_support, "resolve_r_exe", lambda rscript, root, env: r_exe)
 
     def fake_run(command, cwd, env):
         captured_envs.append(dict(env))

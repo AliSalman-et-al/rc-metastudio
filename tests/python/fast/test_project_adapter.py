@@ -1,14 +1,14 @@
 from __future__ import annotations
 import copy
 import pytest
-from rc_metastudio import project_adapter
-from rc_metastudio.project_format import ProjectDocument, migrate_to_latest, JsonObject, JsonValue
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.project import adapter as project_adapter
+from rc_metastudio.project.archive import ProjectDocument, migrate_to_latest, JsonObject, JsonValue
+from rc_metastudio.workspace.session import WorkspaceSession
 from tests.python.fast.test_project_format import _group_project, _legacy_state
 
 
 def test_raw_values_added_to_omitted_arms_are_dirty_and_survive_reopen(tmp_path):
-    from rc_metastudio.project_format import load_project
+    from rc_metastudio.project.archive import load_project
     from rc_metastudio.qt_object_guard import required
 
     project = _group_project("binary", None, [[1, 10], [2, 20]])

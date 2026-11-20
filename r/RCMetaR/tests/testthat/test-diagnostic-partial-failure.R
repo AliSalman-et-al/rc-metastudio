@@ -5,6 +5,12 @@ diagnostic_batch_request <- function(metric, method = "diagnostic.random", adjus
 }
 
 test_that("one failed fit leaves independent diagnostic results and citations", {
+  existing.devices <- grDevices::dev.list()
+  grDevices::pdf(tempfile(fileext=".pdf"))
+  caller.device <- grDevices::dev.cur()
+  withr::defer({
+    for (device in setdiff(grDevices::dev.list(), existing.devices)) grDevices::dev.off(device)
+  })
   tp <- c(11, 13, 15, 16, 19, 21)
   fn <- c(5, 6, 10, 6, 7, 8)
   tn <- c(20, 31, 23, 34, 36, 40)
@@ -40,6 +46,8 @@ test_that("one failed fit leaves independent diagnostic results and citations", 
   expect_identical(names(result$plot_params_paths), result$image_order)
   expect_true(all(file.exists(result$images)))
   expect_true(all(file.exists(paste0(result$plot_params_paths, ".plotdata"))))
+  expect_identical(grDevices::dev.list(), c(existing.devices, caller.device))
+  expect_identical(grDevices::dev.cur(), caller.device)
   sens <- metafor::escalc("PLO", xi=tp + .5, ni=tp + fn + 1, add=0)
   dor <- metafor::escalc("OR", ai=tp + .5, bi=fn + .5, ci=rep(.5, 6), di=tn + .5, add=0)
   for (item in list(list(key="diagnostic.Sens.summary", data=sens, method="DL"),

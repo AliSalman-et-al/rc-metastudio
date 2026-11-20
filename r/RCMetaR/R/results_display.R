@@ -242,33 +242,6 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
   summary
 }
 
-save.plot.data <- function(plot.data, out.path=NULL) {
-  if (is.null(out.path)){
-    out.path <- rcmetar.scratch.path(as.character(as.numeric(Sys.time())))
-  }
-  save(plot.data, file=.rcmetar.plot.bundle.paths(out.path, "plot.data"))
-  out.path
-}
-
-save.data <- function(om.data, res, params, plot.data, out.path=NULL) {
-  if (is.null(out.path)){
-    out.path <- rcmetar.scratch.path(as.character(as.numeric(Sys.time())))
-  }
-
-  save(om.data, file=.rcmetar.plot.bundle.paths(out.path, "om.data"))
-  if (inherits(plot.data$regeneration_state, "rcmetar_forest_regeneration_state")) {
-    res <- plot.data$regeneration_state
-    for (param.name in names(res$param_overrides)) {
-      params[[param.name]] <- res$param_overrides[[param.name]]
-    }
-  }
-  save(res, file=.rcmetar.plot.bundle.paths(out.path, "res"))
-
-  save.plot.data(plot.data, out.path)
-  save(params, file=.rcmetar.plot.bundle.paths(out.path, "params"))
-  out.path
-}
-
 update.changed.plot.params <- function(params, changed.params) {
   if (length(changed.params) == 0) {
     return(params)

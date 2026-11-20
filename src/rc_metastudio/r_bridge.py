@@ -15,16 +15,16 @@ from collections.abc import Mapping, Sequence
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Literal, ParamSpec, TypeVar, cast, overload
+from typing import Callable, Literal, ParamSpec, Protocol, TypeVar, cast, overload, runtime_checkable
 
 from rc_metastudio import r_runtime
-from rc_metastudio.analysis_method_labels import (
+from rc_metastudio.analysis.method_labels import (
     method_display_label,
-    normalize_available_method_labels,
+    method_labels_by_id,
 )
-from rc_metastudio import result_formatting
-from rc_metastudio.analysis_errors import DiagnosticExecutionError
-from rc_metastudio.analysis_results import AnalysisResult, Quantity, QuantityRole, QuantityScale, ResultSection, TableRole, _report_table_entry, parse_analysis_result
+from rc_metastudio.results import formatting as result_formatting
+from rc_metastudio.analysis.errors import DiagnosticExecutionError
+from rc_metastudio.results.contract import AnalysisResult, Quantity, QuantityRole, QuantityScale, ResultSection, TableRole, _report_table_entry, parse_analysis_result
 from typing import get_args
 from rc_metastudio.study_effect_shapes import (
     effect_triplet as effect_triplet,
@@ -32,19 +32,17 @@ from rc_metastudio.study_effect_shapes import (
     normalize_effect_result,
 )
 from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
-from rc_metastudio.analysis_catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
-from rc_metastudio.analysis_validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
-from rc_metastudio.dataset_analysis_domain import fit_raw_rows, raw_data_is_complete
-from rc_metastudio.result_formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
+from rc_metastudio.analysis.catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis.validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
+from rc_metastudio.analysis.study_selection import fit_raw_rows, raw_data_is_complete
+from rc_metastudio.results.formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
 # These modules are bound by initialize_r after the shell is visible.
 ro: ModuleType
-rpy2: ModuleType
+_rinterface: ModuleType
 RRuntimeError: type[Exception]
-_rpy2_conversion: ModuleType
-_rpy2_rchar_to_str: Callable[..., str]
 _INITIALIZATION_ERROR: Exception | None = None
 
 
@@ -64,50 +62,45 @@ def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
     return _serialized_r_call(initialized)
 
 
-def initialize_r():
+@_serialized_r_call
+def initialize_r() -> None:
     """Initialize embedded R explicitly, after the application shell is visible."""
+    global _INITIALIZATION_ERROR
+    if "ro" in globals():
+        return
     try:
         _initialize_rpy2()
     except Exception as error:
+        _INITIALIZATION_ERROR = error
         cause = error
         while cause.__cause__ is not None:
             cause = cause.__cause__
         raise r_runtime.AnalysisBackendUnavailableError(
             f"Embedded R failed to initialize: {cause.__class__.__name__}: {cause}"
         ) from error
+    _INITIALIZATION_ERROR = None
 
 
-def _initialize_rpy2():
-    global _INITIALIZATION_ERROR, ro, rpy2, RRuntimeError, _rpy2_conversion, _rpy2_rchar_to_str
-    if "ro" in globals():
-        return
+def _initialize_rpy2() -> None:
+    global ro, _rinterface, RRuntimeError
     r_runtime.configure_bundled_r_environment()
-    try:
-        import rpy2.robjects as ro
-    except Exception as error:
-        _INITIALIZATION_ERROR = error
-        raise RuntimeError(
-            "Cannot initialize rpy2. Check the bundled R runtime configuration."
-        ) from error
-    import rpy2.robjects
-    import rpy2.rinterface
-    from rpy2.rinterface_lib.embedded import RRuntimeError
-
+    from rpy2 import rinterface, robjects
+    from rpy2.rinterface_lib.embedded import RRuntimeError as EmbeddedRuntimeError
 
     try:
-        import rpy2.rinterface_lib.conversion as _rpy2_conversion
+        from rpy2.rinterface_lib import conversion
 
-        _rpy2_rchar_to_str = _rpy2_conversion._rchar_to_str
+        original_decoder = conversion._rchar_to_str
 
         def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
             try:
-                return str(_rpy2_conversion._utf8_rchar_to_str(rchar))
+                return str(conversion._utf8_rchar_to_str(rchar))
             except UnicodeDecodeError:
-                return str(_rpy2_rchar_to_str(rchar, encoding))
+                return str(original_decoder(rchar, encoding))
 
         # This private rpy2 hook is intentionally replaced at the integration
         # boundary; its runtime signature is not expressible in rpy2's stubs.
-        setattr(_rpy2_conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
+        setattr(conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
     except (ImportError, AttributeError):
         pass
 
@@ -126,6 +119,7 @@ def _initialize_rpy2():
             )
         except (ImportError, AttributeError):
             pass
+    _rinterface, RRuntimeError, ro = rinterface, EmbeddedRuntimeError, robjects
 
 
 _RFunction = Callable[..., object]
@@ -205,20 +199,15 @@ def _first_dynamic(value: object) -> object:
 def _r_is_null(r_object):
     """Return whether an rpy2 object represents R's NULL value."""
     _require_initialized_r()
-    return r_object is rpy2.rinterface.NULL or isinstance(
-        r_object, type(rpy2.rinterface.NULL)
+    return r_object is _rinterface.NULL or isinstance(
+        r_object, type(_rinterface.NULL)
     )
 
 
 @serialized_r_call
 def execute_r_string(r_str):
     require_r_transaction()
-    try:
-        return _r_eval(r_str)
-    except Exception:
-        # An R error can leave the process in a package-specific directory.
-        reset_r_working_directory()
-        raise
+    return _r_eval(r_str)
 
 
 @serialized_r_call
@@ -265,17 +254,6 @@ def get_r_package_version(package_name):
         )
     version = execute_r_function("packageVersion", package_name)
     return str(execute_r_function("as.character", version)[0])
-
-
-@serialized_r_call
-def reset_r_working_directory():
-    """Reset R's working directory to the application data directory."""
-    from rc_metastudio import settings
-
-    base_path = settings.get_base_path()
-    base_path = settings.to_posix_path(base_path)
-
-    execute_r_function("setwd", base_path)
 
 
 @serialized_r_call
@@ -381,7 +359,7 @@ def _r_singleton_to_scalar(singleton):
     _require_initialized_r()
     if len(singleton) != 1:
         raise ValueError("expected an R sequence with one element")
-    if isinstance(singleton, rpy2.robjects.vectors.FactorVector):
+    if isinstance(singleton, ro.vectors.FactorVector):
         return execute_r_function("as.character", singleton)[0]
     return _r_na_to_none(singleton[0])
 
@@ -393,11 +371,11 @@ def _r_na_to_none(value):
     if isinstance(
         value,
         (
-            type(rpy2.rinterface.NA_Character),
-            type(rpy2.rinterface.NA_Integer),
-            type(rpy2.rinterface.NA_Logical),
-            type(rpy2.rinterface.NA_Real),
-            type(rpy2.rinterface.NA_Complex),
+            type(_rinterface.NA_Character),
+            type(_rinterface.NA_Integer),
+            type(_rinterface.NA_Logical),
+            type(_rinterface.NA_Real),
+            type(_rinterface.NA_Complex),
         ),
     ):
         return None
@@ -418,7 +396,7 @@ def _is_r_iterable(value, exclude_strings=True):
 
 def _has_r_names(value):
     _require_initialized_r()
-    if not isinstance(value, rpy2.robjects.vectors.Vector):
+    if not isinstance(value, ro.vectors.Vector):
         return False
     # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
     # are labels for axes, not key/value names for a mapping.
@@ -473,7 +451,7 @@ def get_confidence_multiplier_from_r(confidence_level):
 
 def _r_null_if_none(value):
     _require_initialized_r()
-    return rpy2.rinterface.NULL if value is None else value
+    return _rinterface.NULL if value is None else value
 
 
 @serialized_r_call
@@ -517,10 +495,27 @@ def get_available_methods(
             "workflow": str(workflow),
         },
     )
-    return normalize_available_method_labels(r_object_to_python(methods))
+    return r_object_to_python(methods)
 
 
-
+@_serialized_r_call
+def available_model_methods(
+    model: object, family: str, metrics: Sequence[str], *, workflow: str,
+) -> dict[str, str]:
+    """Discover methods by identity without exposing the R dataset to callers."""
+    if not metrics:
+        raise ValueError("Choose at least one metric before querying methods.")
+    data = dataset_for_analysis(model, family, metric=metrics[0])
+    choices = [
+        get_available_methods(for_data_type=family, data=data, metric=metric, workflow=workflow)
+        for metric in metrics
+    ]
+    compatible = set.intersection(*(set(choice.values()) for choice in choices))
+    return {
+        method: label
+        for method, label in method_labels_by_id(choices[0]).items()
+        if method in compatible
+    }
 
 @serialized_r_call
 def get_analysis_plot_capabilities(data_type, method_name, workflow="standard"):
@@ -865,8 +860,8 @@ def run_small_study_effects(
     r_request = dict(request)
     r_request["preview"] = bool(preview)
     if not preview:
-        from rc_metastudio.analysis_identity import plot_caption
-        r_request["plot_caption"] = plot_caption(table_model, "small-study-effects")
+        from rc_metastudio.analysis.identity import plot_caption
+        r_request["plot_caption"] = plot_caption(table_model)
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         data,
@@ -915,7 +910,7 @@ def trial_sequential_conclusion_command(
 def run_trial_sequential_analysis(
     model: object, family: str, metric: str, params: Mapping[str, object], path: str,
 ) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
-    from rc_metastudio.plot_capabilities import PlotCapability
+    from rc_metastudio.results.plot_capabilities import PlotCapability
 
     data = dataset_for_analysis(model, family, metric=metric)
     params = {**params, "fp_outpath": path}
@@ -952,7 +947,7 @@ def _r_param_value(param):
     if isinstance(param, ro.ListVector):
         return param
     if param is None:
-        return rpy2.rinterface.NULL
+        return _rinterface.NULL
     if isinstance(param, bool):
         return ro.BoolVector([param])
     if isinstance(param, int) and not isinstance(param, bool):
@@ -1081,16 +1076,55 @@ def _execute_versioned_request(
     return parse_out_results(result)
 
 
+@runtime_checkable
+class DiagnosticExecutionModel(Protocol):
+    def included_studies_have_raw_data(self) -> bool: ...
+
+    def included_studies_have_point_estimates(self, effect: str) -> bool: ...
+
+
+@_serialized_r_call
+def run_model_diagnostic_analysis(
+    model: object, requests: list[Mapping[str, object]],
+) -> object:
+    """Prepare the diagnostic inputs and run the requested fits in one transaction."""
+    if not isinstance(model, DiagnosticExecutionModel):
+        raise TypeError("Diagnostic execution requires the diagnostic model queries.")
+    if model.included_studies_have_raw_data():
+        return run_versioned_analysis_requests(
+            requests, dataset_to_simple_diagnostic_r_object(model)
+        )
+    if any(request.get("method") == "diagnostic.reitsma" for request in requests):
+        raise ValueError(
+            "Reitsma bivariate model requires complete TP/FN/FP/TN counts; "
+            "entered diagnostic effects cannot be used for this method."
+        )
+    metrics = [_required_request_text(request, "metric") for request in requests]
+    missing = [
+        metric for metric in metrics
+        if not model.included_studies_have_point_estimates(effect=metric)
+    ]
+    if missing:
+        raise ValueError(
+            "Diagnostic analysis requires complete TP/FN/FP/TN counts or "
+            "complete entered effect estimates and confidence intervals for "
+            f"each selected metric. Missing entered estimates for: {', '.join(missing)}."
+        )
+    return run_versioned_analysis_requests(
+        requests, metric_data=[diagnostic_data_arguments(model, metric=metric) for metric in metrics]
+    )
+
+
 @serialized_r_call
 def run_versioned_analysis_requests(
     requests: list[Mapping[str, object]],
-    data,
+    data: object = None,
+    *,
+    metric_data: Sequence[Mapping[str, object]] | None = None,
 ):
     """Execute a validated diagnostic request set through one R operation."""
     validated_requests = _validated_versioned_requests(requests)
-    return _execute_versioned_requests(
-        validated_requests, data
-    )
+    return _execute_versioned_requests(validated_requests, data, metric_data)
 
 
 def _validated_versioned_requests(
@@ -1122,15 +1156,18 @@ def _validated_versioned_requests(
 
 def _execute_versioned_requests(
     requests: list[dict[str, object]],
-    data,
+    data: object,
+    metric_data: Sequence[Mapping[str, object]] | None,
 ) -> object:
     _require_initialized_r()
     request_list = execute_r_function(
         "list", *[_to_r_params(request) for request in requests]
     )
     arguments = {"request.list": request_list, "request.version": 1, "allow.partial": True}
-    if isinstance(data, list):
-        arguments["request.data"] = execute_r_function("list", *(ro.ListVector(args) for args in data))
+    if metric_data is not None:
+        arguments["request.data"] = execute_r_function(
+            "list", *(ro.ListVector(args) for args in metric_data)
+        )
     else:
         arguments["diagnostic.data"] = data
     try:
@@ -1678,7 +1715,7 @@ def _result_items_for_display(result):
             (name if name else "Result %d" % (index + 1), value)
             for index, (name, value) in enumerate(zip(names, list(result)))
         ]
-    if isinstance(result, rpy2.robjects.vectors.ListVector):
+    if isinstance(result, ro.vectors.ListVector):
         return [
             ("Result %d" % (index + 1), value)
             for index, value in enumerate(list(result))
@@ -2050,12 +2087,12 @@ def _display_section_name(name):
 
 def _is_r_string_vector(r_object):
     _require_initialized_r()
-    return isinstance(r_object, rpy2.robjects.vectors.StrVector)
+    return isinstance(r_object, ro.vectors.StrVector)
 
 
 def _r_dims(r_object):
     _require_initialized_r()
-    if not isinstance(r_object, rpy2.robjects.vectors.Vector):
+    if not isinstance(r_object, ro.vectors.Vector):
         return []
     try:
         dims = execute_r_function("dim", r_object)
@@ -2541,7 +2578,7 @@ def generic_convert_scale(
     if islist:
         x_arg = _r_numeric_vector(x)
         n1_arg = (
-            rpy2.rinterface.NULL if n1 is None else _r_numeric_vector([n1] * len(x))
+            _rinterface.NULL if n1 is None else _r_numeric_vector([n1] * len(x))
         )
     else:
         x_arg = x

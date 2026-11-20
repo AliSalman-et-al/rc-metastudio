@@ -128,20 +128,7 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
           VERSION: ${{ inputs.version }}
         run: |
-          New-Item -ItemType Directory -Force qualified/records | Out-Null
-          Copy-Item candidate/artifacts/RCMetaStudio-windows-x64.zip qualified/RCMetaStudio-windows-x64.zip
-          $candidateHash = (Get-FileHash candidate/artifacts/RCMetaStudio-windows-x64.zip -Algorithm SHA256).Hash
-          $carriedHash = (Get-FileHash qualified/RCMetaStudio-windows-x64.zip -Algorithm SHA256).Hash
-          if ($candidateHash -ne $carriedHash) { throw "Windows artifact changed while being carried into the macos-trusted release." }
-          $assembled = Get-ChildItem candidate -Recurse -Filter windows-x64.assembled.json | Select-Object -First 1
-          if (-not $assembled) { throw "Missing assembled stage result." }
-          Copy-Item $assembled.FullName qualified/records/windows-x64.assembled.json
-          uv run python scripts/delivery.py inventory --root qualified/tree --output qualified/windows-x64.inventory.json
-          uv run python scripts/delivery.py sbom --inventory qualified/windows-x64.inventory.json --version "$env:VERSION" --output qualified/windows-x64.cdx.json
-          $input = uv run python scripts/delivery.py digest --json $assembled.FullName
-          uv run python scripts/delivery.py stage-result --target windows-x64 --stage unsigned-qualified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --result qualified/records/windows-x64.unsigned-qualified.json
-          $input = uv run python scripts/delivery.py digest --json qualified/records/windows-x64.unsigned-qualified.json
-          uv run python scripts/delivery.py stage-result --target windows-x64 --stage verified --commit "$env:SOURCE_SHA" --input-digest "$input" --output-file qualified/RCMetaStudio-windows-x64.zip --output-file qualified/windows-x64.inventory.json --output-file qualified/windows-x64.cdx.json --result qualified/records/windows-x64.verified.json
+          uv run --no-project python scripts/delivery.py record-unsigned-qualification --target "windows-x64" --commit "$env:SOURCE_SHA" --version "$env:VERSION" --candidate candidate --qualified qualified
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-windows-x64
@@ -237,20 +224,7 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
           VERSION: ${{ inputs.version }}
         run: |
-          set -euo pipefail
-          mkdir -p qualified/records
-          artifact=RCMetaStudio-linux-x64.tar.gz
-          cp "candidate/artifacts/$artifact" "qualified/$artifact"
-          cmp "candidate/artifacts/$artifact" "qualified/$artifact"
-          assembled="$(find candidate -name linux-x64.assembled.json -print -quit)"
-          test -n "$assembled"
-          cp "$assembled" qualified/records/linux-x64.assembled.json
-          python3 scripts/delivery.py inventory --root qualified/tree --output qualified/linux-x64.inventory.json
-          python3 scripts/delivery.py sbom --inventory qualified/linux-x64.inventory.json --version "$VERSION" --output qualified/linux-x64.cdx.json
-          input="$(python3 scripts/delivery.py digest --json "$assembled")"
-          python3 scripts/delivery.py stage-result --target linux-x64 --stage unsigned-qualified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --result qualified/records/linux-x64.unsigned-qualified.json
-          input="$(python3 scripts/delivery.py digest --json qualified/records/linux-x64.unsigned-qualified.json)"
-          python3 scripts/delivery.py stage-result --target linux-x64 --stage verified --commit "$SOURCE_SHA" --input-digest "$input" --output-file "qualified/$artifact" --output-file qualified/linux-x64.inventory.json --output-file qualified/linux-x64.cdx.json --result qualified/records/linux-x64.verified.json
+          python3 scripts/delivery.py record-unsigned-qualification --target "linux-x64" --commit "$SOURCE_SHA" --version "$VERSION" --candidate candidate --qualified qualified
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: prepared-linux-x64

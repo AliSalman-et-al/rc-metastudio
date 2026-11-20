@@ -1,4 +1,0 @@
-Command: uv ["run","python","-m","pytest","-q","tests/python/gui/test_funnel_plot_editor.py","tests/python/fast/test_plot_service.py","tests/python/fast/test_plot_capabilities.py","--basetemp",".tmp/tsa-phase5b-python"]
-......................................                                   [100%]
-38 passed in 4.70s
-Exit: 0

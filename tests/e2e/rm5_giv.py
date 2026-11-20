@@ -7,13 +7,13 @@ import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
 from scripts.verification_evidence import desktop_tool_executable
 from tests.fit_observations import observe_fit
-from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-from rc_metastudio.results_window import ResultsWindow
+from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+from rc_metastudio.results.window import ResultsWindow
 
 
 def run(app, window, ROOT, WORK, record_step):
-    from rc_metastudio.rm5_import import read_rm5
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.importing.revman import read_rm5
+    from rc_metastudio.project.adapter import dataset_to_project
     # Exercise existing entered-only paths before deciding their import mapping.
     for index, metric, method, keep_raw in ((0, 'OR', 'binary.fixed.inv.var', False),
                                           (0, 'OR', 'binary.fixed.inv.var', True),
@@ -82,7 +82,7 @@ def run(app, window, ROOT, WORK, record_step):
         assert any('München' in value for row in rows for value in row.values())
     finally:
         locale.setlocale(locale.LC_CTYPE, previous_locale)
-    from rc_metastudio.rm5_review_dialog import review_rm5
+    from rc_metastudio.importing.revman_review import review_rm5
     def review():
         dialog = app.activeModalWidget()
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))

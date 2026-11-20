@@ -8,9 +8,10 @@ from types import SimpleNamespace
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import adaptive_window, calculator_service
-from rc_metastudio.analysis_dataset import Sheet
-from rc_metastudio.analysis_catalog import CONTINUOUS
+from rc_metastudio import adaptive_window
+from rc_metastudio.calculators import service as calculator_service
+from rc_metastudio.project.model import Sheet
+from rc_metastudio.analysis.catalog import CONTINUOUS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -102,7 +103,7 @@ def _open_continuous_dialog(
     back_calc_result=None,
     choose_metric=False,
 ):
-    from rc_metastudio import continuous_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     recorder = recorder if recorder is not None else {}
@@ -335,7 +336,7 @@ def test_continuous_back_calculation_enablement_probes_metric_assumptions(
 def test_continuous_assumptions_cancel_button_prevents_r_and_state_mutation(
     monkeypatch,
 ):
-    from rc_metastudio import continuous_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     recorder = {}
     unit = FakeContinuousAnalysisUnit(
@@ -676,7 +677,7 @@ def test_continuous_long_values_and_large_font_overflow_inside_content(monkeypat
 
 @pytest.mark.parametrize("size", [(1024, 640), (800, 600)])
 def test_continuous_long_metric_choice_is_fully_accessible(monkeypatch, size):
-    from rc_metastudio import continuous_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     long_label = (
         "Standardized Mean Difference with small-sample bias correction and "
@@ -791,7 +792,7 @@ def test_successful_continuous_back_calculation_updates_data_without_root_growth
 def test_continuous_back_calculation_choice_keeps_guidance_and_actions_reachable(
     monkeypatch, size
 ):
-    from rc_metastudio import continuous_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     available = QtCore.QRect(20, 30, *size)
     monkeypatch.setattr(adaptive_window, "available_geometry_for_window", lambda _window: QtCore.QRect(available))

@@ -79,7 +79,7 @@
   model <- s$model
   if (is(data, "BinaryData")) {
     args <- .tsa.counts(data)
-    to <- .rcmetar.binary.correction.target(s)
+    to <- .rcmetar.correction.target(s)
     if (model %in% c("fixed-mh", "peto")) return(.tsa.fit.counts(args, s, to))
     effects <- do.call(metafor::escalc, c(list(measure=s$metric), args,
       list(add=s$adjust, to=to, drop00=s$drop00 %||% FALSE)))

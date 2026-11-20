@@ -38,7 +38,7 @@ rcmetar.bmj.ilab <- function(columns, n) {
 
 rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
     n <- length(binary.data@study.names)
-    groups <- rcmetar.revman.arm.labels(params)
+    groups <- rcmetar.forest.arm.labels(params)
     columns <- list()
     if (rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
             rcmetar.has.binary.raw.columns(binary.data, n, params)) {
@@ -77,23 +77,23 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
 rcmetar.bmj.continuous.ilab <- function(cont.data, params, res=NULL) {
     n <- length(cont.data@study.names)
     digits <- as.integer(params$digits)
-    groups <- rcmetar.revman.arm.labels(params)
+    groups <- rcmetar.forest.arm.labels(params)
     columns <- list()
     if (rcmetar.param.is.true(params, "fp_show_raw_counts", TRUE) &&
             rcmetar.has.continuous.raw.columns(cont.data, n, params)) {
         if (rcmetar.param.is.true(params, "fp_show_col3", TRUE)) {
             columns <- list(
                 list(key="experimental_total", group=groups[[1]], header="Total", values=rcmetar.format.metafor.raw(cont.data@N1)),
-                list(key="experimental_mean", group=groups[[1]], header="Mean", values=rcmetar.revman.format.number(cont.data@mean1, digits)),
-                list(key="experimental_sd", group=groups[[1]], header="SD", values=rcmetar.revman.format.number(cont.data@sd1, digits))
+                list(key="experimental_mean", group=groups[[1]], header="Mean", values=rcmetar.format.metafor.numeric(cont.data@mean1, digits)),
+                list(key="experimental_sd", group=groups[[1]], header="SD", values=rcmetar.format.metafor.numeric(cont.data@sd1, digits))
             )
         }
         if (as.character(params$measure) %in% continuous.two.arm.metrics &&
                 rcmetar.param.is.true(params, "fp_show_col4", TRUE)) {
             columns <- c(columns, list(
                 list(key="control_total", group=groups[[2]], header="Total", values=rcmetar.format.metafor.raw(cont.data@N2)),
-                list(key="control_mean", group=groups[[2]], header="Mean", values=rcmetar.revman.format.number(cont.data@mean2, digits)),
-                list(key="control_sd", group=groups[[2]], header="SD", values=rcmetar.revman.format.number(cont.data@sd2, digits))
+                list(key="control_mean", group=groups[[2]], header="Mean", values=rcmetar.format.metafor.numeric(cont.data@mean2, digits)),
+                list(key="control_sd", group=groups[[2]], header="SD", values=rcmetar.format.metafor.numeric(cont.data@sd2, digits))
             ))
         }
     }
@@ -123,7 +123,7 @@ rcmetar.bmj.ilab.for.data <- function(om.data, params, res=NULL) {
 }
 
 rcmetar.bmj.decorate.bundle <- function(bundle) {
-    directions <- rcmetar.bmj.direction.labels(bundle)
+    directions <- rcmetar.forest.direction.labels(bundle)
     bundle$slab <- gsub(", ([0-9]{4})$", " \\1", bundle$slab)
     if (!is.null(bundle$effect$slab)) {
         bundle$effect$slab <- gsub(", ([0-9]{4})$", " \\1", bundle$effect$slab)
@@ -177,10 +177,8 @@ rcmetar.bmj.total.values <- function(bundle) {
 }
 
 rcmetar.bmj.not_estimable <- function(bundle) {
-    rcmetar.revman.not_estimable(bundle)
+    rcmetar.forest.not.estimable(bundle)
 }
-
-rcmetar.bmj.direction.labels <- function(bundle) rcmetar.revman.direction.labels(bundle)
 
 rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
     directions <- rcmetar.bmj.direction.lines(bundle, footer$right.x - footer$left.x, cex)
@@ -203,7 +201,7 @@ rcmetar.bmj.study.header <- function(bundle) {
 
 
 rcmetar.bmj.metric.label <- function(bundle) {
-    label <- rcmetar.revman.metric.label(bundle)
+    label <- rcmetar.forest.journal.metric.label(bundle)
     switch(
         label,
         "Risk Difference"="Risk difference",
@@ -216,7 +214,7 @@ rcmetar.bmj.metric.label <- function(bundle) {
 rcmetar.bmj.method.label <- function(bundle) {
     if (!is.null(bundle$summary_res)) bundle$res <- bundle$summary_res
     if (identical(bundle$forest_variant, "subgroup")) bundle$res <- bundle$subgroups$overall
-    method <- rcmetar.revman.method.label(bundle)
+    method <- rcmetar.forest.journal.method.label(bundle)
     sub("Fixed|Random", tolower(sub("^.*, ", "", method)), method)
 }
 
@@ -242,7 +240,7 @@ rcmetar.bmj.axis.footer.layout <- function(bundle, layout) {
 }
 
 rcmetar.bmj.summary.result <- function(bundle) {
-    rcmetar.revman.summary.result(bundle)
+    rcmetar.forest.summary.result(bundle)
 }
 
 rcmetar.bmj.heterogeneity.label <- function(bundle) {
@@ -271,7 +269,7 @@ rcmetar.bmj.test.overall.label <- function(bundle) {
 }
 
 rcmetar.bmj.p.label <- function(p, digits) {
-    gsub(" ", "", rcmetar.revman.p.value.label(p, digits), fixed=TRUE)
+    gsub(" ", "", rcmetar.forest.p.value.label(p, digits), fixed=TRUE)
 }
 
 rcmetar.bmj.effect.values <- function(bundle) {
@@ -349,7 +347,7 @@ rcmetar.bmj.header.lines <- function(label, width=24) {
 }
 
 rcmetar.bmj.direction.lines <- function(bundle, width, cex, units="user") {
-    labels <- rcmetar.bmj.direction.labels(bundle)[c("left", "right")]
+    labels <- rcmetar.forest.direction.labels(bundle)[c("left", "right")]
     lines <- lapply(labels, rcmetar.bmj.wrap.direction, width / 2, cex, units)
     widths <- vapply(lines, function(text) {
         max(c(0, graphics::strwidth(text, units=units, cex=cex, font=2)))
@@ -550,7 +548,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
         x=list(
             xlim=layout$xlim,
             alim=layout$alim,
-            at=rcmetar.revman.axis.ticks(bundle, layout$alim),
+            at=rcmetar.forest.journal.axis.ticks(bundle, layout$alim),
             refline=NA,
             xlab=""
         ),
@@ -605,7 +603,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     )
 
     layout <- plan$layout
-    effect <- rcmetar.revman.study.effects(bundle)
+    effect <- rcmetar.forest.study.effects(bundle)
     summary <- rcmetar.bmj.summary.effect(bundle)
     bundle$style_blocks$heterogeneity <- rcmetar.bmj.heterogeneity.label(within(bundle, res <- summary$res))
     bundle$style_blocks$test_overall <- rcmetar.bmj.test.overall.label(within(bundle, res <- summary$res))
@@ -672,7 +670,7 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
 }
 
 rcmetar.bmj.summary.effect <- function(bundle) {
-    summary <- rcmetar.revman.summary.effect(bundle)
+    summary <- rcmetar.forest.journal.summary.effect(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     pred <- c(transform$display.scale(summary$yi, ni=bundle$sample_sizes), transform$display.scale(summary$ci.lb, ni=bundle$sample_sizes), transform$display.scale(summary$ci.ub, ni=bundle$sample_sizes))
     summary$label <- rcmetar.bmj.effect.label(pred[[1]], pred[[2]], pred[[3]], rcmetar.forest.effect.digits(bundle), bundle$params)
@@ -802,9 +800,9 @@ rcmetar.draw.bmj.default_like.forest <- function(bundle, outpath) {
 }
 
 rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
-    ticks <- rcmetar.revman.axis.ticks(bundle, layout$alim)
+    ticks <- rcmetar.forest.journal.axis.ticks(bundle, layout$alim)
     ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
-    labels <- rcmetar.revman.axis.labels(bundle, ticks)
+    labels <- rcmetar.forest.axis.labels(bundle, ticks)
     y.axis <- -2.37
     y.tick <- -2.21
     y.label <- -2.83

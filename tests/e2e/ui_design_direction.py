@@ -28,8 +28,8 @@ def navigation_selection_pixels(view):
 
 def run(app, window, work, root, record, analyze):
     from rc_metastudio.main_wizard import MainWizard, DataTypePage, ChooseMetricPage, OutcomeNamePage
-    from rc_metastudio.ratio_data_dialog import RatioDataDialog
-    from rc_metastudio.manuscript_report import write_docx
+    from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
+    from rc_metastudio.results.report import write_docx
     from analysis_matrix import run as matrix
 
     failures = []
@@ -137,7 +137,7 @@ def run(app, window, work, root, record, analyze):
         assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
         view = analyze(app, window, 'binary.random', via_shortcut=True)
         first = required(view.nav_tree.topLevelItem(0))
-        if id(first) not in view._nav_plot_artifacts:
+        if view._plot_entry(first) is None:
             failures.append('Results navigation lists the landing figure after text pages')
         strips = [label for label in view.findChildren(QtWidgets.QLabel) if label.accessibleName() == 'Result identity']
         if not strips or not strips[0].isVisible():
@@ -190,7 +190,7 @@ def run(app, window, work, root, record, analyze):
             wait(100)
             assert view.zoom_control.value() <= 100
             from advanced_workflows import modal
-            from rc_metastudio.plot_editor_dialog import EditPlotDialog
+            from rc_metastudio.results.plot_editor import EditPlotDialog
             def close_editor(dialog):
                 starts = [dialog.col1_str_edit.mapTo(dialog, QtCore.QPoint()).x(),
                           dialog.accent_color.mapTo(dialog, QtCore.QPoint()).x(),
