@@ -9,7 +9,8 @@ from qt_test_support import required
 
 prepare_generated_ui_imports()
 
-from rc_metastudio import small_study_effects, small_study_effects_dialog, r_bridge
+from rc_metastudio.analysis import small_study_effects, small_study_effects_dialog
+from rc_metastudio import r_bridge
 
 
 class _Model:
@@ -303,7 +304,7 @@ def test_correction_group_is_hidden_for_one_arm_proportion(qapp, monkeypatch):
 
 def test_failure_is_reported_in_dedicated_label(qapp, monkeypatch):
     from PyQt6.QtWidgets import QDialogButtonBox
-    from rc_metastudio.progress_dialog import AnalysisProgressDialog
+    from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
 
     report = _report("continuous", "MD", [_method("classical-egger", True)])
     monkeypatch.setattr(

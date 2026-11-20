@@ -4,7 +4,7 @@ import math
 import os
 import sys
 
-from rc_metastudio.result_text_identity import normalize_heterogeneity_header
+from rc_metastudio.results.text_identity import normalize_heterogeneity_header
 
 
 PASS = "pass"

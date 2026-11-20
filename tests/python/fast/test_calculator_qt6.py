@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.usefixtures("inject_calculator_boundary")
+pytestmark = pytest.mark.usefixtures("inject_python_boundary")
 
 
 from PIL import Image
@@ -35,7 +35,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio import calculator_service, analysis_catalog, calculator_controls
+from rc_metastudio.calculators import service as calculator_service, controls as calculator_controls
+from rc_metastudio.analysis import catalog as analysis_catalog
 
 prepare_generated_ui_imports()
 
@@ -61,8 +62,9 @@ def _required(value, message: str = "expected Qt object"):
 
 
 def test_single_arm_binary_calculator_preserves_its_only_arm(qapp, monkeypatch):
-    from rc_metastudio import analysis_catalog, analysis_dataset
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
+    from rc_metastudio.analysis import catalog as analysis_catalog
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
     from PyQt6.QtWidgets import QMessageBox
 
     errors = []
@@ -345,14 +347,22 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
 
 
 def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():
-    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
+    from rc_metastudio.calculators import (
+        controls as calculator_controls,
+        edit_history as calculator_edit_history,
+        effect_readout as calculator_effect_readout,
+    )
 
     for text in ("12.5", "12,5"):
         assert calculator_controls.numeric_value(text) == 12.5
 
 
 def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
-    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
+    from rc_metastudio.calculators import (
+        controls as calculator_controls,
+        edit_history as calculator_edit_history,
+        effect_readout as calculator_effect_readout,
+    )
 
     for text in ("1,234.5", "1.234,5", "1,2,3", "nan", "inf"):
         with pytest.raises(ValueError, match="finite number using a decimal point or decimal comma"):
@@ -360,7 +370,7 @@ def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
 
 
 def test_calculator_history_replays_edits_and_discards_divergent_redo():
-    from rc_metastudio.calculator_edit_history import TransientEditHistory
+    from rc_metastudio.calculators.edit_history import TransientEditHistory
 
     restored = []
 
@@ -424,7 +434,7 @@ def test_continuous_imputation_still_rejects_unknown_result_fields(monkeypatch):
 
 
 def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch):
-    from rc_metastudio import continuous_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     captured = []
 
@@ -448,7 +458,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     form.arm_names = ["Group 1", "Group 2"]
     form.confidence_level = 95.0
     form.analysis_unit = object()
-    from rc_metastudio.calculator_service import CalculatorService
+    from rc_metastudio.calculators.service import CalculatorService
 
     form.calculator = CalculatorService()
 
@@ -474,8 +484,9 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
 def test_calculator_can_be_reopened_after_a_failed_open(
     qapp, monkeypatch
 ):
-    from rc_metastudio import app_error_handler, dataset_table_view
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+    from rc_metastudio import app_error_handler
+    from rc_metastudio.workspace import table_view as dataset_table_view
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 
     class CalculatorOpenError(RuntimeError):
         pass
@@ -534,7 +545,7 @@ class FakeAnalysisUnit:
         self.selected_source = source
 
     def __init__(self):
-        from rc_metastudio.analysis_catalog import BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS
+        from rc_metastudio.analysis.catalog import BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS
 
         self.effects = {
             metric: {} for metric in BINARY_ONE_ARM_METRICS + BINARY_TWO_ARM_METRICS
@@ -582,7 +593,8 @@ class FakeAnalysisUnit:
 def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     qapp, monkeypatch
 ):
-    from rc_metastudio import analysis_dataset, continuous_data_dialog
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -647,7 +659,12 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 
 
 def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, continuous_data_dialog, analysis_catalog, calculator_controls
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.calculators import (
+        continuous_dialog as continuous_data_dialog,
+        controls as calculator_controls,
+    )
+    from rc_metastudio.analysis import catalog as analysis_catalog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -800,7 +817,12 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     data_type, groups, raw_data, metric, arm_key, partial
 ):
-    from rc_metastudio import analysis_dataset, calculator_controls, calculator_edit_history, calculator_effect_readout
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.calculators import (
+        controls as calculator_controls,
+        edit_history as calculator_edit_history,
+        effect_readout as calculator_effect_readout,
+    )
 
     unit = analysis_dataset.AnalysisUnit(
         analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type),
@@ -830,7 +852,7 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
 def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
     qapp, monkeypatch
 ):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -866,9 +888,9 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
 
 
 def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch):
-    from rc_metastudio import binary_data_dialog
-    from rc_metastudio import continuous_data_dialog
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
+    from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -953,10 +975,15 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
 def test_continuous_effect_fields_fit_metric_domain_samples(
     qapp, monkeypatch, metric, representative
 ):
-    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
+    from rc_metastudio.calculators import (
+        controls as calculator_controls,
+        edit_history as calculator_edit_history,
+        effect_readout as calculator_effect_readout,
+    )
+    from rc_metastudio import r_bridge
 
     monkeypatch.setattr(
-        calculator_effect_readout.r_bridge,
+        r_bridge,
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -986,7 +1013,7 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
 
 
 def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -1017,10 +1044,15 @@ def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypa
 
 
 def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
-    from rc_metastudio import calculator_controls, calculator_edit_history, calculator_effect_readout
+    from rc_metastudio.calculators import (
+        controls as calculator_controls,
+        edit_history as calculator_edit_history,
+        effect_readout as calculator_effect_readout,
+    )
+    from rc_metastudio import r_bridge
 
     monkeypatch.setattr(
-        calculator_effect_readout.r_bridge,
+        r_bridge,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -1141,7 +1173,7 @@ class FakeDiagnosticGroup:
 def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
     qapp, monkeypatch
 ):
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     monkeypatch.setattr(
         calculator_service.r_bridge,
@@ -1237,7 +1269,8 @@ class FakeContinuousAnalysisUnit:
 
 
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
-    from rc_metastudio import analysis_dataset, diagnostic_data_dialog
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
     monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
     monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])

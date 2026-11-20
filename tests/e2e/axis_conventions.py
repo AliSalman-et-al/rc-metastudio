@@ -94,7 +94,7 @@ def run(app, window, work, record, family):
     from analysis_matrix import run as matrix
     from advanced_workflows import modal, click
     from rc_metastudio import r_bridge
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     baseline = bool(os.environ.get('RCMS_AXIS_BASELINE'))
     cases = [('analysis-data-onearm-proportion', metric) for metric in ('PLO','PAS','PFT','PLN')] if family == 'proportions' else [
         ('analysis-data-twoarm-proportion', 'OR'),
@@ -169,8 +169,8 @@ def run(app, window, work, record, family):
                 record('axis-persisted-export', view, measure=measure, style=style, choice=other,
                        ticks=observed, plots={artifact.title:str(path)}, exports={'svg':str(exported)})
                 if adjustable:
-                    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-                    from rc_metastudio.results_window import ResultsWindow
+                    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+                    from rc_metastudio.results.window import ResultsWindow
                     view.report_action.setChecked(True)
                     app.processEvents()
                     view.change_settings_action.trigger()
@@ -180,7 +180,7 @@ def run(app, window, work, record, family):
                     record('axis-analysis-rerun-settings', setup, measure=measure, style=style, choice=other)
                     click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
                     rerun = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view)
-                    repeated = next(candidate for candidate in rerun._nav_plot_artifacts.values() if candidate.title == artifact.title)
+                    repeated = next(entry.artifact for entry in rerun._plots.values() if entry.artifact.title == artifact.title)
                     assert check_axis(repeated.display_path(), other, ratio)
                     record('axis-analysis-rerun', rerun, measure=measure, style=style, choice=other,
                            plots={repeated.title:repeated.display_path()})
@@ -195,7 +195,8 @@ def run(app, window, work, record, family):
 def run_sequential(app, window, work, record):
     """PFT inverses use the actual subset behind each cumulative/omission fit."""
     from analysis_matrix import run as matrix
-    from rc_metastudio import analysis_dataset, r_bridge
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio import r_bridge
     for workflow in ('cumulative', 'leave-one-out', 'subgroup'):
         def groups(window):
             if workflow == 'subgroup':
@@ -208,7 +209,7 @@ def run_sequential(app, window, work, record):
         view = matrix(app, window, 'analysis-data-onearm-proportion', record, keep_results=True,
                       metric_override='PFT', workflow_override=workflow, prepare=groups,
                       parameters={'fp_style':'default'})
-        artifact = next(artifact for artifact in view._nav_plot_artifacts.values() if artifact.capability.regenerator == 'forest')
+        artifact = next(entry.artifact for entry in view._plots.values() if entry.artifact.capability.regenerator == 'forest')
         load_saved_analysis(artifact.params_path, include_plot_data=True)
         reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
             counts <- metafor::escalc(measure="PFT", xi=4:9, ni=20:25)

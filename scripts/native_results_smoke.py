@@ -476,7 +476,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
     from PyQt6 import QtCore, QtWidgets
     from unittest.mock import patch
     from rc_metastudio import r_bridge
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     base = root / "forest"
     params = {"fp_outpath": str(svg), "fp_col1_str": "Study"}
     Path(str(base) + ".params").write_text(json.dumps(params), encoding="utf-8")
@@ -524,7 +524,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
         persisted = json.loads(Path(str(base) + ".params").read_text(encoding="utf-8"))
         if observed != [True] or persisted.get("plot_caption") != "Native fixture edited caption" or before == _sha256(svg):
             raise RuntimeError("native Results edit action did not commit parameters and image")
-        from rc_metastudio.plot_export_dialog import PlotExportDialog
+        from rc_metastudio.results.plot_export import PlotExportDialog
         def accept_export():
             dialog = next(widget for widget in app.topLevelWidgets() if isinstance(widget, PlotExportDialog))
             dialog.format_control.setCurrentIndex(dialog.format_control.findData('svg'))
@@ -550,9 +550,10 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
     from rc_metastudio import r_bridge
     for name, implementation in vars(backend_fake).items():
         setattr(r_bridge, name, implementation)
-    from rc_metastudio import app_error_handler, results_window
+    from rc_metastudio import app_error_handler
+    from rc_metastudio.results import window as results_window
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
-    from rc_metastudio.analysis_results import parse_analysis_result
+    from rc_metastudio.results.contract import parse_analysis_result
 
     evidence_root.mkdir(parents=True, exist_ok=True)
     slug = _scale_slug(scale)

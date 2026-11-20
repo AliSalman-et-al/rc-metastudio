@@ -6,7 +6,8 @@ from typing import cast
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import adaptive_window, calculator_service
+from rc_metastudio import adaptive_window
+from rc_metastudio.calculators import service as calculator_service
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -97,7 +98,7 @@ class FakeDiagnosticModel:
 def _open_data_dialog(
     monkeypatch, raw_data=None, effects=None, imputed=None, available=AVAILABLE
 ):
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     app = required(
         QtWidgets.QApplication.instance() or QtWidgets.QApplication([]), "application"
@@ -139,7 +140,7 @@ def _open_data_dialog(
 
 
 def _open_metrics_dialog(monkeypatch, model):
-    from rc_metastudio import diagnostic_metrics_dialog
+    from rc_metastudio.analysis import diagnostic_metrics_dialog
 
     app = required(
         QtWidgets.QApplication.instance() or QtWidgets.QApplication([]), "application"
@@ -213,7 +214,7 @@ def test_diagnostic_data_keyboard_and_accessibility_contract(monkeypatch):
 def test_count_entry_preserves_diagnostic_behavior_without_root_growth(
     monkeypatch, size
 ):
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     available = QtCore.QRect(20, 30, *size)
     app, dialog = _open_data_dialog(monkeypatch, available=available)
@@ -369,7 +370,7 @@ def test_large_font_count_overflow_and_focus_stay_inside_content(monkeypatch):
 
 
 def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     app = cast(
         QtWidgets.QApplication,
@@ -438,7 +439,7 @@ def test_invalid_count_guidance_wraps_and_remains_reachable(monkeypatch):
 def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     monkeypatch, field_name, invalid_value, guidance, restored
 ):
-    from rc_metastudio import diagnostic_data_dialog
+    from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     app = cast(
         QtWidgets.QApplication,
@@ -458,7 +459,7 @@ def test_direct_effect_validation_is_complete_and_reachable_with_large_font(
     )
     warnings = []
     monkeypatch.setattr(
-        diagnostic_data_dialog.calculator_controls.QMessageBox,
+        diagnostic_data_dialog.QMessageBox,
         "warning",
         lambda _parent, _title, message: warnings.append(message),
     )

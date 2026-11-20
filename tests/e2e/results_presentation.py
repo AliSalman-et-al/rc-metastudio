@@ -34,7 +34,7 @@ def check_values_export(view, work, record, label):
         record('results-values-export', view, analysis=label, table=table.title, path=str(path), values=rows)
     # Renaming presentation labels must not affect primary-row routing.
     from dataclasses import replace
-    from rc_metastudio.manuscript_report import ManuscriptReport
+    from rc_metastudio.results.report import ManuscriptReport
     renamed = replace(view.results, sections=tuple(replace(s, tables=tuple(
         replace(t, headers=tuple('Renamed estimate' if h == 'Estimate' else 'Renamed interval '+str(i)
                                 if h.startswith(('Lower bound', 'Upper bound')) else h for i, h in enumerate(t.headers)))

@@ -1,6 +1,6 @@
 [project]
 name = "rc-metastudio"
-version = "0.6.0"
+version = "0.6.1"
 description = "RC MetaStudio is open-source software for advanced meta-analysis."
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
@@ -97,7 +97,7 @@ min_confidence = 60
 sort_by_size = true
 
 [tool.ruff.lint.per-file-ignores]
-"src/rc_metastudio/analysis_dataset.py" = ["E402"]
+"src/rc_metastudio/project/model.py" = ["E402"]
 "src/rc_metastudio/launch.py" = ["E402"]
 "src/rc_metastudio/r_bridge.py" = ["E402"]
 "tests/**/*.py" = ["E402"]

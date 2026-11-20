@@ -7,7 +7,6 @@
 \alias{binary.fixed.inv.var.parameters}
 \alias{binary.fixed.inv.var.pretty.names}
 \alias{binary.fixed.inv.var.value.info}
-\alias{binary.fixed.meta.regression}
 \alias{binary.fixed.mh}
 \alias{binary.fixed.mh.is.feasible}
 \alias{binary.fixed.mh.overall}
@@ -21,7 +20,6 @@
 \alias{binary.fixed.peto.pretty.names}
 \alias{binary.fixed.peto.value.info}
 \alias{binary.random}
-\alias{binary.random.meta.regression.parameters}
 \alias{binary.random.overall}
 \alias{binary.random.parameters}
 \alias{binary.random.pretty.names}
@@ -31,8 +29,6 @@
 \alias{compute.for.one.bin.study}
 \alias{arcsine.sqrt}
 \alias{invarcsine.sqrt}
-\alias{freeman_tukey}
-\alias{invfreeman_tukey}
 \alias{logit}
 \alias{invlogit}
 \title{Binary outcome analysis functions}
@@ -49,7 +45,6 @@ proportions.
 \item{\code{binary.fixed.mh()}}{Runs a fixed-effect Mantel-Haenszel binary meta-analysis.}
 \item{\code{binary.fixed.peto()}}{Runs a fixed-effect Peto odds-ratio meta-analysis.}
 \item{\code{binary.random()}}{Runs a random-effects binary meta-analysis.}
-\item{\code{binary.fixed.meta.regression()}}{Runs fixed-effect binary meta-regression through the shared regression pipeline.}
 }
 }
 
@@ -70,7 +65,7 @@ method contract consumed by the rc-metastudio UI and Python adapter.
 
 \code{binary.transform.f()} returns the transformation function used for a
 binary metric. \code{arcsine.sqrt()}, \code{invarcsine.sqrt()},
-\code{freeman_tukey()}, \code{invfreeman_tukey()}, \code{logit()}, and
+\code{logit()} and
 \code{invlogit()} are shared transformation utilities.
 }
 

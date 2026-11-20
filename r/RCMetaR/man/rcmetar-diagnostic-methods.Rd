@@ -2,7 +2,6 @@
 % Please edit documentation in R/rcmetar-reference.R
 \name{RCMetaR-diagnostic-methods}
 \alias{RCMetaR-diagnostic-methods}
-\alias{adjust.raw.data}
 \alias{compute.diag.point.estimates}
 \alias{compute.diagnostic.terms}
 \alias{diagnostic.fixed.inv.var}
@@ -50,7 +49,7 @@ models, SROC plotting, and predictive-value calculations.
 
 \section{Study-level calculations}{
 
-\code{adjust.raw.data()}, \code{compute.diag.point.estimates()},
+\code{compute.diag.point.estimates()},
 \code{compute.diagnostic.terms()},
 and \code{diagnostic.transform.f()} normalize count data and derive
 diagnostic metrics.

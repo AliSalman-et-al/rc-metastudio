@@ -1,5 +1,0 @@
-Command: uv run python artifacts/verification/tsa-phase5/contact_sheets.py
-Verified 36 native captures and 54 print layouts with no text collisions or clipping.
-Every print layout passed the PDF font, SVG outline, and 300 dpi LZW TIFF checks.
-The 600 dpi LZW TIFF passed. The 18 SVG pairs match across native scales.
-Exit: 0

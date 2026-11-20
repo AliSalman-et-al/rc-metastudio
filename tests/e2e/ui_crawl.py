@@ -6,7 +6,7 @@ from scripts.verification_evidence import desktop_tool_executable
 
 
 def analysis_setup(driver, capture, missing):
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     for family, sample in (("binary", "amino"), ("continuous", "continuous"),
                            ("diagnostic", "lymph"), ("hr", "Pignon2000-HR"),
                            ("irr", "NielWeise2008-IRR")):
@@ -48,7 +48,7 @@ def analysis_setup(driver, capture, missing):
         for form in forms:
             capture(f"E-{detail}", form)
             form.close()
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
     driver.window.action_go.trigger()
@@ -60,7 +60,7 @@ def analysis_setup(driver, capture, missing):
     form.close()
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     form = SmallStudyEffectsDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
     form.show()
@@ -127,7 +127,7 @@ def exports(driver, capture, missing, view):
     from pathlib import Path
     from unittest.mock import patch
     from PyQt6 import QtGui
-    from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+    from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
     report = ManuscriptReport.from_result(view.results)
     pdf = driver.WORK / "manuscript.pdf"
     docx = driver.WORK / "manuscript.docx"
@@ -201,7 +201,7 @@ def plots(driver, capture, missing):
                 import sys
                 sys.path.insert(0, str(driver.ROOT / ".agents/skills/verify-rcms/scripts"))
                 from advanced_workflows import modal
-                from rc_metastudio.plot_editor_dialog import EditPlotDialog
+                from rc_metastudio.results.plot_editor import EditPlotDialog
                 for style in ("RevMan", "BMJ"):
                     def edit(dialog):
                         dialog.style_cbo.setCurrentText(style)
@@ -262,7 +262,7 @@ def plots(driver, capture, missing):
             if detail == "contour":
                 from tests.e2e.header_geometry import check_contour_colours
                 check_contour_colours(svg)
-            heading = view._layout_items[view._layout_items.index(view._nav_items_to_sections[id(item)]) - 1]
+            heading = view._layout_items[view._layout_items.index(view._plots[section.semantic_id].scene_item) - 1]
             assert abs(heading.scale() * view.graphics_view.transform().m22() - 1) < .001
             assert heading.font().pointSizeF() == view.font().pointSizeF()
             capture(f"G-{detail}-fit", view)
@@ -288,8 +288,8 @@ def plots(driver, capture, missing):
 
 
 def plot_editor(driver, capture, artifact, view, detail, prefix="H"):
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
-    from rc_metastudio.funnel_plot_editor_dialog import FunnelPlotEditorDialog
+    from rc_metastudio.results.plot_editor import EditPlotDialog
+    from rc_metastudio.results.funnel_editor import FunnelPlotEditorDialog
     kind = FunnelPlotEditorDialog if artifact.capability.regenerator == "funnel" else EditPlotDialog
     form = kind(view.plot_service.load_params(artifact.params_path), artifact.image_path,
                           parent=view, plot_type=artifact.plot_kind)
@@ -374,8 +374,8 @@ def imports(driver, capture, missing):
     assert not page.isComplete()
     capture("C-xlsx-error", form)
     form.close()
-    from rc_metastudio.rm5_import import read_rm5
-    from rc_metastudio.rm5_review_dialog import review_rm5
+    from rc_metastudio.importing.revman import read_rm5
+    from rc_metastudio.importing.revman_review import review_rm5
     for name in ("Fleiss1993", "generic-derived"):
         failures = []
         def review():
@@ -470,10 +470,10 @@ def dialogs(driver, capture, missing):
 
 
 def calculators(driver, capture, missing, prefix="D", families=None):
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
-    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
-    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
+    from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
     for family, sample, kind in (
         ("binary", "amino", BinaryDataDialog),
         ("continuous", "continuous", ContinuousDataDialog),
@@ -542,7 +542,7 @@ def calculators(driver, capture, missing, prefix="D", families=None):
 def dark(driver, capture, missing):
     from PyQt6 import QtGui
     from rc_metastudio import main_wizard as wizard
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     original = driver.app.palette()
     palette = QtGui.QPalette(original)
     for role in (QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.WindowText):

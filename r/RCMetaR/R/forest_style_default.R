@@ -12,7 +12,7 @@ rcmetar.binary.default.ilab <- function(binary.data, params) {
         return(rcmetar.empty.default.ilab(length(binary.data@study.names)))
     }
     if (as.character(params$measure) %in% binary.one.arm.metrics) {
-        group <- rcmetar.revman.arm.labels(params)[[1]]
+        group <- rcmetar.forest.arm.labels(params)[[1]]
         if (!rcmetar.param.is.true(params, "fp_show_col3", TRUE)) {
             return(rcmetar.empty.default.ilab(length(binary.data@study.names)))
         }
@@ -249,10 +249,10 @@ rcmetar.default.subgroup.difference.label <- function(test, params=NULL) {
     digits <- display.digits(params)
     if (!is.null(test$test) && test$test %in% c("t", "knha", "adhoc")) {
         return(paste0("Test for subgroup differences: F = ", round.display(test$QM, digits),
-            ", df = ", test$df, ", ", test$df2, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")"))
+            ", df = ", test$df, ", ", test$df2, " (", rcmetar.forest.p.value.label(test$QMp, digits), ")"))
     }
     paste0("Test for subgroup differences: Q = ", round.display(test$QM, digits),
-           ", df = ", test$df, " (", rcmetar.revman.p.value.label(test$QMp, digits), ")")
+           ", df = ", test$df, " (", rcmetar.forest.p.value.label(test$QMp, digits), ")")
 }
 
 rcmetar.draw.default.heterogeneity <- function(bundle, x, cex) {
@@ -292,7 +292,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     layout <- plan$layout
     manual.sequential.labels <- plan$rows$manual_sequential_labels
     plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
-    directions <- rcmetar.revman.direction.labels(bundle)
+    directions <- rcmetar.forest.direction.labels(bundle)
     if (any(nzchar(c(directions$left, directions$right)))) {
         lines <- size$direction_lines
         plot.margin[[1]] <- max(6, 4.5 + lines * 1.6)
@@ -319,7 +319,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
         rcmetar.draw.forest.refline(plan)
     }
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
-    graphics::axis(1, at=ticks, labels=rcmetar.revman.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
+    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
     rcmetar.draw.default.annotations(bundle, plan)
 
     if (identical(bundle$forest_variant, "subgroup")) {

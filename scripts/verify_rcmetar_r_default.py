@@ -99,29 +99,6 @@ def installed_version_report(
         ) from exc
 
 
-def resolve_r_exe(root: Path, rscript: Path, env: dict[str, str]) -> Path:
-    try:
-        return r_support.resolve_r_exe(rscript, root, env)
-    except r_support.RVerificationSupportError as exc:
-        raise DefaultREvidenceError(str(exc)) from exc
-
-
-def dependency_cache_key(
-    root: Path, rscript: Path, env: dict[str, str], cran_repo: str
-) -> str:
-    try:
-        return r_support.dependency_cache_key(
-            root,
-            rscript,
-            env,
-            cran_repo,
-            DEFAULT_R_VERIFIER,
-            "default-rdeps",
-        )
-    except r_support.RVerificationSupportError as exc:
-        raise DefaultREvidenceError(str(exc)) from exc
-
-
 def direct_archive_versions(root: Path) -> dict[str, str]:
     manifest = json.loads(
         (root / "config/r-dependencies.json").read_text(encoding="utf-8")
@@ -134,21 +111,11 @@ def direct_archive_versions(root: Path) -> dict[str, str]:
     }
 
 
-def binary_dependency_policy(root: Path) -> dict:
-    try:
-        return r_support.load_binary_dependency_policy(root)
-    except r_support.RVerificationSupportError as exc:
-        raise DefaultREvidenceError(str(exc)) from exc
-
-
 def install_direct_dependencies(
     root: Path, rscript: Path, library: Path, cran_repo: str, env: dict[str, str]
 ) -> None:
-    policy = binary_dependency_policy(root)
-    if cran_repo != policy["repository"]:
-        raise DefaultREvidenceError(
-            f"R dependency repository must match the manifest snapshot: {policy['repository']}"
-        )
+    install_env = dict(env)
+    r_support.configure_binary_repository(root, install_env, sys.executable, cran_repo)
     r_code = """
 args <- commandArgs(trailingOnly = TRUE)
 repo_root <- normalizePath(args[[1]], winslash = "/", mustWork = TRUE)
@@ -162,9 +129,6 @@ install_rcms_binary_packages(policy, lib)
     with tempfile.TemporaryDirectory(prefix="RCMetaR-default-r-install-") as temp_name:
         install_script = Path(temp_name) / "install-default-r-deps.R"
         install_script.write_text(r_code, encoding="utf-8")
-        install_env = dict(env)
-        install_env["RCMS_POLICY_PYTHON"] = sys.executable
-        install_env["RCMS_CRAN_REPO"] = policy["repository"]
         run_streamed(
             [
                 rscript,
@@ -181,7 +145,7 @@ def install_and_load_RCMetaR(root: Path, rscript: Path, env: dict[str, str]) -> 
     with tempfile.TemporaryDirectory(prefix="RCMetaR-default-r-") as temp_name:
         library = Path(temp_name) / "library"
         library.mkdir()
-        r_exe = resolve_r_exe(root, rscript, env)
+        r_exe = r_support.resolve_r_exe(rscript, root, env)
         install_env = dict(env)
         existing_libs = install_env.get("R_LIBS")
         install_env["R_LIBS"] = (
@@ -221,21 +185,28 @@ def install_and_load_RCMetaR(root: Path, rscript: Path, env: dict[str, str]) -> 
         require_success(smoke, "local RCMetaR load smoke")
 
 
+def dependency_gaps(actual: dict[str, str | None], expected: dict[str, str]) -> list[str]:
+    missing = sorted(name for name, version in actual.items() if version is None)
+    wrong_versions = {
+        name: {"expected": version, "actual": actual.get(name)}
+        for name, version in expected.items()
+        if actual.get(name) != version
+    }
+    gaps = []
+    if missing:
+        gaps.append("missing direct R packages: " + ", ".join(missing))
+    if wrong_versions:
+        gaps.append("wrong direct R package versions: " + json.dumps(wrong_versions, sort_keys=True))
+    return gaps
+
+
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
     base_env = r_support.verification_base_env(dict(os.environ))
-    policy = binary_dependency_policy(root)
-    configured_repo = args.cran_repo or base_env.get("RCMS_CRAN_REPO")
-    if configured_repo and configured_repo != policy["repository"]:
-        raise DefaultREvidenceError(
-            f"R dependency repository must match the manifest snapshot: {policy['repository']}"
-        )
-    cran_repo = policy["repository"]
-    base_env["RCMS_CRAN_REPO"] = cran_repo
-    base_env["RCMS_POLICY_PYTHON"] = python
+    cran_repo = r_support.configure_binary_repository(root, base_env, python, args.cran_repo)
 
     manifest_result = run(
         [python, R_MANIFEST_VALIDATOR, "--root", root], cwd=root, env=base_env
@@ -253,7 +224,9 @@ def verify(args: argparse.Namespace) -> None:
     if args.r_library_cache_root:
         cache_library = (
             args.r_library_cache_root.resolve()
-            / dependency_cache_key(root, rscript, base_env, cran_repo)
+            / r_support.dependency_cache_key(
+                root, rscript, base_env, cran_repo, DEFAULT_R_VERIFIER, "default-rdeps"
+            )
             / "library"
         )
         cache_library.mkdir(parents=True, exist_ok=True)
@@ -267,27 +240,9 @@ def verify(args: argparse.Namespace) -> None:
         )
 
     report = installed_version_report(root, python, rscript, base_env)
-    missing = sorted(
-        name for name, version in report["packages"].items() if version is None
-    )
-    wrong_versions = {
-        name: {"expected": expected, "actual": report["packages"].get(name)}
-        for name, expected in direct_archive_versions(root).items()
-        if report["packages"].get(name) != expected
-    }
-    if missing or wrong_versions:
-        message_parts = []
-        if missing:
-            message_parts.append("missing direct R packages: " + ", ".join(missing))
-        if wrong_versions:
-            message_parts.append(
-                "wrong direct R package versions: "
-                + json.dumps(wrong_versions, sort_keys=True)
-            )
-        message = (
-            "; ".join(message_parts)
-            + "; Default R Evidence limited to manifest validation"
-        )
+    gaps = dependency_gaps(report["packages"], direct_archive_versions(root))
+    if gaps:
+        message = "; ".join([*gaps, "Default R Evidence limited to manifest validation"])
         if args.require_installed_packages:
             raise DefaultREvidenceError(message)
         step(message)
@@ -310,7 +265,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         verify(args)
-    except DefaultREvidenceError as exc:
+    except (DefaultREvidenceError, r_support.RVerificationSupportError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0

@@ -16,8 +16,8 @@ def run(app, window, work, record):
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     from tests.e2e.analysis_result_checks import check_report
     from rc_metastudio import main_wizard
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 
     cases = [
         ("twoarm-proportion", ("", ""), ("Intervention", "Control")),

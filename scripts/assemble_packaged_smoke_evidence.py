@@ -18,7 +18,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from rc_metastudio.result_text_identity import normalize_packaged_summary_identity
+from rc_metastudio.results.text_identity import normalize_packaged_summary_identity
 
 if __name__ == "__main__":
     import packaged_smoke_contract as smoke_contract
@@ -371,8 +371,6 @@ def main() -> int:
     parser.add_argument("--sample-path", type=Path)
     parser.add_argument("--log-path", type=Path)
     args = parser.parse_args()
-    # The packaged application changes its working directory during startup.
-    # Resolve inputs and outputs before passing them to child processes.
     for name in (
         "workflow_observation", "surface_records", "sample_observations", "output",
         "executable", "runtime_probe", "surface_directory", "sample_root", "sample_path",

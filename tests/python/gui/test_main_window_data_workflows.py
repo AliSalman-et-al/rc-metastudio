@@ -362,7 +362,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
 def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
     monkeypatch,
 ):
-    from rc_metastudio import analysis_catalog
+    from rc_metastudio.analysis import catalog as analysis_catalog
 
     app, window = automation.start_automation()
     try:
@@ -604,7 +604,7 @@ def _create_diagnostic_dataset(window):
 
 def test_table_context_menu_requires_a_real_row_and_confirms_deletion(monkeypatch):
     from PyQt6 import QtCore, QtGui, QtWidgets
-    from rc_metastudio import dataset_table_view
+    from rc_metastudio.workspace import table_view as dataset_table_view
 
     app, window = automation.start_automation()
     try:

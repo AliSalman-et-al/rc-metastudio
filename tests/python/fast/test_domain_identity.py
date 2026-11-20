@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-from rc_metastudio import analysis_dataset, analysis_catalog
+from rc_metastudio.project import model as analysis_dataset
+from rc_metastudio.analysis import catalog as analysis_catalog
 from rc_metastudio.domain_ids import SheetId
-from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.project.study import AnalysisUnit
 
 
 def _unit():

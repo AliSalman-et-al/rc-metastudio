@@ -23,7 +23,7 @@ from uuid import uuid4
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from scripts.r_verification_support import resolve_rscript  # noqa: E402
+from scripts.r_verification_support import locked_rpy2_versions, resolve_rscript  # noqa: E402
 from tests.analysis_regression.golden.support import golden_analysis  # noqa: E402
 from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
     compare_golden_baseline,
@@ -44,11 +44,6 @@ MAX_NUMERIC_CONTRACT_BYTES = 256 * 1024
 NUMERIC_CONTRACT_RELATIVE_PATH = (
     "tests/analysis_regression/baseline/numeric-contract.json"
 )
-REQUIRED_RPY2_IDENTITIES = {
-    "rpy2": "3.6.9",
-    "rpy2-rinterface": "3.6.7",
-    "rpy2-robjects": "3.6.6",
-}
 FROZEN_RPY2_IDENTITIES = {
     "rpy2": "3.6.7",
     "rpy2-rinterface": "3.6.6",
@@ -856,14 +851,11 @@ def _reference_with_numeric_contract(
 def _validate_rpy2_identities(root: Path) -> dict[str, str]:
     outer = _load_manifest(root / OUTER_MANIFEST_RELATIVE_PATH)
     committed = outer.get("runtime_identities", {})
-    expected = {
-        distribution: committed.get(distribution)
-        for distribution in REQUIRED_RPY2_IDENTITIES
-    }
+    expected = {distribution: committed.get(distribution) for distribution in FROZEN_RPY2_IDENTITIES}
     if expected != FROZEN_RPY2_IDENTITIES:
         raise ValueError("committed oracle rpy2 capture identities are missing or unexpected")
     actual = {}
-    for distribution, required in REQUIRED_RPY2_IDENTITIES.items():
+    for distribution, required in locked_rpy2_versions().items():
         try:
             observed = metadata.version(distribution)
         except metadata.PackageNotFoundError as exc:

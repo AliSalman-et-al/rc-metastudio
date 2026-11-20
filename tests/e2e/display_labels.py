@@ -31,7 +31,7 @@ def plot_label_inventory(paths, user_names=()):
 
 
 def file_column_controls(widget):
-    from rc_metastudio.csv_import import read_rows
+    from rc_metastudio.importing.tabular import read_rows
     from rc_metastudio.main_wizard import CsvImportPage
 
     pages = [widget] if isinstance(widget, CsvImportPage) else widget.findChildren(CsvImportPage)
@@ -84,10 +84,10 @@ def run(app, window, record):
     from analysis_matrix import DATA_TYPES, run as matrix
     from advanced_workflows import modal
     from tests.e2e.analysis_presentation_workflows import analyze_existing
-    from rc_metastudio.binary_data_dialog import BinaryDataDialog
-    from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
-    from rc_metastudio.diagnostic_data_dialog import DiagnosticDataDialog
-    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
+    from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
+    from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
+    from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
 
     root = Path(__file__).resolve().parents[2]
     inventory = []

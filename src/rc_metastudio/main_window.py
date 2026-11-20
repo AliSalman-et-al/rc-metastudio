@@ -27,27 +27,28 @@ from PyQt6.QtWidgets import (
 import copy
 
 if TYPE_CHECKING:
-    from rc_metastudio.manuscript_report import ManuscriptReport
+    from rc_metastudio.results.report import ManuscriptReport
     import ui_main_window as _ui_main_window
 else:
     from rc_metastudio import ui_main_window as _ui_main_window
-from rc_metastudio import dataset_table_view
-from rc_metastudio import dataset_table_model
-from rc_metastudio import analysis_catalog
+from rc_metastudio.workspace import table_view as dataset_table_view
+from rc_metastudio.workspace import table_model as dataset_table_model
+from rc_metastudio.analysis import catalog as analysis_catalog
 
-from rc_metastudio import analysis_dataset
-from rc_metastudio import analysis_adapter
-from rc_metastudio import analysis_identity
+from rc_metastudio.project import model as analysis_dataset
+from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio.analysis import identity as analysis_identity
 from rc_metastudio import app_error_handler
+from rc_metastudio.app_error_handler import connect_action
 from rc_metastudio import r_runtime
-from rc_metastudio import progress_dialog
+from rc_metastudio.analysis import progress_dialog
 from rc_metastudio import qt_layout
 from rc_metastudio import adaptive_window
 from rc_metastudio import name_validation
-from rc_metastudio import project_adapter
-from rc_metastudio import project_format
-from rc_metastudio import csv_import
-from rc_metastudio import row_padding
+from rc_metastudio.project import adapter as project_adapter
+from rc_metastudio.project import archive as project_format
+from rc_metastudio.importing import tabular as csv_import
+from rc_metastudio.workspace import editing as workspace_editing
 from rc_metastudio.settings import (
     add_file_to_recent_files,
     get_default_open_directory,
@@ -63,12 +64,16 @@ from rc_metastudio.settings import (
 from rc_metastudio.qt_object_guard import required
 
 from rc_metastudio import add_new_dialogs
-from rc_metastudio import results_window, analysis_setup_dialog
-from rc_metastudio import small_study_effects_dialog
-from rc_metastudio import small_study_effects
-from rc_metastudio import trial_sequential_analysis, trial_sequential_analysis_dialog
-from rc_metastudio import diagnostic_metrics_dialog
-from rc_metastudio import subgroup_analysis_dialog
+from rc_metastudio.results import window as results_window
+from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+from rc_metastudio.analysis import small_study_effects_dialog
+from rc_metastudio.analysis import small_study_effects
+from rc_metastudio.analysis import (
+    trial_sequential as trial_sequential_analysis,
+    trial_sequential_dialog as trial_sequential_analysis_dialog,
+)
+from rc_metastudio.analysis import diagnostic_metrics_dialog
+from rc_metastudio.analysis import subgroup_dialog as subgroup_analysis_dialog
 from rc_metastudio import edit_name_dialogs
 from rc_metastudio import covariate_type_dialog
 from rc_metastudio import confidence_level_dialog
@@ -76,8 +81,8 @@ from rc_metastudio import start_page
 from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
-from rc_metastudio.analysis_results import AnalysisResult
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.results.contract import AnalysisResult
+from rc_metastudio.workspace.session import WorkspaceSession
 
 
 DEFAULT_DATASET_NAME = "untitled_dataset"
@@ -113,9 +118,9 @@ def _resolve_open_file_path(file_path):
 def _format_open_project_error(file_path, exception):
     if isinstance(exception, project_format.ProjectFormatError):
         reason = str(exception)
-        if reason.startswith('unsupported project format version'):
+        if isinstance(exception, project_format.UnsupportedProjectVersionError):
             message = 'This project’s file format is not supported. Update RC MetaStudio, then try again.'
-        elif reason.startswith('cannot read project'):
+        elif isinstance(exception, project_format.ProjectAccessError):
             message = 'RC MetaStudio could not read this file. Check that it exists and that you can open it.'
         else:
             message = 'This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.'
@@ -129,13 +134,6 @@ def _format_open_project_error(file_path, exception):
 
 
 
-
-
-def _connect_action(action, callback):
-    parent = getattr(callback, "__self__", None)
-    action.triggered[bool].connect(
-        app_error_handler.safe_slot(lambda checked=False: callback(), parent=parent)
-    )
 
 
 def _pooled_analysis_availability(
@@ -387,7 +385,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.tableView.setItemDelegate(dataset_table_view.StudyDelegate(self.tableView))
 
         self._model_signal_connections = []
-        self._setup_connections()
+        self._connect_model_signals()
+        self._connect_actions()
         self._configure_standard_shortcuts()
         self.tableView.setSelectionMode(QTableView.SelectionMode.ContiguousSelection)
         self.model.reset_model()
@@ -586,7 +585,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action_item.setData(str(dataset))
             action_item.setToolTip(str(dataset))
             self.action_open_recent_2.addAction(action_item)
-            _connect_action(
+            connect_action(
                 action_item, lambda dataset=dataset: self.dataset_selected(dataset)
             )
 
@@ -640,9 +639,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         finally:
             wizard.deleteLater()
 
-    def _setup_connections(self, menu_actions=True):
-        """Signals & slots"""
-        model = self.tableView.model()
+    def _connect_model_signals(self):
+        model = self.model
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
                 model.workspaceEditCommitted,
@@ -657,34 +655,31 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
         )
 
-        if menu_actions:
-            _connect_action(self.action_save, self.save)
-            _connect_action(self.action_save_as, self.save_as)
-            _connect_action(self.action_open, self.open)
-            _connect_action(self.action_new_dataset, self.create_new_dataset)
-            _connect_action(self.action_quit, self.quit)
-            _connect_action(self.action_go, self._launch_analysis)
-            _connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
-            _connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
-            _connect_action(self.action_trial_sequential_analysis, self._trial_sequential_analysis)
+    def _connect_actions(self):
+        connect_action(self.action_save, self.save)
+        connect_action(self.action_save_as, self.save_as)
+        connect_action(self.action_open, self.open)
+        connect_action(self.action_new_dataset, self.create_new_dataset)
+        connect_action(self.action_quit, self.quit)
+        connect_action(self.action_go, self._launch_analysis)
+        connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
+        connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
+        connect_action(self.action_trial_sequential_analysis, self._trial_sequential_analysis)
 
-            _connect_action(self.action_undo, self.undo)
-            _connect_action(self.action_redo, self.redo)
-            _connect_action(self.action_copy, self.tableView.copy)
-            _connect_action(self.action_paste, self.tableView.paste)
-            _connect_action(
-                self.action_auto_fit_columns, self.tableView.auto_fit_columns
-            )
+        connect_action(self.action_undo, self.undo)
+        connect_action(self.action_redo, self.redo)
+        connect_action(self.action_copy, self.tableView.copy)
+        connect_action(self.action_paste, self.tableView.paste)
+        connect_action(self.action_auto_fit_columns, self.tableView.auto_fit_columns)
+        connect_action(self.action_add_covariate, self.add_covariate)
 
-            _connect_action(self.action_add_covariate, self.add_covariate)
+        connect_action(self.action_meta_regression, lambda: self._launch_analysis("meta-regression"))
+        connect_action(self.action_publication_bias, self.small_study_effects)
+        connect_action(self.action_subgroup_ma, self._choose_subgroup_covariate)
 
-            _connect_action(self.action_meta_regression, lambda: self._launch_analysis("meta-regression"))
-            _connect_action(self.action_publication_bias, self.small_study_effects)
-            _connect_action(self.action_subgroup_ma, self._choose_subgroup_covariate)
-
-            _connect_action(self.action_about_legal, self.show_about_legal)
-            _connect_action(self.action_change_confidence_level, self._change_global_ci)
-            _connect_action(self.action_import_csv, self._import_data)
+        connect_action(self.action_about_legal, self.show_about_legal)
+        connect_action(self.action_change_confidence_level, self._change_global_ci)
+        connect_action(self.action_import_csv, self._import_data)
 
     def _update_confidence_level_label(self):
         confidence_level = self.model.get_confidence_level()
@@ -749,10 +744,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             nonlocal saved
             changed = options != saved
             saved = options
-            if (changed and any(candidate is sheet for candidate in self.model.dataset.sheets)
-                    and options != trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))):
-                sheet.settings[settings] = options.to_mapping()
-                self.data_dirtied()
+            if not changed:
+                return
+
+            def update(live_sheet: analysis_dataset.Sheet) -> None:
+                if options != trial_sequential_analysis.TsaOptions.from_mapping(live_sheet.settings.get(settings, {})):
+                    live_sheet.settings[settings] = options.to_mapping()
+
+            if self.workspace.edit_sheet(sheet, update):
+                self._update_project_identity()
 
         def show_result(result: AnalysisResult, manuscript: ManuscriptReport) -> None:
             nonlocal view
@@ -783,7 +783,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.workspace.begin_change()
         try:
             operation()
-            self.data_dirtied()
+            self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
             self.workspace.end_change()
         except BaseException as error:
             runtime = self.workspace.abort_change()
@@ -791,9 +791,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 raise
             try:
                 self._install_workspace_runtime(runtime)
+                self._update_project_identity()
             except Exception as restore_error:
                 error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
             raise
+        self._update_project_identity()
         self.refresh_analysis_actions()
 
     def show_about_legal(self):
@@ -847,28 +849,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         QMessageBox.critical(self, "Could not prepare analysis", message)
 
     def undo(self):
-        if self.workspace.undo():
-            runtime = self.workspace.runtime
-            if runtime is not None:
-                self._install_workspace_runtime(runtime)
+        if self.workspace.undo(install=self._install_workspace_runtime):
+            self._update_project_identity()
 
     def redo(self):
-        if self.workspace.redo():
-            runtime = self.workspace.runtime
-            if runtime is not None:
-                self._install_workspace_runtime(runtime)
-
-    def _install_workspace_runtime(self, runtime):
-        current = self.tableView.currentIndex()
-        position = (current.row(), current.column()) if current.isValid() else None
-        self._set_model_adapter(
-            runtime.dataset,
-            runtime.current_sheet_id,
-            recalculate_effect_previews=False,
-        )
-        self._update_project_identity()
-        if position is not None:
-            self.tableView.setCurrentIndex(self.model.index(*position))
+        if self.workspace.redo(install=self._install_workspace_runtime):
+            self._update_project_identity()
 
     def populate_metrics_menu(self, metric_to_check=None):
         for menu in self.menuMetric.findChildren(QtWidgets.QMenu,
@@ -927,17 +913,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         saved_plots = sheet.settings.get("plot_overrides", {}).get(plot_key, {}) if sheet else {}
 
         def save_plot_override(title: str, overrides: dict[str, object]) -> None:
-            if sheet is not None and any(candidate is sheet for candidate in self.model.dataset.sheets):
-                plots = sheet.settings.setdefault("plot_overrides", {}).setdefault(plot_key, {})
-                if plots.get(title) != overrides:
-                    plots[title] = overrides
-                    self.data_dirtied()
+            def update(live_sheet: analysis_dataset.Sheet) -> None:
+                plots = live_sheet.settings.setdefault("plot_overrides", {}).setdefault(plot_key, {})
+                plots[title] = overrides
+
+            if self.workspace.edit_sheet(sheet, update):
+                self._update_project_identity()
 
         def save_favours_labels(left: str, right: str) -> None:
-            # Opening a project or restoring history replaces the live sheets.
-            if sheet is not None and any(candidate is sheet for candidate in self.model.dataset.sheets):
-                sheet.settings["favours_labels"] = [left, right]
-                self.data_dirtied()
+            def update(live_sheet: analysis_dataset.Sheet) -> None:
+                live_sheet.settings["favours_labels"] = [left, right]
+
+            if self.workspace.edit_sheet(sheet, update):
+                self._update_project_identity()
 
         try:
             form = results_window.ResultsWindow(
@@ -1028,7 +1016,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         file_path = _resolve_open_file_path(file_path)
 
         try:
-            self.workspace.open(file_path, install=self._install_open_document)
+            self.workspace.open(file_path, install=lambda runtime: self._install_workspace_runtime(
+                runtime, recalculate_effect_previews=True, keep_current_cell=False,
+            ))
         except Exception as e:
             msg = _format_open_project_error(file_path, e)
             if raise_on_error:
@@ -1040,8 +1030,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_recent_project_nonfatal(os.fspath(file_path), "opened")
         return True
 
-    def _install_open_document(self, runtime: project_adapter.RuntimeProject):
-        """Adapt a validated session document into the live Qt model."""
+    def _install_workspace_runtime(
+        self, runtime: project_adapter.RuntimeProject, *,
+        recalculate_effect_previews: bool = False, keep_current_cell: bool = True,
+    ) -> None:
         previous_model = self.model
         previous_current = self.tableView.currentIndex()
         current_cell = (
@@ -1059,18 +1051,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._set_model_adapter(
                 runtime.dataset,
                 runtime.current_sheet_id,
-                recalculate_effect_previews=True,
+                recalculate_effect_previews=recalculate_effect_previews,
             )
-        except Exception:
-            self._restore_failed_open(previous_model, current_cell, selected_cells)
+            if keep_current_cell and current_cell is not None:
+                self.tableView.setCurrentIndex(self.model.index(*current_cell))
+        except Exception as error:
+            if self.model is previous_model:
+                raise
+            try:
+                self._restore_workspace_projection(previous_model, current_cell, selected_cells)
+            except Exception as restore_error:
+                error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
             raise
 
-    def _restore_failed_open(self, model, current_cell, selected_cells):
+    def _restore_workspace_projection(self, model, current_cell, selected_cells):
         """Restore the live Qt adapter after a candidate model fails to install."""
         self._disconnect_model_signals()
         self.model = model
         self.tableView.restore_model(model)
-        self._setup_connections(menu_actions=False)
+        self._connect_model_signals()
         self._refresh_projected_sheet_controls()
         selection_model = required(
             self.tableView.selectionModel(), "workspace selection model"
@@ -1097,7 +1096,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 converted_values = {row.id: row.covariate_values for row in sheet.rows}
                 for row in self.model.current_sheet.rows:
                     row.covariate_values = converted_values[row.id]
-                self.model._sync_display_studies()
                 self.model.reset_model()
             self._commit_model_operation(apply)
 
@@ -1158,7 +1156,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._disconnect_model_signals()
         self.model = model
         self.tableView.setModel(self.model)
-        self._setup_connections(menu_actions=False)
+        self._connect_model_signals()
         self._refresh_projected_sheet_controls()
 
     def model_updated(self, *, sheet_id: SheetId | None = None) -> None:
@@ -1532,7 +1530,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     @staticmethod
     def _sheet_from_dataset_info(dataset_info: main_wizard.DatasetInfo) -> analysis_dataset.Sheet:
         import uuid
-        from rc_metastudio.analysis_dataset import Sheet, Arm
+        from rc_metastudio.project.model import Sheet, Arm
         family = required(dataset_info["data_type"], "dataset type")
         name = required(dataset_info["name"], "outcome name")
         data_type = analysis_catalog.STR_TO_TYPE_DICT[family]
@@ -1544,33 +1542,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             settings={"metric": dataset_info.get("effect")},
         )
 
-    def _make_new_dataset_and_setup_spreadsheet(self, dataset_info: main_wizard.DatasetInfo):
-        sheet = self._sheet_from_dataset_info(dataset_info)
-        self.set_model(analysis_dataset.Dataset(sheets=[sheet]))
+    def _start_unnamed_project(self, dataset: analysis_dataset.Dataset, *, imported_rows: bool = False) -> None:
+        selected = dataset.sheets[0].id if dataset.sheets else None
+        candidate = project_adapter.RuntimeProject(dataset, selected)
+        self.workspace.start_new_document(candidate, undo_previous=imported_rows,
+            install=lambda runtime: self._install_workspace_runtime(
+                runtime, recalculate_effect_previews=not imported_rows, keep_current_cell=False,
+            ),
+        )
+        self._update_project_identity()
 
     def _handle_wizard_results(self, wizard_data: main_wizard.WizardResult):
         if wizard_data["path"] == "open":
             self.open(file_path=wizard_data["selected_dataset"])
         elif wizard_data["path"] == "rm5_import":
-            self.set_model(wizard_data["rm5_dataset"])
-            self.workspace.start_new_document()
-            self._update_project_identity()
+            self._start_unnamed_project(wizard_data["rm5_dataset"])
         elif wizard_data["path"] == "new_dataset":
-            self._make_new_dataset_and_setup_spreadsheet(wizard_data["outcome_info"])
-            self.workspace.start_new_document()
-            self._update_project_identity()
+            sheet = self._sheet_from_dataset_info(wizard_data["outcome_info"])
+            self._start_unnamed_project(analysis_dataset.Dataset(sheets=[sheet]))
 
         else:
             self._install_csv_import(wizard_data["outcome_info"], wizard_data["csv_data"])
 
-    def _install_csv_import(self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportPayload):
+    def _install_csv_import(self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportResult):
         sheet = self._sheet_from_dataset_info(dataset_info)
         dataset = analysis_dataset.Dataset(sheets=[sheet])
-        candidate = dataset_table_model.DatasetTableModel(dataset=dataset, add_blank_study=False)
-        for name, data_type in zip(csv_data["covariate_names"], csv_data["covariate_types"], strict=True):
-            candidate.add_covariate(name, data_type)
-        rows = row_padding.normalize_rows(csv_data["data"])
-        progress = ImportProgressDialog(self, len(rows))
+        for name, data_type in zip(csv_data.covariate_names, csv_data.covariate_types, strict=True):
+            workspace_editing.add_covariate(sheet, name, data_type)
+        progress = ImportProgressDialog(self, len(csv_data.rows))
         try:
             progress.progress_bar.setValue(0)
             progress.show()
@@ -1578,11 +1577,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             def show_progress(completed: int) -> None:
                 progress.progress_bar.setValue(completed)
                 progress.progress_bar.repaint()
-            warnings = candidate.load_import_rows(rows, show_progress)
+            warnings = workspace_editing.WorkspaceEditingService().load_import_rows(
+                dataset, sheet, csv_data.rows, show_progress,
+            )
         finally:
             progress_dialog.dispose(progress)
-        self._commit_model_operation(lambda: self.set_model(dataset, recalculate_effect_previews=False))
-        self.workspace.start_new_document(keep_last_change=True)
-        self._update_project_identity()
+        self._start_unnamed_project(dataset, imported_rows=True)
         if warnings:
             self.statusbar.showMessage(f"Skipped {len(warnings)} invalid cells. {warnings[0]}", 8000)

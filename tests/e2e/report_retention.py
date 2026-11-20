@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 from docx import Document
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
-from rc_metastudio.manuscript_report import write_docx, write_pdf
+from rc_metastudio.results.report import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
 from scripts.verification_evidence import desktop_tool_executable
 
@@ -328,7 +328,7 @@ def expected_fit_table(result, section, source):
 
 
 def assert_exports(view, data, *, pdf_ordered=True):
-    from rc_metastudio.result_formatting import numeric_cell, report_cell
+    from rc_metastudio.results.formatting import numeric_cell, report_cell
 
     def rendered_row(row):
         return [report_cell(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
@@ -371,7 +371,7 @@ def assert_retained_table(view, section, source):
 
 
 def assert_report(view):
-    from rc_metastudio.result_formatting import numeric_cell, report_cell, report_numbers
+    from rc_metastudio.results.formatting import numeric_cell, report_cell, report_numbers
 
     report_text = view.manuscript.plain_text().casefold()
     for verdict in ('so these data do not show a clear', 'the confidence interval excludes',
@@ -541,7 +541,7 @@ def document_tables(document):
 
 def install_capture(directory):
     from unittest.mock import patch
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.results.window import ResultsWindow
     original = ResultsWindow._setup_manuscript_page
 
     def observed(view):

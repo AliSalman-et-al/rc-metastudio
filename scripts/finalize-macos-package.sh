@@ -182,7 +182,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --locked-qt-root "$locked_qt_root" --python-version "$python_version" \
     --pyqt6-version "$pyqt6_version" --qt-version "$qt_version" \
     --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version" \
-    --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version 6.22.3
+    --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version "$pyinstaller_version"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" evidence \
     --target "macos-$architecture" --archive "$tmp_zip_path" \
     --deployment-manifest "$deployment_manifest_path" --signing-inventory "$signing_inventory_path" \

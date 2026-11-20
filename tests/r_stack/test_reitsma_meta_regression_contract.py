@@ -1,12 +1,9 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Pinned mada evidence for the typed Reitsma meta-regression boundary."""
+"""Pinned mada values for the Reitsma meta-regression summary."""
 
-import json
 import os
 import textwrap
-
-import pytest
 
 from ._r_driver_support import run_python_driver
 
@@ -20,23 +17,8 @@ _DRIVER = textwrap.dedent(
     sys.path.insert(0, os.path.join(repo_root, "src"))
 
     from rc_metastudio import r_bridge
-    r_bridge.initialize_r()
-    try:
-        from rc_metastudio import r_bridge
-        from rc_metastudio.r_call_serialization import r_transaction
-        from rc_metastudio.reitsma_meta_regression import (
-            ExcludedStudy, parse_reitsma_meta_regression_result,
-        )
-        r_bridge.ro.r("pkgload::load_all")(
-            os.path.join(repo_root, "r", "RCMetaR"), quiet=True
-        )
-        mada_version = str(r_bridge.ro.r("as.character(packageVersion('mada'))")[0])
-        if mada_version != "0.5.12":
-            sys.stdout.write("SKIP mada 0.5.12 is unavailable\n")
-            sys.exit(42)
-    except Exception as exc:
-        sys.stdout.write("SKIP %s: %s\n" % (exc.__class__.__name__, exc))
-        sys.exit(42)
+    r_bridge.load_required_packages()
+    from rc_metastudio.r_call_serialization import r_transaction
 
     with r_transaction():
         fit_result = r_bridge.ro.r(r'''local({
@@ -80,53 +62,45 @@ _DRIVER = textwrap.dedent(
         reml_summary = summary_to_json(fit_result.rx2("reml"))
         ml_summary = summary_to_json(fit_result.rx2("ml"))
 
-    study_ids = tuple("abcdefgh")
-    exclusions = (ExcludedStudy("i", "Missing moderator value; confirmed by researcher"),)
-    reml = parse_reitsma_meta_regression_result(
-        reml_summary, eligible_study_ids=study_ids, exclusions=exclusions
-    )
-    ml = parse_reitsma_meta_regression_result(
-        ml_summary, eligible_study_ids=study_ids, exclusions=exclusions
+    model = reml_summary["Model information"]
+    assert model["package.version"] == "0.5.12"
+    assert model["estimator"] == "REML"
+    assert ml_summary["Model information"]["estimator"] == "ML"
+    assert model["formula"] == "cbind(tsens, tfpr) ~ `quality` + `threshold`"
+    assert model["studies.used"] == 8
+    assert model["correction.factor"] == 0.5
+    assert model["converged"] is True
+
+    coding = reml_summary["Moderator coding"]
+    assert coding["quality"]["levels"] == ["A", "B"]
+    assert coding["quality"]["reference"] == "A"
+    assert coding["threshold"]["range"] == [1, 8]
+    overall = reml_summary["Overall ML likelihood-ratio test"]
+    assert overall["statistic"] == pytest.approx(3.82673612230366, abs=1e-7)
+    assert overall["p.value"] == pytest.approx(0.429962088732508, abs=1e-7)
+    assert overall["df"] == 4
+    blocks = reml_summary["Moderator block tests"]
+    assert list(blocks) == ["quality", "threshold"]
+    assert [row["df"] for row in blocks.values()] == [2, 2]
+    statistics = [row["statistic"] for row in blocks.values()]
+    assert statistics == pytest.approx([3.61678963156885, 0.185175769205564], abs=1e-7)
+    assert [row["statistic"] for row in ml_summary["Moderator block tests"].values()] == pytest.approx(
+        statistics, abs=1e-10
     )
 
-    assert reml.package_version == "0.5.12"
-    assert reml.estimator == "REML"
-    assert reml.formula == "cbind(tsens, tfpr) ~ `quality` + `threshold`"
-    assert reml.eligible_study_ids == study_ids
-    assert reml.exclusions == exclusions
-    assert reml.overall_test.statistic == pytest.approx(3.82673612230366, abs=1e-7)
-    assert reml.overall_test.p_value == pytest.approx(0.429962088732508, abs=1e-7)
-    assert [test.label for test in reml.moderator_tests] == ["quality", "threshold"]
-    assert [test.statistic for test in reml.moderator_tests] == pytest.approx(
-        [3.61678963156885, 0.185175769205564], abs=1e-7
+    sensitivity = reml_summary["Sensitivity coefficients"]
+    specificity = reml_summary["Specificity coefficients"]
+    assert next(row for row in sensitivity if row["term"].endswith("threshold"))[
+        "Estimate"
+    ] == pytest.approx(-0.012322216361123, abs=1e-7)
+    threshold = next(row for row in specificity if row["term"].endswith("threshold"))
+    assert [threshold[key] for key in ("Estimate", "z", "95%ci.lb", "95%ci.ub", "Odds Ratio")] == pytest.approx(
+        [-0.117323225590236, -0.4862503, -0.5902263, 0.3555799, 0.889297702928889], abs=1e-7
     )
-    assert [test.statistic for test in ml.moderator_tests] == pytest.approx(
-        [test.statistic for test in reml.moderator_tests], abs=1e-10
-    )
-
-    sensitivity_threshold = next(
-        item for item in reml.sensitivity_coefficients if item.term.endswith("threshold")
-    )
-    fpr_threshold = next(
-        item for item in reml.false_positive_rate_coefficients
-        if item.term.endswith("threshold")
-    )
-    assert sensitivity_threshold.model_estimate == pytest.approx(
-        -0.012322216361123, abs=1e-7
-    )
-    assert fpr_threshold.model_side == "false_positive_rate"
-    assert fpr_threshold.model_estimate == pytest.approx(0.117323225590236, abs=1e-7)
-    assert fpr_threshold.model_statistic == pytest.approx(0.4862503, abs=1e-7)
-    assert fpr_threshold.model_ci_lower == pytest.approx(-0.3555799, abs=1e-7)
-    assert fpr_threshold.model_ci_upper == pytest.approx(0.5902263, abs=1e-7)
-    assert fpr_threshold.effect_direction == "specificity"
-    assert fpr_threshold.reported_odds_ratio == pytest.approx(
-        0.889297702928889, abs=1e-7
-    )
-    assert all(test.included_study_ids == study_ids for test in reml.moderator_tests)
-    assert {item.name for item in reml.unavailable_outputs} == {
-        "conditional_summary_operating_point", "adjusted_sroc", "sroc_auc"
-    }
+    for rows in (sensitivity, specificity):
+        reference = next(row for row in rows if row["term"] == "quality = A (reference)")
+        assert reference["Odds Ratio"] == 1
+    assert {"Summary operating point", "SROC AUC", "Adjusted SROC"}.isdisjoint(reml_summary)
 
     sys.stdout.write("OK\n")
     sys.stdout.flush()

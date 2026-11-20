@@ -11,7 +11,7 @@ import posixpath
 from dataclasses import dataclass
 from PyQt6 import QtCore, QtGui
 from rc_metastudio import qt_text
-from rc_metastudio.workspace_column_identity import WorkspaceColumnWidthState
+from rc_metastudio.workspace.column_identity import WorkspaceColumnWidthState
 
 QDir = QtCore.QDir
 QSettings = QtCore.QSettings
@@ -586,20 +586,12 @@ def get_default_open_directory(recent_files=None):
 
 
 def setup_directories():
-    """Create and clear the managed scratch directory for analysis artifacts.
-
-    Python stays in the application data directory; R is reset to the same base
-    directory and writes analysis artifacts under the managed scratch folder.
-    """
-    # Overrides belong to the caller; anchor them before switching cwd.
+    """Prepare application data and anchor any caller-owned analysis scratch."""
     override = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR)
     if override:
         os.environ[ANALYSIS_SCRATCH_ENV_VAR] = os.path.abspath(override)
-    base_path = make_base_path()
+    make_base_path()
     make_r_tmp()
-
-    os.chdir(os.path.normpath(base_path))
-
     clear_r_tmp()
 
 

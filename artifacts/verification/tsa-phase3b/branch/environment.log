@@ -1,9 +1,0 @@
-Checkout: C:\Users\Ali-Salman\Documents\Code\rc-metastudio
-Revision: 5f073c8f1fe093810da1c1fa6923b1b8a63d9c90
-R source tree: 0e8a75512a4f99028afdee9c05f06380a39805d6
-Platform: Windows_NT AMD64, QT_QPA_PLATFORM=windows, QT_SCALE_FACTOR=
-RCMS_R_HOME=C:\Users\Ali-Salman/Downloads/RCMetaStudio-0.5.6-windows-x64/R
-RCMS_R_LIBS=C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.tmp\tsa-phase3b-libraries\branch
-RCMS_QT6_RCC=C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt-rcc-verified\bin\rcc.exe
-PATH prefix: C:\Users\Ali-Salman\Documents\Code\rc-metastudio\.tmp\poppler-tsa\poppler-26.09.0\Library\bin
-RCMS_QT6_BUILD_ROOT=C:\Users\Ali-Salman\Documents\Code\rc-metastudio\build\qt6-verification

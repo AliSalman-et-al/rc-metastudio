@@ -69,8 +69,8 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   table and uses the crossing at 68% of RIS to exercise the visible ring.
 - `tsa-stress` drives 36 looks with long favours labels. It compares the
   SVG geometry of the wrapped labels inside the panel and captures the full figure at Fit width.
-  The [design verification](../../../../artifacts/verification/tsa-phase4b/README.md)
-  records the Default, RevMan and BMJ runs at 100% and 150% device scale.
+  For native scale coverage, replay `uv run python scripts/verify_rcms.py tsa-stress --native`
+  with `QT_SCALE_FACTOR` set to `1` and `1.5`. Retain the generated manifests and captures.
 - Target other binary estimators, one-sided or Pocock boundary geometry, custom
   axis limits, unusual favours labels and narrow windows separately when affected.
   The native scenario commands in the [TSA guide](../../../../docs/trial-sequential-analysis.md)

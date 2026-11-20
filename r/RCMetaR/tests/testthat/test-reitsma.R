@@ -23,8 +23,6 @@ testthat::test_that("Reitsma ignores a generic non-Reitsma rm.method", {
 
 testthat::test_that("Reitsma validates and represents diagnostic counts", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   data <- methods::new("DiagnosticData",
     TP=c(19, 8, 41, 5, 45), FN=c(10, 2, 12, 2, 32),
     TN=c(81, 13, 49, 18, 165), FP=c(1, 9, 1, 1, 58),
@@ -40,7 +38,7 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "summary specificity")
   model.info <- result$Summary[["Model information"]]
   testthat::expect_equal(model.info$studies.used, 5L)
-  testthat::expect_identical(model.info$package.version, "0.5.12")
+  testthat::expect_identical(model.info$package.version, as.character(utils::packageVersion("mada")))
   testthat::expect_true(is.finite(model.info$logLik))
   testthat::expect_identical(model.info$summary.seed, 380381L)
   testthat::expect_identical(model.info$summary.iterations, 1000000L)
@@ -83,6 +81,30 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
 
 
 
+testthat::test_that("Reitsma without an explicit output preserves both editable SROC plots", {
+  scratch <- tempfile("sroc-scratch-")
+  withr::local_envvar(c(RCMS_ANALYSIS_SCRATCH_DIR=scratch))
+  data <- rcmetar.create.diagnostic.data(
+    TP=c(19, 8, 41, 5, 45), FN=c(10, 2, 12, 2, 32),
+    TN=c(81, 13, 49, 18, 165), FP=c(1, 9, 1, 1, 58),
+    study.names=letters[1:5]
+  )
+  run <- function() rcmetar.run.analysis(data, method="diagnostic.reitsma", params=list(measure="DOR"))
+  first <- run()
+  second <- run()
+  testthat::expect_false(identical(first$images[["SROC"]], second$images[["SROC"]]))
+  for (result in list(first, second)) {
+    path <- result$images[["SROC"]]
+    testthat::expect_identical(normalizePath(dirname(path), winslash="/"),
+                        normalizePath(scratch, winslash="/"))
+    testthat::expect_identical(xml2::xml_name(xml2::read_xml(path)), "svg")
+    prefix <- result$plot_params_paths[["SROC"]]
+    testthat::expect_identical(normalizePath(dirname(prefix), winslash="/"),
+                        normalizePath(scratch, winslash="/"))
+    testthat::expect_identical(rcmetar.plot.bundle.params(prefix)$fp_outpath, path)
+  }
+})
+
 testthat::test_that("plot capability attachment rejects editable plots without regeneration data", {
   library(RCMetaR)
   result <- list(
@@ -99,8 +121,6 @@ testthat::test_that("plot capability attachment rejects editable plots without r
 
 testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   counts <- data.frame(
     TP=c(19, 8, 41, 5, 45), FN=c(10, 2, 12, 2, 32),
     TN=c(81, 13, 49, 18, 165), FP=c(1, 9, 1, 1, 58)
@@ -156,8 +176,6 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
 
 testthat::test_that("Reitsma model information captures summary warnings", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   namespace <- asNamespace("RCMetaR")
   original <- get("rcmetar.reitsma.summary.points", envir=namespace)
   unlockBinding("rcmetar.reitsma.summary.points", namespace)
@@ -192,8 +210,6 @@ testthat::test_that("Reitsma rejects entered effects, incomplete counts, and bou
 
 testthat::test_that("Boundary covariance preserves valid summaries and omits undefined SROC output", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   data <- methods::new("DiagnosticData", TP=rep(9, 5), FN=rep(1, 5), TN=rep(9, 5), FP=rep(1, 5), study.names=letters[1:5])
   fit <- mada::reitsma(data.frame(TP=data@TP, FN=data@FN, FP=data@FP, TN=data@TN), correction=.5, correction.control="all")
   fit$Psi[,] <- 0
@@ -206,8 +222,6 @@ testthat::test_that("Boundary covariance preserves valid summaries and omits und
 
 testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and separate forests", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   data <- methods::new("DiagnosticData", TP=c(19,8,41,5,45,8), FN=c(10,2,12,2,32,2),
     TN=c(81,13,49,18,165,32), FP=c(1,9,1,1,58,6), study.names=letters[1:6],
     covariates=list(methods::new("CovariateValues", cov.name="quality",
@@ -260,8 +274,6 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
 
 testthat::test_that("Reitsma meta-regression retains warnings from every fit", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   n <- 6L
   data <- methods::new("DiagnosticData", TP=c(19, 8, 41, 5, 45, 8),
     FN=c(10, 2, 12, 2, 32, 2), TN=c(81, 13, 49, 18, 165, 32),
@@ -294,8 +306,6 @@ testthat::test_that("Reitsma meta-regression retains warnings from every fit", {
 
 testthat::test_that("Reitsma meta-regression quotes arbitrary moderator names in full and reduced models", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   n <- 8L
   data <- methods::new("DiagnosticData", TP=c(19, 8, 41, 5, 45, 8, 21, 33),
     FN=c(10, 2, 12, 2, 32, 2, 9, 11), TN=c(81, 13, 49, 18, 165, 32, 72, 91),
@@ -322,8 +332,6 @@ testthat::test_that("Reitsma meta-regression quotes arbitrary moderator names in
 
 testthat::test_that("Reitsma coefficient regeneration restores categorical reference rows without refitting", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   counts <- data.frame(TP=c(19, 8, 41, 5, 45, 8), FN=c(10, 2, 12, 2, 32, 2),
     TN=c(81, 13, 49, 18, 165, 32), FP=c(1, 9, 1, 1, 58, 6))
   fit.data <- transform(counts, quality=factor(c("A", "A", "B", "B", "A", "B"), levels=c("A", "B")))
@@ -354,8 +362,6 @@ testthat::test_that("saved Reitsma geometry regenerates without calling mada ext
 
 testthat::test_that("Reitsma legend stores sample-size markers and omits unavailable lines", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   style <- list(show.legend=TRUE, show.confidence=TRUE, show.prediction=TRUE,
     show.marker.legend=TRUE, marker.area="sample-size", point.size.multiplier=1, point.pch=21)
   marker.only <- RCMetaR:::rcmetar.reitsma.legend.spec(style, NULL, NULL, NULL, c(10, 20))
@@ -421,8 +427,6 @@ testthat::test_that("Reitsma meta-regression rejects missing and rank-deficient 
 
 testthat::test_that("Reitsma warning capture preserves partial output and omits unavailable AUC", {
   library(RCMetaR)
-  testthat::skip_if_not_installed("mada")
-  testthat::skip_if_not(as.character(utils::packageVersion("mada")) == "0.5.12")
   testthat::expect_error(
     RCMetaR:::rcmetar.reitsma.require.value(
       list(value=NULL, error="mada optimizer exploded"),

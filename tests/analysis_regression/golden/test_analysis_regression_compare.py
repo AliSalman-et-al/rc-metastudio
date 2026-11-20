@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath("src"))
 ROOT = Path(__file__).resolve().parents[3]
 
 from rc_metastudio import __version__
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.results.contract import parse_analysis_result
 from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
     ACCEPTED_EXCEPTION,
     CAPTURE_ERROR,
@@ -720,7 +720,7 @@ def test_golden_comparison_uses_public_text_title_for_stable_source_key():
 
 
 def test_current_golden_manifest_requires_exact_rpy2_identities():
-    expected = dict(verify_golden_compatibility.REQUIRED_RPY2_IDENTITIES)
+    expected = verify_golden_compatibility.locked_rpy2_versions()
     case: verify_golden_compatibility.JsonObject = {
         "id": "case",
         "tool_versions": {name: version for name, version in expected.items()},
@@ -1016,8 +1016,8 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
     monkeypatch, tmp_path
 ):
     from tests.analysis_regression.golden.support import headless_analysis
-    from rc_metastudio import analysis_catalog
-    from rc_metastudio import analysis_adapter
+    from rc_metastudio.analysis import catalog as analysis_catalog
+    from rc_metastudio.analysis import requests as analysis_adapter
 
     class DiagnosticModel(object):
         dataset = object()
@@ -1373,7 +1373,7 @@ def test_empty_comparison_is_not_success():
 def test_supplied_environment_cannot_manufacture_authority():
     from tests.analysis_regression.golden.support import golden_analysis as golden
     from tests.analysis_regression.golden.support import headless_analysis as _headless
-    from rc_metastudio import analysis_catalog as _globals
+    from rc_metastudio.analysis import catalog as _globals
     measured = {"os": "Linux", "python": "3.11.9", "pyqt": "6.11.0"}
     observed = golden._baseline_environment(golden.MODERN_BASELINE_ENVIRONMENT_EXPECTED, measured)
     assert observed["os"] == "Linux"
@@ -1383,7 +1383,7 @@ def test_supplied_environment_cannot_manufacture_authority():
 def test_capture_rejects_stale_configured_plot_but_accepts_current_svg(tmp_path):
     from tests.analysis_regression.golden.support import golden_analysis as golden
     from tests.analysis_regression.golden.support import headless_analysis as _headless
-    from rc_metastudio import analysis_catalog as _globals
+    from rc_metastudio.analysis import catalog as _globals
     stale = tmp_path / "old.png"
     stale.write_bytes(b"old plot")
     bundle = {"artifacts": {"Forest Plot": str(stale)}}

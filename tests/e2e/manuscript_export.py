@@ -23,7 +23,7 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     from collections import Counter
     from contextlib import ExitStack
     import weakref
-    from rc_metastudio import manuscript_report
+    from rc_metastudio.results import report as manuscript_report
     from PyQt6.QtGui import QColor, QPalette
 
     original_palette = app.palette()
@@ -188,7 +188,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
 
     def export_report(view, path, suffix):
         if direct_write:
-            from rc_metastudio.manuscript_report import ManuscriptReport, write_docx, write_pdf
+            from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
             (write_pdf if suffix == "pdf" else write_docx)(ManuscriptReport.from_result(view.results), path)
         elif suffix in picker_formats:
             with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
@@ -357,7 +357,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 for actual, expected_table in zip(doc.tables, expected_tables):
                     # Nonbreaking spaces keep each interval together in Word.
                     actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
-                    from rc_metastudio.result_formatting import report_cell
+                    from rc_metastudio.results.formatting import report_cell
                     expected_rows = tuple(tuple(report_cell(value).replace('\u00a0', ' ')
                                                 if numeric_export_cell(value) else value for value in row)
                                           for row in expected_table.rows)
@@ -416,7 +416,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert 'between Intervention and Control' not in view.manuscript.results
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
-            from rc_metastudio.result_formatting import report_numbers
+            from rc_metastudio.results.formatting import report_numbers
             for prose in (view.manuscript.methods, report_numbers(view.manuscript.results)):
                 # A PDF line can wrap immediately after a hyphen or dash.
                 # Compare all ordered words, digits and punctuation independently
@@ -453,7 +453,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         record('manuscript-panel-' + sample, view)
         result = view.results
         close_result(view)
-        from rc_metastudio.results_window import ResultsWindow
+        from rc_metastudio.results.window import ResultsWindow
         for cycle in range(3):
             # Leave a real close/deferred-delete pending across the next save
             # dialog, as opposed to only testing explicit harness disposal.
@@ -517,7 +517,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         window.refresh_analysis_actions()
         view = analyze_existing(app, window, workflow, 'binary.random', record,
                                 parameters={'digits': 3, 'rm.method': 'DL' if workflow == 'subgroup' else 'REML'})
-        from rc_metastudio.manuscript_report import write_docx, write_pdf
+        from rc_metastudio.results.report import write_docx, write_pdf
         write_docx(view.manuscript, work / (workflow + '.docx'))
         write_pdf(view.manuscript, work / (workflow + '.pdf'))
         assert workflow.split('-')[0].lower() in view.manuscript.methods.lower()
@@ -547,8 +547,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         close_result(view)
 
     from PyQt6.QtCore import QTimer
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.results.window import ResultsWindow
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
     errors = []

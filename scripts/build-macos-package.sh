@@ -379,7 +379,6 @@ if [ "$skip_clean" -eq 0 ]; then
 fi
 rm -rf "$qualification_root"
 mkdir -p "$qualification_root"
-r_version="4.6.2"
 "$python_exe" - "$private_r_framework" "$r_version" <<'PY'
 from pathlib import Path
 import sys
@@ -814,11 +813,12 @@ relocate_rpy2_api_bridge "$rpy2_api_bridge"
   --output "$qualification_root/post-injection-r-gate.json"
 "$python_exe" - "$preflight_report_path" "$(git rev-parse HEAD)" <<'PY'
 import json, sys
+from importlib.metadata import version
 from pathlib import Path
 Path(sys.argv[1]).write_text(json.dumps({
     "schema_version": 1,
     "source_commit": sys.argv[2],
-    "pyinstaller_version": "6.22.3",
+    "pyinstaller_version": version("pyinstaller"),
     "system": "Darwin",
     "machine": __import__("platform").machine(),
     "aliases": {
@@ -1028,6 +1028,7 @@ qt_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version(
 sip_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("PyQt6-sip"))')"
 sip_runtime_version="$("$python_exe" -c 'from PyQt6 import sip; print(sip.SIP_VERSION_STR)')"
 rpy2_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("rpy2"))')"
+pyinstaller_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("pyinstaller"))')"
 locked_qt_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
 step "Inspecting the coherent target-native macOS deployment"
 "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" inspect \
@@ -1039,7 +1040,7 @@ step "Inspecting the coherent target-native macOS deployment"
   --python-version "$python_version" --pyqt6-version "$pyqt6_version" \
   --qt-version "$qt_version" --sip-version "$sip_version" \
   --sip-runtime-version "$sip_runtime_version" --r-version "$r_version" \
-  --rpy2-version "$rpy2_version" --pyinstaller-version 6.22.3
+  --rpy2-version "$rpy2_version" --pyinstaller-version "$pyinstaller_version"
 
 step "Recording canonical direct target-native production provenance"
 cp "$repo_root/scripts/macos_embedded_r_adapter.py" "$qualification_root/embedded-r-adapter.py"

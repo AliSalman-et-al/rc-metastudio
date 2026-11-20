@@ -14,10 +14,11 @@ import traceback
 import zipfile
 
 from tests.analysis_regression.golden.support import headless_analysis
-from rc_metastudio import analysis_adapter, application_metadata
+from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio import application_metadata
 from rc_metastudio import r_bridge
-from rc_metastudio.analysis_results import AnalysisResult
-from rc_metastudio.plot_defaults import FOREST_ARM_LABELS
+from rc_metastudio.results.contract import AnalysisResult
+from rc_metastudio.results.plot_defaults import FOREST_ARM_LABELS
 
 
 DEFAULT_TOLERANCES = {
@@ -786,8 +787,8 @@ def capture_bundle(
     requirements = json.loads((root / "config/r-dependencies.json").read_text(encoding="utf-8"))
     authority_versions = {entry["name"]: entry["installed_version"].replace("-", ".") for entry in requirements["direct_RCMetaR_dependencies"] if entry["name"] in {"meta", "mada", "metafor"}}
     source_version = next(line.split(":", 1)[1].strip() for line in (root / "r/RCMetaR/DESCRIPTION").read_text(encoding="utf-8").splitlines() if line.startswith("Version:"))
-    from scripts.verify_rcmetar_r_stack import REQUIRED_RPY2_IDENTITIES
-    locked_python = REQUIRED_RPY2_IDENTITIES
+    from scripts.r_verification_support import locked_rpy2_versions
+    locked_python = locked_rpy2_versions()
     authoritative = (
         capture_mode == "authoritative" and baseline_environment["matches_expected"]
         and all(tool_versions.get(name) == version for name, version in locked_python.items() if name.startswith("rpy2"))

@@ -54,16 +54,16 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
 )
-from rc_metastudio import analysis_catalog
-from rc_metastudio.analysis_dataset import Dataset
+from rc_metastudio.analysis import catalog as analysis_catalog
+from rc_metastudio.project.model import Dataset
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
 from rc_metastudio import qt_text
-from rc_metastudio import csv_import
+from rc_metastudio.importing import tabular as csv_import
 from rc_metastudio import name_validation
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.sheet_columns import (
+from rc_metastudio.workspace.columns import (
     IMPORT_IDENTITY_COLUMNS, IMPORT_YEAR_COLUMN, SheetColumns, sheet_columns,
 )
 from rc_metastudio.settings import (
@@ -99,7 +99,7 @@ class ImportReview(TypedDict):
 class ImportSheet(TypedDict):
     path: Literal["csv_import"]
     outcome_info: DatasetInfo
-    csv_data: csv_import.CsvImportPayload
+    csv_data: csv_import.CsvImportResult
 
 
 class NewSheet(TypedDict):
@@ -223,9 +223,6 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
             )
         )
         self._setup_connections()
-
-    def initializePage(self):
-        pass
 
     def isComplete(self):
         return False
@@ -919,8 +916,8 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             arms, dataset_info["effect"], legacy=legacy,
         )
 
-    def csv_data(self) -> csv_import.CsvImportPayload | None:
-        return self._import_result.to_payload() if self._import_result is not None else None
+    def csv_data(self) -> csv_import.CsvImportResult | None:
+        return self._import_result
 
     def _is_from_excel(self):
         return self.from_excel_chkbx.isChecked()
@@ -1092,8 +1089,8 @@ class MainWizard(QWizard):
             return False
         if suffix == ".rm5":
             from xml.etree.ElementTree import ParseError
-            from rc_metastudio.rm5_import import read_rm5
-            from rc_metastudio.rm5_review_dialog import review_rm5
+            from rc_metastudio.importing.revman import read_rm5
+            from rc_metastudio.importing.revman_review import review_rm5
 
             try:
                 result = read_rm5(path)
@@ -1243,7 +1240,7 @@ class MainWizard(QWizard):
             info["data_type"] = kind.data_type
             info["sub_type"] = kind.sub_type
 
-    def get_csv_data(self) -> csv_import.CsvImportPayload | None:
+    def get_csv_data(self) -> csv_import.CsvImportResult | None:
         page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
         return page.csv_data()
 

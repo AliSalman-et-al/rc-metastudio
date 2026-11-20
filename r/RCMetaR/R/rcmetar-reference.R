@@ -42,7 +42,6 @@ NULL
 #'   \item{\code{binary.fixed.mh()}}{Runs a fixed-effect Mantel-Haenszel binary meta-analysis.}
 #'   \item{\code{binary.fixed.peto()}}{Runs a fixed-effect Peto odds-ratio meta-analysis.}
 #'   \item{\code{binary.random()}}{Runs a random-effects binary meta-analysis.}
-#'   \item{\code{binary.fixed.meta.regression()}}{Runs fixed-effect binary meta-regression through the shared regression pipeline.}
 #' }
 #'
 #' @section Study-level calculations:
@@ -57,7 +56,7 @@ NULL
 #' @section Transform helpers:
 #' \code{binary.transform.f()} returns the transformation function used for a
 #' binary metric. \code{arcsine.sqrt()}, \code{invarcsine.sqrt()},
-#' \code{freeman_tukey()}, \code{invfreeman_tukey()}, \code{logit()}, and
+#' \code{logit()} and
 #' \code{invlogit()} are shared transformation utilities.
 #'
 #' @section References:
@@ -67,7 +66,7 @@ NULL
 #' \code{rcmetar.method.references("rma.peto")} for the statistical method
 #' citations used in result payloads.
 #'
-#' @aliases binary.fixed.inv.var binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.meta.regression binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.meta.regression.parameters binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study arcsine.sqrt invarcsine.sqrt freeman_tukey invfreeman_tukey logit invlogit
+#' @aliases binary.fixed.inv.var binary.fixed.inv.var.overall binary.fixed.inv.var.parameters binary.fixed.inv.var.pretty.names binary.fixed.inv.var.value.info binary.fixed.mh binary.fixed.mh.is.feasible binary.fixed.mh.overall binary.fixed.mh.parameters binary.fixed.mh.pretty.names binary.fixed.mh.value.info binary.fixed.peto binary.fixed.peto.is.feasible binary.fixed.peto.overall binary.fixed.peto.parameters binary.fixed.peto.pretty.names binary.fixed.peto.value.info binary.random binary.random.overall binary.random.parameters binary.random.pretty.names binary.random.value.info binary.transform.f compute.bin.point.estimates compute.for.one.bin.study arcsine.sqrt invarcsine.sqrt logit invlogit
 #' @name RCMetaR-binary-methods
 NULL
 
@@ -117,7 +116,7 @@ NULL
 #' }
 #'
 #' @section Study-level calculations:
-#' \code{adjust.raw.data()}, \code{compute.diag.point.estimates()},
+#' \code{compute.diag.point.estimates()},
 #' \code{compute.diagnostic.terms()},
 #' and \code{diagnostic.transform.f()} normalize count data and derive
 #' diagnostic metrics.
@@ -137,7 +136,7 @@ NULL
 #' \code{rcmetar.method.references("reitsma")} for the
 #' statistical method citations used in result payloads.
 #'
-#' @aliases adjust.raw.data compute.diag.point.estimates compute.diagnostic.terms diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f
+#' @aliases compute.diag.point.estimates compute.diagnostic.terms diagnostic.fixed.inv.var diagnostic.fixed.inv.var.is.feasible diagnostic.fixed.inv.var.overall diagnostic.fixed.inv.var.parameters diagnostic.fixed.inv.var.pretty.names diagnostic.fixed.mh diagnostic.fixed.mh.is.feasible diagnostic.fixed.mh.overall diagnostic.fixed.mh.parameters diagnostic.fixed.mh.pretty.names diagnostic.fixed.peto diagnostic.fixed.peto.is.feasible diagnostic.fixed.peto.overall diagnostic.fixed.peto.parameters diagnostic.fixed.peto.pretty.names diagnostic.random diagnostic.random.is.feasible diagnostic.random.overall diagnostic.random.parameters diagnostic.random.pretty.names diagnostic.reitsma diagnostic.reitsma.is.feasible diagnostic.reitsma.meta.regression diagnostic.reitsma.parameters diagnostic.reitsma.pretty.names diagnostic.transform.f
 #' @name RCMetaR-diagnostic-methods
 NULL
 
@@ -167,7 +166,6 @@ NULL
 #' @section Bootstrap analyses:
 #' \code{bootstrap()}, \code{boot.ma.output.results()},
 #' \code{boot.meta.reg.output.results()},
-#' \code{boot.meta.reg.cond.means.output.results()},
 #' \code{construct.boot.res.and.value.info.for.results()},
 #' \code{calc.meta.reg.coeffs.and.cis()}, and \code{plot.custom.boot()} handle
 #' resampling summaries and bootstrap plots.
@@ -176,44 +174,34 @@ NULL
 #' See \code{rcmetar.method.references("bootstrap")} for the bootstrap
 #' method citations used in result payloads.
 #'
-#' @aliases boot.ma.output.results boot.meta.reg.cond.means.output.results boot.meta.reg.output.results bootstrap calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic
+#' @aliases boot.ma.output.results boot.meta.reg.output.results bootstrap calc.meta.reg.coeffs.and.cis construct.boot.res.and.value.info.for.results construct.sequential.res.output construct.subgroup.res.output construct.subgroup.value.info cum.ma.binary cum.ma.continuous cum.ma.diagnostic loo.ma.binary loo.ma.continuous loo.ma.diagnostic plot.custom.boot subgroup.ma.binary subgroup.ma.continuous subgroup.ma.diagnostic
 #' @name RCMetaR-repeated-analyses
 NULL
 
 #' Meta-regression and covariate-model helpers
 #'
 #' Functions that build model matrices, call \pkg{metafor} regression routines,
-#' compute conditional means, and format model output for rc-metastudio.
+#' and format model output for RC MetaStudio.
 #'
 #' @section Regression wrappers:
 #' The desktop adapter uses a private \code{meta.regression()} workflow.
 #' Use the exported \code{rcmetar.run.analysis()} with
-#' \code{workflow = "meta-regression"}; the method wrappers below are private.
-#' \code{regression.wrapper()}, \code{g.meta.regression()},
-#' \code{g.meta.regression.cond.means()},
-#' \code{g.bootstrap.meta.regression()}, and
-#' \code{g.bootstrap.meta.regression.cond.means()} provide lower-level wrappers
-#' around model fitting and resampling.
+#' \code{workflow = "meta-regression"}. Permutation regression uses the
+#' private \code{regression.wrapper()} to fit its reference model.
 #'
 #' @section Covariate design:
-#' \code{make.mods.formula()}, \code{make.design.matrix()},
-#' \code{get.row.vector.cat.cat()}, \code{get.row.vector.cat.cont()},
-#' \code{coded.cat.mod.level()}, \code{is.single.numeric.covariate()},
-#' \code{extract.cov.data()}, and \code{cond.means.info()} prepare covariate
-#' model terms and conditional-mean metadata.
+#' \code{make.mods.formula()} and \code{extract.cov.data()} prepare
+#' covariate model terms.
 #'
 #' @section Display and plotting:
 #' \code{create.regression.display()}, \code{adjusted_means_display()},
-#' \code{g.create.plot.data.reg()}, \code{g.get.scale()},
-#' \code{meta.regression.plot()},
-#' \code{categorical.meta.regression()}, and
-#' \code{random.meta.regression()} build model summaries and plots.
+#' and \code{meta.regression.plot()} build model summaries and plots.
 #'
 #' @section References:
 #' See \code{rcmetar.method.references("meta.regression")} for the
 #' meta-regression method citations used in result payloads.
 #'
-#' @aliases adjusted_means_display categorical.meta.regression coded.cat.mod.level cond.means.info create.regression.display extract.cov.data g.bootstrap.meta.regression g.bootstrap.meta.regression.cond.means g.create.plot.data.reg g.get.scale g.meta.regression g.meta.regression.cond.means get.row.vector.cat.cat get.row.vector.cat.cont is.single.numeric.covariate make.design.matrix make.mods.formula meta.regression meta.regression.plot random.meta.regression regression.wrapper
+#' @aliases adjusted_means_display create.regression.display extract.cov.data g.get.scale make.mods.formula meta.regression meta.regression.plot regression.wrapper
 #' @name RCMetaR-meta-regression
 NULL
 
@@ -232,13 +220,10 @@ NULL
 #' \code{rcmetar.draw.forest.plot()} and \code{rcmetar.draw.sroc.plot()} draw analysis figures.
 #'
 #' @section Layout and labels:
-#' \code{calc.plot.range()}, \code{calculate.radii()}, \code{check.label()},
-#' \code{create.effect.size.label()}, \code{format.data.cols()},
-#' \code{format.effect.sizes()}, \code{format.raw.data.col()},
-#' \code{set.plot.options()}, and
+#' \code{calc.plot.range()}, \code{set.plot.options()}, and
 #' \code{update.changed.plot.params()} control display formatting.
 #'
-#' @aliases calc.plot.range calculate.radii check.label create.effect.size.label create.plot.data.binary create.plot.data.continuous create.plot.data.diagnostic create.plot.data.generic create.plot.data.reg format.data.cols format.effect.sizes format.raw.data.col create.overall.display create.subgroup.display create.summary.disp pretty.metric.name set.plot.options update.changed.plot.params
+#' @aliases calc.plot.range create.plot.data.binary create.plot.data.continuous create.plot.data.diagnostic create.plot.data.generic create.plot.data.reg create.overall.display create.subgroup.display create.summary.disp pretty.metric.name set.plot.options update.changed.plot.params
 #' @name RCMetaR-plotting
 NULL
 
@@ -278,8 +263,7 @@ NULL
 #' @section Display helpers:
 #' \code{format.summary.display()} and \code{format.summary.data()} return text
 #' without native console encoding. Their S3 print methods write that text.
-#' \code{create.repeat.string()},
-#' \code{pad.with.spaces()}, \code{round.display()}, and the
+#' \code{round.display()} and the
 #' \code{*.value.info()} helpers format display rows and labels.
 #'
 #' @section Persistence:
@@ -287,7 +271,7 @@ NULL
 #' \code{save.data()}, and \code{write.results.to.file()} write generated data,
 #' analysis parameters, and formatted summaries to disk.
 #'
-#' @aliases create.repeat.string cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info pad.with.spaces print.summary.data print.summary.display rma.uni.value.info round.display save.data save.plot.data write.results.to.file
+#' @aliases cumul.rma.mh.value.info cumul.rma.uni.value.info format.summary.data format.summary.display loo.rma.mh.value.info loo.rma.uni.value.info print.summary.data print.summary.display rma.uni.value.info round.display save.data save.plot.data write.results.to.file
 #' @name RCMetaR-output-helpers
 NULL
 

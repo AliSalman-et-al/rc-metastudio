@@ -1,11 +1,12 @@
 # Python
-*.pyc
-*.pyo
-**/__pycache__/
+*.py[cod]
+__pycache__/
 .venv/
+.venv-*/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.ty_cache/
 .grimp_cache/
 .tox/
 *.egg-info/
@@ -17,8 +18,12 @@ htmlcov/
 # R
 .RData
 .Rhistory
-**/r_tmp/
-src/R/rtmp/
+.Rproj.user/
+.Ruserdata
+*.Rcheck/
+Rplots.pdf
+r_tmp/
+/src/R/rtmp/
 HSROC_2.0.5.tar.gz
 RCMetaR_*.tar.gz
 RCMetaR_*.zip
@@ -27,22 +32,31 @@ RCMetaR_*.zip
 .project
 .pydevproject
 .settings/
+.idea/
+*.swp
 
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Build outputs
+# Build products and generated Qt files
 /build/
 /dist/
-dist.zip
-/artifacts/
+/dist.zip
 /src/build/
 /src/build-debug/
 /src/dist/
 /src/dist-debug/
-RCMetaStudio*.spec
-src/RCMetaStudio*.spec
+/RCMetaStudio*.spec
+/src/RCMetaStudio*.spec
+/src/rc_metastudio/ui_main_window.py
+/src/rc_metastudio/ui_results_window.py
+/src/rc_metastudio/forms/ui_*.py
+/src/rc_metastudio/forms/icons_rc.py
+
+# Generated verification receipts, captures, dependency caches, and release bundles
+/artifacts/
 
 # Local agent scratch files
 /.tmp/

@@ -2,14 +2,12 @@
 % Please edit documentation in R/rcmetar-reference.R
 \name{RCMetaR-output-helpers}
 \alias{RCMetaR-output-helpers}
-\alias{create.repeat.string}
 \alias{cumul.rma.mh.value.info}
 \alias{cumul.rma.uni.value.info}
 \alias{format.summary.data}
 \alias{format.summary.display}
 \alias{loo.rma.mh.value.info}
 \alias{loo.rma.uni.value.info}
-\alias{pad.with.spaces}
 \alias{print.summary.data}
 \alias{print.summary.display}
 \alias{rma.uni.value.info}
@@ -26,8 +24,7 @@ files, and preserve plot data alongside analysis parameters.
 
 \code{format.summary.display()} and \code{format.summary.data()} return text
 without native console encoding. Their S3 print methods write that text.
-\code{create.repeat.string()},
-\code{pad.with.spaces()}, \code{round.display()}, and the
+\code{round.display()} and the
 \code{*.value.info()} helpers format display rows and labels.
 }
 

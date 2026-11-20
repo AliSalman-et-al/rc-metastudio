@@ -305,7 +305,7 @@ def test_workspace_boolean_and_splitter_codecs_repair_only_invalid_fields(qapp):
 def test_structured_project_restores_nondefault_active_selection_without_normalizing_it(
     qapp, tmp_path, monkeypatch
 ):
-    from rc_metastudio import project_format
+    from rc_metastudio.project import archive as project_format
 
     source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
@@ -340,7 +340,8 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
 def test_failed_effect_projection_keeps_workspace_selection_and_history(
     qapp, tmp_path, monkeypatch, inject_python_boundary, change
 ):
-    from rc_metastudio import app_error_handler, project_format, r_bridge
+    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio.project import archive as project_format
 
     source = project_format.load_project(ROOT / "sample_projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
@@ -412,7 +413,8 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
 def test_failed_calculator_projection_keeps_study_and_history(
     qapp, monkeypatch, inject_python_boundary,
 ):
-    from rc_metastudio import app_error_handler, binary_data_dialog, r_bridge
+    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     replacement = 12.345
 
@@ -554,13 +556,10 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 },
             }
             if source_path == "csv_import":
-                result["csv_data"] = {
-                    "headers": [],
-                    "expected_headers": [],
-                    "data": [["Unsaved study", "2024", "1", "10", "2", "12"]],
-                    "covariate_names": [],
-                    "covariate_types": [],
-                }
+                from rc_metastudio.importing.tabular import CsvImportResult
+                result["csv_data"] = CsvImportResult(
+                    (), (("Unsaved study", "2024", "1", "10", "2", "12"),), (), (), (),
+                )
             window._handle_wizard_results(result)
             assert import_errors == []
             original_model = window.model
@@ -611,8 +610,8 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
 def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
     qapp, tmp_path, monkeypatch
 ):
-    from rc_metastudio import project_adapter
-    from rc_metastudio import project_format
+    from rc_metastudio.project import adapter as project_adapter
+    from rc_metastudio.project import archive as project_format
     from rc_metastudio import settings
 
     app, window = automation.start_automation()
@@ -804,7 +803,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
     qapp, tmp_path, monkeypatch
 ):
     from rc_metastudio import main_wizard
-    from rc_metastudio import project_format
+    from rc_metastudio.project import archive as project_format
 
     app, window = automation.start_automation()
     warnings = []
@@ -890,7 +889,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
 def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
     qapp, monkeypatch
 ):
-    from rc_metastudio import dataset_table_model
+    from rc_metastudio.workspace import table_model as dataset_table_model
 
     app, window = automation.start_automation()
     errors = []
@@ -983,7 +982,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
 def test_late_cross_family_open_failure_restores_projected_controls_both_directions(
     qapp, tmp_path, monkeypatch
 ):
-    from rc_metastudio import project_format
+    from rc_metastudio.project import archive as project_format
 
     def projected_controls(window):
         return (

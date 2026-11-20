@@ -149,12 +149,17 @@ def safe_slot(callback, parent=None):
     return _safe_slot
 
 
+def connect_action(action, callback):
+    """Connect a parameterless command without passing QAction's checked state."""
+    parent = getattr(callback, "__self__", None)
+    action.triggered.connect(safe_slot(lambda checked=False: callback(), parent=parent))
+
+
 class SafeSignalConnection(object):
     def __init__(self, signal, callback, parent=None):
         self.signal = signal
-        self.parent = parent
-        self.slot = None
-        self.replace(callback, parent=parent)
+        self.slot = safe_slot(callback, parent=parent)
+        self.signal.connect(self.slot)
 
     def disconnect(self):
         if self.slot is None:
@@ -164,15 +169,6 @@ class SafeSignalConnection(object):
         except (TypeError, RuntimeError):
             pass
         self.slot = None
-
-    def replace(self, callback, parent=None):
-        self.disconnect()
-        if parent is not None:
-            self.parent = parent
-        self.slot = safe_slot(callback, parent=self.parent)
-        self.signal.connect(self.slot)
-        return self
-
 
 def connect_safely(signal, callback, parent=None):
     return SafeSignalConnection(signal, callback, parent=parent)

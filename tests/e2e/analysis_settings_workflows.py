@@ -13,8 +13,10 @@ from tests.e2e.plot_observations import load_saved_analysis, load_serialized_obj
 
 def run(app, window, root, record, analyze):
     from advanced_workflows import modal, click
-    from rc_metastudio import analysis_setup_dialog, r_bridge, results_window
-    from rc_metastudio.plot_editor_dialog import EditPlotDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio import r_bridge
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 
     def setup():
@@ -231,8 +233,7 @@ def run(app, window, root, record, analyze):
     # The amino effect-ordered REML prefixes can fail to converge in metafor.
     # Use an explicit FE fit to prove successful sequence/rerun preservation;
     # the independent prefix oracle separately exercises REML sequences.
-    dialog.method_cbo_box.setCurrentText(next(label for label, method in dialog.available_method_d.items()
-                                            if method == 'binary.fixed.inv.var'))
+    dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData('binary.fixed.inv.var'))
     app.processEvents()
     record("review-cumulative-order", dialog, explanation=dialog.study_order.toolTip())
     dialog.study_order.setCurrentIndex(dialog.study_order.findData('year'))
@@ -280,8 +281,7 @@ def run(app, window, root, record, analyze):
     changed.change_settings_action.trigger()
     app.processEvents()
     failed = setup()
-    failed.method_cbo_box.setCurrentText(next(label for label, method in failed.available_method_d.items()
-                                            if method == 'binary.random'))
+    failed.method_cbo_box.setCurrentIndex(failed.method_cbo_box.findData('binary.random'))
     app.processEvents()
     from analysis_matrix import set_parameter
     set_parameter(app, failed, 'rm.method', 'REML')

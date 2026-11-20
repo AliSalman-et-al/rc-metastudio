@@ -18,7 +18,7 @@ class IdentityTableModel(QtGui.QStandardItemModel):
         self.identities = list(identities)
 
     def headerData(self, section, orientation, role=QtCore.Qt.ItemDataRole.DisplayRole):
-        from rc_metastudio.workspace_column_identity import (
+        from rc_metastudio.workspace.column_identity import (
             WORKSPACE_COLUMN_IDENTITY_ROLE,
         )
 
@@ -81,7 +81,7 @@ def test_stale_main_placement_is_clamped_to_available_screen(tmp_path):
 
 def test_main_column_widths_round_trip_in_versioned_workspace_state(tmp_path, qapp):
     from rc_metastudio import settings
-    from rc_metastudio.workspace_column_identity import (
+    from rc_metastudio.workspace.column_identity import (
         WorkspaceColumnIdentity,
         WorkspaceColumnWidthState,
     )
@@ -107,7 +107,7 @@ def test_main_column_widths_round_trip_in_versioned_workspace_state(tmp_path, qa
 
 
 def test_workspace_columns_preserve_user_widths_and_initialize_only_new_columns(qapp):
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+    from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 
     table = QtWidgets.QTableView()
     model = IdentityTableModel([("fixed", "study"), ("outcome", "estimate")])
@@ -139,7 +139,7 @@ def test_workspace_columns_preserve_user_widths_and_initialize_only_new_columns(
 
 
 def test_workspace_columns_keep_width_when_display_header_is_renamed(qapp):
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+    from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 
     table = QtWidgets.QTableView()
     model = IdentityTableModel([("fixed", "study")])
@@ -161,7 +161,7 @@ def test_workspace_columns_keep_width_when_display_header_is_renamed(qapp):
 
 
 def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp):
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+    from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 
     table = QtWidgets.QTableView()
     model = IdentityTableModel(
@@ -199,14 +199,14 @@ def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp
 
 
 def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qapp):
-    from rc_metastudio import dataset_table_model
-    from rc_metastudio import analysis_dataset
-    from rc_metastudio.workspace_column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+    from rc_metastudio.workspace import table_model as dataset_table_model
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.workspace.column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
+    from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 
     def legacy_model():
-        from rc_metastudio import project_adapter
-        from rc_metastudio.project_format import migrate_to_latest
+        from rc_metastudio.project import adapter as project_adapter
+        from rc_metastudio.project.archive import migrate_to_latest
         from tests.python.fast.test_project_adapter import _legacy_multi_arm_project
         from tests.python.fast.test_project_format import _legacy_state
         project = _legacy_multi_arm_project("binary")
@@ -246,7 +246,7 @@ def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qap
 
 
 def test_explicit_auto_fit_transfers_new_widths_to_user_ownership(qapp):
-    from rc_metastudio.qt_workspace_columns import WorkspaceColumnWidthController
+    from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 
     table = QtWidgets.QTableView()
     model = QtGui.QStandardItemModel(1, 1)

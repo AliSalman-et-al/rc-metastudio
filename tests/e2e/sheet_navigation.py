@@ -7,7 +7,7 @@ from PyQt6 import QtCore, QtWidgets
 
 
 def check(app, window, root, work, record):
-    from rc_metastudio.project_adapter import dataset_to_project
+    from rc_metastudio.project.adapter import dataset_to_project
 
     assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
     tabs = window.sheet_tabs
@@ -32,6 +32,25 @@ def check(app, window, root, work, record):
     assert window.model.setData(index, 'Deliberate study edit', QtCore.Qt.ItemDataRole.EditRole)
     tabs.setCurrentIndex(0)
     assert window.workspace.is_dirty and ' *' in window.windowTitle()
+    edited_document = window.workspace.document
+    model_before_undo = window.model
+    table = window.tableView
+    current_cell = model_before_undo.index(0, model_before_undo.NAME)
+    table.setCurrentIndex(current_cell)
+    with patch.object(table, 'setModel', side_effect=RuntimeError('workspace projection failed')):
+        try:
+            window.undo()
+        except RuntimeError as error:
+            assert str(error) == 'workspace projection failed'
+        else:
+            raise AssertionError('Undo accepted a workspace that could not be displayed')
+    assert window.workspace.document == edited_document
+    assert window.workspace.path == path and window.workspace.is_dirty
+    assert window.workspace.can_undo and not window.workspace.can_redo
+    assert window.model is table.model() is model_before_undo
+    assert table.currentIndex() == current_cell
+    record('sheet-undo-rejected-after-projection-failure', window,
+           failed_projection='workspace projection failed', dirty=window.workspace.is_dirty)
     window.action_undo.trigger()
     assert not window.workspace.is_dirty and ' *' not in window.windowTitle()
     window.action_redo.trigger()
@@ -69,7 +88,7 @@ def check(app, window, root, work, record):
     window.action_undo.trigger()
     assert window.action_go.isEnabled() and not window.workspace.is_dirty
 
-    from rc_metastudio import project_format
+    from rc_metastudio.project import archive as project_format
     project = dataset_to_project(window.model.dataset)
     project["sheets"][0]["rows"][0]["raw_data"] = {}
     omitted = work / "omitted-raw-arms.rcms"

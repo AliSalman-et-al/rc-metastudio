@@ -7,7 +7,8 @@ from typing import cast
 from rc_metastudio import automation
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import adaptive_window, calculator_service
+from rc_metastudio import adaptive_window
+from rc_metastudio.calculators import service as calculator_service
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -23,7 +24,7 @@ AVAILABLE = QtCore.QRect(20, 30, 1024, 640)
 
 
 def _open_binary_dialog(monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app, window = automation.start_automation()
     monkeypatch.setattr(
@@ -224,7 +225,7 @@ def test_binary_data_is_screen_bounded_with_large_font_and_long_metric(monkeypat
 
 
 def test_binary_back_calculation_choices_are_scrollable_and_screen_bounded(monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app = required(
         QtWidgets.QApplication.instance() or QtWidgets.QApplication([]), "application"
@@ -267,7 +268,7 @@ def test_binary_back_calculation_choices_are_scrollable_and_screen_bounded(monke
 
 
 def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app, window, dialog = _open_binary_dialog(monkeypatch)
     observed = []
@@ -362,7 +363,7 @@ def _binary_table_snapshot(dialog):
 def test_binary_back_calculation_chooser_cancel_is_an_exact_nested_transaction(
     monkeypatch,
 ):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app, window, dialog = _open_binary_dialog(monkeypatch)
     imputed = {
@@ -415,7 +416,7 @@ def test_binary_back_calculation_chooser_cancel_is_an_exact_nested_transaction(
 
 
 def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app, window, dialog = _open_binary_dialog(monkeypatch)
     imputed = {
@@ -497,7 +498,7 @@ def test_binary_table_long_count_overflows_inside_table_and_remains_accessible(
     monkeypatch,
 ):
     from rc_metastudio import app_error_handler
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     warnings = []
     monkeypatch.setattr(
@@ -537,7 +538,7 @@ def test_binary_table_long_count_overflows_inside_table_and_remains_accessible(
 
 
 def test_binary_validation_message_wraps_and_is_revealed(monkeypatch):
-    from rc_metastudio import binary_data_dialog
+    from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     app, window, dialog = _open_binary_dialog(monkeypatch)
     warnings = []

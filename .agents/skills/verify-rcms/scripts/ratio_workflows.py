@@ -15,10 +15,13 @@ def run(app, window, scenario, record):
         return
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
-    from rc_metastudio import main_wizard, analysis_setup_dialog, results_window, r_bridge, analysis_dataset
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
-    from rc_metastudio.ratio_data_dialog import RatioDataDialog
+    from rc_metastudio import main_wizard, r_bridge
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal, plots
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
@@ -359,8 +362,8 @@ def run(app, window, scenario, record):
             for cov, checkbox in dialog.covs_and_check_boxes:
                 checkbox.setChecked(cov['name'] == 'Dose')
         else:
-            label = next(label for label, key in dialog.available_method_d.items() if key == method)
-            dialog.method_cbo_box.setCurrentText(label); app.processEvents()
+            dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(method))
+            app.processEvents()
         set_parameter(app, dialog, "digits", 6)
         set_parameter(app, dialog, "conf.level", confidence)
         if suffix == "random" or workflow == "meta-regression":
@@ -514,10 +517,12 @@ def run(app, window, scenario, record):
 def verify_bundled_sample(app, window, hazard, record):
     """Open the shipped metadat sample, fit it, and preserve original inputs."""
     from PyQt6 import QtCore, QtWidgets
-    from rc_metastudio import analysis_setup_dialog, results_window, r_bridge
-    from rc_metastudio.project_format import load_project
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio import r_bridge
+    from rc_metastudio.project.archive import load_project
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     from analysis_matrix import set_parameter
     from advanced_workflows import modal
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
@@ -567,8 +572,8 @@ def verify_bundled_sample(app, window, hazard, record):
         window.action_go.trigger(); app.processEvents()
         dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
         method = family + "." + suffix
-        label = next(label for label, key in dialog.available_method_d.items() if key == method)
-        dialog.method_cbo_box.setCurrentText(label); app.processEvents()
+        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(method))
+        app.processEvents()
         set_parameter(app, dialog, "digits", 6)
         set_parameter(app, dialog, "conf.level", 95)
         if suffix == "random":
@@ -598,8 +603,8 @@ def verify_bundled_sample(app, window, hazard, record):
         subgroup.covariate_combo_box.setCurrentText("Chemotherapy timing")
         subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click(); app.processEvents()
         dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
-        label = next(label for label, key in dialog.available_method_d.items() if key == family + ".random")
-        dialog.method_cbo_box.setCurrentText(label); app.processEvents()
+        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(family + ".random"))
+        app.processEvents()
         set_parameter(app, dialog, "digits", 6)
         set_parameter(app, dialog, "rm.method", "REML")
         record("bundled-hr-timing-subgroup-configured", dialog, parameters=dict(dialog.current_param_vals))

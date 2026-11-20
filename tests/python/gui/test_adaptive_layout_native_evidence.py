@@ -448,7 +448,8 @@ def test_covariate_cancel_probe_detects_live_sheet_mutation(qapp, monkeypatch):
 def test_progress_observer_checks_blocked_gestures_and_owner_completion(qapp, monkeypatch, defect, surface):
     import sys
     from scripts import native_remaining_surfaces_smoke as smoke
-    from rc_metastudio import main_window, progress_dialog
+    from rc_metastudio import main_window
+    from rc_metastudio.analysis import progress_dialog
     dialog_type = main_window.ImportProgressDialog if surface == "import-progress" else progress_dialog.AnalysisProgressDialog
     callback_errors = []
     monkeypatch.setattr(sys, "excepthook", lambda _kind, error, _trace: callback_errors.append(error))

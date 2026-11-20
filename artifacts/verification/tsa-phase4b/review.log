@@ -1,3 +1,0 @@
-Command: uv run python artifacts/verification/tsa-phase4b/contact_sheets.py
-Verified manifests, DPI and SVG bounds for 30 native captures; SVGs match across scales in all 15 case/style pairs.
-Exit: 0

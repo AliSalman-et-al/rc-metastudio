@@ -149,6 +149,9 @@ create.plot.data.generic <- function(om.data, params, res, selected.cov=NULL){
 
 create.plot.data.binary <- function(binary.data, params, res, selected.cov = NULL){
 
+    if (rcmetar.metafor.binary.default.supported(binary.data, params, selected.cov=selected.cov)) {
+        return(rcmetar.build.binary.metafor.bundle(binary.data, params, res))
+    }
     plot.data <- create.plot.data.generic(binary.data, params, res, selected.cov=selected.cov)
     if (length(binary.data@g1O1) > 0)  {
 
@@ -159,18 +162,16 @@ create.plot.data.binary <- function(binary.data, params, res, selected.cov = NUL
          plot.data$col4 <- list(nums = binary.data@g2O1, denoms = binary.data@g2O1 + binary.data@g2O2)
     }
 
-    if (rcmetar.metafor.binary.default.supported(binary.data, params, selected.cov=selected.cov)) {
-        plot.data <- rcmetar.build.binary.metafor.bundle(binary.data, params, res)
-    }
 
     plot.data
 }
 
 create.plot.data.diagnostic <- function(diagnostic.data, params, res, selected.cov = NULL){
 
+    if (rcmetar.metafor.diagnostic.default.supported(diagnostic.data, params, selected.cov=selected.cov)) {
+        return(rcmetar.build.diagnostic.metafor.bundle(diagnostic.data, params, res))
+    }
     plot.data <- create.plot.data.generic(diagnostic.data, params, res, selected.cov=selected.cov)
-    plot.options <- plot.data$plot.options
-    plot.options$show.y.axis <- FALSE
     changed.params <- plot.data$changed.params
     if (length(diagnostic.data@TP) > 0) {
         raw.data <- list("TP"=diagnostic.data@TP, "FN"=diagnostic.data@FN, "TN"=diagnostic.data@TN, "FP"=diagnostic.data@FP)
@@ -192,17 +193,14 @@ create.plot.data.diagnostic <- function(diagnostic.data, params, res, selected.c
         changed.params$fp_col3_str <- label
         plot.data$changed.params <- changed.params
     }
-    if (rcmetar.metafor.diagnostic.default.supported(diagnostic.data, params, selected.cov=selected.cov)) {
-        plot.data <- rcmetar.build.diagnostic.metafor.bundle(diagnostic.data, params, res)
-    }
     plot.data
 }
 
 create.plot.data.continuous <- function(cont.data, params, res, selected.cov = NULL){
-    plot.data <- create.plot.data.generic(cont.data, params, res, selected.cov=selected.cov)
     if (rcmetar.metafor.continuous.default.supported(cont.data, params, selected.cov=selected.cov)) {
-        plot.data <- rcmetar.build.continuous.metafor.bundle(cont.data, params, res)
+        return(rcmetar.build.continuous.metafor.bundle(cont.data, params, res))
     }
+    plot.data <- create.plot.data.generic(cont.data, params, res, selected.cov=selected.cov)
     plot.data
 }
 
@@ -389,124 +387,4 @@ meta.regression.plot <- function(plot.data, outpath, ...) {
         stop("Meta-regression bubble plots require a metafor-backed plot bundle.", call.=FALSE)
     }
     rcmetar.draw.metafor.bubble(plot.data, outpath)
-}
-
-format.data.cols <- function(plot.data) {
-  options <- plot.data$options
-  types <- plot.data$types
-  if (options$show.col2==TRUE) {
-
-        y.disp <- plot.data$effects.disp$y.disp
-        lb.disp <- plot.data$effects.disp$lb.disp
-        ub.disp <- plot.data$effects.disp$ub.disp
-        effect.sizes <- format.effect.sizes(y=y.disp, lb=lb.disp, ub=ub.disp, options)
-        effect.size.label <- create.effect.size.label(effect.sizes, options)
-        effect.size.col <- c(effect.size.label,
-                             paste(effect.sizes$y.display, effect.sizes$lb.display, ",",
-                                   effect.sizes$ub.display, ")", sep = ""))
-        effect.size.col[types==4] <- ""
-        plot.data$additional.col.data$es <- effect.size.col
-  }
-  if ((options$show.col3==TRUE) && (!is.null(plot.data$col3))) {
-        label <- options$col3.str
-        data.col <- format.raw.data.col(nums = plot.data$col3$nums, denoms = plot.data$col3$denoms, label = label, types=types)
-        plot.data$additional.col.data$cases = data.col
-  }
-  if ((options$show.col4==TRUE) && (!is.null(plot.data$col4))) {
-        label <- options$col4.str
-        data.col <- format.raw.data.col(nums = plot.data$col4$nums, denoms = plot.data$col4$denoms, label = label, types=types)
-        plot.data$additional.col.data$controls = data.col
-  }
-  plot.data
-}
-
-format.effect.sizes <- function(y, lb, ub, options) {
-  digits <- options$digits
-  y.display <- sprintf(paste("%.", digits,"f", sep=""), y)
-  lb.display <- sprintf(paste("%.", digits,"f", sep=""), lb)
-  ub.display <- sprintf(paste("%.", digits,"f", sep=""), ub)
-
-  if (length(ub.display[ub.display >= 0])) {
-    ub.display[ub.display >= 0] <- mapply(pad.with.spaces, ub.display[ub.display >= 0], begin.num=1, end.num=0)
-  }
-  ub.max.chars <- max(nchar(ub.display))
-  ub.extra.space <- ub.max.chars - nchar(ub.display)
-  ub.display <- mapply(pad.with.spaces, ub.display, begin.num = ub.extra.space, end.num=0)
-  if (length(ub.display[ub.display >= 0])) {
-    ub.display[ub.display >= 0] <- mapply(pad.with.spaces, ub.display[ub.display >= 0], begin.num=1, end.num=0)
-  }
-  if (min(ub) < 0) {
-    ub.display <- paste(" ", ub.display, sep="")
-  }
-  lb.display <- paste(" (", lb.display, sep="")
-  lb.max.chars <- max(nchar(lb.display))
-  lb.extra.space <- lb.max.chars - nchar(lb.display)
-  lb.display <- mapply(pad.with.spaces, lb.display, begin.num = lb.extra.space, end.num=0)
-  effect.sizes <- list("y.display"=y.display, "lb.display"=lb.display, "ub.display"=ub.display)
-}
-
-create.effect.size.label <- function(effect.sizes, options) {
-   col2.label <- as.character(options$col2.str)
-   label.info <- check.label(label = col2.label, split.str = ",")
-   max.chars <- max(nchar(effect.sizes$ub.display)) + 1
-   if (label.info$contains.symbol == TRUE) {
-     col2.label.padded <- pad.with.spaces(col2.label, begin.num=0, end.num = max.chars - label.info$end.string.length)
-   } else {
-     col2.width <- max(nchar(effect.sizes$y.disp) + nchar(effect.sizes$lb.disp) + nchar(effect.sizes$ub.disp))
-     if (col2.width > nchar(col2.label)) {
-       col2.label.padded <- pad.with.spaces(col2.label, begin.num=0, end.num = floor((col2.width - nchar(col2.label)) / 2))
-     } else {
-       col2.label.padded <- col2.label
-     }
-   }
-   col2.label.padded
-}
-
-format.raw.data.col <- function(nums, denoms, label, types) {
-    types.short <- types[types %in% c(0,1)]
-    nums.total <- sum(nums[types.short==0])
-    denoms.total <- sum(denoms[types.short==0])
-    max.chars <- nchar(denoms.total) + 1
-    overall.row <- paste(nums.total, "/", denoms.total, sep = "")
-    label.info <- check.label(label, split.str = "/")
-    if (label.info$contains.symbol == TRUE) {
-        end.string.length <- label.info$end.string.length
-        label.padded <- pad.with.spaces(label, begin.num=0, end.num = max.chars - end.string.length - 1)
-        overall.row <- pad.with.spaces(overall.row, begin.num=0, end.num = end.string.length - max.chars)
-        max.chars <- max(max.chars, end.string.length)
-    }  else {
-      label.padded <- pad.with.spaces(label, begin.num=0, end.num = floor((nchar(overall.row) - nchar(label)) / 2))
-    }
-    denoms <- mapply(pad.with.spaces, denoms, begin.num=0, end.num = max.chars - (nchar(denoms) + 1))
-    data.column = c(label.padded, paste(nums, "/", denoms, sep = ""), overall.row)
-    data.column
-}
-
-check.label <- function(label, split.str) {
-    split.label <- strsplit(label, split.str)
-    split.label.length <- length(split.label[[1]])
-    label.info <- list("contains.symbol"=FALSE, "end.string.length"=0)
-    if (split.label.length > 1) {
-       label.info$contains.symbol <- TRUE
-       label.info$end.string.length <- nchar(split.label[[1]][split.label.length])
-    }
-    label.info
-}
-
-calculate.radii <- function(plot.data, inv.var, max.symbol.size, max.ratio) {
-    ES <- plot.data$effects$ES
-    inv.var <- (plot.data$effects$se)^2
-    cov.values <- plot.data$covariate$values
-    x.range.min <- min(cov.values)
-    x.range.max <- max(cov.values)
-    x.range <- x.range.max - x.range.min
-    y.range.min <- min(ES)
-    y.range.max <- max(ES)
-    y.range <- y.range.max - y.range.min
-    min.range <- min(x.range, y.range)
-    inv.var.min <- min(inv.var)
-    inv.var.max <- max(inv.var)
-    inv.var.ratio <- inv.var.max / inv.var.min
-    radius.max <- min.range / 10
-    radii <- (radius.max / inv.var.max) * inv.var
 }

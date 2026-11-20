@@ -1,0 +1,587 @@
+"""Qt-independent semantic contract for Versioned Project Format datasets."""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Mapping
+from typing import TypeAlias, cast
+
+from rc_metastudio.analysis.catalog import (
+    FAMILY_METRICS, ONE_ARM_METRICS, RAW_FIELDS_PER_ARM, STR_TO_TYPE_DICT,
+)
+
+JsonScalar: TypeAlias = str | int | float | bool | None
+JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
+JsonObject: TypeAlias = dict[str, JsonValue]
+class ProjectSemanticError(ValueError):
+    """Schema-valid project content violates a domain relationship."""
+
+
+_FAMILY_SUBTYPES = {
+    "time_to_event": frozenset({None, "hazard_ratio"}),
+    "event_rates": frozenset({None, "incidence_rate_ratio"}),
+    "binary": frozenset({None, "proportion", "proportions"}),
+    "continuous": frozenset(
+        {None, "mean", "means", "smd", "reg_coef", "generic_effect"}
+    ),
+    "diagnostic": frozenset({None}),
+}
+
+
+def _object(value: object, location: str) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise ProjectSemanticError(f"{location}: expected an object")
+    return cast(dict[str, object], value)
+
+
+def _array(value: object, location: str) -> list[object]:
+    if not isinstance(value, list):
+        raise ProjectSemanticError(f"{location}: expected an array")
+    return cast(list[object], value)
+
+
+def _finite(value: object, location: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ProjectSemanticError(f"{location}: expected a number")
+    try:
+        number = float(value)
+    except (OverflowError, ValueError) as exc:
+        raise ProjectSemanticError(f"{location}: expected a finite number") from exc
+    if not math.isfinite(number):
+        raise ProjectSemanticError(f"{location}: expected a finite number")
+    return number
+
+
+def _integer_valued(value: float | None, location: str) -> None:
+    if value is not None and value % 1 != 0:
+        raise ProjectSemanticError(f"{location}: count must be integer-valued")
+
+
+def _validate_raw(family: str, values: list[object], location: str) -> None:
+    arity = RAW_FIELDS_PER_ARM[STR_TO_TYPE_DICT[family]]
+    if len(values) != arity:
+        raise ProjectSemanticError(
+            f"{location}: raw-data arity for {family} must be {arity}"
+        )
+    if any(isinstance(value, str) and value != "" for value in values):
+        raise ProjectSemanticError(
+            f"{location}: missing raw data must use an empty string"
+        )
+    numbers = [None if value == "" else _finite(value, location) for value in values]
+    if family in {"binary", "diagnostic"}:
+        _validate_count_raw(numbers, location)
+    if family == "binary":
+        _validate_binary_raw(numbers, location)
+    elif family == "event_rates":
+        _validate_rate_raw(numbers, location)
+    elif family == "continuous":
+        _validate_continuous_raw(numbers, location)
+
+
+def _validate_binary_raw(numbers: list[float | None], location: str) -> None:
+    if (
+        numbers[0] is not None
+        and numbers[1] is not None
+        and numbers[0] > numbers[1]
+    ):
+        raise ProjectSemanticError(f"{location}: events cannot exceed the group total")
+
+
+def _validate_count_raw(numbers: list[float | None], location: str) -> None:
+    for index, number in enumerate(numbers):
+        _integer_valued(number, f"{location}/{index}")
+    if any(value < 0 for value in numbers if value is not None):
+        raise ProjectSemanticError(f"{location}: count data cannot be negative")
+
+
+def _validate_rate_raw(numbers: list[float | None], location: str) -> None:
+    _integer_valued(numbers[0], location)
+    if (numbers[0] is not None and numbers[0] < 0) or (numbers[1] is not None and numbers[1] <= 0):
+        raise ProjectSemanticError(f"{location}: events must be nonnegative and person-time positive")
+
+
+def _validate_continuous_raw(numbers: list[float | None], location: str) -> None:
+    if numbers[0] is not None and numbers[0] % 1 != 0:
+        raise ProjectSemanticError(f"{location}/0: sample size must be integer-valued")
+    if (numbers[0] is not None and numbers[0] <= 0) or (numbers[2] is not None and numbers[2] < 0):
+        raise ProjectSemanticError(f"{location}: sample size must be positive and SD nonnegative")
+
+
+def _validate_effect(effect: dict[str, object], location: str) -> None:
+    for key, value in effect.items():
+        if key == "calculator_source":
+            if value not in ("entered", "derived_preview"):
+                raise ProjectSemanticError(f"{location}: invalid calculator source")
+            continue
+        number = _finite(value, f"{location}/{key}")
+        if key in {"SE", "display_se"} and number < 0:
+            raise ProjectSemanticError(
+                f"{location}/{key}: standard error cannot be negative"
+            )
+    for prefix in ("", "display_"):
+        ordered_values = [
+            _finite(effect[f"{prefix}{key}"], location)
+            for key in ("lower", "est", "upper")
+            if f"{prefix}{key}" in effect
+        ]
+        if ordered_values != sorted(ordered_values):
+            raise ProjectSemanticError(
+                f"{location}: interval does not contain estimate"
+            )
+
+
+def _validate_summary(dataset: Mapping[str, object], family: str) -> None:
+    if bool(dataset["is_diagnostic"]) != (family == "diagnostic"):
+        raise ProjectSemanticError("analysis family and is_diagnostic disagree")
+    summary = dataset["summary"]
+    if not isinstance(summary, dict):
+        return
+    summary_value = cast(dict[str, object], summary)
+    _validate_summary_identity(summary_value, family)
+    _validate_summary_metrics(summary_value, family)
+
+
+def _validate_summary_identity(summary: Mapping[str, object], family: str) -> None:
+    if summary["data_type"] != family:
+        raise ProjectSemanticError("project summary data type conflicts with family")
+    if summary["sub_type"] not in _FAMILY_SUBTYPES[family]:
+        raise ProjectSemanticError("project summary subtype conflicts with family")
+
+
+def _validate_summary_metrics(summary: Mapping[str, object], family: str) -> None:
+    effect = summary["effect"]
+    metrics = cast(list[str], summary["metric_choices"])
+    if effect is not None and effect not in FAMILY_METRICS[family]:
+        raise ProjectSemanticError("project summary metric conflicts with family")
+    if not set(metrics).issubset(FAMILY_METRICS[family]):
+        raise ProjectSemanticError("project summary metric conflicts with family")
+
+
+def _validated_outcomes(
+    dataset: Mapping[str, object], family: str
+) -> dict[str, dict[str, object]]:
+    outcomes = [
+        _object(value, f"outcome {index}")
+        for index, value in enumerate(_array(dataset["outcomes"], "outcomes"))
+    ]
+    names = [cast(str, outcome["name"]) for outcome in outcomes]
+    if len(names) != len(set(names)):
+        raise ProjectSemanticError("duplicate outcome identifier")
+    outcome_by_name = dict(zip(names, outcomes, strict=True))
+    expected_data_type = STR_TO_TYPE_DICT[family]
+    for name, outcome in outcome_by_name.items():
+        _validate_outcome(name, outcome, family, expected_data_type)
+    return outcome_by_name
+
+
+def _validate_outcome(
+    name: str,
+    outcome: Mapping[str, object],
+    family: str,
+    expected_data_type: int,
+) -> None:
+    if outcome["data_type"] != expected_data_type:
+        raise ProjectSemanticError(
+            f"outcome {name!r}: data type conflicts with {family} family"
+        )
+    if outcome["sub_type"] not in _FAMILY_SUBTYPES[family]:
+        raise ProjectSemanticError(
+            f"outcome {name!r}: subtype conflicts with {family} family"
+        )
+    follow_ups = cast(list[str], outcome["follow_ups"])
+    if len(follow_ups) != len(set(follow_ups)):
+        raise ProjectSemanticError(f"outcome {name!r}: duplicate follow-up identifier")
+
+
+def _validated_covariates(
+    dataset: Mapping[str, object],
+) -> dict[str, dict[str, object]]:
+    covariates = [
+        _object(value, f"covariate {index}")
+        for index, value in enumerate(_array(dataset["covariates"], "covariates"))
+    ]
+    names = [cast(str, value["name"]) for value in covariates]
+    if len(names) != len(set(names)):
+        raise ProjectSemanticError("duplicate covariate identifier")
+    stable_ids = [
+        cast(str, value["stable_id"])
+        for value in covariates
+        if value["stable_id"] is not None
+    ]
+    if len(stable_ids) != len(set(stable_ids)):
+        raise ProjectSemanticError("duplicate covariate stable identifier")
+    return dict(zip(names, covariates, strict=True))
+
+
+def _validate_studies(
+    dataset: Mapping[str, object],
+    family: str,
+    outcomes: Mapping[str, dict[str, object]],
+    covariates: Mapping[str, dict[str, object]],
+) -> dict[tuple[str, str | None], set[str]]:
+    studies = [
+        _object(value, f"study {index}")
+        for index, value in enumerate(_array(dataset["studies"], "studies"))
+    ]
+    study_ids = [cast(int, study["id"]) for study in studies]
+    if len(study_ids) != len(set(study_ids)):
+        raise ProjectSemanticError("duplicate study identifier")
+    available_groups: dict[tuple[str, str | None], set[str]] = {}
+    for study in studies:
+        _validate_study(study, family, outcomes, covariates, available_groups)
+    return available_groups
+
+
+def _validate_study(
+    study: Mapping[str, object],
+    family: str,
+    outcomes: Mapping[str, dict[str, object]],
+    covariates: Mapping[str, dict[str, object]],
+    available_groups: dict[tuple[str, str | None], set[str]],
+) -> None:
+    study_id = study["id"]
+    _validate_sample_size(study, study_id)
+    _validate_study_covariates(study, study_id, covariates)
+    seen_units: set[tuple[str, str | None]] = set()
+    for unit_index, unit_value in enumerate(
+        _array(study["analysis_units"], "analysis_units")
+    ):
+        _validate_analysis_unit(
+            _object(unit_value, f"study {study_id} unit {unit_index}"),
+            study_id,
+            unit_index,
+            family,
+            outcomes,
+            seen_units,
+            available_groups,
+        )
+
+
+def _validate_sample_size(study: Mapping[str, object], study_id: object) -> None:
+    sample_size = study["sample_size"]
+    if sample_size is None:
+        return
+    numeric_sample_size = _finite(sample_size, f"study {study_id} sample_size")
+    if numeric_sample_size <= 0 or numeric_sample_size % 1 != 0:
+        raise ProjectSemanticError(
+            f"study {study_id} sample_size: expected a positive integer"
+        )
+
+
+def _validate_study_covariates(
+    study: Mapping[str, object],
+    study_id: object,
+    covariates: Mapping[str, dict[str, object]],
+) -> None:
+    values = _object(study["covariates"], f"study {study_id} covariates")
+    if set(values) != set(covariates):
+        raise ProjectSemanticError(
+            f"study {study_id}: covariate references do not match declarations"
+        )
+    for name, value in values.items():
+        if value is None or value == "":
+            continue
+        if covariates[name]["data_type"] == 1:
+            _finite(value, f"study {study_id} covariate {name}")
+        elif not isinstance(value, str):
+            raise ProjectSemanticError(
+                f"study {study_id} covariate {name}: factor value must be text"
+            )
+
+
+def _validate_analysis_unit(
+    unit: Mapping[str, object],
+    study_id: object,
+    unit_index: int,
+    family: str,
+    outcomes: Mapping[str, dict[str, object]],
+    seen_units: set[tuple[str, str | None]],
+    available_groups: dict[tuple[str, str | None], set[str]],
+) -> None:
+    outcome_name = cast(str, unit["outcome"])
+    if outcome_name not in outcomes:
+        raise ProjectSemanticError(
+            f"study {study_id} unit {unit_index}: undeclared outcome"
+        )
+    follow_up = cast(str | None, unit["follow_up"])
+    follow_ups = cast(list[str], outcomes[outcome_name]["follow_ups"])
+    if follow_up is not None and follow_up not in follow_ups:
+        raise ProjectSemanticError(
+            f"study {study_id} unit {unit_index}: undeclared follow-up"
+        )
+    unit_key = (outcome_name, follow_up)
+    if unit_key in seen_units:
+        raise ProjectSemanticError(f"study {study_id}: duplicate analysis unit")
+    seen_units.add(unit_key)
+    groups, group_names = _validate_groups(unit, study_id, unit_index)
+    _validate_group_count(
+        study_id, unit_index, outcomes[outcome_name], family, len(groups)
+    )
+    _validate_group_raw_data(groups, study_id, unit_index, family)
+    available_groups.setdefault(unit_key, set()).update(group_names)
+    _validate_entered_effects(unit, study_id, unit_index, family, group_names)
+    from rc_metastudio.ratio_data import RatioInput
+    seen_comparisons = set()
+    for item in _array(unit.get("ratio_inputs", []), "ratio_inputs"):
+        record = _object(item, "ratio input")
+        names = tuple(cast(list[str], record["groups"]))
+        if family not in ("time_to_event", "event_rates") or len(names) != 2 or names[0] == names[1] or not set(names) <= set(group_names) or names in seen_comparisons:
+            raise ProjectSemanticError("invalid ratio input comparison")
+        seen_comparisons.add(names)
+        try:
+            RatioInput(**cast(dict, record["input"])).validate()
+        except (TypeError, ValueError) as error:
+            raise ProjectSemanticError(str(error)) from error
+
+
+def _validate_groups(
+    unit: Mapping[str, object],
+    study_id: object,
+    unit_index: int,
+) -> tuple[list[dict[str, object]], list[str]]:
+    groups = [
+        _object(value, f"study {study_id} unit {unit_index} group")
+        for value in _array(unit["groups"], "groups")
+    ]
+    group_ids = [cast(int, group["id"]) for group in groups]
+    group_names = [cast(str, group["name"]) for group in groups]
+    if len(group_ids) != len(set(group_ids)) or len(group_names) != len(
+        set(group_names)
+    ):
+        raise ProjectSemanticError(
+            f"study {study_id} unit {unit_index}: duplicate group identifier"
+        )
+    return groups, group_names
+
+
+def _validate_group_raw_data(
+    groups: list[dict[str, object]], study_id: object, unit_index: int, family: str
+) -> None:
+    for group in groups:
+        _validate_raw(
+            family,
+            _array(group["raw_data"], "raw_data"),
+            f"study {study_id} unit {unit_index} group {group['name']}",
+        )
+
+
+def _validate_group_count(
+    study_id: object,
+    unit_index: int,
+    outcome: Mapping[str, object],
+    family: str,
+    group_count: int,
+) -> None:
+    subtype = outcome["sub_type"]
+    if family == "diagnostic":
+        valid = group_count == 1
+    elif subtype in {"proportion", "mean", "reg_coef", "generic_effect"}:
+        valid = group_count >= 1
+    elif subtype in {"proportions", "means", "smd", "hazard_ratio", "incidence_rate_ratio"}:
+        # Retain all arms for pair selection even though each comparison is two-arm.
+        valid = group_count >= 2
+    else:
+        return
+    if not valid:
+        raise ProjectSemanticError(
+            f"study {study_id} unit {unit_index}: group count conflicts with subtype"
+        )
+
+
+def _valid_comparisons(family: str, metric: str, group_names: list[str]) -> set[str]:
+    if metric in ONE_ARM_METRICS or family == "diagnostic":
+        return set(group_names)
+    return {
+        f"{left}-{right}"
+        for left in group_names
+        for right in group_names
+        if left != right
+    }
+
+
+def _validate_entered_effects(
+    unit: Mapping[str, object],
+    study_id: object,
+    unit_index: int,
+    family: str,
+    group_names: list[str],
+) -> None:
+    effects = _object(unit["entered_effects"], "entered_effects")
+    for metric, comparisons_value in effects.items():
+        if metric not in FAMILY_METRICS[family]:
+            raise ProjectSemanticError(
+                f"study {study_id} unit {unit_index}: metric conflicts with family"
+            )
+        comparisons = _object(comparisons_value, "effect comparisons")
+        valid_comparisons = _valid_comparisons(family, metric, group_names)
+        for comparison, effect in comparisons.items():
+            if comparison not in valid_comparisons:
+                raise ProjectSemanticError(
+                    f"study {study_id} unit {unit_index}: undeclared group comparison"
+                )
+            _validate_effect(_object(effect, "effect"), f"{metric}/{comparison}")
+
+
+def _validate_active_state(
+    state: Mapping[str, JsonValue],
+    family: str,
+    outcomes: Mapping[str, dict[str, object]],
+    available_groups: Mapping[tuple[str, str | None], set[str]],
+) -> None:
+    active_outcome = cast(str | None, state["active_outcome"])
+    active_follow_up = cast(str | None, state["active_follow_up"])
+    active_groups = cast(list[str], state["active_groups"])
+    active_effect = cast(str | None, state["active_effect"])
+    if active_outcome is None:
+        _validate_empty_active_state(active_follow_up, active_groups, active_effect)
+        return
+    if active_outcome not in outcomes:
+        raise ProjectSemanticError("active outcome is not declared")
+    _validate_active_follow_up(active_follow_up, outcomes[active_outcome])
+    _validate_active_effect(active_effect, family)
+    groups = available_groups.get((active_outcome, active_follow_up), set())
+    if not set(active_groups) <= groups:
+        raise ProjectSemanticError("active group is not declared")
+
+
+def _validate_empty_active_state(
+    active_follow_up: str | None, active_groups: list[str], active_effect: str | None
+) -> None:
+    if active_follow_up is not None or active_groups or active_effect is not None:
+        raise ProjectSemanticError("active outcome is required for other active state")
+
+
+def _validate_active_follow_up(
+    active_follow_up: str | None, outcome: Mapping[str, object]
+) -> None:
+    if active_follow_up is None:
+        return
+    follow_ups = cast(list[str], outcome["follow_ups"])
+    if active_follow_up not in follow_ups:
+        raise ProjectSemanticError("active follow-up is not declared")
+
+
+def _validate_active_effect(active_effect: str | None, family: str) -> None:
+    if active_effect is not None and active_effect not in FAMILY_METRICS[family]:
+        raise ProjectSemanticError("active effect conflicts with analysis family")
+
+
+def validate_legacy_project_semantics(
+    project: Mapping[str, JsonValue], state: Mapping[str, JsonValue]
+) -> None:
+    dataset = _object(project["dataset"], "project.json/dataset")
+    family = cast(str, dataset["analysis_family"])
+    _validate_summary(dataset, family)
+    outcomes = _validated_outcomes(dataset, family)
+    covariates = _validated_covariates(dataset)
+    available_groups = _validate_studies(dataset, family, outcomes, covariates)
+    _validate_active_state(state, family, outcomes, available_groups)
+
+
+def is_empty_entry_row(row):
+    """Recognize persisted grid placeholders without discarding partially entered studies."""
+    return (not row['label'] and not row['manually_excluded']
+            and row['year'] is None and row['sample_size'] is None and not row['notes']
+            and all(v in ('', None) for v in row['covariates'].values())
+            and all(value is None for entry in row['entered_effects'] for value in entry['values'].values())
+            and not row['ratio_inputs']
+            and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
+
+
+def _unique_sheet_items(items, location):
+    ids = [item.get("id") for item in items]
+    if any(not isinstance(i, str) or not i for i in ids) or len(ids) != len(set(ids)):
+        raise ProjectSemanticError(f"{location}: invalid or duplicate identity")
+
+
+def _validate_sheet_ratio(value):
+    from rc_metastudio.ratio_data import RatioInput
+
+    for key in ("estimate", "lower", "upper", "se", "confidence"):
+        if key in value and (value[key] is not None or key == "confidence"):
+            _finite(value[key], f"ratio input {key}")
+    try:
+        RatioInput(**value).validate()
+    except (TypeError, ValueError) as exc:
+        raise ProjectSemanticError(f"invalid ratio input: {exc}") from exc
+
+
+def _validate_sheet_comparisons(sheet, row, arms):
+    effect_keys = [(record["metric"], tuple(record["arms"])) for record in row["entered_effects"]]
+    ratio_keys = [tuple(record["arms"]) for record in row["ratio_inputs"]]
+    if len(effect_keys) != len(set(effect_keys)) or len(ratio_keys) != len(set(ratio_keys)):
+        raise ProjectSemanticError("duplicate persisted comparison key")
+    for record in row["ratio_inputs"]:
+        _validate_sheet_ratio(record["input"])
+    for record in row["entered_effects"] + row["ratio_inputs"]:
+        if not record["arms"] or not set(record["arms"]) <= arms:
+            raise ProjectSemanticError("comparison references undeclared arm")
+    for record in row["entered_effects"]:
+        if record["metric"] not in FAMILY_METRICS[sheet["family"]]:
+            raise ProjectSemanticError("metric conflicts with family")
+        values = {key: value for key, value in record["values"].items() if value is not None}
+        _validate_effect(values, row["id"])
+
+
+def _validate_sheet_row(sheet, row, arms, covariates):
+    _validate_sample_size(row, row["id"])
+    if not set(row["raw_data"]) <= arms:
+        raise ProjectSemanticError("raw data reference undeclared arm")
+    for values in row["raw_data"].values():
+        _validate_raw(sheet["family"], values, row["id"])
+    if not set(row["covariates"]) <= set(covariates):
+        raise ProjectSemanticError("covariate references do not match declarations")
+    for identity, value in row["covariates"].items():
+        if value is None or value == "":
+            continue
+        if covariates[identity]["data_type"] == 1:
+            _finite(value, f"study {row['id']} covariate {identity}")
+        elif not isinstance(value, str):
+            raise ProjectSemanticError("factor value must be text")
+    _validate_sheet_comparisons(sheet, row, arms)
+
+
+def _validate_sheet_covariates(covariates):
+    for cov in covariates:
+        if not isinstance(cov.get("name"), str) or not cov["name"].strip():
+            raise ProjectSemanticError("covariate name must be nonempty text")
+        if type(cov.get("data_type")) is not int or cov["data_type"] not in (1, 4):
+            raise ProjectSemanticError("covariate data_type must be numeric or categorical")
+    names = [cov["name"] for cov in covariates]
+    if len(names) != len(set(names)):
+        raise ProjectSemanticError("duplicate covariate identifier")
+
+
+def _validate_sheet(sheet):
+    family = sheet["family"]
+    if sheet["data_type"] != STR_TO_TYPE_DICT[family]:
+        raise ProjectSemanticError("data_type conflicts with family")
+    if sheet["sub_type"] not in _FAMILY_SUBTYPES[family]:
+        raise ProjectSemanticError("sub_type conflicts with family")
+    _unique_sheet_items(sheet["arms"], "arms")
+    _unique_sheet_items(sheet["rows"], "rows")
+    _unique_sheet_items(sheet["covariates"], "covariates")
+    _validate_sheet_covariates(sheet["covariates"])
+    _validate_group_count(sheet["id"], 0, sheet, family, len(sheet["arms"]))
+    arms = {a["id"] for a in sheet["arms"]}
+    selected_arms = sheet["settings"].get("arms", [])
+    if not isinstance(selected_arms, list) or any(not isinstance(arm, str) for arm in selected_arms):
+        raise ProjectSemanticError("settings arms must be a list of arm identities")
+    if not set(selected_arms) <= arms:
+        raise ProjectSemanticError("settings reference undeclared arm")
+    covariates = {cov["id"]: cov for cov in sheet["covariates"]}
+    for row in sheet["rows"]:
+        _validate_sheet_row(sheet, row, arms, covariates)
+
+
+def validate_project_semantics(project, state):
+    """Validate the canonical sheet graph after schema validation or migration."""
+    sheets = project["sheets"]
+    _unique_sheet_items(sheets, "sheets")
+    names = [s["name"] for s in sheets]
+    if any(not n.strip() for n in names) or len(names) != len(set(names)):
+        raise ProjectSemanticError("blank or duplicate sheet name")
+    for sheet in sheets:
+        _validate_sheet(sheet)
+    if state["current_sheet_id"] is not None and state["current_sheet_id"] not in {s["id"] for s in sheets}:
+        raise ProjectSemanticError("unknown current sheet")

@@ -1,4 +1,0 @@
-Command: uv ["run","python","scripts/build_qt6.py","generate","--build-root","build/qt6-verification"]
-Git revision: 82bf2cf2cab7cf740ff291f0921126dd4e5fe680
-{"form": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification\\generated\\rc_metastudio\\forms\\ui_about_legal.py", "resource": "C:\\Users\\Ali-Salman\\Documents\\Code\\rc-metastudio\\build\\qt6-verification\\resources\\icons.rcc"}
-Exit: 0

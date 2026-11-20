@@ -21,7 +21,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from rc_metastudio.qt6_resources import ensure_application_resources
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.workspace.session import WorkspaceSession
 
 
 class AutomationWindow(Protocol):
@@ -225,14 +225,13 @@ def _run_main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     backend = install_native_test_backend()
 
-    from rc_metastudio import (
-        app_error_handler,
-        binary_data_dialog,
-        continuous_data_dialog,
-        dataset_table_model,
-        diagnostic_data_dialog,
-        r_bridge,
+    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio.calculators import (
+        binary_dialog as binary_data_dialog,
+        continuous_dialog as continuous_data_dialog,
+        diagnostic_dialog as diagnostic_data_dialog,
     )
+    from rc_metastudio.workspace import table_model as dataset_table_model
 
     for name, implementation in vars(backend).items():
         setattr(r_bridge, name, implementation)

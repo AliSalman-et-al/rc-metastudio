@@ -1,7 +1,7 @@
 import pytest
 
-from rc_metastudio import plot_capabilities
-from rc_metastudio.analysis_results import parse_analysis_result
+from rc_metastudio.results import plot_capabilities
+from rc_metastudio.results.contract import parse_analysis_result
 
 
 def descriptor(**overrides):

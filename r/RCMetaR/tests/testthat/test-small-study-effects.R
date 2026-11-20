@@ -78,8 +78,6 @@ test_that("publication-bias text sections do not expose missing-value artifacts"
 })
 
 test_that("generic entered effects produce one ordered ordinary funnel result", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=c(-0.2, 0.1, 0.3, -0.1),
@@ -134,8 +132,6 @@ test_that("generic entered effects produce one ordered ordinary funnel result", 
 
 
 test_that("optional asymmetry failures remain beside a successful funnel", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=c(-0.2, 0.1, 0.3, -0.1),
@@ -155,8 +151,6 @@ test_that("optional asymmetry failures remain beside a successful funnel", {
 
 
 test_that("one failed funnel does not discard successful plots", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=c(-0.2, 0.1, 0.3, -0.1),
@@ -177,8 +171,6 @@ test_that("one failed funnel does not discard successful plots", {
 
 
 test_that("ordinary and contour funnels persist their prepared geometry", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=c(-0.2, 0.1, 0.3, -0.1),
@@ -260,7 +252,6 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
 })
 
 test_that("contour OR funnels use back-transformed axis labels", {
-  testthat::skip_if_not_installed("metafor")
 
   settings <- RCMetaR:::.small.study.funnel.settings(list(
     metric="OR", funnel.kind="contour"
@@ -297,8 +288,6 @@ test_that("contour OR funnels use back-transformed axis labels", {
 })
 
 test_that("references follow the methods and plots that produced the result", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=seq(-.3, .4, length.out=10),
@@ -325,8 +314,6 @@ test_that("references follow the methods and plots that produced the result", {
 })
 
 test_that("ordinary funnel sampling-region visibility is persisted for regeneration", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=c(-0.2, 0.1, 0.3, -0.1),
               SE=c(0.1, 0.2, 0.15, 0.3),
               study.names=c("one", "two", "three", "four"),
@@ -354,8 +341,6 @@ test_that("ordinary funnel sampling-region visibility is persisted for regenerat
 })
 
 test_that("funnel regeneration uses the persisted funnel index for vector settings", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=c(-0.2, 0.1, 0.3, -0.1),
               SE=c(0.1, 0.2, 0.15, 0.3),
               study.names=c("one", "two", "three", "four"),
@@ -382,8 +367,6 @@ test_that("funnel regeneration uses the persisted funnel index for vector settin
 })
 
 test_that("generic tests use distinct package-native Egger and Begg procedures", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     y=c(-.20, .10, .30, -.10, .20, .40, -.30, .05, .11, -.02),
@@ -424,8 +407,6 @@ test_that("generic tests use distinct package-native Egger and Begg procedures",
 })
 
 test_that("generic guardrails expose hard minimum and automatic k guard", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   make_data <- function(k, se=seq(.1, .1 + .01 * (k - 1), length.out=k)) new(
     "ContinuousData", y=seq(-.2, .2, length.out=k), SE=se,
     study.names=paste0("study-", seq_len(k)), years=as.integer(2011:(2010+k))
@@ -465,8 +446,6 @@ test_that("generic guardrails expose hard minimum and automatic k guard", {
 })
 
 test_that("binary OR routes Harbord at low tau and Rucker AS+RE above the rule of thumb", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   make_data <- function(a, b, c, d) new(
     "BinaryData", g1O1=a, g1O2=b, g2O1=c, g2O2=d,
     y=rep(999, length(a)), SE=rep(999, length(a)),
@@ -535,8 +514,6 @@ test_that("binary OR routes Harbord at low tau and Rucker AS+RE above the rule o
 })
 
 test_that("binary OR corrections preserve policy labels and exclude native double-zero studies", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "BinaryData",
     g1O1=c(0, 2, 4, 5, 6, 7, 8, 3, 4, 5),
@@ -574,8 +551,6 @@ test_that("binary OR corrections preserve policy labels and exclude native doubl
 })
 
 test_that("independent two-group SMD uses native Pustejovsky-Rodgers", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new(
     "ContinuousData",
     N1=c(20,24,30,36,40,45,50,60,70,80), mean1=c(1.1,1.4,1.2,1.8,1.5,1.9,1.7,2.0,1.6,2.1), sd1=rep(1,10),
@@ -605,8 +580,6 @@ test_that("independent two-group SMD uses native Pustejovsky-Rodgers", {
 })
 
 test_that("ordinary SMD Egger follows the meta default primary test", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=seq(-.2,.2,length.out=10), SE=seq(.1,.2,length.out=10),
               study.names=paste0("s",1:10), years=as.integer(2011:2020))
   result <- rcmetar.run.small.study.effects(data, list(
@@ -619,8 +592,6 @@ test_that("ordinary SMD Egger follows the meta default primary test", {
 })
 
 test_that("RR, RD, and one-arm proportion retain package-supported tests and caveats", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   binary <- new("BinaryData", g1O1=c(2,4,6,8,10,12,14,16,18,20), g1O2=c(18,16,14,12,10,8,6,4,2,1),
                 g2O1=c(1,3,5,7,9,11,13,15,17,19), g2O2=c(19,17,15,13,11,9,7,5,3,2),
                 y=rep(999,10), SE=rep(999,10), study.names=paste0("s",1:10), years=as.integer(2011:2020))
@@ -640,8 +611,6 @@ test_that("RR, RD, and one-arm proportion retain package-supported tests and cav
 })
 
 test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=c(-.8, -.6, -.4, -.2, -.1, .1, .2, .3, .4, 1.5),
               SE=c(.10, .11, .12, .13, .14, .15, .16, .17, .18, .19),
               study.names=paste0("s", 1:10), years=as.integer(2011:2020))
@@ -691,8 +660,6 @@ test_that("trim-and-fill uses native L0/R0 controls and persists augmented plots
 })
 
 test_that("infinite-precision sensitivity reports only supported successful tests", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("ContinuousData", y=seq(-.3, .4, length.out=10), SE=seq(.1, .2, length.out=10),
               study.names=paste0("s", 1:10), years=as.integer(2011:2020))
   result <- rcmetar.run.small.study.effects(data, list(
@@ -721,8 +688,6 @@ test_that("infinite-precision sensitivity reports only supported successful test
 })
 
 test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometry", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   data <- new("DiagnosticData",
     TP=c(0, 8, 12, 5, 9, 14, 6, 11, 7, 13),
     FN=c(10, 2, 4, 5, 3, 6, 4, 5, 3, 7),
@@ -805,8 +770,6 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
 })
 
 test_that("diagnostic Deeks requires complete counts", {
-  testthat::skip_if_not_installed("meta")
-  testthat::skip_if_not_installed("metafor")
   entered <- new("DiagnosticData", y=seq(.2, .8, length.out=10), SE=seq(.1, .2, length.out=10),
                  study.names=paste0("e", 1:10), years=as.integer(2011:2020))
   no.counts <- rcmetar.run.small.study.effects(entered, list(

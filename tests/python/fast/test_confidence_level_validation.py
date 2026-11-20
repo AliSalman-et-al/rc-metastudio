@@ -7,10 +7,10 @@ import pytest
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio.analysis_validation import normalize_confidence_level_params, is_valid_plot_tick_list, validate_analysis_digits, validate_correction_factor, validate_confidence_level
-from rc_metastudio.analysis_catalog import CONTINUOUS
-from rc_metastudio.analysis_dataset import Sheet
-from rc_metastudio.analysis_unit import AnalysisUnit
+from rc_metastudio.analysis.validation import normalize_confidence_level_params, is_valid_plot_tick_list, validate_analysis_digits, validate_correction_factor, validate_confidence_level
+from rc_metastudio.analysis.catalog import CONTINUOUS
+from rc_metastudio.project.model import Sheet
+from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import SheetId
 
 

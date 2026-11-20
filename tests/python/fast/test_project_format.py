@@ -12,10 +12,10 @@ import zipfile
 
 import pytest
 
-import rc_metastudio.project_format as project_format
-from rc_metastudio import project_adapter
-from rc_metastudio.project_domain import ProjectSemanticError, is_empty_entry_row, validate_project_semantics
-from rc_metastudio.project_format import (
+import rc_metastudio.project.archive as project_format
+from rc_metastudio.project import adapter as project_adapter
+from rc_metastudio.project.validation import ProjectSemanticError, is_empty_entry_row, validate_project_semantics
+from rc_metastudio.project.archive import (
     CURRENT_FORMAT_VERSION,
     ProjectArchiveLimits,
     ProjectDurabilityError,

@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 TOP_LEVEL_FORM_INVENTORY = {
     "about_legal.ui": (("about_legal_dialog.py", "AboutLegalDialog", "TRANSACTIONAL"),),
     "binary_data_dialog.ui": (
-        ("binary_data_dialog.py", "BinaryDataDialog", "TRANSACTIONAL"),
+        ("calculators/binary_dialog.py", "BinaryDataDialog", "TRANSACTIONAL"),
     ),
     "covariate_type_dialog.ui": (
         ("covariate_type_dialog.py", "CovariateTypeDialog", "TRANSACTIONAL"),
@@ -25,49 +25,49 @@ TOP_LEVEL_FORM_INVENTORY = {
         ("edit_name_dialogs.py", "EditCovariateNameDialog", "TRANSACTIONAL"),
     ),
     "binary_back_calculation_dialog.ui": (
-        ("binary_data_dialog.py", "BinaryBackCalculationDialog", "TRANSACTIONAL"),
+        ("calculators/binary_dialog.py", "BinaryBackCalculationDialog", "TRANSACTIONAL"),
     ),
     "confidence_level_dialog.ui": (
         ("confidence_level_dialog.py", "ConfidenceLevelDialog", "CONFIDENCE_LEVEL"),
     ),
     "continuous_back_calculation_dialog.ui": (
         (
-            "continuous_data_dialog.py",
+            "calculators/continuous_dialog.py",
             "ContinuousBackCalculationDialog",
             "TRANSACTIONAL",
         ),
     ),
     "continuous_data_dialog.ui": (
-        ("continuous_data_dialog.py", "ContinuousDataDialog", "TRANSACTIONAL"),
+        ("calculators/continuous_dialog.py", "ContinuousDataDialog", "TRANSACTIONAL"),
     ),
     "publication_bias_dialog.ui": (
-        ("small_study_effects_dialog.py", "SmallStudyEffectsDialog", "TRANSACTIONAL"),
+        ("analysis/small_study_effects_dialog.py", "SmallStudyEffectsDialog", "TRANSACTIONAL"),
     ),
     "subgroup_analysis_dialog.ui": (
-        ("subgroup_analysis_dialog.py", "SubgroupAnalysisDialog", "TRANSACTIONAL"),
+        ("analysis/subgroup_dialog.py", "SubgroupAnalysisDialog", "TRANSACTIONAL"),
     ),
     "diagnostic_data_dialog.ui": (
-        ("diagnostic_data_dialog.py", "DiagnosticDataDialog", "TRANSACTIONAL"),
+        ("calculators/diagnostic_dialog.py", "DiagnosticDataDialog", "TRANSACTIONAL"),
     ),
     "diagnostic_metrics_dialog.ui": (
-        ("diagnostic_metrics_dialog.py", "DiagnosticMetricsDialog", "TRANSACTIONAL"),
+        ("analysis/diagnostic_metrics_dialog.py", "DiagnosticMetricsDialog", "TRANSACTIONAL"),
     ),
     "edit_plot_dialog.ui": (
-        ("plot_editor_dialog.py", "EditPlotDialog", "TRANSACTIONAL"),
+        ("results/plot_editor.py", "EditPlotDialog", "TRANSACTIONAL"),
     ),
     "funnel_plot_editor_dialog.ui": (
-        ("funnel_plot_editor_dialog.py", "FunnelPlotEditorDialog", "TRANSACTIONAL"),
+        ("results/funnel_editor.py", "FunnelPlotEditorDialog", "TRANSACTIONAL"),
     ),
     "analysis_setup_dialog.ui": (
-        ("analysis_setup_dialog.py", "AnalysisSetupDialog", "TRANSACTIONAL"),
+        ("analysis/setup_dialog.py", "AnalysisSetupDialog", "TRANSACTIONAL"),
     ),
     "main_window.ui": (("main_window.py", "MainWindow", "MAIN"),),
     "new_covariate_dialog.ui": (
         ("add_new_dialogs.py", "AddCovariateDialog", "TRANSACTIONAL"),
     ),
-    "results_window.ui": (("results_window.py", "ResultsWindow", "RESULTS"),),
+    "results_window.ui": (("results/window.py", "ResultsWindow", "RESULTS"),),
     "progress_dialog.ui": (
-        ("progress_dialog.py", "AnalysisProgressDialog", "TRANSIENT"),
+        ("analysis/progress_dialog.py", "AnalysisProgressDialog", "TRANSIENT"),
     ),
 }
 

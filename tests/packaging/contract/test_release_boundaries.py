@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import base64
+import tarfile
 from pathlib import Path
 
 import pytest
@@ -141,6 +142,72 @@ def test_historical_master_ancestor_executes_workflow(tmp_path):
     git("checkout", source, cwd=clone)
     result = shell_step(definition[1], clone, {"inputs.source_sha": source})
     assert result.returncode == 0, result.stderr
+
+
+def test_candidate_records_archive_from_historical_source(tmp_path):
+    remote = tmp_path / "remote"
+    remote.mkdir()
+
+    def git(*args, cwd=remote):
+        return subprocess.check_output(["git", *args], cwd=cwd, text=True).strip()
+
+    git("init", "-b", "master")
+    git("config", "user.email", "fixture@example.invalid")
+    git("config", "user.name", "Fixture")
+    (remote / "scripts").mkdir()
+    script = remote / "scripts/delivery.py"
+    script.write_text("raise SystemExit('historical CLI has no record-assembled command')\n")
+    registry = json.loads((ROOT / "delivery/targets.json").read_text(encoding="utf-8"))
+    target = "linux-x64"
+    artifact = "historical-linux.tar.gz"
+    registry["targets"][target]["candidate_artifact"] = artifact
+    (remote / "delivery").mkdir()
+    (remote / "delivery/targets.json").write_text(json.dumps(registry), encoding="utf-8")
+    git("add", "scripts", "delivery")
+    git("commit", "-m", "Historical source")
+    source = git("rev-parse", "HEAD")
+    script.write_text(release_proof_source("scripts/delivery.py"), encoding="utf-8")
+    shutil.copyfile(ROOT / "delivery/targets.json", remote / "delivery/targets.json")
+    git("add", "scripts", "delivery")
+    git("commit", "-m", "Dispatching workflow source")
+    workflow_sha = git("rev-parse", "HEAD")
+    checkout = tmp_path / "checkout"
+    git("clone", "--depth=1", remote.as_uri(), str(checkout), cwd=tmp_path)
+    git("fetch", "--depth=1", "origin", source, cwd=checkout)
+    git("checkout", source, cwd=checkout)
+    (checkout / "candidate").mkdir()
+    delivery = load_delivery()
+    manifest = {
+        "schema_version": 1,
+        "product": "RC MetaStudio",
+        "version": "0.6.0-rc.99",
+        "channel": "candidate",
+        "trust_profile": "macos-trusted",
+        "source": {"commit": source},
+        "policy_inputs": {},
+        "release_targets": [target],
+    }
+    (checkout / "candidate/release-set.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (checkout / "artifacts").mkdir()
+    payload = checkout / "launcher"
+    payload.write_text("historical application", encoding="utf-8")
+    archive = checkout / "artifacts" / artifact
+    with tarfile.open(archive, "w:gz") as bundle:
+        bundle.add(payload, arcname="launcher")
+
+    values = {"github.workflow_sha": workflow_sha, "matrix.target": target, "matrix.artifact": artifact}
+    python = Path(sys.executable).as_posix()
+    for step in workflow("candidate")["jobs"]["build"]["steps"]:
+        if step.get("name") in {"Extract Linux candidate", "Record assembled candidate"}:
+            observed = shell_step(step, checkout, values, f'function uv() {{ shift 3; "{python}" "$@"; }}')
+            assert observed.returncode == 0, observed.stderr
+
+    record = delivery.load(checkout / f"candidate/{target}.assembled.json")
+    assert record["source_commit"] == source
+    assert record["input_digest"] == delivery.release_identity_digest(manifest)
+    assert {item["name"]: item["sha256"] for item in record["outputs"]}[artifact] == delivery.digest(archive)
+    inventory = delivery.load(checkout / f"candidate/{target}.inventory.json")
+    assert inventory["files"][0]["sha256"] == delivery.digest(payload)
 
 
 @pytest.mark.parametrize(

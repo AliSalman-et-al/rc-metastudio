@@ -49,25 +49,60 @@ permuted.meta.reg <- function (
 		)
 
 	if (include.meta.reg.summary) {
-		meta.reg.result <- g.meta.regression(
-			data=data,
-			mods=mods,
-			method=method,
-			level=level,
-			digits=digits,
-			measure=NULL,
-			btt=btt,
-			make.coeff.forest.plot=FALSE,
-			exclude.intercept=FALSE,
-			disable.plots=TRUE,
-			intercept=intercept,
-			knha=knha
-		)
-
-		results <- c(list('Standard Meta Regression Summary'=meta.reg.result$Summary), results)
+        report <- standard.meta.regression.summary(reg.res, data, mods.formula, digits)
+        results <- c(list("Standard Meta Regression Summary"=report), results)
 	}
 
 	results
+}
+
+standard.meta.regression.summary <- function(fit, data, mods.formula, digits) {
+    intercept <- fit$int.incl
+    model.formula <- stats::reformulate(attr(terms(mods.formula), "term.labels"),
+                                        response="yi", intercept=intercept)
+    formula.label <- paste(deparse(model.formula), collapse=" ")
+    coefficients <- round(fit$b[, 1], digits=digits)
+    slopes <- if (intercept) coefficients[-1] else coefficients
+    terms <- paste(slopes, names(slopes), sep="*")
+    equation <- paste(c(if (intercept) coefficients[[1]], terms), collapse=" + ")
+    summary <- paste(capture.output(fit), collapse="\n")
+    summary <- paste0(summary, "\n\nRegression model formula: ", formula.label,
+                       "\nRegression model equation: ", equation, "\n")
+
+    sections <- reg.output.helper(data, fit, model.formula, digits)
+    report <- ""
+    for (name in names(sections)) {
+        dashes <- strrep("-", nchar(name) + 2L)
+        report <- paste(report, sprintf("%s:\n%s\n%s", name, dashes, sections[[name]]),
+                         sep="\n\n")
+    }
+    paste(report, summary, sep="\n\n")
+}
+
+reg.output.helper <- function(theData, rma.results, model.formula, digits) {
+	coeffs <- tryCatch({
+		coef(summary(rma.results))
+	}, error=function(e) {
+		NULL
+	})
+	omnibus <- tryCatch({
+		anova(rma.results)
+	}, error=function(e) {
+		NULL
+	})
+	output <- list()
+	if (!is.null(coeffs)) {
+		output[["Coefficient table"]] <- paste(capture.output(round(coeffs, digits)), collapse="\n")
+	}
+	if (!is.null(omnibus)) {
+		output[["Omnibus test"]] <- paste(capture.output(omnibus), collapse="\n")
+	}
+	output[["Model data"]] <- sprintf(
+		"Studies: %d\nFormula: %s",
+		nrow(theData),
+		paste(deparse(model.formula), collapse=" ")
+	)
+	output
 }
 
 permutest.value.info <- function(retpermdist, meta.reg.mode=TRUE) {

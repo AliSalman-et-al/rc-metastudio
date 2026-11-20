@@ -1,7 +1,8 @@
 import pytest
 
-from rc_metastudio import r_bridge, result_formatting
-from rc_metastudio.small_study_effects import (
+from rc_metastudio import r_bridge
+from rc_metastudio.results import formatting as result_formatting
+from rc_metastudio.analysis.small_study_effects import (
     EligibilityReport,
     FunnelKind,
     FunnelPlotSpec,

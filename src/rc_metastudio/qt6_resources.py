@@ -9,9 +9,10 @@ import sys
 
 from PyQt6.QtCore import QResource
 
+from rc_metastudio.qt6_ui import default_build_root
+
 
 RESOURCE_ENV = "RCMS_QT6_RESOURCE"
-BUILD_ROOT_ENV = "RCMS_QT6_BUILD_ROOT"
 _registration: ResourceRegistration | None = None
 
 
@@ -47,10 +48,7 @@ def _default_resource_path() -> Path:
     bundle_root = getattr(sys, "_MEIPASS", None)
     if bundle_root is not None:
         return Path(bundle_root) / "resources/icons.rcc"
-    configured_build = os.environ.get(BUILD_ROOT_ENV)
-    if configured_build:
-        return Path(configured_build).expanduser().resolve() / "resources/icons.rcc"
-    return Path(__file__).resolve().parents[2] / "build/qt6/resources/icons.rcc"
+    return default_build_root() / "resources/icons.rcc"
 
 
 def ensure_application_resources() -> ResourceRegistration:

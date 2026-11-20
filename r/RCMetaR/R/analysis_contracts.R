@@ -31,6 +31,34 @@ rcmetar.scratch.path <- function(...) {
   file.path(scratch.dir, ...)
 }
 
+.rcmetar.correction.policy.target <- function(policy, default) {
+    switch(as.character(policy %||% ""),
+        "Studies with any zero cell"="only0",
+        "All studies"="all",
+        "All studies if any zero exists"="if0all",
+        default
+    )
+}
+
+.rcmetar.correction.target <- function(params) {
+    target <- as.character(params$correction.policy %||% params$to %||% "only0")
+    .rcmetar.correction.policy.target(target, target)
+}
+
+.rcmetar.correct.counts <- function(counts, correction, target) {
+    zero <- Reduce("|", lapply(counts, function(cells) cells == 0))
+    apply.correction <- switch(target,
+        only0=zero,
+        all=rep(TRUE, length(zero)),
+        if0all=rep(if (any(zero)) TRUE else FALSE, length(zero)),
+        rep(FALSE, length(zero))
+    )
+    lapply(counts, function(cells) {
+        cells[apply.correction] <- cells[apply.correction] + correction
+        cells
+    })
+}
+
 rcmetar.summary.cell.is.numeric <- function(value) {
   normalized <- trimws(as.character(value))
   if (normalized == "") {

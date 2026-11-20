@@ -20,27 +20,31 @@ def parse_decimal(value):
     decimal convention at a time and rejects ambiguous thousands/grouping
     syntax rather than silently changing a scientific value.
     """
-    text, valid = normalize_decimal_text(value)
-    if not valid or not text:
-        return 0.0, False
-    try:
-        number = float(text)
-    except (TypeError, ValueError):
-        return 0.0, False
-    return (number, True) if math.isfinite(number) else (0.0, False)
+    number, valid = parse_optional_decimal(value)
+    return (number, True) if valid and number is not None else (0.0, False)
+
+
+def parse_optional_decimal(value: object) -> tuple[float | None, bool]:
+    parsed = _decimal_input(value)
+    return (parsed[1], True) if parsed is not None else (None, False)
 
 
 def normalize_decimal_text(value):
     """Return unambiguous finite numeric text in dot-decimal form."""
+    parsed = _decimal_input(value)
+    return (parsed[0], True) if parsed is not None else ("", False)
+
+
+def _decimal_input(value: object) -> tuple[str, float | None] | None:
     text = to_native_text(value).strip()
     if not text:
-        return "", True
+        return "", None
     if "," in text:
         if "." in text or text.count(",") != 1:
-            return "", False
+            return None
         text = text.replace(",", ".")
     try:
         number = float(text)
     except (TypeError, ValueError):
-        return "", False
-    return (text, True) if math.isfinite(number) else ("", False)
+        return None
+    return (text, number) if math.isfinite(number) else None

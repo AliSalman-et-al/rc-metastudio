@@ -60,7 +60,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "get_r_library_paths": lambda: [],
         "get_r_version_string": lambda: None,
         "get_r_package_version": lambda _name: None,
-        "reset_r_working_directory": lambda: None,
         "execute_r_string": lambda _expression: [95.0],
         "execute_r_function": lambda _name, *_args, **_kwargs: [95.0],
         "binary_convert_scale": _scale,
@@ -108,13 +107,3 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(r_bridge, name, function, raising=False)
     monkeypatch.setattr(r_bridge, "ro", _TestObjects, raising=False)
     monkeypatch.setattr(r_bridge, "load_required_packages", lambda _on_phase=None: None)
-
-
-@pytest.fixture
-def inject_calculator_boundary(
-    inject_python_boundary: None,
-) -> None:
-    """Expose the canonical boundary to direct R-dependent test seams."""
-    from rc_metastudio import calculator_effect_readout
-
-    calculator_effect_readout.r_bridge = r_bridge

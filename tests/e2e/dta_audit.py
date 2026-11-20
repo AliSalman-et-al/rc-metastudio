@@ -4,8 +4,8 @@ from PyQt6.QtCore import QCoreApplication, QDeadlineTimer, QEvent, Qt
 from PyQt6.QtWidgets import QComboBox, QLabel, QDialogButtonBox
 from PyQt6.QtTest import QTest
 from typing import Callable, cast
-from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
-from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
 
 def check_fixed_workflow(app, window, workflow, record):
@@ -13,7 +13,7 @@ def check_fixed_workflow(app, window, workflow, record):
     import math
     from analysis_matrix import set_parameter
     from rc_metastudio import r_bridge
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.results.window import ResultsWindow
     from tests.e2e.report_retention import assert_report
 
     raw = window.model.get_current_raw_data()
@@ -27,8 +27,7 @@ def check_fixed_workflow(app, window, workflow, record):
                                      external_params={'cov_name': 'Group'} if workflow == 'subgroup' else None,
                                      diagnostic_metrics=selected, on_result=window.analysis,
                                      confidence_level=window.model.get_confidence_level())
-        label = next(label for label, key in dialog.available_method_d.items() if key == method)
-        dialog.method_cbo_box.setCurrentText(label)
+        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(method))
         set_parameter(app, dialog, 'digits', 6)
         dialog.show()
         app.processEvents()
@@ -82,8 +81,8 @@ def check_fixed_workflow(app, window, workflow, record):
 
 
 def check_small_study_threshold(app, window, record):
-    from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
+    from rc_metastudio.results.window import ResultsWindow
     model = window.model
     original = [model.data(model.index(row, model.INCLUDE_STUDY), Qt.ItemDataRole.CheckStateRole)
                 for row in range(len(model.get_studies(only_if_included=False)))]
@@ -197,7 +196,7 @@ def check_method_choices(app, window, record):
             try:
                 dialog.show()
                 app.processEvents()
-                choices = {dialog.available_method_d[dialog.method_cbo_box.itemText(i)]
+                choices = {dialog.method_cbo_box.itemData(i)
                            for i in range(dialog.method_cbo_box.count())}
                 record('dta-method-availability', dialog, workflow=workflow,
                        metrics=metrics, choices=sorted(choices))
@@ -244,7 +243,7 @@ def check_combined_controls(app, dialog, record):
 
 
 def check_small_sample_ui(app, window, record):
-    from rc_metastudio.results_window import ResultsWindow
+    from rc_metastudio.results.window import ResultsWindow
     model = window.model
     count = len(model.get_studies(only_if_included=False))
     original = [model.data(model.index(row, model.INCLUDE_STUDY), Qt.ItemDataRole.CheckStateRole)

@@ -8,39 +8,26 @@ binary.freeman_tukey.metrics <- c("PFT")
 binary.two.arm.metrics <- c("OR", "RD", "RR", "AS", "YUQ", "YUY")
 binary.one.arm.metrics <- c("PR", "PLN", "PLO", "PAS", "PFT")
 
-.rcmetar.binary.correction.target <- function(params) {
-    target <- if (!is.null(params$to)) as.character(params$to) else "only0"
-    if (!is.null(params$correction.policy)) target <- as.character(params$correction.policy)
-    switch(target,
-        "Studies with any zero cell"="only0",
-        "All studies"="all",
-        "All studies if any zero exists"="if0all",
-        target
-    )
+.rcmetar.require.pft.counts <- function(binary.data) {
+    counts <- list(binary.data@g1O1, binary.data@g1O2)
+    if (!.rcmetar.has.complete.raw.data(counts, length(binary.data@study.names)) ||
+            any(binary.data@g1O1 < 0) || any(binary.data@g1O2 < 0) ||
+            any(!is.finite(binary.data@g1O1 + binary.data@g1O2)) ||
+            any(binary.data@g1O1 + binary.data@g1O2 <= 0)) {
+        stop(paste("PFT requires complete finite nonnegative event and non-event counts",
+                   "with a positive finite sample size for every study;",
+                   "entered effects alone cannot be inverted to proportions."), call.=FALSE)
+    }
 }
 
 rcmetar.corrected.binary.counts <- function(binary.data, params) {
     values <- list(a=binary.data@g1O1, b=binary.data@g1O2,
                    c=binary.data@g2O1, d=binary.data@g2O2)
-    if (length(values$a) == 0) return(values)
+    if (length(values$a) == 0L) return(values)
     one.arm <- as.character(params$measure %||% "") %in% binary.one.arm.metrics
-    target <- .rcmetar.binary.correction.target(params)
-    adjust <- if (!is.null(params$adjust)) as.numeric(params$adjust) else 0
-    zero <- if (one.arm) {
-        (values$a == 0) | (values$b == 0)
-    } else {
-        (values$a * values$b * values$c * values$d) == 0
-    }
-    apply.correction <- switch(target,
-        only0=zero,
-        all=rep(TRUE, length(zero)),
-        if0all=if (any(zero)) rep(TRUE, length(zero)) else rep(FALSE, length(zero)),
-        rep(FALSE, length(zero))
-    )
-    target.names <- if (one.arm) c("a", "b") else names(values)
-    for (name in target.names) {
-        values[[name]][apply.correction] <- values[[name]][apply.correction] + adjust
-    }
+    arms <- if (one.arm) c("a", "b") else names(values)
+    values[arms] <- .rcmetar.correct.counts(values[arms], as.numeric(params$adjust %||% 0),
+                                           .rcmetar.correction.target(params))
     values
 }
 
@@ -209,7 +196,7 @@ binary.fixed.mh <- function(binary.data, params){
                 digits=params$digits,
                 # Study correction follows the request; MH pooling remains uncorrected.
                 add=c(params$adjust, 0),
-                to=c(.rcmetar.binary.correction.target(params), "none"),
+                to=c(.rcmetar.correction.target(params), "none"),
                 measure=params$measure)
     pure.res <- res
     if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {

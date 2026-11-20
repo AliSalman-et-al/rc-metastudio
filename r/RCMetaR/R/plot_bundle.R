@@ -9,6 +9,25 @@
     setNames(paste0(prefix, .rcmetar.plot.bundle.suffixes[members]), members)
 }
 
+save.plot.data <- function(plot.data, out.path=NULL) {
+    out.path <- out.path %||% tempfile("plot-", tmpdir=rcmetar.scratch.path())
+    save(plot.data, file=.rcmetar.plot.bundle.paths(out.path, "plot.data"))
+    out.path
+}
+
+save.data <- function(om.data, res, params, plot.data=NULL, out.path=NULL) {
+    out.path <- out.path %||% tempfile("plot-", tmpdir=rcmetar.scratch.path())
+    save(om.data, file=.rcmetar.plot.bundle.paths(out.path, "om.data"))
+    if (inherits(plot.data$regeneration_state, "rcmetar_forest_regeneration_state")) {
+        res <- plot.data$regeneration_state
+        for (name in names(res$param_overrides)) params[[name]] <- res$param_overrides[[name]]
+    }
+    save(res, file=.rcmetar.plot.bundle.paths(out.path, "res"))
+    save(params, file=.rcmetar.plot.bundle.paths(out.path, "params"))
+    if (!is.null(plot.data)) save.plot.data(plot.data, out.path)
+    out.path
+}
+
 .rcmetar.read.plot.bundle <- function(prefix, members, optional=character()) {
     paths <- .rcmetar.plot.bundle.paths(prefix, c(members, optional))
     present <- file.exists(paths)
@@ -54,7 +73,7 @@ rcmetar.plot.bundle.params <- function(prefix) {
         plan <- rcmetar.forest.layout.preflight(data)
         params$resolved.defaults <- list(
             xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
-            ticks=rcmetar.revman.axis.labels(data, plan$x$at),
+            ticks=rcmetar.forest.axis.labels(data, plan$x$at),
             effect=rcmetar.metafor.effect.header(data))
     }
     if (!is.null(params$funnel.kind)) {

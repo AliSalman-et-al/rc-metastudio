@@ -29,8 +29,8 @@ def rendered_text(widget, rect):
 
 
 def funnel_clip_evidence(view, artifact, work):
-    from rc_metastudio.results_window import _opaque_svg_renderer
-    from rc_metastudio.manuscript_report import figure_source
+    from rc_metastudio.results.window import _opaque_svg_renderer
+    from rc_metastudio.results.report import figure_source
 
     svg = Path(artifact.display_path())
     assert svg.suffix == '.svg', 'Funnels must use vector Results artifacts'
@@ -82,7 +82,7 @@ def funnel_clip_evidence(view, artifact, work):
 
 
 def run(app, window, work, root, record, analyze):
-    from rc_metastudio.analysis_setup_dialog import AnalysisSetupDialog
+    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from rc_metastudio.main_wizard import MainWizard, Page_CsvImport, CsvImportPage
     from tests.e2e.report_retention import assert_report
@@ -233,11 +233,11 @@ def run(app, window, work, root, record, analyze):
             bar.setValue(min(bar.maximum(), bar.value() + view.manuscript_text.viewport().height() // 2))
             record('polish-unstructured-supplementary', view)
         view._explicit_fit_width = False
-        for nav_id, item in view._nav_items_to_sections.items():
+        for entry in view._plots.values():
+            item = entry.scene_item
             if item not in (*view._svg_plot_items, *view._raster_plot_items):
                 continue
-            nav = next(view.nav_tree.topLevelItem(i) for i in range(view.nav_tree.topLevelItemCount())
-                       if id(view.nav_tree.topLevelItem(i)) == nav_id)
+            nav = entry.navigation_item
             view.nav_tree.setCurrentItem(nav)
             view._show_report(False)
             view._explicit_fit_width = False
@@ -255,7 +255,7 @@ def run(app, window, work, root, record, analyze):
                     assert rect.height() <= viewport.height() - 20, (nav.text(0), rect, viewport.size())
             else:
                 raise AssertionError('Expected a vector plot for ' + nav.text(0))
-            artifact = view._nav_plot_artifacts[nav_id]
+            artifact = entry.artifact
             if artifact.capability.regenerator == 'funnel':
                 assert item in view._svg_plot_items
                 record('polish-funnel-region-clip', view, title=nav.text(0), **funnel_clip_evidence(view, artifact, work))

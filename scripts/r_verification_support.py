@@ -12,6 +12,11 @@ import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 
+if __package__:
+    from scripts.dependency_lock import locked_python_versions
+else:
+    from dependency_lock import locked_python_versions
+
 
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
@@ -27,6 +32,10 @@ DEPENDENCY_CACHE_INPUTS = (
 
 class RVerificationSupportError(Exception):
     """An error from shared R runtime discovery or identity checks."""
+
+
+def locked_rpy2_versions() -> dict[str, str]:
+    return locked_python_versions("rpy2", "rpy2-rinterface", "rpy2-robjects")
 
 
 def candidate_rscript_names(*, platform_name: str = os.name) -> list[str]:
@@ -256,3 +265,17 @@ def load_binary_dependency_policy(root: Path) -> dict:
         return module.load_policy(root / DEPENDENCY_MANIFEST)
     except module.PolicyError as exc:
         raise RVerificationSupportError(str(exc)) from exc
+
+
+def configure_binary_repository(
+    root: Path, env: dict[str, str], python: str, requested: str | None
+) -> str:
+    repository: str = load_binary_dependency_policy(root)["repository"]
+    configured = requested or env.get("RCMS_CRAN_REPO")
+    if configured and configured != repository:
+        raise RVerificationSupportError(
+            f"R dependency repository must match the manifest snapshot: {repository}"
+        )
+    env["RCMS_CRAN_REPO"] = repository
+    env["RCMS_POLICY_PYTHON"] = python
+    return repository

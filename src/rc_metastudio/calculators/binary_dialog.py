@@ -1,0 +1,1181 @@
+# SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Binary outcome data entry dialog."""
+
+from contextlib import ExitStack
+from itertools import product
+from typing import TYPE_CHECKING, cast
+
+from rc_metastudio.qt_layout import style_inline_error
+from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, Qt
+from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
+from PyQt6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QMessageBox,
+    QHeaderView,
+    QSizePolicy,
+    QStyle,
+    QTableWidgetItem,
+    QWidget,
+    QWIDGETSIZE_MAX,
+)
+
+from rc_metastudio.calculators.service import (
+    BinaryImputationOption,
+    CalculatorService,
+    Numeric,
+)
+from rc_metastudio.analysis.catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_ARM_NAMES
+from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
+from rc_metastudio.calculators import (
+    controls as calculator_controls,
+    edit_history as calculator_edit_history,
+    effect_readout as calculator_effect_readout,
+)
+
+from rc_metastudio import app_error_handler
+from rc_metastudio import adaptive_window
+from rc_metastudio.qt_object_guard import required
+
+if TYPE_CHECKING:
+    import ui_binary_back_calculation_dialog as _ui_binary_back_calculation_dialog
+    import ui_binary_data_dialog as _ui_binary_data_dialog
+else:
+    from rc_metastudio.forms import (
+        ui_binary_back_calculation_dialog as _ui_binary_back_calculation_dialog,
+    )
+    from rc_metastudio.forms import ui_binary_data_dialog as _ui_binary_data_dialog
+
+# this is the maximum size of a residual that we're willing to accept
+# when computing 2x2 data
+BINARY_RAW_COUNT_CELLS = frozenset(((0, 0), (0, 1), (1, 0), (1, 1)))
+BINARY_ARM_TOTAL_CELLS = frozenset(((0, 2), (1, 2)))
+
+
+class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
+    def __init__(
+        self,
+        analysis_unit,
+        arm_names,
+        arm_key,
+        current_effect,
+        confidence_level=None,
+        calculator: CalculatorService | None = None,
+        parent=None,
+    ):
+        super(BinaryDataDialog, self).__init__(parent)
+        self.setupUi(self)
+        self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._configure_raw_data_table()
+        self._configure_focus_revelation()
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+
+        if confidence_level is None:
+            raise ValueError("Confidence level must be specified")
+        self.confidence_level = confidence_level
+        self.calculator = calculator or CalculatorService()
+        self.confidence_multiplier = normal_confidence_multiplier(
+            self.confidence_level
+        )
+        self._raw_data_invalid = False
+        self.current_item_data: int | None = None
+
+        self._setup_signals_and_slots()
+
+        self.analysis_unit = analysis_unit
+        self.arm_names = arm_names
+        self.arm_key = arm_key
+        self.current_effect = current_effect
+        self._effect_fields = calculator_controls.CalculatorEffectFields(
+            self.effect_text_box, self.lower_text_box, self.upper_text_box,
+        )
+        self.wald_readout = calculator_effect_readout.make_wald_readout(self.dialog_layout, self.buttonBox)
+        for editor in self._effect_fields.editors.values():
+            editor.editingFinished.connect(app_error_handler.safe_slot(self._refresh_readout, parent=self))
+        self.metric_readout = calculator_effect_readout.make_binary_metric_table(self.content_layout, self)
+        self.metric_readout.cellClicked.connect(self._select_readout_metric)
+        self._validation_failed = False
+        self.entry_widgets = [
+            self.raw_data_table,
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+        self.text_boxes = [
+            self.lower_text_box,
+            self.upper_text_box,
+            self.effect_text_box,
+        ]
+
+        self.ci_label.setText(
+            f"{self.confidence_level:g}% confidence interval"
+        )
+        self._configure_readable_ci_label()
+        self.initialize_form()
+        self.setup_back_calculation_feedback()
+        self._field_history = calculator_edit_history.TransientEditHistory()
+
+        self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
+        self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
+        self.input_mode_combo.addItem("Study counts", "counts")
+        self.input_mode_combo.addItem("Entered estimate", "estimate")
+        self.input_mode_combo.setAccessibleName("Study input method")
+        self.input_mode_combo.setAccessibleDescription("Choose the inputs available for this study: arm data or an entered effect estimate.")
+        self._active_input_mode = "estimate" if self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "counts"
+        self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(self._active_input_mode))
+        self.input_mode_combo.currentIndexChanged.connect(self._input_mode_changed)
+        self._update_raw_data()
+        self._populate_effect_data()
+        self.set_current_effect()
+        self._update_data_table()
+        self._input_mode_changed()
+        self._fit_raw_data_columns_for_first_display()
+        self.update_back_calculation_button()
+        self._set_content_preferred_width()
+        self.raw_data_table.setCurrentCell(0, 0)
+        self.raw_data_table.setFocus()
+        required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "binary calculator OK button",
+        ).setDefault(True)
+        self._request_content_refit()
+
+    def _input_mode_changed(self):
+        previous = getattr(self, "_active_input_mode", "counts")
+        self._effect_fields.commit_pending(self.val_changed)
+        if self._validation_failed:
+            with QSignalBlocker(self.input_mode_combo):
+                self.input_mode_combo.setCurrentIndex(self.input_mode_combo.findData(previous))
+            return
+        self._active_input_mode = self.input_mode_combo.currentData()
+        counts = self.input_mode_combo.currentData() == "counts"
+        self.content_scroll.setVisible(counts)
+        self.counts_group.setVisible(counts)
+        self.set_current_effect()
+        self._request_content_refit()
+
+    def _configure_raw_data_table(self):
+        table = self.raw_data_table
+        table.setHorizontalHeaderLabels(["Event", "No event", "Total"])
+        table.setVerticalHeaderLabels(["", "", "Total"])
+        horizontal_header = required(table.horizontalHeader(), "binary table header")
+        vertical_header = required(table.verticalHeader(), "binary row header")
+        horizontal_header.setVisible(True)
+        vertical_header.setVisible(True)
+        horizontal_header.setHighlightSections(False)
+        vertical_header.setHighlightSections(False)
+        table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+        table.setMinimumWidth(0)
+        table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        horizontal_header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        horizontal_header.setStretchLastSection(False)
+        table.resizeColumnsToContents()
+        table.resizeRowsToContents()
+        table_height = (
+            horizontal_header.sizeHint().height()
+            + sum(table.rowHeight(row) for row in range(table.rowCount()))
+            + 2 * table.frameWidth()
+        )
+        # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+        table.setMinimumHeight(table_height)
+        # layout-audit: allow=compact-table-overflow; reason=compact table keeps rows visible and owns excess overflow
+        table.setMaximumHeight(table_height)
+
+    def _configure_readable_ci_label(self):
+        """Keep the confidence heading on one line at normal scaling."""
+        self.ci_label.setWordWrap(False)
+
+    def _set_content_preferred_width(self):
+        """Give dense content room before the outer policy applies its cap."""
+        layout = required(self.content_layout, "binary content layout")
+        layout.activate()
+        content_width = layout.sizeHint().width()
+        content_width = max(content_width, self.raw_data_table.minimumWidth() + 44)
+        margins = required(self.layout(), "binary dialog layout").contentsMargins()
+        scrollbar = required(
+            self.content_scroll.verticalScrollBar(), "binary content scrollbar"
+        )
+        preferred_width = (
+            content_width
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        minimum_width = (
+            self.clear_button.sizeHint().width()
+            + self.back_calculate_button.sizeHint().width()
+            + 40
+            + margins.left()
+            + margins.right()
+            + 2 * self.content_scroll.frameWidth()
+            + scrollbar.sizeHint().width()
+        )
+        preferred_height = self.dialog_layout.sizeHint().height()
+        if not self.content_scroll.isHidden():
+            preferred_height += (
+                layout.sizeHint().height() - self.content_scroll.sizeHint().height()
+                + 2 * self.content_scroll.frameWidth()
+            )
+        adaptive_window.set_content_preferred_width(
+            self, minimum_width, preferred_width, preferred_height
+        )
+
+    def _fit_raw_data_columns_for_first_display(self):
+        """Choose sensible initial widths, then leave sections user-adjustable."""
+        for column in range(self.raw_data_table.columnCount()):
+            self._grow_raw_data_column_to_contents(column)
+        header = required(self.raw_data_table.horizontalHeader(), "binary table header")
+        table_width = sum(
+            header.sectionSize(column)
+            for column in range(self.raw_data_table.columnCount())
+        )
+        table_width += required(
+            self.raw_data_table.verticalHeader(), "binary row header"
+        ).sizeHint().width()
+        table_width += 2 * self.raw_data_table.frameWidth()
+        # layout-audit: allow=compact-table-overflow; reason=wide numeric cells keep their contents and the table owns horizontal overflow
+        self.raw_data_table.setMinimumWidth(
+            max(self.raw_data_table.minimumWidth(), table_width)
+        )
+
+    def _grow_raw_data_column_to_contents(self, column):
+        table = self.raw_data_table
+        header = required(table.horizontalHeader(), "binary table header")
+        required_width = max(
+            header.sectionSizeHint(column),
+            table.sizeHintForColumn(column),
+        )
+        if required_width > table.columnWidth(column):
+            header.resizeSection(column, required_width)
+
+    def _configure_focus_revelation(self):
+        """Reveal focused calculator controls within this dialog's overflow."""
+        for widget in self.content_widget.findChildren(QWidget):
+            widget.installEventFilter(self)
+
+    def eventFilter(
+        self, watched: QObject | None, event: QEvent | None
+    ) -> bool:
+        if (
+            isinstance(watched, QWidget)
+            and event is not None
+            and event.type() == QEvent.Type.FocusIn
+            and self.content_widget.isAncestorOf(watched)
+        ):
+            self.content_scroll.ensureWidgetVisible(watched)
+        return super(BinaryDataDialog, self).eventFilter(watched, event)
+
+    def _request_content_refit(self):
+        self._set_content_preferred_width()
+        controller = getattr(self, "_layout_controller", None)
+        if controller is not None:
+            controller.request_content_refit()
+
+    def initialize_form(self):
+        """Initialize every input field to an empty value."""
+        nrows = self.raw_data_table.rowCount()
+        ncols = self.raw_data_table.columnCount()
+
+        for row in range(nrows):
+            for col in range(ncols):
+                self._set_val(row, col, None)
+
+        for txt_box in self.text_boxes:
+            txt_box.setText("")
+
+    def update_back_calculation_button(self, engage=False):
+        def build_back_calc_args_dict():
+
+            d = {}
+            d["metric"] = str(self.current_effect)
+
+            est, lower, upper = self.analysis_unit.get_effect_and_ci_for_source(
+                "entered",
+                self.current_effect,
+                self.arm_key,
+                self.confidence_multiplier,
+            )
+
+            def to_display_scale(x):
+                return self.calculator.binary_convert_scale(
+                    x, self.current_effect, convert_to="display.scale"
+                )
+
+            display_estimate, display_lower, display_upper = [
+                to_display_scale(x) for x in [est, lower, upper]
+            ]
+            for i, r_key in enumerate(["estimate", "lower", "upper"]):
+                try:
+                    d[r_key] = float(
+                        [display_estimate, display_lower, display_upper][i]
+                    )
+                except (TypeError, ValueError):
+                    d[r_key] = None
+
+            d["conf.level"] = self.confidence_level
+
+            d["Ev_A"] = float(self._get_int(0, 0)) if not self._is_empty(0, 0) else None
+            d["N_A"] = float(self._get_int(0, 2)) if not self._is_empty(0, 2) else None
+            d["Ev_B"] = float(self._get_int(1, 0)) if not self._is_empty(1, 0) else None
+            d["N_B"] = float(self._get_int(1, 2)) if not self._is_empty(1, 2) else None
+
+            return d
+
+        def new_data(bin_data, imputed):
+            changed = False
+            old_data = (
+                bin_data["Ev_A"],
+                bin_data["N_A"],
+                bin_data["Ev_B"],
+                bin_data["N_B"],
+            )
+            new_data = []
+            new_data.append(
+                (
+                    int(round(imputed["op1"]["a"])),
+                    int(round(imputed["op1"]["b"])),
+                    int(round(imputed["op1"]["c"])),
+                    int(round(imputed["op1"]["d"])),
+                )
+            )
+            if "op2" in imputed:
+                new_data.append(
+                    (
+                        int(round(imputed["op2"]["a"])),
+                        int(round(imputed["op2"]["b"])),
+                        int(round(imputed["op2"]["c"])),
+                        int(round(imputed["op2"]["d"])),
+                    )
+                )
+
+            def new_item_available(old, new):
+                def is_blank(x):
+                    return x in EMPTY_VALS
+
+                no_longer_blank = is_blank(old) and not is_blank(new)
+                return no_longer_blank
+
+            comparison0 = [
+                new_item_available(old_data[i], new_data[0][i])
+                for i in range(len(old_data))
+            ]
+            new_data_in_op1 = any(comparison0)
+
+            if new_data_in_op1:
+                changed = True
+                if "op2" in imputed:
+                    comparison1 = [
+                        new_item_available(old_data[i], new_data[1][i])
+                        for i in range(len(old_data))
+                    ]
+                    new_data_in_op2 = any(comparison1)
+                    if not new_data_in_op2:
+                        changed = False
+            else:
+                changed = False
+
+            return changed
+
+        if self.current_effect not in ["OR", "RR", "RD"]:
+            self.back_calculate_button.setVisible(False)
+            self._request_content_refit()
+            return None
+        else:
+            self.back_calculate_button.setVisible(True)
+            self._request_content_refit()
+
+        bin_data = build_back_calc_args_dict()
+
+        imputed = self.calculator.impute_binary_data(bin_data.copy())
+
+        if "FAIL" in imputed:
+            self.back_calculate_button.setEnabled(False)
+            return None
+
+        if new_data(bin_data, imputed):
+            self.back_calculate_button.setEnabled(True)
+        else:
+            self.back_calculate_button.setEnabled(False)
+
+        if not engage:
+            return None
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+        try:
+            if len(list(imputed.keys())) > 1:
+                dialog = BinaryBackCalculationDialog(imputed, self.arm_names, parent=self)
+                if dialog.exec():
+                    choice = dialog.get_choice()
+                else:  # don't do anything if cancelled
+                    return None
+            else:  # only one option
+                choice = "op1"
+
+            # The nested choice is part of this transaction. Do not clear or
+            # rewrite either the table or its copied model until it accepts.
+            for x in range(3):
+                self.clear_column(x)
+            with QSignalBlocker(self.raw_data_table):
+                option = cast(BinaryImputationOption, imputed[choice])
+                group_1_events = int(round(cast(Numeric, option["a"])))
+                group_1_total = int(round(cast(Numeric, option["b"])))
+                group_2_events = int(round(cast(Numeric, option["c"])))
+                group_2_total = int(round(cast(Numeric, option["d"])))
+                self._set_val(0, 0, group_1_events)
+                self._set_val(0, 1, group_1_total - group_1_events)
+                self._set_val(1, 0, group_2_events)
+                self._set_val(1, 1, group_2_total - group_2_events)
+
+            self._update_data_table()
+            self._update_analysis_unit()
+        except BaseException:
+            self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
+            raise
+
+        new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_table,
+            old_state=(old_analysis_unit, old_table),
+            new_state=(new_analysis_unit, new_table),
+        )
+
+    def setup_back_calculation_feedback(self):
+        inconsistency_palette = QPalette()
+        inconsistency_palette.setColor(
+            QPalette.ColorRole.WindowText, Qt.GlobalColor.red
+        )
+        self.inconsistencyLabel.setPalette(inconsistency_palette)
+        self.inconsistencyLabel.setVisible(False)
+        self._request_content_refit()
+
+    def _mark_table_consistent(self):
+        self._raw_data_invalid = False
+        self.inconsistencyLabel.setVisible(False)
+        required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "binary calculator OK button",
+        ).setEnabled(True)
+        self._request_content_refit()
+
+    def _mark_table_invalid(self, message):
+        self._raw_data_invalid = True
+        with QSignalBlocker(self.raw_data_table):
+            for row, col in product(range(self.raw_data_table.rowCount()), range(self.raw_data_table.columnCount())):
+                if self._raw_count_cell_is_editable(row, col):
+                    continue
+                item = self.raw_data_table.item(row, col)
+                if item is not None:
+                    item.setText("")
+        for field in (self.effect_text_box, self.lower_text_box, self.upper_text_box):
+            field.clear()
+        self.metric_readout.hide()
+        self.wald_readout.hide()
+        self.inconsistencyLabel.setText(str(message))
+        style_inline_error(self.inconsistencyLabel)
+        self.inconsistencyLabel.setVisible(True)
+        required(
+            self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
+            "binary calculator OK button",
+        ).setEnabled(False)
+        self._request_content_refit()
+        self.inconsistencyLabel.updateGeometry()
+    def _raw_count_cell_is_editable(self, row, col):
+        if (row, col) in BINARY_RAW_COUNT_CELLS:
+            return True
+        if (row, col) in BINARY_ARM_TOTAL_CELLS:
+            return any(self._is_empty(row, inner_col) for inner_col in (0, 1))
+        return False
+
+    def _refresh_raw_data_editability(self):
+        with QSignalBlocker(self.raw_data_table):
+            for row in range(self.raw_data_table.rowCount()):
+                for col in range(self.raw_data_table.columnCount()):
+                    calculator_controls.set_table_item_editable(
+                        self.raw_data_table.item(row, col),
+                        self._raw_count_cell_is_editable(row, col),
+                    )
+
+    def on_raw_data_table_currentCellChanged(
+        self, currentRow, currentColumn, previousRow, previousColumn
+    ):
+        self.current_item_data = self._get_int(currentRow, currentColumn)
+
+    def _setup_signals_and_slots(self):
+        self.raw_data_table.cellChanged.connect(
+            app_error_handler.safe_slot(self.cell_changed, parent=self)
+        )
+        self.raw_data_table.currentCellChanged.connect(
+            app_error_handler.safe_slot(
+                self.on_raw_data_table_currentCellChanged, parent=self
+            )
+        )
+
+        self.effect_combo_box.currentTextChanged.connect(
+            app_error_handler.safe_slot(
+                lambda _text: self.effect_changed(), parent=self
+            )
+        )
+        self.clear_button.clicked.connect(
+            app_error_handler.safe_slot(self.clear_form, parent=self)
+        )
+        self.back_calculate_button.clicked.connect(
+            app_error_handler.safe_slot(
+                lambda: self.update_back_calculation_button(engage=True), parent=self
+            )
+        )
+
+        self.effect_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("est"), parent=self)
+        )
+        self.lower_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("lower"), parent=self)
+        )
+        self.upper_text_box.editingFinished.connect(
+            app_error_handler.safe_slot(lambda: self.val_changed("upper"), parent=self)
+        )
+
+        undo = QAction(self)
+        redo = QAction(self)
+        undo.setShortcut(QKeySequence.StandardKey.Undo)
+        redo.setShortcut(QKeySequence.StandardKey.Redo)
+        self.addAction(undo)
+        self.addAction(redo)
+        undo.triggered.connect(
+            app_error_handler.safe_slot(lambda _checked=False: self.undo(), parent=self)
+        )
+        redo.triggered.connect(
+            app_error_handler.safe_slot(lambda _checked=False: self.redo(), parent=self)
+        )
+
+    def _populate_effect_data(self):
+        metric_family = (
+            BINARY_ONE_ARM_METRICS
+            if self.current_effect in BINARY_ONE_ARM_METRICS
+            else BINARY_TWO_ARM_METRICS
+        )
+        q_effects = list(metric_family)
+        if self.current_effect not in q_effects:
+            q_effects.append(str(self.current_effect))
+        with QSignalBlocker(self.effect_combo_box):
+            self.effect_combo_box.clear()
+            for effect in q_effects:
+                self.effect_combo_box.addItem(
+                    self._effect_display_label(effect), userData=effect
+                )
+            # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
+            self.effect_combo_box.setMinimumWidth(0)
+            # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
+            self.effect_combo_box.setMaximumWidth(QWIDGETSIZE_MAX)
+            self.effect_combo_box.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
+            self.effect_combo_box.setCurrentIndex(
+                q_effects.index(str(self.current_effect))
+            )
+        self._update_effect_choice_accessibility()
+        self._request_content_refit()
+
+    def _update_effect_choice_accessibility(self):
+        combo = self.effect_combo_box
+        if combo.count() == 0:
+            return
+        full_text = combo.currentText()
+        combo.setToolTip(full_text)
+        text_width = max(
+            combo.fontMetrics().horizontalAdvance(combo.itemText(index))
+            for index in range(combo.count())
+        )
+        scrollbar_width = required(
+            combo.style(), "binary metric combo style"
+        ).pixelMetric(QStyle.PixelMetric.PM_ScrollBarExtent, None, combo)
+        # layout-audit: allow=bounded-native-popup; reason=native choice popup is bounded to the owning screen
+        required(combo.view(), "binary metric combo popup").setMinimumWidth(
+            text_width + scrollbar_width + 24
+        )
+
+    def _effect_display_label(self, effect):
+        return "%s (%s)" % (BINARY_METRIC_NAMES.get(effect, effect), effect)
+
+    def _selected_effect(self):
+        effect = self.effect_combo_box.currentData()
+        if effect is None:
+            effect = self.effect_combo_box.currentText()
+        return str(effect)
+
+    def _effect_source(self):
+        return calculator_effect_readout.calculator_effect_source(
+            self.analysis_unit, self.arm_names, self.current_effect, self.arm_key,
+            self.confidence_multiplier, input_mode=self._active_input_mode,
+        )
+
+    def _refresh_readout(self):
+        if self._raw_data_invalid:
+            return
+        calculator_effect_readout.update_wald_readout(
+            self.wald_readout, self.analysis_unit, self.current_effect, self.arm_key,
+            self.confidence_multiplier, "binary", self._effect_source(),
+        )
+        calculator_effect_readout.update_binary_metric_table(
+            self.metric_readout, self.analysis_unit.get_raw_data_for_arms(self.arm_names),
+            self.calculator, self.confidence_level,
+        )
+
+    def _select_readout_metric(self, row: int, _column: int):
+        metric = calculator_effect_readout.COMPARATIVE_BINARY_METRICS[row]
+        index = self.effect_combo_box.findData(metric)
+        if index < 0:
+            index = self.effect_combo_box.findText(metric)
+        self.effect_combo_box.setCurrentIndex(index)
+
+    def set_current_effect(self):
+        if self._raw_data_invalid:
+            return
+        calculator_effect_readout.populate_effect_ci_fields(
+            self.analysis_unit, self._effect_fields, self.current_effect,
+            self.arm_key, "binary", self.confidence_multiplier,
+            source=self._effect_source(), calculator=self.calculator,
+        )
+        self._refresh_readout()
+
+        self.change_row_color_according_to_metric()
+
+    def change_row_color_according_to_metric(self):
+        current_effect_is_one_arm = self.current_effect in BINARY_ONE_ARM_METRICS
+        for row in (1, 2):
+            self.raw_data_table.setRowHidden(row, current_effect_is_one_arm)
+            for col in range(3):
+                item = self.raw_data_table.item(row, col)
+                item = required(item, f"binary table cell ({row}, {col})")
+                if current_effect_is_one_arm:
+                    item.setBackground(QBrush(QColor(Qt.GlobalColor.gray)))
+                else:
+                    with QSignalBlocker(self.raw_data_table):
+                        item.setBackground(QBrush())
+
+    def effect_changed(self):
+        """Called when a new effect is selected in the combo box"""
+        self.current_effect = self._selected_effect()
+        self.arm_key = self.get_current_arm_key()
+
+        self.update_effect_from_raw_data()
+        self.set_current_effect()
+
+        self.update_back_calculation_button()
+        self._update_effect_choice_accessibility()
+
+    def accept(self):
+        if self._validation_failed:
+            return
+        self._effect_fields.commit_pending(self.val_changed)
+        if not self._validation_failed:
+            self.analysis_unit.set_calculator_source(self.current_effect, self.arm_key, "entered" if self.input_mode_combo.currentData() == "estimate" else "derived_preview")
+            super().accept()
+
+    def val_changed(self, val_str):
+        if self._raw_data_invalid:
+            return
+        field = self._effect_fields.editors.get(val_str)
+        if field is not None and not self._effect_fields.is_pending(val_str) and not self._validation_failed:
+            return
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+
+        editor = self._effect_fields.editors[val_str]
+        new_text = editor.text()
+        with ExitStack() as signal_blockers:
+            for widget in self.entry_widgets:
+                signal_blockers.enter_context(QSignalBlocker(widget))
+            try:
+                display_scale_val = calculator_effect_readout.parse_effect_draft(
+                    new_text, val_str, self.analysis_unit, self.current_effect, self.arm_key,
+                    "binary", self.confidence_multiplier, self._effect_source(), self.calculator,
+                )
+            except calculator_controls.CalculatorInputError as error:
+                QMessageBox.warning(self, "Warning", str(error))
+                self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
+                self._validation_failed = True
+                editor.setText(new_text)
+                editor.setFocus()
+                return
+
+        self._validation_failed = False
+        if field is not None:
+            self._effect_fields.mark_committed(val_str)
+
+        calculation_scale_value = self.calculator.binary_convert_scale(
+            display_scale_val, self.current_effect, convert_to="calc.scale"
+        )
+
+        if val_str == "est":
+            self.analysis_unit.set_effect(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+        elif val_str == "lower":
+            self.analysis_unit.set_lower(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+        elif val_str == "upper":
+            self.analysis_unit.set_upper(
+                self.current_effect, self.arm_key, calculation_scale_value
+            )
+
+        new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_table,
+            old_state=(old_analysis_unit, old_table),
+            new_state=(new_analysis_unit, new_table),
+        )
+        self.update_back_calculation_button()
+
+    def _update_raw_data(self):
+        """Sets events and non-events from stored events and arm totals."""
+
+        for row, group in enumerate(self.arm_names):
+            events, total = self.analysis_unit.get_raw_data_for_arm(group)
+            no_events = None
+            if events not in EMPTY_VALS and total not in EMPTY_VALS:
+                no_events = total - events
+            self._set_val(row, 0, events)
+            self._set_val(row, 1, no_events)
+            self._set_val(row, 2, total)
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, 2), "arm total").setData(Qt.ItemDataRole.UserRole, events in EMPTY_VALS)
+
+    def _update_analysis_unit(self):
+        """Copy the potentially imputed table values into the analysis unit."""
+        for row, arm_name in enumerate(self.arm_names):
+            events = self._get_int(row, 0)
+            no_events = self._get_int(row, 1)
+            total = self._get_int(row, 2)
+            if events not in EMPTY_VALS and no_events not in EMPTY_VALS:
+                total = events + no_events
+            raw_data = self.analysis_unit.get_raw_data_for_arm(arm_name)
+            raw_data[0] = events
+            raw_data[1] = total
+
+    def _cell_data_not_valid(self, celldata_string):
+        if calculator_controls.cell_text_is_blank(celldata_string):
+            return None
+
+        try:
+            value = calculator_controls.numeric_value(celldata_string)
+        except ValueError:
+            return "Enter a number."
+
+        if not value.is_integer():
+            return "Counts must be whole numbers."
+
+        if value < 0:
+            return "Counts cannot be negative."
+        return None
+
+    def restore_analysis_unit(self, old_analysis_unit):
+        """Restores the analysis_unit data and resets the form"""
+        self.analysis_unit = old_analysis_unit.copy_for_edit()
+
+        self.initialize_form()
+        self._update_raw_data()
+        self.set_current_effect()
+        self._update_data_table()
+        self.update_back_calculation_button()
+
+    def restore_table(self, old_table):
+        if not old_table:
+            return
+        nrows = min(len(old_table), self.raw_data_table.rowCount())
+        ncols = min(len(old_table[0]), self.raw_data_table.columnCount())
+
+        for row in range(nrows):
+            for col in range(ncols):
+                value, supplied = old_table[row][col]
+                self._set_val(row, col, value)
+                with QSignalBlocker(self.raw_data_table):
+                    required(self.raw_data_table.item(row, col), "restored count").setData(Qt.ItemDataRole.UserRole, supplied)
+        self._update_data_table()
+        self._mark_table_consistent()
+
+    def restore_analysis_unit_and_table(self, old_analysis_unit, old_table):
+        self.restore_analysis_unit(old_analysis_unit)
+        self.restore_table(old_table)
+
+    def _save_analysis_unit_and_table_state(
+        self,
+        table,
+        analysis_unit,
+        row=None,
+        col=None,
+        old_value=None,
+        use_old_value=True,
+    ):
+        old_table = []
+        for snapshot_row in range(table.rowCount()):
+            cells = []
+            for snapshot_col in range(table.columnCount()):
+                item = required(table.item(snapshot_row, snapshot_col), "count snapshot")
+                cells.append((item.text(), bool(item.data(Qt.ItemDataRole.UserRole))))
+            old_table.append(cells)
+        if use_old_value:
+            row = required(row, "edited count row")
+            col = required(col, "edited count column")
+            old_table[row][col] = (old_value, old_table[row][col][1])
+
+        old_analysis_unit = analysis_unit.copy_for_edit()
+        return old_analysis_unit, old_table
+
+    def cell_changed(self, row, col):
+        # tries to make sense of user input before passing
+        # on to the R routine
+
+        if not self._raw_count_cell_is_editable(row, col):
+            self._update_data_table()
+            self._mark_table_consistent()
+            return
+
+        self._grow_raw_data_column_to_contents(col)
+
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            old_value=self.current_item_data,
+            row=row,
+            col=col,
+            use_old_value=True,
+        )
+
+        if not self._validate_raw_count_cells(col, row):
+            return
+
+        try:
+            self._update_data_table()
+            self._mark_table_consistent()
+        except Exception as e:
+            msg = e.args[0]
+            self._mark_table_invalid(msg)
+            QMessageBox.warning(self, "Warning", msg)  # popup warning
+            self.restore_analysis_unit_and_table(
+                old_analysis_unit, old_table
+            )  # brings things back to the way they were
+            self._mark_table_invalid(msg)
+            return  # and leave
+
+        try:
+            self._update_analysis_unit()  # table widget --> analysis_unit
+            self.update_effect_from_raw_data()
+        except Exception as e:
+            msg = "Could not compute study effects from the edited raw data: %s" % e
+            QMessageBox.warning(self, "Warning", msg)
+            self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
+            return
+
+        new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            row=row,
+            col=col,
+            use_old_value=False,
+        )
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_table,
+            old_state=(old_analysis_unit, old_table),
+            new_state=(new_analysis_unit, new_table),
+        )
+        self.update_back_calculation_button()
+
+    def _validate_raw_count_cells(self, col, row):
+        for check_row in range(self.raw_data_table.rowCount()):
+            if self.raw_data_table.isRowHidden(check_row):
+                continue
+            for check_col in range(self.raw_data_table.columnCount()):
+                if not self._raw_count_cell_is_editable(check_row, check_col):
+                    continue
+                item = self.raw_data_table.item(check_row, check_col)
+                message = self._cell_data_not_valid(item.text()) if item is not None else None
+                if message:
+                    self._mark_table_invalid(message)
+                    return False
+
+        if col == 2:
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, col), "entered total").setData(Qt.ItemDataRole.UserRole, True)
+        for check_row in range(2):
+            total_item = required(self.raw_data_table.item(check_row, 2), "arm total")
+            events = self._get_int(check_row, 0)
+            total = self._get_int(check_row, 2)
+            if total_item.data(Qt.ItemDataRole.UserRole) and events is not None and total is not None and events > total:
+                self._mark_table_invalid("Events cannot exceed the arm total.")
+                return False
+        return True
+
+    def _get_table_values(self):
+        """Package table from 2x2 table in to a dictionary"""
+        vals_d = {}
+        vals_d["c11"] = self._get_int(0, 0)
+        vals_d["c12"] = self._get_int(0, 1)
+        vals_d["c21"] = self._get_int(1, 0)
+        vals_d["c22"] = self._get_int(1, 1)
+        vals_d["r1sum"] = self._get_int(0, 2)
+        vals_d["r2sum"] = self._get_int(1, 2)
+        vals_d["c1sum"] = self._get_int(2, 0)
+        vals_d["c2sum"] = self._get_int(2, 1)
+        vals_d["total"] = self._get_int(2, 2)
+        return vals_d
+
+    def clear_column(self, col):
+        """Clears out column in table and analysis_unit"""
+        for row in range(3):
+            self._set_val(row, col, None)
+
+        self._update_analysis_unit()
+
+    def _set_vals(self, computed_d):
+        """Sets values in table widget"""
+        with QSignalBlocker(self.raw_data_table):
+            self._set_val(0, 0, computed_d["c11"])
+            self._set_val(0, 1, computed_d["c12"])
+            self._set_val(1, 0, computed_d["c21"])
+            self._set_val(1, 1, computed_d["c22"])
+            self._set_val(0, 2, computed_d["r1sum"])
+            self._set_val(1, 2, computed_d["r2sum"])
+            self._set_val(2, 0, computed_d["c1sum"])
+            self._set_val(2, 1, computed_d["c2sum"])
+            self._set_val(2, 2, computed_d["total"])
+
+    def _set_val(self, row, col, val):
+        if is_nan(val):
+            return
+
+        with QSignalBlocker(self.raw_data_table):
+            str_val = "" if val in EMPTY_VALS else str(int(val))
+            if self.raw_data_table.item(row, col) is None:
+                self.raw_data_table.setItem(row, col, QTableWidgetItem(str_val))
+            else:
+                required(
+                    self.raw_data_table.item(row, col),
+                    f"binary table cell ({row}, {col})",
+                ).setText(str_val)
+            calculator_controls.set_table_item_editable(
+                self.raw_data_table.item(row, col),
+                self._raw_count_cell_is_editable(row, col),
+            )
+
+    def _update_data_table(self):
+        """Fill in 2x2 table from other entries in the table"""
+        with QSignalBlocker(self.raw_data_table):
+            params = self._get_table_values()
+            computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
+            for total_name in ("r1sum", "r2sum"):
+                row = 0 if total_name == "r1sum" else 1
+                total_item = required(self.raw_data_table.item(row, 2), "arm total")
+                if computed_params[total_name] in EMPTY_VALS and total_item.data(Qt.ItemDataRole.UserRole):
+                    computed_params[total_name] = params[total_name]
+                elif computed_params[total_name] not in EMPTY_VALS:
+                    total_item.setData(Qt.ItemDataRole.UserRole, False)
+            if (
+                computed_params["total"] in EMPTY_VALS
+                and computed_params["r1sum"] not in EMPTY_VALS
+                and computed_params["r2sum"] not in EMPTY_VALS
+            ):
+                computed_params["total"] = (
+                    computed_params["r1sum"] + computed_params["r2sum"]
+                )
+            if computed_params:
+                self._set_vals(computed_params)  # computed --> table widget
+
+    def _is_empty(self, i, j):
+        val = self.raw_data_table.item(i, j)
+        return val is None or val.text() == ""
+
+    def _get_int(self, i, j):
+        """Get value from cell specified by row=i, col=j as an integer"""
+        if not self._is_empty(i, j):
+            text = required(
+                self.raw_data_table.item(i, j), f"binary table cell ({i}, {j})"
+            ).text()
+            try:
+                val = int(text)
+            except ValueError:
+                val = int(calculator_controls.numeric_value(text))
+            return val
+        else:
+            return None  # its good to be explicit
+
+    def _is_blank(self, x):
+        return x is None or x == ""
+
+    def update_effect_from_raw_data(self):
+        raw_data = self.analysis_unit.get_raw_data_for_arms(self.arm_names)
+        e1, n1 = raw_data[:2]
+        if self.current_effect in BINARY_TWO_ARM_METRICS:
+            e2, n2 = raw_data[2:]
+            if any(self._is_blank(value) for value in raw_data):
+                return
+            result = self.calculator.effect_for_study(
+                e1, n1, e2, n2, metric=self.current_effect,
+                confidence_level=self.confidence_level,
+            )
+        else:
+            if any(self._is_blank(value) for value in (e1, n1)):
+                return
+            result = self.calculator.effect_for_study(
+                e1, n1, two_arm=False, metric=self.current_effect,
+                confidence_level=self.confidence_level,
+            )
+        est, low, high = self.calculator.effect_triplet(result, "calc_scale", metric=self.current_effect)
+        self.analysis_unit.set_derived_effect_preview(
+            self.current_effect, self.arm_key, est, low, high,
+            confidence_multiplier=self.confidence_multiplier,
+        )
+        self.set_current_effect()
+
+    def clear_form(self):
+        self._validation_failed = False
+        old_analysis_unit, old_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+
+        blank_vals = {
+            "c11": "",
+            "c12": "",
+            "r1sum": "",
+            "c21": "",
+            "c22": "",
+            "r2sum": "",
+            "c1sum": "",
+            "c2sum": "",
+            "total": "",
+        }
+
+        self._set_vals(blank_vals)
+        for row in range(2):
+            with QSignalBlocker(self.raw_data_table):
+                required(self.raw_data_table.item(row, 2), "cleared total").setData(Qt.ItemDataRole.UserRole, False)
+        self._update_analysis_unit()
+        self._mark_table_consistent()
+
+        for metric in BINARY_ONE_ARM_METRICS + BINARY_TWO_ARM_METRICS:
+            if (
+                self.current_effect in BINARY_TWO_ARM_METRICS
+                and metric in BINARY_TWO_ARM_METRICS
+            ) or (
+                self.current_effect in BINARY_ONE_ARM_METRICS
+                and metric in BINARY_ONE_ARM_METRICS
+            ):
+                self.analysis_unit.set_effect_for_source(
+                    "entered", metric, self.arm_key, None, None, None
+                )
+        self.set_current_effect()
+        self._refresh_raw_data_editability()
+
+        new_analysis_unit, new_table = self._save_analysis_unit_and_table_state(
+            table=self.raw_data_table,
+            analysis_unit=self.analysis_unit,
+            use_old_value=False,
+        )
+
+        self._field_history.record(
+            restore_state=self.restore_analysis_unit_and_table,
+            old_state=(old_analysis_unit, old_table),
+            new_state=(new_analysis_unit, new_table),
+        )
+        self.update_back_calculation_button()
+
+    def get_current_arm_key(self):
+        names = self.arm_names[:1] if self.current_effect in BINARY_ONE_ARM_METRICS else self.arm_names
+        return tuple(self.analysis_unit.arms[name].stable_id for name in names)
+
+    def undo(self):
+        self._field_history.undo()
+
+    def redo(self):
+        self._field_history.redo()
+
+
+class BinaryBackCalculationDialog(
+    QDialog, _ui_binary_back_calculation_dialog.Ui_BinaryBackCalculationDialog
+):
+    def __init__(self, imputed_data, group_names=None, parent=None):
+        super(BinaryBackCalculationDialog, self).__init__(parent)
+        self.setupUi(self)
+        if group_names is None:
+            group_names = DEFAULT_ARM_NAMES
+        for widget in self.content_widget.findChildren(QWidget):
+            widget.installEventFilter(self)
+        adaptive_window.set_content_preferred_width(
+            self, 280, self.fontMetrics().averageCharWidth() * 80,
+            preferred_height=self.fontMetrics().lineSpacing() * 30,
+        )
+        self._layout_controller = adaptive_window.register_adaptive_window(
+            self, adaptive_window.WindowRole.TRANSACTIONAL
+        )
+
+        op1 = imputed_data["op1"]  # option 1 data
+        a, b, c, d = op1["a"], op1["b"], op1["c"], op1["d"]
+        a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
+        option1_txt = (
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
+            % (a, b, c, d)
+        )
+
+        op2 = imputed_data["op2"]
+        a, b, c, d = op2["a"], op2["b"], op2["c"], op2["d"]
+        a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
+        option2_txt = (
+            f"{group_names[0]}:\n  Events: %d\n  Total: %d\n\n{group_names[1]}:\n  Events: %d\n  Total: %d"
+            % (a, b, c, d)
+        )
+
+        self.choice1_btn.setText(option1_txt)
+        self.choice2_btn.setText(option2_txt)
+        self.info_label.setText(
+            "The back-calculation has resulted in two "
+            "possible sets of choices for the counts. Please"
+            " choose one from below. These choices do not "
+            "reflect possible corrections for zero counts."
+        )
+
+        self._layout_controller.request_content_refit()
+
+    def eventFilter(
+        self, watched: QObject | None, event: QEvent | None
+    ) -> bool:
+        if (
+            isinstance(watched, QWidget)
+            and event is not None
+            and event.type() == QEvent.Type.FocusIn
+            and self.content_widget.isAncestorOf(watched)
+        ):
+            self.content_scroll.ensureWidgetVisible(watched)
+        return super(BinaryBackCalculationDialog, self).eventFilter(watched, event)
+
+    def get_choice(self):
+        choices = ["op1", "op2"]
+
+        if self.choice1_btn.isChecked():
+            return choices[0]  # op1
+        else:
+            return choices[1]  # op2

@@ -15,10 +15,10 @@ from tests.e2e.plot_observations import load_serialized_object
 def set_parameter(app, dialog, key, value):
     from PyQt6 import QtWidgets
 
-    from rc_metastudio.analysis_method_labels import parameter_display_label
+    from rc_metastudio.analysis.method_labels import parameter_display_label
 
     if key == "fp_style":
-        from rc_metastudio.plot_defaults import PLOT_STYLE_LABELS
+        from rc_metastudio.results.plot_defaults import PLOT_STYLE_LABELS
         dialog.style_cbo.setCurrentText(PLOT_STYLE_LABELS[value])
         app.processEvents()
         return
@@ -76,8 +76,10 @@ def run(
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
 
-    from rc_metastudio import analysis_dataset, analysis_setup_dialog, results_window
-    from rc_metastudio.diagnostic_metrics_dialog import DiagnosticMetricsDialog
+    from rc_metastudio.project import model as analysis_dataset
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     from tests.analysis_regression.golden.support.golden_analysis import (
         curated_golden_bundles,
         parsed_numeric_sections,
@@ -442,7 +444,7 @@ def run(
             open_mean_sample(app, window, record, root, work)
         if name == "generic-effect":
             from advanced_workflows import modal
-            from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+            from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
             observations = []
             for se in (.1, 0.0):
                 if se == 0:
@@ -474,7 +476,7 @@ def run(
         metrics = ("sens", "spec") if family == "diagnostic" else ()
         expected = None
     elif scenario.startswith("small-study-"):
-        from rc_metastudio.small_study_effects_dialog import SmallStudyEffectsDialog
+        from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
         sample = {
             "small-study-binary-extended": "amino",
@@ -671,7 +673,7 @@ def run(
     action.trigger()
     app.processEvents()
     if workflow == "subgroup":
-        from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+        from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
 
         subgroup = visible(SubgroupAnalysisDialog)
         assert subgroup.covariate_combo_box.count() == 1
@@ -690,21 +692,17 @@ def run(
         dialog.fixed_effects_radio.setChecked(True)
         expected = None
     if workflow != "meta-regression":
-        label = next(
-            label for label, key in dialog.available_method_d.items() if key == method
-        )
-        dialog.method_cbo_box.setCurrentText(label)
+        index = dialog.method_cbo_box.findData(method)
+        assert index >= 0, method
+        dialog.method_cbo_box.setCurrentIndex(index)
         app.processEvents()
         if scenario == "analysis-diagnostic-combined":
             set_parameter(app, dialog, "rm.method", "DL")
             set_parameter(app, dialog, "conf.level", 90)
             panel = dialog.lr_dor_panel
-            label = next(
-                label
-                for label, key in panel.methods.items()
-                if key == "diagnostic.random"
-            )
-            panel.combo.setCurrentText(label)
+            index = panel.combo.findData("diagnostic.random")
+            assert index >= 0
+            panel.combo.setCurrentIndex(index)
             app.processEvents()
             assert panel.method == "diagnostic.random"
             estimator = next(control for control in panel.widgets

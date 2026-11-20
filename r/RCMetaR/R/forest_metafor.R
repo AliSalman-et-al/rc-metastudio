@@ -679,7 +679,7 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
 rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     ticks <- ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]]
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
-    labels <- rcmetar.revman.axis.labels(bundle, ticks)
+    labels <- rcmetar.forest.axis.labels(bundle, ticks)
     valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
     ticks <- ticks[valid]
     labels <- labels[valid]
@@ -1063,4 +1063,56 @@ rcmetar.sequential.caption.params <- function(params, variant) {
         params$plot_caption <- paste0(caption, if (nzchar(suffix)) paste0(" \u00b7 ", suffix))
     }
     params
+}
+
+rcmetar.forest.arm.labels <- function(params) {
+    labels <- rcmetar.default.arm.labels()
+    experimental <- labels[[1]]
+    control <- labels[[2]]
+    if (!is.null(params$fp_col3_str) && params$fp_col3_str != "[default]") {
+        experimental <- as.character(params$fp_col3_str)
+    }
+    if (!is.null(params$fp_col4_str) && params$fp_col4_str != "[default]") {
+        control <- as.character(params$fp_col4_str)
+    }
+    if (as.character(params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics) &&
+            experimental == "Group") experimental <- ""
+    c(experimental, control)
+}
+
+rcmetar.forest.not.estimable <- function(bundle) {
+    n <- length(bundle$slab)
+    if (!is.null(bundle$effect)) {
+        yi <- bundle$effect$yi
+        vi <- bundle$effect$vi %||% bundle$effect$sei^2
+    } else {
+        yi <- if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi
+        vi <- if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi
+    }
+    missing <- if (length(yi) == n && length(vi) == n) {
+        !is.finite(yi) | !is.finite(vi)
+    } else rep(FALSE, n)
+    missing
+}
+
+rcmetar.forest.study.effects <- function(bundle) {
+    if (!is.null(bundle$effect)) return(bundle$effect)
+    n <- length(bundle$slab)
+    yi <- as.numeric(if (length(bundle$res$yi.f) == n) bundle$res$yi.f else bundle$res$yi)
+    vi <- as.numeric(if (length(bundle$res$vi.f) == n) bundle$res$vi.f else bundle$res$vi)
+    z <- stats::qnorm(1 - (1 - as.numeric(bundle$params$conf.level) / 100) / 2)
+    effect <- list(
+        yi=yi,
+        vi=vi,
+        ci.lb=yi - z * sqrt(vi),
+        ci.ub=yi + z * sqrt(vi)
+    )
+    not.estimable <- bundle$style_blocks$not_estimable
+    if (length(not.estimable) == length(effect$yi) && any(not.estimable)) {
+        effect$yi[not.estimable] <- NA
+        effect$vi[not.estimable] <- NA
+        effect$ci.lb[not.estimable] <- NA
+        effect$ci.ub[not.estimable] <- NA
+    }
+    effect
 }

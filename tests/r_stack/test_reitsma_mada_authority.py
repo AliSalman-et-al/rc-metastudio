@@ -173,7 +173,8 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
     r_bridge.initialize_r()
     try:
         from tests.analysis_regression.golden.support import headless_analysis
-        from rc_metastudio import analysis_adapter, r_bridge
+        from rc_metastudio.analysis import requests as analysis_adapter
+        from rc_metastudio import r_bridge
         try:
             r_bridge.load_required_packages()
         except Exception:

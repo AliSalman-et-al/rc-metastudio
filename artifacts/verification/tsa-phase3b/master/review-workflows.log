@@ -1,6 +1,0 @@
-Command: uv 'run' 'python' 'scripts/verify_rcms.py' 'review-workflows' '--native'
-[23:32:10] $ C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\.venv\Scripts\python.exe -m ty check --python C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\.venv\Scripts\python.exe --python-platform win32 --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\build\qt6-verification\generated\rc_metastudio --extra-search-path C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\build\qt6-verification\generated\rc_metastudio\forms --extra-search-path . --extra-search-path src/rc_metastudio --extra-search-path src --extra-search-path scripts --extra-search-path tests/python/gui src/rc_metastudio scripts tests r/RCMetaR/inst/qa .agents/skills/verify-rcms/scripts
-All checks passed!
-Typing evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\artifacts\verification\typing\20261118T233210-fd603d40
-Evidence: C:\Users\Ali-Salman\Documents\Code\rc-metastudio-tsa-phase3b-master\artifacts\verification\rcms\20261118T183212Z-0a733c7e-review-workflows
-Exit: 0

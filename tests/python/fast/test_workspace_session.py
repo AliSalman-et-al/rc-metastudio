@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from rc_metastudio import project_format
-from rc_metastudio.project_format import load_project
-from rc_metastudio.workspace_session import WorkspaceSession
+from rc_metastudio.project import archive as project_format
+from rc_metastudio.project.archive import load_project
+from rc_metastudio.workspace.session import WorkspaceSession
 from rc_metastudio.qt_object_guard import required
 
 ROOT = Path(__file__).resolve().parents[3]

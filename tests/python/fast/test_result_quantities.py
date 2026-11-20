@@ -1,7 +1,7 @@
 """Failure modes of the numeric result boundary (no display-text parsing)."""
 import math
 import pytest
-from rc_metastudio.analysis_results import Quantity, ResultTable
+from rc_metastudio.results.contract import Quantity, ResultTable
 
 
 @pytest.mark.parametrize('role', ['', 'unknown', None])

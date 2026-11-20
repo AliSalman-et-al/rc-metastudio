@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from rc_metastudio.csv_import import CsvImportError, parse_csv
+from rc_metastudio.importing.tabular import CsvImportError, parse_csv
 
 
 def test_parse_csv_assigns_names_to_blank_covariates(tmp_path: Path) -> None:
@@ -151,7 +151,7 @@ def test_headerless_xlsx_keeps_first_study_and_converts_its_year(tmp_path: Path)
 def test_xlsx_second_open_failure_closes_first_workbook(tmp_path, monkeypatch):
     # A second open may fail after the formula workbook acquired a ZIP handle.
     import openpyxl
-    from rc_metastudio.csv_import import read_xlsx
+    from rc_metastudio.importing.tabular import read_xlsx
 
     path = tmp_path / "formula.xlsx"
     workbook = openpyxl.Workbook()
@@ -182,7 +182,7 @@ def test_xlsx_second_open_failure_closes_first_workbook(tmp_path, monkeypatch):
 def test_xlsx_rejects_excessive_worksheet_extent_before_materializing(tmp_path):
     # Formatting or one distant cell must not allocate a giant rectangular grid.
     from openpyxl import Workbook
-    from rc_metastudio.csv_import import read_xlsx
+    from rc_metastudio.importing.tabular import read_xlsx
 
     path = tmp_path / "extent.xlsx"
     workbook = Workbook()

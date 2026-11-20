@@ -26,8 +26,9 @@ from tests.e2e.plot_observations import load_serialized_object
 
 def analyze_existing(app, window, workflow, method, record, parameters=None, *, covariates=('Dose',)):
     from PyQt6 import QtCore, QtWidgets
-    from rc_metastudio import analysis_setup_dialog, results_window
-    from rc_metastudio.subgroup_analysis_dialog import SubgroupAnalysisDialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+    from rc_metastudio.results import window as results_window
+    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from analysis_matrix import set_parameter
     from tests.python.gui.qt_test_support import mouse_click
 
@@ -48,7 +49,7 @@ def analyze_existing(app, window, workflow, method, record, parameters=None, *, 
         for covariate, checkbox in dialog.covs_and_check_boxes:
             checkbox.setChecked(covariate["name"] in covariates)
     else:
-        dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == method))
+        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(method))
     app.processEvents()
     for key, value in {"digits": 6, **(parameters or {})}.items():
         set_parameter(app, dialog, key, value)
@@ -117,7 +118,7 @@ def run(app, window, work, record, scenario):
                         from rc_metastudio import r_bridge
                         for title, path in view.results.display_images.items():
                             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.revman.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.revman.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
+                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.forest.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.forest.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
                             raw = [[float(window.model.data(window.model.index(row, column))) for column in window.model.RAW_DATA[:2]] for row in range(6)]
                             assert raw == [[4.0+i, 20.0+i] for i in range(6)], raw
                             counts = ",".join(str(row[0]) for row in raw)
@@ -179,7 +180,7 @@ def run(app, window, work, record, scenario):
                     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         if selected_family in {"generic-effect", "reg-coef"}:
             from advanced_workflows import modal
-            from rc_metastudio.continuous_data_dialog import ContinuousDataDialog
+            from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
             def inspect_calculator(dialog):
                 label = "Entered effect" if selected_family == "generic-effect" else "Coefficient"
                 assert dialog.effect_combo_box.currentText() == label, dialog.effect_combo_box.currentText()
@@ -205,7 +206,7 @@ def run(app, window, work, record, scenario):
             page = wizard.currentPage()
             assert isinstance(page, main_wizard.CsvImportPage)
             assert "Estimate" in page.required_header_labels and "Mean" not in page.required_header_labels, page.required_header_labels
-            from rc_metastudio.analysis_catalog import LEGACY_MEAN_METRIC_NAMES
+            from rc_metastudio.analysis.catalog import LEGACY_MEAN_METRIC_NAMES
             for index, alias in enumerate(("Mean", *LEGACY_MEAN_METRIC_NAMES)):
                 source = work / f"entered-estimate-alias-{index}.csv"
                 with source.open("w", newline="", encoding="utf-8") as stream:
@@ -441,14 +442,15 @@ def run(app, window, work, record, scenario):
         check_report(app, view, work, record)
         assert view.results.identity == original_identity
         from PyQt6 import QtWidgets
-        from rc_metastudio import analysis_setup_dialog, results_window
+        from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
+        from rc_metastudio.results import window as results_window
         from tests.python.gui.qt_test_support import mouse_click
         for suffix in ("random", "fixed"):
             view.change_settings_action.trigger()
             app.processEvents()
             dialog = next(w for w in app.topLevelWidgets() if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible())
             assert dialog.data_type == family
-            dialog.method_cbo_box.setCurrentText(next(label for label, key in dialog.available_method_d.items() if key == family + "." + suffix))
+            dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(family + "." + suffix))
             app.processEvents()
             previous = {id(w) for w in app.topLevelWidgets() if isinstance(w, results_window.ResultsWindow)}
             mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
@@ -570,7 +572,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         view.close()
         record("round5-readable-type-matrix", window, measurements=measurements)
         return
-    from rc_metastudio import analysis_catalog
+    from rc_metastudio.analysis import catalog as analysis_catalog
     def add_dose(target):
         studies = target.model.get_studies(only_if_included=True)
         target.model.add_covariate("Dose", "continuous",
@@ -651,7 +653,7 @@ def run_irr_context(app, window, record):
                                 parameters={"fp_style":style, "fp_show_col3":True, "fp_show_col4":True})
         check_annotation_spacing(view, style=style)
         title, path = next(iter(view.results.display_images.items()))
-        from rc_metastudio.analysis_identity import dataset_identity
+        from rc_metastudio.analysis.identity import dataset_identity
         check_caption(path, dataset_identity(window.model))
         labels = ["".join(node.itertext()) for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}text")]
         assert all(label == label.strip() for label in labels if re.fullmatch(r"\s*[-+\d.]+\s*", label)), labels

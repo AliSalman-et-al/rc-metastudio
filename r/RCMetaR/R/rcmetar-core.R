@@ -200,11 +200,7 @@ rcmetar.analysis.plot.capabilities <- function(data.type, method, workflow="stan
         stop(sprintf("Method '%s' is not available for %s %s analysis.", method, data.type, workflow), call.=FALSE)
     }
 
-    defaults <- c(standard="forest", cumulative="cumulative_forest",
-                  "leave-one-out"="leave_one_out_forest", subgroup="subgroup_forest",
-                  bootstrap="other", "meta-regression"="regression")
-    kinds <- .rcmetar.method.registry()[[method]]$plots
-    kind <- if (workflow %in% names(kinds)) kinds[[workflow]] else defaults[[workflow]]
+    kind <- .rcmetar.analysis.plot.kind(method, workflow)
     list(.rcmetar.plot.descriptor.for.kind(kind, has.params=TRUE))
 }
 
@@ -369,17 +365,6 @@ rcmetar.convert.scale <- function(x, metric, data.type, convert.to="display.scal
         return(transform.function[[convert.to]](x=x, ni=n1))
     }
     transform.function[[convert.to]](x)
-}
-
-rcmetar.transform <- function(data.type, metric) {
-    switch(
-        .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic", "time_to_event", "event_rates"), "data.type"),
-        binary = binary.transform.f(metric),
-        continuous = continuous.transform.f(metric),
-        time_to_event = ratio.transform.f(metric),
-        event_rates = ratio.transform.f(metric),
-        diagnostic = diagnostic.transform.f(metric)
-    )
 }
 
 rcmetar.transform.by.name <- function(transform.name, metric) {
@@ -587,7 +572,7 @@ rcmetar.graphics.off <- function() {
 
 rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list(), workflow="standard",
                                  selected.cov=NULL, cond.means.data=NULL, stop.at.rma=FALSE) {
-    request <- rcmetar.validate.analysis.request(
+    request <- .rcmetar.prepare.analysis.request(
         om.data=om.data,
         request=request,
         method=method,
@@ -612,7 +597,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         cumulative=.rcmetar.dispatch.meta.workflow(om.data, request),
         "leave-one-out"=.rcmetar.dispatch.meta.workflow(om.data, request),
         subgroup=.rcmetar.dispatch.meta.workflow(om.data, request),
-        bootstrap=bootstrap(request$method, om.data, request$params, request$cond.means.data),
+        bootstrap=bootstrap(request$method, om.data, request$params),
         "meta-regression"=selected.method$regression(
             om.data, request$params, request$cond.means.data, request$stop.at.rma)
     ), warning=function(condition) {
@@ -626,7 +611,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     }
     result <- .rcmetar.attach.plot.display.artifacts(result, request)
     result <- .rcmetar.attach.plot.capabilities(result, request)
-    .rcmetar.attach.request(result, request)
+    .rcmetar.attach.request(result, .rcmetar.public.analysis.request(request, selected.cov))
 }
 
 .rcmetar.diagnostic.attempt <- function(work, allow.partial) {
@@ -646,7 +631,6 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     if (request$workflow == "standard") {
         return(rcmetar.diagnostic.fit(prepared, request$method, params))
     }
-    request$data.type <- request$data_type
     .rcmetar.dispatch.meta.workflow(prepared, request)
 }
 
@@ -701,28 +685,6 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     result
 }
 
-.rcmetar.diagnostic.request.envelope <- function(request, workflow) {
-    if (!is.list(request) || is.null(names(request))) {
-        stop("Diagnostic request list must contain named requests.", call.=FALSE)
-    }
-    version <- request$version %||% 1L
-    if (length(version) != 1L || !identical(as.integer(version), 1L)) {
-        stop("Unsupported analysis request version.", call.=FALSE)
-    }
-    if (!identical(request$data_type %||% "diagnostic", "diagnostic")) {
-        stop("Analysis request data_type does not match the input data.", call.=FALSE)
-    }
-    request$params <- .rcmetar.as.params.list(request$params)
-    metric <- as.character(request$metric %||% request$params$measure %||% "")
-    if (length(metric) != 1L || is.na(metric) || !nzchar(metric)) {
-        stop("Analysis request must include one metric.", call.=FALSE)
-    }
-    request$metric <- metric
-    request$workflow <- .rcmetar.normalize.workflow(request$workflow %||% workflow)
-    request$method <- .rcmetar.validate.method.name(request$method)
-    request
-}
-
 .rcmetar.diagnostic.batch <- function(request.list, methods, params.list, workflow, selected.cov) {
     legacy <- is.null(request.list)
     if (legacy) {
@@ -737,7 +699,12 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
     } else if (!is.list(request.list) || !length(request.list)) {
         stop("Diagnostic request list must contain at least one request.", call.=FALSE)
     }
-    requests <- lapply(request.list, .rcmetar.diagnostic.request.envelope, workflow=workflow)
+    requests <- lapply(request.list, function(request) {
+        if (!is.list(request) || is.null(names(request))) {
+            stop("Diagnostic request list must contain named requests.", call.=FALSE)
+        }
+        .rcmetar.analysis.request.envelope(request, "diagnostic", workflow)
+    })
     workflows <- unique(vapply(requests, `[[`, character(1), "workflow"))
     if (length(workflows) > 1L) stop("Diagnostic request list cannot mix analysis workflows.", call.=FALSE)
     workflow <- if (length(workflows)) workflows[[1L]] else .rcmetar.normalize.workflow(workflow)
@@ -771,16 +738,10 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
 
 .rcmetar.diagnostic.check.request <- function(input, request, selected.cov) {
     if (inherits(input, "error")) return(request)
-    checked <- rcmetar.validate.analysis.request(input, request=request, selected.cov=selected.cov)
-    request$version <- 1L
-    request$data_type <- checked$data.type
-    request$method <- checked$method
-    request$params <- checked$params
-    request$params$measure <- checked$params$measure %||% request$metric
-    request$workflow <- checked$workflow
-    request$selected.cov <- checked$selected.cov
-    request$cond.means.data <- checked$cond.means.data
-    request$stop.at.rma <- checked$stop.at.rma
+    request$selected.cov <- if (request$workflow == "subgroup")
+        request$selected.cov %||% selected.cov else selected.cov
+    request <- .rcmetar.check.analysis.data(input, request)
+    request$params$measure <- request$params$measure %||% request$metric
     request
 }
 
@@ -800,9 +761,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
 rcmetar.run.diagnostic.analyses <- function(diagnostic.data=NULL, methods=NULL, params.list=NULL,
                                              workflow="standard", selected.cov=NULL, request.version=1,
                                              request.list=NULL, request.data=NULL, allow.partial=FALSE) {
-    if (length(request.version) != 1 || !identical(as.integer(request.version), 1L)) {
-        stop("Unsupported analysis request version.", call.=FALSE)
-    }
+    .rcmetar.validate.analysis.version(request.version)
     if (!identical(allow.partial, FALSE) && !identical(allow.partial, TRUE)) {
         stop("allow.partial must be TRUE or FALSE.", call.=FALSE)
     }
@@ -815,7 +774,6 @@ rcmetar.run.diagnostic.analyses <- function(diagnostic.data=NULL, methods=NULL, 
         outcomes[[i]] <- .rcmetar.diagnostic.outcome(data[[i]], requests[[i]], allow.partial)
     }
     failed <- vapply(outcomes, inherits, logical(1), "error")
-    if (batch$workflow == "standard" && (length(outcomes) == 0L || !all(failed))) graphics.off()
     artifact.request <- list(version=1L, data_type="diagnostic", methods=batch$methods,
                              params.list=lapply(requests, `[[`, "params"), workflow=batch$workflow)
     report.order <- if (any(failed)) seq_along(requests) else batch$fit.order
@@ -844,68 +802,69 @@ rcmetar.run.permutation <- function(data, method="REML", mods=NULL, level=95, di
 
 rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL, params=list(), workflow="standard",
                                               selected.cov=NULL, cond.means.data=NULL, stop.at.rma=FALSE) {
-    if (is.null(request)) {
-        request <- list(
-            version=1L,
-            data_type=.rcmetar.data.type(om.data),
-            metric=as.character(params$measure %||% ""),
-            method=method,
-            params=params,
-            workflow=workflow,
-            selected.cov=selected.cov,
-            cond.means.data=cond.means.data,
-            stop.at.rma=stop.at.rma
-        )
-    } else if (!is.list(request) || is.null(names(request))) {
-        stop("Analysis request must be a named list.", call.=FALSE)
-    } else {
-        request$version <- request$version %||% 1L
-        request$data_type <- request$data_type %||% .rcmetar.data.type(om.data)
-        request$method <- request$method %||% method
-        request$params <- request$params %||% params
-        request$workflow <- request$workflow %||% workflow
-        request$selected.cov <- request$selected.cov %||% selected.cov
-        request$cond.means.data <- request$cond.means.data %||% cond.means.data
-        request$stop.at.rma <- request$stop.at.rma %||% stop.at.rma
-    }
-    if (length(request$version) != 1 || !identical(as.integer(request$version), 1L)) {
+    checked <- .rcmetar.prepare.analysis.request(
+        om.data, request, method, params, workflow, selected.cov, cond.means.data, stop.at.rma)
+    .rcmetar.public.analysis.request(checked, selected.cov)
+}
+
+.rcmetar.public.analysis.request <- function(request, selected.cov) {
+    list(data.type=request$data_type, method=request$method, params=request$params,
+         workflow=request$workflow,
+         selected.cov=if (request$workflow == "subgroup") request$selected.cov else selected.cov,
+         cond.means.data=request$cond.means.data, stop.at.rma=request$stop.at.rma)
+}
+
+.rcmetar.validate.analysis.version <- function(version) {
+    if (length(version) != 1L || !identical(as.integer(version), 1L)) {
         stop("Unsupported analysis request version.", call.=FALSE)
     }
+}
 
-    data.type <- .rcmetar.data.type(om.data)
-    request.data.type <- request$data_type %||% data.type
-    if (!is.character(request.data.type) || length(request.data.type) != 1L ||
-            !identical(request.data.type, data.type)) {
+.rcmetar.analysis.request.envelope <- function(request, data.type, workflow) {
+    .rcmetar.validate.analysis.version(request$version %||% 1L)
+    request$version <- 1L
+    request$data_type <- request$data_type %||% data.type
+    if (!identical(request$data_type, data.type)) {
         stop("Analysis request data_type does not match the input data.", call.=FALSE)
     }
-    if (is.null(request$method) || is.null(request$params) || is.null(request$workflow)) {
-        stop("Analysis request must include method, metric, params, and workflow.", call.=FALSE)
-    }
-    workflow <- .rcmetar.normalize.workflow(request$workflow)
-    params <- .rcmetar.as.params.list(request$params)
-    method <- as.character(request$method)
-    metric <- .rcmetar.canonical.metric(as.character(request$metric %||% params$measure %||% ""))
-    if (length(metric) != 1L || !nzchar(metric)) {
+    request$workflow <- .rcmetar.normalize.workflow(request$workflow %||% workflow)
+    request$params <- .rcmetar.as.params.list(request$params)
+    metric <- .rcmetar.canonical.metric(as.character(request$metric %||% request$params$measure %||% ""))
+    if (length(metric) != 1L || is.na(metric) || !nzchar(metric)) {
         stop("Analysis request must include one metric.", call.=FALSE)
     }
-    if (length(method) != 1 || is.na(method) || !nzchar(method)) {
-        stop("Analysis request must include one method name.", call.=FALSE)
-    }
+    request$metric <- metric
+    request$method <- .rcmetar.validate.method.name(request$method)
+    request$stop.at.rma <- isTRUE(request$stop.at.rma)
+    request
+}
 
-    if (method %in% c("diagnostic.hsroc", "diagnostic.bivariate.ml")) {
-        stop(sprintf("Diagnostic method '%s' was removed. Use 'diagnostic.reitsma' (Reitsma bivariate model) for count-based joint analysis.", method), call.=FALSE)
+.rcmetar.prepare.analysis.request <- function(om.data, request, method, params, workflow,
+                                              selected.cov, cond.means.data, stop.at.rma) {
+    if (is.null(request)) {
+        request <- list()
+    } else if (!is.list(request) || is.null(names(request))) {
+        stop("Analysis request must be a named list.", call.=FALSE)
     }
+    request$method <- request$method %||% method
+    request$params <- request$params %||% params
+    request$selected.cov <- request$selected.cov %||% selected.cov
+    request$cond.means.data <- request$cond.means.data %||% cond.means.data
+    request$stop.at.rma <- request$stop.at.rma %||% stop.at.rma
+    request <- .rcmetar.analysis.request.envelope(request, .rcmetar.data.type(om.data), workflow)
+    supported <- rcmetar.analysis.methods(request$data_type, request$workflow)
+    if (!(request$method %in% supported)) {
+        stop(sprintf("Method '%s' is not supported for %s data with workflow '%s'. Supported methods: %s.",
+                     request$method, request$data_type, request$workflow, paste(supported, collapse=", ")),
+             call.=FALSE)
+    }
+    .rcmetar.check.analysis.data(om.data, request)
+}
 
-    supported <- rcmetar.analysis.methods(data.type, workflow)
-    if (!(method %in% supported)) {
-        stop(
-            sprintf(
-                "Method '%s' is not supported for %s data with workflow '%s'. Supported methods: %s.",
-                method, data.type, workflow, paste(supported, collapse=", ")
-            ),
-            call.=FALSE
-        )
-    }
+.rcmetar.check.analysis.data <- function(om.data, request) {
+    params <- request$params
+    data.type <- request$data_type
+    metric <- request$metric
     if (!is.null(params$conf.level)) {
         validate.conf.level(params$conf.level)
     }
@@ -916,11 +875,11 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         stop("Parameter 'measure' must not be empty.", call.=FALSE)
     }
 
-    if (workflow == "subgroup") {
-        selected.cov <- .rcmetar.resolve.selected.cov(om.data, request$selected.cov %||% selected.cov, params)
-        params$cov_name <- selected.cov@cov.name
+    if (request$workflow == "subgroup") {
+        request$selected.cov <- .rcmetar.resolve.selected.cov(om.data, request$selected.cov, params)
+        params$cov_name <- request$selected.cov@cov.name
     }
-    conditional.means <- request$cond.means.data %||% cond.means.data
+    conditional.means <- request$cond.means.data
     if (data.type != "diagnostic" &&
             ((!is.null(conditional.means) && !identical(conditional.means, FALSE)) ||
              identical(as.character(params$bootstrap.type), "boot.meta.reg.cond.means"))) {
@@ -932,26 +891,11 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
 
     if (identical(data.type, "binary") && identical(metric, "PFT")) {
-        counts <- list(om.data@g1O1, om.data@g1O2)
-        if (!.rcmetar.has.complete.raw.data(counts, length(om.data@study.names)) ||
-                any(om.data@g1O1 < 0) || any(om.data@g1O2 < 0) ||
-                any(!is.finite(om.data@g1O1 + om.data@g1O2)) ||
-                any(om.data@g1O1 + om.data@g1O2 <= 0)) {
-            stop(paste("PFT requires complete finite nonnegative event and non-event counts",
-                       "with a positive finite sample size for every study;",
-                       "entered effects alone cannot be inverted to proportions."), call.=FALSE)
-        }
+        .rcmetar.require.pft.counts(om.data)
     }
 
-    list(
-        data.type=data.type,
-        method=method,
-        params=params,
-        workflow=workflow,
-        selected.cov=selected.cov,
-        cond.means.data=request$cond.means.data %||% cond.means.data,
-        stop.at.rma=isTRUE(request$stop.at.rma %||% stop.at.rma)
-    )
+    request$params <- params
+    request
 }
 
 .rcmetar.call.method <- function(method, om.data, params) {
@@ -965,24 +909,24 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
 .rcmetar.dispatch.meta.workflow <- function(om.data, request) {
     if (is(om.data, "RatioData")) return(ratio.workflow(om.data, request))
     if (request$workflow == "cumulative") {
-        return(switch(request$data.type,
+        return(switch(request$data_type,
             binary = cum.ma.binary(request$method, om.data, request$params),
             continuous = cum.ma.continuous(request$method, om.data, request$params),
             diagnostic = cum.ma.diagnostic(request$method, om.data, request$params)
         ))
     }
     if (request$workflow == "leave-one-out") {
-        return(switch(request$data.type,
+        return(switch(request$data_type,
             binary = loo.ma.binary(request$method, om.data, request$params),
             continuous = loo.ma.continuous(request$method, om.data, request$params),
             diagnostic = loo.ma.diagnostic(request$method, om.data, request$params)
         ))
     }
     if (request$workflow == "subgroup") {
-        if (request$data.type == "diagnostic") {
+        if (request$data_type == "diagnostic") {
             return(subgroup.ma.diagnostic(request$method, om.data, request$params, request$selected.cov))
         }
-        if (request$data.type == "binary") {
+        if (request$data_type == "binary") {
             return(subgroup.ma.binary(request$method, om.data, request$params))
         }
         return(subgroup.ma.continuous(request$method, om.data, request$params))
@@ -1249,21 +1193,10 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     methods <- if (!is.null(request$methods)) request$methods else request$method
     methods <- as.character(methods)
 
-    plot.kind <- switch(
-        workflow,
-        cumulative="cumulative_forest",
-        "leave-one-out"="leave_one_out_forest",
-        subgroup="subgroup_forest",
-        bootstrap="other",
-        "meta-regression"="regression",
-        standard={
-            if (length(methods) != 1 || methods %in% c("diagnostic.reitsma")) {
-                stop("Heterogeneous diagnostic plot producers must declare their own capabilities.", call.=FALSE)
-            }
-            "forest"
-        },
-        stop(sprintf("No plot capability contract for workflow '%s'.", workflow), call.=FALSE)
-    )
+    if (workflow == "standard" && (length(methods) != 1L || methods == "diagnostic.reitsma")) {
+        stop("Heterogeneous diagnostic plot producers must declare their own capabilities.", call.=FALSE)
+    }
+    plot.kind <- .rcmetar.analysis.plot.kind(methods, workflow)
     params.paths <- result$plot_params_paths
     params.path <- if (
         !is.null(params.paths) &&
@@ -1274,6 +1207,21 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
         !is.na(params.path) &&
         nzchar(as.character(params.path))
     .rcmetar.plot.descriptor.for.kind(plot.kind, has.params)
+}
+
+.rcmetar.analysis.plot.kind <- function(method, workflow) {
+    if (length(method) == 1L) {
+        specific <- .rcmetar.method.registry()[[method]]$plots[workflow]
+        if (length(specific) && !is.na(specific)) return(unname(specific))
+    }
+    switch(workflow,
+           standard="forest",
+           cumulative="cumulative_forest",
+           "leave-one-out"="leave_one_out_forest",
+           subgroup="subgroup_forest",
+           bootstrap="other",
+           "meta-regression"="regression",
+           stop(sprintf("No plot capability contract for workflow '%s'.", workflow), call.=FALSE))
 }
 
 .rcmetar.plot.kind.capabilities <- function() {

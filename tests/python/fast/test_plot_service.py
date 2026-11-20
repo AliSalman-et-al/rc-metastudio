@@ -5,8 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from rc_metastudio import plot_service, r_bridge
-from rc_metastudio.plot_service import PlotService, PlotServiceError
+from rc_metastudio.results import plot_service
+from rc_metastudio import r_bridge
+from rc_metastudio.results.plot_service import PlotService, PlotServiceError
 
 
 def test_incomplete_bundle_cannot_overwrite_plot(tmp_path, monkeypatch):

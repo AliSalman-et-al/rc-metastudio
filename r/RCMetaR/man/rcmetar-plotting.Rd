@@ -3,17 +3,11 @@
 \name{RCMetaR-plotting}
 \alias{RCMetaR-plotting}
 \alias{calc.plot.range}
-\alias{calculate.radii}
-\alias{check.label}
-\alias{create.effect.size.label}
 \alias{create.plot.data.binary}
 \alias{create.plot.data.continuous}
 \alias{create.plot.data.diagnostic}
 \alias{create.plot.data.generic}
 \alias{create.plot.data.reg}
-\alias{format.data.cols}
-\alias{format.effect.sizes}
-\alias{format.raw.data.col}
 \alias{create.overall.display}
 \alias{create.subgroup.display}
 \alias{create.summary.disp}
@@ -40,9 +34,6 @@ by plotting functions and the metafor forest renderer.
 
 \section{Layout and labels}{
 
-\code{calc.plot.range()}, \code{calculate.radii()}, \code{check.label()},
-\code{create.effect.size.label()}, \code{format.data.cols()},
-\code{format.effect.sizes()}, \code{format.raw.data.col()},
-\code{set.plot.options()}, and
+\code{calc.plot.range()}, \code{set.plot.options()}, and
 \code{update.changed.plot.params()} control display formatting.
 }

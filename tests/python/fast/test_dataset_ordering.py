@@ -14,13 +14,13 @@ from rc_metastudio import r_bridge
 
 r_bridge.initialize_r()
 
-from rc_metastudio import dataset_table_model
-from rc_metastudio import analysis_dataset
-from rc_metastudio import analysis_catalog
+from rc_metastudio.workspace import table_model as dataset_table_model
+from rc_metastudio.project import model as analysis_dataset
+from rc_metastudio.analysis import catalog as analysis_catalog
 
 
 def _sortable_dataset_model():
-    from rc_metastudio.analysis_unit import AnalysisUnit
+    from rc_metastudio.project.study import AnalysisUnit
     names = list(analysis_catalog.DEFAULT_ARM_NAMES)
     arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Mortality", analysis_catalog.BINARY, arms=arms,
@@ -100,7 +100,7 @@ def test_covariate_sort_uses_values_independent_of_study_field_names(covariate_n
 
 
 def test_standard_error_sort_does_not_sort_confidence_bounds():
-    from rc_metastudio.analysis_unit import AnalysisUnit
+    from rc_metastudio.project.study import AnalysisUnit
 
     arm = analysis_dataset.Arm(ArmId("group"), "Group")
     sheet = analysis_dataset.Sheet(
@@ -137,8 +137,8 @@ def test_initial_sheet_uses_its_saved_metric_and_confidence():
 def test_sheet_arm_order_is_stable_across_hash_seeds():
     script = """
 import json
-from rc_metastudio.analysis_dataset import Dataset, Sheet, Arm
-from rc_metastudio.dataset_table_model import DatasetTableModel
+from rc_metastudio.project.model import Dataset, Sheet, Arm
+from rc_metastudio.workspace.table_model import DatasetTableModel
 names = ["Intervention", "Control", "Arm C", "Arm D"]
 sheet = Sheet("sheet", "Mortality", 0, arms=[Arm(str(i), n) for i, n in enumerate(names)])
 model = DatasetTableModel(dataset=Dataset(sheets=[sheet]), add_blank_study=False)
