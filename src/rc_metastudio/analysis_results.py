@@ -34,7 +34,7 @@ class RawAnalysisResult(TypedDict, total=False):
 QuantityRole = Literal['estimate', 'ci_lower', 'ci_upper', 'pi_lower', 'pi_upper',
                        'se', 'statistic', 'df', 'df2', 'p', 'q', 'i2', 'tau2', 'k', 'weight', 'value']
 QuantityScale = Literal['display', 'log', 'logit', 'arcsine', 'freeman-tukey', 'percent', 'proportion', '']
-TableRole = Literal['pooled', 'coefficients', 'heterogeneity', 'residual_heterogeneity',
+TableRole = Literal['pooled', 'coefficients', 'fitted', 'heterogeneity', 'residual_heterogeneity',
                     'overall_test', 'subgroup_test', 'model_fit', 'model_tests',
                     'model_specification', 'calculation', 'study_results',
                     'cumulative', 'leave_one_out', 'trial_sequential', 'prediction', 'supporting']
@@ -116,6 +116,7 @@ class ResultSection:
     paragraphs: tuple[str, ...] = ()
     tables: tuple[ResultTable, ...] = ()
     prediction_notes: tuple[str, ...] = ()
+    configuration_notes: tuple[str, ...] = ()
 
     @property
     def plot_kind(self) -> PlotKind | None:
@@ -188,6 +189,11 @@ def normalize_analysis_result(result: AnalysisResult) -> AnalysisResult:
         lines = [line for line in details.splitlines() if not line.startswith("Inference:")]
         lines.append("Inference: " + inference)
         details = "\n".join(lines)
+    notes = dict.fromkeys(note for section in result.sections for note in section.configuration_notes)
+    if notes:
+        lines = details.splitlines()
+        lines.extend(note for note in notes if note not in lines)
+        details = "\n".join(lines)
     sections = tuple(
         section for section in result.sections
         if section.kind != "text" or section.source_key != "Inference Method"
@@ -217,9 +223,10 @@ def _result_section(
     if value is None:
         raise ValueError("analysis result section references missing value")
     if kind == "text":
-        paragraphs, tables, prediction_notes = _report_content(item.get("report"))
+        paragraphs, tables, prediction_notes, configuration_notes = _report_content(item.get("report"))
         return ResultSection(semantic_id, kind, order, title, value, source_key,
-                             paragraphs=paragraphs, tables=tables, prediction_notes=prediction_notes)
+                             paragraphs=paragraphs, tables=tables, prediction_notes=prediction_notes,
+                             configuration_notes=configuration_notes)
     capability = capabilities.get(source_key)
     if capability is None:
         raise ValueError("analysis result image has no plot capability")
@@ -236,9 +243,9 @@ def _result_section(
     )
 
 
-def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, ...], tuple[str, ...]]:
+def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, ...], tuple[str, ...], tuple[str, ...]]:
     if value is None:
-        return (), (), ()
+        return (), (), (), ()
     if not isinstance(value, Mapping):
         raise ValueError("report content must be a mapping")
     fields: dict[str, object] = {}
@@ -247,6 +254,7 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
             fields[key] = field
     paragraphs = _optional_string_list(fields.get("paragraphs"), "report paragraphs")
     prediction_notes = _optional_string_list(fields.get("prediction_notes"), "prediction notes")
+    configuration_notes = _optional_string_list(fields.get("configuration_notes"), "configuration notes")
     entries = fields.get("tables")
     if not isinstance(entries, (list, tuple)):
         raise ValueError("report tables must be a list")
@@ -254,6 +262,7 @@ def _report_content(value: object) -> tuple[tuple[str, ...], tuple[ResultTable, 
         tuple(paragraphs or ()),
         tuple(_report_table_entry(entry) for entry in entries),
         tuple(prediction_notes or ()),
+        tuple(configuration_notes or ()),
     )
 
 

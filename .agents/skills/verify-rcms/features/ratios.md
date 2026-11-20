@@ -16,6 +16,8 @@ Forest, cumulative, leave-one-out, subgroup, regression and contour editors exer
 
 The dedicated `ratios-samples` scenario opens both bundled metadat examples (`Pignon2000-HR.rcms` and `NielWeise2008-IRR.rcms`). It checks every source row and stored input, compares fixed/random results directly with metafor (and raw MH for IRR), compares every HR chemotherapy-timing subgroup with metafor, observes the nine-study IRR asymmetry limit with usable descriptive funnels, and saves/reopens separate copies with identical project content. Original HR years stay blank; IRR uses catheter-days and has nine studies. See `sample_projects/README.md` for source attribution and reproducible generation.
 
+`calculator-ratio-precision` follows extreme HR and IRR inputs through native editing, save/reopen, and a public metafor calculation. It checks the fitted positive bound before rounding and verifies the two-significant-figure label (for example, `1.7e−13`) in both journal forest presets, structured table rows, plain text, HTML and DOCX. It also checks column spacing for very large values that still use fixed decimals.
+
 ## Native and remaining scope
 
 Complete double-zero IRR rows show Not estimable and interval dashes, with an explicit tooltip. `options-zero-cells` also drives the shared formatter through undefined SMD, numeric MD, save/reopen, correction to finite SMD, and incomplete-input recovery. Missing input remains blank; display labels never replace original numeric inputs.

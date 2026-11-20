@@ -94,22 +94,20 @@ rcmetar.study.result.values <- function(data, params, fit, grouped.indices=NULL)
     study=as.character(data@study.names[indices]),
     estimate=display$y.disp[indices], lower=display$lb.disp[indices],
     upper=display$ub.disp[indices], weight=weights[indices],
-    level=display.confidence.level(params), digits=params$digits %||% 4L,
+    level=display.confidence.level(params), digits=display.digits(params),
     metric=as.character(params$measure), metric_label=rcmetar.display.metric.name(params)
   )
 }
 
 create.summary.disp <- function(om.data, params, res, model.title) {
   result.digits <- display.digits(params)
-  se.digits <- display.digits(params, minimum=if (is(om.data, "DiagnosticData")) 0L else 3L)
-  digits.str <- paste("%.", result.digits, "f", sep="")
   transform.name <- get.transform.name(om.data)
   scale.str <- get.scale(params)
-  tau2 <- format.numeric.display(res$tau2, digits.str)
-  degf <- (res$k.yi %||% res$k) - (res$p %||% 1)
-  I2 <- format.percent.display(res$I2, "%.1f")
+  tau2 <- rcmetar.format.effect.number(res$tau2 %||% NA_real_, result.digits)
+  degf <- rcmetar.heterogeneity.df(res)
+  I2 <- format.i2.display(res$I2)
   n <- rcmetar.summary.sample.sizes(om.data, params)
-  QE <- format.numeric.display(res$QE, digits.str)
+  QE <- rcmetar.format.effect.number(res$QE %||% NA_real_, result.digits)
   QEp <- format.p.value.display(res$QEp, params$digits)
   pVal <- format.p.value.display(res$pval, params$digits)
 
@@ -121,22 +119,32 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   effect.raw <- c(y.disp, lb.disp, ub.disp)
   analysis.scale <- rcmetar.analysis.scale(params)
   level <- display.confidence.level(params)
-  scale <- if (metric.is.log.scale(params$measure)) 0 else pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
-  y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
-  lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
-  ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-  se <- rcmetar.format.effect.number(res$se, se.digits)
+  studies <- rcmetar.study.result.values(om.data, params, res)
+  lower <- c(studies$lower, lb.disp)
+  upper <- c(studies$upper, ub.disp)
+  effect.digits <- rcmetar.effect.digits(params, lower, upper)
+  if (!is.null(studies)) studies$digits <- effect.digits
+  y.disp <- rcmetar.format.effect.number(y.disp, effect.digits)
+  lb.disp <- rcmetar.format.interval.bound(lb.disp, effect.digits, params)
+  ub.disp <- rcmetar.format.interval.bound(ub.disp, effect.digits, params)
+  se <- rcmetar.format.effect.number(res$se, result.digits)
 
   random <- !res$method %in% c("FE", "EE", "CE", "MH", "PETO")
   het.columns <- seq_len(4L + as.integer(random))
   het.col.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")[het.columns]
   het.col.vals <- c(QE, if (display.value.is.missing(res$QE)) "" else degf,
                     QEp, I2, tau2)[het.columns]
+  het.raw <- c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf,
+               res$QEp %||% NA_real_, res$I2 %||% NA_real_, res$tau2 %||% NA_real_)[het.columns]
+  if (isTRUE(degf <= 0)) {
+    het.col.vals[] <- "\u2014"
+    het.raw[] <- NA_real_
+  }
   het.array <- rbind(het.col.labels, het.col.vals)
   class(het.array) <- "summary.data"
   het.array <- rcmetar.numeric.fields(het.array, seq_along(het.col.labels),
     c("q", "df", "p", "i2", "tau2")[het.columns],
-    c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf, res$QEp %||% NA_real_, res$I2 %||% NA_real_, res$tau2 %||% NA_real_)[het.columns],
+    het.raw,
     c("", "", "", "percent", analysis.scale)[het.columns])
   het.title <- "Heterogeneity"
 
@@ -145,9 +153,9 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     res.col.labels <- c("Estimate", display.confidence.interval.labels(params), "p-value")
     res.col.vals <- c(y.disp, lb.disp, ub.disp, pVal)
     res.array <- rbind(res.col.labels, res.col.vals)
-    estCalc <- sprintf(digits.str, res$b)
-    lbCalc <- sprintf(digits.str, res$ci.lb)
-    ubCalc <- sprintf(digits.str, res$ci.ub)
+    estCalc <- rcmetar.format.effect.number(res$b, result.digits)
+    lbCalc <- rcmetar.format.effect.number(res$ci.lb, result.digits)
+    ubCalc <- rcmetar.format.effect.number(res$ci.ub, result.digits)
     calc.note <- paste(
       "Calculation scale: ", scale.str,
       " - estimate: ", estCalc,
@@ -182,14 +190,14 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   if (!is.null(res$zval)) {
     use.t <- !is.null(res$test) && res$test %in% c("t", "knha", "adhoc")
     overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
-                     c(rcmetar.format.test.statistic(res$zval, result.digits), pVal))
+                     c(rcmetar.format.effect.number(res$zval, result.digits), pVal))
     if (use.t) overall <- cbind(overall, c("df", as.character(res$dfs)))
     overall <- rcmetar.numeric.fields(overall, seq_len(ncol(overall)),
       c("statistic", "p", if (use.t) "df"), c(res$zval, res$pval, if (use.t) res$dfs))
     arrays <- c(arrays, list(rcmetar.table(overall, "overall_test", params, res$test)))
     table.titles <- c(table.titles, rcmetar.overall.test.heading(res, params))
   }
-  prediction <- rcmetar.summary.prediction(res, params, transform, n, result.digits)
+  prediction <- rcmetar.summary.prediction(res, params, transform, n, effect.digits)
   if (!is.null(prediction)) {
     arrays <- c(arrays, list(prediction$interval))
     table.titles <- c(table.titles, "Prediction interval")
@@ -203,7 +211,8 @@ create.summary.disp <- function(om.data, params, res, model.title) {
     "notes" = notes,
     "prediction.notes" = prediction$note,
     "MAResults" = res,
-    "study.results" = rcmetar.study.result.values(om.data, params, res),
+    "study.results" = studies,
+    "display.precision.note" = rcmetar.effect.precision.note(params, effect.digits, lower, upper),
     "summary.sentence" = paste0("Pooled ", rcmetar.display.metric.name(params),
                                 ": ", y.disp, " (", display.confidence.level(params), "% CI ", lb.disp, " to ", ub.disp, ")."),
     "calculation.table" = calculation.table,
@@ -279,7 +288,7 @@ rcmetar.regression.display.value <- function(value, digits, percent=FALSE) {
     return("Not estimable")
   }
   if (percent) {
-    return(sprintf(paste0("%.", digits, "f%%"), as.numeric(value)))
+    return(format.percent.display(value, digits))
   }
   rcmetar.format.effect.number(as.numeric(value), digits)
 }
@@ -341,8 +350,6 @@ create.regression.display <- function(res, params, display.data) {
   n.factor.covs <- length(factor.n.levels)
   n.rows <- length(cov.display.col) + 1
   result.digits <- display.digits(params)
-  se.digits <- display.digits(params, minimum=3L)
-  digits.str <- paste("%.", result.digits, "f", sep="")
   inference.method <- rcmetar.inference.method(params)
   t.inference <- inference.method %in% c("t", "knha", "adhoc")
   ci.labels <- display.confidence.interval.labels(params)
@@ -367,11 +374,11 @@ create.regression.display <- function(res, params, display.data) {
 
   reg.array <- array(dim=c(length(cov.display.col) + 1, length(col.labels)), dimnames=list(NULL, col.labels))
   reg.array[1,] <- col.labels
-  display.values <- function(values, digits, scale=abs(values)) {
+  display.values <- function(values, digits, ratio.bound=FALSE) {
     vapply(seq_along(res$b), function(index) {
       value <- if (length(values) >= index) values[index] else NULL
-      if (display.value.is.missing(value)) "Not estimable" else
-        rcmetar.format.effect.number(value, digits, scale=scale[index])
+      if (display.value.is.missing(value)) "Not estimable" else if (ratio.bound)
+        rcmetar.format.interval.bound(value, digits, params) else rcmetar.format.effect.number(value, digits)
     }, character(1))
   }
   display.p.values <- function(values) {
@@ -384,18 +391,17 @@ create.regression.display <- function(res, params, display.data) {
       }
     }, character(1))
   }
-  coefficient.scale <- pmax(abs(res$b), abs(res$ci.lb), abs(res$ci.ub))
-  coeffs <- display.values(res$b, result.digits, coefficient.scale)
-  lbs <- display.values(res$ci.lb, result.digits, coefficient.scale)
-  ubs <- display.values(res$ci.ub, result.digits, coefficient.scale)
+  coeffs <- display.values(res$b, result.digits)
+  lbs <- display.values(res$ci.lb, result.digits)
+  ubs <- display.values(res$ci.ub, result.digits)
   coeffs.tmp <- coeffs[1:n.cont.rows]
   lbs.tmp <- lbs[1:n.cont.rows]
   ubs.tmp <- ubs[1:n.cont.rows]
 
   if (bootstrap.type != "boot.meta.reg") {
-    se <- display.values(res$se, se.digits)
+    se <- display.values(res$se, result.digits)
     pvals <- display.p.values(res$pval)
-    statistics <- display.values(res$zval, se.digits, pmax(abs(res$zval), coefficient.scale / res$se))
+    statistics <- display.values(res$zval, result.digits)
     dfs <- rep(if (!is.null(res$ddf)) res$ddf else res$k - res$p, length(res$b))
     se.tmp <- se[1:n.cont.rows]
     pvals.tmp <- pvals[1:n.cont.rows]
@@ -491,8 +497,8 @@ create.regression.display <- function(res, params, display.data) {
   for (name in continuous.names) {
     observed.range <- continuous.ranges[[name]]
     range.label <- if (length(observed.range) == 2 && all(is.finite(observed.range))) {
-      paste0("Continuous; observed range ", sprintf(digits.str, observed.range[1]),
-             " to ", sprintf(digits.str, observed.range[2]))
+      paste0("Continuous; observed range ", rcmetar.format.effect.number(observed.range[1], result.digits),
+             " to ", rcmetar.format.effect.number(observed.range[2], result.digits))
     } else {
       "Continuous"
     }
@@ -530,7 +536,8 @@ create.regression.display <- function(res, params, display.data) {
   if (params$measure %in% c("HR", "IRR")) {
     multipliers <- rcmetar.regression.summary.array(lapply(seq_along(res$b), function(i) c(
       sub("^intrcpt$", "Intercept", rownames(res$b)[i]), display.values(exp(res$b), result.digits)[i],
-      display.values(exp(res$ci.lb), result.digits)[i], display.values(exp(res$ci.ub), result.digits)[i]
+      display.values(exp(res$ci.lb), result.digits, ratio.bound=TRUE)[i],
+      display.values(exp(res$ci.ub), result.digits, ratio.bound=TRUE)[i]
     )), c("Coefficient", "Multiplier", ci.labels))
     arrays <- c(arrays, list(multipliers))
     titles <- c(titles, paste0("Exponentiated coefficients (ratios of ", params$measure, "s; intercept is baseline ratio)"))
@@ -539,11 +546,11 @@ create.regression.display <- function(res, params, display.data) {
   if (!identical(as.character(res$method), "FE")) {
     heterogeneity <- rcmetar.regression.summary.array(list(
       c("Residual heterogeneity (\u03c4\u00b2)", rcmetar.regression.display.value(res$tau2, result.digits)),
-      c("SE of \u03c4\u00b2", rcmetar.regression.display.value(res$se.tau2, se.digits)),
+      c("SE of \u03c4\u00b2", rcmetar.regression.display.value(res$se.tau2, result.digits)),
       c("Residual heterogeneity (\u03c4)", rcmetar.regression.display.value(sqrt(res$tau2 %||% NA_real_), result.digits)),
-      c("Residual I\u00b2", rcmetar.regression.display.value(res$I2, 1L, percent=TRUE)),
+      c("Residual I\u00b2", format.i2.display(res$I2, missing="Not estimable")),
       c("Residual H\u00b2", rcmetar.regression.display.value(res$H2, result.digits)),
-      c("Heterogeneity explained (R\u00b2)", rcmetar.regression.display.value(res$R2, 1L, percent=TRUE))
+      c("Heterogeneity explained (R\u00b2)", rcmetar.regression.display.value(res$R2, result.digits, percent=TRUE))
     ))
     # Each row has a distinct meaning; keep these as supporting values.
     heterogeneity <- rcmetar.numeric.fields(heterogeneity, 2L, "value",
@@ -579,11 +586,12 @@ create.regression.display <- function(res, params, display.data) {
       if (t.inference) residual.df else NULL, params$digits)
     raw.tests[[length(raw.tests)+1L]] <- c(statistic, df1, if (t.inference) residual.df else NA_real_, factor.test$QMp)
   }
+  residual.p <- if (isTRUE(residual.df <= 0)) NA_real_ else res$QEp
   test.rows[[length(test.rows) + 1]] <- rcmetar.regression.test.row(
-    "Residual heterogeneity (Q\u2091)", res$QE, residual.df, res$QEp,
+    "Residual heterogeneity (Q\u2091)", res$QE, residual.df, residual.p,
     NULL, params$digits)
   tests <- rcmetar.regression.summary.array(test.rows, c("Test", "Statistic", "df", "p-value"))
-  raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, res$QEp)
+  raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, residual.p)
   tests <- rcmetar.numeric.fields(tests, c(2L, 3L, 3L, 4L), c("statistic", "df", "df2", "p"), do.call(rbind, raw.tests))
   arrays <- c(arrays, list(rcmetar.table(tests, "model_tests", params, res$test, label.column=0L)))
   titles <- c(titles, "Model tests")
@@ -635,9 +643,7 @@ adjusted_means_display <- function(res, params, display.data) {
   mult <- if (isTRUE((res$test %||% rcmetar.inference.method(params)) %in% c("t", "knha", "adhoc"))) {
     qt(1 - (1 - validate.conf.level(params$conf.level)/100)/2, df=res$k-res$p)
   } else get.mult.from.conf.level(params$conf.level)
-  digits.str <- paste("%.", display.digits(params), "f", sep="")
 
-  se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
 
   design.matrix <- cbind(
     Intercept=rep(1, n.levels),
@@ -661,20 +667,21 @@ adjusted_means_display <- function(res, params, display.data) {
     dim=c(n.levels + 1, 6),
     dimnames=list(NULL, c("Level", "Studies", "Estimate", ci.labels, "Std. error"))
   )
-  adj.array[1,] <- c("Level", "Studies", "Estimate", ci.labels, display.standard.error.label(params))
+  adj.array[1,] <- c(display.data$factor.cov.names[[1]] %||% "Subgroup", "Studies", "Estimate", ci.labels,
+                     display.standard.error.label(params))
   level.start <- display.data$n.cont.covs + 2
   level.end <- level.start + n.levels - 1
   if (length(levels.display.col) < level.end || length(studies.display.col) < level.end) {
     stop("display data does not contain factor levels")
   }
-  adj.array[2:(n.levels + 1), "Level"] <- paste0(
-    display.data$factor.cov.names[[1]], ": ", levels.display.col[level.start:level.end],
-    " (reference: ", display.data$factor.ref.levels[[1]], ")")
+  levels <- levels.display.col[level.start:level.end]
+  reference <- display.data$factor.ref.levels[[1]] %||% levels[[1]]
+  adj.array[2:(n.levels + 1), "Level"] <- paste0(levels, ifelse(levels == reference, " (reference)", ""))
   adj.array[2:(n.levels + 1), "Studies"] <- studies.display.col[level.start:level.end]
-  adj.array[2:(n.levels + 1), "Estimate"] <- sprintf(digits.str, estimates.disp)
-  adj.array[2:(n.levels + 1), ci.labels[[1]]] <- sprintf(digits.str, ci.lb.disp)
-  adj.array[2:(n.levels + 1), ci.labels[[2]]] <- sprintf(digits.str, ci.ub.disp)
-  adj.array[2:(n.levels + 1), "Std. error"] <- sprintf(se.digits.str, se)
+  adj.array[2:(n.levels + 1), "Estimate"] <- rcmetar.format.effect.number(estimates.disp, display.digits(params))
+  adj.array[2:(n.levels + 1), ci.labels[[1]]] <- rcmetar.format.interval.bound(ci.lb.disp, display.digits(params), params)
+  adj.array[2:(n.levels + 1), ci.labels[[2]]] <- rcmetar.format.interval.bound(ci.ub.disp, display.digits(params), params)
+  adj.array[2:(n.levels + 1), "Std. error"] <- rcmetar.format.effect.number(se, display.digits(params))
   adj.array <- rcmetar.numeric.fields(adj.array, 3:6, c("estimate", "ci_lower", "ci_upper", "se"),
     c(estimates.disp, ci.lb.disp, ci.ub.disp, se), c("display", "display", "display", rcmetar.analysis.scale(params)),
     c(NA, display.confidence.level(params), display.confidence.level(params), NA))
@@ -708,7 +715,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   }  else {
     transform.name <- "binary.transform.f"
   }
-  scale.str <- get.scale(params)
+  transform <- rcmetar.transform.by.name(transform.name, params$measure)
   overall.array <- array(dim=c(length(study.names) + 1, 6))
 
   overall.array[1,] <- c(if (workflow == "cumulative") "Study added" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
@@ -719,24 +726,23 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
     lb <- res[[count]]$ci.lb
     ub <- res[[count]]$ci.ub
     se <- res[[count]]$se
-    transform <- rcmetar.transform.by.name(transform.name, params$measure)
     y.disp <- transform$display.scale(y, ni=sample.sizes[[count]])
     lb.disp <- transform$display.scale(lb, ni=sample.sizes[[count]])
     ub.disp <- transform$display.scale(ub, ni=sample.sizes[[count]])
     raw[count,] <- c(if (is.finite(y)) y.disp else NA_real_, lb.disp, ub.disp, se, res[[count]]$pval %||% NA_real_)
-    scale <- if (metric.is.log.scale(params$measure)) 0 else pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
-    y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
-    lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
-    ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-    y.disp[!is.finite(y)] <- "Not estimable"
-    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
-
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params))
     pVal <- format.p.value.display(res[[count]]$pval, params$digits)
-    overall.array[count+1,] <- c(study.names[count], y.disp, lb.disp, ub.disp, se.disp, pVal)
+    overall.array[count+1, c(1, 5, 6)] <- c(study.names[count], se.disp, pVal)
   }
+  lower <- raw[,2]
+  upper <- raw[,3]
+  effect.digits <- rcmetar.effect.digits(params, lower, upper)
+  overall.array[-1, 2] <- rcmetar.format.effect.number(raw[,1], effect.digits)
+  overall.array[-1, 3:4] <- rcmetar.format.interval.bound(raw[,2:3], effect.digits, params)
+  overall.array[which(!is.finite(raw[,1])) + 1L, 2] <- "Not estimable"
 
   k <- rcmetar.result.vector(res, "k")
-  i2 <- rcmetar.result.vector(res, "I2")
+  i2 <- rcmetar.sequential.i2(res)
   overall.array <- cbind(overall.array[,1], c("k", ifelse(is.finite(k), as.character(k), "\u2014")),
     overall.array[,2:6], c("I\u00b2", rcmetar.sequential.i2.labels(res)))
   raw <- cbind(k, raw, i2)
@@ -757,12 +763,13 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   arrays <- list(arr1=rcmetar.table(overall.array, if (workflow == "cumulative") "cumulative" else "leave_one_out",
                                   params, label.column=if (workflow == "cumulative") 1L else 0L))
   overall.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
+             "display.precision.note" = rcmetar.effect.precision.note(params, effect.digits, lower, upper),
              "MAResults" = res )
   class(overall.disp) <- "summary.display"
   overall.disp
 }
 
-create.subgroup.display <- function(res, study.names, params, model.title, data.type, sample.sizes=NULL) {
+create.subgroup.display <- function(res, study.names, params, model.title, data.type, sample.sizes=NULL, studies=NULL) {
   if (data.type %in% c("time_to_event", "event_rates")) {
     transform.name <- "ratio.transform.f"
   } else if (data.type == "continuous") {
@@ -772,12 +779,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   }  else {
     transform.name <- "binary.transform.f"
   }
-  scale.str <- "standard"
-  if (metric.is.log.scale(params$measure)){
-    scale.str <- "log"
-  } else if (metric.is.logit.scale(params$measure)) {
-    scale.str <- "logit"
-  }
+  transform <- rcmetar.transform.by.name(transform.name, params$measure)
   subgroup.array <- array(dim=c(length(study.names) + 1, 8))
   random <- vapply(res, function(fit) inherits(fit, "rma.uni") && !fit$method %in% c("FE", "EE", "CE"), logical(1))
   het.headers <- c("Subgroups", "Q", "df", "p-value", "I\u00b2", if (any(random)) "\u03c4\u00b2")
@@ -798,7 +800,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   het.array[1,] <- het.headers
   for (count in 1:length(study.names)) {
     row <- rcmetar.subgroup.display.row(res[[count]], study.names[count], params,
-        data.type, sample.sizes[[count]], transform.name, any(random), random[[count]])
+        sample.sizes[[count]], transform, any(random), random[[count]])
     subgroup.array[count+1,] <- row$subgroup
     het.array[count+1,] <- row$heterogeneity
     prediction.array[count+1,] <- row$prediction
@@ -808,6 +810,14 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
     raw.prediction[count,] <- row$raw$prediction
     prediction.scales[count] <- row$raw$prediction.scale
   }
+
+  lower <- c(studies$lower, raw.subgroup[,3])
+  upper <- c(studies$upper, raw.subgroup[,4])
+  effect.digits <- rcmetar.effect.digits(params, lower, upper)
+  if (!is.null(studies)) studies$digits <- effect.digits
+  subgroup.array[-1, 3] <- rcmetar.format.effect.number(raw.subgroup[,2], effect.digits)
+  subgroup.array[-1, 4:5] <- rcmetar.format.interval.bound(raw.subgroup[,3:4], effect.digits, params)
+  prediction.array[-1, 2:3] <- rcmetar.format.interval.bound(raw.prediction, effect.digits, params)
 
   table.titles <- c("Model Results", "Heterogeneity")
   level <- display.confidence.level(params)
@@ -828,13 +838,15 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   subgroup.disp <- list("model.title" = model.title, "table.titles" = table.titles, "arrays" = arrays,
              "notes" = unique(prediction.notes),
              "prediction.notes" = unique(prediction.notes),
+             "study.results" = studies,
+             "display.precision.note" = rcmetar.effect.precision.note(params, effect.digits, lower, upper),
              "MAResults" = res )
   class(subgroup.disp) <- "summary.display"
   subgroup.disp
 }
 
 rcmetar.summary.prediction <- function(res, params, transform, n, result.digits) {
-  if (inherits(res, "rma.uni") && !identical(res$method, "FE")) {
+  if (inherits(res, "rma.uni") && !identical(res$method, "FE") && isTRUE(res$k > 1)) {
     prediction <- stats::predict(res, level=display.confidence.level(params))
     if (!is.null(prediction$pi.lb) && !is.null(prediction$pi.ub)) {
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
@@ -842,7 +854,7 @@ rcmetar.summary.prediction <- function(res, params, transform, n, result.digits)
       bounds <- display$bounds
       interval <- rbind(paste0(c("Lower bound (", "Upper bound ("),
                               display.confidence.level(params), "% PI)"),
-                        rcmetar.format.effect.number(bounds, result.digits))
+                        rcmetar.format.interval.bound(bounds, result.digits, params))
       interval <- rcmetar.numeric.fields(interval, 1:2, c("pi_lower", "pi_upper"), bounds,
         if (isTRUE(display$transformed)) "freeman-tukey" else "display", display.confidence.level(params))
       note <- paste0(display.confidence.level(params),
@@ -854,47 +866,47 @@ rcmetar.summary.prediction <- function(res, params, transform, n, result.digits)
   NULL
 }
 
-rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
-                                         sample.sizes, transform.name, any.random, is.random) {
+rcmetar.subgroup.display.row <- function(fit, study.name, params,
+                                         sample.sizes, transform, any.random, is.random) {
     num.studies <- fit$k
     y <- fit$b
     lb <- fit$ci.lb
     ub <- fit$ci.ub
     se <- fit$se
-    digits.str <- paste("%.", display.digits(params), "f", sep="")
-    transform <- rcmetar.transform.by.name(transform.name, params$measure)
     y.disp <- transform$display.scale(y, ni=sample.sizes)
     lb.disp <- transform$display.scale(lb, ni=sample.sizes)
     ub.disp <- transform$display.scale(ub, ni=sample.sizes)
     effect.raw <- c(y.disp, lb.disp, ub.disp)
-    scale <- if (metric.is.log.scale(params$measure)) 0 else pmax(abs(y.disp), abs(lb.disp), abs(ub.disp))
-    y.disp <- rcmetar.format.effect.number(y.disp, display.digits(params), scale=scale)
-    lb.disp <- rcmetar.format.effect.number(lb.disp, display.digits(params), scale=scale)
-    ub.disp <- rcmetar.format.effect.number(ub.disp, display.digits(params), scale=scale)
-    se.disp <- rcmetar.format.effect.number(se, display.digits(params, minimum=if (data.type == "diagnostic") 0L else 3L))
+    se.disp <- rcmetar.format.effect.number(se, display.digits(params))
     if (!display.value.is.missing(fit$QE)) {
-      degf <- (fit$k.yi %||% fit$k) - fit$p
-      QE <- sprintf(digits.str, fit$QE)
+      degf <- rcmetar.heterogeneity.df(fit)
+      QE <- rcmetar.format.effect.number(fit$QE, display.digits(params))
     } else {
       QE <- ""
       degf <- ""
     }
-    I2 <- format.percent.display(fit$I2, "%.1f")
+    I2 <- format.i2.display(fit$I2)
     QEp <- format.p.value.display(fit$QEp, params$digits)
     pVal <- format.p.value.display(fit$pval, params$digits)
-    zVal <- g.round.display.zval(fit$zval, digits=params$digits)
+    zVal <- rcmetar.format.effect.number(fit$zval %||% NA_real_, display.digits(params))
 
     if (is.null(num.studies))
       num.studies <- 1
 
-    subgroup <- c(study.name, num.studies, y.disp, lb.disp, ub.disp, se.disp, pVal, zVal)
+    subgroup <- c(study.name, num.studies, "", "", "", se.disp, pVal, zVal)
     heterogeneity <- c(study.name, QE, degf, QEp, I2,
                             if (any.random) if (is.random) round.display(fit$tau2, display.digits(params)) else "")
+    heterogeneity.raw <- c(fit$QE %||% NA_real_, if (identical(degf, "")) NA_real_ else degf,
+                           fit$QEp %||% NA_real_, fit$I2 %||% NA_real_, if (any.random) if (is.random) fit$tau2 else NA_real_)
+    if (isTRUE(rcmetar.heterogeneity.df(fit) <= 0)) {
+      heterogeneity[-1] <- "\u2014"
+      heterogeneity.raw[] <- NA_real_
+    }
     prediction.values <- c(study.name, "", "")
     prediction.notes <- character()
     prediction.raw <- c(NA_real_, NA_real_)
     prediction.scale <- "display"
-    if (is.random) {
+    if (is.random && isTRUE(fit$k > 1)) {
       prediction <- stats::predict(fit, level=display.confidence.level(params))
       bounds <- c(prediction$pi.lb, prediction$pi.ub)
       if (length(bounds) == 2 && all(is.finite(bounds))) {
@@ -903,14 +915,12 @@ rcmetar.subgroup.display.row <- function(fit, study.name, params, data.type,
         prediction.raw <- bounds
         if (isTRUE(display$transformed)) prediction.scale <- "freeman-tukey"
         prediction.notes <- c(prediction.notes, display$note)
-        prediction.values[2:3] <- rcmetar.format.effect.number(bounds, display.digits(params))
       }
     }
     list(subgroup=subgroup, heterogeneity=heterogeneity,
          prediction=prediction.values, notes=prediction.notes,
          raw=list(subgroup=c(num.studies, effect.raw, se, fit$pval %||% NA_real_, fit$zval %||% NA_real_),
-                  heterogeneity=c(fit$QE %||% NA_real_, if (identical(degf, "")) NA_real_ else degf,
-                    fit$QEp %||% NA_real_, fit$I2 %||% NA_real_, if (any.random) if (is.random) fit$tau2 else NA_real_),
+                  heterogeneity=heterogeneity.raw,
                   prediction=prediction.raw, prediction.scale=prediction.scale))
 }
 

@@ -46,34 +46,6 @@ def check_annotation_spacing(view, *, style="default"):
         if style != "bmj":
             check_interval_caps(path)
         nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
-        for weight in (node for node in nodes if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))):
-            row = [node for node in nodes if "[" in "".join(node.itertext())
-                   and abs(float(node.attrib["y"]) - float(weight.attrib["y"])) < 2]
-            if not row:
-                continue
-            assert len(row) == 1, row
-            estimate = row[0]
-            def bounds(node):
-                x, width = float(node.attrib["x"]), float(node.attrib["textLength"].removesuffix("px"))
-                anchor = node.attrib.get("text-anchor", "start")
-                return (x-width, x) if anchor == "end" else (x-width/2, x+width/2) if anchor == "middle" else (x, x+width)
-            a,b = sorted((bounds(weight), bounds(estimate)))
-            assert b[0]-a[1] >= 4, ("weight/estimate gap", b[0]-a[1], weight.attrib, estimate.attrib)
-        for estimate in nodes:
-            text = "".join(estimate.itertext())
-            if not re.fullmatch(r"[+\-\d.eE]+ (?:\[.*\]|\(.* to .*\))", text):
-                continue
-            row = [node for node in nodes if node is estimate or
-                   (re.fullmatch(r"[+\-−\d.][\d.eE+\-−%/() ]*", "".join(node.itertext()))
-                    and abs(float(node.attrib.get("y", 0)) - float(estimate.attrib["y"])) < 2)]
-            boxes = []
-            for node in row:
-                x, width = float(node.attrib["x"]), float(node.attrib["textLength"].removesuffix("px"))
-                anchor = node.attrib.get("text-anchor", "start")
-                boxes.append((x-width, x) if anchor == "end" else (x-width/2, x+width/2) if anchor == "middle" else (x, x+width))
-            boxes.sort()
-            assert all(b[0]-a[1] >= 4 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", text, boxes)
-        # Include the pooled label and footer, not only numeric annotation cells.
         def text_box(node):
             x, y = float(node.attrib["x"]), float(node.attrib["y"])
             width = float(node.attrib["textLength"].removesuffix("px"))
@@ -81,6 +53,19 @@ def check_annotation_spacing(view, *, style="default"):
             anchor = node.attrib.get("text-anchor", "start")
             left = x-width if anchor == "end" else x-width/2 if anchor == "middle" else x
             return left, left+width, y-height, y
+
+        number = r"[+\-−]?[\d,.]+(?:[eE][+\-−]?\d+)?"
+        estimates = [node for node in nodes if re.fullmatch(
+            rf"{number} (?:\[.*\]|\(.* to .*\))", "".join(node.itertext()))]
+        assert estimates, ("missing estimate annotations", path)
+        for estimate in estimates:
+            row = [node for node in nodes if node is estimate or
+                   (re.fullmatch(r"[+\-−\d.][\d,.eE+\-−%/() ]*", "".join(node.itertext()))
+                    and abs(float(node.attrib["y"]) - float(estimate.attrib["y"])) < 2)]
+            boxes = sorted(text_box(node)[:2] for node in row)
+            assert all(b[0]-a[1] >= 4 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", "".join(estimate.itertext()), boxes)
+
+        # Include the pooled label and footer.
         for node in nodes:
             text = "".join(node.itertext())
             if not (text.startswith(("Random-effects model", "Fixed-effect model", "(", "Test for overall effect", "Heterogeneity:"))):
@@ -146,7 +131,7 @@ def check_sequential(view, workflow, record):
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
         load_serialized_object(str(params) + ".plotdata")
-        data = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
+        data = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, style=plot.data$params$fp_style, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
         svg = ET.parse(path)
         nodes = [("".join(node.itertext()), float(node.attrib.get("y", 0)))
                  for node in svg.iter("{http://www.w3.org/2000/svg}text")]
@@ -158,7 +143,10 @@ def check_sequential(view, workflow, record):
             values = dict(zip(table.headers, row))
             bounds = [value for header, value in values.items() if header.startswith(("Lower bound", "Upper bound"))]
             estimate = values["Estimate"]
-            effect = estimate if estimate == "Not estimable" else f"{estimate} [{bounds[0]}, {bounds[1]}]"
+            effect = estimate
+            if estimate != "Not estimable":
+                effect = (f"{estimate} ({bounds[0]} to {bounds[1]})" if data["style"] == "bmj" else
+                          f"{estimate} [{bounds[0]}, {bounds[1]}]")
             label_y = [y for text, y in nodes if text == name]
             effect_y = [y for text, y in nodes if text == effect]
             assert label_y and any(abs(a-b) < .01 for a in label_y for b in effect_y), (title, name, effect, nodes)

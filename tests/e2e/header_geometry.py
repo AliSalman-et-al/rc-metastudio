@@ -83,14 +83,32 @@ def check_headers(source, names):
 
 def check_direction_text(texts, directions, expected):
     ordered = sorted(directions, key=lambda node: (float(node.attrib['x']), node.attrib.get('text-anchor') != 'end'))
-    observed = tuple(''.join(node.itertext()) for node in ordered)
+    observed = []
+    for node, label in zip(ordered, expected, strict=True):
+        lines = sorted(
+            (candidate for candidate in texts if candidate.attrib.get('x') == node.attrib['x']
+             and candidate.attrib.get('text-anchor') == node.attrib.get('text-anchor')
+             and float(candidate.attrib['y']) >= float(node.attrib['y'])),
+            key=lambda candidate: float(candidate.attrib['y']),
+        )
+        line = ''
+        for candidate in lines:
+            line = (line + ' ' + ''.join(candidate.itertext())).strip()
+            if not label.startswith(line) or label == line:
+                break
+        observed.append(line)
+    observed = tuple(observed)
     assert observed == expected, ('direction text changed', observed, expected)
     if len(ordered) == 2:
-        assert ordered[0].attrib.get('text-anchor') == 'end', ('left direction anchor', observed)
-        assert ordered[1].attrib.get('text-anchor', 'start') == 'start', ('right direction anchor', observed)
+        anchors = tuple(node.attrib.get('text-anchor', 'start') for node in ordered)
+        assert anchors in (('end', 'start'), ('start', 'end')), ('direction anchors', observed)
         gap = float(ordered[1].attrib['x']) - float(ordered[0].attrib['x'])
         size = float(required(re.search(r'font-size:\s*([\d.]+)', ordered[0].attrib['style']))[1])
-        assert 0 < gap < 2 * size, ('direction null gutter', gap, size)
+        if anchors == ('end', 'start'):
+            assert size - .1 <= gap < 2 * size, ('direction null gutter', gap, size)
+        else:
+            width = sum(float(node.attrib['textLength'].removesuffix('px')) for node in ordered)
+            assert gap > width, ('BMJ directions overlap', gap, width)
 
 
 def check_direction_ink_gap(source, directions, width, height):
@@ -134,14 +152,15 @@ def check_forest_footer(source, expected_directions=None):
     measurements: list[FooterMeasurement] = []
     root = ET.parse(source).getroot()
     _, _, device_width, device_height = map(float, root.attrib['viewBox'].split())
-    ink_gap = check_direction_ink_gap(source, directions, device_width, device_height) if len(directions) == 2 else None
+    outward = len(directions) == 2 and min(directions, key=lambda node: float(node.attrib['x'])).attrib.get('text-anchor') == 'end'
+    ink_gap = check_direction_ink_gap(source, directions, device_width, device_height) if outward else None
     first = min(float(node.attrib['y']) for node in directions)
     for node in texts:
         text = ''.join(node.itertext())
         # Axis titles and direction lines follow ticks; numeric tick labels are
         # excluded, as are the footer's heterogeneity/test sentences to the left.
         y = float(node.attrib['y'])
-        if y < first - 25 or not text.strip() or re.fullmatch(r'[-+\d.,%eE ]+', text):
+        if y < first - 25 or not text.strip() or re.fullmatch(r'[-−+\d.,%eE ]+', text):
             continue
         if any(term in text for term in ('Heterogeneity:', 'Test for overall', 'prediction interval:')):
             continue

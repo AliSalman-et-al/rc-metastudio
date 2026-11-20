@@ -1,18 +1,18 @@
 {
   "golden_numeric_contract": {
     "path": "tests/analysis_regression/baseline/numeric-contract.json",
-    "sha256": "88d0f6327ee876e99f476e2684956fa3b0f2d4523601426fda3892ff850b926e",
+    "sha256": "9058e7bc7963b4908511bb8d4283b5e8ac75f394cb553dd25596aee3f50d0ff5",
     "size": 42173
   },
   "golden_plot_descriptor_contract": {
     "path": "tests/analysis_regression/baseline/plot-descriptors.json",
-    "sha256": "242ecf14905e48454f755e225b0271e983f020f58c0a90164eebe843fe7f9f86",
+    "sha256": "33dd789f297c08ea0ed766165a4a742bf8109d8a4b4f8397f261265594401dad",
     "size": 6384
   },
   "observed_golden_analysis_bundle": {
     "path": "tests/analysis_regression/baseline/observed-golden-baseline.zip",
-    "sha256": "576120f609f6b21fd646c9264810c490e134081c313d1cc9c512a73c521d39b8",
-    "size": 9452892
+    "sha256": "4e50606b1be4940a030d7a20662e0f464566da63479d751249182edc340f6789",
+    "size": 10342499
   },
   "purpose": "Frozen behavior oracle for statistical regression tests.",
   "runtime_identities": {

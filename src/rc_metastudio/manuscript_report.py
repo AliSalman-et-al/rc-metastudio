@@ -9,7 +9,7 @@ import math
 from rc_metastudio.analysis_results import ResultTable, ResultSection
 from rc_metastudio.application_metadata import CITATION_DOI, citation_text
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell, numeric_columns, table_html
+from rc_metastudio.result_formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
 from PyQt6.QtCore import QRectF, Qt
@@ -168,6 +168,8 @@ def _interval_fields(table):
     return lower[0], upper[0], f'{lower[1].level:g}% {kind.upper()}'
 
 def _heterogeneity_sentence(values, quantities, heading="Heterogeneity"):
+    if values.get('Q') == '—' and values.get('df') == '—':
+        return [heading + ': not estimable (k = 1).']
     parts = []
     if "Q" in values:
         test = f"Q = {values['Q']}"
@@ -493,6 +495,8 @@ def _sequential_prose(result, section, table, lower, upper, level, summary):
     estimable = [row for row in subsets if _has_sequential_estimate(row)]
     if not cumulative:
         _omission_range_prose(estimable, len(subsets), summary)
+    elif records[0][0].get('k') == '1':
+        summary.append('Heterogeneity at the first step was not estimable (k = 1).')
     _sequential_missing_prose(subsets, label, cumulative, summary)
     number = _sequential_table_number(result, section, table)
     summary.append(f'Table {number} gives the estimate, {level} and I² after each addition.' if cumulative else f'Table {number} gives every omission fit.')
@@ -572,20 +576,26 @@ def _report_sections(result, summary, methods):
     if not text_sections:
         return [], []
     pooled, fit = [], [((label, ()), (value, ())) for label, value in result.manuscript_model_info]
+    coefficients = []
     level, statistic = '95% CI', 'z'
+    coefficient_level, coefficient_statistic = level, statistic
     _report_subgroup_tests(text_sections, fit, summary)
-    for section in result.sections:
-        if section.kind != 'text':
-            continue
+    for section in text_sections:
         overall, calculation = _section_statistics(section)
         for table in section.tables:
             if table.role == 'subgroup_test':
                 continue
-            level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
+            if table.role == 'coefficients':
+                coefficient_level, coefficient_statistic = _report_table(
+                    result, section, table, summary, coefficients, fit, coefficient_level,
+                    coefficient_statistic, overall, calculation, methods)
+            else:
+                level, statistic = _report_table(result, section, table, summary, pooled, fit, level, statistic, overall, calculation, methods)
     primary = _primary_sections(result, text_sections, pooled, fit, level, statistic)
-    sequential = _sequential_sections(result, text_sections)
-    if sequential:
-        primary = sequential + primary
+    if coefficients and primary:
+        primary[0] = _regression_section(result, primary[0], coefficients,
+                                         coefficient_level, coefficient_statistic)
+    primary = _sequential_sections(result, text_sections) + primary
     supplementary = _supplementary_sections(result, primary)
     return primary, supplementary
 
@@ -605,10 +615,10 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     if any(t.role in {'cumulative', 'leave_one_out'} for s in text_sections for t in s.tables):
         return [replace(template, title='Model fit', paragraphs=notes,
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit, role='model_fit'),))] if fit else []
-    sections = [replace(template, title=primary_title, paragraphs=(() if pooled else
-                         ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
-                        tables=(_pooled_table(primary_title, pooled, level, statistic),)),
-                replace(template, title='Model fit', paragraphs=notes,
+    estimates = replace(template, title=primary_title, paragraphs=(() if pooled else
+        ('No structured pooled estimates are available for this analysis. See Supplementary details for the full output.',)),
+        tables=(_pooled_table(primary_title, pooled, level, statistic),))
+    sections = [estimates, replace(template, title='Model fit', paragraphs=notes,
                         tables=(_table('Model fit', ('Statistic', 'Value'), fit, role='model_fit'),)),
                 _study_results(result, template, level)]
     if not any(section.tables for section in text_sections):
@@ -616,11 +626,38 @@ def _primary_sections(result, text_sections, pooled, fit, level, statistic):
     return [replace(section, tables=tuple(_available_columns(table) for table in section.tables if table.rows)) for section in sections]
 
 
+def _regression_section(result, section, coefficients, level, statistic):
+    metric = (result.manuscript_metric or 'effect').lower()
+    if metric.endswith('transformed proportion'):
+        metric = 'proportion'
+    scale = _coefficient_scale(coefficients, metric)
+    title = f'Model coefficients ({scale})'
+    coefficient_table = _pooled_table(title, coefficients, level, statistic)
+    fitted = [replace(table, title=f'Fitted subgroup effects ({metric})', role='fitted',
+                      headers=('Subgroup', *table.headers[1:]))
+              for table in section.tables]
+    return replace(section, title=title, paragraphs=(),
+                   tables=(_available_columns(replace(coefficient_table, role='coefficients')), *fitted))
+
+
+def _coefficient_scale(rows, metric):
+    scales = {quantity.scale for row in rows for quantity in row[1][1] if quantity.role == 'estimate'}
+    if scales == {'log'}:
+        return f'log {metric} scale'
+    if scales == {'logit'}:
+        return 'logit scale'
+    if scales == {'arcsine'}:
+        return 'arcsine scale'
+    if scales == {'freeman-tukey'}:
+        return 'Freeman–Tukey scale'
+    return f'{metric} scale'
+
+
 def _pooled_table(title, rows, level, statistic):
     scales = {row[4][0] for row in rows if row[3][0] not in ('', '—', 'NA')}
     if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'}:
-        scale = next(iter(scales))
-        return _table(title, ('Effect', 'Estimate', level, f'SE ({scale} scale)', statistic, 'P'),
+        se_scale = next(iter(scales))
+        return _table(title, ('Effect', 'Estimate', level, f'SE ({se_scale} scale)', statistic, 'P'),
                       [(*row[:4], *row[5:]) for row in rows], role='pooled')
     return _table(title, ('Effect', 'Estimate', level, 'SE', 'SE scale', statistic, 'P'), rows, role='pooled')
 
@@ -688,7 +725,9 @@ def _methods_fragments(text):
 
 
 def _table_html(table, table_number):
-    return f'<p style="page-break-after:avoid;"><b>Table {table_number}. {escape(table.title)}</b></p>' + table_html(table.headers, table.rows)
+    label_width = 420 if table.role in ('coefficients', 'fitted') else None
+    return f'<p style="page-break-after:avoid;"><b>Table {table_number}. {escape(table.title)}</b></p>' + table_html(
+        table.headers, table.rows, label_width=label_width)
 
 
 @dataclass(frozen=True)
@@ -743,7 +782,7 @@ class ManuscriptReport:
         parts = [self.title, self.comparison]
         for heading, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                parts.extend((heading, text))
+                parts.extend((heading, report_numbers(text) if heading == 'Results' else text))
         for number, figure in enumerate(self.figures, 1):
             if figure.paragraphs:
                 parts.extend((f'Figure {number}. {figure.title}', *figure.paragraphs))
@@ -754,8 +793,10 @@ class ManuscriptReport:
             for table in section.tables:
                 number += 1
                 parts.append(f'Table {number}. {table.title}')
-                parts.extend(('\t'.join(table.headers), *('\t'.join(row) for row in table.rows)))
-            parts.extend(section.paragraphs)
+                parts.append('\t'.join(table.headers))
+                parts.extend('\t'.join(report_cell(cell) if numeric_cell(cell) else cell for cell in row)
+                             for row in table.rows)
+            parts.extend(map(report_numbers, section.paragraphs))
         if self.configuration:
             parts.extend(('Model configuration', self.configuration))
         return '\n\n'.join(parts)
@@ -764,7 +805,7 @@ class ManuscriptReport:
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>'] if heading else []
         for name, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
-                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(text).replace('\n', '<br>')
+                formatted = ''.join('<i>' + escape(part) + '</i>' if italic else escape(part) for part, italic in _methods_fragments(text)) if name == 'Methods' else escape(report_numbers(text)).replace('\n', '<br>')
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
@@ -788,7 +829,7 @@ class ManuscriptReport:
             for table_number, table in tables:
                 parts.append(f'<a name="table-{table_number}"></a>')
                 parts.append(_table_html(table, table_number))
-            parts.extend(f'<p>{escape(paragraph)}</p>' for paragraph in section.paragraphs)
+            parts.extend(f'<p>{escape(report_numbers(paragraph))}</p>' for paragraph in section.paragraphs)
         return ''.join(parts)
 
 
@@ -1002,26 +1043,40 @@ def _workflow_prose(workflow, parameters, details, *, missing_years=False):
 
 def _docx_table(document, table):
     target = document.add_table(rows=1, cols=len(table.headers))
-    target.autofit = True
+    target.autofit = False
     section = document.sections[-1]
     available = section.page_width - section.left_margin - section.right_margin
     widths = _docx_column_widths(table, available)
     for column, width in zip(target.columns, widths):
         column.width = width
     from docx.oxml import OxmlElement
-    from docx.oxml.ns import qn
-    borders = OxmlElement('w:tblBorders')
-    for edge in ('top', 'bottom'):
-        rule = OxmlElement('w:' + edge)
-        rule.set(qn('w:val'), 'single')
-        rule.set(qn('w:sz'), '6')
-        borders.append(rule)
-    target._tbl.tblPr.append(borders)
+
+    _add_docx_rules(target._tbl.tblPr, 'tblBorders', ('top', 'bottom'))
     target.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:tblHeader'))
     numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
     for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
+        # Word resolves a shared edge from both cells. Assign the same rule
+        # to each side of the header boundary.
+        edges = tuple(edge for edge, rows in (('top', (0, 1)), ('bottom', (0, len(table.rows)))) if index in rows)
         for column, (cell, value) in enumerate(zip(row.cells, values)):
             _style_docx_cell(cell, value, widths[column], numeric[column], index == 0)
+            if edges:
+                _add_docx_rules(cell._tc.get_or_add_tcPr(), 'tcBorders', edges)
+
+
+def _add_docx_rules(properties, kind, edges):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    borders = OxmlElement('w:' + kind)
+    for edge in edges:
+        rule = OxmlElement('w:' + edge)
+        for attribute, value in (('val', 'single'), ('sz', '8'), ('space', '0'), ('color', '000000')):
+            rule.set(qn('w:' + attribute), value)
+        borders.append(rule)
+    properties.insert_element_before(
+        borders, 'w:shd', 'w:noWrap', 'w:tcMar', 'w:tblLayout', 'w:tblCellMar', 'w:tblLook'
+    )
 
 
 def _docx_sections(document, report, supplementary):
@@ -1036,7 +1091,7 @@ def _docx_sections(document, report, supplementary):
             _docx_table(document, table)
             document.add_paragraph()
         for paragraph in section.paragraphs:
-            document.add_paragraph(paragraph)
+            document.add_paragraph(report_numbers(paragraph))
 
 
 def _docx_styles(document):
@@ -1093,7 +1148,7 @@ def write_docx(report, path):
         if text.strip():
             document.add_heading(heading, 1)
             paragraph = document.add_paragraph()
-            for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((text, False),)):
+            for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((report_numbers(text), False),)):
                 paragraph.add_run(part).italic = italic
     _docx_sections(document, report, False)
     _docx_figures(document, report.figures)
@@ -1125,11 +1180,9 @@ def write_pdf(report, path):
     document.setHtml(report.html())
     # QTextDocument prints paginated real tables; figures get their own pages so
     # long reports cannot overwrite a figure or split its caption.
-    from PyQt6.QtCore import QSizeF
     scale = writer.resolution() / 96
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     width, height = page.width() / scale, page.height() / scale
-    document.setPageSize(QSizeF(width, height))
     painter = QPainter(writer)
     _print_pdf_pages(document, writer, painter, width, height, scale)
     for number, figure in enumerate(report.figures, 1):
@@ -1236,19 +1289,33 @@ def _docx_column_widths(table, available):
     lengths = [max(len(line) for row in (table.headers, *table.rows)
                    for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
     weights = [max(5, min(45, length)) for length in lengths]
-    widths = [round(available * weight / sum(weights)) for weight in weights]
-    return widths
+    minimums = [Pt(12 + 6 * max((len(report_cell(row[column])) for row in table.rows
+                                if numeric_cell(row[column])), default=0))
+                for column in range(len(table.headers))]
+    if table.role in ('coefficients', 'fitted'):
+        # Reserve just the space needed for the numeric values and their headings.
+        for column in range(1, len(weights)):
+            heading = max(table.headers[column].split(), key=len, default='')
+            minimums[column] = max(minimums[column], Pt(12 + 6 * len(heading)))
+        weights = [1, *([0] * (len(weights) - 1))]
+    remaining = max(0, available - sum(minimums))
+    return [round(minimum + remaining * weight / sum(weights))
+            for minimum, weight in zip(minimums, weights)]
 
 
 def _style_docx_cell(cell, value, width, numeric, heading):
-    cell.text = value.replace(' to ', '\u00a0to\u00a0')
+    from docx.oxml import OxmlElement
+    is_numeric = not heading and numeric_cell(value)
+    cell.text = report_cell(value) if is_numeric else value
     cell.width = width
+    if not heading and (is_numeric or numeric):
+        cell._tc.get_or_add_tcPr().append(OxmlElement('w:noWrap'))
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     for paragraph in cell.paragraphs:
         paragraph.paragraph_format.space_before = Pt(2)
         paragraph.paragraph_format.space_after = Pt(2)
         paragraph.paragraph_format.line_spacing = 1
-        right = numeric if heading else numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric)
+        right = numeric if heading else is_numeric or (value in ('', 'NA', '—', 'Not estimable') and numeric)
         paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT
         if heading:
             paragraph.paragraph_format.keep_with_next = True
@@ -1258,7 +1325,19 @@ def _style_docx_cell(cell, value, width, numeric, heading):
 
 
 def _print_pdf_pages(document, writer, painter, width, height, scale, first_page=False):
+    from PyQt6.QtCore import QSizeF
     from PyQt6.QtGui import QAbstractTextDocumentLayout
+
+    document.setPageSize(QSizeF(width, height))
+    # Qt allows a table with unbreakable cells to exceed the page width.
+    # Fit that layout to the page before paginating it or clipping the painter.
+    required_width = document.idealWidth()
+    if required_width > width:
+        expansion = required_width / width
+        width = required_width
+        height *= expansion
+        scale /= expansion
+        document.setPageSize(QSizeF(width, height))
     _keep_pdf_tables_together(document, height)
     for number in range(document.pageCount()):
         if number or first_page:

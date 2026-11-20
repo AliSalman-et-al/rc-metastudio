@@ -43,17 +43,7 @@ rcmetar.forest.axis.effect <- function(bundle, effect) {
 }
 
 rcmetar.forest.axis.alim <- function(bundle, fitted.range) {
-    if (!rcmetar.forest.natural.axis(bundle)) return(fitted.range)
-    if (rcmetar.forest.proportion(bundle)) {
-        limits <- c(0, 1)
-        for (index in 1:2) {
-            name <- c("fp_plot_lb", "fp_plot_ub")[[index]]
-            if (!rcmetar.is.plot.default.text(bundle$params[[name]])) {
-                limits[[index]] <- as.numeric(bundle$params[[name]])
-            }
-        }
-        return(limits)
-    }
+    if (!rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) return(fitted.range)
     rcmetar.forest.axis.values(bundle, fitted.range)
 }
 

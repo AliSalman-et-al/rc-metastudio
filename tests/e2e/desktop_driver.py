@@ -587,11 +587,14 @@ def sample_analysis(app, window, sample):
         "lymph": ("diagnostic.random", "lymph-diagnostic-random-dor"),
     }[sample]
     if sample == "amino":
+        import re
+
         small_view = analyze(app, window, method, digits=2, estimator="DL")
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.manuscript_text.toPlainText()
-        assert "0.0040 to 1.44" in small_text and "0.00 to 1.44" not in small_text, small_text
+        match = re.search(r"(4\.\de−03) to 1\.44\b", small_text)
+        assert match and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
     view = analyze(app, window, method, estimator="DL")

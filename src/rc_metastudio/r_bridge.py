@@ -865,8 +865,8 @@ def run_small_study_effects(
     r_request = dict(request)
     r_request["preview"] = bool(preview)
     if not preview:
-        from rc_metastudio.analysis_identity import dataset_identity
-        r_request["plot_caption"] = dataset_identity(table_model)
+        from rc_metastudio.analysis_identity import plot_caption
+        r_request["plot_caption"] = plot_caption(table_model, "small-study-effects")
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         data,
@@ -1161,8 +1161,9 @@ def prepare_plot_edit(
 
 @serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
-                       *dimensions: float) -> bool:
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output, *dimensions)
+                       *, include_title: bool = True, outline_text: bool = True) -> bool:
+    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
+                                include_title=include_title, outline_text=outline_text)
     return not _r_is_null(result)
 
 
@@ -2592,6 +2593,7 @@ def _structured_summary_display(value, study_names):
         "paragraphs": paragraphs,
         "tables": _summary_display_tables(fields, study_names),
         "prediction_notes": _r_text_values(fields.get("prediction.notes")),
+        "configuration_notes": _r_text_values(fields.get("display.precision.note")),
     }
 
 
@@ -2599,13 +2601,15 @@ def _structured_study_table(value):
     data = dict(zip(list(value.names), list(value), strict=True))
     digits = int(data["digits"][0])
     level = float(data["level"][0])
+    metric = str(data["metric"][0])
+    ratio = metric in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
     rows = []
     quantities = []
     for study, estimate, lower, upper, weight in zip(
         data["study"], data["estimate"], data["lower"], data["upper"], data["weight"],
         strict=True,
     ):
-        effects = _display_effect_values((estimate, lower, upper), digits)
+        effects = _display_effect_values((estimate, lower, upper), digits, ratio=ratio)
         if effects[0] == "NA":
             effects = ["Not estimable", "—", "—"]
         rows.append([str(study), *effects, _format_weight(weight)])
@@ -2618,7 +2622,7 @@ def _structured_study_table(value):
         ])
     return {
         "title": "Study weights", "role": "study_results", "label_column": 0,
-        "metric": str(data["metric"][0]), "metric_label": str(data["metric_label"][0]),
+        "metric": metric, "metric_label": str(data["metric_label"][0]),
         "headers": ["Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"],
         "rows": rows, "quantities": quantities,
     }
@@ -2648,8 +2652,9 @@ def _format_numeric_table_cell(value, field_name):
             return f"< {10**(-precision):g}" if value < 10**(-precision) else f"{value:.{precision}f}"
         if compact_name in {"df", "studies", "studiesused", "k", "summaryseed", "summaryiterations"} and float(value).is_integer():
             return str(int(value))
-        formatted = f"{value:.{digits}f}"
-        return f"{value:.{max(1, digits)}g}" if value != 0 and float(formatted) == 0 else formatted
+        return result_formatting.fixed_result_number(
+            value, digits, preserve_positive=compact_name.endswith(("ciloweror", "ciupperor"))
+        )
     if compact_name in {"p", "pvalue", "pval", "prz", "qmp", "qep"}:
         if value < 0.001:
             return "< 0.001"
@@ -2673,11 +2678,11 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
     return tables[0]
 
 
-def _display_effect_values(values, digits):
-    effects = [result_formatting.format_effect_number(value, digits)
+def _display_effect_values(values, digits, *, ratio):
+    effects = [result_formatting.fixed_result_number(value, digits, preserve_positive=ratio and index > 0)
                if isinstance(value, (float, int)) and math.isfinite(value)
                else _format_r_table_cell(value)
-               for value in values]
+               for index, value in enumerate(values)]
     return effects
 
 
@@ -2715,16 +2720,3 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
     execute_r_function("rcmetar.export.svg.artwork", source, destination, width, height, dpi)
-    if destination.lower().endswith('.png'):
-        from PyQt6.QtCore import Qt
-        from PyQt6.QtGui import QImage, QPainter
-        source_image = QImage(destination)
-        image = QImage(source_image.size(), QImage.Format.Format_RGB32)
-        image.fill(Qt.GlobalColor.white)
-        painter = QPainter(image)
-        painter.drawImage(0, 0, source_image)
-        painter.end()
-        image.setDotsPerMeterX(round(dpi / .0254))
-        image.setDotsPerMeterY(round(dpi / .0254))
-        if not image.save(destination, 'PNG'):
-            raise OSError('Could not write PNG resolution metadata')

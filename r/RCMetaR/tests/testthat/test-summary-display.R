@@ -165,7 +165,7 @@ expect_values_inside_header_columns <- function(header, values, labels) {
 }
 
 test_that("ordinary numeric display never applies p-value threshold notation", {
-  expect_equal(RCMetaR:::round.display(c(-0.809, -0.0004, 0.0004, 0.809), 3), c("-0.809", "-0.000", "0.000", "0.809"))
+  expect_equal(RCMetaR:::round.display(c(-0.809, -0.0004, 0.0004, 0.809), 3), c("-0.809", "0.000", "0.000", "0.809"))
 })
 
 test_that("zero subgroup z-values remain visible", {
@@ -211,7 +211,7 @@ test_that("summary display uses readable labels and aligned columns", {
   expect_false(grepl(" Results (log scale)", text, fixed = TRUE))
   expect_match(
     text,
-    "Calculation scale: log - estimate: -0.262, lower: -0.724, upper: 0.200, std. error: 0.236",
+    "Calculation scale: log - estimate: \u22120.262, lower: \u22120.724, upper: 0.200, std. error: 0.236",
     fixed = TRUE
   )
   expect_false(grepl("Calculation scale: log; estimate", text, fixed = TRUE))
@@ -392,7 +392,7 @@ test_that("adjusted means use the configured confidence labels for indexed value
     unname(display$arrays$arr1[1, 4:5]),
     c("Lower bound (90% CI)", "Upper bound (90% CI)")
   )
-  expect_equal(unname(display$arrays$arr1[2:3, 4]), c("-0.064", "0.015"))
+  expect_equal(unname(display$arrays$arr1[2:3, 4]), c("\u22120.064", "0.015"))
 })
 
 test_that("meta-regression summary reports model, coefficients, heterogeneity, and tests", {

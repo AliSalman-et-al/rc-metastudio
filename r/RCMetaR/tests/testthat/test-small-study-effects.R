@@ -849,8 +849,12 @@ test_that("ratio funnels use readable ticks without moving points or limits", {
   for (label in c("0.01", "0.1", "1", "10"))
     expect_match(after$svg, paste0(">", label, "</text>"), fixed=TRUE)
   expect_false(grepl(">0.14</text>", after$svg, fixed=TRUE))
-  settings$at <- c(-4, 0, 2)
-  expect_equal(RCMetaR:::.small.study.funnel.args(settings, 0, TRUE)$at, settings$at)
+  settings$at <- c(-5, 0, 3)
+  manual <- draw(TRUE)
+  expect_equal(manual$limits, before$limits)
+  expect_identical(points(manual$svg), points(before$svg))
+  for (label in c("0.006737947", "1", "20.08554"))
+    expect_match(manual$svg, paste0(">", label, "</text>"), fixed=TRUE)
 })
 
 

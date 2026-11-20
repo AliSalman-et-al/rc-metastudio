@@ -29,7 +29,7 @@ from rc_metastudio.plot_defaults import BUBBLE_STYLE_ACCENTS, FOREST_ARM_LABELS,
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.plot_style_controls import (
     configure_plot_style,
-    configure_tsa_x_axis, load_plot_style, selected_plot_style,
+    configure_tsa_x_axis, load_plot_style, plot_color, selected_plot_style,
 )
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
@@ -52,6 +52,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def __init__(
         self, plot_params, image_path, parent=None, plot_type="forest",
         *, on_commit: Callable[[dict[str, object]], None] | None = None,
+        default_params: dict[str, object] | None = None,
     ):
         super(EditPlotDialog, self).__init__(parent)
         self.setupUi(self)
@@ -59,6 +60,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._configure_accessibility()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
+        self._default_params = dict(default_params or {})
         self.plot_type = plot_type
         self._style_accents = BUBBLE_STYLE_ACCENTS if plot_type == "trial_sequential" else PLOT_STYLE_ACCENTS
         if plot_type == "subgroup_forest":
@@ -76,6 +78,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.tsa_x_axis.hide()
         self.default_panel.setTitle("Forest options")
         self._setup_direction_labels()
+        self.show_weight = QCheckBox("Show weight column", self)
+        self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
+        self.show_weight.setVisible(plot_type in {"forest", "subgroup_forest"})
+        self.default_layout.addWidget(self.show_weight, self.default_layout.rowCount(), 0, 1, 2)
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
@@ -102,12 +108,15 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         configure_plot_style(self.style_cbo, self.accent_color, self.color_btn, accents=self._style_accents)
         apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
         apply_button.clicked.connect(self._commit)
+        reset = self.buttonBox.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
+        required(reset, "plot reset button").clicked.connect(self._reset_to_defaults)
 
         add_color_swatch(self.accent_color, self.accent_color_layout)
         self._load_params(image_path)
         self.setTabOrder(self.style_cbo, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.show_1)
         self._configure_option_groups()
+        self.style_cbo.currentIndexChanged.connect(self._configure_option_groups)
         layouts = [self.style_layout, self.appearance_layout, self.gridLayout_2, self.default_layout, self.regression_layout, self.gridLayout_4]
         if self._sroc_group is not None:
             layouts.append(self._sroc_group.layout())
@@ -238,7 +247,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._commit_error.setText(message)
         self._commit_error.show()
 
-    def _commit(self) -> bool:
+    def _validate_bounds(self) -> bool:
         axes = [("X-axis", self.plot_lb_le, self.plot_ub_le)]
         if self.plot_type == "sroc":
             axes.append(("Y-axis", self.sroc_y_lower, self.sroc_y_upper))
@@ -263,8 +272,21 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                 self._show_commit_error(f"{axis} lower bound must be less than the upper bound.")
                 lower.setFocus()
                 return False
-        if not self._validate_ticks():
+        return True
+
+    def _commit(self) -> bool:
+        if not self._validate_bounds() or not self._validate_ticks():
             return False
+        colors = [self.accent_color]
+        if self.plot_type == "sroc":
+            colors.extend((self.sroc_curve_color, self.sroc_confidence_color, self.sroc_prediction_color))
+        for field in colors:
+            try:
+                plot_color(field.text())
+            except ValueError as error:
+                self._show_commit_error(str(error))
+                field.setFocus()
+                return False
         try:
             params = self.plot_params()
             if self._on_commit is not None:
@@ -327,13 +349,35 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _configure_option_groups(self):
         self.study_order.setVisible("forest" in self._option_groups)
         self.study_order_label.setVisible("forest" in self._option_groups)
-        self.groupBox.setVisible("columns" in self._option_groups)
+        has_columns = "forest" in self._option_groups
+        self.groupBox.setVisible(has_columns)
+        has_arms = "columns" in self._option_groups
+        for control in (self.label_5, self.col3_str_edit, self.show_3,
+                        self.label_6, self.col4_str_edit, self.show_4, self.show_raw_counts):
+            control.setVisible(has_arms)
         self.default_panel.setVisible("forest" in self._option_groups)
-        self.label_16.setVisible("summary" in self._option_groups)
-        self.show_summary_line.setVisible("summary" in self._option_groups)
+        pooled_guide = self.plot_type == "forest" and selected_plot_style(self.style_cbo) == "bmj"
+        self.label_16.setVisible(pooled_guide)
+        self.show_summary_line.setVisible(pooled_guide)
         self.regression_group.setVisible("regression" in self._option_groups)
         if self._sroc_group is not None:
             self._sroc_group.setVisible(True)
+            self.sroc_extrapolate.hide()
+
+    def _reset_to_defaults(self):
+        self._params = dict(self._default_params)
+        self._load_params(self._image_path)
+        self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
+        self.favours_left.setText(str(self._params.get("fp_favours_left") or ""))
+        self.favours_right.setText(str(self._params.get("fp_favours_right") or ""))
+        for control, key in ((self.axis_scale, "fp_axis_scale"), (self.study_order, "fp_study_order"),
+                             (self.tsa_x_axis, "tsa_x_axis")):
+            value = self._scalar(self._params.get(key))
+            if value is None and control is self.axis_scale:
+                value = "natural" if self._scalar(self._params.get("measure")) in {
+                    "PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"} else "transformed"
+            control.setCurrentIndex(max(0, control.findData(value)))
+        self._configure_option_groups()
 
     def _build_sroc_controls(self):
         self._sroc_group = QWidget(self.content_scroll_contents)
@@ -469,16 +513,15 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._params.get("fp_col4_str", FOREST_ARM_LABELS[1]),
         )
         self.show_1.setChecked(self._bool_param("fp_show_col1", True))
-        self.show_2.setChecked(self._bool_param("fp_show_col2", True))
+        self.show_2.setChecked(self._bool_param("fp_show_col2", True) and self._bool_param("fp_show_annotation", True))
         self.show_3.setChecked(self._bool_param("fp_show_col3", True))
         self.show_4.setChecked(self._bool_param("fp_show_col4", True))
         self.show_raw_counts.setChecked(
             self._bool_param("fp_show_raw_counts", True)
         )
         self.show_headers.setChecked(self._bool_param("fp_show_headers", True))
-        self.show_annotation.setChecked(
-            self._bool_param("fp_show_annotation", True)
-        )
+        self.show_i2.setChecked(self._bool_param("fp_show_i2", True))
+        self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
         xlabel = self._params.get(self._param_name("xlabel"))
         if self._bool_param(self._param_name("xlabel_literal"), False):
             set_plot_text_value(self.x_lbl_le, self._scalar(xlabel), literal=True)
@@ -577,7 +620,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             widget.setPlaceholderText("Automatic")
             keys = {self.col2_str_edit: "effect", self.x_lbl_le: "xlabel",
                     self.plot_lb_le: "lower", self.plot_ub_le: "upper", self.x_ticks_le: "ticks"}
-            resolved = self._params.get("resolved.defaults", {}).get(keys[widget])
+            defaults = self._params.get("resolved.defaults")
+            resolved = defaults.get(keys[widget]) if isinstance(defaults, dict) else None
             if isinstance(resolved, (list, tuple)):
                 resolved = ", ".join(str(item) for item in resolved)
             widget.setToolTip("Automatic: " + str(resolved if resolved is not None else "determined by the plotted data"))
@@ -632,9 +676,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_col4": self.show_4.isChecked(),
             "fp_col4_str": qt_text.to_native_text(plot_text_value(self.col4_str_edit)),
             "fp_show_raw_counts": self.show_raw_counts.isChecked(),
+            "fp_show_weight": self.show_weight.isChecked(),
             "fp_show_headers": self.show_headers.isChecked(),
-            "fp_show_annotation": self.show_annotation.isChecked(),
-            "fp_accent_color": qt_text.to_native_text(self.accent_color.text()),
+            "fp_show_annotation": self.show_2.isChecked() if "forest" in self._option_groups else True,
+            "fp_accent_color": plot_color(self.accent_color.text()) or self._style_accents[style],
             "fp_point_size_multiplier": self.point_size_multiplier.value(),
             **plot_axis_label_params(self.x_lbl_le, "fp"),
             "fp_plot_lb": self._automatic_value(self.plot_lb_le),
@@ -652,7 +697,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         if self.plot_type == "regression":
             params = {
                 "bp_style": style,
-                "bp_accent_color": qt_text.to_native_text(self.accent_color.text()),
+                "bp_accent_color": plot_color(self.accent_color.text()) or BUBBLE_STYLE_ACCENTS[style],
                 "bp_point_size_multiplier": self.point_size_multiplier.value(),
                 **plot_axis_label_params(self.x_lbl_le, "bp"),
                 "bp_plot_lb": self._automatic_value(self.plot_lb_le),
@@ -680,9 +725,9 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     "fp_marker_area": self.sroc_marker_area.currentData(),
                     "fp_show_labels": self.sroc_show_labels.isChecked(),
                     "fp_extrapolate": self.sroc_extrapolate.isChecked(),
-                    "fp_curve_color": qt_text.to_native_text(self.sroc_curve_color.text()),
-                    "fp_confidence_color": qt_text.to_native_text(self.sroc_confidence_color.text()),
-                    "fp_prediction_color": qt_text.to_native_text(self.sroc_prediction_color.text()),
+                    "fp_curve_color": plot_color(self.sroc_curve_color.text()) or self._style_accents[style],
+                    "fp_confidence_color": plot_color(self.sroc_confidence_color.text()) or self._style_accents[style],
+                    "fp_prediction_color": plot_color(self.sroc_prediction_color.text()) or "#b45f06",
                     "fp_curve_lty": self.sroc_curve_lty.currentIndex() + 1,
                     "fp_confidence_lty": self.sroc_confidence_lty.currentIndex() + 1,
                     "fp_prediction_lty": self.sroc_prediction_lty.currentIndex() + 1,

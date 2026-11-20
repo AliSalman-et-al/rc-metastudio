@@ -92,13 +92,16 @@ def dataset_label(model):
     }.get(model.get_current_data_subtype(), str(model.get_current_data_type() or "Dataset").title())
 
 
-def dataset_identity(model, metric=None):
+def dataset_identity(model, metric=None, *, include_type=True):
     comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
     group_label = "Index test" if model.get_current_data_type() == "diagnostic" else "Comparison" if comparison else "Arm"
-    labels = [model.current_sheet.name, dataset_label(model)]
+    data_type = dataset_label(model)
+    labels = [model.current_sheet.name]
+    if include_type:
+        labels.append(data_type)
     quantity = metric or metric_label(model)
-    if quantity and model.current_effect != "Mean" and quantity.casefold() != labels[-1].casefold():
+    if quantity and model.current_effect != "Mean" and quantity.casefold() != data_type.casefold():
         labels.append(quantity)
     context = []
     default_name = "Index test" if model.get_current_data_type() == "diagnostic" else "Group"
@@ -108,5 +111,5 @@ def dataset_identity(model, metric=None):
 
 
 def plot_caption(model, workflow, caption=None):
-    caption = caption or dataset_identity(model)
+    caption = caption or dataset_identity(model, include_type=model.get_current_data_type() != "binary")
     return caption

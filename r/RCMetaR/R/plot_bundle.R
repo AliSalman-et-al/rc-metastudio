@@ -35,6 +35,8 @@
 #' @param svg.path The path to SVG artwork.
 #' @param width,height The requested width and height in inches.
 #' @param dpi The requested raster resolution in dots per inch.
+#' @param include_title Whether to draw the figure's title line on export.
+#' @param outline_text Whether to outline text in trial sequential SVG exports.
 #' @return Parameters, a mapping from destination paths to staged files, or the
 #'   rendered path, respectively. Missing bundles return `NULL`.
 #' @name rcmetar-plot-bundle
@@ -54,6 +56,11 @@ rcmetar.plot.bundle.params <- function(prefix) {
             xlabel=plan$x$xlab, lower=plan$x$alim[[1]], upper=plan$x$alim[[2]],
             ticks=rcmetar.revman.axis.labels(data, plan$x$at),
             effect=rcmetar.metafor.effect.header(data))
+    }
+    if (!is.null(params$funnel.kind)) {
+        x <- .small.study.funnel.x(bundle$om.data, params)
+        params$resolved.funnel.ratio <- .small.study.funnel.ratio(params)
+        params$resolved.funnel.x <- if (params$resolved.funnel.ratio) exp(x) else x
     }
     params
 }
@@ -116,17 +123,24 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 
 #' @rdname rcmetar-plot-bundle
 #' @export
-rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600) {
+rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600,
+                                       include_title=TRUE, outline_text=TRUE) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
+        if (!include_title) bundle$params$plot_caption <- NULL
         return(rcmetar.regenerate.small.study.funnel(
             bundle$om.data, bundle$res, bundle$params, output.path, dpi=600))
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
+    if (identical(regenerator, "sroc")) bundle$plot.data$display.path <- NULL
+    if (!include_title) {
+        bundle$plot.data$params$plot_caption <- NULL
+        if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
+    }
     if (identical(regenerator, "trial_sequential")) {
-        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=TRUE)
+        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text))
     } else {
         .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
     }

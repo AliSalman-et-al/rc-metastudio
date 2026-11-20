@@ -49,7 +49,7 @@ _PLOT_RULES: dict[str, tuple[PlotRegenerator, frozenset[str]]] = {
     "forest": ("forest", _FOREST_OPTIONS | {"columns"}),
     "cumulative_forest": ("forest", _FOREST_OPTIONS),
     "leave_one_out_forest": ("forest", _FOREST_OPTIONS),
-    "subgroup_forest": ("forest", _FOREST_OPTIONS),
+    "subgroup_forest": ("forest", _FOREST_OPTIONS | {"columns"}),
     "reitsma_coefficient": ("forest", frozenset(("style", "appearance", "axis"))),
     "regression": (
         "regression",

@@ -28,7 +28,7 @@ def run(app, window, work, root, record, analyze):
       RCMetaR:::rcmetar.table(x, "supporting")
     })''')
     from rc_metastudio.analysis_results import _report_content
-    _, parsed, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
+    _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
     cells = parsed[0].quantities[0]
     assert [q[0].value for q in cells] == [2.2e-17, 1e-19, math.inf, 1e-8, None]
     try:
@@ -44,7 +44,7 @@ def run(app, window, work, root, record, analyze):
       transform <- RCMetaR:::rcmetar.transform.by.name("binary.transform.f", "PFT")
       RCMetaR:::rcmetar.summary.prediction(fit, params, transform, NULL, 3)$interval
     })''')
-    _, parsed_pft, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
+    _, parsed_pft, _, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
     pft_quantities = [q for row in parsed_pft[0].quantities for cell in row for q in cell]
     assert {q.role for q in pft_quantities} == {'pi_lower', 'pi_upper'}
     assert all(q.scale == 'freeman-tukey' and q.level == 90.0 for q in pft_quantities)
@@ -63,9 +63,10 @@ def run(app, window, work, root, record, analyze):
                 assert any(table.rows == held.rows and table.headers == held.headers for table in supporting), (label, held.title, 'source context lost')
         if label == 'adjusted-means':
             means = next(t for t in source if t.role == 'pooled')
-            expected_levels = {row[0] for row in means.rows}
-            assert expected_levels == {'Group: A (reference: B)', 'Group: B (reference: B)'}, means.rows
-            assert expected_levels <= {row[0] for row in primary.rows}, primary.rows
+            fitted = next(table for table in view._report_tables if table.role == 'fitted')
+            assert fitted.headers[0] == 'Subgroup', fitted.headers
+            assert {row[0] for row in means.rows} == {'A', 'B (reference)'}, means.rows
+            assert {row[0] for row in fitted.rows} == {'A', 'B (reference)'}, fitted.rows
             assert 'Studies' in means.headers, means.headers
         if label == 'Reitsma':
             assert view.results.analysis_method == 'diagnostic.reitsma', view.results.analysis_method

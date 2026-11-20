@@ -59,7 +59,13 @@ def _refresh_case(row: dict, changes: list[dict], capture: Path, members: dict[s
     for detail in reviewed:
         if detail.startswith("Text section ") and detail.endswith(" changed."):
             name = detail.removeprefix("Text section ").removesuffix(" changed.")
-            row["texts"][name] = current["texts"][name]
+            frozen_name = next(label for label in row["texts"] if label.casefold() == name.casefold())
+            row["texts"][frozen_name] = current["texts"][name]
+    _refresh_case_artifacts(row, current, reviewed, members)
+    members[f"captures/{row['id']}.json"] = json.dumps(row, indent=2, sort_keys=True).encode()
+
+
+def _refresh_case_artifacts(row: dict, current: dict, reviewed: list[str], members: dict[str, bytes]) -> None:
     old_artifacts = {item["label"]: item for item in row["artifacts"]}
     if set(old_artifacts) != {item["label"] for item in current["artifacts"]}:
         raise ValueError(f"Artifact families changed: {row['id']}")
@@ -74,7 +80,6 @@ def _refresh_case(row: dict, changes: list[dict], capture: Path, members: dict[s
         member = f"artifacts/{row['id']}/{Path(old['bundle_path'] or old['path']).name}"
         members[member] = contents
         old["sha256"] = artifact["sha256"]
-    members[f"captures/{row['id']}.json"] = json.dumps(row, indent=2, sort_keys=True).encode()
 
 
 def _refresh_contracts(baseline: Path, manifest: dict, entry: dict, outer: dict, outputs: dict[Path, bytes]) -> None:

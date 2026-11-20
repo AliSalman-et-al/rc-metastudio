@@ -5,10 +5,6 @@ rcmetar.revman.format.number <- function(values, digits) {
     rcmetar.format.metafor.numeric(values, digits)
 }
 
-rcmetar.revman.format.effect.number <- function(values, digits, scale=abs(values)) {
-    rcmetar.format.effect.number(values, digits, scale=scale)
-}
-
 rcmetar.revman.format.weight <- function(weights, n) {
     if (is.null(weights) || length(weights) == 0 || !any(is.finite(weights))) {
         weights <- rep(100 / max(n, 1), n)
@@ -176,7 +172,7 @@ rcmetar.revman.test.overall.label <- function(bundle) {
     paste0(
         rcmetar.overall.test.heading(res, bundle$params), ": ",
         if (!is.null(res$test) && res$test %in% c("t", "knha", "adhoc")) paste0("t (df = ", res$dfs, ")") else "Z",
-        " = ", rcmetar.format.test.statistic(res$zval, display.digits(bundle$params)),
+        " = ", rcmetar.format.effect.number(res$zval, display.digits(bundle$params)),
         " (", rcmetar.revman.p.value.label(res$pval, display.digits(bundle$params)), ")"
     )
 }
@@ -189,7 +185,8 @@ rcmetar.revman.summary.result <- function(bundle) {
 }
 
 rcmetar.revman.heterogeneity.label <- function(bundle) {
-    if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) return("")
+    if (isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup"))
+        return(if (rcmetar.forest.is.sequential.variant(bundle)) "" else "Heterogeneity: \u2014")
     rcmetar.forest.heterogeneity.label(rcmetar.revman.summary.result(bundle), bundle$params)
 }
 
@@ -310,7 +307,7 @@ rcmetar.revman.study.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
         return("")
     }
-    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
+    rcmetar.metafor.study.header(bundle)
 }
 
 rcmetar.draw.revman.forest <- function(bundle, outpath) {
@@ -368,9 +365,6 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
         textpos=c(rcmetar.forest.study.x(layout), layout$annotation.xpos),
         lty=c("solid", "blank"),
         refline=NA,
-        ilab=rcmetar.forest.display.ilab(ilab$matrix),
-        ilab.xpos=layout$ilab.xpos,
-        ilab.pos=NULL,
         cex=plan$typography$cex,
         cex.lab=plan$typography$cex.lab,
         cex.axis=plan$typography$cex.axis,
@@ -406,11 +400,11 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     if (show.headers) {
         header <- paste(metric, paste0(method, ","), paste0(bundle$params$conf.level, "% CI"), sep="\n")
         if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-            rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1, header, adj=1)
+            rcmetar.draw.forest.effect.header(layout$annotation.xpos, k + 1,
+                                              rcmetar.forest.estimate.header(bundle, header), adj=1)
         rcmetar.draw.forest.effect.header(layout$plot.header.xpos, k + 1, header)
     }
 
-    graphics::rect(layout$annotation.xpos, -1.5, layout$ilab.xpos[[length(layout$ilab.xpos)]], -0.5, col="white", border=NA)
     graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
         graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
@@ -419,7 +413,7 @@ rcmetar.draw.revman.forest <- function(bundle, outpath) {
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex)
 
     graphics::par(cex=1, font=1)
-    graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab, pos=4, cex=plot.info$cex, col="black")
+    rcmetar.draw.forest.study.columns(bundle, rows, layout, ilab, plot.info$cex)
     rcmetar.draw.revman.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
     rcmetar.draw.revman.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout)
 
@@ -556,6 +550,7 @@ rcmetar.revman.summary.effect <- function(bundle) {
     on.exit(options(old.options), add=TRUE)
     weights <- as.numeric(weights(res))
     transform <- rcmetar.bundle.transform(bundle)
+    digits <- rcmetar.forest.effect.digits(bundle)
     pred <- c(transform$display.scale(res$b, ni=bundle$sample_sizes), transform$display.scale(res$ci.lb, ni=bundle$sample_sizes), transform$display.scale(res$ci.ub, ni=bundle$sample_sizes))
     psize <- rep(NA_real_, length(weights))
     finite.weights <- is.finite(weights)
@@ -570,11 +565,11 @@ rcmetar.revman.summary.effect <- function(bundle) {
         weights=weights,
         psize=psize * rcmetar.point.size.multiplier(bundle$params),
         label=paste0(
-            rcmetar.revman.format.effect.number(pred[[1]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.effect.number(pred[[1]], digits),
             " [",
-            rcmetar.revman.format.effect.number(pred[[2]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.interval.bound(pred[[2]], digits, bundle$params),
             ", ",
-            rcmetar.revman.format.effect.number(pred[[3]], bundle$params$digits, max(abs(pred))),
+            rcmetar.format.interval.bound(pred[[3]], digits, bundle$params),
             "]"
         )
     )
@@ -591,6 +586,7 @@ rcmetar.revman.display.ilab <- function(bundle, weights) {
 
 rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows, cex) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) return(invisible(NULL))
+    digits <- rcmetar.forest.effect.digits(bundle)
     transform <- rcmetar.bundle.transform(bundle)
     labels <- rep("Not estimable", length(effect$yi))
     finite <- is.finite(effect$yi) & is.finite(effect$ci.lb) & is.finite(effect$ci.ub)
@@ -598,14 +594,13 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
         y <- transform$display.scale(effect$yi[finite], ni=bundle$sample_sizes[finite])
         lower <- transform$display.scale(effect$ci.lb[finite], ni=bundle$sample_sizes[finite])
         upper <- transform$display.scale(effect$ci.ub[finite], ni=bundle$sample_sizes[finite])
-        scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lower), abs(upper))
         labels[finite] <- paste0(
-            rcmetar.revman.format.effect.number(y, bundle$params$digits, scale),
-            " [", rcmetar.revman.format.effect.number(lower, bundle$params$digits, scale),
-            ", ", rcmetar.revman.format.effect.number(upper, bundle$params$digits, scale), "]"
+            rcmetar.format.effect.number(y, digits),
+            " [", rcmetar.format.interval.bound(lower, digits, bundle$params),
+            ", ", rcmetar.format.interval.bound(upper, digits, bundle$params), "]"
         )
     }
-    graphics::text(layout$annotation.xpos, rows, labels, pos=2, cex=cex)
+    graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, 0), cex=cex)
 }
 
 rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
@@ -632,7 +627,8 @@ rcmetar.draw.revman.axis <- function(bundle, layout, cex) {
 
 rcmetar.revman.axis.labels <- function(bundle, ticks) {
     if (rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) {
-        return(vapply(ticks, function(value) format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1)))
+        return(rcmetar.compact.numeric.labels(vapply(ticks, function(value)
+            format(signif(value, 8), trim=TRUE, scientific=FALSE), character(1))))
     }
     measure <- as.character(bundle$params$measure)
     if (metric.is.log.scale(measure)) {
@@ -643,8 +639,8 @@ rcmetar.revman.axis.labels <- function(bundle, ticks) {
     if (metric.is.logit.scale(measure) || metric.is.arcsine.scale(measure) || metric.is.freeman_tukey.scale(measure)) {
         return(trimws(formatC(values, digits=3, format="fg")))
     }
-    digits <- max(0, min(2, as.integer(bundle$params$digits)))
-    vapply(values, function(value) format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1))
+    rcmetar.compact.numeric.labels(vapply(values, function(value)
+        format(signif(value, 3), trim=TRUE, scientific=FALSE), character(1)))
 }
 
 rcmetar.revman.axis.footer.layout <- function(bundle, layout) {

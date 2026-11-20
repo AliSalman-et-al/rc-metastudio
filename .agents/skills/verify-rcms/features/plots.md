@@ -151,6 +151,13 @@ Require every selected family-specific parameter and point size to persist and r
 
 The shared Export as dialog exports each offered PDF/PNG/TIFF/SVG format to a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
+The phase 2 native export drive compares the requested physical width and height
+in every offered format at 85 and 180 mm. The figure title is opt-in for a
+standalone export. The size receipts and replay are in
+[`artifacts/output-polish/SUMMARY.md`](../../../../artifacts/output-polish/SUMMARY.md).
+The same evidence records the three-preset pooled-tip geometry and representative
+appearance edits after project save, reopen and analysis rerun.
+
 `ui-fine-tuning` requires all five funnel variants to be vector Results items and
 renders them through both Results and manuscript loaders at 1× and 2×. It checks
 zero region-colour pixels outside the plot rectangle and retained interior fill,

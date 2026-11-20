@@ -357,7 +357,13 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 for actual, expected_table in zip(doc.tables, expected_tables):
                     # Nonbreaking spaces keep each interval together in Word.
                     actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
-                    assert actual_text == (expected_table.headers, *expected_table.rows), expected_table.title
+                    from rc_metastudio.result_formatting import report_cell
+                    expected_rows = tuple(tuple(report_cell(value).replace('\u00a0', ' ')
+                                                if numeric_export_cell(value) else value for value in row)
+                                          for row in expected_table.rows)
+                    assert actual_text == (expected_table.headers, *expected_rows), (
+                        expected_table.title, actual_text, expected_rows
+                    )
                 from docx.enum.text import WD_ALIGN_PARAGRAPH
                 for exported_table in doc.tables:
                     properties = exported_table.rows[0]._tr.trPr
@@ -410,7 +416,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert 'between Intervention and Control' not in view.manuscript.results
             assert 'Methods' in text and 'RC MetaStudio' in ' '.join(text.split())
             normalized = ' '.join(unicodedata.normalize('NFKC', text).split())
-            for prose in (view.manuscript.methods, view.manuscript.results):
+            from rc_metastudio.result_formatting import report_numbers
+            for prose in (view.manuscript.methods, report_numbers(view.manuscript.results)):
                 # A PDF line can wrap immediately after a hyphen or dash.
                 # Compare all ordered words, digits and punctuation independently
                 # of physical line breaks, as the complete-table observer does.
@@ -418,7 +425,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 actual = re.findall(r'\w+|[^\w\s]', normalized)
                 assert any(actual[i:i+len(expected)] == expected for i in range(len(actual)-len(expected)+1)), (sample, suffix, prose, normalized)
             assert view.manuscript.methods in view.manuscript_text.toPlainText()
-            assert view.manuscript.results in view.manuscript_text.toPlainText()
+            assert report_numbers(view.manuscript.results).replace('\u00a0', ' ') in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
             assert text.index('Supplementary details') > text.rindex('Figure ')
@@ -429,10 +436,10 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 model_fit = next(section for section in view.manuscript.sections if section.title == "Model fit")
                 assert prediction_note in model_fit.paragraphs
                 assert view.manuscript.plain_text().count(prediction_note) == 1
-                assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = -1.111; P = 0.267).' in view.manuscript.results
-                assert view.manuscript.results == 'In total, 19 studies were included (1097 participants in Intervention, 1080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = -1.111; P = 0.267). Heterogeneity: Q = 33.360 (df = 18; P = 0.015); I² = 46.0%; τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
+                assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = −1.111; P = 0.267).' in view.manuscript.results
+                assert view.manuscript.results == 'In total, 19 studies were included (1,097 participants in Intervention, 1,080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = −1.111; P = 0.267). Heterogeneity: Q = 33.360 (df = 18; P = 0.015); I² = 46.0%; τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
                 assert view.manuscript.methods == f"Statistical analyses were performed using RC MetaStudio (version {__version__}; Research Consultancy) [1] with the R package metafor (version 5.2.1) [2]. Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance [3]. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with at least one zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran’s Q and I²."
-                assert '-0.262' in normalized
+                assert '−0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results
                 assert 'The pooled standardized mean difference was 0.358 (95% CI 0.152 to 0.565; z = 3.400; P < 0.001).' in view.manuscript.results
@@ -487,7 +494,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random', estimator='DL')
     assert_manuscript_tables(view)
-    expected_swap = 'The pooled standardized mean difference was -0.358 (95% CI -0.565 to -0.152; z = -3.400; P < 0.001).'
+    expected_swap = 'The pooled standardized mean difference was −0.358 (95% CI −0.565 to −0.152; z = −3.400; P < 0.001).'
     assert expected_swap in view.manuscript.results, view.manuscript.results
     assert 'The confidence interval excludes' not in view.manuscript.results
     assert view.results.manuscript_favours == ('Intervention', 'Control')
@@ -525,10 +532,11 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         else:
             assert 'coefficient' in prose and '95% CI' in prose and '; P = ' in prose, (prose, [(s.title, s.tables) for s in view.results.sections if s.kind == 'text'])
             assert 'For Intercept' not in prose
-            assert 'For Dose, the coefficient was 0.063 (95% CI -0.026 to 0.151; z = 1.384; P = 0.166).' in prose
+            assert 'For Dose, the coefficient was 0.063 (95% CI −0.026 to 0.151; z = 1.384; P = 0.166).' in prose
             assert 'Residual heterogeneity: Q = ' in prose
             assert 'The confidence interval includes 0' not in prose
-            assert any(t.title == 'Pooled effect' for section in view.manuscript.sections for t in section.tables)
+            assert any(t.title == 'Model coefficients (log odds ratio scale)'
+                       for section in view.manuscript.sections for t in section.tables)
         exported = Document(work / (workflow + '.docx'))
         captions = [p.text for p in exported.paragraphs]
         assert any(p.startswith('Table ') for p in captions)

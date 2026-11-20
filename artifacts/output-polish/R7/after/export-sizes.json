@@ -1,0 +1,31 @@
+[
+  {
+    "file": "requested-cm.svg",
+    "width": 3.3464566929133857,
+    "height": 1.9390921386750566,
+    "dpi": 600,
+    "shown_pt": 2.67,
+    "target_mm": 192,
+    "message": "Smallest text would be 2.67 pt at 85 mm. This figure needs at least 192 mm wide for 6 pt text.",
+    "measured_pt": 2.667127041819061
+  },
+  {
+    "file": "suggested-cm.svg",
+    "width": 7.559055118110236,
+    "height": 4.380066948536599,
+    "dpi": 600,
+    "shown_pt": 2.67,
+    "target_mm": 192,
+    "message": "Smallest text would be 2.67 pt at 85 mm. This figure needs at least 192 mm wide for 6 pt text.",
+    "measured_pt": 6.024569317991292
+  },
+  {
+    "file": "suggested-in.pdf",
+    "width": 7.56,
+    "height": 4.380614456905166,
+    "dpi": 600,
+    "shown_pt": 2.67,
+    "target_mm": 192,
+    "message": "Smallest text would be 2.67 pt at 85 mm. This figure needs at least 192 mm wide for 6 pt text."
+  }
+]

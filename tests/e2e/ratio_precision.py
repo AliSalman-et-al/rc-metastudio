@@ -115,14 +115,28 @@ def run(app, window, work, record):
                     check_annotation_spacing(view, style=style)
                     labels = [''.join(n.itertext()) for path in view.results.display_images.values()
                               for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
-                    assert any('e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
+                    assert any('e−' in text or 'e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
                     if mode == 'ratio':
-                        import re
-                        row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
-                        values = [float(value) for value in re.findall(r'[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?', row)]
                         from statistics import NormalDist
+                        from zipfile import ZipFile
+                        from rc_metastudio.manuscript_report import write_docx
+
                         fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
-                        assert values[1] > 0 and math.isclose(values[1], fitted_lower, rel_tol=1e-5), ('tiny positive fitted bound lost', row, fitted_lower, expected)
+                        displayed = f'{fitted_lower:.1e}'.replace('e-', 'e−')
+                        row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
+                        assert row.startswith((f'0.123457 [{displayed}, ', f'0.123457 ({displayed} to ')), row
+                        study = next(table for section in view.results.sections for table in section.tables
+                                     if table.role == 'study_results')
+                        bound, = study.quantities[0][2]
+                        assert bound.role == 'ci_lower' and bound.value is not None
+                        assert math.isclose(bound.value, fitted_lower, rel_tol=1e-12), bound
+                        assert study.rows[0][2] == displayed, study.rows[0]
+                        assert displayed in view.manuscript.plain_text()
+                        assert displayed in view.manuscript.html(supplementary=True) or displayed in view.manuscript.html()
+                        docx = work / f'{metric}-{mode}-{style}.docx'
+                        write_docx(view.manuscript, docx)
+                        with ZipFile(docx) as document:
+                            assert displayed in document.read('word/document.xml').decode('utf-8')
                     record('stress-journal-after-reopen', view, metric=metric, mode=mode, style=style,
                            source=expected, raw=raw, plots=dict(view.results.display_images))
                     view.close()

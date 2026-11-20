@@ -4,18 +4,19 @@
 import math
 
 from PyQt6.QtCore import QSettings, QSignalBlocker
-from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QSpinBox
+from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QPushButton, QSpinBox
 
 from rc_metastudio.settings import load_plot_export_format, save_plot_export_format
 
 
 class PlotExportDialog(QDialog):
-    def __init__(self, formats, width: float, height: float, parent=None, *, resizable: bool = True, native_dpi: int = 96):
+    def __init__(self, formats, width: float, height: float, parent=None, *, resizable: bool = True, native_dpi: int = 96, text_per_inch: tuple[float, float] = (0, 0)):
         super().__init__(parent)
         self.setWindowTitle('Export plot')
         self.setMinimumWidth(360)
         self.ratio = height / width
         self.resizable = resizable
+        self.text_per_inch = text_per_inch
         self._width_inches = width
         if resizable:
             try:
@@ -39,6 +40,8 @@ class PlotExportDialog(QDialog):
         self.width_control.setRange(.1 * self.unit_factor(), 200 * self.unit_factor())
         self.width_control.setSuffix(' ' + self.units.currentText())
         self.width_control.setValue(self._width_inches * self.unit_factor())
+        if resizable:
+            self._width_inches = self.width_control.value() / self.unit_factor()
         self.width_control.setEnabled(resizable)
         layout.addRow('Width', self.width_control)
         self.height_label = QLabel(self)
@@ -56,6 +59,18 @@ class PlotExportDialog(QDialog):
         self.width_control.valueChanged.connect(self._change_width)
         self.pixel_label = QLabel(self)
         layout.addRow(self.pixel_label)
+        self.legibility_warning = QLabel(self)
+        self.legibility_warning.setWordWrap(True)
+        layout.addRow(self.legibility_warning)
+        self.use_readable_width = QPushButton(self)
+        self.use_readable_width.clicked.connect(self._set_readable_width)
+        layout.addRow(self.use_readable_width)
+        self.include_title = QCheckBox("Include title line", self)
+        self.include_title.toggled.connect(self._refresh)
+        if resizable:
+            layout.addRow(self.include_title)
+        else:
+            self.include_title.hide()
         if not resizable:
             layout.addRow(QLabel("This image keeps its original size and resolution.", self))
         self.units.currentIndexChanged.connect(self._change_units)
@@ -77,13 +92,37 @@ class PlotExportDialog(QDialog):
             self.width_control.setRange(.1 * self.unit_factor(), 200 * self.unit_factor())
             self.width_control.setSuffix(' ' + self.units.currentText())
             self.width_control.setValue(self._width_inches * self.unit_factor())
+        if self.resizable:
+            self._width_inches = self.width_control.value() / self.unit_factor()
         self._refresh()
+
+    def _readable_width_mm(self) -> int:
+        rate = self.text_per_inch[self.include_title.isChecked()]
+        return math.ceil(6 * 25.4 / rate) if rate else 0
+
+    def _set_readable_width(self):
+        target = self._readable_width_mm()
+        width = math.ceil(target / 25.4 * self.unit_factor() * 100 - 1e-9) / 100
+        self.width_control.setValue(width)
 
     def _refresh(self):
         self.height_label.setText(f'{self.width_control.value() * self.ratio:.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster)
+        smallest = self._width_inches * self.text_per_inch[self.include_title.isChecked()]
+        warn = self.resizable and 0 < smallest < 6
+        self.legibility_warning.setVisible(warn)
+        self.use_readable_width.setVisible(warn)
+        if warn:
+            target = self._readable_width_mm()
+            self.legibility_warning.setText(
+                f"Smallest text would be {smallest:.2f}".rstrip("0") +
+                f" pt at {self._width_inches * 25.4:.3g} mm. "
+                f"This figure needs at least {target} mm wide for 6 pt text."
+            )
+            self.use_readable_width.setText(f"Use {target} mm")
+            self.use_readable_width.setEnabled(target / 25.4 * self.unit_factor() <= self.width_control.maximum())
         self.pixel_label.setText(f'{round(self._width_inches * self.dpi.value())} × {round(self._width_inches * self.ratio * self.dpi.value())} pixels')
 
     def dimensions(self) -> tuple[float, float, int]:

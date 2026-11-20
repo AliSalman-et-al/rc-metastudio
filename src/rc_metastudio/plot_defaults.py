@@ -9,7 +9,7 @@ PLOT_STYLE_LABELS = {
 PLOT_STYLE_ACCENTS = {
     "default": "#2f5597",
     "revman": "#000000",
-    "bmj": "#6b58a6"
+    "bmj": "#5f4c9a"
 }
 BUBBLE_STYLE_ACCENTS = {
     "default": "#2f5597",

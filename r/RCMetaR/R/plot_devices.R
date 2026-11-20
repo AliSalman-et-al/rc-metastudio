@@ -210,7 +210,13 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     ext <- rcmetar.plot.file.extension(outpath)
     pixels <- rcmetar.plot.pixel.size(size)
     if (identical(ext, "png")) {
-        rsvg::rsvg_png(svg.path, outpath, width=pixels[["width"]], height=pixels[["height"]])
+        if (is.null(size$dpi)) {
+            rsvg::rsvg_png(svg.path, outpath, width=pixels[["width"]], height=pixels[["height"]])
+        } else {
+            bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]],
+                height=pixels[["height"]]), native=TRUE)
+            png::writePNG(bitmap, outpath, dpi=rcmetar.plot.export.dpi(size))
+        }
         return(invisible(ext))
     }
     if (identical(ext, "tif") || identical(ext, "tiff")) {
@@ -232,7 +238,10 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         )
         return(invisible(ext))
     }
-    rsvg::rsvg_pdf(svg.path, outpath)
+    # The PDF device defaults to the viewBox extent even when the SVG
+    # declares a different physical viewport. Give Cairo its page in points.
+    rsvg::rsvg_pdf(svg.path, outpath, width=round(size$width * 72),
+                  height=round(size$height * 72))
     invisible(ext)
 }
 

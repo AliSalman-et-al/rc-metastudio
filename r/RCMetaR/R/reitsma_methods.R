@@ -458,6 +458,40 @@ rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sa
     list(labels=labels, col=colors, lty=ltys, pch=pchs, pt.cex=pt.cex, pt.bg=pt.bg)
 }
 
+rcmetar.sroc.label.positions <- function(x, y, labels, cex) {
+    bounds <- graphics::par("usr")
+    width <- graphics::strwidth(labels, cex=cex)
+    height <- rep(graphics::strheight("Mg", cex=cex), length(labels))
+    dx <- graphics::strwidth("M", cex=cex)
+    dy <- max(height)
+    directions <- rbind(c(1, 0), c(-1, 0), c(1, 1), c(-1, 1),
+                        c(1, -1), c(-1, -1), c(0, 1), c(0, -1))
+    placed <- matrix(NA_real_, nrow=length(labels), ncol=4)
+    for (i in order(width, decreasing=TRUE)) {
+        found <- FALSE
+        for (distance in c(1, 2, 4)) {
+            for (j in seq_len(nrow(directions))) {
+                direction <- directions[j, ]
+                left <- x[i] + direction[1L] * dx * distance - width[i] * (1 - direction[1L]) / 2
+                bottom <- y[i] + direction[2L] * dy * distance - height[i] * (1 - direction[2L]) / 2
+                right <- left + width[i]
+                top <- bottom + height[i]
+                if (left < bounds[1L] || right > bounds[2L] || bottom < bounds[3L] || top > bounds[4L]) next
+                if (any(left - dx / 3 < placed[, 2L] & right + dx / 3 > placed[, 1L] &
+                        bottom - dy / 3 < placed[, 4L] & top + dy / 3 > placed[, 3L], na.rm=TRUE)) next
+                if (any(x > left - dx / 3 & x < right + dx / 3 &
+                        y > bottom - dy / 3 & y < top + dy / 3)) next
+                placed[i, ] <- c(left, right, bottom, top)
+                found <- TRUE
+                break
+            }
+            if (found) break
+        }
+        if (!found) return(NULL)
+    }
+    placed
+}
+
 rcmetar.reitsma.draw <- function(plot.data, outpath) {
     size <- list(width=7, height=6, dpi=600, bg="white")
     style <- plot.data$style
@@ -489,10 +523,55 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
     }
     xlim <- axis.limits(style$plot.lb %||% "[default]", style$plot.ub %||% "[default]", c(0, 1))
     ylim <- axis.limits(style$y.plot.lb %||% "[default]", style$y.plot.ub %||% "[default]", c(0, 1))
+    label.cex <- as.numeric(style$text.cex %||% .8)
+    visible <- which(scalar.bool(style$show.labels, FALSE) &
+        plot.data$fpr >= xlim[[1L]] & plot.data$fpr <= xlim[[2L]] &
+        plot.data$sensitivity >= ylim[[1L]] & plot.data$sensitivity <= ylim[[2L]])
+    label.x <- plot.data$fpr[visible]
+    label.y <- plot.data$sensitivity[visible]
+    labels <- as.character(plot.data$study.names[visible])
+    key <- character()
+    margins <- c(1.02, .82, .82, .42)
+    if (length(labels)) {
+        measure <- function() {
+            path <- tempfile(fileext=".svg")
+            rcmetar.open.svg_device(path, size)
+            on.exit({ grDevices::dev.off(); unlink(path) })
+            graphics::par(mai=margins)
+            graphics::plot.new()
+            graphics::plot.window(xlim, ylim, xaxs="i", yaxs="i")
+            if (!is.null(rcmetar.sroc.label.positions(label.x, label.y, labels, label.cex))) return(0)
+            max(graphics::strwidth(paste(seq_along(labels), labels), units="inches", cex=label.cex)) + .6
+        }
+        key.width <- measure()
+        if (key.width > 0) {
+            key <- paste(seq_along(labels), labels, sep=". ")
+            margins[[4L]] <- margins[[4L]] + key.width
+            size$width <- size$width + key.width
+            size$height <- max(size$height, sum(margins[c(1L, 3L)]) +
+                                    (length(key) + 2) * max(.16, label.cex * .21))
+        }
+    }
     draw.annotations <- function() {
         point <- plot.data$summary.point
         if (scalar.bool(style$show.summary, TRUE)) points(1 - point$specificity[["estimate"]], point$sensitivity[["estimate"]], pch=19, col=accent.color)
-        if (scalar.bool(style$show.labels, FALSE)) text(plot.data$fpr, plot.data$sensitivity, labels=plot.data$study.names, pos=4, cex=as.numeric(style$text.cex %||% .8))
+        if (length(labels) && !length(key)) {
+            positions <- rcmetar.sroc.label.positions(label.x, label.y, labels, label.cex)
+            if (!is.null(positions)) {
+                graphics::segments(label.x, label.y,
+                    pmin(pmax(label.x, positions[, 1L]), positions[, 2L]),
+                    pmin(pmax(label.y, positions[, 3L]), positions[, 4L]), col="grey55")
+                graphics::text(positions[, 1L], positions[, 3L], labels, adj=c(0, 0), cex=label.cex)
+            }
+        } else if (length(key)) {
+            sorted <- order(label.y, decreasing=TRUE)
+            rows <- seq(ylim[[2L]], ylim[[1L]], length.out=length(key) + 2L)[seq_along(key) + 1L]
+            edge <- xlim[[2L]] - .05 * diff(xlim)
+            graphics::segments(label.x[sorted], label.y[sorted], edge, rows, col="grey55")
+            graphics::text(edge, rows, sorted, pos=4, cex=label.cex)
+            graphics::text(xlim[[2L]] + .06 * diff(xlim), rows, key[sorted],
+                           adj=c(0, .5), cex=label.cex, xpd=NA)
+        }
         if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
             digits <- as.integer(style$digits %||% 3L)
             if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
@@ -511,6 +590,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         }
     }
     draw <- function() {
+        graphics::par(mai=margins, xaxs="i", yaxs="i")
         plot(plot.data$fpr, plot.data$sensitivity, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n",
              xlab=as.character(style$xlabel %||% "False Positive Rate"),
              ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",

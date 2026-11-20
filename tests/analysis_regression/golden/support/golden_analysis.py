@@ -575,6 +575,7 @@ def curated_golden_bundles(root_dir=None):
 def parsed_numeric_sections(result: AnalysisResult):
     parsed = {}
     for name, text in _public_texts(result).items():
+        text = text.replace("−", "-")
         values = _parse_summary(text)
         values.update(_parse_result_table(text))
         values.update(_parse_weights(text))
@@ -586,6 +587,24 @@ def parsed_numeric_sections(result: AnalysisResult):
              'se': 'standard_error', 'p': 'p_value'}
     for section in result.sections:
         for table in section.tables:
+            # These fields were frozen at different precisions from the current report.
+            # Compare the original projection of the live quantities, keeping the oracle
+            # values and tolerances independent of the user's display precision.
+            values = parsed.get(section.title, {})
+            if table.role in {'heterogeneity', 'coefficients'} and values:
+                for row, cells in zip(table.rows, table.quantities):
+                    label = _result_row_key(row[table.label_column]) if table.label_column is not None else ''
+                    for quantity in (q for cell in cells for q in cell):
+                        if quantity.value is None:
+                            continue
+                        if table.role == 'heterogeneity' and quantity.role == 'i2':
+                            key = f'heterogeneity.{label}.i_squared' if label else 'i_squared'
+                            if key in values:
+                                values[key] = round(quantity.value, 1)
+                        elif table.role == 'coefficients' and quantity.role == 'se':
+                            key = f'model.{label}.standard_error'
+                            if key in values:
+                                values[key] = round(quantity.value, 3)
             if table.title not in {'Cumulative results', 'Leave-one-out results'}:
                 continue
             cumulative = table.title == 'Cumulative results'
@@ -1392,7 +1411,7 @@ def _extract_heterogeneity_values(row):
 
 
 def _to_float(value):
-    return float(str(value).replace("<", "").replace("%", "").strip())
+    return float(str(value).replace("−", "-").replace(",", "").replace("<", "").replace("%", "").strip())
 
 
 if __name__ == "__main__":

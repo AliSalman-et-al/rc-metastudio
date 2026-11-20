@@ -7,8 +7,13 @@ from xml.etree import ElementTree as ET
 from tests.e2e.plot_observations import load_serialized_object
 
 
+def _display_number(cell):
+    return float(cell.replace("−", "-").replace(",", "").rstrip("%"))
+
+
 def check_report(app, view, work, record):
     from rc_metastudio import results_window
+    from rc_metastudio.result_formatting import report_numbers
 
     assert "Model configuration\n" in view.manuscript_text.toPlainText()
     scene_text = [item.toPlainText() for item in view.scene.items() if hasattr(item, "toPlainText")]
@@ -20,7 +25,8 @@ def check_report(app, view, work, record):
     view.manuscript_text.copy()
     copied = app.clipboard().text()
     assert copied.startswith("Methods\n"), copied
-    assert view.manuscript.methods in copied and view.manuscript.results in copied
+    for paragraph in (view.manuscript.methods, view.manuscript.results):
+        assert report_numbers(paragraph).replace("\u00a0", " ") in copied.replace("\u00a0", " ")
     from tests.e2e.manuscript_export import assert_manuscript_tables
     assert_manuscript_tables(view)
 
@@ -73,14 +79,14 @@ def check_standard_heterogeneity(view, record):
         assert table.headers == ("Q", "df", "p-value", "I²") + (("τ²",) if expected["random"] else ()), table
         for cell, key in zip(table.rows[0], ("Q", "df", "p", "I2", "tau2")):
             if cell.startswith("<"):
-                assert expected[key] < float(cell[1:]), (cell, expected)
+                assert expected[key] < _display_number(cell[1:]), (cell, expected)
             else:
-                assert abs(float(cell.rstrip("%"))-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
+                assert abs(_display_number(cell)-expected[key]) <= (.05001 if key == "I2" else 5.01e-7), (cell, expected)
         if expected["data_type"] in {"binary", "continuous"}:
             weights = next(t for section in view.results.sections for t in section.tables if t.title == "Study weights")
             assert weights.headers == ("Study", "Effect", "Lower bound", "Upper bound", "Weight (%)"), weights
             assert weights.rows and all(len(row) == 5 and row[0] and row[4].endswith("%") for row in weights.rows), weights
-            assert all(float(row[2]) <= float(row[1]) <= float(row[3]) for row in weights.rows), weights
+            assert all(_display_number(row[2]) <= _display_number(row[1]) <= _display_number(row[3]) for row in weights.rows), weights
         assert "Pooled " in view.manuscript_text.toPlainText(), view.manuscript_text.toPlainText()
         assert "Calculation scale: log - estimate" not in view.manuscript_text.toPlainText()
         record("round3-standard-heterogeneity-public-reference", view, expected=expected,
@@ -94,9 +100,9 @@ def check_subgroup(view, record):
         if expected is None:
             assert cell == "", cell
         elif cell.startswith("<"):
-            assert expected < float(cell[1:]), (cell, expected)
+            assert expected < _display_number(cell[1:]), (cell, expected)
         else:
-            assert abs(float(cell.rstrip("%")) - expected) <= tolerance, (cell, expected)
+            assert abs(_display_number(cell) - expected) <= tolerance, (cell, expected)
 
     sections = [s for s in view.results.sections if any(t.title == "Heterogeneity" for t in s.tables)]
     for index, (title, path) in enumerate(view.results.display_images.items()):

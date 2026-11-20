@@ -46,7 +46,7 @@ test_that("two-study prediction intervals preserve metafor output", {
   expect_true(is.finite(reference$pi.lb) && is.finite(reference$pi.ub))
   displayed <- RCMetaR:::rcmetar.summary.prediction(fit, list(conf.level=95,digits=6,measure="MD"),
                                                  list(display.scale=function(x, ...) x), NULL, 6)
-  expect_equal(as.numeric(displayed$interval[2, ]), c(reference$pi.lb, reference$pi.ub), tolerance=1e-5)
+  expect_equal(as.numeric(sub("\u2212", "-", displayed$interval[2, ], fixed=TRUE)), c(reference$pi.lb, reference$pi.ub), tolerance=1e-5)
 })
 
 test_that("singleton inference follows metafor rather than rejecting or blanking the fit", {

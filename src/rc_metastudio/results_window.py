@@ -10,7 +10,7 @@ import re
 from html import escape
 from pathlib import Path
 from rc_metastudio.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns
+from rc_metastudio.result_formatting import numeric_cell as _numeric_cell, numeric_columns, report_cell
 from rc_metastudio import qt_layout
 from collections import Counter, namedtuple
 from typing import TYPE_CHECKING, Callable
@@ -269,10 +269,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         *,
         source_sheet_name: str | None = None,
         save_favours_labels: Callable[[str, str], None] | None = None,
+        plot_overrides: dict[str, dict[str, object]] | None = None,
+        save_plot_override: Callable[[str, dict[str, object]], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
         self._save_favours_labels = save_favours_labels
+        self._plot_overrides = dict(plot_overrides or {})
+        self._plot_defaults: dict[str, dict[str, object]] = {}
+        self._save_plot_override = save_plot_override
         self._explicit_fit_width = False
         self._svg_plot_items = []
         self._raster_plot_items = []
@@ -366,6 +371,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         # proportions again after the native window receives its final geometry.
         self._apply_restored_splitter_proportions()
         self._setup_report_controls(source_sheet_name)
+        for key, artifact in self._nav_plot_artifacts.items():
+            self._restore_plot_override(artifact, self._nav_items_to_sections.get(key))
 
     def _load_result(self, results: AnalysisResult) -> None:
         self.results = results = normalize_analysis_result(results)
@@ -395,6 +402,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._nav_items_to_sections[key] = plot
         self._nav_plot_artifacts[key] = artifact
         self._load_result(results)
+        self._plot_defaults.pop(artifact.title, None)
+        self._restore_plot_override(artifact, plot)
         self.manuscript = manuscript
         self._refresh_manuscript_theme()
         self._load_report_tables()
@@ -591,7 +600,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         position = scrollbar.value()
         color = self.manuscript_text.palette().color(self.manuscript_text.foregroundRole()).name()
         self.manuscript_text.setHtml((self.manuscript.html(heading=False) + self.manuscript.html(supplementary=True))
-                                     .replace('solid black', 'solid ' + color).replace(' to ', '\u00a0to\u00a0'))
+                                     .replace('solid black', 'solid ' + color))
         scrollbar.setValue(position)
 
     def _refresh_theme(self):
@@ -790,7 +799,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         from rc_metastudio.result_formatting import table_html
         headers, rows = self._table_rows(selected=True)
         mime = QMimeData()
-        mime.setText(self._table_payload("\t", selected=True))
+        stream = io.StringIO(newline="")
+        writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
+        if headers:
+            writer.writerow(headers)
+        writer.writerows([report_cell(cell) if _numeric_cell(cell) else cell for cell in row]
+                         for row in rows)
+        mime.setText(stream.getvalue())
         mime.setHtml(table_html(headers, rows))
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
         self.statusbar.showMessage("Table copied", 4000)
@@ -1598,6 +1613,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         plot_params = self.plot_service.load_params(artifact.params_path)
         if plot_params is None:
             return
+        defaults = self._plot_defaults.setdefault(artifact.title, plot_params)
 
         def commit(parameters: dict[str, object]) -> None:
             self._apply_plot_edits(parameters, artifact, plot_item)
@@ -1605,12 +1621,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if regenerator == "funnel":
             dialog = FunnelPlotEditorDialog(
                 plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind,
-                on_commit=commit,
+                on_commit=commit, default_params=defaults,
             )
         else:
             dialog = EditPlotDialog(
                 plot_params, artifact.image_path, parent=self, plot_type=artifact.plot_kind,
-                on_commit=commit,
+                on_commit=commit, default_params=defaults,
             )
             if regenerator == "forest":
                 reopen = self._change_settings
@@ -1620,7 +1636,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         dialog.exec()
 
-    def _apply_plot_edits(self, updated_params, artifact, plot_item):
+    def _restore_plot_override(self, artifact, plot_item):
+        params = self._plot_overrides.get(artifact.title)
+        if params and artifact.params_path:
+            defaults = self.plot_service.load_params(artifact.params_path)
+            if defaults is not None:
+                self._plot_defaults[artifact.title] = defaults
+                self._apply_plot_edits(params, artifact, plot_item, persist=False)
+
+    def _apply_plot_edits(self, updated_params, artifact, plot_item, *, persist=True):
         regenerator = artifact.capability.regenerator
         output_parameter = {
             "forest": "fp_outpath", "regression": "bp_outpath",
@@ -1632,11 +1656,19 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             updated_params=updated_params, output_path=outpath,
         )
 
-        if regenerator == "forest" and self._save_favours_labels is not None:
+        if persist and regenerator == "forest" and self._save_favours_labels is not None:
             self._save_favours_labels(
                 updated_params.get("fp_favours_left", ""),
                 updated_params.get("fp_favours_right", ""),
             )
+        if persist and self._save_plot_override is not None:
+            exclusions = {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path",
+                          "funnel.outpath", "funnel.kind", "funnel.index", "funnel.center"}
+            overrides = {name: value for name, value in updated_params.items()
+                         if name not in exclusions and (name in {"plot_caption", "tsa_x_axis"}
+                             or name.startswith(("fp_", "bp_", "funnel.")))}
+            self._plot_overrides[artifact.title] = overrides
+            self._save_plot_override(artifact.title, overrides)
         self._refresh_plot_item(plot_item, artifact, outpath)
 
     def _refresh_plot_item(self, plot_item, artifact, outpath):
@@ -1674,11 +1706,31 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         from rc_metastudio.manuscript_report import figure_source
         source, ratio = figure_source(artifact.display_path())
         from PyQt6.QtSvg import QSvgRenderer
+        text_per_inch = (0.0, 0.0)
         if isinstance(source, QSvgRenderer):
-            width = source.defaultSize().width() / 96
+            bounds = source.viewBoxF()
+            width = bounds.width() / 72
+            ratio = bounds.width() / bounds.height()
+            if artifact.params_path:
+                from tempfile import TemporaryDirectory
+                from rc_metastudio.plot_service import svg_text_points_per_inch
+
+                with TemporaryDirectory(prefix="rcms-export-size-") as directory:
+                    untitled = Path(directory) / "untitled.svg"
+                    self.plot_service.export(regenerator=artifact.capability.regenerator,
+                                             params_path=artifact.params_path, output_path=str(untitled),
+                                             include_title=False, outline_text=False)
+                    text_per_inch = (
+                        svg_text_points_per_inch(untitled, 1 / ratio),
+                        svg_text_points_per_inch(artifact.display_path(), 1 / ratio),
+                    )
         else:
             width = source.width() / max(1, source.dotsPerMeterX() * .0254)
-        dialog = PlotExportDialog(artifact.export_formats(), width, width / ratio, self, resizable=bool(artifact.params_path), native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96)
+        dialog = PlotExportDialog(
+            artifact.export_formats(), width, width / ratio, self,
+            resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
+            native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
+        )
         if not dialog.exec():
             return
         format = dialog.format_control.currentData()
@@ -1686,15 +1738,16 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not artifact.params_path:
             unscaled_image = QImage(artifact.image_path)
 
-        return format, dimensions, unscaled_image
+        return format, dimensions, unscaled_image, dialog.include_title.isChecked()
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
         dimensions = None
+        include_title = True
         if format is None:
             options = self._plot_export_options(artifact, unscaled_image)
             if options is None:
                 return
-            format, dimensions, unscaled_image = options
+            format, dimensions, unscaled_image, include_title = options
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
@@ -1738,7 +1791,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         elif dimensions is not None:
             width, height, dpi = dimensions
             self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,
-                                           output_path=destination, width=width, height=height, dpi=dpi)
+                                           output_path=destination, width=width, height=height, dpi=dpi,
+                                           include_title=include_title)
         else:
             self.plot_service.export(
                 regenerator=regenerator,

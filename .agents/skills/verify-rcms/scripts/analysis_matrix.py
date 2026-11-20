@@ -120,7 +120,10 @@ def run(
             assert len(terms) == 3 and all("treatment group" in term and "reference" in term for term in terms), terms
             assert all(term in report for term in terms), report
             if scenario.endswith("category-factor"):
-                assert all(f"treatment group: {level} (reference: 2)" in report for level in ("1", "2", "3", "4")), report
+                fitted = next(table for table in view._report_tables if table.role == "fitted")
+                levels = {"1", "2 (reference)", "3", "4"}
+                assert fitted.headers[0] == "Subgroup" and {row[0] for row in fitted.rows} == levels
+                assert levels <= set(report.splitlines()), report
             record("category-coefficients-labelled", view, terms=terms, report=report)
             return view
         clinical = any(section.plot_kind == "sroc" for section in view.results.sections)
@@ -209,7 +212,7 @@ def run(
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
             headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
             style = dialog.current_param_vals["fp_style"]
-            expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N"] if style == "default" else
+            expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N", "Weight (%)"] if style == "default" else
                                 ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
                                 ["Mean", "SD", "Total", "Mean", "SD", "Total", "Weight"])
             assert headers == expected_headers, headers
@@ -774,17 +777,14 @@ def run(
                         if re.fullmatch(r"[\d.]+%", "".join(node.itertext()))]
         plotted_weights = [float("".join(node.itertext()).removesuffix("%"))
                            for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
+        assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows] + [100.0], (plotted_weights, rows)
         if dialog.current_param_vals["fp_style"] == "default":
-            assert not plotted_weights, plotted_weights
             from rc_metastudio import r_bridge
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
-            plotted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
-            assert len(plotted_weights) == len(rows), (plotted_weights, rows)
+            fitted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
+            assert len(fitted_weights) == len(rows), (fitted_weights, rows)
             assert all(abs(actual - float(row[-1].removesuffix("%"))) <= 0.051
-                       for actual, row in zip(plotted_weights, rows, strict=True)), (plotted_weights, rows)
-        else:
-            plotted_weights.remove(100.0)
-            assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows], (plotted_weights, rows)
+                       for actual, row in zip(fitted_weights, rows, strict=True)), (fitted_weights, rows)
         assert all(float(row[-1].removesuffix("%")) == 0 for row in omitted), omitted
         assert len(omitted) == 2 and figure.count("Not estimable") == 2, (rows, figure)
         record("binary-zero-display", view, method=method, rows=rows, figure=figure)

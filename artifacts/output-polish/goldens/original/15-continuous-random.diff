@@ -1,0 +1,10 @@
+--- frozen
++++ proposed
+@@ -16,6 +16,6 @@
+ 
+ Prediction interval
+  Lower bound (95% PI)  Upper bound (95% PI)
+- -0.072                               0.789
++ −0.072                               0.789
+ 
+ 95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.

@@ -189,8 +189,9 @@ ratio.subgroup <- function(data, request, suppressed) {
     subsets <- lapply(indices, function(rows) get.subset(data, rows))
     fits <- lapply(c(subsets, list(data)), ratio.fit, params=suppressed, method=method)
     labels <- c(groups, "Overall")
-    disp <- create.subgroup.display(fits, labels, params, "Subgroup meta-analysis", .rcmetar.data.type(data))
-    disp$study.results <- rcmetar.study.result.values(data, params, tail(fits, 1L)[[1L]], indices)
+    studies <- rcmetar.study.result.values(data, params, tail(fits, 1L)[[1L]], indices)
+    disp <- create.subgroup.display(fits, labels, params, "Subgroup meta-analysis", .rcmetar.data.type(data),
+                                    studies=studies)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.subgroup.metafor.bundle(data, params,
         list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
              row.indices=indices))

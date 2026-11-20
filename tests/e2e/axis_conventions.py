@@ -31,7 +31,7 @@ def ticks(path):
     rows = {}
     for node in ET.parse(path).iter('{http://www.w3.org/2000/svg}text'):
         try:
-            value = float(''.join(node.itertext()))
+            value = float(''.join(node.itertext()).replace('−', '-'))
         except ValueError:
             continue
         y = float(node.attrib['y'])
@@ -52,7 +52,7 @@ def check_axis(path, mode, ratio=False):
         expected = a[1] + (b[1]-a[1])*(value-a[0])/(b[0]-a[0])
         assert abs(x-expected) < .15, ('axis spacing', mode, ratio, values, expected)
     if mode == 'natural' and not ratio:
-        assert values[0][0] == 0 and values[-1][0] == 1, values
+        assert 0 <= values[0][0] < values[-1][0] <= 1, values
     return values
 
 
@@ -227,6 +227,8 @@ def run_sequential(app, window, work, record):
             labels = ' '.join(''.join(node.itertext()) for node in ET.parse(path).iter('{http://www.w3.org/2000/svg}text'))
             assert labels.count('Sequence: current table order') == 1, labels
         axis_ticks = check_axis(path, 'natural')
+        assert axis_ticks[0][0] <= min(row[1] for row in expected)
+        assert axis_ticks[-1][0] >= max(row[2] for row in expected)
         if workflow != 'subgroup':
             row_labels = ([f'Fixture {i}' for i in range(1, 7)]
                           if workflow == 'cumulative' else ['All studies', *[f'Fixture {i}' for i in range(1, 7)]])

@@ -17,10 +17,22 @@ rcmetar.forest.model.label <- function(res) {
 rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim, color) {
     left <- max(lower, alim[[1]])
     right <- min(upper, alim[[2]])
-    if (!all(is.finite(c(center, left, right))) || left >= right) return(invisible(NULL))
+    if (!all(is.finite(c(center, left, right))) || lower >= upper) return(invisible(NULL))
+    arrow.length <- diff(alim) * 0.026
+    if (left >= right) {
+        edge <- if (upper <= alim[[1]]) alim[[1]] else alim[[2]]
+        base <- edge + if (edge == alim[[1]]) arrow.length else -arrow.length
+        graphics::polygon(c(edge, base, base), row + c(0, height / 2, -height / 2),
+                          col=color, border=color)
+        return(invisible(NULL))
+    }
     # Bound the vertices themselves: the desktop SVG renderer ignores clip paths.
-    x <- sort(unique(c(left, center[center > left & center < right], right)))
+    inset <- min(arrow.length, (right - left) / 3)
+    left.base <- left + if (lower < left) inset else 0
+    right.base <- right - if (upper > right) inset else 0
+    x <- sort(unique(c(left, left.base, center[center > left.base & center < right.base], right.base, right)))
     rise <- height * pmin((x - lower) / (center - lower), (upper - x) / (upper - center))
+    rise[c(1, length(rise))] <- 0
     bottom <- rev(which(rise > 0))
     graphics::polygon(c(x, x[bottom]), c(row + rise, row - rise[bottom]), col=color, border=color)
     invisible(NULL)
@@ -28,7 +40,15 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
 
 rcmetar.forest.direction.metrics <- function(bundle, plan) {
     if (!is.null(plan$footer$axis) && !is.finite(plan$footer$axis$split.x)) return(list(lines=0, spacing=0))
-    labels <- setNames(unlist(rcmetar.revman.direction.labels(bundle)[c("left", "right")], use.names=FALSE), c("left", "right"))
+    labels <- unlist(rcmetar.revman.direction.labels(bundle)[c("left", "right")], use.names=FALSE)
+    if (rcmetar.forest.style(bundle$params) == "bmj" && any(nzchar(labels))) {
+        return(rcmetar.forest.with.measurement.device({
+            cex <- plan$typography$cex
+            panel.width <- diff(plan$x$alim) / diff(plan$x$xlim) * (plan$device$width - 0.6)
+            lines <- rcmetar.bmj.direction.lines(bundle, panel.width, cex, units="inches")
+            list(lines=max(lengths(lines)), spacing=0.32)
+        }))
+    }
     list(lines=as.integer(any(nzchar(labels))), spacing=0)
 }
 
@@ -36,7 +56,7 @@ rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
     labels <- rcmetar.revman.direction.labels(bundle)
     # Qt trims outer SVG whitespace, so reserve the space in coordinates.
-    gap <- graphics::strwidth(" ", cex=cex, font=font)
+    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
         if (nzchar(labels[[side]])) graphics::text(at,
@@ -51,8 +71,13 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     on.exit(graphics::par(previous), add=TRUE)
     labels <- rcmetar.revman.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
+    if (rcmetar.forest.style(bundle$params) == "bmj") {
+        limits <- graphics::par("usr")[3:4]
+        y <- limits[[1]] - 4.5 * graphics::par("csi") * diff(limits) / graphics::par("pin")[[2]]
+        return(rcmetar.draw.bmj.direction(bundle, rcmetar.bmj.axis.footer.layout(bundle, list(alim=alim)), y, cex))
+    }
     if (!is.finite(footer$split.x) || footer$split.x <= alim[[1]] || footer$split.x >= alim[[2]]) return(invisible(NULL))
-    gap <- graphics::strwidth(" ", cex=cex)
+    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     for (side in c("left", "right")) {
         at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
         if (nzchar(labels[[side]])) graphics::mtext(labels[[side]], side=1,
@@ -94,14 +119,20 @@ rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
     label
 }
 
+rcmetar.heterogeneity.df <- function(res) {
+    (res$k.yi %||% res$k %||% NA_real_) - (res$p %||% 1)
+}
+
 rcmetar.forest.heterogeneity.label <- function(res, params=NULL) {
+    df <- rcmetar.heterogeneity.df(res)
+    if (isTRUE(df <= 0)) return("Heterogeneity: \u2014")
     if (is.null(res$QE)) return("")
     digits <- display.digits(params)
     fixed <- inherits(res, "rma.mh") || inherits(res, "rma.peto") || res$method %in% c("FE", "EE", "CE")
     paste0("Heterogeneity: ", if (!fixed) paste0("\u03c4\u00b2 = ", round.display(res$tau2, digits), "; "),
-           "Q = ", round.display(res$QE, digits), ", df = ", (res$k.yi %||% res$k) - res$p,
+           "Q = ", round.display(res$QE, digits), ", df = ", df,
            " (", rcmetar.revman.p.value.label(res$QEp, digits), "); I\u00b2 = ",
-           round.display(res$I2, 1), "%")
+           format.i2.display(res$I2))
 }
 
 rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
@@ -112,8 +143,11 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
     measure <- as.character(bundle$params$measure)
     display <- rcmetar.prediction.display(bounds, bundle$params,
         rcmetar.bundle.transform(bundle), bundle$sample_sizes)
-    paste0(display.confidence.level(bundle$params), "% prediction interval: [",
-           paste(rcmetar.format.effect.number(display$bounds, display.digits(bundle$params)), collapse=", "), "]",
+    bmj <- identical(rcmetar.forest.style(bundle$params), "bmj")
+    limits <- rcmetar.format.interval.bound(display$bounds, rcmetar.forest.effect.digits(bundle), bundle$params)
+    interval <- if (bmj) paste0("(", paste(limits, collapse=" to "), ")") else
+        paste0("[", paste(limits, collapse=", "), "]")
+    paste0(display.confidence.level(bundle$params), "% prediction interval: ", interval,
            if (measure == "PFT" && isTRUE(display$transformed))
                " (Freeman-Tukey scale; proportion inverse undefined)" else "")
 }
@@ -145,14 +179,6 @@ rcmetar.overall.test.heading <- function(res, params) {
     null <- rcmetar.overall.null.label(res, params)
     paste0("Test for overall effect", if (nzchar(null)) paste0(" (H\u2080: ", null, ")"))
 }
-
-rcmetar.format.test.statistic <- function(value, digits) {
-    if (length(value) == 1L && is.finite(value) && abs(value) >= 1e6) {
-        return(formatC(value, digits=max(1L, digits), format="e"))
-    }
-    rcmetar.format.effect.number(value, digits)
-}
-
 
 rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     if (!nzchar(label)) return(invisible(NULL))

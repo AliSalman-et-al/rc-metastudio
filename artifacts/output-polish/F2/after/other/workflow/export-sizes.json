@@ -1,0 +1,242 @@
+[
+  {
+    "file": "regression-85mm.pdf",
+    "kind": "regression",
+    "width": 3.3464566929133857,
+    "height": 1.9403294503659085,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "regression-85mm.svg",
+    "kind": "regression",
+    "width": 3.3464566929133857,
+    "height": 1.9403294503659085,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "regression-85mm.png",
+    "kind": "regression",
+    "width": 3.3464566929133857,
+    "height": 1.9403294503659085,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "regression-85mm.tiff",
+    "kind": "regression",
+    "width": 3.3464566929133857,
+    "height": 1.9403294503659085,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "regression-85mm.svgz",
+    "kind": "regression",
+    "width": 3.3464566929133857,
+    "height": 1.9403294503659085,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "regression-180mm.pdf",
+    "kind": "regression",
+    "width": 7.086614173228346,
+    "height": 4.1089329537160415,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "regression-180mm.svg",
+    "kind": "regression",
+    "width": 7.086614173228346,
+    "height": 4.1089329537160415,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "regression-180mm.png",
+    "kind": "regression",
+    "width": 7.086614173228346,
+    "height": 4.1089329537160415,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "regression-180mm.tiff",
+    "kind": "regression",
+    "width": 7.086614173228346,
+    "height": 4.1089329537160415,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "regression-180mm.svgz",
+    "kind": "regression",
+    "width": 7.086614173228346,
+    "height": 4.1089329537160415,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "sroc-85mm.pdf",
+    "kind": "sroc",
+    "width": 3.3464566929133857,
+    "height": 3.1743532058492683,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "sroc-85mm.svg",
+    "kind": "sroc",
+    "width": 3.3464566929133857,
+    "height": 3.1743532058492683,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "sroc-85mm.png",
+    "kind": "sroc",
+    "width": 3.3464566929133857,
+    "height": 3.1743532058492683,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "sroc-85mm.tiff",
+    "kind": "sroc",
+    "width": 3.3464566929133857,
+    "height": 3.1743532058492683,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "sroc-85mm.svgz",
+    "kind": "sroc",
+    "width": 3.3464566929133857,
+    "height": 3.1743532058492683,
+    "dpi": 300,
+    "warning": true
+  },
+  {
+    "file": "sroc-180mm.pdf",
+    "kind": "sroc",
+    "width": 7.086614173228346,
+    "height": 6.722159730033745,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "sroc-180mm.svg",
+    "kind": "sroc",
+    "width": 7.086614173228346,
+    "height": 6.722159730033745,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "sroc-180mm.png",
+    "kind": "sroc",
+    "width": 7.086614173228346,
+    "height": 6.722159730033745,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "sroc-180mm.tiff",
+    "kind": "sroc",
+    "width": 7.086614173228346,
+    "height": 6.722159730033745,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "sroc-180mm.svgz",
+    "kind": "sroc",
+    "width": 7.086614173228346,
+    "height": 6.722159730033745,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-85mm.pdf",
+    "kind": "trial_sequential",
+    "width": 3.3464566929133857,
+    "height": 1.7959574100101336,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-85mm.svg",
+    "kind": "trial_sequential",
+    "width": 3.3464566929133857,
+    "height": 1.7959574100101336,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-85mm.png",
+    "kind": "trial_sequential",
+    "width": 3.3464566929133857,
+    "height": 1.7959574100101336,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-85mm.tiff",
+    "kind": "trial_sequential",
+    "width": 3.3464566929133857,
+    "height": 1.7959574100101336,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-85mm.svgz",
+    "kind": "trial_sequential",
+    "width": 3.3464566929133857,
+    "height": 1.7959574100101336,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-180mm.pdf",
+    "kind": "trial_sequential",
+    "width": 7.086614173228346,
+    "height": 3.803203927080283,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-180mm.svg",
+    "kind": "trial_sequential",
+    "width": 7.086614173228346,
+    "height": 3.803203927080283,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-180mm.png",
+    "kind": "trial_sequential",
+    "width": 7.086614173228346,
+    "height": 3.803203927080283,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-180mm.tiff",
+    "kind": "trial_sequential",
+    "width": 7.086614173228346,
+    "height": 3.803203927080283,
+    "dpi": 300,
+    "warning": false
+  },
+  {
+    "file": "trial_sequential-180mm.svgz",
+    "kind": "trial_sequential",
+    "width": 7.086614173228346,
+    "height": 3.803203927080283,
+    "dpi": 300,
+    "warning": false
+  }
+]

@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from xml.etree import ElementTree as ET
 from PyQt6 import QtCore
 from tests.python.gui.qt_test_support import mouse_click
@@ -61,13 +62,23 @@ def run_predictions(app, window, work, record):
                 if style == 'bmj' and workflow in ('standard', 'subgroup'):
                     assert 'Events / Total' in figure, figure
                 if workflow == 'subgroup' and style != 'default':
-                    lines = [node for node in ET.parse(artifact.display_path()).iter('{http://www.w3.org/2000/svg}line')
-                             if 'stroke-width: 1.01' in node.attrib.get('style','') and abs(float(node.attrib['y1'])-float(node.attrib['y2'])) < .02]
-                    assert lines and all(node.attrib.get('stroke') == '#000000' for node in lines), ('journal subgroup ink changed',style)
+                    svg = ET.parse(artifact.display_path())
+                    study_rows = [float(node.attrib['y']) for node in svg.iter('{http://www.w3.org/2000/svg}text')
+                                  if ''.join(node.itertext()).startswith('Fixture ')]
+                    lines = [node for node in svg.iter('{http://www.w3.org/2000/svg}line')
+                             if abs(float(node.attrib['y1']) - float(node.attrib['y2'])) < .02
+                             and any(abs(float(node.attrib['y1']) - y) < 2 for y in study_rows)]
+                    colours = [match[1].upper() if (match := re.search(r'\bstroke:\s*(#[0-9A-Fa-f]{6})', node.get('style', '')))
+                               else node.get('stroke') for node in lines]
+                    expected_colour = '#5F4C9A' if style == 'bmj' else '#000000'
+                    assert len(study_rows) == 6 and colours == [expected_colour] * 6, (style, colours)
                 footer = [line for line in figure if 'prediction interval:' in line]
                 assert footer, (workflow, style, figure)
                 assert len(footer) == len(reference), (footer,reference)
-                assert all(', '.join(item['display']) in line for item,line in zip(reference,footer,strict=True)), (footer, reference)
+                for item, line in zip(reference, footer, strict=True):
+                    lower, upper = item['display']
+                    limits = f'({lower} to {upper})' if style == 'bmj' else f'[{lower}, {upper}]'
+                    assert line.endswith(limits), (line, limits, reference)
                 assert 'Freeman' not in footer[-1]
                 if measure == 'PFT':
                     assert any('Freeman–Tukey transformed proportion = 0' in line for line in figure), figure

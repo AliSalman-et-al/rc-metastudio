@@ -65,7 +65,6 @@ cum.ma.binary <- function(fname, binary.data, params){
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
     rcmetar.draw.forest.plot(plot.data, forest.path)
     params <- update.changed.plot.params(params, plot.data$changed.params)
@@ -492,7 +491,6 @@ cum.ma.continuous <- function(fname, cont.data, params){
     forest.path <- paste(params$fp_outpath, sep="")
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    params.cum$fp_col2_str <- "Cumulative Estimate"
     plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
     rcmetar.draw.forest.plot(plot.data, forest.path)
     params <- update.changed.plot.params(params, plot.data$changed.params)
@@ -543,7 +541,6 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	forest.path <- paste(params$fp_outpath, sep="")
 	params.cum <- params
 	params.cum$fp_col1_str <- "Study added"
-	params.cum$fp_col2_str <- "Cumulative Estimate"
 	plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
 	rcmetar.draw.forest.plot(plot.data, forest.path)
 	params <- update.changed.plot.params(params, plot.data$changed.params)
@@ -644,9 +641,10 @@ subgroup.ma.binary <- function(fname, binary.data, params){
 		binary.fixed.mh	     = binary.fixed.mh.value.info(),
 		binary.fixed.peto	 = binary.fixed.peto.value.info(),
 		binary.random	     = binary.random.value.info())
-    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="binary", sample.sizes=lapply(grouped.data, rcmetar.pft.sample.sizes, params=params))
-    subgroup.disp$study.results <- rcmetar.study.result.values(
+    studies <- rcmetar.study.result.values(
         binary.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
+    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
+        data.type="binary", sample.sizes=lapply(grouped.data, rcmetar.pft.sample.sizes, params=params), studies=studies)
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.subgroup.metafor.bundle(binary.data, params, subgroup.data)
     subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
@@ -692,9 +690,10 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
     value.info <- switch(fname,
 						 continuous.fixed  = continuous.fixed.value.info(),
 						 continuous.random = continuous.random.value.info())
-    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="continuous")
-    subgroup.disp$study.results <- rcmetar.study.result.values(
+    studies <- rcmetar.study.result.values(
         cont.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
+    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
+        data.type="continuous", studies=studies)
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- rcmetar.build.subgroup.metafor.bundle(cont.data, params, subgroup.data)
     subgroup.disp <- rcmetar.add.subgroup.test(subgroup.disp, plot.data, params)
@@ -822,9 +821,10 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
 
     metric.name <- pretty.metric.name(suppressed_params$measure)
     model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nMetric: ", metric.name)
-    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title, data.type="diagnostic")
-    subgroup.disp$study.results <- rcmetar.study.result.values(
+    studies <- rcmetar.study.result.values(
         diagnostic.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
+    subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
+        data.type="diagnostic", studies=studies)
     forest.path <- paste(params$fp_outpath, sep="")
     if (is.null(params$create.plot)) {
         plot.data <- rcmetar.build.subgroup.metafor.bundle(diagnostic.data, params, subgroup.data)

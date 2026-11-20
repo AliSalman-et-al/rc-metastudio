@@ -1,0 +1,9 @@
+funnel-ref-0-pooled-0.svg ('0.25', '0.5', '1', '2') 3 studies fall outside the displayed bounds.
+funnel-ref-0-pooled-1.svg ('0.25', '0.5', '1', '2') 3 studies fall outside the displayed bounds.
+funnel-ref-1-pooled-0.svg ('0.25', '0.5', '1', '2') 3 studies fall outside the displayed bounds.
+funnel-ref-1-pooled-1.svg ('0.25', '0.5', '1', '2') 3 studies fall outside the displayed bounds.
+Region vertices, axis ticks and panel bounds are identical for all four toggle combinations.
+contour_funnel.svg | P > 0.10 | 0.05 < P ≤ 0.10 | 0.01 < P ≤ 0.05 | P ≤ 0.01
+3 filled polygons clipped to the exact panel rectangle
+trimfill_funnel.svg | Observed | Imputed
+1 filled polygons clipped to the exact panel rectangle

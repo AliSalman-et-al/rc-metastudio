@@ -25,7 +25,7 @@ create.repeat.string <- function(symbol, num.repeats) {
 RCMETAR_DEFAULT_DISPLAY_DIGITS <- 2L
 RCMETAR_MINIMUM_P_VALUE_DIGITS <- 3L
 
-display.digits <- function(params=NULL, minimum=0L) {
+display.digits <- function(params=NULL) {
   digits <- RCMETAR_DEFAULT_DISPLAY_DIGITS
   if (!is.null(params) && !is.null(params$digits) && length(params$digits) > 0) {
     candidate <- suppressWarnings(as.integer(params$digits[[1]]))
@@ -33,7 +33,7 @@ display.digits <- function(params=NULL, minimum=0L) {
       digits <- candidate
     }
   }
-  max(as.integer(minimum), digits)
+  digits
 }
 
 p.value.display.digits <- function(digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
@@ -48,7 +48,7 @@ round.display <- function(x, digits) {
   digits.str <- paste("%.", digits, "f", sep="")
   x.disp <- rep("", length(x))
   finite <- is.finite(x)
-  x.disp[finite] <- sprintf(digits.str, x[finite])
+  x.disp[finite] <- sub("^-(0(\\.0+)?)$", "\\1", sprintf(digits.str, x[finite]))
   x.disp[!finite & is.na(x)] <- NA_character_
   x.disp
 }
@@ -57,18 +57,51 @@ display.value.is.missing <- function(value) {
   is.null(value) || length(value) == 0 || all(is.na(value))
 }
 
-format.numeric.display <- function(value, digits.str) {
+format.percent.display <- function(value, digits) {
   if (display.value.is.missing(value)) {
     return("")
   }
-  sprintf(digits.str, value)
+  paste0(rcmetar.format.effect.number(value, digits), "%")
 }
 
-format.percent.display <- function(value, digits.str) {
-  if (display.value.is.missing(value)) {
-    return("")
+format.i2.display <- function(value, missing="") {
+  if (!length(value)) return(missing)
+  ifelse(is.finite(value), format.percent.display(value, 1L), missing)
+}
+
+rcmetar.format.interval.bound <- function(values, digits, params) {
+  values <- as.numeric(values)
+  labels <- rcmetar.format.effect.number(values, digits)
+  metric <- as.character(params$measure)
+  if (isTRUE(metric.is.log.scale(metric) & !metric %in% binary.one.arm.metrics)) {
+    tiny <- is.finite(values) & values > 0 & grepl("^0(\\.0+)?$", labels)
+    labels[tiny] <- sub("e-", "e\u2212", sprintf("%.1e", values[tiny]), fixed=TRUE)
   }
-  paste(sprintf(digits.str, value), "%", sep="")
+  labels
+}
+
+rcmetar.collapsed.intervals <- function(lower, upper, digits, params) {
+  finite <- is.finite(lower) & is.finite(upper) & lower < upper
+  any(rcmetar.format.interval.bound(lower[finite], digits, params) ==
+      rcmetar.format.interval.bound(upper[finite], digits, params))
+}
+
+rcmetar.effect.digits <- function(params, lower, upper) {
+  digits <- display.digits(params)
+  while (digits < 4L && rcmetar.collapsed.intervals(lower, upper, digits, params)) {
+    digits <- digits + 1L
+  }
+  digits
+}
+
+rcmetar.effect.precision.note <- function(params, digits, lower, upper) {
+  if (digits <= display.digits(params)) return(NULL)
+  suffix <- if (rcmetar.collapsed.intervals(lower, upper, digits, params)) {
+    "to help distinguish narrow intervals. Some bounds still round to the same value at 4 decimals."
+  } else {
+    "so intervals are distinguishable."
+  }
+  paste("Effect estimates displayed with", digits, "decimals", suffix)
 }
 
 format.p.value.display <- function(value, digits) {
@@ -95,25 +128,6 @@ display.confidence.level <- function(params=NULL) {
 display.confidence.interval.labels <- function(params=NULL) {
   level <- trimws(formatC(display.confidence.level(params), format="fg", digits=4))
   c(paste0("Lower bound (", level, "% CI)"), paste0("Upper bound (", level, "% CI)"))
-}
-
-g.round.display.zval <- function(x, digits) {
-  if (display.value.is.missing(x)) {
-    return("")
-  }
-  digits.str <- paste("%.", digits, "f", sep="")
-  x.disp <- round.display(x, digits)
-
-  negative.small <- is.finite(x) & x < 0 & abs(x) < 10^(-digits)
-  negative <- is.finite(x) & x < 0 & abs(x) >= 10^(-digits)
-  x.disp[negative.small] <- paste(">","-",10^(-digits)," & <0",sep="")
-  x.disp[negative] <- sprintf(digits.str, x[negative])
-
-  positive.small <- is.finite(x) & x > 0 & x < 10^(-digits)
-  positive <- is.finite(x) & x > 0 & x >= 10^(-digits)
-  x.disp[positive.small] <- paste("< ", 10^(-digits), sep="")
-  x.disp[positive] <- sprintf(digits.str, x[positive])
-  x.disp
 }
 
 # Use the pooled PFT inverse for both prediction endpoints, never the two study-N

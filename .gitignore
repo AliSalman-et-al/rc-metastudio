@@ -45,6 +45,7 @@ RCMetaStudio*.spec
 src/RCMetaStudio*.spec
 
 # Local agent scratch files
+/.tmp/
 .agents/*
 # Preserve the repository's verification skill and its supporting files.
 !.agents/skills/

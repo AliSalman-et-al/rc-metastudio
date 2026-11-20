@@ -12,8 +12,9 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_text
-from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch
+from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch, style_inline_error
 from rc_metastudio.qt_object_guard import required
+from rc_metastudio.plot_style_controls import plot_color
 from rc_metastudio.plot_text import (
     configure_plot_text_inputs,
     size_plot_text_editor,
@@ -56,13 +57,21 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     def __init__(
         self, plot_params, image_path, parent=None, plot_type="funnel",
         *, on_commit: Callable[[dict[str, object]], None] | None = None,
+        default_params: dict[str, object] | None = None,
     ):
         super().__init__(parent)
         self.setupUi(self)
         self._on_commit = on_commit
         self._configure_accessibility()
+        self._commit_error = QLabel(self)
+        self._commit_error.setWordWrap(True)
+        style_inline_error(self._commit_error)
+        layout = required(self.layout(), "funnel dialog layout")
+        layout.addWidget(self._commit_error)
+        self._commit_error.hide()
         configure_plot_text_inputs(self)
         self._params = dict(plot_params or {})
+        self._default_params = dict(default_params or {})
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setAccessibleName("Figure caption")
         self.figure_caption.setToolTip("Shown under the figure when exported alone. Clear it to omit the caption.")
@@ -84,7 +93,22 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.plot_type = str(plot_type)
         self._validate_kind_descriptor()
         self.kind = self._kind_from_params()
+        self._ratio_axis = self._bool("resolved.funnel.ratio", False)
+        effects = self._params.get("resolved.funnel.x", ())
+        if isinstance(effects, (int, float)):
+            effects = (effects,)
+        self._funnel_x = tuple(value for value in effects if isinstance(value, (int, float))) if isinstance(effects, (list, tuple)) else ()
+        self._bounds_warning = QLabel(self)
+        self._bounds_warning.setWordWrap(True)
+        self.axis_layout.addWidget(self._bounds_warning, self.axis_layout.rowCount(), 0, 1, 2)
         self._load_params(image_path)
+        if self._ratio_axis:
+            self.x_lower_label.setText("X-axis lower bound (ratio)")
+            self.x_upper_label.setText("X-axis upper bound (ratio)")
+            self.x_ticks_label.setText("X-axis ticks (ratios)")
+        self.x_lower_edit.textChanged.connect(self._refresh_bounds_warning)
+        self.x_upper_edit.textChanged.connect(self._refresh_bounds_warning)
+        self._refresh_bounds_warning()
         self._configure_kind()
         self.setTabOrder(self.background_color_button, self.figure_caption)
         self.setTabOrder(self.figure_caption, self.x_label_edit)
@@ -119,6 +143,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             )
         apply_button = required(self.button_box.button(QDialogButtonBox.StandardButton.Apply), "funnel Apply button")
         apply_button.clicked.connect(self._commit)
+        reset = self.button_box.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
+        required(reset, "funnel reset button").clicked.connect(self._reset_to_defaults)
         self._connect_dirty_signals()
         align_field_columns((self.appearance_layout, self.confidence_layout, self.axis_layout))
         size_plot_text_editor(self)
@@ -211,7 +237,22 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
     def _mark_dirty(self, *_args):
         self._dirty = True
 
+    def _reset_to_defaults(self):
+        self._params = dict(self._default_params)
+        self._load_params(self._funnel_outpath)
+        self.figure_caption.setText(str(self._params.get("plot_caption", "") or "").replace("\n", " · "))
+        self._refresh_bounds_warning()
+        self._dirty = True
+
     def _commit(self) -> bool:
+        for field in (self.point_color_edit, self.reference_color_edit, self.region_color_edit, self.background_color_edit):
+            try:
+                plot_color(field.text())
+            except ValueError as error:
+                self._commit_error.setText(str(error))
+                self._commit_error.show()
+                field.setFocus()
+                return False
         try:
             params = self.plot_params()
         except ValueError as error:
@@ -225,6 +266,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             return False
         self._params = params
         self._dirty = False
+        self._commit_error.hide()
         return True
 
     def accept(self) -> None:
@@ -334,17 +376,43 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         default_y_label = self._default_y_label()
         self.x_label_edit.setText(str(self._value("funnel.xlab", default_x_label)))
         self.y_label_edit.setText(str(self._value("funnel.ylab", default_y_label)))
-        self.x_lower_edit.setText(str(self._value("funnel.xlim.lower", "[default]")))
-        self.x_upper_edit.setText(str(self._value("funnel.xlim.upper", "[default]")))
+        self.x_lower_edit.setText(self._saved_axis_value("funnel.xlim.lower"))
+        self.x_upper_edit.setText(self._saved_axis_value("funnel.xlim.upper"))
         ticks = self._value("funnel.xticks", "[default]")
         if isinstance(ticks, (list, tuple)):
             ticks = ",".join(str(value) for value in ticks)
-        self.x_ticks_edit.setText(str(ticks))
+        self.x_ticks_edit.setText(self._display_saved_axis_value(str(ticks)))
         for field in (self.x_label_edit, self.x_lower_edit, self.x_upper_edit, self.x_ticks_edit):
             if field.text() == "[default]":
                 field.clear()
                 field.setPlaceholderText("Automatic")
                 field.setToolTip("Automatic: determined by the fitted plot range.")
+
+    def _saved_axis_value(self, key):
+        return self._display_saved_axis_value(str(self._value(key, "[default]")))
+
+    def _display_saved_axis_value(self, text):
+        if not self._ratio_axis or self._bool("funnel.xaxis.natural", False) or text in ("", "[default]"):
+            return text
+        try:
+            return ",".join(format(math.exp(value), ".15g") for value in self._finite_list(text, "X-axis"))
+        except (ValueError, OverflowError):
+            return ""
+
+    def _refresh_bounds_warning(self):
+        message = ""
+        try:
+            lower, upper = float(self.x_lower_edit.text()), float(self.x_upper_edit.text())
+        except ValueError:
+            pass
+        else:
+            if math.isfinite(lower) and math.isfinite(upper) and lower < upper:
+                hidden = sum(not lower <= float(effect) <= upper for effect in self._funnel_x)
+                if hidden:
+                    subject = "study falls" if hidden == 1 else "studies fall"
+                    message = f"{hidden} {subject} outside these bounds and will not be shown."
+        self._bounds_warning.setText(message)
+        self._bounds_warning.setVisible(bool(message))
 
     def _default_y_label(self):
         measure = self._value("measure", self._value("metric", ""))
@@ -372,6 +440,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             )
         self.contour_levels_edit.setEnabled(contour)
         self.contour_levels_label.setEnabled(contour)
+        self.contour_levels_edit.setVisible(contour)
+        self.contour_levels_label.setVisible(contour)
         self.contour_levels_edit.setToolTip(
             "Available only for contour-enhanced funnels."
             if not contour
@@ -379,13 +449,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.sampling_confidence_spin.setEnabled(not deeks)
         self.sampling_confidence_label.setEnabled(not deeks)
+        self.sampling_confidence_spin.setVisible(not deeks)
+        self.sampling_confidence_label.setVisible(not deeks)
         self.sampling_region_check.setEnabled(not deeks and not contour)
+        self.sampling_region_check.setVisible(not deeks and not contour)
         self.sampling_region_check.setToolTip(
             "Contour levels replace the single pseudo-confidence region."
             if contour
             else "Show or hide the sampling-error pseudo-confidence region."
         )
         self.include_tau2_check.setEnabled(not deeks)
+        self.include_tau2_check.setVisible(not deeks)
         self.include_tau2_check.setToolTip(
             "Not applicable to the Deeks effective-sample-size funnel."
             if deeks
@@ -393,8 +467,14 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         )
         self.pooled_overlay_check.setEnabled(not deeks)
         self.pooled_overlay_label.setEnabled(not deeks)
+        self.pooled_overlay_check.setVisible(not deeks)
+        self.pooled_overlay_label.setVisible(not deeks)
+        self.reference_visible_check.setVisible(not deeks)
+        self.reference_visible_label.setVisible(not deeks)
         self.regression_visible_check.setEnabled(deeks)
         self.regression_visible_label.setEnabled(deeks)
+        self.regression_visible_check.setVisible(deeks)
+        self.regression_visible_label.setVisible(deeks)
         self.regression_visible_check.setToolTip(
             "Deeks regression line visibility; statistical fitting is unchanged."
             if deeks
@@ -462,28 +542,23 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         """Return the original run params plus presentation-only edits."""
         self._validate_plot_ranges()
         params = dict(self._params)
+        params.pop("resolved.funnel.ratio", None)
+        params.pop("resolved.funnel.x", None)
+        style = next(code for code, label in FUNNEL_STYLE_LABELS.items()
+                     if label == self.style_combo.currentText())
+        preset = FUNNEL_STYLE_PRESETS[style]
         edits = {
             "plot_caption": self.figure_caption.text().strip(),
-            "funnel.style": next(
-                code.value
-                for code, label in FUNNEL_STYLE_LABELS.items()
-                if label == self.style_combo.currentText()
-            ),
+            "funnel.style": style.value,
             "funnel.label.policy": LABEL_VALUES[self.label_policy_combo.currentText()],
             "funnel.point.symbol": POINT_SYMBOL_VALUES[
                 self.point_symbol_combo.currentText()
             ],
             "funnel.point.size": self.point_size_spin.value(),
-            "funnel.point.color": qt_text.to_native_text(self.point_color_edit.text()),
-            "funnel.reference.color": qt_text.to_native_text(
-                self.reference_color_edit.text()
-            ),
-            "funnel.region.color": qt_text.to_native_text(
-                self.region_color_edit.text()
-            ),
-            "funnel.background.color": qt_text.to_native_text(
-                self.background_color_edit.text()
-            ),
+            "funnel.point.color": plot_color(self.point_color_edit.text()) or str(preset["point_color"]),
+            "funnel.reference.color": plot_color(self.reference_color_edit.text()) or str(preset["reference_color"]),
+            "funnel.region.color": plot_color(self.region_color_edit.text()) or str(preset["region_color"]),
+            "funnel.background.color": plot_color(self.background_color_edit.text()) or str(preset["background_color"]),
             "funnel.reference.visible": self.reference_visible_check.isChecked(),
             "funnel.regression.visible": self.regression_visible_check.isChecked(),
             "funnel.pooled.overlay.visible": self.pooled_overlay_check.isChecked(),
@@ -498,6 +573,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             "funnel.xlim.lower": qt_text.to_native_text(self.x_lower_edit.text()),
             "funnel.xlim.upper": qt_text.to_native_text(self.x_upper_edit.text()),
             "funnel.xticks": qt_text.to_native_text(self.x_ticks_edit.text()),
+            "funnel.xaxis.natural": True,
             "funnel.outpath": self._funnel_outpath,
         }
         for name, value in edits.items():
@@ -511,6 +587,17 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         return params
 
     def _validate_plot_ranges(self):
+        self._validate_x_bounds()
+        if self.x_ticks_edit.text().strip():
+            ticks = self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
+            if self._ratio_axis and any(tick <= 0 for tick in ticks):
+                raise ValueError("Ratio ticks must be greater than zero.")
+        if self.contour_levels_edit.isEnabled():
+            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
+            if any(not 0 < value < 100 for value in levels):
+                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+
+    def _validate_x_bounds(self):
         lower, upper = self.x_lower_edit.text().strip(), self.x_upper_edit.text().strip()
         if bool(lower) != bool(upper):
             raise ValueError("Enter both X-axis bounds, or leave both empty for automatic bounds.")
@@ -521,12 +608,8 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
                 raise ValueError("X-axis bounds must be finite numbers.") from error
             if not all(math.isfinite(value) for value in bounds) or bounds[0] >= bounds[1]:
                 raise ValueError("X-axis bounds must be finite, with the lower bound less than the upper bound.")
-        if self.x_ticks_edit.text().strip():
-            self._finite_list(self.x_ticks_edit.text(), "X-axis ticks")
-        if self.contour_levels_edit.isEnabled():
-            levels = self._finite_list(self.contour_levels_edit.text(), "Contour levels")
-            if any(not 0 < value < 100 for value in levels):
-                raise ValueError("Contour levels must be percentages strictly between 0 and 100.")
+            if self._ratio_axis and bounds[0] <= 0:
+                raise ValueError("Ratio bounds must be greater than zero.")
 
     @staticmethod
     def _finite_list(text, label):

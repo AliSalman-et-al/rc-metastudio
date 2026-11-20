@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.study.header.label <- function(header) {
+rcmetar.forest.study.header.label <- function(header, subgroup=FALSE) {
     if (is.null(header) || length(header) == 0 ||
-            as.character(header) %in% c("[default]", "Studies", "Author(s) and Year")) {
-        return("Study or Subgroup")
+            tolower(as.character(header)) %in% c("[default]", "studies", "author(s) and year", "study or subgroup")) {
+        return(if (subgroup) "Study or subgroup" else "Study")
     }
     as.character(header)
 }
@@ -111,7 +111,10 @@ rcmetar.compact.numeric.labels <- function(labels) {
     values <- suppressWarnings(as.numeric(labels))
     compact <- is.finite(values) & nchar(labels) > 12
     labels[compact] <- formatC(values[compact], digits=4, format="e")
-    labels
+    integers <- gregexpr("(?<![.[:alnum:],])[0-9]{4,}(?![.[:alnum:],])", labels, perl=TRUE)
+    regmatches(labels, integers) <- lapply(regmatches(labels, integers), function(matches)
+        formatC(as.numeric(matches), digits=0, format="f", big.mark=","))
+    gsub("(^|[eE])-(?=[0-9.])", "\\1\u2212", labels, perl=TRUE)
 }
 
 rcmetar.forest.display.ilab <- function(values) {
@@ -131,42 +134,12 @@ rcmetar.format.metafor.numeric <- function(values, digits) {
     ifelse(is.na(values), "", round.display(values, digits))
 }
 
-rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
-    values <- as.numeric(values)
-    # Eight machine epsilons of the row's effect/interval scale hide arithmetic
-    # residue. Scaling by the row, rather than one, preserves genuinely tiny rows.
-    values[is.finite(values) & abs(values) <= 8 * .Machine$double.eps * scale] <- 0
-    digits <- max(0L, as.integer(digits))
-    labels <- rep("", length(values))
-    finite <- is.finite(values)
-    labels[finite] <- formatC(values[finite], digits=digits, format="f")
-    small <- finite & values != 0 & abs(values) < 10^(-digits)
-    if (any(small)) {
-        required <- ceiling(-log10(abs(values[small]))) + 1L
-        use.scientific <- required > max.decimals
-        indexes <- which(small)
-        if (any(!use.scientific)) {
-            fixed.indexes <- indexes[!use.scientific]
-            fixed.digits <- required[!use.scientific]
-            labels[fixed.indexes] <- vapply(
-                seq_along(fixed.indexes),
-                function(i) formatC(
-                    values[fixed.indexes[[i]]], digits=fixed.digits[[i]], format="f"
-                ),
-                character(1)
-            )
-        }
-        if (any(use.scientific)) {
-            scientific.indexes <- indexes[use.scientific]
-            labels[scientific.indexes] <- formatC(
-                values[scientific.indexes], digits=max(1L, digits), format="e"
-            )
-        }
-    }
-    labels[small] <- sub("(\\.[0-9]*?)0+($|e)", "\\1\\2", labels[small])
-    labels[small] <- sub("\\.($|e)", "\\1", labels[small])
-    labels[is.na(values)] <- ""
-    rcmetar.compact.numeric.labels(labels)
+rcmetar.format.effect.number <- function(values, digits) {
+    labels <- round.display(as.numeric(values), digits)
+    displayed <- !is.na(labels) & nzchar(labels)
+    labels[displayed] <- sub("^-", "\u2212", prettyNum(labels[displayed], big.mark=",", preserve.width="none"))
+    labels[is.na(labels)] <- ""
+    labels
 }
 
 rcmetar.empty.forest.ilab <- function(n) {
@@ -210,9 +183,15 @@ rcmetar.result.vector <- function(results, field) {
     vapply(results, function(result) as.numeric((result[[field]] %||% NA_real_)[1]), numeric(1))
 }
 
-rcmetar.sequential.i2.labels <- function(results) {
+rcmetar.sequential.i2 <- function(results) {
     values <- rcmetar.result.vector(results, "I2")
-    ifelse(is.finite(values), sprintf("%.1f%%", values), "\u2014")
+    k <- rcmetar.result.vector(results, "k")
+    values[which(k <= 1)] <- NA_real_
+    values
+}
+
+rcmetar.sequential.i2.labels <- function(results) {
+    format.i2.display(rcmetar.sequential.i2(results), missing="\u2014")
 }
 
 rcmetar.sequential.ilab <- function(results, params) {
@@ -733,22 +712,32 @@ rcmetar.metafor.study.header <- function(bundle) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
         return("")
     }
-    rcmetar.forest.study.header.label(bundle$params$fp_col1_str)
+    rcmetar.forest.study.header.label(bundle$params$fp_col1_str,
+                                     identical(bundle$forest_variant, "subgroup"))
 }
 
 rcmetar.metafor.effect.header <- function(bundle) {
-    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
+    if (!rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE) ||
+            !rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE)) {
         return("")
     }
-    paste0(rcmetar.display.metric.name(bundle$params), " [", bundle$params$conf.level, "% CI]")
+    rcmetar.forest.estimate.header(bundle, rcmetar.forest.auto.estimate.header(bundle$params))
+}
+
+rcmetar.forest.estimate.header <- function(bundle, default) {
+    heading <- bundle$params[["fp_col2_str"]]
+    legacy <- paste0("Estimate (", bundle$params$conf.level, "% CI)")
+    if (identical(bundle$forest_variant, "cumulative")) legacy <- c(legacy, "Cumulative Estimate")
+    if (rcmetar.is.plot.default.text(heading) || as.character(heading[[1L]]) %in% legacy) default else as.character(heading[[1L]])
 }
 
 rcmetar.metafor.psize <- function(bundle) {
-    if (identical(bundle$forest_variant, "subgroup")) {
-        return(rep(1, length(bundle$effect$yi)))
-    }
-    if (inherits(bundle$res, "rma") && is.null(bundle$forest_variant)) {
-        return(NULL)
+    if (inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
+        weights <- bundle$weights
+        size <- rep(1, length(bundle$slab))
+        finite <- is.finite(weights) & weights > 0
+        if (any(finite)) size[finite] <- 0.65 + 0.9 * sqrt(weights[finite] / max(weights[finite]))
+        return(size * rcmetar.point.size.multiplier(bundle$params))
     }
     sei <- as.numeric(bundle$effect$sei)
     multiplier <- rcmetar.point.size.multiplier(bundle$params)
@@ -793,8 +782,20 @@ rcmetar.metafor.alim <- function(bundle) {
     rcmetar.forest.nonzero.axis.range(range(values))
 }
 
+rcmetar.forest.effect.digits <- function(bundle) {
+    bounds <- bundle$effect_display
+    if (!is.null(bounds)) return(rcmetar.effect.digits(bundle$params, bounds$lb.disp, bounds$ub.disp))
+    lower <- rcmetar.forest.display.values(bundle, bundle$effect$ci.lb)
+    upper <- rcmetar.forest.display.values(bundle, bundle$effect$ci.ub)
+    if (inherits(bundle$res, "rma") && !isTRUE(bundle$single_study)) {
+        lower <- c(lower, rcmetar.forest.display.values(bundle, bundle$res$ci.lb))
+        upper <- c(upper, rcmetar.forest.display.values(bundle, bundle$res$ci.ub))
+    }
+    rcmetar.effect.digits(bundle$params, lower, upper)
+}
+
 rcmetar.metafor.effect.labels <- function(bundle) {
-    digits <- as.integer(bundle$params$digits)
+    digits <- rcmetar.forest.effect.digits(bundle)
     if (!is.null(bundle$forest_variant) && !identical(bundle$forest_variant, "standard")) {
         y <- rcmetar.forest.display.values(bundle, bundle$effect$yi)
         lb <- rcmetar.forest.display.values(bundle, bundle$effect$ci.lb)
@@ -814,13 +815,14 @@ rcmetar.metafor.effect.labels <- function(bundle) {
         lb <- transform$display.scale(c(bundle$res$ci.lb, bundle$res$ci.lb))
         ub <- transform$display.scale(c(bundle$res$ci.ub, bundle$res$ci.ub))
     }
-    scale <- if (metric.is.log.scale(bundle$params$measure)) 0 else pmax(abs(y), abs(lb), abs(ub))
-    labels <- paste0(
-        rcmetar.format.effect.number(y, digits, scale=scale),
+    labels <- if (rcmetar.forest.style(bundle$params) == "bmj") {
+        rcmetar.bmj.effect.label(y, lb, ub, digits, bundle$params)
+    } else paste0(
+        rcmetar.format.effect.number(y, digits),
         " [",
-        rcmetar.format.effect.number(lb, digits, scale=scale),
+        rcmetar.format.interval.bound(lb, digits, bundle$params),
         ", ",
-        rcmetar.format.effect.number(ub, digits, scale=scale),
+        rcmetar.format.interval.bound(ub, digits, bundle$params),
         "]"
     )
     labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
@@ -873,13 +875,10 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     graphics::par(xpd=NA)
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
-    graphics::text(study.x, rows, bundle$slab, pos=4, cex=cex, col="black",
+    rcmetar.draw.forest.study.columns(bundle, rows, layout, bundle$ilab, cex,
         font=ifelse(seq_along(rows) == 1L & isTRUE(bundle$has_overall), 2, 1))
     if (isTRUE(bundle$has_overall) && length(rows) > 1) {
         graphics::segments(study.x, rows[1] - .5, annotation.x, rows[1] - .5, col="grey65", lwd=.6)
-    }
-    for (column in seq_len(ncol(bundle$ilab$matrix))) {
-        graphics::text(layout$ilab.xpos[column], rows, bundle$ilab$matrix[, column], cex=cex, col="black")
     }
     if (!is.null(bundle$summary_res)) {
         graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
@@ -887,7 +886,7 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
-        graphics::text(annotation.x, rows, labels, pos=2, cex=cex, col="black")
+        graphics::text(annotation.x, rows, labels, adj=c(1, 0), cex=cex, col="black")
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
         first.row <- max(rows, na.rm=TRUE)
@@ -899,6 +898,18 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
         graphics::segments(study.x, rule.y, annotation.x, rule.y, lwd=0.8)
     }
     invisible(NULL)
+}
+
+rcmetar.draw.forest.study.columns <- function(bundle, rows, layout, ilab, cex, font=1) {
+    if (rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
+        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab,
+                       adj=c(0, 0), cex=cex, col="black", font=font)
+    }
+    values <- rcmetar.forest.display.ilab(ilab$matrix)
+    for (column in seq_len(ncol(values))) {
+        graphics::text(layout$ilab.xpos[column], rows, values[, column],
+                       adj=c(0.5, 0), cex=cex, col="black")
+    }
 }
 
 rcmetar.draw.metafor.single.study.accent <- function(bundle, rows, alim, color, pch=15) {
@@ -932,6 +943,10 @@ rcmetar.draw.metafor.effect.accent <- function(effect, rows, alim, color, psize,
     rcmetar.draw.metafor.single.study.interval.ends(ci.lb[finite], ci.ub[finite], rows[finite], alim, color, lwd=lwd)
     inside <- yi[finite] >= alim[[1]] & yi[finite] <= alim[[2]]
     if (any(inside)) {
+        if (pch == 18) {
+            graphics::points(yi[finite][inside], rows[finite][inside],
+                             pch=pch, col="white", cex=psize[finite][inside] * 1.15)
+        }
         graphics::points(
             yi[finite][inside],
             rows[finite][inside],

@@ -300,7 +300,7 @@ def mh_rd(app, window, record):
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     modal(app, EditPlotDialog, edit_rd, view.edit_plot_action.trigger)
     figure = " ".join("".join(n.itertext()) for n in ET.parse(artifact.display_path()).iter("{http://www.w3.org/2000/svg}text"))
-    assert "M–H, Fixed" in figure and "IV, random" not in figure, figure
+    assert figure.count("Risk difference, M–H, fixed (95% CI)") == 2 and "IV, random" not in figure, figure
     record("mh-rd-bmj-method", view, figure=figure, plots={"RD":artifact.display_path()})
     view.close()
     window.workspace.mark_saved()
@@ -353,7 +353,7 @@ def zero_cells(app, window, record):
     assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
     assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
-    assert "1097" in report and "Participants in Intervention" in report, report
+    assert "1,097" in report and "Participants in Intervention" in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
     assert "Arm: Intervention" in manuscript, manuscript
     view.close()
@@ -417,12 +417,12 @@ def plots(app, window, family, record, *, view=None):
     path = Path(artifact.display_path())
     before = path.read_bytes()
     from tests.e2e.plot_geometry_checks import check_caption
-    from rc_metastudio.analysis_identity import dataset_identity, metric_label
+    from rc_metastudio.analysis_identity import plot_caption, metric_label
     initial_svg = path
     if path.suffix != ".svg":
         initial_svg = Path(sys.argv[2]) / (family + "-initial.svg")
         view.plot_service.export(regenerator=artifact.capability.regenerator, params_path=artifact.params_path, output_path=str(initial_svg))
-    check_caption(initial_svg, dataset_identity(window.model))
+    check_caption(initial_svg, plot_caption(window.model, ""))
     if artifact.capability.regenerator == "forest":
         from tests.e2e.header_geometry import check_forest_footer
         check_forest_footer(initial_svg)
@@ -556,7 +556,7 @@ def plots(app, window, family, record, *, view=None):
                         "null <- RCMetaR:::rcmetar.metafor.refline(state$plot.data, limits); "
                         "is.finite(null) && null > limits[[1]] && null < limits[[2]] })"
                     )[0])
-                    expected = tuple("Favours " + name for name in names) if null_inside else ()
+                    expected = tuple("Favours " + name for name in names) if null_inside or style == "BMJ" else ()
                     measurements = check_forest_footer(path, expected_directions=expected)
                     retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
                     retained.write_bytes(path.read_bytes())
@@ -818,7 +818,7 @@ def plots(app, window, family, record, *, view=None):
     app.processEvents()
     record("family-plot-reopened", view, family=family)
     files = export_formats(app, view, Path(sys.argv[2]), family, record,
-                           lambda extension, action_label: context("Export plot…"))
+                           lambda extension, action_label: context("Export plot…"), include_title=True)
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")):
         from rc_metastudio.plot_export_dialog import PlotExportDialog
         modal(app, PlotExportDialog, lambda dialog: dialog.accept(), lambda: context("Export plot…"))
@@ -929,7 +929,7 @@ def plots(app, window, family, record, *, view=None):
     view.close()
 
 
-def export_formats(app, view, directory, family, record, invoke=None):
+def export_formats(app, view, directory, family, record, invoke=None, *, include_title=False):
     directory.mkdir(parents=True, exist_ok=True)
     if invoke is None:
         if view._selected_plot() is None:
@@ -955,6 +955,8 @@ def export_formats(app, view, directory, family, record, invoke=None):
         ) as picker:
             from rc_metastudio.plot_export_dialog import PlotExportDialog
             def accept_export(dialog):
+                assert not dialog.include_title.isChecked()
+                dialog.include_title.setChecked(include_title)
                 dialog.format_control.setCurrentIndex(dialog.format_control.findData(extension))
                 record('export-options', dialog, format=extension, dimensions=dialog.dimensions())
                 dialog.accept()
@@ -1997,6 +1999,13 @@ def table_covariates(app, window, record):
         if workflow == "meta-regression":
             expression = f'{{ e <- {effects}; f <- metafor::rma.uni(e$yi, vi=e$vi, mods=~{dose}, method="DL"); jsonlite::toJSON(list(coefficient=as.numeric(f$b[2]), standard_error=f$se[2], lower_bound=f$ci.lb[2], upper_bound=f$ci.ub[2], p_value=f$pval[2]), auto_unbox=TRUE, digits=16) }}'
             expected = json.loads(str(r_bridge.execute_r_string(expression)[0]))
+            coefficients = next(table for section in view.results.sections for table in section.tables
+                                if table.role == "coefficients")
+            dose_row = next(index for index, row in enumerate(coefficients.rows) if "Dose" in row)
+            actual["Summary"]["model.dose.standard_error"] = next(
+                q.value for cell in coefficients.quantities[dose_row] for q in cell
+                if q.role == "se" and q.value is not None
+            )
             for key, value in expected.items():
                 assert abs(actual["Summary"]["model.dose." + key] - value) <= 1e-6, (
                     actual,

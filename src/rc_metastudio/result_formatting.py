@@ -29,23 +29,47 @@ def numeric_columns(rows: Sequence[Sequence[str]]) -> tuple[bool, ...]:
                  for values in columns)
 
 
-def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
+def report_numbers(text: str) -> str:
+    """Keep a sign, interval, or threshold with its number in a report."""
+    text = re.sub(r"(?<!\w)-[ \t]*(?=\d|\.\d)|(?<=\de)-(?=\d)", "−", text)
+    text = re.sub(r"(?<=\d) +to +(?=[+−]?\d)", "\u00a0to\u00a0", text)
+    return re.sub(r"([<>≤≥]) +(?=[+−]?\d)", r"\1" + "\u00a0", text)
+
+
+def report_cell(value: str) -> str:
+    value = report_numbers(value)
+    return re.sub(r"^([+−]?)(\d{4,})(%?)$",
+                  lambda match: f"{match[1]}{int(match[2]):,}{match[3]}", value)
+
+
+def _table_header_html(headers: Sequence[str], numeric: Sequence[bool], label_width: int | None) -> str:
+    if not headers:
+        return ''
+    parts = ['<thead><tr>']
+    for index, header in enumerate(headers):
+        align = 'right' if numeric and numeric[index] else 'left'
+        width = f' width="{label_width}"' if index == 0 and label_width is not None else ''
+        parts.append(f'<th align="{align}"{width} style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
+    parts.append('</tr></thead>')
+    return ''.join(parts)
+
+
+def table_html(headers: Sequence[str], rows: Sequence[Sequence[str]], *, label_width: int | None = None) -> str:
     """Editable, content-sized table for clipboard and manuscript surfaces."""
     numeric = numeric_columns(rows)
-    parts = ['<table border="0" cellspacing="0" cellpadding="5">']
-    if headers:
-        parts.append('<thead><tr>')
-        for index, header in enumerate(headers):
-            align = 'right' if numeric and numeric[index] else 'left'
-            parts.append(f'<th align="{align}" style="font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">{escape(header)}</th>')
-        parts.append('</tr></thead>')
-    parts.append('<tbody>')
+    width = ' width="100%"' if label_width is not None else ''
+    parts = [f'<table border="0" cellspacing="0" cellpadding="5"{width}>',
+             _table_header_html(headers, numeric, label_width), '<tbody>']
     for index, row in enumerate(rows):
         parts.append('<tr>')
         for column, value in enumerate(row):
-            align = 'right' if numeric_cell(value) or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
+            is_numeric = numeric_cell(value)
+            align = 'right' if is_numeric or (value in ('', 'NA', '—', 'Not estimable') and numeric[column]) else 'left'
+            wrap = 'nowrap' if is_numeric else 'pre-wrap'
+            if is_numeric:
+                value = report_cell(value)
             border = 'border-bottom:1px solid black;' if index == len(rows) - 1 else ''
-            parts.append(f'<td align="{align}" style="white-space:pre-wrap; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
+            parts.append(f'<td align="{align}" style="white-space:{wrap}; {border}">{escape(value).replace(chr(10), "<br>")}</td>')
         parts.append('</tr>')
     parts.append('</tbody></table>')
     return ''.join(parts)
@@ -145,6 +169,13 @@ def normalize_identifier_label(value: object) -> str:
 
 def _reference_key(reference: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", reference.lower()).strip()
+
+
+def fixed_result_number(value: float, digits: int, *, preserve_positive: bool = False) -> str:
+    formatted = f"{value:z,.{digits}f}"
+    if preserve_positive and value > 0 and not formatted.strip("0."):
+        formatted = f"{value:.1e}"
+    return formatted.replace("-", "\u2212", 1)
 
 
 def format_effect_number(value: float, digits: int) -> str:

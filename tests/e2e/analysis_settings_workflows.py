@@ -139,7 +139,7 @@ def run(app, window, root, record, analyze):
         display_order = [int(index) - 1 for index in r_bridge.ro.r("plot.data$display_order")]
         assert display_order == expected_orders[order], ('study order', order, display_order, expected_orders[order])
         last_column = list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")))
-        assert (last_column == ["weight"]) == (style == "RevMan"), (style, last_column)
+        assert last_column == ["weight"], (style, last_column)
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
         svg = ET.parse(next(iter(changed.results.display_images.values())))

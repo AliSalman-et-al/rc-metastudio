@@ -199,21 +199,21 @@ def expected_p(value):
     return '< 0.001' if float(value) < .001 else value
 
 
-def expected_pooled(result):
+def expected_pooled(result, roles=('pooled', 'coefficients')):
     rows = []
     for section in result.sections:
         overall = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
                         if t.role == 'overall_test' and t.rows), {})
         calculation = next((dict(zip(t.headers, t.rows[0])) for t in section.tables
                             if t.role == 'calculation' and t.rows), {})
-        rows.extend(expected_effect_rows(result, section, overall, calculation))
+        rows.extend(expected_effect_rows(result, section, overall, calculation, roles))
     return tuple(rows)
 
 
-def expected_effect_rows(result, section, overall, calculation):
+def expected_effect_rows(result, section, overall, calculation, roles=('pooled', 'coefficients')):
     rows = []
     for table in section.tables:
-        if table.role not in ('pooled', 'coefficients'):
+        if table.role not in roles:
             continue
         vertical = table.vertical
         headers = tuple(dict(table.rows)) if vertical else table.headers
@@ -225,7 +225,9 @@ def expected_effect_rows(result, section, overall, calculation):
         metric = table.metric_label.lower() or result.manuscript_metric or 'effect'
         if table.role != 'coefficients' and metric.endswith('transformed proportion'):
             metric = 'proportion'
-        effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title, overall, calculation)
+        label_header = headers[table.label_column] if table.label_column is not None and not vertical else ''
+        effects = expected_effect_values(values, headers, low, high, metric, vertical, table.title,
+                                         overall, calculation, label_header)
         if table.role == 'coefficients':
             scale = next((q.scale for line in table.quantities for cell in line for q in cell if q.role == 'se'), '')
             label = {'SMD': 'standardized', 'PFT': 'Freeman-Tukey'}.get(
@@ -239,13 +241,13 @@ def expected_effect_rows(result, section, overall, calculation):
     return rows
 
 
-def expected_effect_values(values, headers, low, high, metric, vertical, title, overall, calculation):
+def expected_effect_values(values, headers, low, high, metric, vertical, title, overall, calculation, label_header):
     rows = []
     for row in values:
         if not row.get('Estimate'):
             continue
         context = next((row[h] for h in headers if h.startswith(('Study added', 'Study omitted'))), title if vertical else metric)
-        label = row.get('Term', row.get('Subgroups', row.get('Level', context)))
+        label = row.get('Term', row.get('Subgroups', row.get('Level', row.get(label_header, context))))
         statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
@@ -326,10 +328,13 @@ def expected_fit_table(result, section, source):
 
 
 def assert_exports(view, data, *, pdf_ordered=True):
+    from rc_metastudio.result_formatting import numeric_cell, report_cell
+
+    def rendered_row(row):
+        return [report_cell(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
+
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    expected = [[list(table.headers), *[list(row) for row in table.rows]] for table in tables]
-    # Word keeps interval tokens together with nonbreaking spaces; only their
-    # layout whitespace differs from the producer's original cell text.
+    expected = [[list(table.headers), *[rendered_row(row) for row in table.rows]] for table in tables]
     observed = [[[cell.replace('\u00a0', ' ') for cell in row] for row in table]
                 for table in data['docx_tables']]
     assert observed == expected, (observed, expected)
@@ -338,12 +343,12 @@ def assert_exports(view, data, *, pdf_ordered=True):
     # every digit, sign and punctuation mark across those physical line breaks.
     pdf = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', (Path(data['directory']) / 'pdf.txt').read_text(encoding="utf-8")))
     cursor = 0
-    for number, table in enumerate(tables, 1):
+    for number, (table, rows) in enumerate(zip(tables, expected, strict=True), 1):
         caption = f'Table {number}. {table.title}'
-        block = '\n\n'.join([caption, *['\t'.join(row) for row in (table.headers, *table.rows)]])
+        block = '\n\n'.join([caption, *['\t'.join(row) for row in rows]])
         assert re.sub(r'\s+', '', block) in re.sub(r'\s+', '', copied), (caption, block)
         caption_tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', caption))
-        tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', ' '.join([caption, *[' '.join(row) for row in (table.headers, *table.rows)]])))
+        tokens = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', ' '.join([caption, *[' '.join(row) for row in rows]])))
         starts = [i for i in range(cursor, len(pdf)) if pdf[i] == 'Table' and pdf[i:i + len(caption_tokens)] == caption_tokens]
         assert len(starts) == 1, (caption, 'PDF caption missing or repeated', data['directory'])
         start = starts[0]
@@ -366,12 +371,16 @@ def assert_retained_table(view, section, source):
 
 
 def assert_report(view):
+    from rc_metastudio.result_formatting import numeric_cell, report_cell, report_numbers
+
     report_text = view.manuscript.plain_text().casefold()
     for verdict in ('so these data do not show a clear', 'the confidence interval excludes',
                     'which may represent', 'evidence of small-study effects'):
         assert verdict not in report_text, verdict
     tables = [table for section in view.manuscript.sections for table in section.tables]
-    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')), None)
+    pooled = next((table for table in tables if table.title in ('Pooled effect', 'Diagnostic summary')
+                   or table.title.startswith('Fitted subgroup effects (')), None)
+    coefficients = next((table for table in tables if table.title.startswith('Model coefficients (')), None)
     fit = next((table for table in tables if table.title == 'Model fit'), None)
     studies = next((t for t in tables if t.title == 'Study results'), None)
     for section in view.results.sections:
@@ -381,26 +390,32 @@ def assert_report(view):
                 model_fit = next(s for s in view.manuscript.sections if s.title == 'Model fit')
                 assert any(note in paragraph for paragraph in model_fit.paragraphs), (section.title, note)
     structured = any(s.tables for s in view.results.sections)
-    expected_rows = expected_pooled(view.results) if structured else ()
+    if coefficients is not None:
+        bounds = [q for row in coefficients.quantities for cell in row for q in cell if q.role == 'ci_lower']
+        level, = {q.level for q in bounds}
+        assert level is not None and coefficients.headers[1:3] == ('Estimate', f'{level:g}% CI')
+        expected_coefficients = expected_pooled(view.results, ('coefficients',))
+        assert [row[:3] for row in coefficients.rows] == [row[:3] for row in expected_coefficients]
+    expected_rows = expected_pooled(view.results, ('pooled',)) if structured else ()
     assert (pooled is not None) == bool(expected_rows), (pooled, expected_rows)
     level = '95% CI'
     if structured and expected_rows:
         assert pooled is not None
-        level = next(header for header in pooled.headers if header.endswith('% CI'))
-        expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_pooled(view.results))
+        level = next(header.split(' (')[0] for header in pooled.headers if '% CI' in header)
+        expected_rows = tuple((*row[:4], row[4].removeprefix('(').removesuffix(')').removesuffix(' scale'), *row[5:]) for row in expected_rows)
         scales = {row[4] for row in expected_rows if row[3] not in ('', '—', 'NA')}
         compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
         indexes = [i for i in range(7) if (i != 4 or not compact_scale) and any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
-        statistic = 'z'
-        for section in view.results.sections:
-            for source in section.tables:
-                if not {'t', 't-value'}.intersection(source.headers):
-                    continue
-                statistic = 't'
-                if 'df' in source.headers:
-                    statistic = f"t (df = {source.rows[-1][source.headers.index('df')]})"
-        full_headers = [('Effect', 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE', 'SE scale', statistic, 'P')]
-        assert pooled.headers in [tuple(headers[i] for i in indexes) for headers in full_headers]
+        sources = [source for section in view.results.sections for source in section.tables]
+        statistic = 't' if any({'t', 't-value'}.intersection(source.headers) for source in sources) else 'z'
+        overall_df = next((source.rows[0][source.headers.index('df')] for source in sources
+                           if source.role == 'overall_test' and {'t', 'df'} <= set(source.headers)), '')
+        if statistic == 't' and overall_df:
+            statistic = f't (df = {overall_df})'
+        label = 'Subgroup' if pooled.role == 'fitted' else 'Effect'
+        headers = (label, 'Estimate', level, f'SE ({compact_scale} scale)' if compact_scale else 'SE',
+                   'SE scale', statistic, 'P')
+        assert pooled.headers == tuple(headers[i] for i in indexes), (pooled.headers, headers, indexes)
         assert pooled.rows == tuple(tuple(row[i] for i in indexes) for row in expected_rows), (pooled.rows, expected_rows, indexes)
         assert all(any(row[i] not in ('', '—', 'NA') for row in pooled.rows) for i in range(len(pooled.headers)))
     elif expected_rows:
@@ -476,9 +491,12 @@ def assert_report(view):
         if section.source_key == 'small-study.warning':
             for line in section.value.splitlines():
                 if line.strip():
-                    assert line in copied_lines, (line, copied_lines)
+                    assert report_numbers(line).replace('\u00a0', ' ') in copied_lines, (line, copied_lines)
     observed_tables = [[[cell.replace("\u00a0", " ") for cell in row] for row in table] for table in document_tables(document)]
-    assert observed_tables == [[list(t.headers), *[list(row) for row in t.rows]] for t in tables]
+    expected_tables = [[list(t.headers), *[
+        [report_cell(cell).replace('\u00a0', ' ') if numeric_cell(cell) else cell for cell in row]
+        for row in t.rows]] for t in tables]
+    assert observed_tables == expected_tables
     prose_surfaces = [
         (Path(data['directory']) / 'copy.txt').read_text(encoding='utf-8'),
         (Path(data['directory']) / 'pdf.txt').read_text(encoding='utf-8'),
@@ -489,7 +507,7 @@ def assert_report(view):
         normalized = re.sub(r'\s+', '', unicodedata.normalize('NFKC', text))
         for section in view.manuscript.sections:
             for paragraph in section.paragraphs:
-                assert re.sub(r'\s+', '', unicodedata.normalize('NFKC', paragraph)) in normalized, paragraph
+                assert re.sub(r'\s+', '', unicodedata.normalize('NFKC', report_numbers(paragraph))) in normalized, paragraph
     selected = view.table_selector.currentIndex()
     for index, table in enumerate(tables):
         view.table_selector.setCurrentIndex(index)

@@ -1,0 +1,24 @@
+
+    labels[compact] <- formatC(values[compact], digits=4, format="e")
+rcmetar.format.effect.number <- function(values, digits, max.decimals=6L, scale=abs(values)) {
+    labels[finite] <- formatC(values[finite], digits=digits, format="f")
+        use.scientific <- required > max.decimals
+        if (any(!use.scientific)) {
+            fixed.indexes <- indexes[!use.scientific]
+            fixed.digits <- required[!use.scientific]
+                function(i) formatC(
+        if (any(use.scientific)) {
+            scientific.indexes <- indexes[use.scientific]
+            labels[scientific.indexes] <- formatC(
+
+
+
+  se.digits <- display.digits(params, minimum=3L)
+adjusted_means_display <- function(res, params, display.data) {
+    stop("adjusted_means_display requires exactly one factor covariate")
+    stop("adjusted_means_display does not support continuous covariates")
+    stop("adjusted_means_display requires at least two factor levels")
+  se.digits.str <- paste("%.", display.digits(params, minimum=3L), "f", sep="")
+  adj.array[2:(n.levels + 1), "Std. error"] <- sprintf(se.digits.str, se)
+
+

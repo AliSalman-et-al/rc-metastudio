@@ -3,6 +3,7 @@
 """Attach the shared style and accent fields to the plot controls."""
 
 from collections.abc import Mapping
+import re
 
 from PyQt6.QtCore import QSignalBlocker
 from PyQt6.QtGui import QColor
@@ -21,6 +22,16 @@ def configure_tsa_x_axis(selector: QComboBox, saved_units: object, *, statistica
 
 def selected_plot_style(selector: QComboBox) -> str:
     return str(selector.currentData() or "default")
+
+def plot_color(text: str) -> str:
+    """Accept named Qt colours and R hex colours, or an unset field."""
+    text = text.strip()
+    if not text or re.fullmatch(r"#[0-9a-fA-F]{6}(?:[0-9a-fA-F]{2})?", text):
+        return text
+    color = QColor(text)
+    if color.isValid():
+        return color.name(QColor.NameFormat.HexRgb)
+    raise ValueError("Enter a color name or a hex color such as #2F5597, or leave it blank for the preset default.")
 
 
 def configure_plot_style(

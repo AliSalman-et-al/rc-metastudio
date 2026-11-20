@@ -1072,14 +1072,14 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _result_context(self, applied_parameters):
         included = len(self._manuscript_studies())
         excluded = len(self.model.get_studies(only_if_included=False)) - included
-        context = f"In total, {included} " + ("study was included" if included == 1 else "studies were included")
+        context = f"In total, {included:,} " + ("study was included" if included == 1 else "studies were included")
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
-            context += f" ({total:g} participants in {name}"
-            context += "".join(f", {total:g} in {name}" for name, total in others) + ")"
+            context += f" ({total:,g} participants in {name}"
+            context += "".join(f", {total:,g} in {name}" for name, total in others) + ")"
         if excluded:
-            context += f"; {excluded} " + ("study was excluded" if excluded == 1 else "studies were excluded")
+            context += f"; {excluded:,} " + ("study was excluded" if excluded == 1 else "studies were excluded")
         context += "."
         return context + self._correction_context(applied_parameters)
 
