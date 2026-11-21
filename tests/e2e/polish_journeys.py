@@ -76,12 +76,20 @@ def run(app, window, work, root, record, analyze):
             '(ai=om.data@g1O1, bi=om.data@g1O2, ci=om.data@g2O1, di=om.data@g2O2); c(fit$k, fit$k.yi) })'
         ))
         assert actual == direct[1] == 17 and direct[0] == 19, direct
+        assert int(r_bridge.ro.r("length(om.data@study.names)")[0]) == 19
+        record("forest-keeps-included-studies-" + method, view)
         view.report_action.trigger()
         app.processEvents()
-        record("model-fit-count-" + method, view, counts=counts, metafor_k=direct[0], metafor_k_yi=direct[1], prose=view.manuscript.results)
+        record("results-prose-count-" + method, view, counts=counts, metafor_k=direct[0], metafor_k_yi=direct[1], prose=view.manuscript.results)
+        view.tables_action.trigger()
+        view.table_selector.setCurrentText("Model fit")
+        table_cells = [view.result_table.item(row, 0).text() for row in range(view.result_table.rowCount())]
+        assert "Studies included" in table_cells and "Studies contributing" in table_cells, table_cells
+        record("model-fit-count-" + method, view, counts=counts)
     view.tables_action.trigger()
     app.processEvents()
     assert view.nav_tree.currentItem().text(0) == "Data tables (CSV)"
+    view.table_selector.setCurrentText("Pooled effect")
     view.result_table.clearSelection()
     copy_action = view.copy_table_action
     for scope, cells in (

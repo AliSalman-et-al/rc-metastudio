@@ -95,7 +95,8 @@ def run(app, window, root, record, analyze):
            svg_caption=ET.tostring(captions["[default]"], encoding="unicode"))
     dialog.reject()
     assert literal_view.isVisible()
-    view = literal_view
+    literal_view.close()
+    view = analyze(app, window, "binary.random")
     baseline = parsed_numeric_sections(view.results)
     params_path = next(iter(view.params_paths.values()))
     load_saved_analysis(params_path)

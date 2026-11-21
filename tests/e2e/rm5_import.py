@@ -159,6 +159,25 @@ def run(app, window, ROOT, WORK, record_step):
     assert all(abs(delta) <= 1e-6 for delta in differences[:6]), differences
     assert all(abs(delta) <= 1e-6 for delta in differences[6:]), differences
     view.close()
+    missing_index = next(i for i, row in enumerate(subgroup_sheet.rows) if row.label == "ISIS-2")
+    model = window.model
+    assert model.setData(model.index(missing_index, model.columns.first_covariate), "Later trials")
+    assert model.setData(model.index(missing_index, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Checked.value,
+                         QtCore.Qt.ItemDataRole.CheckStateRole)
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    selector = next(w for w in app.topLevelWidgets() if isinstance(w, SubgroupAnalysisDialog) and w.isVisible())
+    assert not selector.missing_label.isVisible()
+    selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
+    setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData('binary.fixed.inv.var'))
+    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
+    assert dict(view.results.manuscript_model_info)["Studies (k)"] == str(len(subgroup_sheet.rows))
+    record_step('rm5-assigned-subgroup-results', view)
+    view.close()
     failures = []
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     window.set_model(read_rm5(source).dataset)
