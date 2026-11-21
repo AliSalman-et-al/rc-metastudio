@@ -382,7 +382,7 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, plan) {
         pch=compact.pch
     )
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
-    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
+    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis, gap.axis=0)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, plan$typography$cex, plan$rows$summary)
     rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)
     invisible(bundle$changed.params)

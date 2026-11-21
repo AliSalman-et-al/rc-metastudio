@@ -317,7 +317,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
         rcmetar.draw.forest.refline(plan)
     }
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
-    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis)
+    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis, gap.axis=0)
     rcmetar.draw.default.annotations(bundle, plan)
 
     if (identical(bundle$forest_variant, "subgroup")) {

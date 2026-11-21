@@ -618,7 +618,7 @@ rcmetar.draw.bmj.forest <- function(bundle, plan) {
     ))
 
     graphics::par(xpd=NA)
-    rcmetar.draw.bmj.effects(rcmetar.forest.axis.effect(bundle, effect), rows, layout$alim, accent, summary$psize)
+    rcmetar.draw.bmj.effects(rcmetar.forest.axis.effect(bundle, effect), rows, layout$alim, accent, summary$psize * size$cex)
     graphics::segments(plot.info$xlim[1], k + 1.55, plot.info$xlim[2], k + 1.55, lwd=0.9, col="#a7a9ac")
     refline <- rcmetar.metafor.refline(bundle, layout$alim)
     if (is.finite(refline)) graphics::segments(refline, -1.0, refline, k + 1.55, lwd=0.85, col="#a7a9ac")
