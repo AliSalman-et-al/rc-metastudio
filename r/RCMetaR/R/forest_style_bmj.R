@@ -359,9 +359,9 @@ rcmetar.bmj.direction.lines <- function(bundle, width, cex, units="user") {
     lines
 }
 
-rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user") {
+rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user", font=2) {
     if (!nzchar(label)) return(character())
-    measure <- function(text) graphics::strwidth(text, cex=cex, font=2, units=units)
+    measure <- function(text) graphics::strwidth(text, cex=cex, font=font, units=units)
     if (measure(label) <= available) return(label)
     width <- max(1, floor(nchar(label) * available / measure(label)))
     repeat {

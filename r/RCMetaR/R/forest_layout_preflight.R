@@ -20,7 +20,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
-    plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)$lines
+    plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
     rows <- plan$rows$study_rows
