@@ -9,7 +9,7 @@ from xml.etree import ElementTree as ET
 from rpy2 import robjects as ro
 
 
-def check_trimfill(view, record):
+def check_trimfill(view, record, *, side=None):
     checked = 0
     for title, image in view.results.images.items():
         if 'trim-and-fill' not in title.lower():
@@ -17,15 +17,18 @@ def check_trimfill(view, record):
         checked += 1
         directory = Path(sys.argv[2]) / 'trimfill-geometry'
         directory.mkdir(exist_ok=True)
-        path = directory / 'automatic.svg'
+        path = directory / f'{side or "automatic"}.svg'
         view.plot_service.export(regenerator='funnel', params_path=view.results.image_params_paths[title], output_path=str(path))
         params = view.plot_service.load_params(view.results.image_params_paths[title])
+        if side is not None:
+            assert params['trim.and.fill.side'] == side, params['trim.and.fill.side']
         filled = list(params['trimfill.imputed'])
         y = list(params['prepared.effects'])
         se = list(params['prepared.standard.errors'])
         observed = [i for i, fill in enumerate(filled) if not fill]
+        side_arg = ', left=FALSE' if side == 'right' else ''
         trimfill = cast(SignatureTranslatedFunction, ro.r(
-            'function(y,se) meta::trimfill(meta::metagen(y,se,sm="OR",method.tau="REML"))'))
+            'function(y,se) meta::trimfill(meta::metagen(y,se,sm="OR",method.tau="REML")' + side_arg + ')'))
         fit = trimfill(
             ro.FloatVector([y[i] for i in observed]), ro.FloatVector([se[i] for i in observed]))
         k0 = int(fit.rx2('k0')[0])

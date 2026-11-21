@@ -492,7 +492,7 @@ def run(
                 duplicate.label += " replicate"
                 window.model.current_sheet.rows.append(duplicate)
             window.model.set_current_sheet(window.model.current_sheet_id)
-        if sample == "amino":
+        if sample == "amino" and trim_fill_side is None:
             from tests.e2e.dta_audit import check_small_study_threshold
             check_small_study_threshold(app, window, record, system_clipboard=system_clipboard)
         callback_errors = []
