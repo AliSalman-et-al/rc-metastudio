@@ -220,8 +220,8 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
   expect_equal(bundle$data_type, "binary")
   expect_equal(bundle$fp_style, "default")
   expect_true("effect_display" %in% names(bundle))
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
-  expect_equal(unname(bundle$ilab$matrix[1, 1:4]), c("4", "119", "11", "128"))
+  expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight (%)"))
+  expect_equal(unname(bundle$ilab$matrix[1, 1:4]), c("4", "123", "11", "139"))
   expect_equal(bundle$ilab$groups, c("Intervention", "Control"))
   expect_equal(nrow(bundle$ilab$matrix), length(fixture$data@study.names))
   expect_true(inherits(bundle$res, "rma"))
@@ -407,7 +407,7 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_s3_class(bmj.plan, "rcmetar_forest_layout_plan")
   expect_equal(bmj.plan$style$name, "bmj")
   expect_equal(bmj.plan$style$template, "standard")
-  expect_equal(bmj.plan$headers$study, "Study or\nsubgroup")
+  expect_equal(bmj.plan$headers$study, "Study")
   expect_equal(bmj.plan$headers$effect, "Odds ratio")
   expect_equal(bmj.plan$rows$study_rows, length(bmj.bundle$slab):1)
   expect_equal(bmj.plan$footer$axis$axis.x, mean(bmj.plan$x$alim), tolerance = 1e-8)
@@ -1132,7 +1132,7 @@ test_that("mixed raw and entered-effect rows render blanks for unavailable raw d
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
   expect_equal(bundle$render_engine, "metafor")
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
+  expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight (%)"))
   expect_equal(unname(bundle$ilab$matrix[2, 1:4]), rep("", 4))
 
   fixture$params$fp_style <- "revman"
@@ -1184,7 +1184,7 @@ test_that("Default Forest Style sizing reserves space for long group headers", {
 
 test_that("forest labels wrap at layout time and preserve source names and data", {
   fixture <- metafor_binary_fixture()
-  original.name <- paste(rep("Very long identifying study name", 5), collapse = " ")
+  original.name <- paste(rep("Very long identifying study name", 8), collapse = " ")
   fixture$data@study.names[[1]] <- original.name
   original.y <- fixture$data@y
   fixture$params$fp_col1_str <- paste(rep("Long heading", 12), collapse = " ")
@@ -1275,7 +1275,7 @@ test_that("single-study binary Default Forest Style uses normalized vectors", {
   expect_equal(bundle$render_engine, "metafor")
   expect_equal(unname(bundle$effect$yi), unname(as.numeric(fixture$data@y)))
   expect_equal(unname(bundle$effect$sei), unname(as.numeric(fixture$data@SE)))
-  expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Events", "Non-events", "Weight (%)"))
+  expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight (%)"))
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(bundle, png_path)

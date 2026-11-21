@@ -204,7 +204,7 @@ rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
 
 rcmetar.bmj.study.header <- function(bundle) {
     header <- rcmetar.metafor.study.header(bundle)
-    if (header %in% c("Study", "Study or subgroup")) "Study or\nsubgroup" else header
+    if (header == "Study or subgroup") "Study or\nsubgroup" else header
 }
 
 
@@ -427,7 +427,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle, cex=8 / 12) {
             minimum=.9
         )
         study.gap <- column.gap
-        left.plot.gap <- .06
+        left.plot.gap <- 2.8 / 25.4
         right.plot.gap <- .06
         weight.effect.gap <- column.gap
         right.margin <- .04

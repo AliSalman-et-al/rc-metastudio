@@ -33,9 +33,9 @@ rcmetar.binary.default.ilab <- function(binary.data, params) {
     }
     columns <- list(
         list(key="experimental_events", group="intervention", header="Events", values=rcmetar.format.metafor.raw(binary.data@g1O1)),
-        list(key="experimental_nonevents", group="intervention", header="Non-events", values=rcmetar.format.metafor.raw(binary.data@g1O2)),
+        list(key="experimental_total", group="intervention", header="Total", values=rcmetar.format.metafor.raw(binary.data@g1O1 + binary.data@g1O2)),
         list(key="control_events", group="control", header="Events", values=rcmetar.format.metafor.raw(binary.data@g2O1)),
-        list(key="control_nonevents", group="control", header="Non-events", values=rcmetar.format.metafor.raw(binary.data@g2O2))
+        list(key="control_total", group="control", header="Total", values=rcmetar.format.metafor.raw(binary.data@g2O1 + binary.data@g2O2))
     )
     if (!rcmetar.param.is.true(params, "fp_show_col3", TRUE)) {
         columns <- columns[!vapply(columns, function(column) column$group == "intervention", logical(1))]

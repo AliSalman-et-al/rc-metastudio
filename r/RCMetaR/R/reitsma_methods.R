@@ -269,7 +269,7 @@ rcmetar.reitsma.display.ratios <- function(ratios, level, digits=3L) {
     rcmetar.table(display, "supporting")
 }
 
-rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
+rcmetar.reitsma.display.i2 <- function(i2) {
     if (is.null(i2)) return(NULL)
     values <- c(
         "Zhou\u2013Dendukuri"=if (is.data.frame(i2)) i2[["Zhou"]] else i2[["Zhou"]],
@@ -282,7 +282,7 @@ rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
     )
     display <- data.frame(
         Measure=names(values),
-        `I-squared (%)`=vapply(values, rcmetar.reitsma.display.percent, character(1), digits=digits),
+        `I-squared (%)`=format.i2.display(100 * values, missing="Not estimable"),
         check.names=FALSE,
         row.names=NULL
     )
@@ -290,14 +290,14 @@ rcmetar.reitsma.display.i2 <- function(i2, digits=1L) {
     rcmetar.table(display, "supporting")
 }
 
-rcmetar.reitsma.display.i2.summary <- function(i2, digits=1L) {
+rcmetar.reitsma.display.i2.summary <- function(i2) {
     if (is.null(i2)) return(NULL)
     values <- if (is.data.frame(i2)) unlist(i2[1L, c("Zhou", "HollingUnadjusted1", "HollingUnadjusted2", "HollingUnadjusted3", "HollingAdjusted1", "HollingAdjusted2", "HollingAdjusted3")], use.names=FALSE) else numeric()
     if (length(values) != 7L || any(!is.finite(values))) return(NULL)
     list(
-        "Zhou\u2013Dendukuri"=rcmetar.reitsma.display.percent(values[[1L]], digits),
-        `Holling unadjusted range`=paste(rcmetar.reitsma.display.percent(min(values[2:4]), digits), "to", rcmetar.reitsma.display.percent(max(values[2:4]), digits)),
-        `Holling adjusted range`=paste(rcmetar.reitsma.display.percent(min(values[5:7]), digits), "to", rcmetar.reitsma.display.percent(max(values[5:7]), digits))
+        "Zhou\u2013Dendukuri"=format.i2.display(100 * values[[1L]]),
+        `Holling unadjusted range`=paste(format.i2.display(100 * range(values[2:4])), collapse=" to "),
+        `Holling adjusted range`=paste(format.i2.display(100 * range(values[5:7])), collapse=" to ")
     )
 }
 
@@ -931,8 +931,8 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         "Marginal prediction"=prediction.display,
         "Between-study heterogeneity"=extracted$heterogeneity,
         "Diagnostic I-squared"=list(
-            `I-squared summary`=rcmetar.reitsma.display.i2.summary(extracted$i2, digits),
-            `I-squared estimates`=rcmetar.reitsma.display.i2(extracted$i2, digits),
+            `I-squared summary`=rcmetar.reitsma.display.i2.summary(extracted$i2),
+            `I-squared estimates`=rcmetar.reitsma.display.i2(extracted$i2),
             Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; Zhou\u2013Dendukuri and Holling are distinct estimators."
         ),
         "Model information"=model.info
@@ -1273,7 +1273,7 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
                       "Moderator block tests"=block.tests,
                       "Sensitivity coefficients"=sens.coefficients, "Specificity coefficients"=spec.coefficients,
                       "Residual diagnostic I-squared"=list(
-                          `I-squared estimates`=rcmetar.reitsma.display.i2(sm$i2, digits),
+                          `I-squared estimates`=rcmetar.reitsma.display.i2(sm$i2),
                           Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
                       ), "Moderator coding"=public.coding,
                       "Model information"=model.info),

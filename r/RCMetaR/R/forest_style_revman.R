@@ -364,14 +364,14 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, plan) {
         digits=as.integer(bundle$params$digits)
     ))
     rcmetar.draw.forest.refline(plan)
-    rcmetar.draw.metafor.effect.accent(
-        effect=rcmetar.forest.axis.effect(bundle, bundle$effect),
-        rows=rows,
-        alim=alim,
-        color=rcmetar.forest.accent.color(bundle$params),
-        psize=rcmetar.metafor.psize(bundle),
-        pch=compact.pch
-    )
+    effect <- rcmetar.forest.axis.effect(bundle, bundle$effect)
+    accent <- rcmetar.forest.accent.color(bundle$params)
+    psize <- rcmetar.metafor.psize(bundle)
+    if (bundle$fp_style == "bmj") {
+        rcmetar.draw.bmj.effects(effect, rows, alim, accent, psize * plan$typography$cex)
+    } else {
+        rcmetar.draw.metafor.effect.accent(effect, rows, alim, accent, psize, pch=compact.pch)
+    }
     rcmetar.draw.forest.axis(bundle, plan)
     rcmetar.draw.metafor.sequential.text(bundle, rows, layout, plan$typography$cex, plan)
     rcmetar.draw.forest.direction(bundle, alim, plan$typography$cex)

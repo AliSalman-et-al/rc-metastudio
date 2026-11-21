@@ -237,7 +237,7 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         ilab.width <- if (length(column.widths)) {
             sum(column.widths) + column.gap * (length(column.widths) - 1) + block.gap
         } else 0
-        annotation.width <- annotation.width + .055
+        annotation.width <- annotation.width + 2.8 / 25.4
         journal <- identical(bundle$fp_style, "revman") && inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")
         edge <- if (journal) .13 else .04
