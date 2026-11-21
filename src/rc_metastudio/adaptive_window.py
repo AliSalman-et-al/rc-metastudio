@@ -393,9 +393,10 @@ class AdaptiveWindowController(QObject):
             self._screen_placer(self.window, screen)
         if self.policy.first_use_behavior == FirstUseBehavior.MAXIMIZED:
             available = self._available_geometry()
-            if available.isValid() and self.window.size().isEmpty():
+            if available.isValid() and not self.window.isMaximized():
                 normal_frame = centered_bounded_geometry(
-                    self._preferred_outer_frame_size(),
+                    QSize(max(960, round(available.width() * 0.8)),
+                          max(640, round(available.height() * 0.8))),
                     available,
                     self._first_use_center(available),
                     maximum_fraction=self.policy.maximum_screen_fraction,

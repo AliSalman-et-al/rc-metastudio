@@ -77,6 +77,9 @@ class DatasetTableView(QtWidgets.QTableView):
         self.setAccessibleName("Study data")
         self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
 
+        self.study_calculator_action = QAction("Study calculator…", self)
+        self.study_calculator_action.setShortcut("F4")
+        connect_action(self.study_calculator_action, lambda: self.row_header_clicked(self.currentIndex().row()))
         self.edit_transaction: Callable[[Callable[[], None]], None] | None = None
 
         header = required(self.horizontalHeader(), "workspace column header")
@@ -183,7 +186,10 @@ class DatasetTableView(QtWidgets.QTableView):
         if event is None:
             return
         context_menu = QMenu(self)
-        study_index = self.rowAt(event.pos().y())
+        clicked = self.indexAt(event.pos())
+        if event.reason() == QtGui.QContextMenuEvent.Reason.Keyboard:
+            clicked = self.currentIndex()
+        study_index = clicked.row()
 
         sheet = self.model().current_sheet
         if sheet is None or not 0 <= study_index < len(sheet.rows):
@@ -214,6 +220,8 @@ class DatasetTableView(QtWidgets.QTableView):
         context_menu.addAction(action)
 
         context_menu.addSeparator()
+        calculator_action = context_menu.addAction(self.study_calculator_action.text())
+        connect_action(calculator_action, lambda: self.row_header_clicked(study_index))
         context_menu.addAction(delete_action)
         app_error_handler.popup_context_menu(
             context_menu, event.globalPos(), parent=self, event=event
@@ -432,7 +440,7 @@ class DatasetTableView(QtWidgets.QTableView):
         from rc_metastudio import r_runtime
         if not r_runtime.is_ready():
             return
-        if row > len(self.model().get_studies(False)) - 1:
+        if not 0 <= row < len(self.model().get_studies(False)):
             return
 
         signal_blocker = QSignalBlocker(self.vert_header)
@@ -477,6 +485,12 @@ class DatasetTableView(QtWidgets.QTableView):
                 )
             study_name = qt_text.to_native_text(self.model().data(self.model().index(row, self.model().NAME)))
             form.setWindowTitle(f"Study data — {study_name}")
+            study_label = QtWidgets.QLabel(study_name, form)
+            study_label.setTextFormat(Qt.TextFormat.PlainText)
+            qt_layout.configure_context_label(study_label)
+            layout = required(form.layout(), "calculator layout")
+            if isinstance(layout, QtWidgets.QBoxLayout):
+                layout.insertWidget(0, study_label)
             if form.exec():
                 model = self.model()
 

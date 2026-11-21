@@ -129,6 +129,9 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._effect_fields = calculator_controls.CalculatorEffectFields(
             self.effect_text_box, self.lower_text_box, self.upper_text_box,
         )
+        self.preview_source_label = QLabel(self)
+        self.dialog_layout.insertWidget(self.dialog_layout.indexOf(self.buttonBox), self.preview_source_label)
+        self.preview_source_label.hide()
         self.wald_readout = calculator_effect_readout.make_wald_readout(self.dialog_layout, self.buttonBox)
         for editor in self._effect_fields.editors.values():
             editor.editingFinished.connect(app_error_handler.safe_slot(self._refresh_readout, parent=self))
@@ -675,6 +678,18 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return "entered" if self._active_input_mode == "estimate" else "derived_preview"
 
     def _refresh_readout(self):
+        arm_count = 2 if self.current_effect in CONTINUOUS_TWO_ARM_METRICS else 1
+        from_summaries = [
+            self.arm_names[row] for row in range(arm_count)
+            if not required(self.simple_table.item(row, 0), "arm summary").data(Qt.ItemDataRole.UserRole + 1)
+        ]
+        show_source = self._active_input_mode == "pre-post" and bool(from_summaries) and bool(self.effect_text_box.text())
+        self.preview_source_label.setVisible(show_source)
+        if show_source:
+            self.preview_source_label.setText(
+                "From arm summaries" if len(from_summaries) == arm_count
+                else f"From arm summaries for {from_summaries[0]} and pre/post summaries for the other arm."
+            )
         calculator_effect_readout.update_wald_readout(
             self.wald_readout, self.analysis_unit, self.current_effect, self.arm_key,
             self.confidence_multiplier, "continuous", self._effect_source(),

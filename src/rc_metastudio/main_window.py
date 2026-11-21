@@ -5,6 +5,7 @@
 from __future__ import annotations
 from rc_metastudio.domain_ids import ArmId, SheetId
 
+import json
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -292,11 +293,25 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_new_dataset.setText("New project…")
         qt_layout.configure_main_toolbar(self.toolBar)
         self.analysis_button.setAccessibleName("Analyses")
-        self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
+        self.sample_menu = QtWidgets.QMenu("Open sample project", self)
+        sample_root = Path(get_sample_projects_path())
+        manifest = sample_root / "manifest.json"
+        names = {}
+        if manifest.is_file():
+            names = {item["file"]: item.get("scientific_name")
+                     for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
+        for path in sorted(sample_root.glob("*.rcms")):
+            action = self.sample_menu.addAction(names.get(path.name) or path.stem.replace("-", " "))
+            connect_action(action, lambda sample=path: self.open(file_path=str(sample)))
+        self.sample_menu.setEnabled(bool(self.sample_menu.actions()))
+        self.start_page = start_page.StartPage(
+            self.action_new_dataset, self.action_import_csv, self.action_open, self,
+            sample_menu=self.sample_menu,
+        )
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
         for action in (self.action_new_dataset, self.action_open,
-                       self.action_open_recent_2.menuAction(), self.action_import_csv):
+                       self.action_open_recent_2.menuAction(), self.sample_menu.menuAction(), self.action_import_csv):
             self.menu_file.addAction(action)
         self.menu_file.addSeparator()
         self.menu_file.addActions([self.action_save, self.action_save_as])
@@ -309,6 +324,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout.replaceWidget(self.tableView, table_view)
         self.tableView.deleteLater()
         self.tableView = table_view
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.tableView.study_calculator_action)
         self.tableView.restore_column_widths(load_main_column_widths())
 
         self.confidence_button = QtWidgets.QPushButton(self.statusbar)
@@ -761,7 +778,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             else:
                 view.replace_trial_sequential_result(result, manuscript)
 
-        def reopen(_plot_parameters: dict[str, object]) -> None:
+        def reopen(_plot_parameters: dict[str, object], _origin: QtWidgets.QWidget | None = None) -> None:
             form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
                 model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
             )
@@ -1485,6 +1502,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def save(self, save_as=False, *, destination: str | Path | None = None):
         if destination is None:
             destination = self.workspace.path
+            if destination is not None and destination.resolve().is_relative_to(Path(get_sample_projects_path()).resolve()):
+                destination = None
             if destination is None or save_as:
                 suggested = str(destination) if destination is not None else os.path.join(
                     get_user_documents_path(), self.model.get_name()
@@ -1502,6 +1521,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         destination = str(destination)
         if not destination.lower().endswith(".rcms"):
             destination += ".rcms"
+
+        if Path(destination).resolve().is_relative_to(Path(get_sample_projects_path()).resolve()):
+            QMessageBox.warning(self, "Choose a different location",
+                                "Save your project outside the bundled sample projects folder.")
+            return False
 
         durability_error = None
         try:
