@@ -924,7 +924,7 @@ rcmetar.draw.forest.study.columns <- function(bundle, rows, layout, ilab, cex, f
         wrapped <- lengths(lines) > 1L
         spacing <- graphics::strheight("Mg", cex=cex) * .75
         x <- rcmetar.forest.study.x(layout)
-        graphics::text(x, rows + spacing * wrapped, vapply(lines, `[[`, character(1), 1L),
+        graphics::text(x, rows + spacing * wrapped, vapply(lines, `[`, character(1), 1L),
                        adj=c(0, 0), cex=cex, col="black", font=font)
         if (any(wrapped)) graphics::text(x, rows[wrapped] - spacing,
             vapply(lines[wrapped], `[[`, character(1), 2L), adj=c(0, 0), cex=cex,
