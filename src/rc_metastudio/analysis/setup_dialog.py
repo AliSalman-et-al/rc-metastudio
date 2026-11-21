@@ -58,6 +58,7 @@ from rc_metastudio.results.plot_text import (
 from rc_metastudio.analysis.catalog import (
     ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS,
     RATIO_DATA_TYPES, RAW_COUNT_METHODS, REITSMA_METHOD,
+    TWO_ARM_METRICS,
 )
 from rc_metastudio.analysis.validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, parse_plot_bound, is_valid_plot_tick_list, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
 from rc_metastudio.settings import analysis_output_path
@@ -882,11 +883,24 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return self._execute_requests(self.analysis_requests())
 
     def _execute_requests(self, requests: Sequence[analysis_adapter.AnalysisRequest]) -> AnalysisResult:
+        sheet = self.model.current_sheet
+        direction = ("", "")
+        if (sheet is not None and requests and requests[0].data_type != "diagnostic"
+                and requests[0].metric in TWO_ARM_METRICS):
+            direction = sheet.effect_direction_arms()
         result = analysis_adapter.execute_analysis_requests(self.model, requests)
-        return self._prepare_analysis_result(result)
+        return self._prepare_analysis_result(result, direction)
 
-    def _prepare_analysis_result(self, result: AnalysisResult) -> AnalysisResult:
-        return normalize_analysis_result(self._with_result_identity(result))
+    def _prepare_analysis_result(
+        self, result: AnalysisResult, direction: tuple[str, str] = ("", ""),
+    ) -> AnalysisResult:
+        result = normalize_analysis_result(self._with_result_identity(result))
+        if all(direction) and any(
+            section.plot_kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"}
+            for section in result.sections
+        ):
+            return replace(result, manuscript_favours=direction)
+        return result
 
     def _run_analysis(
         self, regression: Callable[[], AnalysisResult] | None = None, *,
@@ -1095,7 +1109,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                        manuscript_context=summary,
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(arms),
-                       manuscript_favours=self._manuscript_favours(arms),
                        manuscript_model_info=tuple(model_info),
                        manuscript_comparison=self._manuscript_comparison(arms))
 
@@ -1105,12 +1118,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if "fixed" in model_label.lower():
             return "fixed-effect"
         return model_label
-
-    def _manuscript_favours(self, arms):
-        if self.data_type == "diagnostic":
-            return ()
-        labels = self.model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in arms])
-        return tuple(label.removeprefix("Favours ").strip() for label in labels[:len(arms)])
 
     def _manuscript_comparison(self, arms):
         if self.data_type == "diagnostic":
@@ -1994,12 +2001,6 @@ def add_plot_params(specs_form: AnalysisSetupDialog) -> None:
         )
         return
 
-    if specs_form.data_type != "diagnostic" and specs_form.model.current_effect not in ONE_ARM_METRICS and len(specs_form.model.arm_names) == 2:
-        labels = specs_form.model.current_sheet.settings.get("favours_labels")
-        if labels is None:
-            labels = ["Favours " + name for name in specs_form.model.arm_names]
-        for side, label in zip(("left", "right"), labels):
-            specs_form.current_param_vals.setdefault("fp_favours_" + side, label)
     if specs_form.analysis_type == "cumulative":
         specs_form.current_param_vals["cum_sequence"] = specs_form.study_order.currentData()
     specs_form.current_param_vals["fp_show_i2"] = specs_form.show_i2.isChecked()

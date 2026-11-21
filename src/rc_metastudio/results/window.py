@@ -279,13 +279,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         manuscript: "ManuscriptReport | None" = None,
         *,
         source_sheet_name: str | None = None,
-        save_favours_labels: Callable[[str, str], None] | None = None,
         plot_overrides: dict[str, dict[str, object]] | None = None,
         save_plot_override: Callable[[str, dict[str, object]], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
-        self._save_favours_labels = save_favours_labels
         self._plot_overrides = dict(plot_overrides or {})
         self._plot_defaults: dict[str, dict[str, object]] = {}
         self._save_plot_override = save_plot_override
@@ -1673,11 +1671,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             updated_params=updated_params, output_path=outpath,
         )
 
-        if persist and regenerator == "forest" and self._save_favours_labels is not None:
-            self._save_favours_labels(
-                updated_params.get("fp_favours_left", ""),
-                updated_params.get("fp_favours_right", ""),
-            )
         if persist and self._save_plot_override is not None:
             exclusions = {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path",
                           "funnel.outpath", "funnel.kind", "funnel.index", "funnel.center"}

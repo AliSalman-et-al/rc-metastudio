@@ -774,6 +774,9 @@ class ManuscriptReport:
         summary = [result.manuscript_context] if result.manuscript_context else []
         pooled_methods = []
         sections, supplementary = _report_sections(result, summary, pooled_methods)
+        if result.manuscript_favours:
+            below, above = result.manuscript_favours
+            summary.append(f"Values below the null favour {below}, and values above the null favour {above}.")
         methods = _report_methods(result, pooled_methods)
         return cls(
             title=result.manuscript_title or 'Meta-analysis',

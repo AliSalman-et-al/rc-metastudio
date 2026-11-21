@@ -26,7 +26,6 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
-from dataclasses import replace
 
 if TYPE_CHECKING:
     from rc_metastudio.results.report import ManuscriptReport
@@ -954,17 +953,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
             if self.workspace.edit_sheet(sheet, update):
                 self._update_project_identity()
-
-        if sheet and any(section.plot_kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"}
-                         for section in result.sections):
-            direction = sheet.effect_direction_arms()
-            if sheet.family == "diagnostic" or self.model.current_effect in analysis_catalog.ONE_ARM_METRICS:
-                direction = ("", "")
-            result = replace(result, manuscript_favours=direction if all(direction) else ())
-            if manuscript is not None and result.manuscript_favours:
-                below, above = result.manuscript_favours
-                manuscript = replace(manuscript, summary=(*manuscript.summary,
-                    f"Values below the null favour {below}, and values above the null favour {above}."))
 
         try:
             form = results_window.ResultsWindow(
