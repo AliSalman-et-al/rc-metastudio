@@ -561,11 +561,23 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
 rcmetar.forest.revman.layout.preflight <- function(bundle) {
     size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
     layout <- rcmetar.forest.revman.layout.coordinates(bundle, size)
+    ticks <- rcmetar.forest.journal.axis.ticks(bundle, layout$alim)
+    inference <- rcmetar.forest.with.measurement.device({
+        tick.width <- max(c(0, graphics::strwidth(rcmetar.forest.axis.labels(bundle, ticks),
+                                                 units="inches", cex=size$cex)))
+        available <- size$left_width + size$annotation_width - tick.width / 2 - 2.5 / 25.4
+        labels <- c(rcmetar.revman.heterogeneity.label(bundle), rcmetar.forest.test.overall.label(bundle),
+                    rcmetar.forest.prediction.label(bundle))
+        unlist(lapply(labels, function(label) {
+            if (!nzchar(label)) return("")
+            rcmetar.bmj.wrap.direction(label, available, size$cex, units="inches", font=1)
+        }), use.names=FALSE)
+    })
     k <- length(bundle$slab)
     rows <- list(
         k=k,
         study_rows=k:1,
-        ylim=c(-6.3, k + 4),
+        ylim=c(-6.3 - max(0, length(inference) - 3L), k + 4),
         top=k + 4,
         manual_sequential_labels=FALSE,
         max_group_header_lines=if (length(layout$group.xpos) > 0) 2 else 1
@@ -579,7 +591,7 @@ rcmetar.forest.revman.layout.preflight <- function(bundle) {
         x=list(
             xlim=layout$xlim,
             alim=layout$alim,
-            at=rcmetar.forest.journal.axis.ticks(bundle, layout$alim),
+            at=ticks,
             refline=NA,
             xlab=""
         ),
@@ -597,7 +609,7 @@ rcmetar.forest.revman.layout.preflight <- function(bundle) {
             method=rcmetar.forest.journal.method.label(bundle),
             groups=if (length(layout$group.xpos) > 0) names(layout$group.xpos) else character(0)
         ),
-        footer=list(axis=rcmetar.forest.revman.axis.footer(bundle, layout)),
+        footer=list(axis=rcmetar.forest.revman.axis.footer(bundle, layout), inference=inference),
         metrics=size,
         layout=layout
     )

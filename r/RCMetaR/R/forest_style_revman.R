@@ -234,8 +234,6 @@ rcmetar.draw.revman.forest <- function(bundle, plan) {
     layout <- plan$layout
     effect <- rcmetar.forest.study.effects(bundle)
     summary <- rcmetar.forest.journal.summary.effect(bundle)
-    bundle$style_blocks$heterogeneity <- rcmetar.revman.heterogeneity.label(within(bundle, res <- summary$res))
-    bundle$style_blocks$test_overall <- rcmetar.forest.test.overall.label(within(bundle, res <- summary$res))
     ilab <- rcmetar.revman.display.ilab(bundle, summary$weights)
     method <- rcmetar.forest.journal.method.label(bundle)
     metric <- rcmetar.forest.journal.metric.label(bundle)
@@ -451,14 +449,8 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout, plan) {
             }
         }
     }
-    if (nzchar(bundle$style_blocks$heterogeneity)) {
-        graphics::text(x, -3 - extra, bundle$style_blocks$heterogeneity, adj=c(0, .5), cex=cex)
-    }
-    if (nzchar(bundle$style_blocks$test_overall)) {
-        graphics::text(x, -4 - extra, bundle$style_blocks$test_overall, adj=c(0, .5), cex=cex)
-    }
-    prediction <- rcmetar.forest.prediction.label(bundle)
-    if (nzchar(prediction)) graphics::text(x, -5 - extra, prediction, adj=c(0, .5), cex=cex)
+    inference <- plan$footer$inference
+    graphics::text(x, -2 - extra - seq_along(inference), inference, adj=c(0, .5), cex=cex)
     rcmetar.draw.revman.axis.footer(bundle, layout, cex, -extra)
     invisible(NULL)
 }
