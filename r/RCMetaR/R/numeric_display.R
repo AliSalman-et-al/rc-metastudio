@@ -67,13 +67,14 @@ rcmetar.collapsed.intervals <- function(lower, upper, digits, params) {
 }
 
 rcmetar.effect.digits <- function(params, lower, upper) {
-  digits <- display.digits(params)
+  requested <- display.digits(params)
+  digits <- requested
   while (digits < 4L && rcmetar.collapsed.intervals(lower, upper, digits, params)) {
     digits <- digits + 1L
   }
   if (identical(as.character(params$measure), "RD")) {
     tiny <- is.finite(lower) & is.finite(upper) & lower < upper &
-        round(lower, digits) == 0 & round(upper, digits) == 0
+        round(lower, requested) == 0 & round(upper, requested) == 0
     while (rcmetar.collapsed.intervals(lower[tiny], upper[tiny], digits, params)) {
       digits <- digits + 1L
     }
