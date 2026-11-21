@@ -1452,9 +1452,11 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     for (i in which(selected & visible)) {
         w <- graphics::strwidth(labels[i], cex=.7, units="inches") / 2
         h <- graphics::strheight("Mg", cex=.7, units="inches") / 2
-        gap <- pad + .012
-        centers <- rbind(c(x[i]+gap+w, y[i]), c(x[i]-gap-w, y[i]),
-                         c(x[i], y[i]+gap+h), c(x[i], y[i]-gap-h))
+        gap <- pad + .012 + c(0, .13, .26, .39)
+        centers <- cbind(
+            c(rbind(x[i]+gap+w, x[i]-gap-w, x[i], x[i])),
+            c(rbind(y[i], y[i], y[i]+gap+h, y[i]-gap-h))
+        )
         placed <- FALSE
         for (side in seq_len(nrow(centers))) {
             cx <- centers[side, 1]
@@ -1463,8 +1465,15 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
             if (any(box[c(1, 3)] <= region[c(1, 3)] | box[c(2, 4)] >= region[c(2, 4)]) ||
                 any(box[1] < occupied[, 2] & box[2] > occupied[, 1] &
                     box[3] < occupied[, 4] & box[4] > occupied[, 3])) next
-            graphics::text(graphics::grconvertX(cx, from="inches"),
-                           graphics::grconvertY(cy, from="inches"), labels[i], cex=.7)
+            user.x <- function(value) graphics::grconvertX(value, from="inches")
+            user.y <- function(value) graphics::grconvertY(value, from="inches")
+            if (side > 4L) {
+                edge.x <- min(max(x[i], box[1]), box[2])
+                edge.y <- min(max(y[i], box[3]), box[4])
+                graphics::segments(user.x(x[i]), user.y(y[i]), user.x(edge.x), user.y(edge.y),
+                                   col=settings$point.color, lwd=.6)
+            }
+            graphics::text(user.x(cx), user.y(cy), labels[i], cex=.7)
             occupied <- rbind(occupied, box)
             placed <- TRUE
             break

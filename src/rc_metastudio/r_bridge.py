@@ -1005,10 +1005,7 @@ def _normalize_rcmetar_workflow(workflow):
 
 
 @contextmanager
-def sequential_progress(progress: Callable[[int, int], bool] | None):
-    if progress is None:
-        yield
-        return
+def sequential_progress(progress: Callable[[int, int], bool]):
     with r_transaction():
         _require_initialized_r()
         callback = _rinterface.rternalize(

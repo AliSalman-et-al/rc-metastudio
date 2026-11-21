@@ -889,13 +889,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         bar.show()
         bar.repaint()
         try:
-            from rc_metastudio import r_bridge
             from rc_metastudio.results.report import ManuscriptReport
 
+            bar.start_tracking()
             source_sheet = self._rerun_source_sheet or self.model.current_sheet
             requests = self.analysis_requests() if regression is None else ()
-            with r_bridge.sequential_progress(bar.track_fit if repeated else None):
-                result = self._execute_requests(requests) if regression is None else regression()
+            result = self._execute_requests(requests) if regression is None else regression()
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
             manuscript = ManuscriptReport.from_result(result)
             change_settings = self._change_settings_callback(source_sheet)

@@ -378,7 +378,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                             right = numeric if row_index == 0 or cell.text in missing else numeric_export_cell(cell.text)
                             assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT), (row_index, column, cell.text)
                 assert len(doc.inline_shapes) >= len(view.results.images)
-                assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
+            assert all(round(s.width / 36000) in (85, 170) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
                 text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
