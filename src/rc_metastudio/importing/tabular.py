@@ -144,9 +144,9 @@ def normalize_csv_input(
             name = name_validation.validate_required_name("study", row[0])
         except ValueError as error:
             raise CsvImportError(f"Row {number}: {error}") from error
-        key = (name, int(row[year_column]))
+        key = name_validation.study_identity(name, int(row[year_column]))
         if key in seen:
-            raise CsvImportError(f"Rows {seen[key]} and {number} have the same study name and year ({name}, {key[1]}).")
+            raise CsvImportError(f"Row {number}: {name_validation.study_conflict(key, seen[key])}")
         seen[key] = number
     covariate_names, covariate_types = _infer_covariates(
         normalized_rows,

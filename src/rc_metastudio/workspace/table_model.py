@@ -536,8 +536,12 @@ class DatasetTableModel(QAbstractTableModel):
         field = self._editable_field(column)
         if field is None:
             return workspace_editing.CellRejection("Cannot edit that cell.")
+        row_order = None
+        if field in ("name", "year"):
+            canonical_positions = {study.id: row for row, study in enumerate(self.current_sheet.rows)}
+            row_order = [canonical_positions[study_id] for study_id in self.get_ordered_study_ids()]
         rejection = self.editing_service.apply_edit(
-            self.dataset, canonical_row, field, self._editing_context(), value,
+            self.dataset, canonical_row, field, self._editing_context(), value, row_order=row_order,
         )
         if rejection is not None:
             return rejection
@@ -555,9 +559,25 @@ class DatasetTableModel(QAbstractTableModel):
         )
         by_id = {study.id: study for study in candidate.current_sheet.rows}
         candidate._display_studies = [by_id[study_id] for study_id in self.get_ordered_study_ids()]
-        skipped = 0
+        sheet = candidate.current_sheet
+        canonical_positions = {study.id: row for row, study in enumerate(sheet.rows)}
+        row_order = [canonical_positions[study.id] for study in candidate._display_studies]
+        identity_edits = {}
+        for row, cells in enumerate(values, start=first_row):
+            fields = {("name" if column == self.NAME else "year"): value
+                      for column, value in zip(columns, cells) if column in (self.NAME, self.YEAR)}
+            if fields:
+                identity_edits[row_order[row] if row < len(row_order) else row] = fields
+        rejection, skipped = candidate.editing_service.edit_study_identities(
+            sheet, identity_edits, row_order=row_order, skip_invalid_year=True,
+        )
+        if rejection is not None:
+            raise ValueError(rejection.message)
+        candidate._sync_display_studies()
         for row, cells in enumerate(values, start=first_row):
             for column, value in zip(columns, cells):
+                if column in (self.NAME, self.YEAR):
+                    continue
                 index = candidate.index(row, column)
                 if candidate.get_current_data_type(False) in RATIO_DATA_TYPES and column in candidate.OUTCOMES[:3]:
                     if not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:

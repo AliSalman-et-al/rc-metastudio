@@ -721,12 +721,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         style_inline_error(self.import_status)
         if not self.file_path:
             return False
+        error_tab = self.preview_grp_box
         try:
             headers, rows = self._preview_source()
             info = self.wizard().require_dataset_info()
             data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
             columns = sheet_columns(data_type, info["sub_type"])
+            error_tab = self.mapping_table
             mapping = self._selected_mapping(columns, single_arm=info["arms"] == "one")
+            error_tab = self.preview_grp_box
             notices: list[str] = []
             result = self._normalize_preview(headers, rows, mapping, columns, notices)
             if not result.rows:
@@ -735,7 +738,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self._show_ready_preview(result, columns, notices)
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
-            self.import_tabs.setCurrentWidget(self.mapping_table)
+            self.import_tabs.setCurrentWidget(error_tab)
             return False
         except Exception as error:
             self.import_status.setText(f"Could not preview the file: {error}")

@@ -42,7 +42,7 @@ from rc_metastudio.analysis.validation import (
     normal_confidence_multiplier, validate_confidence_interval_order, validate_confidence_level,
 )
 from rc_metastudio.workspace.columns import (
-    FIRST_IMPORT_COLUMN, STUDY_COLUMN, CovariateCell, EditableField, OutcomeCell,
+    FIRST_IMPORT_COLUMN, FIRST_RAW_COLUMN, CovariateCell, EditableField, OutcomeCell,
     RawCell, RawColumn, RawInputKind, sheet_columns,
 )
 
@@ -230,17 +230,17 @@ class WorkspaceEditingService:
         value: object,
         *,
         allow_raw_and_entered: bool = False,
+        row_order: Sequence[int] | None = None,
     ) -> CellRejection | None:
         if context.sheet_id is None or row < 0:
             return CellRejection("Cannot edit that cell.")
         sheet = dataset.sheet(context.sheet_id)
-        if field == "name":
-            return self._edit_study_name(sheet, row, value)
+        if field in ("name", "year"):
+            rejection, _ = self.edit_study_identities(sheet, {row: {field: value}}, row_order=row_order)
+            return rejection
         if row >= len(sheet.rows):
             return CellRejection("Enter a study name first.")
         study = sheet.rows[row]
-        if field == "year":
-            return self._edit_year(study, value)
         if not study.label.strip() and not qt_text.is_blank(value):
             return CellRejection("Enter a study name first.")
         if isinstance(field, (RawCell, OutcomeCell)):
@@ -262,19 +262,22 @@ class WorkspaceEditingService:
         fields = [columns.editable_field(section, sheet.covariates) for section in sections]
         confidence = self.confidence_settings(sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL))
         context = WorkspaceEditingContext.for_sheet(sheet, selected_metric(sheet), confidence)
+        rejection, _ = self.edit_study_identities(
+            sheet, {row: {"name": values[0], "year": values[1]} for row, values in enumerate(rows)},
+        )
+        if rejection is not None:
+            raise ValueError(rejection.message)
         warnings = []
         for row, values in enumerate(rows):
             for section, field, value in zip(sections, fields, values):
+                if section < FIRST_RAW_COLUMN:
+                    continue
                 if field is None:
                     raise ValueError(f"Study row {row + 1}, column {section}: Cannot edit that cell.")
-                if section == STUDY_COLUMN:
-                    # The preview has validated the combination of name and year.
-                    rejection = self._edit_study_name(sheet, row, value, importing=True)
-                else:
-                    rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
+                rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
                 if rejection is not None:
                     message = f"Study row {row + 1}, column {section}: {rejection.message}"
-                    if section == STUDY_COLUMN or rejection.kind == "backend":
+                    if rejection.kind == "backend":
                         raise ValueError(message)
                     warnings.append(message)
             on_row_loaded(row + 1)
@@ -358,37 +361,66 @@ class WorkspaceEditingService:
         )
 
     @staticmethod
-    def _edit_study_name(sheet, row: int, value: object, *, importing: bool = False) -> CellRejection | None:
-        try:
-            name = name_validation.validate_required_name("study", value)
-        except ValueError as error:
-            return CellRejection(str(error))
-        if not importing and any(index != row and name_validation.normalize_name(study.label) == name
-               for index, study in enumerate(sheet.rows)):
-            return CellRejection(f"Study name ‘{name}’ already exists. Use a unique name before pasting.")
-        while len(sheet.rows) <= row:
-            unit = AnalysisUnit(
-                sheet,
-                arm_names=[arm.name for arm in sheet.arms],
-                arm_stable_ids=[arm.id for arm in sheet.arms],
-            )
-            sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False))
-        study = sheet.rows[row]
-        if not study.manually_excluded and not has_study_entered_data(study):
-            study.include = True
-        study.label = name
-        return None
+    def edit_study_identities(
+        sheet: Sheet, edits: Mapping[int, Mapping[str, object]], *,
+        row_order: Sequence[int] | None = None, skip_invalid_year: bool = False,
+    ) -> tuple[CellRejection | None, int]:
+        """Validate all proposed names and years together before applying them."""
+        updates = {}
+        skipped = 0
+        for index, fields in edits.items():
+            study = sheet.rows[index] if index < len(sheet.rows) else None
+            name, year = (study.label, study.year) if study is not None else ("", 0)
+            if "name" in fields:
+                try:
+                    name = name_validation.validate_required_name("study", fields["name"])
+                except ValueError as error:
+                    return CellRejection(str(error)), skipped
+            if "year" in fields:
+                text = qt_text.to_native_text(fields["year"])
+                if qt_text.is_blank(text):
+                    year = 0
+                else:
+                    try:
+                        year = int(text)
+                    except ValueError:
+                        if is_an_int(text):
+                            year = int(float(text))
+                        elif skip_invalid_year:
+                            skipped += 1
+                        else:
+                            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number"), skipped
+            if (name, year) != ((study.label, study.year) if study is not None else ("", 0)):
+                updates[index] = (name, year)
 
-    @staticmethod
-    def _edit_year(study: StudyRow, value: object) -> CellRejection | None:
-        text = qt_text.to_native_text(value)
-        if not qt_text.is_blank(text) and not is_an_int(text):
-            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number")
-        try:
-            study.year = int(float(text)) if not qt_text.is_blank(text) else 0
-        except (TypeError, ValueError):
-            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number")
-        return None
+        ordered = list(row_order) if row_order is not None else list(range(len(sheet.rows)))
+        ordered.extend(range(len(sheet.rows), max(updates, default=len(sheet.rows) - 1) + 1))
+        seen = {}
+        for row_number, index in enumerate(ordered, start=1):
+            study = sheet.rows[index] if index < len(sheet.rows) else None
+            name, year = updates.get(index, (study.label, study.year) if study is not None else ("", 0))
+            key = name_validation.study_identity(name, year)
+            if not key[0]:
+                continue
+            previous = seen.get(key)
+            if previous is not None:
+                previous_index, previous_row = previous
+                if index in updates or previous_index in updates:
+                    conflict_row = row_number if index not in updates else previous_row
+                    return CellRejection(name_validation.study_conflict(key, conflict_row)), skipped
+            else:
+                seen[key] = (index, row_number)
+
+        for index, (name, year) in sorted(updates.items()):
+            while len(sheet.rows) <= index:
+                unit = AnalysisUnit(sheet, arm_names=[arm.name for arm in sheet.arms],
+                                    arm_stable_ids=[arm.id for arm in sheet.arms])
+                sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False))
+            study = sheet.rows[index]
+            if name != study.label and not study.manually_excluded and not has_study_entered_data(study):
+                study.include = True
+            study.label, study.year = name, year
+        return None, skipped
 
     def _raw_data(self, study: StudyRow, context: WorkspaceEditingContext):
         return study.analysis_unit.get_raw_data_for_arms(
