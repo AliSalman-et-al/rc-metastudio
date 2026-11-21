@@ -114,7 +114,7 @@ tab and Add outcome button in both themes, tests mouse/Space inclusion
 and Undo, changes
 confidence through the clickable status control and undoes it, checks fresh plot
 style Default, and captures collapsed/expanded Advanced in both themes. See
-[current verification guidance](../../../../docs/testing.md) for evidence and the accepted tab design.
+[current verification guidance](../../../../docs/maintaining.md#test-suite-organization-and-policy) for evidence and the accepted tab design.
 
 `review1-design --native` exercises startup without a welcome modal, present and
 missing recent paths (including wrapping full paths), Create/CSV wizard Cancel,
@@ -162,7 +162,7 @@ Native pickers and exhaustive DTA structures remain unexercised.
 
 The RM5 derived-fixture drive compares six grouped studies, fixed-IV subgroup
 estimates and intervals, and moderator Q and p with `meta::metacr` at `1e-6`.
-See the [RevMan import guide](../../../../docs/rm5-import.md). Generic IV HR, OR and MD run
+See the [RevMan import guide](../../../../docs/user-guide.md#revman-5-rm5). Generic IV HR, OR and MD run
 untouched setup, compare held pooled values/I² at 1e-6, and save/reopen. OR/MD
 entered-only capability is exercised first. Review excludes free-text effects
 and IPD O-E/variance. This does not qualify other RM5 structures or native pickers.

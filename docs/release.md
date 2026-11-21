@@ -4,7 +4,7 @@ The release pipeline builds Windows x64, Apple silicon macOS, and Linux x86_64 a
 
 ## Prepare the source
 
-1. Bump the version with `uv run python scripts/bump_version.py X.Y.Z`.
+1. Run `uv run python scripts/bump_version.py X.Y.Z`. This updates the Python and RCMetaR versions, lockfile, citation metadata and changelog.
 2. Complete the matching `CHANGELOG.md` section.
 3. Run the fast, full R, Qt, and packaging checks affected by the release.
 4. Merge the release commit to protected `master` and record its full commit SHA.
@@ -21,7 +21,7 @@ same source. An app version bump alone does not invalidate these caches.
 
 Run the `Build Immutable Candidate` workflow with:
 
-- `version`: the full RC version, such as `0.4.0-rc.1`; its base must match the repository version
+- `version`: the full RC version, such as `0.7.0-rc.1`. Its base must match the repository version
 - `source_sha`: the full commit SHA on `master`
 - `trust_profile`: `macos-trusted` for the normal signed macOS release path, or `unsigned-community` for an explicitly unsigned candidate
 

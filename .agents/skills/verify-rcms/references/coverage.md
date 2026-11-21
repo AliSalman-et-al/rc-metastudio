@@ -38,7 +38,7 @@ source-confidence undo/redo, save/reopen, and applicable main analyses. They com
 pooled and every sequential/subgroup row, numeric regression, and primary Egger
 with public package calls, and decode four export formats for six plot contexts.
 Raw IRR adds MH eligibility, original-count pooling and non-estimable subsets.
-The [verification report](../../../../docs/hr-irr-verification.md) links completed
+The [verification report](../features/ratios.md) links completed
 runs, native observations, fixes and source/runtime provenance. Factor/interactions,
 legacy bootstrap/permutation, all alternate UI estimator/inference pairs,
 fractional DPI and release packages remain unclaimed by these two scenarios.

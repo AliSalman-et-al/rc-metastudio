@@ -31,7 +31,7 @@ of native selection rendering.
 
 `hillclimb` drives the five fixed tasks through the shared desktop
 driver and records gesture counts, wall time and numerical/text receipts in
-measures.json. See [workflow effort comparison](../../../../docs/verification/desktop-effort.md)
+measures.json. See [workflow effort comparison](../../../../tests/e2e/fixtures/hillclimb/README.md#compare-workflow-effort)
 for fixtures, starting states, repeat comparison and baseline. This is offscreen
 effort evidence with QAction activations; native menu traversal and human timing
 remain unmeasured. `manuscript-export` verifies PDF/DOCX report export for amino, continuous and
@@ -94,7 +94,7 @@ Results. Native QMenu captures use the desktop composite while the popup is
 visible; popups are reopened after theme switches and are not activated before
 capture. Blank saved menu images fail verification. `ui-design-direction` also
 checks readable toolbar labels, native overflow and the grouped Zoom control at
-760 pixels. Use [current verification guidance](../../../../docs/testing.md) for replay
+760 pixels. Use [current verification guidance](../../../../docs/maintaining.md#test-suite-organization-and-policy) for replay
 requirements and platform limits; historical captures remain in Git.
 
 `RCMS_UI_CRAWL_SECTIONS` can select sections for a targeted continuation:

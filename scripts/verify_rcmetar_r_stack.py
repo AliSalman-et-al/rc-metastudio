@@ -498,12 +498,15 @@ def verify(args: argparse.Namespace) -> None:
                 cwd=root,
                 env=env,
             )
+        if args.doctor:
+            run([python, "scripts/verify_rcms.py", "doctor"], cwd=root, env=env)
 
     step("RCMetaR R Stack Slice verification complete")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--doctor", action="store_true", help="check app startup with the verified R library")
     parser.add_argument("--root", type=Path, default=Path.cwd())
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--rscript", default="Rscript")

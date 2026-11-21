@@ -169,7 +169,7 @@ plus the automatic 9 pt floor and explicit Fit width. `trimfill_geometry` compar
 the preview and exported SVG geometry before checking observed/imputed marker
 counts against a separately constructed metafor fit. Pixel identity between Qt
 and librsvg is not required: font rasterization and antialiasing differ. See the
-[SVG clipping report](../../../../docs/plot-rendering.md) for
+[SVG clipping report](../../../../docs/maintaining.md#platform-and-rendering-invariants) for
 narrow-axis, nonwhite-background and high-resolution vector PDF evidence.
 
 `manuscript-split-figure` derives a 95-study project from the sample and exports
@@ -271,7 +271,7 @@ and removal. Calculator-mode drives traverse the effective form controls.
 Native runs at QT_SCALE_FACTOR=1.25/1.5/2 establish Linux Qt scaling only; inspect
 retained frames for clipping. Screen readers, actual Windows/macOS OS scaling,
 all file-picker/failure states and all parameter combinations remain unqualified.
-See [current verification guidance](../../../../docs/testing.md).
+See [current verification guidance](../../../../docs/maintaining.md#test-suite-organization-and-policy).
 
 Round-five review follow-up: `audit-round3-irr-context` checks all three styles,
 caption separation/readable size, exposure-header descender/rule clearance, normal
@@ -301,7 +301,7 @@ and SVG header-rule clearance for three styles × three arm-name pairs. The long
 HR style matrix and short report checks measure cap height against row spacing.
 `plot-workflow-regression` checks twelve band/line visibility and legend combinations.
 Native captures require inspection; raw per-step inventories and independent values
-are retained. See [current verification guidance](../../../../docs/testing.md).
+are retained. See [current verification guidance](../../../../docs/maintaining.md#test-suite-organization-and-policy).
 
 Round-six reviewer follow-up: `project-reviewer-predictions` checks PFT/PLO/PAS
 prediction intervals in three styles, PFT sequential/subgroup footers and report/
@@ -405,7 +405,7 @@ Default-style unavailable intervals have neither caps nor clipping arrows;
 infinite bounds still have directional arrows. The zero-display path in
 `audit-round3-references` exercises the unavailable Default intervals. Style-order
 checks compare canonical study indexes, including Default non-table ordering;
-printed weight-column checks explicitly select RevMan. Use the [verification guidance](../../../../docs/testing.md) for current-source
+printed weight-column checks explicitly select RevMan. Use the [verification guidance](../../../../docs/maintaining.md#test-suite-organization-and-policy) for current-source
 R checks and affected desktop replay requirements.
 
 Batch 7 direction labels retain the axis tick font size and extend outward from

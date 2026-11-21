@@ -89,7 +89,9 @@ SHA-256 (`generic-derived.rm5`):
 
 Synthetic two-test fixture derived from the actual XML structure in Bristol's
 RevMan 5.3.5 workshop review, with invented labels and counts; not RevMan output
-or a published schema. Original source URL and both original hashes are recorded
-in docs/rm5-import.md. The original has no explicit redistribution
-licence and is not committed. Fixture SHA-256:
+or a published schema. The original came from the [Bristol workshop](https://www.bristol.ac.uk/population-health-sciences/centres/beam-centre/nice/workshop/). The [download archive](https://www.bristol.ac.uk/social-community-medicine/media/mpes/anti-ccp2-for-rheumatoid-arthritis.zip) has SHA-256 `c4fc64fd8d8441171c94190fd4494844058fa30c7feaee1f606375906ff88da6`. Its `anti-ccp2-for-rheumatoid-arthritis.rm5` member has SHA-256 `2d033cde5be5af71278f8dc569f8e7b291f93be5fc3b1be7249b7d28eb058e54`. The original has no explicit redistribution licence and is not committed.
+
+Diagnostic counts use `ANALYSES_AND_DATA/TESTS/TEST/TEST_DATA/TEST_DATA_ENTRY` with `STUDY_ID` and `TP/FN/FP/TN` attributes. The pre-0.5.1 fixed-effect subgroup Q discrepancy was superseded by authority-package inference.
+
+Fixture SHA-256:
 `b873d338c765ba537ab4430405bc4f454837ec14a420aec859873769665ff355`.

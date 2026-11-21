@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
@@ -47,6 +48,7 @@ REPO_ROOT = discover_repo_root(SCRIPT_DIR)
 DEFAULT_BUILD_ROOT = REPO_ROOT / "build" / "qt6-verification"
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
+PRE_PUSH_RECEIPT = REPO_ROOT / "artifacts" / "verification" / "pre-push.json"
 TYPING_RECEIPT_ENV = "RCMS_TYPING_RECEIPT"
 STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 SMOKE_TESTS = (
@@ -297,7 +299,6 @@ def run_code_health(
                 str(report),
             ]
         )
-    # shortcut: local code health measures committed HEAD, upgrade if dirty-tree qualification is needed.
     run(
         [
             sys.executable,
@@ -320,48 +321,99 @@ def run_packaging_contracts(env: dict[str, str] | None = None) -> None:
     run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
 
 
-def run_pre_push() -> None:
+def git_output(*args: str) -> str:
+    return subprocess.check_output(["git", *args], cwd=REPO_ROOT, text=True).strip()
+
+
+def clean_checkout() -> bool:
+    return not git_output("status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none")
+
+
+def pinned_r_environment(env: dict[str, str]) -> None:
+    selected_home = env.get("RCMS_R_HOME")
+    if selected_home:
+        rscript = next(
+            (path for path in r_support.rscript_paths_for_r_home(selected_home) if path.is_file()),
+            None,
+        )
+    else:
+        rscript = r_support.resolve_rscript("Rscript", env)
+    if rscript is None:
+        raise VerificationError("Rscript not found; set RCMS_R_HOME to the manifest-pinned installation")
+    # Let the selected Rscript resolve its own home, independently of ambient R_HOME.
+    env.pop("R_HOME", None)
+    manifest = json.loads((REPO_ROOT / "config/r-dependencies.json").read_text(encoding="utf-8"))
+    expected = manifest["target_runtime"]["r"]
+    actual = subprocess.check_output(
+        [str(rscript), "--vanilla", "-e", "cat(as.character(getRversion()))"],
+        cwd=REPO_ROOT, env=env, text=True,
+    ).strip()
+    if actual != expected:
+        raise VerificationError(f"{rscript} is R {actual}; expected R {expected}. Set RCMS_R_HOME.")
+    home = str(r_support.resolve_r_home(rscript, REPO_ROOT, env))
+    write_step(f"Using pinned R {actual} at {home}")
+    env.update(
+        RCMS_RSCRIPT=str(rscript),
+        RCMS_R_HOME=home,
+        R_HOME=home,
+        PATH=os.pathsep.join((str(rscript.parent), env.get("PATH", ""))),
+    )
+
+
+def pre_push_steps() -> dict[str, Callable[[], object]]:
     build = configured_build_root(dict(os.environ))
     env: dict[str, str] = {}
-    fast = parser().parse_args(
-        ["fast", "--skip-r-evidence", "--build-root", str(build)]
-    )
-    steps = [
-        ("prepare", lambda: env.update(prepare_qt_environment(build))),
-        ("typing (win32)", lambda: run_typing(build)),
-        ("code health", run_code_health),
-        ("Python fast and golden", lambda: run_source_tests(env, smoke=False, fast_workers=fast.fast_workers)),
-        (
-            "GUI",
-            lambda: run(
-                [
-                    sys.executable,
-                    "-m",
-                    "pytest",
-                    "-W",
-                    "error",
-                    "--strict-markers",
-                    "tests/python/gui",
-                ],
-                env=env,
-            ),
+
+    def qt(section: str) -> None:
+        run([
+            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+            "scripts/verify-qt6.ps1", "-Section", section, "-BuildRoot", str(build),
+        ], env=env)
+
+    return {
+        "prepare": lambda: env.update(prepare_qt_environment(build)),
+        "typing (win32)": lambda: run_typing(build),
+        "pinned R runtime": lambda: pinned_r_environment(env),
+        "code health": run_code_health,
+        "fast-verification/source-fast-targets": lambda: run_source_tests(
+            env, smoke=False, fast_workers=int(os.environ.get("RCMS_FAST_WORKERS", "4"))
         ),
-        ("packaging contracts", lambda: run_packaging_contracts(env)),
-    ]
-    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name, _ in steps]
-    # shortcut: native platform qualification stays in CI, upgrade when local native setup is owned here.
+        "GUI": lambda: run_pytest(["-W", "error", "tests/python/gui"], env=env),
+        "fast-verification/packaging-contract": lambda: run_packaging_contracts(env),
+        "JavaScript release tests": lambda: run(
+            ["node", "--test", "tests/packaging/contract/release_actions.test.cjs"], env=env
+        ),
+        "fast-verification/qt6-verification": lambda: qt("Core"),
+        "fast-verification/remaining-surface-verification": lambda: qt("RemainingSurfaces"),
+        "fast-verification/full-r-stack": lambda: run([
+            sys.executable, "scripts/verify_rcmetar_r_stack.py",
+            "--rscript", env["RCMS_RSCRIPT"], "--r-library-cache-root",
+            str(FULL_R_LIBRARY_CACHE), "--fresh", "--doctor",
+        ], env=env),
+    }
+
+
+def run_pre_push() -> None:
+    steps = pre_push_steps()
+    PRE_PUSH_RECEIPT.unlink(missing_ok=True)
+    head = git_output("rev-parse", "HEAD")
+    clean_at_start = clean_checkout()
+    rows = [{"step": name, "seconds": 0.0, "status": "not run"} for name in steps]
     rows += [
         {"step": name, "seconds": 0.0, "status": "CI only"}
         for name in (
-            "R stack, authorities and desktop E2E (local: python scripts/verify.py r-stack)",
-            "Windows native Qt and package qualification",
             "macOS native smoke and packaging",
             "Linux native xcb smoke",
         )
     ]
     try:
-        for row, (_, action) in zip(rows, steps):
+        if sys.platform != "win32":
+            raise VerificationError("pre-push requires Windows and a native Qt desktop")
+        if not clean_at_start:
+            raise VerificationError("commit your changes before running pre-push")
+        for row, action in zip(rows, steps.values()):
             started = time.monotonic()
+            write_step(f"Starting {row['step']}")
             row["status"] = "fail"
             try:
                 action()
@@ -369,12 +421,43 @@ def run_pre_push() -> None:
             finally:
                 row["seconds"] = round(time.monotonic() - started, 2)
     finally:
-        output = REPO_ROOT / "artifacts/verification/pre-push.json"
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")
+        clean = clean_at_start and git_output("rev-parse", "HEAD") == head and clean_checkout()
+        PRE_PUSH_RECEIPT.parent.mkdir(parents=True, exist_ok=True)
+        temporary = PRE_PUSH_RECEIPT.with_suffix(f".{uuid4().hex}.tmp")
+        temporary.write_text(
+            json.dumps({"head": head, "clean": clean, "steps": rows}, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(PRE_PUSH_RECEIPT)
         print("\n| Step | Seconds | Result |\n| --- | ---: | --- |")
         for row in rows:
             print(f"| {row['step']} | {row['seconds']} | {row['status']} |")
+    if not clean:
+        raise VerificationError("HEAD or the worktree changed during pre-push")
+
+
+def check_pre_push() -> None:
+    # Git supplies local ref, local object, remote ref and remote object for every update.
+    updates = [line.split() for line in sys.stdin]
+    commits = {local for ref, local, _, _ in updates if ref != "(delete)"}
+    if not commits:
+        return
+    try:
+        receipt = json.loads(PRE_PUSH_RECEIPT.read_text(encoding="utf-8"))
+        statuses = {row["step"]: row["status"] for row in receipt["steps"]}
+        valid = (
+            receipt["clean"] is True
+            and commits == {receipt["head"]}
+            and len(statuses) == len(receipt["steps"])
+            and all(statuses.get(step) == "pass" for step in pre_push_steps())
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        valid = False
+    if not valid or not clean_checkout():
+        raise VerificationError(
+            "No clean passing pre-push receipt for the object(s) being pushed. "
+            "See docs/maintaining.md#pre-push-gate."
+        )
 
 
 def parser() -> argparse.ArgumentParser:
@@ -421,6 +504,7 @@ def parser() -> argparse.ArgumentParser:
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
     subparsers.add_parser("pre-push", help="run required local CI checks, failing fast")
+    subparsers.add_parser("check-pre-push", help="validate a push against the local receipt")
     return cli
 
 
@@ -433,9 +517,11 @@ def main(argv: list[str] | None = None) -> int:
             run_source_lane(args, smoke=False)
         elif args.lane == "pre-push":
             run_pre_push()
+        elif args.lane == "check-pre-push":
+            check_pre_push()
         else:
             run_full_r_stack(args)
-    except VerificationError as exc:
+    except (VerificationError, r_support.RVerificationSupportError, subprocess.CalledProcessError) as exc:
         print(f"verification failed: {exc}", file=sys.stderr)
         return 1
     write_step(f"{args.lane} verification complete")

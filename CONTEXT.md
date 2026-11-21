@@ -101,7 +101,7 @@ _Avoid_: Display effect, cached effect
 A guided analysis of associations between study size or precision and observed effects. Its results can suggest several causes and do not establish that publication bias exists.
 _Avoid_: Publication bias analysis, publication-bias test
 
-**Publication Bias**:
+**Small-study effects…**:
 The short user-interface label that helps users find the small-study effects analysis. It is a navigation label, not the interpretation of the analysis.
 _Avoid_: Proof of publication bias, bias detection
 
@@ -118,7 +118,7 @@ The model whose estimate can appear on a funnel plot or in a pooled-estimate com
 _Avoid_: Reference model, test model
 
 **Eligible study set**:
-The included studies that supply every input required by a selected method. Release 1 does not silently reduce this set for individual methods.
+The included studies that supply every input required by a selected method. RC MetaStudio does not silently reduce this set for individual methods.
 _Avoid_: Available cases, implicit complete cases
 
 **Trim-and-fill sensitivity analysis**:

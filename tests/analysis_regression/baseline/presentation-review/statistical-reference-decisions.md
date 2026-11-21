@@ -40,6 +40,6 @@ calculation. The stale sequential helper that corrected pooled counts again was
 repaired without changing the product or frozen numerical expectations.
 
 Use direct public-package comparisons alongside the frozen release comparisons.
-The [testing guide](../../../../docs/testing.md) and [verification skill](../../../../.agents/skills/verify-rcms/SKILL.md)
+The [testing guide](../../../../docs/maintaining.md#test-suite-organization-and-policy) and [verification skill](../../../../.agents/skills/verify-rcms/SKILL.md)
 describe the required source/runtime identity and retained evidence. Historical
 success counts do not qualify a current source revision or release package.

@@ -5,42 +5,13 @@ description: Verify RC MetaStudio desktop workflows with real Qt and R, capture 
 
 # Verify RC MetaStudio
 
-Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use `CONTEXT.md` for domain terms, `docs/testing.md` for retained failure tests, and the relevant `docs/adr/` decisions. ADR-0005 owns the release oracle; ADR-0007 requires a real R runtime. A green basic analysis is insufficient after a shared analysis change.
+Prove the changed user behavior with the real application. Read the [feature index](features/README.md), the [coverage checklist](references/coverage.md), then the affected feature. Use [CONTEXT.md](../../../CONTEXT.md) for domain terms, the relevant [architecture decisions](../../../docs/adr/README.md), and the [test policy](../../../docs/maintaining.md#test-suite-organization-and-policy). A green basic analysis is insufficient after a shared analysis change.
 
 ## Launch
 
-Run from the repository root using its locked Python 3.14 environment:
-
-```powershell
-uv sync --locked
-uv run python scripts/build_qt6.py generate --build-root build/qt6-verification
-$env:RCMS_QT6_BUILD_ROOT = (Resolve-Path build/qt6-verification).Path
-uv run python scripts/verify_rcms.py doctor
-```
-
-The helper starts a fresh ordinary Qt/R composition for each invocation. `doctor` requires a visible main window, generated forms, working embedded R, the manifest-pinned statistical authority packages, and the current RCMetaR version. Exit zero plus `WORKFLOW PASSED` in the saved transcript establishes readiness. It does not establish that installed RCMetaR code matches a dirty source tree.
-
-For a warm run, `RCMS_R_HOME` and `RCMS_R_LIBS` must select an existing pinned runtime and library containing installed RCMetaR. The helper inherits these variables and `RCMS_QT6_BUILD_ROOT`; it does not install packages or silently substitute an R fake. If startup fails, inspect `stderr.log` and `runtime.json` if present. Use the repository's full setup/verification lane:
-
-```powershell
-uv run python scripts/verify.py r-stack
-```
-
-That lane installs dependencies and the current RCMetaR source into a temporary library and runs the live bridge and complete desktop matrix. Its temporary library disappears at completion; the dependency cache alone is not an installed RCMetaR development library. Configure a persistent test-owned library for later screenshot captures. Do not install into a system library or alter a qualified package to repair source verification.
-
-For interactive source execution, after configuring that runtime and generating forms:
-
-```powershell
-uv run python -m rc_metastudio
-```
-
-Keep `RCMS_QT6_BUILD_ROOT` set for interactive execution; without it the application
-defaults to `build/qt6`. On a POSIX shell use
-`export RCMS_QT6_BUILD_ROOT="$PWD/build/qt6-verification"` instead of the PowerShell assignment.
+Follow [source setup](../../../docs/maintaining.md#set-up-the-development-environment) for generated forms and a pinned R runtime. Use a persistent test library for targeted drives. Reinstall changed RCMetaR source before driving it and record installed-source provenance. If startup fails, inspect the helper's `stderr.log` and `runtime.json`.
 
 The verification helper owns and closes its own windows. Do not attach it to the user's running application. Native driving is opt-in with `--native`; on Windows this uses qwindows, on macOS cocoa, and on Linux a working native display is required. The default uses Qt offscreen.
-
-The full R-stack lane runs bridge drivers serially and desktop scenarios in fresh offscreen processes with `-n auto`. Worker selection reserves one CPU and 1 GiB for the host, allows 2 GiB per child, respects Linux cgroup limits, and caps concurrency at three. Limited capacity falls back to one. Native drives remain serial; use `-n 1` to diagnose contention. It binds `RCMS_R_LIBS`, `R_LIBS` and `R_LIBS_USER` to its owned library so an ambient interactive-library override cannot replace the installed current source. Inspect desktop `runtime.json` library paths to confirm that selection. Each desktop child owns its settings, working directory and analysis scratch directory. Hosted R-stack jobs install pinned binaries directly into the owned library, verify their manifest versions, and rebuild RCMetaR from the current source. `--durations=10` reports the slowest desktop cases.
 
 ## Doctor
 
@@ -57,40 +28,13 @@ uv run python scripts/verify_rcms.py amino
 uv run python scripts/verify_rcms.py editing
 ```
 
-Choose the scenario from the feature map. For the complete desktop matrix with durable evidence:
-
-```powershell
-uv run python .agents/skills/verify-rcms/scripts/verify_all.py
-```
-
-For a shared analysis, data-type, inference, or R dependency change, run the full profile:
-
-```powershell
-uv run python .agents/skills/verify-rcms/scripts/verify_all.py --full
-```
-
-This runs the current-source R-stack lane (covering every distinct desktop qualification obligation), independent authority comparisons and doctor. It requires `RCMS_R_HOME` and `RCMS_R_LIBS` from Launch. The R lane installs a temporary library; doctor and later targeted drives still use the configured warm library. After changing RCMetaR, install the changed source into a persistent test-owned library and select it before desktop driving; version equality alone is insufficient. Record installed-source provenance. The full profile does not repeat the desktop registry after pytest has already proved it. Desktop matrices reuse passed evidence only when source, fixtures, generated forms, installed Python/R runtime bytes, fonts, startup profiles and relevant environment match; the manifest and every retained artifact hash must still match. Failed or damaged evidence reruns. Reuse is printed in the transcript and retains the original manifest and runtime provenance. `--fresh` on `verify_all.py` or E2E pytest disables reuse for qualification. No process is shared between scenarios.
+Choose the scenario from the feature map. See [verification lanes](../../../docs/maintaining.md#verification-lanes-and-test-suites) for warm and full matrix commands, reuse rules and the R-change gate. The desktop registry lists its scenarios. An exact artifact or numerical claim needs the corresponding evidence.
 
 The matrix includes all eight original New Dataset paths plus the HR/IRR metric variants, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
 The advanced workflows in `scripts/advanced_workflows.py` add nondefault inference, heterogeneity and confidence-interval choices with public numerical references, zero cells and inclusion changes, calculator modes with persistence and independent post-reopen analysis, plot editors with decoded exports, and workspace transactions. The scenario registry in `tests/e2e/desktop_scenarios.py` lists the current drives. Examples include `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, `plot-workflow-trial-sequential`, and `project-table-covariates`. Numerical claims require numerical comparisons.
 
-The same scenarios are part of the R-stack CI E2E selection. Pytest calls the evidence helper too, so every run retains its inputs, transcript and manifest:
-
-Qualification runs each distinct analysis obligation through its strongest
-workflow. The plot workflows exercise their producing analyses, including the
-BCG trial sequential analysis, before editing and exporting. Pytest omits the
-duplicate standalone runs. `PLOT_PRODUCERS` defines the producer calls and the derived
-`QUALIFICATION_SCENARIOS` selection. Standalone CLI names remain available for
-targeted debugging. See `docs/testing.md` for the mapping.
-Exact CLI aliases also run once: `results-window` through `ux-improvements`,
-and `project-structure` through `sheets`.
-
-```powershell
-uv run python -m pytest tests/e2e -n auto -q
-```
-
-For the normal edit loop, run the mapped scenario directly, or select affected cases with `pytest tests/e2e -n auto -k ...`. Use the complete warm matrix before review and the full profile when the change requires the R gates. An interrupted matrix resumes verified successes instead of repeating their work; any executable source or fixture change invalidates that evidence conservatively.
+See the [desktop selection policy](../../../docs/maintaining.md#desktop-selection) for producer deduplication. Individual CLI scenarios remain available for debugging.
 
 The driver uses QAction handles, Qt widgets, editors, modal buttons, and the production storage and analysis path. Each child owns its application-data and analysis-scratch subdirectories. `runtime.json` records those paths and confirms that Python and embedded R retain the caller's working directory. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. Native application-data creation and OS file-picker gestures require separate checks. The `csv` scenario starts at the CSV page. Use `xlsx-import` for the unified Import data action and Welcome wizard entry with controlled picker results, and `rm5-import` for RevMan entry and review.
 
@@ -133,4 +77,4 @@ After a proof, confirm the printed directory still contains `manifest.json`, tra
 
 The skill owns `scripts/analysis_matrix.py`, `scripts/analysis_authorities.R`, and `scripts/verify_all.py` here, and uses the shared verification harness `scripts/verify_rcms.py`, `tests/e2e/desktop_driver.py`, its pytest selection, and the golden comparison harness under `tests/analysis_regression/golden/`. Maintenance may repair these harnesses; keep product changes and frozen oracle changes out of a skill maintenance pass. Invoke Python scripts with `uv run python`; the analysis feature documents the pinned Rscript invocation and report argument.
 
-Update this feature map when a demonstrated path changes or new behavior is added. Use `pstack:maintain-verification-skill` for a later maintenance pass.
+Update this feature map when a demonstrated path changes or new behavior is added.
