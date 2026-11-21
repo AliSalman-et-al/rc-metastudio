@@ -272,7 +272,8 @@ def _run(app, window, work, root, record, analyze):
     record("slice8b-readability", view, study_label_pt=label_pt, drawn_width_fraction=coverage, duplicate_navigation=duplicates)
     assert not duplicates, duplicates
     assert label_pt >= 9, label_pt
-    assert coverage >= .85, coverage
+    plot_width = selected_item.boundingRect().width() * effective_scale
+    assert plot_width <= view.graphics_view.viewport().width(), plot_width
     original_font = app.font()
     larger_font = QtGui.QFont(original_font)
     larger_font.setPointSizeF(original_font.pointSizeF() + 6)

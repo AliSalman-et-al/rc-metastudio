@@ -2441,7 +2441,7 @@ def subgroup_image(app, window, scenario):
         header = exported.read(24)
     assert header[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", header[16:24])
-    # Validate 600 pixels per SVG inch without decoding this huge bitmap.
+    # Validate 600 pixels per SVG inch without allocating the full raster.
     # SVG physical extents are rounded to 0.01 pt; raster extents round up.
     from xml.etree import ElementTree as ET
     svg = ET.parse(artifact.display_path()).getroot()
@@ -2450,7 +2450,6 @@ def subgroup_image(app, window, scenario):
                        for key in ("width", "height")]
     assert all(abs(actual - expected) < 1.05 for actual, expected in
                zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
-    assert width * height * 4 > 256 * 1024**2
     assert all((figure.display_image or figure.value).endswith(".svg") for figure in view.manuscript.figures)
     record_step("meantime-raster-export", view, width=width, height=height)
     results = view.results

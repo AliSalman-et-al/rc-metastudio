@@ -966,6 +966,7 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
         name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
         assert f"*.{extension}" in name_filter, (extension, name_filter)
         assert destination.is_file(), destination
+        rendered_pages: list[QtGui.QImage] = []
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
             assert renderer.isValid()
@@ -974,14 +975,18 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
             painter = QtGui.QPainter(rendered)
             renderer.render(painter)
             painter.end()
+            rendered_pages.append(rendered)
         elif extension == "pdf":
             from PyQt6.QtPdf import QPdfDocument
 
             document = QPdfDocument(view)
             assert document.load(str(destination)) == QPdfDocument.Error.None_
-            assert document.pageCount() == 1
-            rendered = document.render(0, QtCore.QSize(400, 400))
-            assert not rendered.isNull()
+            assert document.pageCount() > 0
+            a4 = QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4).sizePoints()
+            for page in range(document.pageCount()):
+                if document.pageCount() > 1:
+                    assert document.pagePointSize(page).toSize() == a4
+                rendered_pages.append(document.render(page, QtCore.QSize(400, 400)))
             document.close()
         else:
             from PIL import Image
@@ -1003,7 +1008,8 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
                     )
                     < 200
                 )
-        if extension in ("svg", "pdf"):
+        for rendered in rendered_pages:
+            assert not rendered.isNull()
             assert any(
                 rendered.pixelColor(x, y).lightness() < 200
                 for x in range(0, 400, 4)

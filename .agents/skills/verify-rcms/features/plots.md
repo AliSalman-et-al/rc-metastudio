@@ -166,13 +166,13 @@ and librsvg is not required: font rasterization and antialiasing differ. See the
 [SVG clipping report](../../../../docs/plot-rendering.md) for
 narrow-axis, nonwhite-background and high-resolution vector PDF evidence.
 
-`manuscript-split-figure` derives a 95-study project from the sample, fits it
-through the application, and exports the actual manuscript PDF. It requires
-multiple figure pages, renders those pages to check the area below each caption
-is clear, and rejects embedded raster images. It also derives empty SVG viewports
-from the resulting plot and requires blank Qt output. PDF rendering intersects
-the SVG viewports with the visible page slice because Qt symbol clipping replaces
-an existing painter clip.
+`manuscript-split-figure` derives a 95-study project from the sample and exports
+the manuscript PDF through the application. It requires multiple vector panels
+with study rows, column headers and an axis on each figure page. It checks that
+every study identifier appears once, renders each page to check for spill below
+the caption, and separately checks that zero-width SVG clips hide their contents.
+For Word and large export checks, retain both the original manuscript and rendered
+pages, the geometry of panel boundaries, and the raster limit alternatives.
 
 The `plot-workflow-*` scenarios allow 240 seconds for publication-resolution exports. The [scenario registry](../../../../tests/e2e/desktop_scenarios.py) sets longer limits for the six editors and 24 exports in each full ratio drive. TIFF conversion uses a packed native raster and preserves 600 dpi output. `family-export-decoded` records each completed format. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 

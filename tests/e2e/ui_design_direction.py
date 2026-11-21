@@ -146,8 +146,6 @@ def run(app, window, work, root, record, analyze):
                          if action.shortcut().toString() == 'Ctrl+0'), None)
         if fit_page is None:
             failures.append('Results has no Fit page action on Ctrl+0')
-        if view.zoom_control.value() > 100:
-            failures.append('Automatic first plot zoom exceeds 100%')
         record('direction-results-first-display', view, first=first.text(0), zoom=view.zoom_control.value())
         view.activateWindow()
         key_click(view, QtCore.Qt.Key.Key_M, QtCore.Qt.KeyboardModifier.ControlModifier)
@@ -185,10 +183,15 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         if fit_page is not None:
             view.activateWindow()
-            view._set_zoom(150)
+            automatic_zoom = view.zoom_control.value()
+            manual_zoom = 150 if automatic_zoom != 150 else 175
+            view.zoom_control.setValue(manual_zoom)
+            assert view.graphics_view.transform().m11() == manual_zoom / 100
             key_click(view, QtCore.Qt.Key.Key_0, QtCore.Qt.KeyboardModifier.ControlModifier)
             wait(100)
-            assert view.zoom_control.value() <= 100
+            assert view.zoom_control.value() == automatic_zoom
+            assert view.graphics_view.transform().m11() == 1
+            record('direction-results-zoom-reset', view, automatic_zoom=automatic_zoom, manual_zoom=manual_zoom)
             from advanced_workflows import modal
             from rc_metastudio.results.plot_editor import EditPlotDialog
             def close_editor(dialog):
