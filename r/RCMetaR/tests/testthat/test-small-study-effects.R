@@ -711,8 +711,8 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_false("Pooled comparison" %in% names(result))
   expect_false("Trim-and-fill" %in% names(result))
   expect_false("Extrapolation" %in% names(result))
-  expect_true("Deeks Effective-Sample-Size Funnel Plot" %in% names(result$images))
-  path <- result$plot_params_paths[["Deeks Effective-Sample-Size Funnel Plot"]]
+  expect_true("Deeks asymmetry regression plot" %in% names(result$images))
+  path <- result$plot_params_paths[["Deeks asymmetry regression plot"]]
   load(paste0(path, ".params"))
   expect_identical(params$`funnel.xlab`, "1/sqrt(ESS)")
   expect_identical(params$`funnel.ylab`, "Log diagnostic odds ratio")
@@ -724,7 +724,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
     unname(tools::md5sum(regenerated)),
-    unname(tools::md5sum(result$images[["Deeks Effective-Sample-Size Funnel Plot"]]))
+    unname(tools::md5sum(result$images[["Deeks asymmetry regression plot"]]))
   )
   params$`funnel.xlab` <- "Edited ESS axis"
   params$`funnel.ylab` <- "Edited log DOR axis"
@@ -736,7 +736,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
 
     `funnel.xlab`="Edited ESS axis", `funnel.ylab`="Edited log DOR axis"
   ))
-  custom.path <- custom$plot_params_paths[["Deeks Effective-Sample-Size Funnel Plot"]]
+  custom.path <- custom$plot_params_paths[["Deeks asymmetry regression plot"]]
   load(paste0(custom.path, ".params"))
   expect_identical(params$`funnel.xlab`, "Edited ESS axis")
   expect_identical(params$`funnel.ylab`, "Edited log DOR axis")

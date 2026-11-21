@@ -311,7 +311,7 @@
         keys <- c(keys, "publication.bias.funnel")
     if ("Contour Funnel Plot" %in% displayed.plots)
         keys <- c(keys, "publication.bias.contour")
-    if ("Deeks Effective-Sample-Size Funnel Plot" %in% displayed.plots)
+    if (.small.study.deeks.title %in% displayed.plots)
         keys <- c(keys, "publication.bias.deeks")
     if (any(grepl("Trim-and-fill", displayed.plots, fixed=TRUE)))
         keys <- c(keys, "publication.bias.trimfill")
@@ -614,7 +614,7 @@
     if (metric == "DOR") summary <- c(
         summary,
         paste0("Continuity correction: ", as.character(params$correction.policy %||% "Studies with any zero cell")),
-        "Plot method: Deeks funnel plot using effective sample size"
+        "Plot method: Deeks asymmetry regression using effective sample size"
     )
     paste(summary, collapse="\n")
 }
@@ -1097,10 +1097,12 @@
     sub("^SE", "Standard error", display.standard.error.label(params))
 }
 
+.small.study.deeks.title <- "Deeks asymmetry regression plot"
+
 .small.study.base.plot <- function(kind, index, plot.data, pooled, params, metric,
                                    common.center, prepared, diagnostic.model) {
     title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
-        "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
+        .small.study.deeks.title else "Contour Funnel Plot"
     metric.label <- .small.study.metric.label(metric)
     xlab <- .small.study.plot.setting(
         params, "funnel.xlab", index, if (kind == "deeks") "1/sqrt(ESS)" else metric.label)
@@ -1501,7 +1503,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     if (length(effective) != sum(keep))
         stop("persisted Deeks effective sample sizes do not match prepared effects")
     xlab <- if (settings$xlab == "1/sqrt(ESS)") expression(1/sqrt(ESS)) else settings$xlab
-    plot(predictor, y[keep], xlab=xlab, ylab=settings$ylab, las=1,
+    plot(predictor, y[keep], main=.small.study.deeks.title, xlab=xlab, ylab=settings$ylab, las=1,
          xlim=settings$xlim, xaxt=if (is.null(settings$at)) "s" else "n",
          pch=settings$point.symbol, cex=settings$point.size,
          col=settings$point.color, bg=settings$point.color)
