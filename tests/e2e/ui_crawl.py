@@ -82,10 +82,8 @@ def analysis_setup(driver, capture, missing):
     assert "Sorry" not in form.analysis_error_details.toPlainText()
     assert form.analysis_error_panel.isVisible()
     assert not form.analysis_error_details.isVisible()
-    capture("E-error-details-collapsed", form)
-    form.analysis_error_toggle.click()
-    assert form.analysis_error_details.isVisible()
-    capture("E-error-details-expanded", form)
+    assert not form.analysis_error_toggle.isVisible()
+    capture("E-empty-study-selection", form)
     form.close()
     driver.window.workspace.mark_saved()
 
@@ -110,10 +108,9 @@ def results(driver, capture, missing):
     assert view.nav_tree.isVisible() and view.graphics_view.isVisible()
     view.showMaximized()
     driver.app.processEvents()
-    for detail in ("Text report", "Tables"):
-        item = view.nav_tree.findItems(detail, QtCore.Qt.MatchFlag.MatchExactly)[0]
-        view.nav_tree.setCurrentItem(item)
-        capture("F-amino-" + detail.lower().replace(" ", "-"), view)
+    for label, action in (("text-report", view.report_action), ("data-tables", view.tables_action)):
+        action.trigger()
+        capture("F-amino-" + label, view)
     exports(driver, capture, missing, view)
     view.close()
     missing.append("F subgroup Tables: eligible moderator fixture still needed")

@@ -24,7 +24,7 @@ def pytest_configure(config: pytest.Config) -> None:
     if config.option.collectonly:
         return
     if hasattr(config, "workerinput"):
-        config.stash[_DESKTOP_ENV] = dict(os.environ)
+        config.stash[_DESKTOP_ENV] = dict(os.environ) | config.workerinput["desktop_launch"]
         return
     from scripts.verify import ensure_typing
 
@@ -39,6 +39,15 @@ def pytest_configure(config: pytest.Config) -> None:
     fresh = config.getoption("--fresh") or os.environ.get("RCMS_E2E_FRESH") == "1"
     os.environ["RCMS_E2E_REUSE_PASSED"] = "0" if fresh else "1"
     config.stash[_DESKTOP_ENV] = dict(os.environ)
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_configure_node(node) -> None:
+    environment = node.config.stash[_DESKTOP_ENV]
+    names = verification_launch_inputs(desktop_environment()) | {
+        "RCMS_E2E_CONTEXT": None, "RCMS_E2E_REUSE_PASSED": None,
+    }
+    node.workerinput["desktop_launch"] = {name: environment[name] for name in names if name in environment}
 
 
 @pytest.fixture(scope="session")

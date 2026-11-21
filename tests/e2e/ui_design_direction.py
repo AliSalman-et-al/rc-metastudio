@@ -16,8 +16,13 @@ def navigation_selection_pixels(view):
     from PyQt6.QtGui import QPalette
     tree = view.nav_tree
     item = required(tree.currentItem(), 'selected Results section')
-    image = required(tree.viewport()).grab().toImage()
-    rect = tree.visualItemRect(item).intersected(image.rect())
+    viewport = required(tree.viewport())
+    image = view.grab().toImage()
+    dpr = image.devicePixelRatio()
+    rect = tree.visualItemRect(item).intersected(viewport.rect())
+    rect.translate(viewport.mapTo(view, QtCore.QPoint()))
+    rect = QtCore.QRect(round(rect.x() * dpr), round(rect.y() * dpr),
+                        round(rect.width() * dpr), round(rect.height() * dpr)).intersected(image.rect())
     highlight = QtWidgets.QApplication.palette().color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight)
     assert tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight) == highlight
     count = sum(image.pixelColor(x, y).rgb() == highlight.rgb()

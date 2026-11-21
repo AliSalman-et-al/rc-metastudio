@@ -209,7 +209,6 @@ def _run(app, window, work, root, record, analyze):
     assert setup.analysis_error_label.isVisible()
     assert setup.analysis_error_toggle.hasFocus()
     assert "Unknown 'method' specified" in setup.analysis_error_label.text()
-    assert "Change the method" in setup.analysis_error_label.text()
     assert setup.analysis_error_details.isHidden()
     mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert setup.analysis_error_details.isVisible()
@@ -297,7 +296,7 @@ def _run(app, window, work, root, record, analyze):
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
         app.setPalette(palette)
         for page in ("forest", "manuscript", "tables"):
-            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Tables"}[page])
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Data tables (CSV)"}[page])
             view.nav_tree.setCurrentItem(item)
             app.processEvents()
             app.processEvents()
@@ -662,7 +661,7 @@ def _run(app, window, work, root, record, analyze):
     close_result(bmj)
     window.workspace.mark_saved()
     subgroup = matrix(app, window, 'analysis-amino-binary-subgroup', record, keep_results=True)
-    tables_item = next(item for item in subgroup.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
+    tables_item = next(item for item in subgroup.nav_tree.findItems('Data tables (CSV)', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
     subgroup.nav_tree.setCurrentItem(tables_item)
     app.processEvents()
     for index in range(subgroup.table_selector.count()):

@@ -89,6 +89,7 @@ def run(app, window, work, root, record, analyze):
         for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
             palette.setColor(role, QtGui.QColor(text))
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
+        palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(background))
         app.setPalette(palette)
         app.processEvents()
         record('review1-start-' + name, window)
@@ -153,6 +154,7 @@ def run(app, window, work, root, record, analyze):
         for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
             palette.setColor(role, QtGui.QColor('#202020' if name == 'light' else '#f0f0f0'))
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor('#ffffff' if name == 'light' else '#25272b'))
+        palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor('#efefef' if name == 'light' else '#303238'))
         app.setPalette(palette)
         app.processEvents()
         header = table.horizontalHeader()
@@ -328,7 +330,7 @@ def run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
     assert output.read_bytes().startswith(b"%PDF")
-    tables_entry = next(item for item in view.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly))
+    tables_entry = next(item for item in view.nav_tree.findItems('Data tables (CSV)', QtCore.Qt.MatchFlag.MatchExactly))
     view.tables_action.trigger()
     assert view.nav_tree.currentItem() is tables_entry
     assert view.result_table.isVisible()
