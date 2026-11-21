@@ -44,7 +44,7 @@ def check_values_export(view, work, record, label):
 
 
 def run(app, window, work, root, record, analyze):
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
     assert window.model.setData(window.model.index(0, window.model.NAME), 'Gonzalez <α> & colleagues')
     view = analyze(app, window, 'binary.random')
     check_values_export(view, work, record, 'binary')

@@ -2,6 +2,10 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## Unreleased
+
+- Named bundled samples by analysis type and topic. The window title identifies samples, and saving a sample opens Save As.
+
 ## 0.6.1 - 2026-11-21
 
 ### Changed

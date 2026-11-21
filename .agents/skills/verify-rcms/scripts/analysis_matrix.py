@@ -10,6 +10,7 @@ from tests.python.gui.qt_test_support import metric_action, mouse_click, wait
 
 from tests.e2e.desktop_scenarios import DATA_TYPES as DATA_TYPES, FIXED, GOLDEN
 from tests.e2e.plot_observations import load_serialized_object
+from tests.sample_projects import SAMPLE_FILES
 
 
 def set_parameter(app, dialog, key, value):
@@ -69,6 +70,8 @@ def run(
     prepare=None,
     fixed_effects=False,
     group_names=None,
+    trim_fill_side=None,
+    system_clipboard=True,
 ):
     import json
     import re
@@ -177,14 +180,8 @@ def run(
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
-        view.manuscript_text.selectAll()
-        view.manuscript_text.copy()
-        report = app.clipboard().text()
-        cursor = view.manuscript_text.textCursor()
-        cursor.clearSelection()
-        view.manuscript_text.setTextCursor(cursor)
         from tests.e2e.report_retention import assert_report
-        assert_report(view)
+        assert_report(view, system_clipboard=system_clipboard)
         if (scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion",
                          "analysis-data-reg-coef", "analysis-data-generic-effect"}
                 and group_names is None and prepare is None
@@ -484,7 +481,7 @@ def run(
             "small-study-diagnostic": "lymph",
         }[scenario]
         assert window.open(
-            str(root / f"sample_projects/{sample}.rcms"), raise_on_error=True
+            str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
         )
         if sample == "continuous":
             import copy
@@ -497,7 +494,7 @@ def run(
             window.model.set_current_sheet(window.model.current_sheet_id)
         if sample == "amino":
             from tests.e2e.dta_audit import check_small_study_threshold
-            check_small_study_threshold(app, window, record)
+            check_small_study_threshold(app, window, record, system_clipboard=system_clipboard)
         callback_errors = []
 
         def configure():
@@ -515,6 +512,8 @@ def run(
                     dialog.ordinary_funnel_check.setChecked(True)
                     dialog.contour_funnel_check.setChecked(True)
                     dialog.trim_fill_check.setChecked(True)
+                    if trim_fill_side is not None:
+                        dialog.trim_fill_side_combo.setCurrentText(trim_fill_side)
                     dialog.extrapolation_check.setChecked(True)
                 app.processEvents()
                 controls = [dialog.sampling_confidence_combo, dialog.include_tau2_check, dialog.contour_levels_edit]
@@ -552,7 +551,7 @@ def run(
             assert any("contour" in key for key in view.results.images)
             assert any("trim-and-fill" in key for key in view.texts)
             assert "small-study.extrapolation" in view.texts
-        if sample == "amino":
+        if sample == "amino" and trim_fill_side is None:
             from tests.e2e.trimfill_geometry import check_trimfill
             check_trimfill(view, record)
         from tests.e2e.report_retention import assert_report
@@ -561,7 +560,7 @@ def run(
             assert package + ' (version ' + r_bridge.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
         assert window.model.current_sheet.name.casefold() in view.manuscript.title.casefold()
         assert view.manuscript.comparison == view.results.identity.splitlines()[1]
-        assert_report(view)
+        assert_report(view, system_clipboard=system_clipboard)
         references = [section for section in view.manuscript.sections if section.source_key == 'References']
         assert len(references) == 1 and not references[0].tables
         meta_number = next(i for i, line in enumerate(references[0].paragraphs, 1) if '10.1136/ebmental-2019-300117' in line)
@@ -611,12 +610,12 @@ def run(
                 "diagnostic": "lymph",
             }[family]
             assert window.open(
-                str(root / f"sample_projects/{sample}.rcms"), raise_on_error=True
+                str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
             )
             workflow = "standard"
             method = case if case in FIXED else "diagnostic.random"
             if case.startswith("category-"):
-                assert window.open(str(root / "sample_projects/meantime.rcms"), raise_on_error=True)
+                assert window.open(str(root / "sample_projects/Binary subgroups - Mortality by treatment group.rcms"), raise_on_error=True)
                 workflow = "meta-regression"
                 method = "binary.random"
             if case == "diagnostic-joint":
@@ -817,7 +816,7 @@ def run(
         sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity summary")
         heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
         from tests.e2e.report_retention import assert_report
-        assert_report(view)
+        assert_report(view, system_clipboard=system_clipboard)
         assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration"), report
     if scenario == "analysis-diagnostic-joint":
         point = view.texts["Summary operating point"]

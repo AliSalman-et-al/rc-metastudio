@@ -91,6 +91,10 @@ DEFAULT_DATASET_NAME = "untitled_dataset"
 
 
 
+def _is_bundled_sample(path: str | Path) -> bool:
+    return Path(path).resolve().is_relative_to(Path(get_sample_projects_path()).resolve())
+
+
 def _resolve_open_file_path(file_path):
     if file_path in [None, ""] or os.path.exists(file_path):
         return file_path
@@ -300,8 +304,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if manifest.is_file():
             names = {item["file"]: item.get("scientific_name")
                      for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
-        for path in sorted(sample_root.glob("*.rcms")):
-            action = self.sample_menu.addAction(names.get(path.name) or path.stem.replace("-", " "))
+        for path in sorted(sample_root.glob("*.rcms"), key=lambda path: path.name.casefold()):
+            action = self.sample_menu.addAction(names.get(path.name) or path.stem)
             connect_action(action, lambda sample=path: self.open(file_path=str(sample)))
         self.sample_menu.setEnabled(bool(self.sample_menu.actions()))
         self.start_page = start_page.StartPage(
@@ -523,6 +527,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_project_identity(self, state=None):
         path = self.workspace.path
         name = path.name if path is not None else "Untitled project"
+        if path is not None and _is_bundled_sample(path):
+            name = f"{path.stem.partition(' - ')[2] or path.stem} (sample)"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
         self.setWindowFilePath(str(path) if path is not None else "")
@@ -530,6 +536,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.statusbar.showMessage(state, 4000)
 
     def refresh_analysis_actions(self) -> None:
+        self.tableView.refresh_study_calculator()
         included = sum(not study.manually_excluded for study in self.model.get_studies())
         r_ready = r_runtime.is_ready()
         can_analyze = r_ready and included > 0
@@ -1501,28 +1508,30 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def save(self, save_as=False, *, destination: str | Path | None = None):
         if destination is None:
-            destination = self.workspace.path
-            if destination is not None and destination.resolve().is_relative_to(Path(get_sample_projects_path()).resolve()):
-                destination = None
-            if destination is None or save_as:
-                suggested = str(destination) if destination is not None else os.path.join(
-                    get_user_documents_path(), self.model.get_name()
-                )
+            path = self.workspace.path
+            sample = path is not None and _is_bundled_sample(path)
+            if path is None or sample or save_as:
+                if path is None or sample:
+                    suggested = os.path.join(get_user_documents_path(), path.name if path else self.model.get_name())
+                else:
+                    suggested = str(path)
                 selected, _ = QFileDialog.getSaveFileName(
                     parent=self,
-                    caption="Save project",
+                    caption="Save project as" if path is not None else "Save project",
                     directory=suggested,
                     filter="RC MetaStudio projects (*.rcms)",
                 )
                 if not selected:
                     return None
                 destination = selected
+            else:
+                destination = path
 
         destination = str(destination)
         if not destination.lower().endswith(".rcms"):
             destination += ".rcms"
 
-        if Path(destination).resolve().is_relative_to(Path(get_sample_projects_path()).resolve()):
+        if _is_bundled_sample(destination):
             QMessageBox.warning(self, "Choose a different location",
                                 "Save your project outside the bundled sample projects folder.")
             return False

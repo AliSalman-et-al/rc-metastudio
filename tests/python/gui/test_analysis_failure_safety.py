@@ -39,7 +39,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     from rc_metastudio.project import adapter, archive
     from rc_metastudio.workspace.table_model import DatasetTableModel
 
-    sample = archive.load_project(ROOT / "sample_projects/amino.rcms")
+    sample = archive.load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms")
     project = adapter.runtime_from_loaded_project(sample)
     model = DatasetTableModel(project.dataset, add_blank_study=False, current_sheet_id=project.current_sheet_id)
 

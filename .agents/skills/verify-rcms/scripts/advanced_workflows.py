@@ -17,6 +17,7 @@ from tests.python.gui.qt_test_support import key_click, key_clicks, metric_actio
 
 from tests.e2e.desktop_scenarios import PLOT_PRODUCERS
 from tests.e2e.plot_observations import load_saved_analysis
+from tests.sample_projects import SAMPLE_FILES
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -203,7 +204,7 @@ def confidence_inclusion(app, window, record):
     from rc_metastudio.results import window as results_window
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
 
     def set_ci(dialog):
         dialog.confidence_level_spinbox.setValue(90)
@@ -354,14 +355,14 @@ def zero_cells(app, window, record):
     assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
     assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
-    assert "1,097" in report and "Participants in Intervention" in report, report
+    assert "1,097 participants)" in report and "Participants in Intervention" not in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
     assert "Arm: Intervention" in manuscript, manuscript
     view.close()
     window.workspace.mark_saved()
 
     # One participant per group leaves no residual degrees of freedom for SMD.
-    assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Continuous - Blood pressure.rcms"), raise_on_error=True)
     metric_action(window.menuMetric, "SMD").trigger()
     model = window.model
     for column in (model.RAW_DATA[0], model.RAW_DATA[3]):
@@ -1040,7 +1041,7 @@ def calculators(app, window, mode, record):
             family
         ]
         assert window.open(
-            str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+            str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
         )
     kind = {
         "binary": BinaryDataDialog,
@@ -1822,7 +1823,7 @@ def calculators(app, window, mode, record):
 def table_covariates(app, window, record):
     from rc_metastudio.add_new_dialogs import AddCovariateDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     for name, kind in (("Dose", "continuous"), ("Region", "factor")):
 
         def add(dialog, name=name, kind=kind):
@@ -2140,7 +2141,7 @@ def shell(app, window, record):
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-full-screen", window)
 
-    sample = str(ROOT / "sample_projects/amino.rcms")
+    sample = str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms")
     with patch.object(
         QtWidgets.QFileDialog, "getOpenFileName", return_value=(sample, "")
     ):
@@ -2161,7 +2162,7 @@ def shell(app, window, record):
     with patch.object(
         QtWidgets.QFileDialog,
         "getOpenFileName",
-        return_value=(str(ROOT / "sample_projects/continuous.rcms"), ""),
+        return_value=(str(ROOT / "sample_projects/Continuous - Blood pressure.rcms"), ""),
     ):
         modal(app, QtWidgets.QMessageBox, cancel, window.action_open.trigger)
     assert window.model.get_studies(False)[0].label == "Unsaved study"

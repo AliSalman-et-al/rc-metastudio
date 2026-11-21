@@ -1,6 +1,14 @@
 # Sample projects
 
-Open these `.rcms` files through RCMS **File > Open**. The original binary, continuous and diagnostic examples retain every numerical input and effect. Their bundled arm labels use readable names; user projects keep their stored labels.
+Open a bundled example from **File > Open sample project** or from the Welcome page. You can edit and analyze samples freely. Save opens a file picker for your own copy.
+
+| Project | Demonstrates |
+| --- | --- |
+| [Binary - Aminoglycosides](<Binary - Aminoglycosides.rcms>) | Clinical failure and nephrotoxicity outcomes |
+| [Binary - BCG vaccine and tuberculosis](<Binary - BCG vaccine and tuberculosis.rcms>) | Two-arm event counts from 13 studies |
+| [Binary subgroups - Mortality by treatment group](<Binary subgroups - Mortality by treatment group.rcms>) | Mortality with a treatment-group factor and time-to-treatment covariate |
+| [Continuous - Blood pressure](<Continuous - Blood pressure.rcms>) | Two-arm continuous results |
+| [Diagnostic accuracy - LAG positivity](<Diagnostic accuracy - LAG positivity.rcms>) | Diagnostic accuracy from counts |
 
 BCG uses **BCG vaccine / Control**. All 13 original event/total rows and their arm direction match the pinned `metadat::dat.bcg` source: `tpos/tneg` are vaccinated counts and `cpos/cneg` are non-vaccinated control counts. The source is Colditz et al. (1994), JAMA 271(9), 698–702, [doi:10.1001/jama.1994.03510330076038](https://doi.org/10.1001/jama.1994.03510330076038). The exact source/arm check is retained in [the BCG source record](sources/bcg-source.json).
 
@@ -12,8 +20,8 @@ These datasets are distributed in `metadat`, the companion dataset package used 
 
 | Project | Data | Preserved inputs |
 | --- | --- | --- |
-| [Pignon2000-HR.rcms](Pignon2000-HR.rcms) | 65 trial results on mortality with chemotherapy added to locoregional treatment for head and neck cancer | `log(HR) = OmE / V`, `SE = sqrt(1 / V)`; original observed-minus-expected deaths, variance, study IDs and chemotherapy timing |
-| [NielWeise2008-IRR.rcms](NielWeise2008-IRR.rcms) | 9 studies of catheter-related bloodstream infections | Original event counts and catheter-days for anti-infective versus standard catheters |
+| [Time-to-event (HR) - Head and neck cancer, Pignon 2000](<Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms>) | 65 trial results on mortality with chemotherapy added to locoregional treatment for head and neck cancer | `log(HR) = OmE / V`, `SE = sqrt(1 / V)`; original observed-minus-expected deaths, variance, study IDs and chemotherapy timing |
+| [Event rates (IRR) - Catheter infections, Niel-Weise 2008](<Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms>) | 9 studies of catheter-related bloodstream infections | Original event counts and catheter-days for anti-infective versus standard catheters |
 
 For HR, the comparison is **locoregional treatment plus chemotherapy / locoregional treatment alone**. Study years are absent in the source and remain blank. The original order is retained; a cumulative analysis in that order is not a chronological analysis. The **Chemotherapy timing** factor supports subgroup analysis (adjuvant, neoadjuvant, concomitant). RCMS uses sequential internal study IDs while retaining the original IDs, including `26.1` and `26.2`, as a covariate and in study notes. Original numeric inputs remain available through the study dialog; the table displays HR and its calculated interval.
 
@@ -21,7 +29,7 @@ For IRR, the comparison is **anti-infective catheter / standard catheter** and t
 
 ## Illustrative one-arm Mean
 
-[Illustrative-Mean.rcms](Illustrative-Mean.rcms) contains six synthetic study means, sample sizes and standard deviations for learning the one-arm workflow. These values have no clinical interpretation and are not published research. Rebuild it with `uv run python scripts/build_mean_sample.py`. The `analysis-data-onearm-mean` desktop workflow opens it, saves and reopens a copy, and compares displayed pooling with public metafor calculations.
+[Single-arm mean - Synthetic measurements](<Single-arm mean - Synthetic measurements.rcms>) contains six synthetic study means, sample sizes and standard deviations for learning the one-arm workflow. These values have no clinical interpretation and are not published research. Rebuild it with `uv run python scripts/build_mean_sample.py`. The `analysis-data-onearm-mean` desktop workflow opens it, saves and reopens a copy, and compares displayed pooling with public metafor calculations.
 
 ## Sources and citation
 

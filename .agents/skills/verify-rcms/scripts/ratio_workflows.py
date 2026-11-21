@@ -481,10 +481,14 @@ def run(app, window, scenario, record):
             assert model.setData(model.index(i, model.OUTCOMES[6]), "raw")
         view = analysis("standard", "mh")
         expression = f'f <- metafor::rma.mh(measure="IRR",x1i={vector(0)},t1i={vector(1)},x2i={vector(2)},t2i={vector(3)},add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); '
-        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
+        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub,contributing=f$k.yi),auto_unbox=TRUE,digits=16)}')[0]))
         actual = parsed_numeric_sections(view.results)["Summary"]
         for key, name in (("estimate","b"), ("standard_error","se"), ("lower_bound","lower"), ("upper_bound","upper")):
             assert abs(actual["calculation_scale."+key] - expected[name]) <= 1.1e-6, (actual,expected)
+        counts = dict(view.results.manuscript_model_info)
+        assert counts["Studies included"] == "12" and counts["Studies contributing"] == "11", counts
+        assert view.results.contributing_studies == expected["contributing"] == 11
+        assert "11 studies contributed" in view.manuscript.results
         record("ratio-mh-metafor-comparison", view, actual=actual, expected=expected)
         view.close(); app.processEvents()
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
@@ -528,7 +532,7 @@ def verify_bundled_sample(app, window, hazard, record):
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
 
     root = Path(__file__).resolve().parents[4]
-    filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
+    filename = "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms" if hazard else "Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms"
     dataset_name = "dat.pignon2000" if hazard else "dat.nielweise2008"
     family, metric = ("time_to_event", "HR") if hazard else ("event_rates", "IRR")
     source = json.loads((root / "sample_projects/sources/metadat-ratios.json").read_text(encoding="utf-8"))

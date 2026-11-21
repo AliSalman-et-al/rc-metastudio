@@ -68,7 +68,7 @@ def build(name, hazard, source):
                        data_type=data_type, sub_type=subtype, arms=arms, covariates=covariates,
                        settings=settings, rows=studies)])
     state = dict(schema_version=3, current_sheet_id="sheet:0")
-    filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
+    filename = "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms" if hazard else "Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms"
     path = SAMPLES / filename
     save_project(path, cast(JsonObject, project), state)
     loaded = load_project(path)
@@ -77,7 +77,7 @@ def build(name, hazard, source):
         file=filename, format_version=3, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
         semantic_sha256=hashlib.sha256((json.dumps(loaded.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")).hexdigest(),
         analysis_evidence="ratios-samples",
-        scientific_name=project["title"], analysis_family=family, study_count=len(rows),
+        scientific_name=path.stem, analysis_family=family, study_count=len(rows),
         provenance=f"metadat::{name}; original data retained in sources/metadat-ratios.json",
         source_url=source["documentation"], source_doi=source["doi"],
         source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),

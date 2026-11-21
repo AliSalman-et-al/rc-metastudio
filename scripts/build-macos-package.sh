@@ -848,14 +848,14 @@ R_DIR="$APP_DIR/../Frameworks/R.framework/Resources"
 export RPY2_CFFI_MODE=API
 export RCMS_R_HOME="$R_DIR"
 export RCMS_R_LIBS="$R_DIR/library"
-exec "$APP_DIR/../MacOS/RCMetaStudio" "$APP_DIR/sample_projects/amino.rcms"
+exec "$APP_DIR/../MacOS/RCMetaStudio" "$APP_DIR/sample_projects/Binary - Aminoglycosides.rcms"
 SH
 chmod +x "$resources_root/LaunchRCMetaStudio.command"
 
 for required_path in \
   "$app_root/RCMetaStudio" \
-  "$sample_root/BCG.rcms" \
-  "$sample_root/amino.rcms" \
+  "$sample_root/Binary - BCG vaccine and tuberculosis.rcms" \
+  "$sample_root/Binary - Aminoglycosides.rcms" \
   "$r_home/bin/Rscript" \
   "$r_home/library/RCMetaR/DESCRIPTION" \
   "$resources_root/LaunchRCMetaStudio.command"
@@ -904,7 +904,7 @@ if [ ! -s "$runtime_probe_path" ]; then
 fi
 
 if [ "$skip_smoke" -eq 0 ]; then
-  sample_path="$sample_root/BCG.rcms"
+  sample_path="$sample_root/Binary - BCG vaccine and tuberculosis.rcms"
   baseline_dpr="$("$python_exe" - "$runtime_probe_path" <<'PY'
 import json
 import sys
@@ -988,7 +988,7 @@ PY
     --workflow-observation "$workflow_observation_path" \
     --surface-records "$surface_records_path" \
     --sample-observations "$sample_observations_path" \
-    --sample BCG.rcms --sample-root "$sample_root" \
+    --sample "Binary - BCG vaccine and tuberculosis.rcms" --sample-root "$sample_root" \
     --sample-path "$sample_path" \
     --executable "$app_root/RCMetaStudio" --runtime-probe "$runtime_probe_path" \
     --surface-directory "$surface_records_path" --log-path "$smoke_log_path" \

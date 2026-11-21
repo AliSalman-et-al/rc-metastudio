@@ -261,7 +261,7 @@ def curated_golden_bundles(root_dir=None):
     return [
         {
             "id": "amino-binary-random",
-            "dataset": "amino.rcms",
+            "dataset": "Binary - Aminoglycosides.rcms",
             "data_family": "binary",
             "method": "binary.random",
             "metric": "OR",
@@ -280,7 +280,7 @@ def curated_golden_bundles(root_dir=None):
             },
             "artifacts": {"Forest plot": binary_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("amino.rcms"),
+                sample("Binary - Aminoglycosides.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='binary',
@@ -294,7 +294,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "continuous-random",
-            "dataset": "continuous.rcms",
+            "dataset": "Continuous - Blood pressure.rcms",
             "data_family": "continuous",
             "method": "continuous.random",
             "metric": "SMD",
@@ -313,7 +313,7 @@ def curated_golden_bundles(root_dir=None):
             },
             "artifacts": {"Forest plot": continuous_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("continuous.rcms"),
+                sample("Continuous - Blood pressure.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='continuous',
@@ -327,7 +327,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "lymph-diagnostic-random-dor",
-            "dataset": "lymph.rcms",
+            "dataset": "Diagnostic accuracy - LAG positivity.rcms",
             "data_family": "diagnostic",
             "method": ["diagnostic.random"],
             "metric": "DOR",
@@ -346,7 +346,7 @@ def curated_golden_bundles(root_dir=None):
             },
             "artifacts": {"Diagnostic odds ratio forest plot": diagnostic_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("lymph.rcms"),
+                sample("Diagnostic accuracy - LAG positivity.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='diagnostic',
@@ -360,7 +360,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "amino-binary-cumulative",
-            "dataset": "amino.rcms",
+            "dataset": "Binary - Aminoglycosides.rcms",
             "data_family": "binary",
             "method": "binary.random",
             "metric": "OR",
@@ -371,7 +371,7 @@ def curated_golden_bundles(root_dir=None):
                 "Cumulative forest plot": binary_cumulative_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("amino.rcms"),
+                sample("Binary - Aminoglycosides.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='binary',
@@ -385,7 +385,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "amino-binary-leave-one-out",
-            "dataset": "amino.rcms",
+            "dataset": "Binary - Aminoglycosides.rcms",
             "data_family": "binary",
             "method": "binary.random",
             "metric": "OR",
@@ -394,7 +394,7 @@ def curated_golden_bundles(root_dir=None):
             "expected": {"Leave-one-out summary": {}},
             "artifacts": {"Leave-one-out forest plot": binary_loo_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("amino.rcms"),
+                sample("Binary - Aminoglycosides.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='binary',
@@ -408,7 +408,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "continuous-cumulative",
-            "dataset": "continuous.rcms",
+            "dataset": "Continuous - Blood pressure.rcms",
             "data_family": "continuous",
             "method": "continuous.random",
             "metric": "SMD",
@@ -419,7 +419,7 @@ def curated_golden_bundles(root_dir=None):
                 "Cumulative forest plot": continuous_cumulative_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("continuous.rcms"),
+                sample("Continuous - Blood pressure.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='continuous',
@@ -433,7 +433,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "continuous-leave-one-out",
-            "dataset": "continuous.rcms",
+            "dataset": "Continuous - Blood pressure.rcms",
             "data_family": "continuous",
             "method": "continuous.random",
             "metric": "SMD",
@@ -444,7 +444,7 @@ def curated_golden_bundles(root_dir=None):
                 "Leave-one-out forest plot": continuous_loo_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("continuous.rcms"),
+                sample("Continuous - Blood pressure.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='continuous',
@@ -458,7 +458,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "amino-binary-meta-regression",
-            "dataset": "amino.rcms",
+            "dataset": "Binary - Aminoglycosides.rcms",
             "data_family": "binary",
             "method": "meta.regression",
             "metric": "OR",
@@ -467,7 +467,7 @@ def curated_golden_bundles(root_dir=None):
             "expected": {"Summary": {}},
             "artifacts": {"Regression Plot": _analysis_output_path("reg.png")},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("amino.rcms"),
+                sample("Binary - Aminoglycosides.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='binary',
@@ -484,7 +484,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "continuous-meta-regression",
-            "dataset": "continuous.rcms",
+            "dataset": "Continuous - Blood pressure.rcms",
             "data_family": "continuous",
             "method": "meta.regression",
             "metric": "SMD",
@@ -493,7 +493,7 @@ def curated_golden_bundles(root_dir=None):
             "expected": {"Summary": {}},
             "artifacts": {"Regression Plot": _analysis_output_path("reg.png")},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("continuous.rcms"),
+                sample("Continuous - Blood pressure.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='continuous',
@@ -514,7 +514,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "amino-binary-subgroup",
-            "dataset": "amino.rcms",
+            "dataset": "Binary - Aminoglycosides.rcms",
             "data_family": "binary",
             "method": "binary.random",
             "metric": "OR",
@@ -523,7 +523,7 @@ def curated_golden_bundles(root_dir=None):
             "expected": {"Subgroup summary": {}},
             "artifacts": {"Subgroup forest plot": binary_subgroup_params["fp_outpath"]},
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("amino.rcms"),
+                sample("Binary - Aminoglycosides.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='binary',
@@ -540,7 +540,7 @@ def curated_golden_bundles(root_dir=None):
         },
         {
             "id": "continuous-subgroup",
-            "dataset": "continuous.rcms",
+            "dataset": "Continuous - Blood pressure.rcms",
             "data_family": "continuous",
             "method": "continuous.random",
             "metric": "SMD",
@@ -551,7 +551,7 @@ def curated_golden_bundles(root_dir=None):
                 "Subgroup forest plot": continuous_subgroup_params["fp_outpath"]
             },
             "case": headless_analysis.HeadlessAnalysisCase(
-                sample("continuous.rcms"),
+                sample("Continuous - Blood pressure.rcms"),
                 (
                     analysis_adapter.make_analysis_request(
                         data_type='continuous',

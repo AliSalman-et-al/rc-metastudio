@@ -1,6 +1,6 @@
 [
   {
-    "file": "BCG.rcms",
+    "file": "Binary - BCG vaccine and tuberculosis.rcms",
     "pair": {
       "outcome": "tuberculosis",
       "follow_up": "first",
@@ -43,7 +43,7 @@
     }
   },
   {
-    "file": "NielWeise2008-IRR.rcms",
+    "file": "Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms",
     "pair": {
       "outcome": "Catheter-related bloodstream infection",
       "follow_up": "first",
@@ -81,7 +81,7 @@
     }
   },
   {
-    "file": "Pignon2000-HR.rcms",
+    "file": "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms",
     "pair": {
       "outcome": "Mortality",
       "follow_up": "first",
@@ -176,7 +176,7 @@
     }
   },
   {
-    "file": "amino.rcms",
+    "file": "Binary - Aminoglycosides.rcms",
     "pair": {
       "outcome": "clinical failure",
       "follow_up": "first",
@@ -225,7 +225,7 @@
     }
   },
   {
-    "file": "amino.rcms",
+    "file": "Binary - Aminoglycosides.rcms",
     "pair": {
       "outcome": "nephrotoxic",
       "follow_up": "first",
@@ -274,7 +274,7 @@
     }
   },
   {
-    "file": "continuous.rcms",
+    "file": "Continuous - Blood pressure.rcms",
     "pair": {
       "outcome": "blood pressure",
       "follow_up": "first",
@@ -307,7 +307,7 @@
     }
   },
   {
-    "file": "lymph.rcms",
+    "file": "Diagnostic accuracy - LAG positivity.rcms",
     "pair": {
       "outcome": "LAG positive",
       "follow_up": "first",
@@ -368,7 +368,7 @@
     }
   },
   {
-    "file": "meantime.rcms",
+    "file": "Binary subgroups - Mortality by treatment group.rcms",
     "pair": {
       "outcome": "Death",
       "follow_up": "first",

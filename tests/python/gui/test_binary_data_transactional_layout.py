@@ -55,7 +55,7 @@ def _open_binary_dialog(monkeypatch):
         "effect_triplet",
         lambda *_args, **_kwargs: (None, None, None),
     )
-    assert window.open(str(REPO_ROOT / "sample_projects" / "amino.rcms")) is True
+    assert window.open(str(REPO_ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")) is True
     model = window.model
     dialog = binary_data_dialog.BinaryDataDialog(
         copy.deepcopy(model.get_current_analysis_unit_for_study(0)),

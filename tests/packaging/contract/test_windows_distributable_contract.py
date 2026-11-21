@@ -1111,7 +1111,7 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
                 "passed": True,
                 "workflows": {
                     "automation_entry_point": True,
-                    "converted_sample": "amino.rcms",
+                    "converted_sample": "Binary - Aminoglycosides.rcms",
                     "representative_edit": True,
                     "real_r_analysis": True,
                     "result_text": True,
@@ -1144,7 +1144,7 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
                         "manifest_sha256": "c" * 64,
                         "projects": [
                             {
-                                "project": "amino.rcms",
+                                "project": "Binary - Aminoglycosides.rcms",
                                 "sha256": "d" * 64,
                                 "semantic_sha256": "e" * 64,
                                 "opened_in_packaged_application": True,

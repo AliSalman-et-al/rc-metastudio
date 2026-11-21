@@ -2,6 +2,7 @@
 """Deliberate surface inventory; omissions remain a failing acceptance gate."""
 from PyQt6 import QtCore, QtGui, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
+from tests.sample_projects import SAMPLE_FILES
 from scripts.verification_evidence import desktop_tool_executable
 
 
@@ -11,7 +12,7 @@ def analysis_setup(driver, capture, missing):
                            ("diagnostic", "lymph"), ("hr", "Pignon2000-HR"),
                            ("irr", "NielWeise2008-IRR")):
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
         diagnostic_metrics = ["dor"] if family == "diagnostic" else None
         form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95,
                                    diagnostic_metrics=diagnostic_metrics)
@@ -26,7 +27,7 @@ def analysis_setup(driver, capture, missing):
         capture(f"E-{family}-plots", form)
         form.close()
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     original_record = driver.record_step
     driver.record_step = lambda *args, **kwargs: None
     try:
@@ -50,7 +51,7 @@ def analysis_setup(driver, capture, missing):
             form.close()
     from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
     driver.window.action_go.trigger()
     driver.app.processEvents()
     form = next(w for w in driver.app.topLevelWidgets() if isinstance(w, DiagnosticMetricsDialog) and w.isVisible())
@@ -59,7 +60,7 @@ def analysis_setup(driver, capture, missing):
     capture("E-diagnostic-metrics", form)
     form.close()
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     form = SmallStudyEffectsDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
@@ -90,7 +91,7 @@ def analysis_setup(driver, capture, missing):
 
 def results(driver, capture, missing):
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     original = driver.record_step
     driver.record_step = lambda *args, **kwargs: None
     try:
@@ -178,7 +179,7 @@ def plots(driver, capture, missing):
                                    ("diagnostic", "lymph", "diagnostic.random"),
                                    ("hr", "Pignon2000-HR", "time_to_event.random")):
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
         original = driver.record_step
         driver.record_step = lambda *args, **kwargs: None
         try:
@@ -226,19 +227,23 @@ def plots(driver, capture, missing):
         ("analysis-amino-binary-cumulative", (("cumulative", "cumulative_forest"),)),
         ("analysis-amino-binary-leave-one-out", (("leave-one-out", "leave_one_out_forest"),)),
         ("analysis-amino-binary-meta-regression", (("regression", "regression"),)),
-        ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"), ("trim-and-fill-right", "trimfill_funnel"))),
+        ("small-study-binary-extended", (("funnel", "funnel"), ("contour", "contour_funnel"), ("trim-and-fill", "trimfill_funnel"))),
+        ("small-study-binary-extended", (("trim-and-fill-right", "trimfill_funnel"),)),
         ("analysis-diagnostic-joint", (("sroc", "sroc"),)),
         ("analysis-diagnostic-regression-continuous", (("coefficient", "reitsma_coefficient"),)),
         ("small-study-diagnostic", (("deeks", "deeks_funnel"),)),
     )
     for producer, kinds in producers:
         driver.window.workspace.mark_saved()
-        view = matrix(driver.app, driver.window, producer, lambda *args, **kwargs: None, keep_results=True)
+        right_trimfill = kinds[0][0] == "trim-and-fill-right"
+        # This visual drive also runs on desktops without system clipboard access.
+        view = matrix(driver.app, driver.window, producer, lambda *args, **kwargs: None,
+                      keep_results=True, trim_fill_side="Right" if right_trimfill else None,
+                      system_clipboard=False)
         for detail, kind in kinds:
             artifacts = [view.plot_artifact(title)
                          for title, path in view.results.images.items()]
-            selected = [artifact for artifact in artifacts if artifact.plot_kind == kind
-                        and (detail != "trim-and-fill-right" or "right" in artifact.title.lower())]
+            selected = [artifact for artifact in artifacts if artifact.plot_kind == kind]
             if not selected:
                 missing.append(f"G {detail}: producer {producer} did not expose {kind}")
                 continue
@@ -249,7 +254,7 @@ def plots(driver, capture, missing):
             view._show_report(False)
             view.fit_width_action.trigger()
             svg = driver.WORK / f"{detail}-geometry.svg"
-            if detail in {"contour", "sroc", "trim-and-fill-right"}:
+            if detail in {"contour", "sroc"}:
                 view.plot_service.export(regenerator=selected[0].capability.regenerator,
                                          params_path=selected[0].params_path, output_path=str(svg))
                 assert svg.is_file() and svg.stat().st_size > 0, f"Missing or empty {detail} geometry SVG after export: {svg}"
@@ -264,10 +269,8 @@ def plots(driver, capture, missing):
             assert heading.font().pointSizeF() == view.font().pointSizeF()
             capture(f"G-{detail}-fit", view)
             if detail == "trim-and-fill-right":
-                from xml.etree import ElementTree as ET
-                root = ET.parse(svg).getroot()
-                hollow = [n for n in root.iter('{http://www.w3.org/2000/svg}circle') if 'fill: none' in n.attrib.get('style', '') or n.attrib.get('fill') == 'none']
-                assert len(hollow) == 4, len(hollow)
+                from tests.e2e.trimfill_geometry import check_trimfill
+                check_trimfill(view, driver.record_step, side="right")
                 capture("G-trim-and-fill-right", view)
             if detail == "cumulative":
                 scrollbar = required(view.graphics_view.verticalScrollBar())
@@ -393,7 +396,7 @@ def imports(driver, capture, missing):
 
 def shell(driver, capture, missing):
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     assert driver.window.menu_file.actions() == [
         driver.window.action_new_dataset, driver.window.action_open,
         driver.window.action_open_recent_2.menuAction(), driver.window.action_import_csv,
@@ -445,7 +448,7 @@ def dialogs(driver, capture, missing):
     from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
     from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     driver.window.model.add_covariate("Dose", "continuous")
     sheet = driver.window.model.current_sheet
     for detail, form in (
@@ -481,7 +484,7 @@ def calculators(driver, capture, missing, prefix="D", families=None):
         if families and family not in families:
             continue
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
         model = driver.window.model
         unit = model.get_current_analysis_unit_for_study(0)
         if kind is RatioDataDialog:
@@ -619,7 +622,7 @@ def structure(driver, capture, missing):
     from rc_metastudio import main_wizard as wizard
     from rc_metastudio.edit_name_dialogs import EditArmNameDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     table = driver.window.tableView
     driver.window.model.add_covariate("Dose", "continuous")
     table.synchronize_column_widths()
@@ -771,7 +774,7 @@ def run(driver):
             import shutil
             from datetime import datetime
             recent = driver.WORK / 'Recent project.rcms'
-            shutil.copyfile(driver.ROOT / 'sample_projects/amino.rcms', recent)
+            shutil.copyfile(driver.ROOT / 'sample_projects/Binary - Aminoglycosides.rcms', recent)
             modified = datetime(2026, 11, 5, 12).timestamp()
             os.utime(recent, (modified, modified))
             driver.window.start_page.set_recent_projects([str(recent)], driver.window.open)

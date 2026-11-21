@@ -1,5 +1,6 @@
 """Audit journeys with real Qt, RCMetaR and the bundled projects."""
 import csv
+import hashlib
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, sip
@@ -27,10 +28,12 @@ def run(app, window, work, root, record, analyze):
     def open_sample(label):
         next(action for action in window.sample_menu.actions() if action.text() == label).trigger()
         app.processEvents()
+        assert window.workspace.path.name == label + ".rcms"
 
     sample_button = required(window.start_page.findChild(QtWidgets.QPushButton, "empty_recent_sample"))
     assert sample_button.menu() is window.sample_menu
     assert window.sample_menu.menuAction() in window.menu_file.actions()
+    assert not window.tableView.study_calculator_action.isEnabled()
     record("sample-welcome", window)
     menu_bar = required(window.menuBar())
     mouse_click(menu_bar, QtCore.Qt.MouseButton.LeftButton,
@@ -38,16 +41,94 @@ def run(app, window, work, root, record, analyze):
     app.processEvents()
     record("sample-file-menu", window.menu_file)
     window.menu_file.close()
-    sample = root / "sample_projects/amino.rcms"
-    original = sample.read_bytes()
-    open_sample("Aminoglycosides")
-    assert window.workspace.path == sample
-    saved = work / "amino-copy.rcms"
-    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(saved), "")) as picker:
-        window.action_save.trigger()
-    assert picker.call_count == 1 and saved.is_file() and sample.read_bytes() == original
-    assert window.open(str(saved), raise_on_error=True)
-    record("sample-save-as-reopened", window, file=str(saved))
+    sample = root / "sample_projects/Binary - BCG vaccine and tuberculosis.rcms"
+    original = hashlib.sha256(sample.read_bytes()).hexdigest()
+    sample_label = sample.stem
+    assert [action.text() for action in window.sample_menu.actions()] == sorted(
+        path.stem for path in sample.parent.glob("*.rcms")
+    )
+
+    def open_welcome_sample():
+        window.sample_menu.popup(sample_button.mapToGlobal(sample_button.rect().bottomLeft()))
+        record("sample-welcome-menu", window.sample_menu)
+        window.sample_menu.close()
+        open_sample(sample_label)
+
+    def open_file_sample():
+        with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(sample), "")):
+            window.action_open.trigger()
+
+    def open_recent_sample():
+        next(action for action in window.action_open_recent_2.actions()
+             if action.data() == str(sample)).trigger()
+
+    get_save_file_name = QtWidgets.QFileDialog.getSaveFileName
+    quit_on_close = app.quitOnLastWindowClosed()
+    app.setQuitOnLastWindowClosed(False)
+    window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, False)
+    try:
+        for route, open_project in (
+            ("welcome", open_welcome_sample),
+            ("sample-menu", lambda: open_sample(sample_label)),
+            ("file-open", open_file_sample),
+            ("recent", open_recent_sample),
+        ):
+            open_project()
+            assert window.workspace.path == sample
+            assert "BCG vaccine and tuberculosis (sample)" in window.windowTitle()
+            label = f"Edited BCG study via {route}"
+            assert window.model.setData(window.model.index(0, window.model.NAME), label)
+            assert window.workspace.is_dirty
+            saved = work / f"bcg-{route}-copy.rcms"
+            picker_count = 0
+
+            def pick_destination(**kwargs):
+                nonlocal picker_count
+                picker_count += 1
+                assert kwargs["caption"] == "Save project as"
+                submit = picker_count == 2
+                result = None
+
+                def drive_picker(dialog):
+                    assert dialog.windowTitle() == "Save project as"
+                    dialog.selectFile(str(saved))
+                    record(f"sample-{route}-{'close' if submit else 'ctrl-s'}-save-as", dialog)
+                    if submit:
+                        dialog.accept()
+                    else:
+                        dialog.reject()
+
+                def launch_picker():
+                    nonlocal result
+                    result = get_save_file_name(**kwargs, options=QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+
+                modal(app, QtWidgets.QFileDialog, drive_picker, launch_picker)
+                return result
+
+            def save_on_close(dialog):
+                assert dialog.windowTitle() == "Unsaved changes"
+                record(f"sample-{route}-unsaved-changes", dialog)
+                required(dialog.button(QtWidgets.QMessageBox.StandardButton.Save)).click()
+
+            with patch.object(QtWidgets.QFileDialog, "getSaveFileName", side_effect=pick_destination):
+                window.activateWindow()
+                window.tableView.setFocus()
+                app.processEvents()
+                key_click(window.tableView, QtCore.Qt.Key.Key_S, QtCore.Qt.KeyboardModifier.ControlModifier)
+                assert picker_count == 1 and window.workspace.path == sample and window.workspace.is_dirty
+                modal(app, QtWidgets.QMessageBox, save_on_close, window.close)
+            assert picker_count == 2 and saved.is_file() and window.workspace.path == saved
+            assert hashlib.sha256(sample.read_bytes()).hexdigest() == original
+            assert window.action_open_recent_2.actions()[0].data() == str(saved)
+            window.show()
+            assert window.open(str(saved), raise_on_error=True)
+            assert window.model.current_sheet.rows[0].label == label and "(sample)" not in window.windowTitle()
+            record(f"sample-{route}-copy-reopened", window, file=str(saved), original_sha256=original)
+    finally:
+        window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        app.setQuitOnLastWindowClosed(quit_on_close)
+
+    open_sample("Binary - Aminoglycosides")
 
     view = analyze(app, window, "binary.random")
     assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
@@ -125,27 +206,35 @@ def run(app, window, work, root, record, analyze):
     record("small-study-results-replaced", changed)
     changed.close()
 
-    open_sample("Illustrative Mean")
+    open_sample("Single-arm mean - Synthetic measurements")
+    window.model.rename_arm(window.model.arm_names[0], "Custom cohort")
     mean = analyze(app, window, "continuous.random")
-    assert "135 participants" in mean.manuscript.results and "participants in Participants" not in mean.manuscript.results
+    assert "135 participants)" in mean.manuscript.results and "participants in Custom cohort" not in mean.manuscript.results
     assert dict(mean.results.manuscript_model_info)["Participants"] == "135"
     mean.report_action.trigger()
     record("one-arm-participant-prose", mean, prose=mean.manuscript.results)
     mean.close()
 
-    open_sample("Continuous outcome example")
+    window.workspace.mark_saved()
+    open_sample("Continuous - Blood pressure")
     table = window.tableView
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
     table.setFocus()
     window.activateWindow()
     app.processEvents()
+    assert table.study_calculator_action.isEnabled() and "F4" in table.accessibleDescription()
+    with patch("rc_metastudio.r_runtime.is_ready", return_value=False):
+        window.refresh_analysis_actions()
+        assert not table.study_calculator_action.isEnabled()
+    window.refresh_analysis_actions()
 
     def inspect_continuous(dialog):
         if dialog.input_mode_combo.findData("pre-post") < 0:
-            raise AssertionError(dialog.input_mode_combo.currentText())
+            raise AssertionError((dialog.current_effect, dialog.input_mode_combo.currentText()))
         dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
         app.processEvents()
         assert dialog.preview_source_label.isVisible()
+        assert dialog.preview_source_label.wordWrap()
         record("continuous-pre-post-source", dialog, source=dialog.preview_source_label.text())
         dialog.reject()
 
@@ -180,11 +269,15 @@ def run(app, window, work, root, record, analyze):
     window.action_go.trigger()
     setup = visible(AnalysisSetupDialog)
     assert any(label.text() == outcome and label.wordWrap() for label in setup.findChildren(QtWidgets.QLabel))
+    viewport = required(setup.content_scroll_area.viewport())
+    advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
+    assert viewport.rect().contains(advanced), (viewport.rect(), advanced)
     record("long-outcome-in-setup", setup)
     required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)).click()
     app.processEvents()
     error = setup.analysis_error_label.text()
-    assert error.startswith("No study has enough data to analyse.") and f"{study} (2021)" in error and "events" in error and "total" in error
+    assert error.startswith("No study has enough data to analyze.") and f"{study} (2021)" in error and "events" in error and "total" in error
+    assert "events and totals for both arms, or an estimate with its confidence interval or standard error" in error
     assert not setup.analysis_error_toggle.isVisible()
     record("named-empty-study-blocked", setup, error=error)
     setup.reject()
@@ -204,11 +297,25 @@ def run(app, window, work, root, record, analyze):
     menu = visible(QtWidgets.QMenu)
     record("row-context-calculator", menu)
     action = next(action for action in menu.actions() if action.text() == "Study calculator…")
+    assert action.shortcut().toString() == "F4" and action.isShortcutVisibleInContextMenu()
     menu.close()
     modal(app, BinaryDataDialog, inspect_binary, action.trigger)
 
+    for row, label in enumerate(("Second study", "Third study", "Fourth study", "Fifth study"), start=1):
+        assert model.setData(model.index(row, model.NAME), label)
+    table.setCurrentIndex(model.index(len(model.current_sheet.rows), model.NAME))
+    assert not table.study_calculator_action.isEnabled()
+    window.action_go.trigger()
+    setup = visible(AnalysisSetupDialog)
+    required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)).click()
+    app.processEvents()
+    error = setup.analysis_error_label.text()
+    assert "and 2 more" in error and "Third study" in error and "Fourth study" not in error, error
+    record("incomplete-study-message-bounded", setup, error=error)
+    setup.reject()
+
     window.workspace.mark_saved()
-    open_sample("Niel-Weise 2008 — Catheter infections")
+    open_sample("Event rates (IRR) - Catheter infections, Niel-Weise 2008")
     audit_fixture = root / "tests/fixtures/irr-duplicate-labels.csv"
     with audit_fixture.open(encoding="utf-8", newline="") as stream:
         rows = list(csv.reader(stream))
@@ -222,7 +329,8 @@ def run(app, window, work, root, record, analyze):
         assert isinstance(page, main_wizard.CsvImportPage)
         page.data_type_combo.setCurrentText("Incidence rate ratio")
         assert not page.isComplete()
-        assert "Rows 6 and 7" in page.import_status.text()
+        assert "Row 7" in page.import_status.text() and "already exists in row 6" in page.import_status.text()
+        assert page.import_tabs.currentWidget() is page.preview_grp_box
         assert not wizard.button(QtWidgets.QWizard.WizardButton.FinishButton).isEnabled()
         record("duplicate-study-preview-blocked", wizard, error=page.import_status.text())
         with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(audit_fixture), "")):
@@ -236,3 +344,44 @@ def run(app, window, work, root, record, analyze):
     jaeger = [row.year for row in window.model.current_sheet.rows if row.label == "Jaeger et al."]
     assert jaeger == [2001, 2005] and len(window.model.current_sheet.rows) == 9
     record("duplicate-name-imported", window, years=jaeger)
+
+    model = window.model
+    new_row = len(model.current_sheet.rows)
+    assert model.setData(model.index(new_row, model.YEAR), 2008)
+    assert model.setData(model.index(new_row, model.NAME), " Jaeger et al. ")
+    assert model.current_sheet.rows[new_row].label == "Jaeger et al."
+    record("study-identity-grid-distinct-year", window)
+    def conflict_message(dialog):
+        assert "Study ‘Jaeger et al.’ (2001) already exists in row 5." in dialog.text(), dialog.text()
+        record("study-identity-year-conflict", dialog)
+        dialog.accept()
+
+    modal(app, QtWidgets.QMessageBox, conflict_message,
+          lambda: model.setData(model.index(new_row, model.YEAR), 2001))
+    assert model.current_sheet.rows[new_row].year == 2008
+    paste_sources = []
+
+    def paste_identity(row, year):
+        window.tableView.setCurrentIndex(window.model.index(row, window.model.NAME))
+        payload = f"Jaeger et al.\t{year}"
+        clipboard = app.clipboard()
+        clipboard.setText(payload)
+        if app.platformName() == "windows" and not clipboard.ownsClipboard():
+            paste_sources.append("seeded clipboard read after Windows denied access")
+            with patch.object(QtGui.QClipboard, "text", return_value=payload):
+                window.action_paste.trigger()
+        else:
+            paste_sources.append("Qt clipboard")
+            window.action_paste.trigger()
+
+    paste_identity(new_row + 1, 2009)
+    assert window.model.current_sheet.rows[new_row + 1].year == 2009
+
+    def paste_conflict(dialog):
+        assert dialog.text() == "Study ‘Jaeger et al.’ (2005) already exists in row 6."
+        record("study-identity-paste-conflict", dialog)
+        dialog.accept()
+
+    modal(app, QtWidgets.QMessageBox, paste_conflict, lambda: paste_identity(new_row + 2, 2005))
+    assert len(window.model.current_sheet.rows) == new_row + 2
+    record("study-identity-paste-atomic", window, clipboard_source=paste_sources)

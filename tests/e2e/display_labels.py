@@ -1,5 +1,6 @@
 """Inspect attached menus and real dialog/result surfaces across dataset families."""
 import re
+from tests.sample_projects import SAMPLE_FILES
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -127,7 +128,7 @@ def run(app, window, record):
             matrix(app, window, 'analysis-data-' + family, observe)
         else:
             sample = 'Pignon2000-HR' if family == 'hr' else 'NielWeise2008-IRR'
-            assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
+            assert window.open(str(root / 'sample_projects' / SAMPLE_FILES[sample]), raise_on_error=True)
             view = analyze_existing(app, window, 'standard', 'time_to_event.random' if family == 'hr' else 'event_rates.random', observe)
             view.close()
         menus(window.menuBar())

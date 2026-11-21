@@ -130,7 +130,7 @@ def run(app, window, work, record):
     window.workspace.mark_saved()
     # Frozen legacy input remains intentional test data, separate from bundled examples.
     legacy = work / "legacy-input-arm-names.rcms"
-    legacy.write_bytes((Path(__file__).resolve().parents[1] / "fixtures/legacy-projects/amino.rcms").read_bytes())
+    legacy.write_bytes((Path(__file__).resolve().parents[1] / "fixtures/legacy-projects/Binary - Aminoglycosides.rcms").read_bytes())
     original = legacy.read_bytes()
     assert window.open(str(legacy), raise_on_error=True)
     assert window.model.arm_names == ["Intervention", "Control"], window.model.arm_names

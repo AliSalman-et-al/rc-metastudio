@@ -27,7 +27,7 @@ def main():
                        covariates=[], settings=dict(metric="Mean", confidence_level=95.0, arms=[arm_id]),
                        rows=rows)])
     state = dict(schema_version=3, current_sheet_id=sheet_id)
-    path = ROOT / "sample_projects/Illustrative-Mean.rcms"
+    path = ROOT / "sample_projects/Single-arm mean - Synthetic measurements.rcms"
     save_project(path, cast(JsonObject, project), state)
     reopened = load_project(path)
     assert reopened.project == project and reopened.state == state
@@ -39,6 +39,7 @@ def main():
                      allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")).hexdigest(),
                  provenance="Synthetic illustrative values; no publication or clinical interpretation.",
                  analysis_evidence="analysis-data-onearm-mean",
+                 scientific_name=path.stem,
                  workflow_coverage=["raw one-arm Mean", "save and reopen", "pooling compared with metafor"],
                  test_usage=["tests/e2e/mean_metric_migration.py"])
     manifest["projects"] = [p for p in manifest["projects"] if p["file"] != path.name] + [entry]

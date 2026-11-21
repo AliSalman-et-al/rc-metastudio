@@ -1118,9 +1118,9 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
 ):
     from tests.analysis_regression.golden.support import golden_analysis
     bundles = [
-        _capture_bundle("amino-binary-random", "amino.rcms", "binary.random"),
+        _capture_bundle("amino-binary-random", "Binary - Aminoglycosides.rcms", "binary.random"),
         _capture_bundle(
-            "continuous-random", "continuous.rcms", "continuous.random"
+            "continuous-random", "Continuous - Blood pressure.rcms", "continuous.random"
         ),
     ]
     plot = tmp_path / "plot.png"
@@ -1225,7 +1225,7 @@ def _baseline():
         "curated_golden_set": [
             {
                 "id": "amino-binary-random",
-                "dataset": "amino.rcms",
+                "dataset": "Binary - Aminoglycosides.rcms",
                 "method": "binary.random",
                 "metric": "OR",
                 "tolerances": {"estimate": 0.001},

@@ -48,8 +48,8 @@ def open_mean_sample(app, window, record, root, work):
     import shutil
     from rc_metastudio.project.adapter import dataset_to_project
 
-    source = work / "Illustrative-Mean.rcms"
-    shutil.copy2(root / "sample_projects/Illustrative-Mean.rcms", source)
+    source = work / "Single-arm mean - Synthetic measurements.rcms"
+    shutil.copy2(root / "sample_projects/Single-arm mean - Synthetic measurements.rcms", source)
     assert window.open(str(source), raise_on_error=True)
     assert window.model.current_effect == "Mean"
     sheet = window.model.current_sheet

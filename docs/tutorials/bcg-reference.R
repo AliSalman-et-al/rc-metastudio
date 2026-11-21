@@ -6,7 +6,7 @@ output <- args[[1L]]
 if (dir.exists(output)) stop("Choose a new output directory to preserve previous evidence.")
 dir.create(output, recursive = TRUE)
 
-project.path <- "sample_projects/BCG.rcms"
+project.path <- "sample_projects/Binary - BCG vaccine and tuberculosis.rcms"
 project <- jsonlite::fromJSON(unz(project.path, "project.json"), simplifyVector = FALSE)
 sheet <- project$sheets[[1L]]
 rows <- Filter(function(row) isTRUE(row$include), sheet$rows)

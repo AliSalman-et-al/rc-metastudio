@@ -33,9 +33,9 @@ def run(app, window, work, root, record, analyze):
     assert not app.activeModalWidget()
     assert not window.workspace.is_dirty
     missing = work / 'missing project.rcms'
-    present = work / 'projects' / ('a long path for evidence ' * 3).rstrip() / 'amino.rcms'
+    present = work / 'projects' / ('a long path for evidence ' * 3).rstrip() / 'Binary - Aminoglycosides.rcms'
     present.parent.mkdir(parents=True)
-    present.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
+    present.write_bytes((root / 'sample_projects/Binary - Aminoglycosides.rcms').read_bytes())
     settings.add_file_to_recent_files(str(missing))
     settings.add_file_to_recent_files(str(present))
     window.populate_open_recent_menu()

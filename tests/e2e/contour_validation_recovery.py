@@ -10,7 +10,7 @@ def run(app, window, work, record):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     root = Path(__file__).resolve().parents[2]
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/NielWeise2008-IRR.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'sample_projects/Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms'), raise_on_error=True)
     def small_study(dialog):
         explanation = dialog.automatic_test_label.text()
         assert '10' in explanation and '9 eligible' in dialog.context_label.text(), explanation

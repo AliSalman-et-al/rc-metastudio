@@ -13,7 +13,7 @@ Users open **Small-study effects…**, inspect eligibility, select procedures, a
 
 ## Driving it with Qt E2E
 
-Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient included raw study data.
+Preconditions: doctor passes; `sample_projects/Binary - Aminoglycosides.rcms` has sufficient included raw study data.
 
 - **Counts.** The amino configuration asserts 19 included and 17 eligible studies, with an explanation that two studies with no events in either arm are ineligible for odds-ratio asymmetry tests.
 - **Configure.** Run `uv run python scripts/verify_rcms.py small-study-effects`. Trigger `action_publication_bias`; the visible modal is `SmallStudyEffectsDialog`. Enable `ordinary_funnel_check`, record `small-study-configured`, then click the actual OK button.

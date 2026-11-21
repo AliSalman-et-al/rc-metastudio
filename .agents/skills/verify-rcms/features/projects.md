@@ -48,7 +48,7 @@ These add to `editing`, `csv`, and the eight original New Dataset workflows plus
 
 ## Driving it with Qt E2E
 
-Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user project is involved.
+Preconditions: doctor passes; `sample_projects/Binary - Aminoglycosides.rcms` is readable; no user project is involved.
 
 - **Edit and persist.** Run `uv run python scripts/verify_rcms.py editing`. The driver opens the sample through the application's open path, edits the NAME column with a QLineEdit, sends Return, and triggers `action_undo`/`action_redo`. Save As uses an isolated file-picker destination. `workflow/edited.rcms` reopens with `München – edited`; `edit-reopened` captures the table and preserved save path after a corrupt open fails. The reopened data still analyze through real R.
 - **Import and persist.** Run `uv run python scripts/verify_rcms.py csv`. The wizard's `select_file_btn` loads a generated CSV. `csv-preview` shows three rows. The reopened `workflow/imported.rcms` contains `Alpha, München`, numeric Dose `7.0` and factor Region `South`; analysis displays the imported study weights.

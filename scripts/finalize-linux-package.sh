@@ -31,9 +31,9 @@ if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" RCMS_RE
   --workflow-observation "$qualification_root/workflow-observation.json" \
   --surface-records "$qualification_root/surface-records.json" \
   --sample-observations "$qualification_root/sample-observations.json" \
-  --sample BCG.rcms \
+  --sample "Binary - BCG vaccine and tuberculosis.rcms" \
   --sample-root "$extracted_root/sample_projects" \
-  --sample-path "$extracted_root/sample_projects/BCG.rcms" \
+  --sample-path "$extracted_root/sample_projects/Binary - BCG vaccine and tuberculosis.rcms" \
   --executable "$extracted_root/LaunchRCMetaStudio.sh" \
   --runtime-probe "$qualification_root/extracted-runtime-probe.json" \
   --surface-directory "$qualification_root/surfaces" \

@@ -63,6 +63,7 @@ from tests.analysis_regression.golden.support.golden_analysis import (
     parsed_numeric_sections,
 )
 from tests.e2e.plot_observations import load_saved_analysis
+from tests.sample_projects import SAMPLE_FILES
 
 EVIDENCE = (
     Path(os.environ["RCMS_E2E_EVIDENCE_DIR"])
@@ -109,8 +110,8 @@ def record_step(action, *widgets, **observations):
     observations["visible_plot_labels"] = plot_label_inventory(plot_paths, user_names)
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
+        popup = isinstance(widget, QtWidgets.QMenu)
         if app.platformName() in {"windows", "xcb", "cocoa"}:
-            popup = isinstance(widget, QtWidgets.QMenu)
             if popup:
                 assert widget.isVisible(), action
             else:
@@ -132,10 +133,18 @@ def record_step(action, *widgets, **observations):
                 capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
-        if isinstance(widget, QtWidgets.QMenu):
+        if popup:
             pixels = capture.toImage()
-            assert len({pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
-                        for y in range(0, pixels.height(), 4)}) > 4, f"Blank menu capture: {action}"
+            colors = {pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                      for y in range(0, pixels.height(), 4)}
+            if len(colors) <= 4 and app.platformName() in {"windows", "xcb", "cocoa"}:
+                assert widget.isVisible(), action
+                capture = widget.grab()
+                pixels = capture.toImage()
+                colors = {pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                          for y in range(0, pixels.height(), 4)}
+                observations["capture_fallback"] = "Qt menu grab after blank desktop composite"
+            assert len(colors) > 4, f"Blank menu capture: {action}"
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
         if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
@@ -420,7 +429,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
 def analysis_dialog(app, window):
     QtCore.QSettings().remove("analysis/advancedExpanded")
     for sample in ("amino", "continuous", "Pignon2000-HR", "lymph"):
-        assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert window.open(str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
         for row in range(window.model.rowCount()):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
             decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
@@ -540,7 +549,7 @@ def sample_analysis(app, window, sample):
         record_step("wizard-return-advances", wizard)
         wizard.reject()
     assert window.open(
-        str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+        str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
     )
     first_study, study_count = {
         "amino": ("Gonzalez", 19),
@@ -722,7 +731,7 @@ def rename_sheet_inline(app, window, name, invalid=False):
 def sheets_persist(app, window):
     import copy
     from rc_metastudio.project.adapter import dataset_to_project
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     add_named_sheet(app, window, "Third")
     tabs = window.sheet_tabs
     tabs.setCurrentIndex(0)
@@ -813,7 +822,7 @@ def sheets_swap(app, window):
     import math
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     from tests.fit_observations import observe_fit
-    for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Pignon2000-HR.rcms", "HR"), ("NielWeise2008-IRR.rcms", "IRR")):
+    for filename, metric in (("Binary - Aminoglycosides.rcms", "OR"), ("Binary - Aminoglycosides.rcms", "RD"), ("Continuous - Blood pressure.rcms", "MD"), ("Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms", "HR"), ("Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms", "IRR")):
         window.workspace.mark_saved()
         assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
         model = window.model
@@ -848,7 +857,7 @@ def sheets_swap(app, window):
             if favours is not None:
                 assert model.current_sheet.settings["favours_labels"] == (list(reversed(favours)) if iteration == 1 else favours)
             record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
-            if filename == "amino.rcms" and iteration == 1:
+            if filename == "Binary - Aminoglycosides.rcms" and iteration == 1:
                 from xml.etree import ElementTree as ET
                 for title, params_path in view.results.image_params_paths.items():
                     exported = WORK / "amino-swapped-forest.svg"
@@ -861,7 +870,7 @@ def sheets_swap(app, window):
             if iteration == 0:
                 window.action_swap_arms.trigger()
                 swapped = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
-                if filename != "Pignon2000-HR.rcms":
+                if filename != "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms":
                     assert swapped != headers
                 assert [a.name for a in model.current_sheet.arms] == list(reversed(arms))
             elif iteration == 1:
@@ -873,7 +882,7 @@ def sheets_swap(app, window):
         else:
             assert math.isclose(values[1], 1 / values[0], abs_tol=.003), values
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
     assert not window.action_swap_arms.isEnabled()
     add_named_sheet(app, window, "Diagnostic 2", diagnostic=True)
     for index in (0, 1, 0):
@@ -919,7 +928,7 @@ def sheets(app, window):
                 r_code=code, expected=expected, actual=actual)
 
     for sample in ("NielWeise2008-IRR", "amino"):
-        assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert window.open(str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
         table = window.tableView
         for fit in (False, True):
             if fit:
@@ -936,7 +945,7 @@ def sheets(app, window):
     from rc_metastudio.project.adapter import dataset_to_project
     def project(dataset):
         return dataset_to_project(dataset)
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     assert_study_grid(app, window)
     tabs = window.sheet_tabs
     original_palette = app.palette()
@@ -1249,7 +1258,7 @@ def verify_sheet_strip(app, window, screens):
 
 
 def editing(app, window):
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     table = window.tableView
     original = str(window.model.data(window.model.index(0, window.model.NAME)))
     record_step("table-before-edit", window, name=original)
@@ -1312,7 +1321,7 @@ def xlsx_import(app, window):
     sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
     from advanced_workflows import modal
     from rc_metastudio import main_wizard
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     original_palette = app.palette()
     screens = WORK / "screens"
     screens.mkdir(parents=True, exist_ok=True)
@@ -1676,7 +1685,7 @@ def csv_import(app, window):
 def plot_edit(app, window):
     from rc_metastudio.results.plot_editor import EditPlotDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random", estimator="DL")
     title = next(iter(view.results.display_images))
     path = Path(view.results.display_images[title])
@@ -1761,7 +1770,7 @@ def plot_edit(app, window):
 def small_study_effects(app, window):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
     callback_errors = []
 
     def run():
@@ -1882,7 +1891,7 @@ def calculator(app, window, family):
         ),
     }[family]
     assert window.open(
-        str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+        str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
     )
 
     def raw():
@@ -2361,7 +2370,7 @@ def hillclimb(app, window):
 
     # T4 starts from the committed populated diagnostic project, as PLAN specifies.
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
     begin("T4")
     diagnostic = run_analysis(window.action_go, diagnostic=True)
     end(diagnostic)
@@ -2410,7 +2419,7 @@ def subgroup_image(app, window, scenario):
         app.setFont(font)
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from unittest.mock import patch
-    assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "sample_projects/Binary subgroups - Mortality by treatment group.rcms"), raise_on_error=True)
     def visible_result(kind):
         return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
     window.action_subgroup_ma.trigger()

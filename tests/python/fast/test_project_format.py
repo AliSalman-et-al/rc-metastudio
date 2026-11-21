@@ -260,7 +260,7 @@ def test_project_schema_rejects_unknown_fields_and_invalid_types(
     (lambda project: cast(list, _first_study(project)["entered_effects"]).append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
 ], ids=["duplicate-sheet", "raw-arm-reference", "raw-arity", "comparison-reference"])
 def test_semantic_validation_rejects_invalid_domain_relationships(tmp_path, mutation, message):
-    project = _snapshot_project("amino.rcms")
+    project = _snapshot_project("Binary - Aminoglycosides.rcms")
     mutation(project)
     with pytest.raises(ProjectFormatError, match=message):
         save_project(tmp_path / "semantic.rcms", project, _minimal_state())
@@ -323,7 +323,7 @@ def test_group_subtype_contract_rejects_too_few_or_forbidden_extra_groups(
 def test_schema_rejects_values_outside_the_domain_vocabulary(
     tmp_path: Path, field: str, value: JsonValue
 ) -> None:
-    project = _snapshot_project("amino.rcms")
+    project = _snapshot_project("Binary - Aminoglycosides.rcms")
     outcome = _first_sheet(project)
     outcome[field] = value
 
@@ -332,11 +332,11 @@ def test_schema_rejects_values_outside_the_domain_vocabulary(
 
 
 @pytest.mark.parametrize(("sample", "mutation", "message"), [
-    ("amino.rcms", lambda sheet: sheet["rows"].append(copy.deepcopy(sheet["rows"][0])), "duplicate identity"),
-    ("amino.rcms", lambda sheet: sheet["arms"][1].update(id=sheet["arms"][0]["id"]), "duplicate identity"),
-    ("BCG.rcms", lambda sheet: sheet["covariates"].append(copy.deepcopy(sheet["covariates"][0])), "covariates: invalid or duplicate identity"),
-    ("amino.rcms", lambda sheet: sheet["rows"][0]["entered_effects"].append({"metric": "MD", "arms": [a["id"] for a in sheet["arms"][:2]], "values": {"est": .2, "lower": .1, "upper": .3, "SE": None}}), "metric conflicts with family"),
-    ("amino.rcms", lambda sheet: next(iter(sheet["rows"][0]["raw_data"].values())).__setitem__(0, -1.0), "count data cannot be negative"),
+    ("Binary - Aminoglycosides.rcms", lambda sheet: sheet["rows"].append(copy.deepcopy(sheet["rows"][0])), "duplicate identity"),
+    ("Binary - Aminoglycosides.rcms", lambda sheet: sheet["arms"][1].update(id=sheet["arms"][0]["id"]), "duplicate identity"),
+    ("Binary - BCG vaccine and tuberculosis.rcms", lambda sheet: sheet["covariates"].append(copy.deepcopy(sheet["covariates"][0])), "covariates: invalid or duplicate identity"),
+    ("Binary - Aminoglycosides.rcms", lambda sheet: sheet["rows"][0]["entered_effects"].append({"metric": "MD", "arms": [a["id"] for a in sheet["arms"][:2]], "values": {"est": .2, "lower": .1, "upper": .3, "SE": None}}), "metric conflicts with family"),
+    ("Binary - Aminoglycosides.rcms", lambda sheet: next(iter(sheet["rows"][0]["raw_data"].values())).__setitem__(0, -1.0), "count data cannot be negative"),
 ], ids=["row-identifier", "arm-identifier", "covariate-identifier", "cross-family-metric", "numeric-domain"])
 def test_semantic_validation_enforces_domain_identity_family_and_numeric_contracts(tmp_path, sample, mutation, message):
     project = _snapshot_project(sample)
@@ -402,7 +402,7 @@ def test_v1_schema_rejects_internal_identity_fields(
 def test_family_raw_counts_and_sample_sizes_reject_fractional_values_on_save_and_load(
     tmp_path: Path,
 ) -> None:
-    for sample in ("amino.rcms", "continuous.rcms", "lymph.rcms"):
+    for sample in ("Binary - Aminoglycosides.rcms", "Continuous - Blood pressure.rcms", "Diagnostic accuracy - LAG positivity.rcms"):
         project = _snapshot_project(sample)
         _first_populated_raw(project)[0] = 1.5
         with pytest.raises(ProjectFormatError, match="integer-valued"):
@@ -421,7 +421,7 @@ def test_reader_rejects_oversized_overflowing_and_nonfinite_numeric_literals(
     tmp_path: Path,
 ) -> None:
     source = tmp_path / "numeric-source.rcms"
-    save_project(source, _snapshot_project("amino.rcms"), _minimal_state())
+    save_project(source, _snapshot_project("Binary - Aminoglycosides.rcms"), _minimal_state())
     source_project = _members(source)["project.json"]
     assert b'[6.0,27.0]' in source_project
     assert b'"sample_size":null' in source_project
@@ -455,7 +455,7 @@ def test_reader_rejects_oversized_overflowing_and_nonfinite_numeric_literals(
 def test_writer_and_domain_validation_normalize_numeric_conversion_overflow(
     tmp_path: Path,
 ) -> None:
-    huge_count_project = _snapshot_project("amino.rcms")
+    huge_count_project = _snapshot_project("Binary - Aminoglycosides.rcms")
     _first_populated_raw(huge_count_project)[0] = 10**399
     with pytest.raises(ProjectFormatError, match="finite JSON numeric range"):
         save_project(tmp_path / "huge-count.rcms", huge_count_project, _minimal_state())
@@ -468,12 +468,12 @@ def test_writer_and_domain_validation_normalize_numeric_conversion_overflow(
     with pytest.raises(ProjectSemanticError, match="expected a finite number"):
         validate_project_semantics(document.project, document.state)
 
-    oversized_project = _snapshot_project("amino.rcms")
+    oversized_project = _snapshot_project("Binary - Aminoglycosides.rcms")
     _first_study(oversized_project)["year"] = 10**5000
     with pytest.raises(ProjectFormatError, match="portable JSON numeric range"):
         save_project(tmp_path / "oversized.rcms", oversized_project, _minimal_state())
 
-    nonfinite_project = _snapshot_project("amino.rcms")
+    nonfinite_project = _snapshot_project("Binary - Aminoglycosides.rcms")
     _first_study(nonfinite_project)["sample_size"] = float("inf")
     with pytest.raises(ProjectFormatError, match="finite JSON number"):
         save_project(tmp_path / "nonfinite.rcms", nonfinite_project, _minimal_state())
@@ -483,7 +483,7 @@ def test_study_sample_size_requires_a_finite_positive_integer_on_save_and_load(
     tmp_path: Path,
 ) -> None:
     for invalid in (0, -1, 1.5):
-        project = _snapshot_project("amino.rcms")
+        project = _snapshot_project("Binary - Aminoglycosides.rcms")
         _first_study(project)["sample_size"] = invalid
         with pytest.raises(ProjectFormatError, match="positive integer"):
             save_project(
@@ -491,14 +491,14 @@ def test_study_sample_size_requires_a_finite_positive_integer_on_save_and_load(
             )
 
         destination = tmp_path / f"load-sample-size-{invalid}.rcms"
-        valid = _snapshot_project("amino.rcms")
+        valid = _snapshot_project("Binary - Aminoglycosides.rcms")
         save_project(destination, valid, _minimal_state())
         _first_study(valid)["sample_size"] = invalid
         _replace_json_member(destination, "project.json", valid)
         with pytest.raises(ProjectFormatError, match="positive integer"):
             load_project(destination)
 
-    valid = _snapshot_project("amino.rcms")
+    valid = _snapshot_project("Binary - Aminoglycosides.rcms")
     _first_study(valid)["sample_size"] = 10.0
     destination = tmp_path / "valid-sample-size.rcms"
     save_project(destination, valid, _minimal_state())

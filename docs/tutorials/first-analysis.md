@@ -6,7 +6,7 @@ release from the [download page](https://github.com/AliSalman-et-al/rc-metastudi
 
 ## Open the study data
 
-1. Download [BCG.rcms](../../sample_projects/BCG.rcms). If GitHub displays the
+1. Download [Binary - BCG vaccine and tuberculosis.rcms](<../../sample_projects/Binary - BCG vaccine and tuberculosis.rcms>). If GitHub displays the
    file instead of downloading it, use its **Download raw file** control.
 2. In RC MetaStudio, choose **Open project** and open that file.
 3. Select the **tuberculosis** sheet. It contains 13 included studies, with
