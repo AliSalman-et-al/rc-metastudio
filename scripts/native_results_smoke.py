@@ -261,7 +261,7 @@ def validate_evidence(root: Path) -> list[dict[str, object]]:
         if record.get("navigation") != [
             "Forest plot",
             "Text report",
-            "Tables",
+            "Data tables (CSV)",
         ]:
             raise ValueError("native Results evidence has the wrong navigation")
         if record.get("result_text") != {
@@ -475,7 +475,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
     """Drive real editor/export actions with an explicit renderer boundary fixture."""
     from PyQt6 import QtCore, QtWidgets
     from unittest.mock import patch
-    from rc_metastudio import r_bridge
+    from rc_metastudio import app_error_handler, r_bridge
     from rc_metastudio.results.plot_editor import EditPlotDialog
     base = root / "forest"
     params = {"fp_outpath": str(svg), "fp_col1_str": "Study"}
@@ -494,9 +494,23 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
         )
         return {f"{prefix}.params": str(pending_params), output: str(pending_svg)}
 
-    def render(_prefix, _regenerator, output, *, include_title=True, outline_text=True):
+    def render(
+        _prefix: str, _regenerator: str, output: str, *, include_title: bool = True,
+        width: float | None = None,
+    ) -> tuple[str, ...]:
         Path(output).write_bytes(svg.read_bytes())
-        return True
+        return (output,)
+
+    measured_prefixes = []
+
+    def measure_forest(prefix: str, width: float, _include_title: bool) -> tuple[float, float]:
+        measured_prefixes.append(prefix)
+        return width / 2, 4.0
+
+    action_errors = []
+
+    def record_action_error(_kind, error: Exception, _traceback, *, parent=None):
+        action_errors.append(error)
 
     observed = []
     def edit():
@@ -510,28 +524,45 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
             button.click()
             observed.append(dialog.result() == QtWidgets.QDialog.DialogCode.Accepted)
     destination = root / ("exported-" + slug + ".svg")
+    destination.unlink(missing_ok=True)
     before = _sha256(svg)
     with (
+        patch.object(app_error_handler, "handle_exception", record_action_error),
         patch.object(r_bridge, "load_plot_parameters", load),
         patch.object(r_bridge, "prepare_plot_edit", prepare),
         patch.object(r_bridge, "render_plot_bundle", render),
+        patch.object(r_bridge, "forest_export_dimensions", measure_forest),
     ):
         results.nav_tree.setCurrentItem(next(item for item in results.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == "Forest plot"))
         app.processEvents()
         QtCore.QTimer.singleShot(0, edit)
         results.edit_plot_action.trigger()
         app.processEvents()
+        if action_errors:
+            raise RuntimeError("native Results edit action raised an error") from action_errors[0]
         persisted = json.loads(Path(str(base) + ".params").read_text(encoding="utf-8"))
         if observed != [True] or persisted.get("plot_caption") != "Native fixture edited caption" or before == _sha256(svg):
             raise RuntimeError("native Results edit action did not commit parameters and image")
         from rc_metastudio.results.plot_export import PlotExportDialog
+        export_errors = []
+
         def accept_export():
             dialog = next(widget for widget in app.topLevelWidgets() if isinstance(widget, PlotExportDialog))
             dialog.format_control.setCurrentIndex(dialog.format_control.findData('svg'))
-            dialog.accept()
+            if dialog.save_button.isEnabled():
+                dialog.save_button.click()
+            if dialog.result() != QtWidgets.QDialog.DialogCode.Accepted:
+                export_errors.append(dialog.raster_limit.text())
+                dialog.reject()
         QtCore.QTimer.singleShot(0, accept_export)
         with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
             results.export_plot_action.trigger()
+        if action_errors:
+            raise RuntimeError("native Results export action raised an error") from action_errors[0]
+        if export_errors:
+            raise RuntimeError(f"native Results export dialog could not save: {export_errors[0]}")
+        if measured_prefixes != [str(base), str(base)]:
+            raise RuntimeError(f"native Results export did not measure the fixture forest: {measured_prefixes}")
         if not destination.exists() or not destination.read_text(encoding='utf-8').startswith('<?xml'):
             raise RuntimeError("native Results export action did not write edited plot")
     return {"edit_committed": True, "export_path": destination.name, "export_sha256": _sha256(destination)}
