@@ -684,7 +684,7 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     ticks <- ticks[valid]
     labels <- labels[valid]
     half.width <- graphics::strwidth(labels, cex=cex) / 2
-    gap <- graphics::strwidth("  ", cex=cex)
+    gap <- graphics::strwidth("    ", cex=cex)
     chosen <- integer(0)
     # Keep the null tick when it is visible.
     priority <- order(ticks != null, abs(ticks), ticks, na.last=TRUE)
@@ -904,7 +904,7 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, cex, summ
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
-        graphics::text(annotation.x, rows, labels, adj=c(1, 0), cex=cex, col="black")
+        graphics::text(annotation.x, rows, labels, adj=c(1, .5), cex=cex, col="black")
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
         first.row <- max(rows, na.rm=TRUE)
@@ -925,15 +925,15 @@ rcmetar.draw.forest.study.columns <- function(bundle, rows, layout, ilab, cex, f
         spacing <- graphics::strheight("Mg", cex=cex) * .75
         x <- rcmetar.forest.study.x(layout)
         graphics::text(x, rows + spacing * wrapped, vapply(lines, `[`, character(1), 1L),
-                       adj=c(0, 0), cex=cex, col="black", font=font)
+                       adj=c(0, .5), cex=cex, col="black", font=font)
         if (any(wrapped)) graphics::text(x, rows[wrapped] - spacing,
-            vapply(lines[wrapped], `[[`, character(1), 2L), adj=c(0, 0), cex=cex,
+            vapply(lines[wrapped], `[[`, character(1), 2L), adj=c(0, .5), cex=cex,
             col="black", font=rep_len(font, length(rows))[wrapped])
     }
     values <- rcmetar.forest.display.ilab(ilab$matrix)
     for (column in seq_len(ncol(values))) {
         graphics::text(layout$ilab.xpos[column], rows, values[, column],
-                       adj=c(0.5, 0), cex=cex, col="black")
+                       adj=c(0.5, .5), cex=cex, col="black")
     }
 }
 

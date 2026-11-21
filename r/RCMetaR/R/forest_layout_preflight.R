@@ -1,18 +1,27 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width=180 / 25.4) {
+rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width=180 / 25.4,
+                                           measure.minimum=FALSE) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
     style <- if (is.null(style) || length(style) == 0) "default" else as.character(style[[1]])
     bundle$target_width <- width
+    bundle$fp_style <- style
     bundle <- rcmetar.forest.compact.headers(bundle)
+    bmj <- identical(style, "bmj") && inherits(bundle$res, "rma") &&
+        !identical(bundle$forest_variant, "subgroup")
+    measure <- if (bmj) rcmetar.forest.bmj.device.metrics else rcmetar.forest.default.device.metrics
+    bundle$size <- measure(bundle)
+    if (bundle$size$width > width + 1e-8 || measure.minimum) {
+        minimum <- measure(bundle, cex=7 / 12)
+        if (bundle$size$width > width + 1e-8) bundle$size <- minimum
+        bundle$size$min_width <- minimum$min_width
+    }
     if (identical(style, "revman") &&
             inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
         plan <- rcmetar.forest.revman.layout.preflight(bundle)
-    } else if (identical(style, "bmj") &&
-            inherits(bundle$res, "rma") &&
-            !identical(bundle$forest_variant, "subgroup")) {
+    } else if (bmj) {
         plan <- rcmetar.forest.bmj.layout.preflight(bundle)
     } else {
         plan <- rcmetar.forest.default.layout.preflight(bundle, style=style)
@@ -25,6 +34,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
     rows <- plan$rows$study_rows
     extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .8, 0)
+    plan$rows$half_height <- (1 + extra) / 2
     expand <- function(y) vapply(y, function(value)
         value + sum(extra[rows < value]) + sum(extra[rows == value]) / 2, numeric(1))
     plan$rows$study_rows <- expand(rows)
@@ -39,16 +49,26 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
 }
 
 rcmetar.forest.panel.height <- function(plan) {
-    # Match the graphics margins used by the style painters (0.2 in per line).
-    journal <- !is.null(plan$footer$axis)
-    sequential <- plan$rows$manual_sequential_labels
-    bottom <- if (journal) 1 else if (sequential) 3.6 else 4.8
-    top <- if (journal) 1.8 else if (sequential) 1 else 1.4
-    if (!journal && plan$device$direction_lines > 0)
-        bottom <- max(6, 4.5 + plan$device$direction_lines * 1.6)
-    plan$device$height <- diff(plan$rows$ylim) * .185 + .2 * (bottom + top) +
-        plan$headers$height + if (journal) .15 * plan$device$direction_lines else 0
+    margins <- rcmetar.forest.margins(plan)
+    plan$device$height <- diff(plan$rows$ylim) * .16 + sum(margins[c(1, 3)]) +
+        plan$headers$height + if (!is.null(plan$footer$axis)) .15 * plan$device$direction_lines else 0
     plan
+}
+
+rcmetar.forest.margins <- function(plan) {
+    if (!is.null(plan$footer$axis)) return(c(.2, .12, .36, .12))
+    bottom <- if (plan$device$direction_lines > 0) 2.2 + .85 * plan$device$direction_lines else 1.8
+    c(.2 * bottom, .12, if (plan$rows$manual_sequential_labels) .2 else .28, .12)
+}
+
+rcmetar.forest.width.budget <- function(width, fixed.width) {
+    study.min <- .73
+    graph.min <- 1.1
+    minimum <- max(fixed.width + study.min + graph.min, (fixed.width + study.min) / .65)
+    width <- max(width, minimum)
+    study <- min(2.05, width - fixed.width - max(graph.min, .35 * width))
+    list(width=width, min_width=minimum, study_width=study,
+         plot_width=width - fixed.width - study)
 }
 
 rcmetar.forest.layout.plan <- function(
@@ -97,7 +117,7 @@ rcmetar.forest.layout.plan <- function(
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- rcmetar.scratch.path("INTER")
     rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
-    on.exit(grDevices::dev.off(), add=TRUE)
+    on.exit({ grDevices::dev.off(); unlink(scratch) }, add=TRUE)
     force(expr)
 }
 
@@ -124,16 +144,14 @@ rcmetar.forest.annotation.x <- function(layout) {
 rcmetar.forest.compact.headers <- function(bundle) {
     headers <- bundle$ilab$headers
     headers[headers == "Weight (%)"] <- "Weight\n(%)"
-    headers[headers == "Non-events"] <- "Non-\nevents"
     bundle$ilab$headers <- headers
     bundle
 }
 
-rcmetar.forest.default.device.metrics <- function(bundle) {
+rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
     rcmetar.forest.with.measurement.device({
-        cex <- 8 / 12
-        column.gap <- 0.06
-        block.gap <- 0.11
+        column.gap <- 0.022
+        block.gap <- 0.06
         if (ncol(bundle$ilab$matrix) > 0) {
             column.widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
                 values <- c(bundle$ilab$matrix[, index], strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]])
@@ -168,8 +186,9 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
             column.widths <- numeric(0)
             group.widths <- numeric(0)
         }
+        effect.header <- sub(" [", "\n[", rcmetar.metafor.effect.header(bundle), fixed=TRUE)
         annotation.values <- if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
-            c(rcmetar.metafor.effect.header(bundle), rcmetar.metafor.effect.labels(bundle))
+            c(effect.header, rcmetar.metafor.effect.labels(bundle))
         } else {
             ""
         }
@@ -178,35 +197,31 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
         ilab.width <- if (length(column.widths)) {
             sum(column.widths) + column.gap * (length(column.widths) - 1) + block.gap
         } else 0
-        annotation.width <- annotation.width + .09
+        annotation.width <- annotation.width + .055
         journal <- identical(bundle$fp_style, "revman") && inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")
-        edge.factor <- if (journal) 1.29 else 1.12
-        fixed.width <- block.gap + ilab.width + annotation.width + .4
+        edge <- if (journal) .13 else .04
+        fixed.width <- block.gap + ilab.width + annotation.width + .24 + edge
         width <- bundle$target_width %||% (180 / 25.4)
-        study.width <- min(2.05, max(1.15, width - fixed.width - 1.10 * edge.factor))
-        left.width <- study.width + block.gap + ilab.width
-        plot.width <- max(1.10, (width - fixed.width - study.width) / edge.factor)
-        list(
-            width=max(width, fixed.width + study.width + plot.width * edge.factor),
+        budget <- rcmetar.forest.width.budget(width, fixed.width)
+        c(budget, list(
             cex=cex,
             bg="white",
-            study_width=study.width,
             column_widths=column.widths,
             group_widths=group.widths,
             column_gap=column.gap,
             block_gap=block.gap,
-            left_width=left.width,
-            plot_width=plot.width,
-            annotation_width=annotation.width
-        )
+            left_width=budget$study_width + block.gap + ilab.width,
+            annotation_width=annotation.width,
+            effect_header=effect.header
+        ))
     })
 }
 
 rcmetar.forest.default.layout.coordinates <- function(bundle, size, alim) {
     span <- diff(alim)
     user.per.inch <- span / size$plot_width
-    edge.pad <- 0.06 * span
+    edge.pad <- 0.02 * user.per.inch
     base.xlim <- c(
         alim[1] - size$left_width * user.per.inch,
         alim[2] + size$annotation_width * user.per.inch
@@ -282,7 +297,7 @@ rcmetar.forest.default.rows <- function(bundle) {
 }
 
 rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
-    size <- rcmetar.forest.default.device.metrics(bundle)
+    size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
     alim <- if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         rcmetar.forest.journal.ratio.alim(bundle)
     } else {
@@ -312,7 +327,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
         headers=list(
             show=rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE),
             study=rcmetar.metafor.study.header(bundle),
-            effect=rcmetar.metafor.effect.header(bundle)
+            effect=if (rows$manual_sequential_labels) rcmetar.metafor.effect.header(bundle) else size$effect_header
         ),
         metrics=size,
         layout=layout
@@ -468,8 +483,8 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle, size=rcmetar.forest
     group.xpos <- vapply(bundle$ilab$groups, function(group) {
         mean(ilab.xpos[column.groups == group])
     }, numeric(1))
-    base.xlim <- c(left, alim[2] + 0.25 * span)
-    edge.pad <- 0.02 * span
+    base.xlim <- c(left, alim[2] + 0.09 * user.per.inch)
+    edge.pad <- 0.02 * user.per.inch
     list(
         xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
         study.xpos=left,
@@ -505,7 +520,7 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
 }
 
 rcmetar.forest.revman.layout.preflight <- function(bundle) {
-    size <- rcmetar.forest.default.device.metrics(bundle)
+    size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
     layout <- rcmetar.forest.revman.layout.coordinates(bundle, size)
     k <- length(bundle$slab)
     rows <- list(
@@ -590,7 +605,14 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
         local$subgroups$polygon_rows <- local$subgroups$polygon_rows - shift
         local$rows$top <- max(c(rows[selected] - shift, local$subgroups$header_rows), na.rm=TRUE)
         local$rows$ylim[[2L]] <- local$rows$top + diff(c(max(c(rows, plan$subgroups$header_rows)), plan$rows$ylim[[2L]]))
-        if (!final && subgroup) local$rows$ylim[[1L]] <- -1
+        if (!final) {
+            if (is.null(local$footer$axis)) {
+                local$rows$ylim[[1L]] <- 0
+            } else {
+                local$rows$axis_offset <- 2.3
+                local$rows$ylim[[1L]] <- -2.3
+            }
+        }
         rcmetar.forest.panel.height(local)
     }
     panels <- list()

@@ -288,13 +288,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     alim <- plan$x$alim
     layout <- plan$layout
     manual.sequential.labels <- plan$rows$manual_sequential_labels
-    plot.margin <- if (manual.sequential.labels) c(3.6, 1.0, 1.0, 1.0) else c(4.8, 1.0, 1.4, 1.0)
-    directions <- rcmetar.forest.direction.labels(bundle)
-    if (any(nzchar(c(directions$left, directions$right)))) {
-        lines <- size$direction_lines
-        plot.margin[[1]] <- max(6, 4.5 + lines * 1.6)
-    }
-    graphics::par(bg="white", mar=plot.margin, mai=c(plot.margin[[1]] * .2, .2, plot.margin[[3]] * .2, .2), fg="black", col.axis="black", col.lab="black")
+    graphics::par(bg="white", mai=rcmetar.forest.margins(plan), fg="black", col.axis="black", col.lab="black")
     ylim <- rcmetar.forest.header.ylim(plan, max(c(rows, bundle$subgroups$header_rows), na.rm=TRUE) + 1)
 
     raw.effect <- rcmetar.forest.journal.effect.intervals(bundle)
@@ -316,8 +310,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     } else {
         rcmetar.draw.forest.refline(plan)
     }
-    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, size$cex, plan$x$alim)
-    graphics::axis(1, at=ticks, labels=rcmetar.forest.axis.labels(bundle, ticks), cex.axis=plan$typography$cex.axis, gap.axis=0)
+    rcmetar.draw.forest.axis(bundle, plan)
     rcmetar.draw.default.annotations(bundle, plan)
 
     if (identical(bundle$forest_variant, "subgroup")) {
@@ -400,7 +393,7 @@ rcmetar.draw.default.headers <- function(bundle, plan) {
     graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
     header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
     graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, adj=0)
-    graphics::text(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, adj=1)
+    rcmetar.draw.forest.header(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, adj=1)
     graphics::par(header.par)
 }
 
@@ -414,7 +407,7 @@ rcmetar.draw.default.annotations <- function(bundle, plan) {
         label.rows <- if (length(labels) == length(rows) + 1L) c(rows, if (plan$rows$summary) -1 else NA_real_) else rows
         fonts <- rep(1, length(labels))
         if (length(labels) == length(rows) + 1L) fonts[[length(fonts)]] <- 2
-        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, adj=c(1, 0), font=fonts, cex=size$cex)
+        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, adj=c(1, .5), font=fonts, cex=size$cex)
     }
 
 }
@@ -423,16 +416,20 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
     layout <- plan$layout
     rows <- plan$rows$study_rows
     groups <- if (identical(bundle$forest_variant, "subgroup")) {
-        split(rows, bundle$study_groups)
+        split(seq_along(rows), bundle$study_groups)
     } else if (isTRUE(bundle$has_overall)) {
-        list(rows[-1L])
+        list(seq_along(rows)[-1L])
     } else {
-        list(rows)
+        list(seq_along(rows))
     }
     shade <- unlist(lapply(groups, function(group.rows) {
-        displayed <- sort(group.rows, decreasing=TRUE)
+        displayed <- group.rows[order(rows[group.rows], decreasing=TRUE, na.last=NA)]
         displayed[seq_along(displayed) %% 2L == 1L]
     }), use.names=FALSE)
+    extra <- plan$rows$half_height[shade] - .5
+    # Metafor shades one row unit per centre. Two overlapping strips cover a
+    # wrapped row symmetrically without drawing over the marks.
+    shaded.rows <- unique(c(rows[shade] - extra, rows[shade] + extra))
     forest.args <- list(
         slab = rep("", length(bundle$slab)),
         textpos = c(rcmetar.forest.study.x(layout), rcmetar.forest.annotation.x(layout)),
@@ -441,7 +438,7 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
         at = plan$x$at,
         atransf = rcmetar.metafor.atransf(bundle),
         refline = NA,
-        xlab = plan$x$xlab,
+        xlab = "",
         cex = plan$typography$cex,
         cex.lab = plan$typography$cex.lab,
         cex.axis = plan$typography$cex.axis,
@@ -452,7 +449,7 @@ rcmetar.default.forest.args <- function(bundle, plan, ylim, forest.color) {
         xaxt = "n",
         col = forest.color,
         colshade = "#eeeeee",
-        shade = shade,
+        shade = shaded.rows,
         lty = c("solid", "blank", "blank"),
         pch = 15,
         psize = rcmetar.metafor.psize(bundle),
