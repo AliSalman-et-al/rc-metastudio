@@ -459,7 +459,6 @@ def run(app, window, work, record, scenario):
             assert ("Estimator:" in changed.results.details) == (suffix == "random"), changed.results.details
             assert changed.results.identity == original_identity
             record("round3-fixed-random-rerun", changed, method=suffix, details=changed.results.details, plots=dict(changed.results.display_images))
-            view.close()
             view = changed
         view.close()
 

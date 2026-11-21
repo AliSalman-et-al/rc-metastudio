@@ -3,7 +3,7 @@
 import hashlib
 from pathlib import Path
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, sip
 from collections.abc import Iterable
 from typing import cast
 from xml.etree import ElementTree as ET
@@ -61,7 +61,8 @@ def run(app, window, root, record, analyze):
     fresh_view.close()
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     assert view.result_identity.isVisible()
-    assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
+    assert view.windowTitle().startswith("Meta-analysis — clinical failure · Binary · Odds ratio")
+    assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
     report = view.manuscript_text.toPlainText()
     from tests.e2e.report_retention import assert_report
     assert_report(view)
@@ -81,7 +82,8 @@ def run(app, window, root, record, analyze):
     key_clicks(dialog.x_lbl_le, "[default]")
     literal_view = submit(dialog)
     assert not first_plot.keys() & plot_hashes(literal_view).keys()
-    assert plot_hashes(view) == first_plot
+    assert sip.isdeleted(view) or not view.isVisible()
+    assert {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in first_plot} == first_plot
     literal_svg = next(iter(literal_view.results.display_images.values()))
     captions = {"".join(node.itertext()): node for node in ET.parse(literal_svg).iter("{http://www.w3.org/2000/svg}text")}
     assert "[default]" in captions, captions.keys()
@@ -92,8 +94,8 @@ def run(app, window, root, record, analyze):
     record("review-literal-axis-label", dialog, caption=dialog.x_lbl_le.text(),
            svg_caption=ET.tostring(captions["[default]"], encoding="unicode"))
     dialog.reject()
-    literal_view.close()
-    app.processEvents()
+    assert literal_view.isVisible()
+    view = literal_view
     baseline = parsed_numeric_sections(view.results)
     params_path = next(iter(view.params_paths.values()))
     load_saved_analysis(params_path)
@@ -152,7 +154,8 @@ def run(app, window, root, record, analyze):
         axis_titles = ["".join(node.itertext()) for node in nodes
                        if float(node.attrib["y"]) > tick_baseline and "".join(node.itertext()) == "Odds ratio"]
         assert len(axis_titles) == 1 and "Odds ratio (log scale)" not in captions, captions
-        changed.close()
+        assert sip.isdeleted(view) or not view.isVisible()
+        view = changed
         app.processEvents()
     view.change_settings_action.trigger()
     app.processEvents()
@@ -184,7 +187,6 @@ def run(app, window, root, record, analyze):
     record("review-replaced-project-edit-stays-local", changed, project=str(project_path),
            favours_labels=old_labels, plots={"Edited forest plot": edited_svg})
     changed.close()
-    view.close()
 
     assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")

@@ -1229,7 +1229,12 @@ def parse_out_results(result):
         packages = execution.get('packages')
         software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
         inference = execution.get('inference', ())
-        return replace(parsed, software=software, inference_methods=tuple(str(code) for code in inference),
+        contributors = None
+        if request.get('method') in ('binary.fixed.mh', 'binary.fixed.peto') and 'res' in result:
+            fit = result['res']
+            if 'k.yi' in fit.names:
+                contributors = int(fit.rx2('k.yi')[0])
+        return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
                        sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
