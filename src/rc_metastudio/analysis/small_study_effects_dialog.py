@@ -584,9 +584,9 @@ class SmallStudyEffectsDialog(
         report = self._eligibility_report
         if report is not None:
             facts.extend(_eligibility_identity(report))
-        facts.append(f"{self.model.get_confidence_level():g}% CI")
-        result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts),
-                         details=f"Model: Pooled display ({request.pooled_display.model.value})")
+        facts.append(f"Pooled display: {request.pooled_display.model.value.capitalize()} effect")
+        facts.append(f"{request.confidence_level:g}% CI")
+        result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()
                       and line != "No formal method details are available."]

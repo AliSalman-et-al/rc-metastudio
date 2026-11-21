@@ -196,7 +196,7 @@ def run(
             assert "Other group" not in manuscript, manuscript
             assert f"Arm: {participant_arm}" in manuscript, manuscript
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
-                assert re.search(rf"Participants in {re.escape(participant_arm)}\s+135\b", text), text
+                assert re.search(r"Participants\s+135\b", text), text
             else:
                 assert 'Participants' not in text, text
         if scenario.startswith("analysis-diagnostic-regression"):

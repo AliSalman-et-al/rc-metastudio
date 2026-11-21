@@ -536,6 +536,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         details = self._identity_facts(workflow, context, rest, description, separator)
         models, levels = self._identity_model_details(self.results.details)
         title_facts = [model + (f" ({estimator})" if estimator else "") for model, estimator in models]
+        title_facts.extend(detail for detail in details if detail.startswith("Pooled display: "))
         title_facts.extend(levels or [detail for detail in details if detail.endswith("% CI")])
         self.setWindowTitle(" · ".join((identity.splitlines()[0], *dict.fromkeys(title_facts))))
         title_font = QFont(self.font())
