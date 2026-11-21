@@ -1198,10 +1198,15 @@ def prepare_plot_edit(
 
 @serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
-                       *, include_title: bool = True, outline_text: bool = True) -> bool:
+                       *, include_title: bool = True, outline_text: bool = True,
+                       width: float | None = None, dpi: int | None = None,
+                       page_height: float | None = None) -> tuple[str, ...]:
+    dimensions = {key: value for key, value in (
+        ("width", width), ("dpi", dpi), ("page_height", page_height),
+    ) if value is not None}
     result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
-                                include_title=include_title, outline_text=outline_text)
-    return not _r_is_null(result)
+                                include_title=include_title, outline_text=outline_text, **dimensions)
+    return () if _r_is_null(result) else tuple(str(path) for path in result)
 
 
 _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)

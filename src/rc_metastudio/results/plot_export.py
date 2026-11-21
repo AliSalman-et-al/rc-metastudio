@@ -4,8 +4,10 @@
 import math
 
 from PyQt6.QtCore import QSettings, QSignalBlocker
+from rc_metastudio.qt_object_guard import required
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QPushButton, QSpinBox
 
+from rc_metastudio.results.plot_service import RASTER_MAX_DIMENSION, RASTER_MAX_PIXELS
 from rc_metastudio.settings import load_plot_export_format, save_plot_export_format
 
 
@@ -59,6 +61,18 @@ class PlotExportDialog(QDialog):
         self.width_control.valueChanged.connect(self._change_width)
         self.pixel_label = QLabel(self)
         layout.addRow(self.pixel_label)
+        self.raster_limit = QLabel(self)
+        self.raster_limit.setWordWrap(True)
+        layout.addRow(self.raster_limit)
+        self.use_max_dpi = QPushButton(self)
+        self.use_max_dpi.clicked.connect(lambda: self.dpi.setValue(self._largest_dpi(self._width_inches)))
+        layout.addRow(self.use_max_dpi)
+        self.use_vector = QPushButton("Switch to PDF (vector)", self)
+        self.use_vector.clicked.connect(lambda: self.format_control.setCurrentIndex(self.format_control.findData("pdf")))
+        layout.addRow(self.use_vector)
+        self.paginate_pdf = QCheckBox("Use A4 pages for tall PDF figures", self)
+        self.paginate_pdf.setChecked(str(QSettings().value("export/paginate_pdf", True)).lower() == "true")
+        layout.addRow(self.paginate_pdf)
         self.legibility_warning = QLabel(self)
         self.legibility_warning.setWordWrap(True)
         layout.addRow(self.legibility_warning)
@@ -75,6 +89,7 @@ class PlotExportDialog(QDialog):
             layout.addRow(QLabel("This image keeps its original size and resolution.", self))
         self.units.currentIndexChanged.connect(self._change_units)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel, self)
+        self.save_button = required(buttons.button(QDialogButtonBox.StandardButton.Save), "Save plot")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addRow(buttons)
@@ -100,20 +115,43 @@ class PlotExportDialog(QDialog):
         rate = self.text_per_inch[self.include_title.isChecked()]
         return math.ceil(6 * 25.4 / rate) if rate else 0
 
+    def _readable_width_value(self) -> float:
+        return math.ceil(self._readable_width_mm() / 25.4 * self.unit_factor() * 100 - 1e-9) / 100
+
     def _set_readable_width(self):
-        target = self._readable_width_mm()
-        width = math.ceil(target / 25.4 * self.unit_factor() * 100 - 1e-9) / 100
-        self.width_control.setValue(width)
+        self.width_control.setValue(self._readable_width_value())
+
+    def _largest_dpi(self, width: float) -> int:
+        height = width * self.ratio
+        dpi = min(self.dpi.maximum(), math.floor(min(
+            RASTER_MAX_DIMENSION / max(width, height),
+            math.sqrt(RASTER_MAX_PIXELS / (width * height)),
+        )))
+        while dpi > 0 and math.ceil(width * dpi) * math.ceil(height * dpi) > RASTER_MAX_PIXELS:
+            dpi -= 1
+        return dpi
 
     def _refresh(self):
         self.height_label.setText(f'{self.width_control.value() * self.ratio:.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')
+        max_dpi = self._largest_dpi(self._width_inches)
+        oversized = self.resizable and raster and self.dpi.value() > max_dpi
+        self.save_button.setEnabled(not oversized)
+        self.raster_limit.setVisible(oversized)
+        self.raster_limit.setText("This image is too large at the selected DPI. Use a lower DPI or export a vector PDF or SVG.")
+        self.use_max_dpi.setVisible(oversized and max_dpi >= self.dpi.minimum())
+        self.use_max_dpi.setText(f"Use {max_dpi} DPI")
+        self.use_vector.setVisible(oversized and self.format_control.findData("pdf") >= 0)
+        self.paginate_pdf.setVisible(self.resizable and self.format_control.currentData() == "pdf"
+                                     and self._width_inches * self.ratio > 267 / 25.4)
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster)
         smallest = self._width_inches * self.text_per_inch[self.include_title.isChecked()]
         warn = self.resizable and 0 < smallest < 6
         self.legibility_warning.setVisible(warn)
-        self.use_readable_width.setVisible(warn)
+        target_width = self._readable_width_value()
+        self.use_readable_width.setVisible(warn and target_width <= self.width_control.maximum()
+            and (not raster or self.dpi.value() <= self._largest_dpi(target_width / self.unit_factor())))
         if warn:
             target = self._readable_width_mm()
             self.legibility_warning.setText(
@@ -122,17 +160,20 @@ class PlotExportDialog(QDialog):
                 f"This figure needs at least {target} mm wide for 6 pt text."
             )
             self.use_readable_width.setText(f"Use {target} mm")
-            self.use_readable_width.setEnabled(target / 25.4 * self.unit_factor() <= self.width_control.maximum())
-        self.pixel_label.setText(f'{round(self._width_inches * self.dpi.value())} × {round(self._width_inches * self.ratio * self.dpi.value())} pixels')
+        self.pixel_label.setText(f'{math.ceil(self._width_inches * self.dpi.value())} × {math.ceil(self._width_inches * self.ratio * self.dpi.value())} pixels')
 
     def dimensions(self) -> tuple[float, float, int]:
         width = self._width_inches
         return width, width * self.ratio, self.dpi.value()
 
     def accept(self):
+        if not self.save_button.isEnabled():
+            return
         save_plot_export_format(self.format_control.currentData())
         QSettings().setValue('export/units', self.units.currentText())
         if self.resizable:
             QSettings().setValue('export/dpi', self.dpi.value())
+            if self.format_control.currentData() == "pdf":
+                QSettings().setValue("export/paginate_pdf", self.paginate_pdf.isChecked())
             QSettings().setValue('export/width_inches', self.dimensions()[0])
         super().accept()

@@ -1,5 +1,8 @@
 """Manuscript content taken exclusively from an executed result."""
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Protocol
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.analysis.catalog import REITSMA_METHOD
@@ -14,12 +17,17 @@ from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
-from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtCore import QMarginsF, QRectF, Qt
 from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor, Pt
 from docx.oxml.ns import qn
+from docx.opc.packuri import PackURI
+from docx.opc.part import Part
+from docx.opc.constants import RELATIONSHIP_TYPE
+from docx.oxml import parse_xml
+from rc_metastudio import r_bridge
 from rc_metastudio import __version__
 
 if TYPE_CHECKING:
@@ -1007,10 +1015,10 @@ def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) 
     )
 
 
-def figure_source(path, clip_bounds=None):
+def figure_source(path):
     if str(path).lower().endswith(('.svg', '.svgz')):
-        svg = QSvgRenderer(svg_bytes_for_qt(path, clip_bounds))
-        size = svg.defaultSize()
+        svg = QSvgRenderer(svg_bytes_for_qt(path))
+        size = svg.viewBoxF()
         return svg, size.width() / size.height()
     image = QImage(str(path))
     if image.isNull():
@@ -1113,31 +1121,82 @@ def _docx_styles(document):
             title_properties.remove(border)
 
 
+@contextmanager
+def _figure_panels(figure: ResultSection, width_mm: float, height_mm: float) -> Generator[tuple[str, ...]]:
+    if figure.plot_kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"} and figure.plot_data:
+        with TemporaryDirectory(prefix="rcms-figure-") as directory:
+            paths = r_bridge.render_plot_bundle(
+                figure.plot_data, "forest", str(Path(directory) / "panel.svg"),
+                width=width_mm / 25.4, page_height=height_mm / 25.4, include_title=False,
+            )
+            if paths:
+                yield paths
+                return
+    yield (figure.display_image or figure.value,)
+
+
+def _figure_caption(number: int, figure: ResultSection, continued: bool) -> str:
+    return f"Figure {number}. {figure.title}" + (" (continued)" if continued else "")
+
+
+def _caption_document(text: str, notes: tuple[str, ...], width_mm: float) -> QTextDocument:
+    caption = _print_document()
+    caption.setTextWidth(width_mm / 25.4 * 96)
+    caption.setHtml(f"<b>{escape(text)}</b>" + "".join(f"<br>{escape(note)}" for note in notes))
+    return caption
+
+
+def _figure_height_budget(number: int, figure: ResultSection, width_mm: float, height_mm: float) -> float:
+    caption = _caption_document(_figure_caption(number, figure, True), figure.paragraphs, width_mm)
+    return min(250, height_mm - caption.size().height() / 96 * 25.4 - 9)
+
+
 def _docx_figures(document, figures):
     from PyQt6.QtCore import QBuffer, QIODevice
-    for number, figure in enumerate(figures, 1):
-        source, ratio = figure_source(figure.display_image or figure.value)
-        width = _figure_width(figure, ratio)
-        pixel_width = round(width / 25.4 * 300)
-        pixel_height = round(pixel_width / ratio)
-        page_height = round(230 / 25.4 * 300)
-        for top in range(0, pixel_height, page_height):
-            image = QImage(pixel_width, min(page_height, pixel_height-top), QImage.Format.Format_RGB32)
-            image.fill(Qt.GlobalColor.white)
-            painter = QPainter(image)
-            painter.translate(0, -top)
-            paint_figure(painter, source, QRectF(0, 0, pixel_width, pixel_height))
-            painter.end()
-            buffer = QBuffer()
-            buffer.open(QIODevice.OpenModeFlag.WriteOnly)
-            image.save(buffer, 'PNG')
-            document.add_page_break()
-            document.add_picture(io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(width))
-            document.add_paragraph(f'Figure {number}. {figure.title}' + (' (continued)' if top else ''))
-            if not top:
-                for note in figure.paragraphs:
-                    document.add_paragraph(note)
 
+    section = document.sections[0]
+    width_mm = (section.page_width - section.left_margin - section.right_margin) / Mm(1)
+    height_mm = (section.page_height - section.top_margin - section.bottom_margin) / Mm(1)
+    for number, figure in enumerate(figures, 1):
+        _, ratio = figure_source(figure.display_image or figure.value)
+        width = min(width_mm, _figure_width(figure, ratio))
+        available = _figure_height_budget(number, figure, width_mm, height_mm)
+        with _figure_panels(figure, width, available) as paths:
+            for index, path in enumerate(paths):
+                source, ratio = figure_source(path)
+                placed_width = min(width, available * ratio)
+                pixel_width = round(placed_width / 25.4 * 300)
+                pixel_height = round(pixel_width / ratio)
+                image = QImage(pixel_width, pixel_height, QImage.Format.Format_RGB32)
+                image.fill(Qt.GlobalColor.white)
+                painter = QPainter(image)
+                paint_figure(painter, source, QRectF(0, 0, pixel_width, pixel_height))
+                painter.end()
+                buffer = QBuffer()
+                buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+                image.save(buffer, "PNG")
+                paragraph = document.add_paragraph()
+                paragraph.paragraph_format.page_break_before = True
+                paragraph.paragraph_format.space_after = Pt(0)
+                picture = paragraph.add_run().add_picture(
+                    io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(placed_width)
+                )
+                if Path(path).suffix.lower() == ".svg":
+                    part = Part(PackURI(f"/word/media/figure-{number}-{index + 1}.svg"),
+                                "image/svg+xml", Path(path).read_bytes(), document.part.package)
+                    relationship = document.part.relate_to(part, RELATIONSHIP_TYPE.IMAGE)
+                    blip = picture._inline.xpath(".//a:blip")[0]
+                    blip.append(parse_xml(
+                        '<a:extLst xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+                        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+                        'xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main">'
+                        '<a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
+                        f'<asvg:svgBlip r:embed="{relationship}"/></a:ext></a:extLst>'
+                    ))
+                document.add_paragraph(_figure_caption(number, figure, bool(index)))
+                if index == 0:
+                    for note in figure.paragraphs:
+                        document.add_paragraph(note)
 
 
 def write_docx(report, path):
@@ -1145,6 +1204,8 @@ def write_docx(report, path):
     _docx_styles(document)
     section = document.sections[0]
     section.page_width = Mm(210)
+    section.page_height = Mm(297)
+    section.top_margin = section.bottom_margin = Mm(15)
     section.left_margin = section.right_margin = Mm(15)
     document.add_heading(report.title, 0)
     document.add_paragraph(report.comparison)
@@ -1180,6 +1241,7 @@ def write_pdf(report, path):
     writer = QPdfWriter(str(path))
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
     writer.setResolution(600)
+    writer.setPageMargins(QMarginsF(15, 15, 15, 15))
     document = _print_document()
     document.setHtml(report.html())
     # QTextDocument prints paginated real tables; figures get their own pages so
@@ -1190,45 +1252,26 @@ def write_pdf(report, path):
     painter = QPainter(writer)
     _print_pdf_pages(document, writer, painter, width, height, scale)
     for number, figure in enumerate(report.figures, 1):
-        title = figure.title
-        path_ = figure.display_image or figure.value
-        writer.newPage()
-        source, ratio = figure_source(path_)
+        _, ratio = figure_source(figure.display_image or figure.value)
+        width_mm = page.width() / writer.resolution() * 25.4
+        height_mm = page.height() / writer.resolution() * 25.4
         mm = _figure_width(figure, ratio)
-        w = mm / 25.4 * writer.resolution()
-        h = w / ratio
-        caption = _print_document()
-        caption.setTextWidth(width)
-        note = ''.join('<br><span>' + escape(line) + '</span>' for line in figure.paragraphs)
-        caption.setHtml(f'<b>Figure {number}. {escape(title)} (continued)</b>' + note)
-        # Lay out captions in the same 96-DPI coordinates as table captions.
-        available = page.height() - (caption.size().height() + 12) * scale
-        import math
-        for part in range(math.ceil(h / available)):
-            if part:
+        available = _figure_height_budget(number, figure, width_mm, height_mm)
+        with _figure_panels(figure, mm, available) as paths:
+            for index, path_ in enumerate(paths):
                 writer.newPage()
-            painter.save()
-            painter.setClipRect(QRectF(0, 0, page.width(), available))
-            rect = QRectF((page.width() - w) / 2, -part * available, w, h)
-            page_source = source
-            if isinstance(source, QSvgRenderer):
-                # Qt's symbol viewport replaces the painter clip. Intersect the
-                # SVG groups themselves with this page's slice to preserve it.
-                bounds = source.viewBoxF()
-                page_source, _ = figure_source(path_, (
-                    bounds.x(), bounds.y() + part * available * bounds.height() / h,
-                    bounds.width(), min(available, h - part * available) * bounds.height() / h,
-                ))
-            paint_figure(painter, page_source, rect)
-            painter.restore()
-            painter.save()
-            painter.scale(scale, scale)
-            caption_y = min(h - part * available, available) / scale + 12
-            caption.setHtml(f'<b>Figure {number}. {escape(title)}'
-                            + (' (continued)</b>' if part else '</b>' + note))
-            painter.translate(0, caption_y)
-            caption.drawContents(painter)
-            painter.restore()
+                source, ratio = figure_source(path_)
+                w = min(mm, available * ratio) / 25.4 * writer.resolution()
+                h = w / ratio
+                paint_figure(painter, source, QRectF((page.width() - w) / 2, 0, w, h))
+                caption = _caption_document(
+                    _figure_caption(number, figure, bool(index)), () if index else figure.paragraphs, width_mm
+                )
+                painter.save()
+                painter.scale(scale, scale)
+                painter.translate(0, h / scale + 12)
+                caption.drawContents(painter)
+                painter.restore()
     if report.configuration or report.supplementary_sections:
         document.setHtml(report.html(supplementary=True))
         _print_pdf_pages(document, writer, painter, width, height, scale, first_page=True)

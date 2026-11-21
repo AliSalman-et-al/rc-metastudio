@@ -2,36 +2,38 @@
 """Adapt R's rectangular SVG clips for Qt without changing exported artwork."""
 
 import gzip
+import re
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 
-def svg_bytes_for_qt(
-    path: str | Path, clip_bounds: tuple[float, float, float, float] | None = None
-) -> bytes:
+def svg_bytes_for_qt(path: str | Path) -> bytes:
     opener = gzip.open if str(path).lower().endswith(".svgz") else open
     with opener(path, "rb") as source:
         svg = source.read()
-    if b"clip-path" not in svg:
+    if b"clip-path" not in svg and b"Segoe UI Symbol" not in svg:
         return svg
 
     namespace = "http://www.w3.org/2000/svg"
     root = ET.fromstring(svg)
+    # Qt resolves a bare family name and can then apply its own glyph fallback.
+    for node in root.iter(f"{{{namespace}}}text"):
+        style = node.get("style", "")
+        if "Segoe UI Symbol" in style:
+            node.set("style", re.sub(r"font-family:\s*([^;]+)",
+                lambda match: "font-family: " + match[1].split(",", 1)[0].strip(" \"'"), style))
     # Qt treats svglite's percentage canvas as 100 SVG units, not the viewBox.
     _, _, canvas_width, canvas_height = root.attrib["viewBox"].split()
     for canvas in root.findall(f"{{{namespace}}}g[@class='svglite']/{{{namespace}}}rect"):
         for attribute, extent in (("width", canvas_width), ("height", canvas_height)):
             if canvas.get(attribute) == "100%":
                 canvas.set(attribute, extent)
-        if clip_bounds is not None:
-            for attribute, value in zip(("x", "y", "width", "height"), clip_bounds):
-                canvas.set(attribute, str(value))
     clips = _rectangular_clips(root, namespace)
     groups = [(parent, node) for parent in root.iter() for node in parent
               if node.tag == f"{{{namespace}}}g" and node.get("clip-path") in clips
               and "transform" not in node.attrib]
     for index, (parent, node) in enumerate(groups):
-        _clip_group(parent, node, clips[node.get("clip-path")], index, clip_bounds, namespace)
+        _clip_group(parent, node, clips[node.get("clip-path")], index, namespace)
     ET.register_namespace("", namespace)
     ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
     return ET.tostring(root, encoding="utf-8")
@@ -49,16 +51,10 @@ def _rectangular_clips(root, namespace):
     return clips
 
 
-def _clip_group(parent, node, rectangle, index, clip_bounds, namespace):
+def _clip_group(parent, node, rectangle, index, namespace):
     node.attrib.pop("clip-path")
     x, y = rectangle.get("x", "0"), rectangle.get("y", "0")
     width, height = rectangle["width"], rectangle["height"]
-    if clip_bounds is not None:
-        left, top, span, extent = clip_bounds
-        right = min(float(x) + float(width), left + span)
-        bottom = min(float(y) + float(height), top + extent)
-        x, y = str(max(float(x), left)), str(max(float(y), top))
-        width, height = str(right - float(x)), str(bottom - float(y))
     if float(width) <= 0 or float(height) <= 0:
         parent.remove(node)
         return

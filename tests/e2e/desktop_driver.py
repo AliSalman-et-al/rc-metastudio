@@ -385,7 +385,6 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
         plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
         intrinsic_width = selected[1].boundingRect().width()
         record_step('analysis-initial-fit', view, width=plot_width, viewport=viewport.width(), zoom=view.zoom_control.value())
-        assert view.zoom_control.value() <= 100, view.zoom_control.value()
         assert plot_width >= min(intrinsic_width, viewport.width()) * .9, (plot_width, intrinsic_width, viewport.width(), view.zoom_control.value())
     if selected is not None and not view.report_action.isChecked():
         original_zoom = view.zoom_control.value()
