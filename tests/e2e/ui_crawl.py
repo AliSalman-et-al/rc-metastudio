@@ -397,15 +397,16 @@ def imports(driver, capture, missing):
 def shell(driver, capture, missing):
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
-    assert driver.window.menu_file.actions() == [
+    actions = driver.window.menu_file.actions()
+    assert actions == [
         driver.window.action_new_dataset, driver.window.action_open,
-        driver.window.action_open_recent_2.menuAction(), driver.window.action_import_csv,
-        driver.window.menu_file.actions()[4],
+        driver.window.action_open_recent_2.menuAction(), driver.window.sample_menu.menuAction(),
+        driver.window.action_import_csv, actions[5],
         driver.window.action_save, driver.window.action_save_as,
-        driver.window.menu_file.actions()[7], driver.window.action_quit,
+        actions[8], driver.window.action_quit,
     ]
-    assert driver.window.menu_file.actions()[4].isSeparator()
-    assert driver.window.menu_file.actions()[7].isSeparator()
+    assert actions[5].isSeparator()
+    assert actions[8].isSeparator()
     assert driver.window.action_quit.shortcut().toString() == "Ctrl+Q"
     driver.window.resize(1280, 800)
     capture("A-amino-grid", driver.window)
