@@ -13,11 +13,11 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 
 ## Batch A journeys
 
-\`polish-journeys\` drives sample Save As, named incomplete studies, calculator
+`polish-journeys` drives sample Save As, named incomplete studies, calculator
 entry from F4 and the grid menu, mapped CSV conflicts and repeated names across
 years, HR/IRR breadcrumbs, Results replacement and copy feedback. It compares
 Aminoglycosides Mantel–Haenszel and Peto counts with direct metafor fits. Use
-\`--native\` for the restored frame. \`rm5-import\` covers the inline missing subgroup
+`--native` for the restored frame. `rm5-import` covers the inline missing subgroup
 and recovery after assignment.
 
 ## UX effort scoreboard
