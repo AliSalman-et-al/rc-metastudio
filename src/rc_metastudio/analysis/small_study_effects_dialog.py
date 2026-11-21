@@ -584,7 +584,8 @@ class SmallStudyEffectsDialog(
         report = self._eligibility_report
         if report is not None:
             facts.extend(_eligibility_identity(report))
-        facts.append(f"Pooled display: {request.pooled_display.model.value.capitalize()} effect")
+        model_label = "Random effects" if request.pooled_display.model.value == "random" else "Common effect"
+        facts.append(f"Pooled display: {model_label}")
         facts.append(f"{request.confidence_level:g}% CI")
         result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")

@@ -1230,7 +1230,7 @@ def parse_out_results(result):
         software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
         inference = execution.get('inference', ())
         contributors = None
-        if request.get('method') in ('binary.fixed.mh', 'binary.fixed.peto') and 'res' in result:
+        if 'res' in result:
             fit = result['res']
             if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
                 contributors = int(fit.rx2('k.yi')[0])

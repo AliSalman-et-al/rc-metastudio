@@ -55,7 +55,10 @@ from rc_metastudio.results.plot_text import (
     plot_text_value,
     set_plot_text_value,
 )
-from rc_metastudio.analysis.catalog import ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS, REITSMA_METHOD
+from rc_metastudio.analysis.catalog import (
+    ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS,
+    RATIO_DATA_TYPES, RAW_COUNT_METHODS, REITSMA_METHOD,
+)
 from rc_metastudio.analysis.validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, parse_plot_bound, is_valid_plot_tick_list, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
 from rc_metastudio.settings import analysis_output_path
 from rc_metastudio.qt_object_guard import required
@@ -277,10 +280,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         error_layout.addWidget(self.analysis_error_details)
         self.analysis_error_toggle.toggled.connect(self._expand_error_details)
         self.analysis_error_panel.hide()
-        outcome_label = QLabel(self.model.current_outcome_name, self)
-        outcome_label.setTextFormat(Qt.TextFormat.PlainText)
-        configure_context_label(outcome_label)
-        self.content_scroll_layout.insertWidget(0, outcome_label)
+        self.outcome_label = QLabel(self.model.current_outcome_name, self)
+        self.outcome_label.setTextFormat(Qt.TextFormat.PlainText)
+        configure_context_label(self.outcome_label)
+        self.content_scroll_layout.insertWidget(0, self.outcome_label)
         self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
             not self.is_meta_regression
@@ -559,6 +562,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                   else layout.totalSizeHint().height())
         height += required(self.specs_tab.tabBar(), "analysis tabs").sizeHint().height()
         height += 2 * required(self.specs_tab.style(), "analysis tab style").pixelMetric(QtWidgets.QStyle.PixelMetric.PM_DefaultFrameWidth)
+        height += self.outcome_label.heightForWidth(self.specs_tab.width()) + self.content_scroll_layout.spacing()
         if hasattr(self, "analysis_error_panel") and not self.analysis_error_panel.isHidden():
             height += self.analysis_error_panel.sizeHint().height() + self.content_scroll_layout.spacing()
         return height
@@ -782,7 +786,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             return self._prepare_analysis_result(result)
 
-        self._run_analysis(execute_regression)
+        self._run_analysis(execute_regression, regression_request=request)
 
     def _confirm_excluded_studies(self, names):
         excluded = ", ".join(names)
@@ -884,7 +888,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _prepare_analysis_result(self, result: AnalysisResult) -> AnalysisResult:
         return normalize_analysis_result(self._with_result_identity(result))
 
-    def _run_analysis(self, regression: Callable[[], AnalysisResult] | None = None):
+    def _run_analysis(
+        self, regression: Callable[[], AnalysisResult] | None = None, *,
+        regression_request: analysis_adapter.AnalysisRequest | None = None,
+    ):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
@@ -897,9 +904,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             source_sheet = self._rerun_source_sheet or self.model.current_sheet
             requests = self.analysis_requests() if regression is None else ()
             missing_inputs = self._missing_analysis_inputs(
-                [request.metric for request in requests] or [self._meta_regression_metric()],
-                raw_required=any(request.method in {"binary.fixed.mh", "binary.fixed.peto", REITSMA_METHOD}
-                                 for request in requests),
+                (regression_request,) if regression_request is not None else requests
             )
             if missing_inputs:
                 self._show_analysis_error(missing_inputs)
@@ -915,6 +920,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             message = re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
             message = re.sub(r"(?m)^\w*(?:Error|Exception):\s*", "", message).strip()
+            # The input precheck should make this fallback unreachable for missing inputs.
             if "Processing terminated since k = 0" in message:
                 message = "No study could contribute to this analysis. Check the study values and selected method."
             self._show_analysis_error(message or "The analysis could not be completed.",
@@ -941,14 +947,21 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if details:
             self.analysis_error_toggle.setFocus()
 
-    def _missing_analysis_inputs(self, metrics: Sequence[str], *, raw_required: bool) -> str:
+    def _missing_analysis_inputs(self, requests: Sequence[analysis_adapter.AnalysisRequest]) -> str:
         studies = self._manuscript_studies()
         if not studies:
             return ("No studies are included. Select Include for at least one study with complete data."
                     if not self.model.get_studies() else "No included study has values for the selected covariates.")
         selected_ids = {study.id for study in studies}
-        missing_by_metric = []
-        for metric in metrics:
+        ratio_input = self.model.get_current_data_type(get_str=False) in RATIO_DATA_TYPES
+        arm_inputs = {
+            "binary": "events and totals",
+            "continuous": "sample size, mean, and standard deviation",
+            "event_rates": "events and person-time",
+        }.get(self.data_type)
+        for request in requests:
+            metric = request.metric
+            raw_required = request.method in RAW_COUNT_METHODS
             fields = [column for column in self.model.columns.raw if not column.hidden]
             if metric in ONE_ARM_METRICS:
                 fields = [column for column in fields if column.arm_index in (None, 0)]
@@ -957,26 +970,44 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 if study.id not in selected_ids:
                     continue
                 raw = self.model.get_current_raw_data_for_study(index)
-                absent = [
-                    f"{column.field.label} ({self.model.arm_names[column.arm_index]})"
-                    if column.arm_index is not None else column.field.label
-                    for position, column in enumerate(fields)
-                    if position >= len(raw) or raw[position] in (None, "")
-                ]
-                has_estimate = not raw_required and self.model.study_has_point_est(index, effect=metric)
-                if has_estimate or (fields and not absent and metric != "IRR"):
+                absent = [column for position, column in enumerate(fields)
+                          if position >= len(raw) or raw[position] in (None, "")]
+                has_raw = bool(fields) and not absent
+                has_effect = self.model.study_has_point_est(index, effect=metric)
+                if ratio_input:
+                    has_raw = (
+                        has_raw and has_effect
+                        and study.analysis_unit.ratio_input(self.model.arm_names).selected_source(raw, metric=metric) == "raw"
+                    )
+                if has_raw or (has_effect and not raw_required):
                     break
-                inputs = ", ".join(absent)
+                if len(missing) == 3:
+                    continue
+                missing_fields = []
+                if arm_inputs and absent and absent == fields and {column.arm_index for column in fields} == {0, 1}:
+                    missing_fields.append(f"{arm_inputs} for both arms")
+                else:
+                    for arm, arm_name in enumerate(self.model.arm_names):
+                        arm_fields = [column for column in fields if column.arm_index == arm]
+                        arm_missing = [column for column in absent if column.arm_index == arm]
+                        if arm_inputs and arm_missing and arm_missing == arm_fields:
+                            missing_fields.append(f"{arm_inputs} for {arm_name}")
+                        else:
+                            missing_fields.extend(f"{column.field.label} ({arm_name})" for column in arm_missing)
+                    missing_fields.extend(column.field.label for column in absent if column.arm_index is None)
+                inputs = ", ".join(missing_fields)
                 if not raw_required:
-                    estimate = "an estimate with a confidence interval or standard error"
-                    inputs = f"{inputs} or {estimate}" if inputs else estimate
+                    estimate = "an estimate with its confidence interval or standard error"
+                    inputs = f"{inputs}, or {estimate}" if inputs else estimate
+                if raw_required and not inputs and ratio_input:
+                    inputs = "events and person-time selected as the effect source"
                 name = f"{study.label} ({study.year})" if study.year else study.label
                 missing.append(f"{name} needs {inputs or 'valid study inputs'}.")
             else:
-                prefix = f"{ALL_METRIC_NAMES.get(metric, metric)} — " if len(metrics) > 1 else ""
-                missing_by_metric.append(prefix + " ".join(missing))
-        if missing_by_metric:
-            return "No study has enough data to analyse. " + " ".join(missing_by_metric)
+                if len(studies) > len(missing):
+                    missing.append(f"and {len(studies) - len(missing):,} more.")
+                prefix = f"{ALL_METRIC_NAMES.get(metric, metric)} — " if len(requests) > 1 else ""
+                return "No study has enough data to analyze. " + prefix + " ".join(missing)
         return ""
 
     def _pooled_fit_for_sheet(
@@ -1094,8 +1125,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
         for name, total in self._manuscript_participants():
             label = (
-                "Participants" if self.model.current_effect in ONE_ARM_METRICS
-                and name.casefold() in {"group", "participants"} else f"Participants in {name}"
+                "Participants" if self.model.current_effect in ONE_ARM_METRICS else f"Participants in {name}"
             )
             model_info.append((label, f"{total:g}"))
         if self.data_type == "diagnostic":
@@ -1138,7 +1168,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
-            if self.model.current_effect in ONE_ARM_METRICS and name.casefold() in {"group", "participants"}:
+            if self.model.current_effect in ONE_ARM_METRICS:
                 context += f" ({total:,g} participants)"
             else:
                 context += f" ({total:,g} participants in {name}"
