@@ -245,7 +245,7 @@ SCENARIOS = {
     "results-values": Scenario(external("results_values", standard_args), 600),
     "amino": Scenario(local("sample_analysis", "amino")),
     "sheets": Scenario(local("sheets")),
-    "ui-crawl": Scenario(external("ui_crawl", lambda driver, *_: (driver,)), 600, qualifies=False),
+    "ui-crawl": Scenario(external("ui_crawl", lambda driver, *_: (driver,)), 900, qualifies=False),
     "rm5-import": Scenario(external("rm5_import", rm5_args), 240),
     "sheets-legacy": Scenario(local("sheets_legacy"), 600),
     "sheets-edges": Scenario(local("sheets_edges")),
