@@ -34,7 +34,7 @@ def run(app, window, work, root, record, analyze):
     record("sample-welcome", window)
     window.menu_file.popup(window.menu_file.parentWidget().mapToGlobal(QtCore.QPoint()))
     app.processEvents()
-    record("sample-file-menu", window, window.menu_file)
+    record("sample-file-menu", window.menu_file)
     window.menu_file.close()
     sample = root / "sample_projects/amino.rcms"
     original = sample.read_bytes()
@@ -200,7 +200,7 @@ def run(app, window, work, root, record, analyze):
     event = QtGui.QContextMenuEvent(QtGui.QContextMenuEvent.Reason.Mouse, point, viewport.mapToGlobal(point))
     app.sendEvent(viewport, event)
     menu = visible(QtWidgets.QMenu)
-    record("row-context-calculator", window, menu)
+    record("row-context-calculator", menu)
     action = next(action for action in menu.actions() if action.text() == "Study calculator…")
     menu.close()
     modal(app, BinaryDataDialog, inspect_binary, action.trigger)
