@@ -968,7 +968,7 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         label = selected.data()
         assert window.model.setData(selected, "Recovered study") is True
         assert selected.data() == "Recovered study"
-        assert "Aminoglycosides (sample) *" in window.windowTitle()
+        assert window.windowTitle() == "amino.rcms * — RC MetaStudio"
         window.action_undo.trigger()
         assert window.model.index(0, window.model.NAME).data() == label
         assert window.windowTitle() == initial_title
@@ -1065,11 +1065,11 @@ def test_opening_a_second_project_updates_the_status_path_atomically(qapp):
     try:
         assert window.open(first) is True
         assert window.windowFilePath() == first
-        assert "LAG positivity (sample)" in window.windowTitle()
+        assert window.windowTitle() == "lymph.rcms — RC MetaStudio"
         assert window.open(second) is True
         assert window.model.dataset.title == "BCG"
         assert window.windowFilePath() == second
-        assert "BCG vaccine and tuberculosis (sample)" in window.windowTitle()
+        assert window.windowTitle() == "bcg.rcms — RC MetaStudio"
         assert first != window.windowFilePath()
     finally:
         _close_shell(app, window)

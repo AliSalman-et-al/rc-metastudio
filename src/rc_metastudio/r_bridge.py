@@ -32,7 +32,7 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import r_transaction, require_r_transaction, serialized_r_call as _serialized_r_call
+from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
 from rc_metastudio.analysis.catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.analysis.validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.analysis.study_selection import fit_raw_rows, raw_data_is_complete
@@ -51,7 +51,7 @@ def _require_initialized_r() -> None:
     from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
     if _INITIALIZATION_ERROR is not None:
         raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
-    if "ro" not in globals():
+    if "ro" not in globals() or "_rinterface" not in globals():
         raise AnalysisBackendUnavailableError("R is still starting")
 
 
@@ -1004,18 +1004,32 @@ def _normalize_rcmetar_workflow(workflow):
     return workflow
 
 
+_sequential_progress: ContextVar[Callable[[int, int], bool] | None] = ContextVar("sequential_progress", default=None)
+
+
 @contextmanager
 def sequential_progress(progress: Callable[[int, int], bool]):
-    with r_transaction():
-        _require_initialized_r()
-        callback = _rinterface.rternalize(
-            lambda index, total: _rinterface.BoolSexpVector([progress(int(index[0]), int(total[0]))])
-        )
-        previous = execute_r_function("options", **{"rcmetar.sequential.progress": callback})
-        try:
-            yield
-        finally:
-            execute_r_function("options", previous)
+    token = _sequential_progress.set(progress)
+    try:
+        yield
+    finally:
+        _sequential_progress.reset(token)
+
+
+@contextmanager
+def _r_sequential_progress(workflow: object):
+    progress = _sequential_progress.get()
+    if progress is None or workflow not in ("cumulative", "leave-one-out"):
+        yield
+        return
+    callback = _rinterface.rternalize(
+        lambda index, total: _rinterface.BoolSexpVector([progress(int(index[0]), int(total[0]))])
+    )
+    previous = execute_r_function("options", **{"rcmetar.sequential.progress": callback})
+    try:
+        yield
+    finally:
+        execute_r_function("options", previous)
 
 
 @serialized_r_call
@@ -1090,11 +1104,8 @@ def _execute_versioned_request(
         "params": _to_r_params(params),
         "workflow": _normalize_rcmetar_workflow(workflow),
     }
-    result = execute_r_function(
-        "rcmetar.run.analysis",
-        data,
-        _to_r_params(normalized),
-    )
+    with _r_sequential_progress(normalized["workflow"]):
+        result = execute_r_function("rcmetar.run.analysis", data, _to_r_params(normalized))
     return parse_out_results(result)
 
 
@@ -1193,7 +1204,8 @@ def _execute_versioned_requests(
     else:
         arguments["diagnostic.data"] = data
     try:
-        result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
+        with _r_sequential_progress(requests[0]["workflow"]):
+            result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
     return parse_out_results(result)

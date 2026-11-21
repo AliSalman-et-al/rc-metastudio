@@ -320,8 +320,7 @@ class AdaptiveWindowController(QObject):
             and not window.isFullScreen()
         ):
             self._normal_frame_geometry = QRect(window.frameGeometry())
-        if (watched is window and self.role == WindowRole.MAIN and window.isMaximized()
-                and event.type() in (QEvent.Type.Move, QEvent.Type.Resize)):
+        if watched is window and event.type() == QEvent.Type.WindowStateChange:
             self.request_runtime_clamp()
         if (watched is window and self.role == WindowRole.TRANSACTIONAL
                 and event.type() == QEvent.Type.Resize):
@@ -520,20 +519,17 @@ class AdaptiveWindowController(QObject):
         self._set_outer_frame_geometry(target)
 
     def _apply_runtime_clamp(self):
+        if self.window.isMaximized() or self.window.isFullScreen():
+            return
         available = self._available_geometry()
         if available.isValid():
-            # Maximized native frames can extend beyond the work area (Windows
-            # hides their resize borders). Only the client must fit in that state.
-            visible = self.window.geometry() if self.window.isMaximized() else self.window.frameGeometry()
-            if available.contains(visible):
+            current = self.window.frameGeometry()
+            if available.contains(current):
                 return
-            if self.window.isMaximized():
-                self.window.showNormal()
             if self.role == WindowRole.MAIN:
                 # The client minimum must leave room for native frame decorations.
                 self.window.setMinimumSize(self.window.minimumSize().boundedTo(
                     client_size_for_frame_size(available.size(), self._frame_margins())))
-            current = self.window.frameGeometry()
             target = clamp_frame_geometry(current, available)
             if target != current:
                 self._set_outer_frame_geometry(target)

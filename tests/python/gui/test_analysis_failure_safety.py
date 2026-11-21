@@ -386,19 +386,7 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         )
     }
     try:
-        window._handle_wizard_results(
-            {
-                "path": "new_dataset",
-                "outcome_info": {
-                    "arms": "two",
-                    "data_type": "diagnostic",
-                    "sub_type": None,
-                    "effect": "Sens",
-                    "metric_choices": [],
-                    "name": "Accuracy",
-                },
-            }
-        )
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
 
         _set_backend(
             monkeypatch,
@@ -424,19 +412,18 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
             lambda *args, **kwargs: [],
             raising=False,
         )
-        monkeypatch.setattr(
-            analysis_setup_dialog,
-            "add_plot_params",
-            lambda specs_form: (_ for _ in ()).throw(
-                RuntimeError("simulated setup failure")
-            ),
-        )
-
         form = window._build_analysis_specs_dialog(
             diagnostic_metrics=["sens", "spec"],
             confidence_level=window.model.get_confidence_level(),
         )
+        assert form is not None
 
+        def fail_with_progress_visible(_requests):
+            progress = form.findChild(progress_dialog.AnalysisProgressDialog)
+            assert progress is not None and progress.isVisible()
+            raise RuntimeError("simulated setup failure")
+
+        monkeypatch.setattr(form, "_execute_requests", fail_with_progress_visible)
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox, "critical", lambda *_args: None
         )
