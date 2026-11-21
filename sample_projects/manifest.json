@@ -14,7 +14,7 @@
       "source_reference": "Colditz GA, Brewer TF, Berkey CS, Wilson ME, Burdick E, Fineberg HV, Mosteller F. Efficacy of BCG vaccine in the prevention of tuberculosis: meta-analysis of the published literature. JAMA. 1994;271:698–702.",
       "source_doi": "https://doi.org/10.1001/jama.1994.03510330076038",
       "source_file": "sources/metadat-clinical.json",
-      "source_sha256": "4753da37801abddd6e27ec76daa6d95cd428993ec08539fbaef9f9746564f8b3",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
       "sha256": "5349dc81fd6f2f43022116e37a93d11884681fef170a5d3dbb2b4f7c005a3100",
       "semantic_sha256": "142a4dd9acf02e67b2eb4bb76fe2a472c3ee3f2d15cd301f815919afb390c5df"
     },
@@ -28,7 +28,7 @@
       "source_reference": "Barza M, Ioannidis JP, Cappelleri JC, Lau J. Single or multiple daily doses of aminoglycosides: a meta-analysis. BMJ. 1996;312:338–345.",
       "source_doi": "https://doi.org/10.1136/bmj.312.7027.338",
       "source_file": "sources/barza1996.json",
-      "source_sha256": "d375ea7e764a3fa1f682c9b3b420ca27be13b0dc9aebb76d4d5ec67558b26cba",
+      "source_sha256": "af5609a04310c2fa2740f017349555ae08dc6535b7411311b6a5857880d756de",
       "sha256": "52586ff087b4e16ba2d18d0bf37f8bb706ed8ca37941cf0bcac13f3f9c1ef4a6",
       "semantic_sha256": "e224ef48aef2ffdbdab91e0b0b7f53e8fc2c1728dadcc3947c4b5e50ebb68fc0"
     },
@@ -42,7 +42,7 @@
       "source_reference": "Poole PJ, Black PN. Mucolytic agents for chronic bronchitis or chronic obstructive pulmonary disease. Cochrane Database Syst Rev. 2003;1:CD001287.",
       "source_doi": "https://doi.org/10.1002/14651858.CD001287",
       "source_file": "sources/metadat-clinical.json",
-      "source_sha256": "4753da37801abddd6e27ec76daa6d95cd428993ec08539fbaef9f9746564f8b3",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
       "sha256": "c4f0580647c5c75d11bf9863c65e142b28f03cee7953897f8dabc3b9006bc551",
       "semantic_sha256": "e8d457b75f709961e53b047c44ad031b5a4fb86522272af41933424666f14551"
     },
@@ -56,7 +56,7 @@
       "source_reference": "Kearon C, Julian JA, Newman TE, Ginsberg JS. Noninvasive diagnosis of deep venous thrombosis. Ann Intern Med. 1998;128:663–677.",
       "source_doi": "https://doi.org/10.7326/0003-4819-128-8-199804150-00011",
       "source_file": "sources/metadat-clinical.json",
-      "source_sha256": "4753da37801abddd6e27ec76daa6d95cd428993ec08539fbaef9f9746564f8b3",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
       "sha256": "a596577c1a98c971d8aa0c0e9cdff2d6190f9487d97322430863bdcd57a88e5b",
       "semantic_sha256": "3db33fcf282de4ac14cf72894d218d4b0ddee671b8fe99b5df23d751388a2c02"
     },
@@ -94,7 +94,7 @@
       "source_reference": "Greenland S, Longnecker MP. Methods for trend estimation from summarized dose-response data, with applications to meta-analysis. Am J Epidemiol. 1992;135:1301–1309.",
       "source_doi": "https://doi.org/10.1093/oxfordjournals.aje.a116237",
       "source_file": "sources/metadat-clinical.json",
-      "source_sha256": "4753da37801abddd6e27ec76daa6d95cd428993ec08539fbaef9f9746564f8b3",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
       "sha256": "d648bd2036dc497a648b01955c39ade6d40ede9d616a35621273e14033374efa",
       "semantic_sha256": "cfa36222a9859eed19aff1d680ff58ab098e36394ea266e990b46a4fee0f0e7a"
     },
@@ -108,7 +108,7 @@
       "source_reference": "Abe T, Song JS, Dankel SJ, Viana RB, Abe A, Loenneke JP. Impact of potential moderating factors on absolute test-retest reliability of grip strength measurements in healthy populations: a systematic review with meta-analysis. J Sports Sci Med. 2025;24:543–554.",
       "source_doi": "https://doi.org/10.52082/jssm.2025.543",
       "source_file": "sources/abe2025.json",
-      "source_sha256": "7a543f83eb2dd8440dd017f51c7df9b40d8652fa91bae20804b099e3876cd2fe",
+      "source_sha256": "cab6e3233deadce8f23ec8470a223c71301f98aef4e600feb7107e02ef8c73e4",
       "sha256": "c7d287f79f2def4ce142d16d31d1d91859fb6934e05665155e77e4eb672fa502",
       "semantic_sha256": "e7621d79373c22c3056180262aa3810b1bf2d89dfa7c55402a1da8d588ab067d"
     },
@@ -122,7 +122,7 @@
       "source_reference": "Feng L, Li L, Liu W, Yang J, Wang Q, Shi L, Luo M. Prevalence of depression in myocardial infarction: A PRISMA-compliant meta-analysis. Medicine. 2019;98:e14596.",
       "source_doi": "https://doi.org/10.1097/MD.0000000000014596",
       "source_file": "sources/metadat-clinical.json",
-      "source_sha256": "4753da37801abddd6e27ec76daa6d95cd428993ec08539fbaef9f9746564f8b3",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
       "sha256": "4f11f59e78d9da9faebc1af2adc6c8509333d118faf80c87037cbaac8ce00eb5",
       "semantic_sha256": "27638e0286e594929d01f5bbeae751ce9f1e2643e93f6b44a4f4d5a0347b7208"
     },
