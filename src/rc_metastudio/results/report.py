@@ -1426,8 +1426,9 @@ def _print_pdf_pages(document, writer, painter, width, height, scale):
         height *= expansion
         scale /= expansion
         document.setPageSize(QSizeF(width, height))
-    _keep_pdf_blocks_together(document, height)
     _keep_pdf_tables_together(document, height)
+    # Moving a table and its caption can push a later paragraph across a page.
+    _keep_pdf_blocks_together(document, height)
     # Start painting from a fresh layout after setting paragraph and table breaks.
     document = document.clone()
     document.setPageSize(QSizeF(width, height))
