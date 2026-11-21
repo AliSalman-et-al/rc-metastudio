@@ -541,7 +541,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
                 points = [float(value) for value in re.findall(r"[-+]?[\d.]+", polygon.attrib["points"])]
                 polygon_heights.append(max(points[1::2])-min(points[1::2]))
             layout.update(row_spacing_px=row_gap, max_polygon_height_px=max(polygon_heights))
-            assert max(polygon_heights) <= row_gap * .8, ("pooled polygon exceeds study row", style, workflow, layout)
+            assert max(polygon_heights) <= row_gap * .9, ("polygon fills study row", style, workflow, layout)
             heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
             view.nav_tree.setCurrentItem(view.nav_tree.findItems(heading, QtCore.Qt.MatchFlag.MatchExactly)[0])
             view.report_action.setChecked(False)

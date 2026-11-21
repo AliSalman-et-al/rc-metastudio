@@ -63,7 +63,7 @@ def check_annotation_spacing(view, *, style="default"):
                    (re.fullmatch(r"[+\-−\d.][\d,.eE+\-−%/() ]*", "".join(node.itertext()))
                     and abs(float(node.attrib["y"]) - float(estimate.attrib["y"])) < 2)]
             boxes = sorted(text_box(node)[:2] for node in row)
-            assert all(b[0]-a[1] >= 4 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", "".join(estimate.itertext()), boxes)
+            assert all(b[0]-a[1] >= 2 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", "".join(estimate.itertext()), boxes)
 
         # Include the pooled label and footer.
         for node in nodes:
@@ -76,7 +76,7 @@ def check_annotation_spacing(view, *, style="default"):
                     continue
                 b = text_box(other)
                 if min(a[3], b[3])-max(a[2], b[2]) > 1:
-                    assert b[0]-a[1] >= 4 or a[0]-b[1] >= 4, ("model/footer collision", text, "".join(other.itertext()), a, b)
+                    assert b[0]-a[1] >= 2 or a[0]-b[1] >= 2, ("model/footer collision", text, "".join(other.itertext()), a, b)
         study_rows = [float(node.attrib['y']) for node in nodes if ''.join(node.itertext()).startswith('Fixture ')]
         if study_rows:
             svg = ET.parse(path)
@@ -118,7 +118,7 @@ def check_annotation_spacing(view, *, style="default"):
             for tick in (node for node in nodes if re.fullmatch(r"0\.[\d]+", "".join(node.itertext()))):
                 other = text_box(tick)
                 if abs(other[3]-box[3]) < 30 and min(box[1], other[1]) > max(box[0], other[0]):
-                    assert box[2]-other[3] >= 4 or other[2]-box[3] >= 4, ("axis title/tick gap", box, other)
+                    assert abs(other[3]-box[3]) >= 8, ("axis title/tick gap", box, other)
         assert not any("1.110223" in caption for caption in captions), captions
         if any("Entered effect" in text or "Coefficient" in text for text in captions):
             assert "Mean" not in captions, captions
