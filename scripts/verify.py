@@ -277,7 +277,10 @@ def run_code_health(
     report = baseline.with_suffix(".txt")
     cached = False
     if reuse_baseline and (REPO_ROOT / report).is_file():
-        from scripts.code_health import CodeHealthError, load_baseline
+        if __package__:
+            from scripts.code_health import CodeHealthError, load_baseline
+        else:
+            from code_health import CodeHealthError, load_baseline
 
         try:
             cached = load_baseline(REPO_ROOT / baseline).get("head") == STABLE_BASELINE
@@ -374,7 +377,7 @@ def pre_push_steps() -> dict[str, Callable[[], object]]:
         "prepare": lambda: env.update(prepare_qt_environment(build)),
         "typing (win32)": lambda: run_typing(build),
         "pinned R runtime": lambda: pinned_r_environment(env),
-        "code health": run_code_health,
+        "code health": lambda: run_code_health(reuse_baseline=True),
         "fast-verification/source-fast-targets": lambda: run_source_tests(
             env, smoke=False, fast_workers=int(os.environ.get("RCMS_FAST_WORKERS", "4"))
         ),
