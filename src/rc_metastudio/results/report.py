@@ -1193,7 +1193,7 @@ def _docx_figures(document, figures):
                         '<a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
                         f'<asvg:svgBlip r:embed="{relationship}"/></a:ext></a:extLst>'
                     ))
-                document.add_paragraph(_figure_caption(number, figure, bool(index)))
+                document.add_paragraph().add_run(_figure_caption(number, figure, bool(index))).bold = True
                 if index == 0:
                     for note in figure.paragraphs:
                         document.add_paragraph(note)
@@ -1217,11 +1217,14 @@ def write_docx(report, path):
                 paragraph.add_run(part).italic = italic
     _docx_sections(document, report, False)
     _docx_figures(document, report.figures)
+    first_supplement = len(document.paragraphs)
     _docx_sections(document, report, True)
     if report.configuration:
         document.add_heading('Model configuration', 1)
         for line in report.configuration.splitlines():
             document.add_paragraph(line)
+    if report.figures and first_supplement < len(document.paragraphs):
+        document.paragraphs[first_supplement].paragraph_format.page_break_before = True
     document.save(path)
 
 

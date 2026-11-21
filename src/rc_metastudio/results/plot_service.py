@@ -108,12 +108,6 @@ class PlotService:
                 raise PlotServiceError(f"Minimum width for this figure: {minimum_width * 25.4:.1f} mm")
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
-            paths = r_bridge.render_plot_bundle(
-                params_path, regenerator, str(source), include_title=include_title,
-                width=width if regenerator == "forest" else None,
-            )
-            if not paths:
-                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             extension = Path(output_path).suffix.lower()
             if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
                 page_width = min(width, 180 / 25.4)
@@ -125,6 +119,12 @@ class PlotService:
                 )
                 _write_a4_pdf(output_path, paths)
                 return
+            paths = r_bridge.render_plot_bundle(
+                params_path, regenerator, str(source), include_title=include_title,
+                width=width if regenerator == "forest" else None,
+            )
+            if not paths:
+                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             ET.register_namespace('', 'http://www.w3.org/2000/svg')
             ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
             tree = ET.parse(source)
