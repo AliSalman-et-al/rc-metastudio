@@ -18,7 +18,7 @@ from rc_metastudio.results.formatting import numeric_cell, numeric_columns, repo
 from html import escape
 import io
 from PyQt6.QtCore import QMarginsF, QRectF, Qt
-from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
+from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor, Pt
@@ -1070,20 +1070,29 @@ def _docx_table(document, table):
     target.autofit = False
     section = document.sections[-1]
     available = section.page_width - section.left_margin - section.right_margin
-    widths = _docx_column_widths(table, available)
+    widths, font_size = _docx_column_widths(table, available)
     for column, width in zip(target.columns, widths):
         column.width = width
     from docx.oxml import OxmlElement
 
-    _add_docx_rules(target._tbl.tblPr, 'tblBorders', ('top', 'bottom'))
+    properties = target._tbl.tblPr
+    _add_docx_rules(properties, 'tblBorders', ('top', 'bottom'))
+    margins = OxmlElement('w:tblCellMar')
+    for edge in ('left', 'right'):
+        margin = OxmlElement('w:' + edge)
+        margin.set(qn('w:w'), '40')
+        margin.set(qn('w:type'), 'dxa')
+        margins.append(margin)
+    properties.insert_element_before(margins, 'w:tblLook')
     target.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:tblHeader'))
     numeric = numeric_columns(table.rows) or (False,) * len(table.headers)
     for index, (row, values) in enumerate(zip([target.rows[0], *[target.add_row() for _ in table.rows]], (table.headers, *table.rows))):
+        row._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
         # Word resolves a shared edge from both cells. Assign the same rule
         # to each side of the header boundary.
         edges = tuple(edge for edge, rows in (('top', (0, 1)), ('bottom', (0, len(table.rows)))) if index in rows)
         for column, (cell, value) in enumerate(zip(row.cells, values)):
-            _style_docx_cell(cell, value, widths[column], numeric[column], index == 0)
+            _style_docx_cell(cell, value, widths[column], numeric[column], index == 0, font_size)
             if edges:
                 _add_docx_rules(cell._tc.get_or_add_tcPr(), 'tcBorders', edges)
 
@@ -1192,7 +1201,6 @@ def _docx_figures(document, figures):
                 buffer.open(QIODevice.OpenModeFlag.WriteOnly)
                 image.save(buffer, "PNG")
                 paragraph = document.add_paragraph()
-                paragraph.paragraph_format.page_break_before = True
                 paragraph.paragraph_format.keep_with_next = True
                 paragraph.paragraph_format.space_after = Pt(0)
                 picture = paragraph.add_run().add_picture(
@@ -1350,24 +1358,40 @@ def _residual_heterogeneity_sentence(values, quantities, residual):
 
 
 def _docx_column_widths(table, available):
+    # Measure the 10 pt cell font at a larger pixel size for sub-point precision.
+    font = QFont('Arial')
+    font.setPixelSize(100)
+    body = QFontMetricsF(font)
+    font.setBold(True)
+    heading = QFontMetricsF(font)
+    wrap_at = re.compile(r'(?<=-)|\s+')
+    minimums = []
+    for column, header in enumerate(table.headers):
+        header_width = max(heading.horizontalAdvance(word) for word in wrap_at.split(header))
+        body_width = max((
+            body.horizontalAdvance(word)
+            for value in (row[column] for row in table.rows)
+            for word in ((report_cell(value),) if numeric_cell(value) else wrap_at.split(value))
+        ), default=0)
+        minimums.append(Pt(max(header_width, body_width) / 10))
     lengths = [max(len(line) for row in (table.headers, *table.rows)
                    for line in (row[column].splitlines() or [''])) for column in range(len(table.headers))]
     weights = [max(5, min(45, length)) for length in lengths]
-    minimums = [Pt(12 + 6 * max((len(report_cell(row[column])) for row in table.rows
-                                if numeric_cell(row[column])), default=0))
-                for column in range(len(table.headers))]
     if table.role in ('coefficients', 'fitted'):
         # Reserve just the space needed for the numeric values and their headings.
-        for column in range(1, len(weights)):
-            heading = max(table.headers[column].split(), key=len, default='')
-            minimums[column] = max(minimums[column], Pt(12 + 6 * len(heading)))
         weights = [1, *([0] * (len(weights) - 1))]
-    remaining = max(0, available - sum(minimums))
-    return [round(minimum + remaining * weight / sum(weights))
-            for minimum, weight in zip(minimums, weights)]
+    padding = Pt(5)
+    content = available - len(weights) * padding
+    total = sum(minimums)
+    scale = min(1.0, content / max(1, total))
+    remaining = max(0, content - total)
+    widths = [round(padding + minimum * scale + remaining * weight / sum(weights))
+              for minimum, weight in zip(minimums, weights)]
+    font_size = max(8, math.floor(20 * scale) / 2)
+    return widths, font_size
 
 
-def _style_docx_cell(cell, value, width, numeric, heading):
+def _style_docx_cell(cell, value, width, numeric, heading, font_size):
     from docx.oxml import OxmlElement
     is_numeric = not heading and numeric_cell(value)
     cell.text = report_cell(value) if is_numeric else value
@@ -1384,7 +1408,7 @@ def _style_docx_cell(cell, value, width, numeric, heading):
         if heading:
             paragraph.paragraph_format.keep_with_next = True
         for run in paragraph.runs:
-            run.font.size = Pt(10)
+            run.font.size = Pt(font_size)
             run.bold = heading
 
 
