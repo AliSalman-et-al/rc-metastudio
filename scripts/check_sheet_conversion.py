@@ -15,6 +15,7 @@ from rc_metastudio.project.archive import load_project, save_project
 from rc_metastudio.project.adapter import project_to_dataset, dataset_to_project
 
 ROOT = Path(__file__).resolve().parents[1]
+FROZEN_PROJECTS = ROOT / "tests/fixtures/desktop-projects"
 
 def _source_pairs(source, outcome):
     declared = list(outcome['follow_ups'])
@@ -99,31 +100,31 @@ def _check_pair(sheet, source, state, outcome, follow, path):
         _check_row(old, row, unit, sheet, labels, ids, state, path)
 
 
-def _empty_bundled_row(row):
+def _empty_frozen_row(row):
     return (not row['label'] and row['year'] is None and not row['manually_excluded']
             and not row['entered_effects'] and not row['ratio_inputs']
             and not row['covariates'] and not row['notes'] and row['sample_size'] is None
             and all(v in ('', None) for cells in row['raw_data'].values() for v in cells))
 
 
-def _check_bundled(path, document):
-    bundled = load_project(path)
-    manifest = json.loads((ROOT / "sample_projects/manifest.json").read_text(encoding="utf-8"))
-    replacements = next(item for item in manifest["projects"] if item["file"] == path.name).get("arm_labels", {})
+def _check_frozen(path, document):
+    frozen = load_project(path)
+    migrations = json.loads((FROZEN_PROJECTS / "arm-label-migration.json").read_text(encoding="utf-8"))
+    replacements = migrations[path.name]
     for sheet in document.project["sheets"]:
         for arm in sheet["arms"]:
             arm["name"] = replacements.get(arm["name"], arm["name"])
-    # Bundled v3 archives retain the historical empty entry row; legacy import omits it.
-    for sheet, converted in zip(cast(list[dict], bundled.project['sheets']), document.project['sheets'], strict=True):
+    # These v3 fixtures retain the historical empty entry row.
+    for sheet, converted in zip(cast(list[dict], frozen.project['sheets']), document.project['sheets'], strict=True):
         ids = {r['id'] for r in converted['rows']}
         omitted = [row for row in sheet['rows'] if row['id'] not in ids]
-        assert all(_empty_bundled_row(row) for row in omitted)
+        assert all(_empty_frozen_row(row) for row in omitted)
         sheet['rows'][:] = [row for row in sheet['rows'] if row not in omitted]
-    assert bundled.project == document.project and bundled.state == document.state
+    assert frozen.project == document.project and frozen.state == document.state
 
 
 def _check_file(path):
-    original = (ROOT / 'tests/fixtures/legacy-projects' / path.name).read_bytes()
+    original = path.read_bytes()
     with zipfile.ZipFile(io.BytesIO(original)) as archive:
         source = json.loads(archive.read('project.json'))['dataset']
         state = json.loads(archive.read('state.json'))
@@ -146,7 +147,9 @@ def _check_file(path):
         reopened = load_project(dest)
         assert reopened.project == document.project and reopened.state == document.state
         assert legacy.read_bytes() == original
-        _check_bundled(path, document)
+        frozen = FROZEN_PROJECTS / path.name
+        if frozen.exists():
+            _check_frozen(frozen, document)
         print(f'| {path.name} | {count} → {len(converted_sheets)} | yes |')
 
 
@@ -154,8 +157,7 @@ def check():
     print('| file | pairs → sheets | equal |')
     print('| --- | --- | --- |')
     for legacy in sorted((ROOT / 'tests/fixtures/legacy-projects').glob('*.rcms')):
-        path = ROOT / 'sample_projects' / legacy.name
-        _check_file(path)
+        _check_file(legacy)
 
 
 if __name__ == '__main__':

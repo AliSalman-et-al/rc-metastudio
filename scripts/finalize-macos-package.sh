@@ -37,8 +37,8 @@ version_root = f"{framework}/Versions/{framework_version}"
 resources = f"{version_root}/Resources"
 required = [
     f"{archive_root_name}/RCMetaStudio.app/Contents/MacOS/RCMetaStudio",
-    f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis.rcms",
-    f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - Aminoglycosides.rcms",
+    f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
+    f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms",
     f"{resources}/bin/Rscript",
     f"{resources}/library/RCMetaR/DESCRIPTION",
     f"{resources}/Info.plist",
@@ -156,8 +156,8 @@ if [ "$skip_smoke" -eq 0 ]; then
     --workflow-observation "$extracted_workflow" \
     --surface-records "$extracted_surfaces" \
     --sample-observations "$extracted_samples" \
-    --sample "Binary - BCG vaccine and tuberculosis.rcms" --sample-root "$extracted_app/Contents/Resources/sample_projects" \
-    --sample-path "$extracted_app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis.rcms" \
+    --sample "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" --sample-root "$extracted_app/Contents/Resources/sample_projects" \
+    --sample-path "$extracted_app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" \
     --executable "$extracted_app/Contents/MacOS/RCMetaStudio" \
     --runtime-probe "$extracted_probe" --surface-directory "$extracted_surfaces" \
     --log-path "$extracted_smoke_log" \
@@ -170,7 +170,7 @@ if [ "$skip_smoke" -eq 0 ]; then
       --timeout-seconds 900 --stdout "$extracted_stdout" --stderr "$extracted_stderr" --owned-pid-file "$extracted_pid" -- \
       open -W -n "$extracted_app" --args --automation-startup-project-smoke \
         --automation-startup-completion-marker "$extracted_marker" --automation-pid-file "$extracted_pid" \
-        --automation-smoke-log "$extracted_smoke_log" "$extracted_app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis.rcms"
+        --automation-smoke-log "$extracted_smoke_log" "$extracted_app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" finalize-smoke \
     --smoke-evidence "$extracted_smoke" --smoke-log "$extracted_smoke_log" --launchservices-marker "$extracted_marker" \
     --require-atomic-completion

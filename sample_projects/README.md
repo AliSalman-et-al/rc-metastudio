@@ -1,49 +1,51 @@
 # Sample projects
 
-Open a bundled example from **File > Open sample project** or from the Welcome page. You can edit and analyze samples freely. Save opens a file picker for your own copy.
+Open a bundled example from **File > Open sample project** or from the Welcome page. You can edit and analyze the sample. Save opens Save As so you can keep your own copy.
 
-| Project | Demonstrates |
+| Project | Analysis suggestion |
 | --- | --- |
-| [Binary - Aminoglycosides](<Binary - Aminoglycosides.rcms>) | Clinical failure and nephrotoxicity outcomes |
-| [Binary - BCG vaccine and tuberculosis](<Binary - BCG vaccine and tuberculosis.rcms>) | Two-arm event counts from 13 studies |
-| [Binary subgroups - Mortality by treatment group](<Binary subgroups - Mortality by treatment group.rcms>) | Mortality with a treatment-group factor and time-to-treatment covariate |
-| [Continuous - Blood pressure](<Continuous - Blood pressure.rcms>) | Two-arm continuous results |
-| [Diagnostic accuracy - LAG positivity](<Diagnostic accuracy - LAG positivity.rcms>) | Diagnostic accuracy from counts |
+| [Binary - BCG vaccine and tuberculosis, Colditz 1994](<Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms>) | Use this for two-arm event counts, latitude meta-regression and trial sequential analysis. |
+| [Binary - Aminoglycoside dosing, Barza 1996](<Binary - Aminoglycoside dosing, Barza 1996.rcms>) | Use this for Mantel–Haenszel and Peto with studies that have zero events in both arms. |
+| [Continuous - Monthly respiratory exacerbations, Poole 2003](<Continuous - Monthly respiratory exacerbations, Poole 2003.rcms>) | Use this for mean differences, trial-duration subgroups, meta-regression and small-study effects. |
+| [Diagnostic accuracy - Ultrasound for deep vein thrombosis, Kearon 1998](<Diagnostic accuracy - Ultrasound for deep vein thrombosis, Kearon 1998.rcms>) | Use this for paired sensitivity and specificity, SROC, patient-group regression and Deeks’ test. |
+| [Event rates (IRR) - Catheter infections, Niel-Weise 2008](<Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms>) | Use this for events per catheter-day, raw Mantel–Haenszel and reported incidence rate ratios. |
+| [Reported effects - Alcohol intake and breast cancer, Greenland 1992](<Reported effects - Alcohol intake and breast cancer, Greenland 1992.rcms>) | Use this for pooling published coefficients with a confidence interval or a standard error. |
+| [Single-arm mean - Handgrip strength in young adults, Abe 2025](<Single-arm mean - Handgrip strength in young adults, Abe 2025.rcms>) | Use this for pooling measured grip strength in kilograms from one cohort per study. |
+| [Single-arm proportion - Depression after myocardial infarction, Feng 2019](<Single-arm proportion - Depression after myocardial infarction, Feng 2019.rcms>) | Use this for pooling a prevalence from cases and totals and comparing proportion transformations. |
+| [Time-to-event (HR) - Head and neck cancer, Pignon 2000](<Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms>) | Use this for pooling hazard ratios, chemotherapy-timing subgroups and trial sequential analysis. |
 
-BCG uses **BCG vaccine / Control**. All 13 original event/total rows and their arm direction match the pinned `metadat::dat.bcg` source: `tpos/tneg` are vaccinated counts and `cpos/cneg` are non-vaccinated control counts. The source is Colditz et al. (1994), JAMA 271(9), 698–702, [doi:10.1001/jama.1994.03510330076038](https://doi.org/10.1001/jama.1994.03510330076038). The exact source/arm check is retained in [the BCG source record](sources/bcg-source.json).
+See the [coverage table](COVERAGE-PLAN.md) for the analyses by project and [retained source records](sources/README.md) for the row checks and exclusions.
 
-The retained Aminoglycosides, blood pressure and Death examples do not identify the source arms, so they use **Intervention / Control** without guessing a treatment or direction. The lymph diagnostic example uses **Index test**. `manifest.json` documents the exact label replacements and current archive/semantic checksums. Immutable original snapshots remain test-only legacy inputs; see [the sample identity record](sources/sample-identity.json) for complete-field preservation proof.
+In the Abe handgrip project, dynamometers, measurement protocols and cohorts differ. The pooled mean is an instructional example only. One cohort consists of trained male basketball players.
 
-## Metafor HR and IRR examples
+The existing desktop calculator fixture exercises pre/post inputs with a paired correlation.
 
-These datasets are distributed in `metadat`, the companion dataset package used by metafor. The source tables are retained in [sources/metadat-ratios.json](sources/metadat-ratios.json), exported from **metadat 1.6-0** (GPL ≥ 2). Bundled projects use RCMS format 3, with independent sheets and stable arm identifiers.
+## Sources
 
-| Project | Data | Preserved inputs |
-| --- | --- | --- |
-| [Time-to-event (HR) - Head and neck cancer, Pignon 2000](<Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms>) | 65 trial results on mortality with chemotherapy added to locoregional treatment for head and neck cancer | `log(HR) = OmE / V`, `SE = sqrt(1 / V)`; original observed-minus-expected deaths, variance, study IDs and chemotherapy timing |
-| [Event rates (IRR) - Catheter infections, Niel-Weise 2008](<Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms>) | 9 studies of catheter-related bloodstream infections | Original event counts and catheter-days for anti-infective versus standard catheters |
+- Colditz GA, Brewer TF, Berkey CS, Wilson ME, Burdick E, Fineberg HV, Mosteller F. Efficacy of BCG vaccine in the prevention of tuberculosis: meta-analysis of the published literature. JAMA. 1994;271:698–702. [Source paper](https://doi.org/10.1001/jama.1994.03510330076038) · [metadat::dat.bcg](https://wviechtb.github.io/metadat/reference/dat.bcg.html)
+- Barza M, Ioannidis JP, Cappelleri JC, Lau J. Single or multiple daily doses of aminoglycosides: a meta-analysis. BMJ. 1996;312:338–345. [Source paper](https://doi.org/10.1136/bmj.312.7027.338)
+- Poole PJ, Black PN. Mucolytic agents for chronic bronchitis or chronic obstructive pulmonary disease. Cochrane Database Syst Rev. 2003;1:CD001287. [Source paper](https://doi.org/10.1002/14651858.CD001287) · [metadat::dat.poole2003](https://wviechtb.github.io/metadat/reference/dat.poole2003.html)
+- Kearon C, Julian JA, Newman TE, Ginsberg JS. Noninvasive diagnosis of deep venous thrombosis. Ann Intern Med. 1998;128:663–677. [Source paper](https://doi.org/10.7326/0003-4819-128-8-199804150-00011) · [metadat::dat.kearon1998](https://wviechtb.github.io/metadat/reference/dat.kearon1998.html)
+- Niel-Weise BS, Stijnen T, van den Broek PJ. Anti-infective-treated central venous catheters for total parenteral nutrition or chemotherapy: a systematic review. J Hosp Infect. 2008;69:114–123. [Source paper](https://doi.org/10.1016/j.jhin.2008.02.020) · [metadat::dat.nielweise2008](https://wviechtb.github.io/metadat/reference/dat.nielweise2008.html)
+- Greenland S, Longnecker MP. Methods for trend estimation from summarized dose-response data, with applications to meta-analysis. Am J Epidemiol. 1992;135:1301–1309. [Source paper](https://doi.org/10.1093/oxfordjournals.aje.a116237) · [metadat::dat.greenland1992](https://wviechtb.github.io/metadat/reference/dat.greenland1992.html)
+- Abe T, Song JS, Dankel SJ, Viana RB, Abe A, Loenneke JP. Impact of potential moderating factors on absolute test-retest reliability of grip strength measurements in healthy populations: a systematic review with meta-analysis. J Sports Sci Med. 2025;24:543–554. [Source paper](https://doi.org/10.52082/jssm.2025.543)
+- Feng L, Li L, Liu W, Yang J, Wang Q, Shi L, Luo M. Prevalence of depression in myocardial infarction: A PRISMA-compliant meta-analysis. Medicine. 2019;98:e14596. [Source paper](https://doi.org/10.1097/MD.0000000000014596) · [metadat::dat.feng2019](https://wviechtb.github.io/metadat/reference/dat.feng2019.html)
+- Pignon JP, Bourhis J, Domenge C, Designe L. Chemotherapy added to locoregional treatment for head and neck squamous-cell carcinoma: three meta-analyses of updated individual data. Lancet. 2000;355:949–955. [Source paper](https://doi.org/10.1016/S0140-6736(00)90011-4) · [metadat::dat.pignon2000](https://wviechtb.github.io/metadat/reference/dat.pignon2000.html)
+- Viechtbauer W, White T, Noble D, Senior A, Hamilton W. metadat: Meta-Analysis Datasets. R package version 1.6-0. [Package repository](https://github.com/wviechtb/metadat)
 
-For HR, the comparison is **locoregional treatment plus chemotherapy / locoregional treatment alone**. Study years are absent in the source and remain blank. The original order is retained; a cumulative analysis in that order is not a chronological analysis. The **Chemotherapy timing** factor supports subgroup analysis (adjuvant, neoadjuvant, concomitant). RCMS uses sequential internal study IDs while retaining the original IDs, including `26.1` and `26.2`, as a covariate and in study notes. Original numeric inputs remain available through the study dialog; the table displays HR and its calculated interval.
+## Rebuild
 
-For IRR, the comparison is **anti-infective catheter / standard catheter** and the exposure unit is **catheter-days**. Inverse-variance fixed/random analyses and raw-data Mantel–Haenszel are available. This example has nine eligible studies, below meta's default minimum for several asymmetry tests. The small-study dialog allows an explicit minimum and shows each method's eligibility; mixed-effects Egger follows metafor's own requirements. The upstream help page's opening description says 18 studies, but its displayed table, detailed description and installed dataset contain nine; the bundled project uses those nine rows without additions. Neither source example contains a double-zero IRR row; they should not be modified to manufacture a “Not estimable” demonstration.
-
-## Illustrative one-arm Mean
-
-[Single-arm mean - Synthetic measurements](<Single-arm mean - Synthetic measurements.rcms>) contains six synthetic study means, sample sizes and standard deviations for learning the one-arm workflow. These values have no clinical interpretation and are not published research. Rebuild it with `uv run python scripts/build_mean_sample.py`. The `analysis-data-onearm-mean` desktop workflow opens it, saves and reopens a copy, and compares displayed pooling with public metafor calculations.
-
-## Sources and citation
-
-- Pignon, J. P., Bourhis, J., Domenge, C., & Designe, L. (2000). *Chemotherapy added to locoregional treatment for head and neck squamous-cell carcinoma: Three meta-analyses of updated individual data.* Lancet, 355(9208), 949–955. [Original publication](https://doi.org/10.1016/S0140-6736(00)90011-4); [dataset documentation and metafor analysis](https://wviechtb.github.io/metadat/reference/dat.pignon2000.html).
-- Niel-Weise, B. S., Stijnen, T., & van den Broek, P. J. (2008). *Anti-infective-treated central venous catheters for total parenteral nutrition or chemotherapy: A systematic review.* Journal of Hospital Infection, 69(2), 114–123. [Original publication](https://doi.org/10.1016/j.jhin.2008.02.020); [dataset documentation and metafor analysis](https://wviechtb.github.io/metadat/reference/dat.nielweise2008.html).
-- Viechtbauer, W., White, T., Noble, D., Senior, A., & Hamilton, W. (2026). *metadat: Meta-Analysis Datasets.* R package version 1.6-0. [Package repository](https://github.com/wviechtb/metadat). The complete package citation is also retained with the source tables.
-
-## Rebuild and verification
-
-From the repository root, `uv run python scripts/build_metafor_ratio_samples.py` rebuilds both projects deterministically from the retained source tables and updates their archive/semantic hashes in `manifest.json`. It preserves the existing samples. To re-export the source tables, select the verified R library with `RCMS_R_LIBS`, then run:
+From the repository root, run the builders to refresh the archives and their manifest hashes.
 
 ```powershell
-& 'C:/Program Files/R/R-4.6.1/bin/Rscript.exe' --vanilla scripts/export_metafor_ratio_samples.R sample_projects/sources/metadat-ratios.json
+uv run python scripts/build_clinical_samples.py
+uv run python scripts/build_mean_sample.py
 uv run python scripts/build_metafor_ratio_samples.py
 ```
 
-Run `uv run python scripts/verify_rcms.py ratios-samples` through the [verification skill](../.agents/skills/verify-rcms/SKILL.md). This dedicated desktop drive opens both bundled samples, checks every original input and displayed estimate, compares fixed/random pooling with direct metafor calls (plus IRR Mantel–Haenszel), compares HR chemotherapy-timing subgroups with metafor, observes IRR asymmetry ineligibility and descriptive funnels, saves separate copies, and reopens them. Commands, runtime identity, screenshots, numerical results and saved copies are retained.
+To verify the retained R-package data, run the two source exporters with the pinned R library selected. The manual Barza and Abe extractions record the exact publication tables in their JSON files.
+
+```powershell
+& "$env:RCMS_R_HOME/bin/Rscript.exe" --vanilla scripts/export_metadat_clinical_samples.R sample_projects/sources/metadat-clinical.json
+& "$env:RCMS_R_HOME/bin/Rscript.exe" --vanilla scripts/export_metafor_ratio_samples.R sample_projects/sources/metadat-ratios.json
+```

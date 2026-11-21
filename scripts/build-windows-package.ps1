@@ -122,8 +122,8 @@ function Assert-AppLayout {
     param([string]$Root)
     Assert-PathExists -Path (Join-Path $Root "RCMetaStudio.exe") -Description "RCMetaStudio executable"
     Assert-PathExists -Path (Join-Path $Root "_internal\PyQt6") -Description "Bundled PyQt6 runtime"
-    Assert-PathExists -Path (Join-Path $Root "sample_projects\Binary - BCG vaccine and tuberculosis.rcms") -Description "Bundled sample project"
-    Assert-PathExists -Path (Join-Path $Root "sample_projects\Binary - Aminoglycosides.rcms") -Description "Bundled GUI slice sample project"
+    Assert-PathExists -Path (Join-Path $Root "sample_projects\Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms") -Description "Bundled sample project"
+    Assert-PathExists -Path (Join-Path $Root "sample_projects\Binary - Aminoglycoside dosing, Barza 1996.rcms") -Description "Bundled GUI slice sample project"
     Assert-PathExists -Path (Join-Path $Root "R\bin\x64\R.dll") -Description "Bundled R runtime"
     Assert-PathExists -Path (Join-Path $Root "R\library\RCMetaR\DESCRIPTION") -Description "Bundled RCMetaR R package"
     Assert-PathExists -Path (Join-Path $Root "LaunchRCMetaStudio.bat") -Description "Windows launcher"
@@ -132,7 +132,7 @@ function Assert-AppLayout {
 function Invoke-PackagedAppSmokeTest {
     param([string]$Root)
     $exePath = Join-Path $Root "RCMetaStudio.exe"
-    $samplePath = Join-Path $Root "sample_projects\Binary - Aminoglycosides.rcms"
+    $samplePath = Join-Path $Root "sample_projects\Binary - Aminoglycoside dosing, Barza 1996.rcms"
     $smokeEvidencePath = Join-Path $Root "qualification\packaged-smoke.json"
     $workflowObservationPath = Join-Path $Root "qualification\workflow-observation.json"
     $surfaceDirectory = Join-Path $Root "qualification\surface-records"
@@ -172,7 +172,7 @@ function Invoke-PackagedAppSmokeTest {
             --workflow-observation $workflowObservationPath `
             --surface-records $surfaceDirectory `
             --sample-observations $sampleObservationsPath `
-            --sample "Binary - Aminoglycosides.rcms" --sample-root (Join-Path $Root "sample_projects") `
+            --sample "Binary - Aminoglycoside dosing, Barza 1996.rcms" --sample-root (Join-Path $Root "sample_projects") `
             --sample-path $samplePath `
             --executable $exePath --runtime-probe $runtimeProbePath `
             --surface-directory $surfaceDirectory --log-path $smokeLogPath `
@@ -230,7 +230,7 @@ function Assert-ZipLayout {
         foreach ($entryName in $entryNames.Keys) {
             if (-not $entryName.StartsWith("$ArchiveRootName\")) { throw "Created ZIP entry is outside '$ArchiveRootName': $entryName" }
         }
-        foreach ($requiredEntry in @("RCMetaStudio.exe", "sample_projects\Binary - BCG vaccine and tuberculosis.rcms", "sample_projects\Binary - Aminoglycosides.rcms", "R\bin\x64\R.dll", "R\library\RCMetaR\DESCRIPTION", "LaunchRCMetaStudio.bat", "qualification\deployment-manifest.json")) {
+        foreach ($requiredEntry in @("RCMetaStudio.exe", "sample_projects\Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", "sample_projects\Binary - Aminoglycoside dosing, Barza 1996.rcms", "R\bin\x64\R.dll", "R\library\RCMetaR\DESCRIPTION", "LaunchRCMetaStudio.bat", "qualification\deployment-manifest.json")) {
             $requiredEntry = Join-Path $ArchiveRootName $requiredEntry
             if (-not $entryNames.ContainsKey($requiredEntry)) { throw "Created ZIP is missing '$requiredEntry'." }
         }
@@ -664,7 +664,7 @@ $sourceCommit = $sourceProvenance.head_sha
 @echo off
 set APP_DIR=%~dp0
 set RPY2_CFFI_MODE=API
-start "" "%APP_DIR%RCMetaStudio.exe" "%APP_DIR%sample_projects\Binary - Aminoglycosides.rcms"
+start "" "%APP_DIR%RCMetaStudio.exe" "%APP_DIR%sample_projects\Binary - Aminoglycoside dosing, Barza 1996.rcms"
 '@ | Set-Content -Path (Join-Path $appDir "LaunchRCMetaStudio.bat") -Encoding ASCII
 
 Assert-AppLayout -Root $appDir

@@ -698,7 +698,7 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
     def covariate_factory():
         import copy
         from rc_metastudio.project import archive as project_format, adapter as project_adapter
-        sheet = project_adapter.project_to_dataset(project_format.load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms").project).sheets[0]
+        sheet = project_adapter.project_to_dataset(project_format.load_project(ROOT / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms").project).sheets[0]
         covariate = {"id": "native-dose", "name": "Dose", "data_type": 1}
         sheet.covariates.append(covariate)
         for index, row in enumerate(sheet.rows):
@@ -1107,7 +1107,7 @@ def _observe_covariate_owner_cancel(app):
     owner = main_window.MainWindow()
     observed = []
     try:
-        if not owner.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms")):
+        if not owner.open(str(ROOT / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms")):
             raise RuntimeError("could not open owned cancellation fixture")
         owner.model.add_covariate("Dose", "continuous", {row.label: index + 1 for index, row in enumerate(owner.model.current_sheet.rows)})
         before = copy.deepcopy(owner.model.current_sheet)

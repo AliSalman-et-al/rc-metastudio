@@ -212,7 +212,7 @@ def main() -> int:
         app.processEvents()
 
     def make_configuration() -> analysis_setup_dialog.AnalysisSetupDialog:
-        project = document_to_runtime_project(load_project(repo_root / "sample_projects/Binary - Aminoglycosides.rcms"))
+        project = document_to_runtime_project(load_project(repo_root / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms"))
         model = DatasetTableModel(dataset=project.dataset, add_blank_study=False)
         if project.current_sheet_id is not None:
             model.set_current_sheet(project.current_sheet_id)

@@ -300,12 +300,17 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sample_menu = QtWidgets.QMenu("Open sample project", self)
         sample_root = Path(get_sample_projects_path())
         manifest = sample_root / "manifest.json"
-        names = {}
+        entries = {}
         if manifest.is_file():
-            names = {item["file"]: item.get("scientific_name")
-                     for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
-        for path in sorted(sample_root.glob("*.rcms"), key=lambda path: path.name.casefold()):
-            action = self.sample_menu.addAction(names.get(path.name) or path.stem)
+            entries = {item["file"]: item for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
+        order = {name: index for index, name in enumerate(entries)}
+        for path in sorted(sample_root.glob("*.rcms"), key=lambda path: (order.get(path.name, len(order)), path.name.casefold())):
+            entry = entries.get(path.name, {})
+            caption = entry.get("scientific_name") or path.stem
+            description = entry.get("description")
+            action = QAction(f"{caption} — {description}" if description else caption, self.sample_menu)
+            action.setData(path.name)
+            self.sample_menu.addAction(action)
             connect_action(action, lambda sample=path: self.open(file_path=str(sample)))
         self.sample_menu.setEnabled(bool(self.sample_menu.actions()))
         self.start_page = start_page.StartPage(

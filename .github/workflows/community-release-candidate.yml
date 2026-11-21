@@ -118,10 +118,10 @@ jobs:
         shell: pwsh
         run: |
           $exe = Get-ChildItem qualified/tree -Recurse -Filter RCMetaStudio.exe | Select-Object -First 1
-          $sample = Get-ChildItem qualified/tree -Recurse -Filter "Binary - Aminoglycosides.rcms" | Select-Object -First 1
+          $sample = Get-ChildItem qualified/tree -Recurse -Filter "Binary - Aminoglycoside dosing, Barza 1996.rcms" | Select-Object -First 1
           $runtimeProbe = Get-ChildItem qualified/tree -Recurse -Filter runtime-probe.json | Select-Object -First 1
           if (-not $exe) { throw "RCMetaStudio.exe is missing." }
-          if (-not $sample) { throw "Binary - Aminoglycosides.rcms is missing." }
+          if (-not $sample) { throw "Binary - Aminoglycoside dosing, Barza 1996.rcms is missing." }
           if (-not $runtimeProbe) { throw "runtime-probe.json is missing." }
           New-Item -ItemType Directory -Force qualified/diagnostics | Out-Null
           $env:RCMS_REQUIRE_IN_PROCESS_RPY2 = "1"
@@ -138,7 +138,7 @@ jobs:
             --workflow-observation $workflowObservation `
             --surface-records $surfaceDirectory `
             --sample-observations $sampleObservations `
-            --sample "Binary - Aminoglycosides.rcms" --sample-root $sampleRoot `
+            --sample "Binary - Aminoglycoside dosing, Barza 1996.rcms" --sample-root $sampleRoot `
             --sample-path $sample.FullName `
             --executable $exe.FullName --runtime-probe $runtimeProbe.FullName `
             --surface-directory $surfaceDirectory --log-path $env:RCMS_AUTOMATION_SMOKE_LOG `
@@ -162,7 +162,7 @@ jobs:
           app="$(find qualified/tree -type d -name 'RCMetaStudio.app' -print -quit)"
           app="$PWD/$app"
           executable="$app/Contents/MacOS/RCMetaStudio"
-          sample="$(find qualified/tree -path '*/sample_projects/Binary - BCG vaccine and tuberculosis.rcms' -print -quit)"
+          sample="$(find qualified/tree -path '*/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms' -print -quit)"
           runtime_probe="$(find qualified/tree -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$app" && test -x "$executable" && test -n "$sample" && test -n "$runtime_probe"
           sample="$PWD/$sample"
@@ -178,7 +178,7 @@ jobs:
               --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
               --surface-records "$PWD/qualified/diagnostics/surface-records" \
               --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
-              --sample "Binary - BCG vaccine and tuberculosis.rcms" --sample-root "$(dirname "$sample")" \
+              --sample "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" --sample-root "$(dirname "$sample")" \
               --sample-path "$sample" --executable "$executable" \
               --runtime-probe "$runtime_probe" \
               --surface-directory "$PWD/qualified/diagnostics/surface-records" \
@@ -194,7 +194,7 @@ jobs:
           set -euo pipefail
           root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
           launcher="$root/LaunchRCMetaStudio.sh"
-          sample="$(find "$root" -path '*/sample_projects/Binary - BCG vaccine and tuberculosis.rcms' -print -quit)"
+          sample="$(find "$root" -path '*/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms' -print -quit)"
           runtime_probe="$(find "$root" -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
           mkdir -p qualified/diagnostics
@@ -206,7 +206,7 @@ jobs:
               --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
               --surface-records "$PWD/qualified/diagnostics/surface-records" \
               --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
-              --sample "Binary - BCG vaccine and tuberculosis.rcms" --sample-root "$(dirname "$sample")" \
+              --sample "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" --sample-root "$(dirname "$sample")" \
               --sample-path "$sample" --executable "$launcher" \
               --runtime-probe "$runtime_probe" \
               --surface-directory "$PWD/qualified/diagnostics/surface-records" \

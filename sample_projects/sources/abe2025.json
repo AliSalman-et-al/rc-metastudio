@@ -1,0 +1,77 @@
+{
+  "source": "Abe et al. 2025, Table 3, young adults, first test only",
+  "doi": "10.52082/jssm.2025.543",
+  "table": "https://jssm.org/tablejssm-24-543.xml/table003.xml",
+  "unit": "kg on the dynamometer scale (kilogram-force)",
+  "excluded": {
+    "Cildan Uysal 2022": "The accessible primary abstract confirms the 50-person cohort and protocol but omits the first-session mean and SD. The secondary extraction alone is insufficient. DOI 10.1016/j.hansur.2022.02.007."
+  },
+  "rows": [
+    {
+      "study": "Gerodimos",
+      "year": 2012,
+      "n": 30,
+      "mean": 66.49,
+      "sd": 9.33,
+      "device": "Jamar",
+      "hand": "Preferred",
+      "doi": "10.2478/v10078-012-0003-y",
+      "check": "Primary Table 2, adult cohort, preferred hand, Test (kg). Exact match. The 30 healthy male basketball players (mean age 26.06) form a separate cohort from the youth participants."
+    },
+    {
+      "study": "Savva et al.",
+      "year": 2013,
+      "n": 19,
+      "mean": 35.6,
+      "sd": 12.1,
+      "device": "Jamar",
+      "hand": "Dominant",
+      "doi": "10.1177/1753193412449804",
+      "check": "Primary Table 1, 19 healthy students, First measurement in kgf. The displayed primary data give mean 35.55263 and sample SD 12.14141, which round to the Abe entries. Only the aggregate is retained."
+    },
+    {
+      "study": "Boshnjaku et al.",
+      "year": 2021,
+      "n": 57,
+      "mean": 41.5,
+      "sd": 10.7,
+      "device": "Jamar",
+      "hand": "Dominant",
+      "doi": "10.1016/j.dib.2021.106988",
+      "check": "Primary Table 2, healthy young Kosovan cohort aged 18–35. Handgrip (kg), Test. Exact match. Excludes the older cohort and retest."
+    },
+    {
+      "study": "Venegas-Carro et al.",
+      "year": 2022,
+      "n": 17,
+      "mean": 47.7,
+      "sd": 12,
+      "device": "Jamar",
+      "hand": "Preferred",
+      "doi": "10.3390/sports10110171",
+      "check": "Primary Tables 1–2, handgrip MVC (kg), Session 1, highest trial. Exact match. The later sessions reuse the same 17 volunteers."
+    },
+    {
+      "study": "Biasini et al.",
+      "year": 2023,
+      "n": 20,
+      "mean": 45.4,
+      "sd": 13.7,
+      "device": "JTECH",
+      "hand": "Dominant",
+      "doi": "10.3138/ptc-2021-0041",
+      "check": "Primary Table 1, JTECH Grip (N), Session 1. The 445.1 N mean and 134.0 N SD divide by 9.80665 to give 45.38757 and 13.66420 kgf, rounding to the Abe entries. All 20 healthy volunteers are included."
+    },
+    {
+      "study": "Leszczak et al.",
+      "year": 2024,
+      "n": 122,
+      "mean": 35.36,
+      "sd": 11.69,
+      "device": "Biometrics E-Link",
+      "hand": "Right",
+      "doi": "10.1371/journal.pone.0303648",
+      "check": "Primary Methods and Table 3, right hand, Test I, Investigator 1. Exact match. Healthy Polish physiotherapy students aged 20–24."
+    }
+  ]
+}

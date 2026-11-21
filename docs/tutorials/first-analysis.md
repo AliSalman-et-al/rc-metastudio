@@ -6,11 +6,11 @@ release from the [download page](https://github.com/AliSalman-et-al/rc-metastudi
 
 ## Open the study data
 
-1. Download [Binary - BCG vaccine and tuberculosis.rcms](<../../sample_projects/Binary - BCG vaccine and tuberculosis.rcms>). If GitHub displays the
+1. Download [Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms](<../../sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms>). If GitHub displays the
    file instead of downloading it, use its **Download raw file** control.
 2. In RC MetaStudio, choose **Open project** and open that file.
-3. Select the **tuberculosis** sheet. It contains 13 included studies, with
-   **BCG vaccine** as the first arm and **Control** as the second arm. The
+3. Select the **Tuberculosis** sheet. It contains 13 included studies, with
+   **BCG vaccine** as the first arm and **Unvaccinated control** as the second arm. The
    binary data columns contain events and total participants for each arm.
 4. Choose **Analysis > Effect-size tools > Two-arm metrics > Risk ratio (RR)**.
    Selecting the effect measure changes the derived values, not the counts.
