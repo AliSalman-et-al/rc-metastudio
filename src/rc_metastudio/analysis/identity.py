@@ -111,4 +111,4 @@ def dataset_identity(model, metric=None, *, include_type=True):
 
 
 def plot_caption(model, caption=None):
-    return caption or dataset_identity(model, include_type=model.get_current_data_type() != "binary")
+    return caption or dataset_identity(model, include_type=model.get_current_data_type() != "binary").rstrip("\n")

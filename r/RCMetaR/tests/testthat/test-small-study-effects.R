@@ -798,7 +798,7 @@ test_that("ratio funnels use readable ticks without moving points or limits", {
       data <- new("BinaryData", y=model$yi, SE=sqrt(model$vi), study.names=letters[1:4])
       RCMetaR:::.small.study.draw.standard.funnel(data, model, list(metric="OR"), settings, data@y, data@SE, rep(TRUE, 4))
     } else {
-      metafor::funnel(model, xlim=settings$xlim, atransf=exp)
+      metafor::funnel(model, xlim=settings$xlim, ylim=c(.954, 0), atransf=exp)
     }
     limits <- graphics::par("usr")
     grDevices::dev.off()
