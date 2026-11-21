@@ -630,7 +630,7 @@ rcmetar.draw.bmj.forest <- function(bundle, plan) {
     rcmetar.draw.bmj.headers(bundle, layout, ilab, k, metric, method, plan$headers$show)
 
     if (plan$rows$summary && rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-        graphics::text(layout$annotation.xpos, -0.65, summary$label, adj=c(0, 0), font=1)
+        graphics::text(layout$annotation.xpos, -0.65, summary$label, adj=c(0, .5), font=1)
     if (plan$rows$summary) rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -0.65, accent, layout$alim)
     graphics::par(cex=1)
     rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex, axis.offset)
@@ -760,7 +760,7 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             rcmetar.forest.effect.digits(bundle), bundle$params
         )
     }
-    graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, 0), cex=cex)
+    graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, .5), cex=cex)
 }
 
 rcmetar.draw.bmj.axis <- function(bundle, layout, cex, offset=0) {
