@@ -14,9 +14,8 @@ comparison uses an explicit no-intercept formula and checks coefficient identity
 Pinned metafor cannot permute one-coefficient no-intercept models; the public
 permutation boundary rejects that shape explicitly instead of silently adding an
 intercept. Standard regression still supports that fit.
-Retained before/after evidence for G1B-001/002/004–011 lives under
-`artifacts/fixes/rendering-02`. The parent repair owns aggregate full-profile
-qualification; these focused checks do not qualify native DPI or packages.
+Use the current-source R-stack and the affected plot drives to replay these
+checks. Native DPI and release packages have separate verification lanes.
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
@@ -89,7 +88,7 @@ Preconditions: doctor passes; amino analysis produces a real editable forest plo
 - **Edit and cancel.** Run `uv run python scripts/verify_rcms.py plot-edit`. The existing Results editor path opens `EditPlotDialog`. Fill `x_lbl_le` with `Edited effect axis`, click the button box Apply, and require changed SVG bytes and persisted `fp_xlabel`. Change the draft again and reject the editor; the applied label and a valid SVG remain. `plot-edit-draft` and `plot-applied-cancelled` capture the sequence and final result.
 - **Export.** Run `uv run python scripts/verify_rcms.py amino` (or `continuous`/`lymph`). The production Results save-image path writes `workflow/forest.pdf`; require a PDF header and inspect the figure when export behavior changed.
 - **Overwrite after suffix normalization.** `ux-improvements` supplies a mismatched entered suffix with an existing final destination for PDF/DOCX reports, a raster PNG and a regenerated R PNG. No preserves the existing bytes; Yes writes the selected format. The controlled picker and confirmation responses do not qualify native file dialogs.
-- **Entry reachability.** The driver calls the Results editor/export paths directly. It does not exercise plot hit testing or context-menu selection. Add right-click/menu gestures when changing their wiring. Source owner: `results_window.py:_make_context_menu`; there is no double-click editor route.
+- **Entry reachability.** The sample and `plot-edit` drives call editor or export paths directly. Use the advanced `plot-workflow-*` drives to exercise plot hit testing and context-menu selection. The menu is built in `src/rc_metastudio/results/window.py`.
 
 The funnel and contour `plot-workflow-*` drives reject partial/nonfinite axis bounds, malformed ticks and contour percentages before regeneration, preserving the last saved artifacts. They also commit a caption-only edit with OK and export it, then reject an incomplete persisted bundle while preserving the previously loaded analysis. Both axis bounds are required for a custom range; leave both empty for automatic limits. If a failed plot promotion cannot restore its files, the original error identifies the retained recovery directory.
 
@@ -98,7 +97,7 @@ The funnel and contour `plot-workflow-*` drives reject partial/nonfinite axis bo
 `ux-improvements` drives report/plot toolbar export, the plot export shortcut, fit/zoom, deliberate CSV mapping and duplicate-name recovery with real Qt/R. It preserves exported report text, decoded PDF, mapped input and a reopened project. Native widget evidence does not establish Narrator/NVDA table semantics: the report uses selectable preformatted text, and plots have textual alternatives rather than interactive accessible study marks.
 
 - A parameter change without changed rendered output is not successful regeneration.
-- `amino`, `continuous` and `lymph` export a PDF. `plot-edit` checks editing and Cancel in the standard forest. The eleven advanced plot workflows exercise the scene context menu and all four export formats.
+- `amino`, `continuous` and `lymph` export a PDF. `plot-edit` checks editing and Cancel in the standard forest. The general advanced plot workflows exercise the scene context menu and all four export formats. `plot-workflow-trial-sequential` covers the BCG monitoring plot editor and decoded exports. `plot-workflow-mh-rd` covers the Mantel–Haenszel risk-difference forest.
 - Offscreen screenshots cannot prove screen bounds, native DPI, accessibility, or pixel geometry. Native Results smoke provides fractional-scale fixture evidence; real-R E2E supplies the statistical workflow proof.
 - Keep the pre-edit artifact and the last successful applied state when testing failed regeneration or rollback.
 
@@ -253,7 +252,7 @@ in both the displayed SVG and a production SVG export. `audit-round3-irr-context
 checks all three IRR styles for original events, person-time, declared units,
 unpadded axis labels, header clearance and SVG export.
 
-All eleven `plot-workflow-*` families exercise the visible identity-caption field:
+The eleven general plot workflows exercise the visible identity-caption field:
 Apply/reopen, Cancel rollback, clear/reopen and decoded PDF/PNG/TIFF/SVG exports.
 The figure page contains figures; structured weights and references remain in
 Text report, Tables and copied/exported reports with their existing row identities.
@@ -271,7 +270,7 @@ See [current verification guidance](../../../../docs/testing.md).
 Round-five review follow-up: `audit-round3-irr-context` checks all three styles,
 caption separation/readable size, exposure-header descender/rule clearance, normal
 inference typography, independently summed original events/person-time and pooled
-weight in the actual SVG and exported SVG. All eleven `plot-workflow-*` families
+weight in the actual SVG and exported SVG. The eleven general plot workflows
 check initial rendered identity as well as caption edit/reopen/Cancel/removal and
 four decoded exports. HR totals remain weight only when raw events/exposure are
 unavailable; the native long-forest drive retains top/footer views for every style.
@@ -398,9 +397,9 @@ R checks and affected desktop replay requirements.
 
 Batch 7 direction labels retain the axis tick font size and extend outward from
 its null; preflight reserves extra device space for long labels. HR/IRR drives
-retain the existing footer bounds, gap and overlap assertions. Native continuous
-SMD (dark) and amino OR (light, large font) captures are in
-`artifacts/batch7/`; the 9 pt body floor and forest fit settling remain unchanged.
+retain the existing footer bounds, gap and overlap assertions. For a native
+replay, use continuous SMD in dark mode and amino OR in light mode at an enlarged
+font. Check the 9 pt body floor and that forest fitting settles after resize.
 
 ## November desktop refresh
 

@@ -66,7 +66,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user 
 
 ## Structure, table and shell recipes
 
-The targeted recipes use `main_window.py`, `main_wizard.py`, and `dataset_table_view.py`.
+The targeted recipes use `src/rc_metastudio/main_window.py`, `main_wizard.py`, and `workspace/table_view.py` in the same package. Import parsing lives in `importing/`, persistence in `project/archive.py`, and workspace transactions in `workspace/session.py`.
 
 - **Dataset creation:** `action_new_dataset` opens `MainWizard`; click a type button on `Page_DataType`, Next, choose `metric_cbo_box` by item data, Next, enter `outcome_name_LineEdit`, Finish. Eight automated cases are in analysis.md. Test Back/Cancel and invalid names when changing wizard flow. Empty and one-study states need explicit analysis availability/results checks.
 - **Import:** `action_import_csv` is the unified Import data action: pick CSV/XLSX/RM5, review in the matching wizard, then authorize project replacement on acceptance. The mapping page can select another supported file, including switching to RevMan review. On the import page use `select_file_btn`, `from_excel_chkbx`, `has_headers_chkbx`, `delimter_le` (actual spelling), `quotechar_le`, and `preview_table`. Malformed/schema-invalid input must leave completion disabled; corrected input must recover. Require correct raw columns and covariate types after reopening, not only preview rows.
@@ -158,9 +158,9 @@ preserves data/path/dirty/history; confirmation invokes the existing save prompt
 Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
 Native pickers and exhaustive DTA structures remain unexercised.
 
-RM5 derived-fixture extension: real subgroup dialog compares six grouped studies
-and fixed-IV subgroup estimates/CIs to metacr; the existing moderator Q/p
-difference is explicitly quantified in SLICE5.md. Generic IV HR, OR and MD run
+The RM5 derived-fixture drive compares six grouped studies, fixed-IV subgroup
+estimates and intervals, and moderator Q and p with `meta::metacr` at `1e-6`.
+See the [RevMan import guide](../../../../docs/rm5-import.md). Generic IV HR, OR and MD run
 untouched setup, compare held pooled values/I² at 1e-6, and save/reopen. OR/MD
 entered-only capability is exercised first. Review excludes free-text effects
 and IPD O-E/variance. This does not qualify other RM5 structures or native pickers.
@@ -170,8 +170,6 @@ TEST_DATA/TEST_DATA_ENTRY. A labelled synthetic fixture using that structure
 covers two index tests, independent stdlib count parsing in TP/FN/FP/TN order,
 review table, default diagnostic analysis and full save/reopen equality.
 Original-review redistribution and exhaustive DTA structures remain unqualified.
-Fixed-effect subgroup imports disclose the existing random moderator test in
-Differs from RevMan; subgroup estimates and the held discrepancy remain unchanged.
 
 `sheets-swap` verifies binary OR/RD and continuous MD before, after, and after
 swapping back, against direct metafor DL at 1e-6 (estimate, CI and p). Favours
@@ -189,9 +187,10 @@ workbook rejection, one-step import undo/redo and normalized project equality wi
 CSV. It asserts Preview first, the Import data title, hidden CSV options for XLSX
 and no page vertical scrollbar at the default size. It captures each data-type
 and metric page in light/dark palettes and checks uniform icon presence at each
-level. `csv` opens the initially collapsed CSV options and retains its Unicode,
-covariate, analysis and reopen assertions. Welcome-page picker entry and native
-OS file-picker operation remain unexercised by these automated scenarios.
+level. `xlsx-import` also clicks the Welcome wizard import button and observes
+the loaded workbook preview with a controlled picker result. `csv` opens the
+initially collapsed CSV options and retains its Unicode, covariate, analysis and
+reopen assertions. Native OS file-picker gestures require a separate drive.
 
 Slice 8A: effect cells use a translucent neutral tint, normal font and inherited
 theme text. The xlsx-import drive captures the amino effect grid with light and
@@ -224,8 +223,7 @@ Batch 7 native startup captures open a project before R is ready and show blank
 effect/CI cells, followed by populated ready-state captures. The `project-shell`
 unsaved prompt drive checks Save/Discard/Cancel, Save default and Escape cancel;
 `editing` checks the exact invalid-project guidance and preservation of the open
-project. Native dark/default and light/large prompt evidence is in
-`artifacts/batch7/`. Native Save/Discard through every destructive entry point
+project. Native Save/Discard through every destructive entry point
 still requires a targeted drive; shared authorization behavior has GUI coverage.
 
 ### Workspace transaction safety
