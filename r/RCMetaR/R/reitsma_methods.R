@@ -458,16 +458,27 @@ rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sa
     list(labels=labels, col=colors, lty=ltys, pch=pchs, pt.cex=pt.cex, pt.bg=pt.bg)
 }
 
-rcmetar.sroc.label.positions <- function(x, y, labels, cex) {
+rcmetar.sroc.label.positions <- function(x, y, labels, cex, markers, marker.cex, curve) {
     bounds <- graphics::par("usr")
     width <- graphics::strwidth(labels, cex=cex)
     height <- rep(graphics::strheight("Mg", cex=cex), length(labels))
     dx <- graphics::strwidth("M", cex=cex)
     dy <- max(height)
+    radius.x <- .7 * graphics::strwidth("M") * marker.cex
+    radius.y <- .7 * graphics::strheight("Mg") * marker.cex
+    obstacles <- cbind(markers[, 1L] - radius.x, markers[, 1L] + radius.x,
+                       markers[, 2L] - radius.y, markers[, 2L] + radius.y)
+    if (is.matrix(curve) && nrow(curve) > 1L) {
+        start <- curve[-nrow(curve), , drop=FALSE]
+        end <- curve[-1L, , drop=FALSE]
+        obstacles <- rbind(obstacles, cbind(
+            pmin(start[, 1L], end[, 1L]) - dx / 8, pmax(start[, 1L], end[, 1L]) + dx / 8,
+            pmin(start[, 2L], end[, 2L]) - dy / 8, pmax(start[, 2L], end[, 2L]) + dy / 8))
+    }
     directions <- rbind(c(1, 0), c(-1, 0), c(1, 1), c(-1, 1),
                         c(1, -1), c(-1, -1), c(0, 1), c(0, -1))
     placed <- matrix(NA_real_, nrow=length(labels), ncol=4)
-    for (i in order(width, decreasing=TRUE)) {
+    for (i in seq_along(labels)) {
         found <- FALSE
         for (distance in c(1, 2, 4)) {
             for (j in seq_len(nrow(directions))) {
@@ -479,15 +490,14 @@ rcmetar.sroc.label.positions <- function(x, y, labels, cex) {
                 if (left < bounds[1L] || right > bounds[2L] || bottom < bounds[3L] || top > bounds[4L]) next
                 if (any(left - dx / 3 < placed[, 2L] & right + dx / 3 > placed[, 1L] &
                         bottom - dy / 3 < placed[, 4L] & top + dy / 3 > placed[, 3L], na.rm=TRUE)) next
-                if (any(x > left - dx / 3 & x < right + dx / 3 &
-                        y > bottom - dy / 3 & y < top + dy / 3)) next
+                if (any(left < obstacles[, 2L] & right > obstacles[, 1L] &
+                        bottom < obstacles[, 4L] & top > obstacles[, 3L], na.rm=TRUE)) next
                 placed[i, ] <- c(left, right, bottom, top)
                 found <- TRUE
                 break
             }
             if (found) break
         }
-        if (!found) return(NULL)
     }
     placed
 }
@@ -528,21 +538,32 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         plot.data$fpr >= xlim[[1L]] & plot.data$fpr <= xlim[[2L]] &
         plot.data$sensitivity >= ylim[[1L]] & plot.data$sensitivity <= ylim[[2L]])
     count <- length(visible)
-    if (count > 12L) visible <- visible[round(seq(1, count, length.out=12L))]
+    point <- plot.data$summary.point
+    center <- c(1 - point$specificity[["estimate"]], point$sensitivity[["estimate"]])
+    markers <- cbind(plot.data$fpr, plot.data$sensitivity)
+    if (count > 12L) {
+        reference <- if (length(center) == 2L && all(is.finite(center))) center else
+            apply(markers[visible, , drop=FALSE], 2L, stats::median)
+        distance <- ((plot.data$fpr[visible] - reference[[1L]]) / diff(xlim))^2 +
+            ((plot.data$sensitivity[visible] - reference[[2L]]) / diff(ylim))^2
+        visible <- head(visible[order(distance, decreasing=TRUE)], 12L)
+    }
     label.x <- plot.data$fpr[visible]
     label.y <- plot.data$sensitivity[visible]
     labels <- rcmetar.truncate.plot.display.text(plot.data$study.names[visible], limit=40L)
+    marker.cex <- rep_len(size.multiplier * if (identical(style$marker.area, "sample-size") ||
+        scalar.bool(style$point.area.by.sample.size, FALSE))
+        sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1, nrow(markers))
     margins <- c(1.02, .82, .82, .42)
     draw.annotations <- function() {
-        point <- plot.data$summary.point
-        if (scalar.bool(style$show.summary, TRUE)) points(1 - point$specificity[["estimate"]], point$sensitivity[["estimate"]], pch=19, col=accent.color)
+        show.summary <- scalar.bool(style$show.summary, TRUE) && length(center) == 2L && all(is.finite(center))
+        if (show.summary) points(center[1L], center[2L], pch=19, col=accent.color)
         if (length(labels)) {
-            chosen <- seq_along(labels)
-            repeat {
-                positions <- rcmetar.sroc.label.positions(label.x[chosen], label.y[chosen], labels[chosen], label.cex)
-                if (!is.null(positions) || !length(chosen)) break
-                chosen <- head(chosen, -1L)
-            }
+            positions <- rcmetar.sroc.label.positions(label.x, label.y, labels, label.cex,
+                if (show.summary) rbind(markers, center) else markers,
+                if (show.summary) c(marker.cex, 1) else marker.cex, plot.data$curve)
+            chosen <- which(is.finite(positions[, 1L]))
+            positions <- positions[chosen, , drop=FALSE]
             if (length(chosen)) {
                 graphics::segments(label.x[chosen], label.y[chosen],
                     pmin(pmax(label.x[chosen], positions[, 1L]), positions[, 2L]),
@@ -576,8 +597,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
              xlab=as.character(style$xlabel %||% "False Positive Rate"),
              ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",
              col=accent.color,
-             cex=size.multiplier * if (identical(style$marker.area, "sample-size") || scalar.bool(style$point.area.by.sample.size, FALSE))
-                 sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1)
+             cex=marker.cex)
         axis(1, at=axis.ticks(style$xticks %||% "[default]", xlim))
         axis(2, at=axis.ticks(style$yticks %||% "[default]", ylim))
         if (!is.null(plot.data$curve)) lines(plot.data$curve[,1], plot.data$curve[,2], lwd=2, col=curve.color, lty=as.integer(style$curve.lty %||% 1))
