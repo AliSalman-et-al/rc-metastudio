@@ -169,6 +169,15 @@ class PlotExportDialog(QDialog):
         blocked = pending or bool(self._layout_error) or width * 25.4 + 1e-8 < self._minimum_mm
         self.height_label.setText("Measuring…" if pending else f'{height * self.unit_factor():.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')
+        self._refresh_save_controls(dpi, blocked=blocked, raster=raster)
+        self.paginate_pdf.setVisible(self.resizable and self.format_control.currentData() == "pdf"
+                                     and not blocked and height > 267 / 25.4)
+        self.dpi.setEnabled(self.resizable and raster)
+        self.pixel_label.setVisible(raster and not blocked)
+        self.pixel_label.setText(f'{math.ceil(width * dpi)} × {math.ceil(height * dpi)} pixels')
+        self._refresh_legibility(width, pending=pending, raster=raster)
+
+    def _refresh_save_controls(self, dpi: int, *, blocked: bool, raster: bool) -> None:
         max_dpi = self._largest_dpi(self._width_inches)
         oversized = not blocked and self.resizable and raster and dpi > max_dpi
         self.save_button.setEnabled(not blocked and not oversized)
@@ -177,11 +186,8 @@ class PlotExportDialog(QDialog):
         self.use_max_dpi.setVisible(oversized and max_dpi >= self.dpi.minimum())
         self.use_max_dpi.setText(f"Use {max_dpi} DPI")
         self.use_vector.setVisible(oversized and self.format_control.findData("pdf") >= 0)
-        self.paginate_pdf.setVisible(self.resizable and self.format_control.currentData() == "pdf"
-                                     and not blocked and height > 267 / 25.4)
-        self.dpi.setEnabled(self.resizable and raster)
-        self.pixel_label.setVisible(raster and not blocked)
-        self.pixel_label.setText(f'{math.ceil(width * dpi)} × {math.ceil(height * dpi)} pixels')
+
+    def _refresh_legibility(self, width: float, *, pending: bool, raster: bool) -> None:
         units = self.units.currentText()
         target_width = self._readable_width_value()
         target = f"{target_width:.2f}".rstrip("0").rstrip(".") + f" {units}"

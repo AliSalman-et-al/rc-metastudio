@@ -1181,8 +1181,6 @@ def _figure_height_budget(number: int, figure: ResultSection, width_mm: float, h
 
 
 def _docx_figures(document, figures):
-    from PyQt6.QtCore import QBuffer, QIODevice
-
     section = document.sections[0]
     width_mm = (section.page_width - section.left_margin - section.right_margin) / Mm(1)
     height_mm = (section.page_height - section.top_margin - section.bottom_margin) / Mm(1)
@@ -1192,41 +1190,51 @@ def _docx_figures(document, figures):
         available = _figure_height_budget(number, figure, width_mm, height_mm)
         with _figure_panels(figure, width, available) as paths:
             for index, path in enumerate(paths):
-                source, ratio = figure_source(path)
-                placed_width = min(width, available * ratio)
-                pixel_width = round(placed_width / 25.4 * 300)
-                pixel_height = round(pixel_width / ratio)
-                image = QImage(pixel_width, pixel_height, QImage.Format.Format_RGB32)
-                image.fill(Qt.GlobalColor.white)
-                painter = QPainter(image)
-                paint_figure(painter, source, QRectF(0, 0, pixel_width, pixel_height))
-                painter.end()
-                buffer = QBuffer()
-                buffer.open(QIODevice.OpenModeFlag.WriteOnly)
-                image.save(buffer, "PNG")
-                paragraph = document.add_paragraph()
-                paragraph.paragraph_format.keep_with_next = True
-                paragraph.paragraph_format.space_after = Pt(0)
-                picture = paragraph.add_run().add_picture(
-                    io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(placed_width)
-                )
-                if Path(path).suffix.lower() == ".svg":
-                    part = Part(PackURI(f"/word/media/figure-{number}-{index + 1}.svg"),
-                                "image/svg+xml", Path(path).read_bytes(), document.part.package)
-                    relationship = document.part.relate_to(part, RELATIONSHIP_TYPE.IMAGE)
-                    blip = picture._inline.xpath(".//a:blip")[0]
-                    blip.append(parse_xml(
-                        '<a:extLst xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
-                        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
-                        'xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main">'
-                        '<a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
-                        f'<asvg:svgBlip r:embed="{relationship}"/></a:ext></a:extLst>'
-                    ))
-                caption = document.add_paragraph(_figure_caption(number, figure, bool(index)), style='Caption')
-                caption.paragraph_format.keep_with_next = index == 0 and bool(figure.paragraphs)
-                if index == 0:
-                    for note in figure.paragraphs:
-                        document.add_paragraph(note)
+                _add_docx_figure_panel(document, path, width, available, number, index)
+                _add_docx_figure_caption(document, figure, number, index)
+
+
+def _add_docx_figure_caption(document, figure: ResultSection, number: int, index: int) -> None:
+    caption = document.add_paragraph(_figure_caption(number, figure, bool(index)), style='Caption')
+    caption.paragraph_format.keep_with_next = index == 0 and bool(figure.paragraphs)
+    if index == 0:
+        for note in figure.paragraphs:
+            document.add_paragraph(note)
+
+
+def _add_docx_figure_panel(document, path, width: float, available: float, number: int, index: int) -> None:
+    from PyQt6.QtCore import QBuffer, QIODevice
+
+    source, ratio = figure_source(path)
+    placed_width = min(width, available * ratio)
+    pixel_width = round(placed_width / 25.4 * 300)
+    pixel_height = round(pixel_width / ratio)
+    image = QImage(pixel_width, pixel_height, QImage.Format.Format_RGB32)
+    image.fill(Qt.GlobalColor.white)
+    painter = QPainter(image)
+    paint_figure(painter, source, QRectF(0, 0, pixel_width, pixel_height))
+    painter.end()
+    buffer = QBuffer()
+    buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+    image.save(buffer, "PNG")
+    paragraph = document.add_paragraph()
+    paragraph.paragraph_format.keep_with_next = True
+    paragraph.paragraph_format.space_after = Pt(0)
+    picture = paragraph.add_run().add_picture(
+        io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(placed_width)
+    )
+    if Path(path).suffix.lower() == ".svg":
+        part = Part(PackURI(f"/word/media/figure-{number}-{index + 1}.svg"),
+                    "image/svg+xml", Path(path).read_bytes(), document.part.package)
+        relationship = document.part.relate_to(part, RELATIONSHIP_TYPE.IMAGE)
+        blip = picture._inline.xpath(".//a:blip")[0]
+        blip.append(parse_xml(
+            '<a:extLst xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+            'xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main">'
+            '<a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
+            f'<asvg:svgBlip r:embed="{relationship}"/></a:ext></a:extLst>'
+        ))
 
 
 def write_docx(report, path):

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import csv
 from contextlib import ExitStack
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -125,12 +125,7 @@ def normalize_csv_input(
             raise CsvImportError("CSV file is missing the required header row.")
     else:
         _validate_minimum_width(rows, positional_width or len(expected_headers))
-    minimum_width = len(headers) if has_headers else len(expected_headers)
-    normalized_rows = row_padding.normalize_rows(rows, minimum_width)
-    if headers:
-        width = len(normalized_rows[0]) if normalized_rows else len(headers)
-        headers = headers + [""] * (width - len(headers))
-
+    headers, normalized_rows = _pad_csv_rows(headers, rows, expected_headers, has_headers)
     if optional_headers:
         headers, normalized_rows = _add_optional_columns(
             headers, normalized_rows, expected_headers, optional_headers, has_headers=has_headers,
@@ -138,16 +133,7 @@ def normalize_csv_input(
         expected_headers = [*expected_headers, *optional_headers]
 
     _validate_years(normalized_rows, year_column)
-    seen = {}
-    for number, row in enumerate(normalized_rows, start=2 if has_headers else 1):
-        try:
-            name = name_validation.validate_required_name("study", row[0])
-        except ValueError as error:
-            raise CsvImportError(f"Row {number}: {error}") from error
-        key = name_validation.study_identity(name, int(row[year_column]))
-        if key in seen:
-            raise CsvImportError(f"Row {number}: {name_validation.study_conflict(key, seen[key])}")
-        seen[key] = number
+    _validate_csv_study_identities(normalized_rows, year_column, first_row=2 if has_headers else 1)
     covariate_names, covariate_types = _infer_covariates(
         normalized_rows,
         headers=headers,
@@ -161,6 +147,30 @@ def normalize_csv_input(
         covariate_names=tuple(covariate_names),
         covariate_types=tuple(covariate_types),
     )
+
+
+def _pad_csv_rows(
+    headers: list[str], rows: list[list[str]], expected_headers: Sequence[str], has_headers: bool,
+) -> tuple[list[str], list[list[str]]]:
+    minimum_width = len(headers) if has_headers else len(expected_headers)
+    normalized_rows = row_padding.normalize_rows(rows, minimum_width)
+    if headers:
+        width = len(normalized_rows[0]) if normalized_rows else len(headers)
+        headers = headers + [""] * (width - len(headers))
+    return headers, normalized_rows
+
+
+def _validate_csv_study_identities(rows: list[list[str]], year_column: int, *, first_row: int) -> None:
+    seen = {}
+    for number, row in enumerate(rows, start=first_row):
+        try:
+            name = name_validation.validate_required_name("study", row[0])
+        except ValueError as error:
+            raise CsvImportError(f"Row {number}: {error}") from error
+        key = name_validation.study_identity(name, int(row[year_column]))
+        if key in seen:
+            raise CsvImportError(f"Row {number}: {name_validation.study_conflict(key, seen[key])}")
+        seen[key] = number
 
 
 def _validate_header_width(headers: list[str], rows: list[list[str]]) -> None:

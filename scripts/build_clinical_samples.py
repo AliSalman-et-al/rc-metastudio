@@ -89,45 +89,9 @@ def build():
                   [sheet(0, "Exacerbations per month", "continuous", "means", "MD", ["Mucolytic agent", "Placebo"],
                          poole, [("Trial duration", 4), ("Publication year", 1)])])
 
-    kearon = []
-    for r in data["dat.kearon1998"]:
-        tp, np, tn, nn = (r[field] for field in ("tp", "np", "tn", "nn"))
-        if None in (tp, np, tn, nn) or r["id"] in {20, 22, 30}:
-            continue
-        group = r["patients"].capitalize()
-        label = r["study"]
-        if label == "Mattos et al.":
-            label = f"Mattos et al. ({group.lower()})"
-        kearon.append((label, r["year"], [[tp, np - tp, nn - tn, tn]], [group, r["year"]],
-                       f"metadat::dat.kearon1998, source row {r['id']}.", {}))
-    assert len(kearon) == 27
-    yield project("Diagnostic accuracy", "Ultrasound for deep vein thrombosis, Kearon 1998",
-                  "Kearon C, Julian JA, Newman TE, Ginsberg JS. Noninvasive diagnosis of deep venous thrombosis. Ann Intern Med. 1998;128:663–677.",
-                  "10.7326/0003-4819-128-8-199804150-00011",
-                  "paired sensitivity and specificity, SROC, patient-group regression and Deeks’ test.", METADAT,
-                  "Venous ultrasound is compared with contrast venography. The sheet keeps 16 symptomatic and 11 asymptomatic tables. Some source tables count limbs. Use the Patient group factor to compare groups or restrict Deeks to asymptomatic cohorts. See sources/README.md for omitted rows.",
-                  [sheet(0, "Deep vein thrombosis", "diagnostic", None, "DOR", ["Venous ultrasound"],
-                         kearon, [("Patient group", 4), ("Publication year", 1)])])
+    yield _kearon_project(data["dat.kearon1998"])
 
-    reported = []
-    for i, (subtype, name) in enumerate((("reg_coef", "Coefficient and confidence interval"),
-                                         ("generic_effect", "Estimate and standard error"))):
-        rows = []
-        for r in data["dat.greenland1992"]:
-            b, se = r["b"], r["SE"]
-            margin = NormalDist().inv_cdf(.975) * se
-            values = dict(est=b, lower=b - margin, upper=b + margin, SE=se,
-                          display_est=b, display_lower=b - margin, display_upper=b + margin,
-                          display_se=se, display_conf_level=95.0)
-            note = "The 95% Wald bounds are derived from the published coefficient and SE."
-            rows.append((r["author"], r["year"], [["", "", ""]], [], note if i == 0 else "", values))
-        reported.append(sheet(i, name, "continuous", subtype, "Mean", ["Adjusted log risk ratio"], rows))
-    yield project("Reported effects", "Alcohol intake and breast cancer, Greenland 1992",
-                  "Greenland S, Longnecker MP. Methods for trend estimation from summarized dose-response data, with applications to meta-analysis. Am J Epidemiol. 1992;135:1301–1309.",
-                  "10.1093/oxfordjournals.aje.a116237",
-                  "pooling published coefficients with a confidence interval or a standard error.", METADAT,
-                  "Both sheets use the adjusted log risk ratio per additional gram of alcohol per day from Table 3. Analyze the sheets separately.",
-                  reported)
+    yield _greenland_project(data["dat.greenland1992"])
 
     feng = [(r["author"], r["year"], [[r["depr"], r["n"]]], [r["design"]],
              f"Assessment: {r.get('questionnaire') or r.get('interview')}. Timing: {r['timing']}.", {})
@@ -140,6 +104,48 @@ def build():
                   [sheet(0, "Depression after myocardial infarction", "binary", "proportion", "PR",
                          ["Patients after myocardial infarction"], feng, [("Study design", 4)])])
 
+
+def _kearon_project(rows):
+    kearon = []
+    for r in rows:
+        tp, np, tn, nn = (r[field] for field in ("tp", "np", "tn", "nn"))
+        if None in (tp, np, tn, nn) or r["id"] in {20, 22, 30}:
+            continue
+        group = r["patients"].capitalize()
+        label = r["study"]
+        if label == "Mattos et al.":
+            label = f"Mattos et al. ({group.lower()})"
+        kearon.append((label, r["year"], [[tp, np - tp, nn - tn, tn]], [group, r["year"]],
+                       f"metadat::dat.kearon1998, source row {r['id']}.", {}))
+    assert len(kearon) == 27
+    return project("Diagnostic accuracy", "Ultrasound for deep vein thrombosis, Kearon 1998",
+                  "Kearon C, Julian JA, Newman TE, Ginsberg JS. Noninvasive diagnosis of deep venous thrombosis. Ann Intern Med. 1998;128:663–677.",
+                  "10.7326/0003-4819-128-8-199804150-00011",
+                  "paired sensitivity and specificity, SROC, patient-group regression and Deeks’ test.", METADAT,
+                  "Venous ultrasound is compared with contrast venography. The sheet keeps 16 symptomatic and 11 asymptomatic tables. Some source tables count limbs. Use the Patient group factor to compare groups or restrict Deeks to asymptomatic cohorts. See sources/README.md for omitted rows.",
+                  [sheet(0, "Deep vein thrombosis", "diagnostic", None, "DOR", ["Venous ultrasound"],
+                         kearon, [("Patient group", 4), ("Publication year", 1)])])
+
+def _greenland_project(source_rows):
+    reported = []
+    for i, (subtype, name) in enumerate((("reg_coef", "Coefficient and confidence interval"),
+                                         ("generic_effect", "Estimate and standard error"))):
+        rows = []
+        for r in source_rows:
+            b, se = r["b"], r["SE"]
+            margin = NormalDist().inv_cdf(.975) * se
+            values = dict(est=b, lower=b - margin, upper=b + margin, SE=se,
+                          display_est=b, display_lower=b - margin, display_upper=b + margin,
+                          display_se=se, display_conf_level=95.0)
+            note = "The 95% Wald bounds are derived from the published coefficient and SE."
+            rows.append((r["author"], r["year"], [["", "", ""]], [], note if i == 0 else "", values))
+        reported.append(sheet(i, name, "continuous", subtype, "Mean", ["Adjusted log risk ratio"], rows))
+    return project("Reported effects", "Alcohol intake and breast cancer, Greenland 1992",
+                  "Greenland S, Longnecker MP. Methods for trend estimation from summarized dose-response data, with applications to meta-analysis. Am J Epidemiol. 1992;135:1301–1309.",
+                  "10.1093/oxfordjournals.aje.a116237",
+                  "pooling published coefficients with a confidence interval or a standard error.", METADAT,
+                  "Both sheets use the adjusted log risk ratio per additional gram of alcohol per day from Table 3. Analyze the sheets separately.",
+                  reported)
 
 def update_manifest(additions):
     path = SAMPLES / "manifest.json"

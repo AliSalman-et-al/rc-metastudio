@@ -533,11 +533,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             separator = ' · ' if first != source_name else ''
             description = first[len(source_name):].removeprefix(' · ')
         details = self._identity_facts(workflow, context, rest, description, separator)
-        models, levels = self._identity_model_details(self.results.details)
-        title_facts = [model + (f" ({estimator})" if estimator else "") for model, estimator in models]
-        title_facts.extend(detail for detail in details if detail.startswith("Pooled display: "))
-        title_facts.extend(levels or [detail for detail in details if detail.endswith("% CI")])
-        self.setWindowTitle(" · ".join((identity.splitlines()[0], *dict.fromkeys(title_facts))))
+        self.setWindowTitle(self._result_window_title(identity, details))
         title_font = QFont(self.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
         title_font.setWeight(QFont.Weight.DemiBold)
@@ -559,6 +555,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
         self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _result_window_title(self, identity: str, details: list[str]) -> str:
+        models, levels = self._identity_model_details(self.results.details)
+        title_facts = [model + (f" ({estimator})" if estimator else "") for model, estimator in models]
+        title_facts.extend(detail for detail in details if detail.startswith("Pooled display: "))
+        title_facts.extend(levels or [detail for detail in details if detail.endswith("% CI")])
+        return " · ".join((identity.splitlines()[0], *dict.fromkeys(title_facts)))
 
     def _refresh_header_palette(self):
         palette = QPalette(self.palette())

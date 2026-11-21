@@ -141,6 +141,29 @@ class CellRejection:
     kind: Literal["value", "number", "backend"] = "value"
 
 
+def _study_identity_at(sheet: Sheet, index: int) -> tuple[str, int | None]:
+    if index >= len(sheet.rows):
+        return "", 0
+    study = sheet.rows[index]
+    return study.label, study.year
+
+
+def _edited_study_name(original: str, fields: Mapping[str, object]) -> str:
+    if "name" in fields:
+        return name_validation.validate_required_name("study", fields["name"])
+    return original
+
+
+def _parse_study_identity_year(value: object) -> int | None:
+    text = qt_text.to_native_text(value)
+    if qt_text.is_blank(text):
+        return 0
+    try:
+        return int(text)
+    except ValueError:
+        return int(float(text)) if is_an_int(text) else None
+
+
 class WorkspaceEditingService:
     """Perform backend-facing edit work without importing Qt.
 
@@ -369,36 +392,38 @@ class WorkspaceEditingService:
         updates = {}
         skipped = 0
         for index, fields in edits.items():
-            study = sheet.rows[index] if index < len(sheet.rows) else None
-            name, year = (study.label, study.year) if study is not None else ("", 0)
-            if "name" in fields:
-                try:
-                    name = name_validation.validate_required_name("study", fields["name"])
-                except ValueError as error:
-                    return CellRejection(str(error)), skipped
+            original = _study_identity_at(sheet, index)
+            try:
+                name = _edited_study_name(original[0], fields)
+            except ValueError as error:
+                return CellRejection(str(error)), skipped
+            year = original[1]
             if "year" in fields:
-                text = qt_text.to_native_text(fields["year"])
-                if qt_text.is_blank(text):
-                    year = 0
+                parsed_year = _parse_study_identity_year(fields["year"])
+                if parsed_year is not None:
+                    year = parsed_year
+                elif skip_invalid_year:
+                    skipped += 1
                 else:
-                    try:
-                        year = int(text)
-                    except ValueError:
-                        if is_an_int(text):
-                            year = int(float(text))
-                        elif skip_invalid_year:
-                            skipped += 1
-                        else:
-                            return CellRejection("Enter the year as a whole number, for example 2019.", kind="number"), skipped
-            if (name, year) != ((study.label, study.year) if study is not None else ("", 0)):
+                    return CellRejection("Enter the year as a whole number, for example 2019.", kind="number"), skipped
+            if (name, year) != original:
                 updates[index] = (name, year)
 
+        rejection = WorkspaceEditingService._study_identity_conflict(sheet, updates, row_order)
+        if rejection is not None:
+            return rejection, skipped
+        WorkspaceEditingService._apply_study_identities(sheet, updates)
+        return None, skipped
+
+    @staticmethod
+    def _study_identity_conflict(
+        sheet: Sheet, updates: dict[int, tuple[str, int | None]], row_order: Sequence[int] | None,
+    ) -> CellRejection | None:
         ordered = list(row_order) if row_order is not None else list(range(len(sheet.rows)))
         ordered.extend(range(len(sheet.rows), max(updates, default=len(sheet.rows) - 1) + 1))
         seen = {}
         for row_number, index in enumerate(ordered, start=1):
-            study = sheet.rows[index] if index < len(sheet.rows) else None
-            name, year = updates.get(index, (study.label, study.year) if study is not None else ("", 0))
+            name, year = updates.get(index, _study_identity_at(sheet, index))
             key = name_validation.study_identity(name, year)
             if not key[0]:
                 continue
@@ -407,10 +432,14 @@ class WorkspaceEditingService:
                 previous_index, previous_row = previous
                 if index in updates or previous_index in updates:
                     conflict_row = row_number if index not in updates else previous_row
-                    return CellRejection(name_validation.study_conflict(key, conflict_row)), skipped
+                    return CellRejection(name_validation.study_conflict(key, conflict_row))
             else:
                 seen[key] = (index, row_number)
 
+        return None
+
+    @staticmethod
+    def _apply_study_identities(sheet: Sheet, updates: dict[int, tuple[str, int | None]]) -> None:
         for index, (name, year) in sorted(updates.items()):
             while len(sheet.rows) <= index:
                 unit = AnalysisUnit(sheet, arm_names=[arm.name for arm in sheet.arms],
@@ -420,7 +449,6 @@ class WorkspaceEditingService:
             if name != study.label and not study.manually_excluded and not has_study_entered_data(study):
                 study.include = True
             study.label, study.year = name, year
-        return None, skipped
 
     def _raw_data(self, study: StudyRow, context: WorkspaceEditingContext):
         return study.analysis_unit.get_raw_data_for_arms(

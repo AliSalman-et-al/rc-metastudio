@@ -10,14 +10,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     bundle <- rcmetar.forest.compact.headers(bundle)
     bmj <- identical(style, "bmj") && inherits(bundle$res, "rma") &&
         !identical(bundle$forest_variant, "subgroup")
-    measure <- if (bmj) rcmetar.forest.bmj.device.metrics else rcmetar.forest.default.device.metrics
-    bundle$size <- measure(bundle)
-    needs.smaller.type <- bundle$size$width > (width %||% (260 / 25.4)) + 1e-8
-    if (needs.smaller.type || measure.minimum) {
-        minimum <- measure(bundle, cex=7 / 12)
-        if (needs.smaller.type) bundle$size <- minimum
-        bundle$size$min_width <- minimum$min_width
-    }
+    bundle$size <- rcmetar.forest.measured.size(bundle, bmj, width, measure.minimum)
     if (identical(style, "revman") &&
             inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
@@ -39,16 +32,38 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     }
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
     subgroup <- identical(bundle$forest_variant, "subgroup")
-    model.labels <- if (subgroup) {
+    model.labels <- rcmetar.forest.summary.model.labels(bundle, subgroup, bmj)
+    plan$summary_labels <- rcmetar.forest.wrap.summary.labels(
+        model.labels, plan$device$study_width, plan$typography$cex)
+    plan$summary_extra <- .86 * pmax(0, lengths(plan$summary_labels) - 1L)
+    plan <- rcmetar.forest.expand.wrapped.rows(bundle, plan, subgroup)
+    plan$rows$summary <- TRUE
+    rcmetar.forest.panel.height(plan)
+}
+
+rcmetar.forest.measured.size <- function(bundle, bmj, width, measure.minimum) {
+    measure <- if (bmj) rcmetar.forest.bmj.device.metrics else rcmetar.forest.default.device.metrics
+    bundle$size <- measure(bundle)
+    needs.smaller.type <- bundle$size$width > (width %||% (260 / 25.4)) + 1e-8
+    if (needs.smaller.type || measure.minimum) {
+        minimum <- measure(bundle, cex=7 / 12)
+        if (needs.smaller.type) bundle$size <- minimum
+        bundle$size$min_width <- minimum$min_width
+    }
+    bundle$size
+}
+
+rcmetar.forest.summary.model.labels <- function(bundle, subgroup, bmj) {
+    if (subgroup) {
         vapply(c(bundle$subgroups$results, list(bundle$subgroups$overall)), rcmetar.forest.model.label, character(1))
     } else if (bmj) {
         paste0("Total (", display.confidence.level(bundle$params), "% CI)")
     } else if (!isTRUE(bundle$single_study) || !is.null(bundle$summary_res)) {
         rcmetar.forest.model.label(bundle$summary_res %||% bundle$res)
     } else ""
-    plan$summary_labels <- rcmetar.forest.wrap.summary.labels(
-        model.labels, plan$device$study_width, plan$typography$cex)
-    plan$summary_extra <- .86 * pmax(0, lengths(plan$summary_labels) - 1L)
+}
+
+rcmetar.forest.expand.wrapped.rows <- function(bundle, plan, subgroup) {
     summary.rows <- c(bundle$subgroups$polygon_rows, bundle$subgroups$overall_row)
     rows <- plan$rows$study_rows
     extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .7, 0)
@@ -68,8 +83,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
         plan$rows$ylim[[1L]] <- plan$rows$ylim[[1L]] - plan$summary_extra[[1L]]
         if (!is.null(plan$footer$axis)) plan$rows$axis_offset <- -plan$summary_extra[[1L]]
     }
-    plan$rows$summary <- TRUE
-    rcmetar.forest.panel.height(plan)
+    plan
 }
 
 rcmetar.forest.panel.height <- function(plan) {
@@ -623,48 +637,8 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
     subgroup <- identical(bundle$forest_variant, "subgroup")
     groups <- match(bundle$study_groups, unique(bundle$study_groups))
     panel <- function(first, last) {
-        selected <- studies[first:last]
-        final <- last == length(studies)
-        local <- plan
-        local$rows$summary <- final
-        bottom <- min(rows[selected])
-        if (subgroup) {
-            for (i in seq_along(local$subgroups$names)) {
-                visible <- selected[groups[selected] == i]
-                members <- which(groups == i)
-                if (!length(visible)) {
-                    local$subgroups$header_rows[[i]] <- NA_real_
-                    local$subgroups$polygon_rows[[i]] <- NA_real_
-                    next
-                }
-                if (!members[which.max(rows[members])] %in% visible) {
-                    local$subgroups$header_rows[[i]] <- max(rows[visible]) + 1.15
-                    local$subgroups$names[[i]] <- paste0(local$subgroups$names[[i]], " (continued)")
-                }
-                if (!members[which.min(rows[members])] %in% visible) {
-                    local$subgroups$polygon_rows[[i]] <- NA_real_
-                } else if (!final) {
-                    bottom <- min(bottom, local$subgroups$polygon_rows[[i]] - plan$summary_extra[[i]] - 3.5)
-                }
-            }
-        }
-        shift <- if (final) 0 else bottom - 1
-        local$rows$study_rows[-selected] <- NA_real_
-        local$rows$study_rows <- local$rows$study_rows - shift
-        if (isTRUE(bundle$has_overall) && final) local$rows$study_rows[[1L]] <- -.3
-        local$subgroups$header_rows <- local$subgroups$header_rows - shift
-        local$subgroups$polygon_rows <- local$subgroups$polygon_rows - shift
-        local$rows$top <- max(c(rows[selected] - shift, local$subgroups$header_rows), na.rm=TRUE)
-        local$rows$ylim[[2L]] <- local$rows$top + diff(c(max(c(rows, plan$subgroups$header_rows)), plan$rows$ylim[[2L]]))
-        if (!final) {
-            if (is.null(local$footer$axis)) {
-                local$rows$ylim[[1L]] <- 0
-            } else {
-                local$rows$axis_offset <- 2.3
-                local$rows$ylim[[1L]] <- -2.3
-            }
-        }
-        rcmetar.forest.panel.height(local)
+        rcmetar.forest.page.panel(bundle, plan, rows, groups, subgroup,
+                                  studies[first:last], last == length(studies))
     }
     panels <- list()
     first <- 1L
@@ -689,4 +663,54 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
         first <- last + 1L
     }
     panels
+}
+
+rcmetar.forest.page.panel <- function(bundle, plan, rows, groups, subgroup, selected, final) {
+    local <- plan
+    local$rows$summary <- final
+    bottom <- min(rows[selected])
+    if (subgroup) {
+        group.panel <- rcmetar.forest.page.subgroups(local$subgroups, plan$summary_extra, rows, groups, selected, final, bottom)
+        local$subgroups <- group.panel$subgroups
+        bottom <- group.panel$bottom
+    }
+    shift <- if (final) 0 else bottom - 1
+    local$rows$study_rows[-selected] <- NA_real_
+    local$rows$study_rows <- local$rows$study_rows - shift
+    if (isTRUE(bundle$has_overall) && final) local$rows$study_rows[[1L]] <- -.3
+    local$subgroups$header_rows <- local$subgroups$header_rows - shift
+    local$subgroups$polygon_rows <- local$subgroups$polygon_rows - shift
+    local$rows$top <- max(c(rows[selected] - shift, local$subgroups$header_rows), na.rm=TRUE)
+    local$rows$ylim[[2L]] <- local$rows$top + diff(c(max(c(rows, plan$subgroups$header_rows)), plan$rows$ylim[[2L]]))
+    if (!final) {
+        if (is.null(local$footer$axis)) {
+            local$rows$ylim[[1L]] <- 0
+        } else {
+            local$rows$axis_offset <- 2.3
+            local$rows$ylim[[1L]] <- -2.3
+        }
+    }
+    rcmetar.forest.panel.height(local)
+}
+
+rcmetar.forest.page.subgroups <- function(subgroups, summary.extra, rows, groups, selected, final, bottom) {
+    for (i in seq_along(subgroups$names)) {
+        visible <- selected[groups[selected] == i]
+        members <- which(groups == i)
+        if (!length(visible)) {
+            subgroups$header_rows[[i]] <- NA_real_
+            subgroups$polygon_rows[[i]] <- NA_real_
+            next
+        }
+        if (!members[which.max(rows[members])] %in% visible) {
+            subgroups$header_rows[[i]] <- max(rows[visible]) + 1.15
+            subgroups$names[[i]] <- paste0(subgroups$names[[i]], " (continued)")
+        }
+        if (!members[which.min(rows[members])] %in% visible) {
+            subgroups$polygon_rows[[i]] <- NA_real_
+        } else if (!final) {
+            bottom <- min(bottom, subgroups$polygon_rows[[i]] - summary.extra[[i]] - 3.5)
+        }
+    }
+    list(subgroups=subgroups, bottom=bottom)
 }

@@ -555,6 +555,15 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
         scalar.bool(style$point.area.by.sample.size, FALSE))
         sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1, nrow(markers))
     margins <- c(1.02, .82, .82, .42)
+    draw.auc.caption <- function() {
+        if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
+            digits <- as.integer(style$digits %||% 3L)
+            if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
+            rcmetar.draw.panel.caption(
+                sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC),
+                cex=as.numeric(style$text.cex %||% .8))
+        }
+    }
     draw.annotations <- function() {
         show.summary <- scalar.bool(style$show.summary, TRUE) && length(center) == 2L && all(is.finite(center))
         if (show.summary) points(center[1L], center[2L], pch=19, col=accent.color)
@@ -574,13 +583,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
                 graphics::mtext(sprintf("Study labels shown: %d of %d", length(chosen), count),
                                 side=1, line=3.8, cex=label.cex)
         }
-        if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
-            digits <- as.integer(style$digits %||% 3L)
-            if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
-            rcmetar.draw.panel.caption(
-                sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC),
-                cex=as.numeric(style$text.cex %||% .8))
-        }
+        draw.auc.caption()
         legend.spec <- plot.data$legend %||% rcmetar.reitsma.legend.spec(
             style, plot.data$curve, plot.data$confidence.region, plot.data$prediction.region,
             plot.data$sample.size

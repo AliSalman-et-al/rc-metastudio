@@ -65,7 +65,9 @@ from rc_metastudio.settings import analysis_output_path
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
-    from rc_metastudio.project.model import Sheet
+    from rc_metastudio.domain_ids import RowId
+    from rc_metastudio.project.model import Sheet, StudyRow
+    from rc_metastudio.workspace.columns import RawColumn
     from rc_metastudio.results.report import AnalysisResultHandler
     from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 else:
@@ -940,14 +942,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         except Exception as error:
             if bar is not None and bar.cancelled:
                 return
-            app_error_handler.log_exception(type(error), error, error.__traceback__)
-            message = re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
-            message = re.sub(r"(?m)^\w*(?:Error|Exception):\s*", "", message).strip()
-            # The input precheck should make this fallback unreachable for missing inputs.
-            if "Processing terminated since k = 0" in message:
-                message = "No study could contribute to this analysis. Check the study values and selected method."
-            self._show_analysis_error(message or "The analysis could not be completed.",
-                                      f"{type(error).__name__}: {error}")
+            self._show_execution_error(error)
             return
         finally:
             if bar is not None:
@@ -956,8 +951,21 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             source_sheet.last_meta_analysis = pooled_fit
         self.done(QDialog.DialogCode.Accepted.value)
         shown = on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
+        self._close_replaced_result(shown)
+
+    def _close_replaced_result(self, shown) -> None:
         if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
             self._replaces.close()
+
+    def _show_execution_error(self, error: Exception) -> None:
+        app_error_handler.log_exception(type(error), error, error.__traceback__)
+        message = re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
+        message = re.sub(r"(?m)^\w*(?:Error|Exception):\s*", "", message).strip()
+        # The input precheck should make this fallback unreachable for missing inputs.
+        if "Processing terminated since k = 0" in message:
+            message = "No study could contribute to this analysis. Check the study values and selected method."
+        self._show_analysis_error(message or "The analysis could not be completed.",
+                                  f"{type(error).__name__}: {error}")
 
     def _show_analysis_error(self, message: str, details: str = "") -> None:
         self.analysis_error_label.setText(message)
@@ -984,55 +992,83 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             "event_rates": "events and person-time",
         }.get(self.data_type)
         for request in requests:
+            missing = self._describe_missing_request_inputs(request, selected_ids, ratio_input, arm_inputs)
+            if missing is None:
+                continue
+            if len(studies) > len(missing):
+                missing.append(f"and {len(studies) - len(missing):,} more.")
             metric = request.metric
-            raw_required = request.method in RAW_COUNT_METHODS
-            fields = [column for column in self.model.columns.raw if not column.hidden]
-            if metric in ONE_ARM_METRICS:
-                fields = [column for column in fields if column.arm_index in (None, 0)]
-            missing = []
-            for index, study in enumerate(self.model.current_sheet.rows):
-                if study.id not in selected_ids:
-                    continue
-                raw = self.model.get_current_raw_data_for_study(index)
-                absent = [column for position, column in enumerate(fields)
-                          if position >= len(raw) or raw[position] in (None, "")]
-                has_raw = bool(fields) and not absent
-                has_effect = self.model.study_has_point_est(index, effect=metric)
-                if ratio_input:
-                    has_raw = (
-                        has_raw and has_effect
-                        and study.analysis_unit.ratio_input(self.model.arm_names).selected_source(raw, metric=metric) == "raw"
-                    )
-                if has_raw or (has_effect and not raw_required):
-                    break
-                if len(missing) == 3:
-                    continue
-                missing_fields = []
-                if arm_inputs and absent and absent == fields and {column.arm_index for column in fields} == {0, 1}:
-                    missing_fields.append(f"{arm_inputs} for both arms")
-                else:
-                    for arm, arm_name in enumerate(self.model.arm_names):
-                        arm_fields = [column for column in fields if column.arm_index == arm]
-                        arm_missing = [column for column in absent if column.arm_index == arm]
-                        if arm_inputs and arm_missing and arm_missing == arm_fields:
-                            missing_fields.append(f"{arm_inputs} for {arm_name}")
-                        else:
-                            missing_fields.extend(f"{column.field.label} ({arm_name})" for column in arm_missing)
-                    missing_fields.extend(column.field.label for column in absent if column.arm_index is None)
-                inputs = ", ".join(missing_fields)
-                if not raw_required:
-                    estimate = "an estimate with its confidence interval or standard error"
-                    inputs = f"{inputs}, or {estimate}" if inputs else estimate
-                if raw_required and not inputs and ratio_input:
-                    inputs = "events and person-time selected as the effect source"
-                name = f"{study.label} ({study.year})" if study.year else study.label
-                missing.append(f"{name} needs {inputs or 'valid study inputs'}.")
-            else:
-                if len(studies) > len(missing):
-                    missing.append(f"and {len(studies) - len(missing):,} more.")
-                prefix = f"{ALL_METRIC_NAMES.get(metric, metric)} — " if len(requests) > 1 else ""
-                return "No study has enough data to analyze. " + prefix + " ".join(missing)
+            prefix = f"{ALL_METRIC_NAMES.get(metric, metric)} — " if len(requests) > 1 else ""
+            return "No study has enough data to analyze. " + prefix + " ".join(missing)
         return ""
+
+    def _describe_missing_request_inputs(
+        self, request: analysis_adapter.AnalysisRequest, selected_ids: set["RowId"],
+        ratio_input: bool, arm_inputs: str | None,
+    ) -> list[str] | None:
+        fields = [column for column in self.model.columns.raw if not column.hidden]
+        if request.metric in ONE_ARM_METRICS:
+            fields = [column for column in fields if column.arm_index in (None, 0)]
+        missing = []
+        for index, study in enumerate(self.model.current_sheet.rows):
+            if study.id not in selected_ids:
+                continue
+            absent = self._missing_study_fields(index, study, fields, request, ratio_input)
+            if absent is None:
+                return None
+            if len(missing) < 3:
+                inputs = self._describe_study_fields(fields, absent, arm_inputs, request, ratio_input)
+                name = f"{study.label} ({study.year})" if study.year else study.label
+                missing.append(f"{name} needs {inputs}.")
+        return missing
+
+    def _missing_study_fields(
+        self, index: int, study: "StudyRow", fields: list["RawColumn"],
+        request: analysis_adapter.AnalysisRequest, ratio_input: bool,
+    ) -> list["RawColumn"] | None:
+        raw = self.model.get_current_raw_data_for_study(index)
+        absent = [column for position, column in enumerate(fields)
+                  if position >= len(raw) or raw[position] in (None, "")]
+        has_raw = bool(fields) and not absent
+        has_effect = self.model.study_has_point_est(index, effect=request.metric)
+        if ratio_input:
+            has_raw = (
+                has_raw and has_effect
+                and study.analysis_unit.ratio_input(self.model.arm_names).selected_source(raw, metric=request.metric) == "raw"
+            )
+        if has_raw or (has_effect and request.method not in RAW_COUNT_METHODS):
+            return None
+        return absent
+
+    def _describe_study_fields(
+        self, fields: list["RawColumn"], absent: list["RawColumn"], arm_inputs: str | None,
+        request: analysis_adapter.AnalysisRequest, ratio_input: bool,
+    ) -> str:
+        if arm_inputs and absent and absent == fields and {column.arm_index for column in fields} == {0, 1}:
+            parts = [f"{arm_inputs} for both arms"]
+        else:
+            parts = self._describe_missing_arm_fields(fields, absent, arm_inputs)
+        inputs = ", ".join(parts)
+        if request.method not in RAW_COUNT_METHODS:
+            estimate = "an estimate with its confidence interval or standard error"
+            return f"{inputs}, or {estimate}" if inputs else estimate
+        if not inputs and ratio_input:
+            return "events and person-time selected as the effect source"
+        return inputs or "valid study inputs"
+
+    def _describe_missing_arm_fields(
+        self, fields: list["RawColumn"], absent: list["RawColumn"], arm_inputs: str | None,
+    ) -> list[str]:
+        parts = []
+        for arm, arm_name in enumerate(self.model.arm_names):
+            arm_fields = [column for column in fields if column.arm_index == arm]
+            arm_missing = [column for column in absent if column.arm_index == arm]
+            if arm_inputs and arm_missing and arm_missing == arm_fields:
+                parts.append(f"{arm_inputs} for {arm_name}")
+            else:
+                parts.extend(f"{column.field.label} ({arm_name})" for column in arm_missing)
+        parts.extend(column.field.label for column in absent if column.arm_index is None)
+        return parts
 
     def _pooled_fit_for_sheet(
         self, requests: Sequence[analysis_adapter.AnalysisRequest],

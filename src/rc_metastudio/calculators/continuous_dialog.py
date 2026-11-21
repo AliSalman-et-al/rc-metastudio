@@ -686,27 +686,32 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
     def _refresh_readout(self):
         self.preview_source_label.hide()
         if self._active_input_mode == "pre-post" and self.effect_text_box.text():
-            arm_count = 2 if self.current_effect in CONTINUOUS_TWO_ARM_METRICS else 1
-            from_summaries = []
-            for row, arm in enumerate(self.arm_names[:arm_count]):
-                n, mean, sd, se = (self._get_float(row, col) for col in range(4))
-                if mean is None or ((n is None or sd is None) and (self.current_effect != "MD" or se is None)):
-                    for editor in self._effect_fields.editors.values():
-                        editor.clear()
-                    self.wald_readout.hide()
-                    return
-                if not required(self.simple_table.item(row, 0), "arm summary").data(Qt.ItemDataRole.UserRole + 1):
-                    from_summaries.append(arm)
-            if from_summaries:
-                self.preview_source_label.setText(
-                    "From arm summaries" if len(from_summaries) == arm_count
-                    else f"From arm summaries for {from_summaries[0]} and pre/post summaries for the other arm."
-                )
-                self.preview_source_label.show()
+            if not self._refresh_pre_post_source():
+                return
         calculator_effect_readout.update_wald_readout(
             self.wald_readout, self.analysis_unit, self.current_effect, self.arm_key,
             self.confidence_multiplier, "continuous", self._effect_source(),
         )
+
+    def _refresh_pre_post_source(self) -> bool:
+        arm_count = 2 if self.current_effect in CONTINUOUS_TWO_ARM_METRICS else 1
+        from_summaries = []
+        for row, arm in enumerate(self.arm_names[:arm_count]):
+            n, mean, sd, se = (self._get_float(row, col) for col in range(4))
+            if mean is None or ((n is None or sd is None) and (self.current_effect != "MD" or se is None)):
+                for editor in self._effect_fields.editors.values():
+                    editor.clear()
+                self.wald_readout.hide()
+                return False
+            if not required(self.simple_table.item(row, 0), "arm summary").data(Qt.ItemDataRole.UserRole + 1):
+                from_summaries.append(arm)
+        if from_summaries:
+            self.preview_source_label.setText(
+                "From arm summaries" if len(from_summaries) == arm_count
+                else f"From arm summaries for {from_summaries[0]} and pre/post summaries for the other arm."
+            )
+            self.preview_source_label.show()
+        return True
 
     def set_current_effect(self):
         calculator_effect_readout.populate_effect_ci_fields(

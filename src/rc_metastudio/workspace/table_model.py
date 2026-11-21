@@ -516,15 +516,10 @@ class DatasetTableModel(QAbstractTableModel):
         return True
 
     def _apply_cell(self, index, value, role=Qt.ItemDataRole.EditRole):
-        if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
-            return workspace_editing.CellRejection("That data role cannot edit a workspace cell.")
+        rejection = self._check_cell_edit_target(index, role)
+        if rejection is not None:
+            return rejection
         column = index.column()
-        if role == Qt.ItemDataRole.CheckStateRole and (
-            not index.isValid() or index.model() is not self or column != self.INCLUDE_STUDY
-        ):
-            return workspace_editing.CellRejection("Check state applies only to study inclusion.")
-        if not self._valid_edit_index(index):
-            return workspace_editing.CellRejection("Cannot edit that cell.")
         if column == self.INCLUDE_STUDY:
             value, valid = _parse_inclusion(value)
             if not valid:
@@ -536,10 +531,7 @@ class DatasetTableModel(QAbstractTableModel):
         field = self._editable_field(column)
         if field is None:
             return workspace_editing.CellRejection("Cannot edit that cell.")
-        row_order = None
-        if field in ("name", "year"):
-            canonical_positions = {study.id: row for row, study in enumerate(self.current_sheet.rows)}
-            row_order = [canonical_positions[study_id] for study_id in self.get_ordered_study_ids()]
+        row_order = self._canonical_display_order() if field in ("name", "year") else None
         rejection = self.editing_service.apply_edit(
             self.dataset, canonical_row, field, self._editing_context(), value, row_order=row_order,
         )
@@ -551,6 +543,18 @@ class DatasetTableModel(QAbstractTableModel):
         self._publish_workspace_edit(index)
         return None
 
+    def _check_cell_edit_target(self, index, role) -> workspace_editing.CellRejection | None:
+        if role not in (Qt.ItemDataRole.EditRole, Qt.ItemDataRole.CheckStateRole):
+            return workspace_editing.CellRejection("That data role cannot edit a workspace cell.")
+        column = index.column()
+        if role == Qt.ItemDataRole.CheckStateRole and (
+            not index.isValid() or index.model() is not self or column != self.INCLUDE_STUDY
+        ):
+            return workspace_editing.CellRejection("Check state applies only to study inclusion.")
+        if not self._valid_edit_index(index):
+            return workspace_editing.CellRejection("Cannot edit that cell.")
+        return None
+
     def paste_cells(self, first_row, columns, values) -> int:
         """Stage clipboard edits against the visible row order and publish them together."""
         candidate = type(self)(
@@ -560,8 +564,7 @@ class DatasetTableModel(QAbstractTableModel):
         by_id = {study.id: study for study in candidate.current_sheet.rows}
         candidate._display_studies = [by_id[study_id] for study_id in self.get_ordered_study_ids()]
         sheet = candidate.current_sheet
-        canonical_positions = {study.id: row for row, study in enumerate(sheet.rows)}
-        row_order = [canonical_positions[study.id] for study in candidate._display_studies]
+        row_order = candidate._canonical_display_order()
         identity_edits = {}
         for row, cells in enumerate(values, start=first_row):
             fields = {("name" if column == self.NAME else "year"): value
@@ -574,23 +577,35 @@ class DatasetTableModel(QAbstractTableModel):
         if rejection is not None:
             raise ValueError(rejection.message)
         candidate._sync_display_studies()
+        skipped += candidate._apply_paste_values(first_row, columns, values)
+        candidate.recalculate_display_scale()
+        self._adopt_projection(candidate)
+        self.workspaceEditCommitted.emit()
+        return skipped
+
+    def _canonical_display_order(self) -> list[int]:
+        positions = {study.id: row for row, study in enumerate(self.current_sheet.rows)}
+        return [positions[study_id] for study_id in self.get_ordered_study_ids()]
+
+    def _apply_paste_values(self, first_row, columns, values) -> int:
+        skipped = 0
         for row, cells in enumerate(values, start=first_row):
             for column, value in zip(columns, cells):
                 if column in (self.NAME, self.YEAR):
                     continue
-                index = candidate.index(row, column)
-                if candidate.get_current_data_type(False) in RATIO_DATA_TYPES and column in candidate.OUTCOMES[:3]:
-                    if not candidate.flags(index) & Qt.ItemFlag.ItemIsEditable:
-                        raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
-                rejection = candidate._apply_cell(index, value)
+                index = self.index(row, column)
+                if (
+                    self.get_current_data_type(False) in RATIO_DATA_TYPES
+                    and column in self.OUTCOMES[:3]
+                    and not self.flags(index) & Qt.ItemFlag.ItemIsEditable
+                ):
+                    raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
+                rejection = self._apply_cell(index, value)
                 if rejection is None:
                     continue
                 if rejection.kind != "number":
                     raise ValueError(rejection.message)
                 skipped += 1
-        candidate.recalculate_display_scale()
-        self._adopt_projection(candidate)
-        self.workspaceEditCommitted.emit()
         return skipped
 
     def _valid_edit_index(self, index):

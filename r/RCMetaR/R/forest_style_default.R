@@ -340,19 +340,7 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
         return(invisible(NULL))
     }
     if (rcmetar.forest.natural.axis(bundle)) {
-        effect <- rcmetar.forest.axis.effect(bundle, raw.effect)
-        if (is.null(forest.args$psize) && inherits(bundle$res, "rma")) {
-            wi <- sqrt(rcmetar.metafor.weights(bundle$res))
-            forest.args$psize <- if (diff(range(wi)) < 1e-8) rep(1, length(wi)) else
-                .5 + (wi - min(wi)) / diff(range(wi))
-        }
-        do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
-            ci.ub=effect$ci.ub, sei=if (inherits(bundle$res, "rma")) sqrt(bundle$res$vi) else bundle$effect$sei), forest.args))
-        rcmetar.draw.metafor.single.study.interval.ends(effect$ci.lb, effect$ci.ub, rows, alim, accent.color)
-        if (manual.sequential.labels) rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan)
-        if (plan$rows$summary && !isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
-            rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
-        }
+        rcmetar.draw.natural.axis.study.marks(bundle, plan, forest.args, raw.effect, accent.color)
     } else if (isTRUE(bundle$single_study)) {
         do.call(metafor::forest.default, c(
             list(
@@ -378,6 +366,27 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
         }
     }
 
+}
+
+rcmetar.draw.natural.axis.study.marks <- function(bundle, plan, forest.args, raw.effect, accent.color) {
+    rows <- plan$rows$study_rows
+    alim <- plan$x$alim
+    layout <- plan$layout
+    size <- plan$device
+    manual.sequential.labels <- plan$rows$manual_sequential_labels
+    effect <- rcmetar.forest.axis.effect(bundle, raw.effect)
+    if (is.null(forest.args$psize) && inherits(bundle$res, "rma")) {
+        wi <- sqrt(rcmetar.metafor.weights(bundle$res))
+        forest.args$psize <- if (diff(range(wi)) < 1e-8) rep(1, length(wi)) else
+            .5 + (wi - min(wi)) / diff(range(wi))
+    }
+    do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
+        ci.ub=effect$ci.ub, sei=if (inherits(bundle$res, "rma")) sqrt(bundle$res$vi) else bundle$effect$sei), forest.args))
+    rcmetar.draw.metafor.single.study.interval.ends(effect$ci.lb, effect$ci.ub, rows, alim, accent.color)
+    if (manual.sequential.labels) rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan)
+    if (plan$rows$summary && !isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
+        rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
+    }
 }
 
 rcmetar.draw.default.headers <- function(bundle, plan) {

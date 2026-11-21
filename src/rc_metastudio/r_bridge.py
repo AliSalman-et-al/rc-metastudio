@@ -1273,19 +1273,23 @@ def parse_out_results(result):
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
         parsed = _parse_display_results(result)
-        workflow = request.get('workflow', '')
-        packages = execution.get('packages')
-        software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
-        inference = execution.get('inference', ())
-        contributors = None
-        if 'res' in result:
-            fit = result['res']
-            if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
-                contributors = int(fit.rx2('k.yi')[0])
-        return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
-                       sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
+        return _with_execution_details(parsed, request, execution, result)
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
+
+
+def _with_execution_details(parsed, request, execution, result):
+    workflow = request.get('workflow', '')
+    packages = execution.get('packages')
+    software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
+    inference = execution.get('inference', ())
+    contributors = None
+    if 'res' in result:
+        fit = result['res']
+        if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
+            contributors = int(fit.rx2('k.yi')[0])
+    return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
+                   sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
 
 
 def _add_regression_reports(result, reports):

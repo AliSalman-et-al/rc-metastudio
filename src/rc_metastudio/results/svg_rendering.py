@@ -19,6 +19,20 @@ def svg_bytes_for_qt(path: str | Path) -> bytes:
 
     namespace = "http://www.w3.org/2000/svg"
     root = ET.fromstring(svg)
+    _normalize_font_stacks(root, namespace)
+    _normalize_canvas_size(root, namespace)
+    clips = _rectangular_clips(root, namespace)
+    groups = [(parent, node) for parent in root.iter() for node in parent
+              if node.tag == f"{{{namespace}}}g" and node.get("clip-path") in clips
+              and "transform" not in node.attrib]
+    for index, (parent, node) in enumerate(groups):
+        _clip_group(parent, node, clips[node.get("clip-path")], index, namespace)
+    ET.register_namespace("", namespace)
+    ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
+    return ET.tostring(root, encoding="utf-8")
+
+
+def _normalize_font_stacks(root: ET.Element, namespace: str) -> None:
     # Qt resolves a bare family name and can then apply its own glyph fallback.
     def primary(match: re.Match[str]) -> str:
         return match[1] + match[2].strip(" \"'")
@@ -30,6 +44,9 @@ def svg_bytes_for_qt(path: str | Path) -> bytes:
             node.set("font-family", _FONT_STACK.sub(primary, f"font-family:{family}").partition(":")[2])
         if node.tag == f"{{{namespace}}}style" and node.text:
             node.text = _FONT_STACK.sub(primary, node.text)
+
+
+def _normalize_canvas_size(root: ET.Element, namespace: str) -> None:
     # Qt treats svglite's percentage canvas as 100 SVG units, not the viewBox.
     if view_box := root.get("viewBox"):
         _, _, canvas_width, canvas_height = view_box.split()
@@ -37,15 +54,6 @@ def svg_bytes_for_qt(path: str | Path) -> bytes:
             for attribute, extent in (("width", canvas_width), ("height", canvas_height)):
                 if canvas.get(attribute) == "100%":
                     canvas.set(attribute, extent)
-    clips = _rectangular_clips(root, namespace)
-    groups = [(parent, node) for parent in root.iter() for node in parent
-              if node.tag == f"{{{namespace}}}g" and node.get("clip-path") in clips
-              and "transform" not in node.attrib]
-    for index, (parent, node) in enumerate(groups):
-        _clip_group(parent, node, clips[node.get("clip-path")], index, namespace)
-    ET.register_namespace("", namespace)
-    ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
-    return ET.tostring(root, encoding="utf-8")
 
 
 def _rectangular_clips(root, namespace):
