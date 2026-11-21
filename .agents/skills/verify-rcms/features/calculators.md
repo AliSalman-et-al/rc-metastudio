@@ -7,7 +7,7 @@ Users edit a study's raw inputs, inspect the derived effect preview, accept or c
 - `calculator-binary` checks accepted integer event counts and totals.
 - `calculator-continuous` checks sample size, mean and standard deviation, including a mean entered with a decimal comma.
 - `calculator-diagnostic`: TP/FN/FP/TN inputs.
-- `calculator-rollback`: Cancel, undo/redo, dirty state and reopen.
+- Each baseline includes Cancel, undo/redo, dirty state and reopen.
 
 ## How to get to it (user POV)
 
@@ -32,7 +32,7 @@ Preconditions: doctor passes; the matching committed sample supplies compatible 
 
 ## Additional modes after calculator changes
 
-The baseline clicks the actual vertical-header viewport at the first section's center and requires the correct modal. Source owners: `dataset_table_view.py:row_header_clicked`, `binary_data_dialog.py`, `continuous_data_dialog.py`, `diagnostic_data_dialog.py`, `calculator_service.py`.
+The baseline clicks the vertical-header viewport at the first section's center after embedded R is ready and requires the correct modal. The row-header handler lives in `src/rc_metastudio/workspace/table_view.py`. The dialogs and their R service live in `src/rc_metastudio/calculators/`.
 
 - **Binary:** select OR/RR/RD and a one-arm metric with `effect_combo_box` item data. Verify partial-count imputation, entered estimate/CI, Clear, and zero cells. Back-calculation uses `back_calculate_button`; ambiguous alternatives appear in `BinaryBackCalculationDialog.choice1_btn`/`choice2_btn`. Compare independently known counts and effect/variance; cancel the nested dialog before accepting a candidate.
 - **Continuous:** exercise MD/SMD and one-arm mean/entered-effect data. Check `simple_table` N/Mean/SD/SE consistency; MD equal/unequal SD and SMD Hedges/Cohen choices; `g1_pre_post_table`, `g2_pre_post_table`, and `correlation_pre_post` for pre/post reconstruction. Test inconsistent input rejection, missing-data back-calculation, Clear, and nested Cancel. Correlation changes must change reconstructed variance without overwriting unrelated raw values.
@@ -140,7 +140,7 @@ font and at +6 points on the existing reopen/Cancel pass.
 
 Entered continuous and binary mode drives retain the sample group data, exercise a pending continuous draft across a mode shortcut, switch back, and check the accepted grid/model source, undo/redo, reopen and independent R fit. Calculator source is persisted per metric/comparison; inactive group inputs remain available. These drives do not qualify native mouse-wheel behavior or every invalid draft.
 
-Batch-5 targeted xcb evidence (`artifacts/qa-r1/batch5/`) covers continuous summary invalid numeric/negative N, repeated Tab without a modal, disabled OK and correction recovery in light and dark/large font. The summary grid uses visible rows and compact content height; native proof does not cover every metric/pre-post input.
+For targeted native continuous-summary checks, enter invalid numeric text and a negative N, then Tab repeatedly. Verify inline validation, disabled OK and recovery after correction in both themes and at an enlarged font.
 
 The one-arm proportion drive also selects PFT and compares its preview with
 `metafor::transf.ipft` using the actual arm sample size before returning to PR.

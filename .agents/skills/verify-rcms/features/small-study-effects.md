@@ -4,10 +4,8 @@ Users open **Small-study effects…**, inspect eligibility, select procedures, a
 
 ## Sub-features
 
-- `small-study-open`: the main action opens guided configuration.
-- `small-study-primary`: the automatic primary asymmetry test runs on included studies.
-- `small-study-funnel`: ordinary funnel output renders alongside the report.
-- `small-study-extended`: binary/continuous contour, trim-and-fill and extrapolation; diagnostic Deeks have separate matrix drives.
+- `small-study-effects` opens guided configuration, runs the automatic primary asymmetry test on eligible included studies, and renders the ordinary funnel.
+- The extended binary, continuous and diagnostic scenarios below cover contour, trim-and-fill, extrapolation and Deeks.
 
 ## How to get to it (user POV)
 
@@ -39,7 +37,7 @@ Preconditions: doctor passes; `sample_projects/amino.rcms` has sufficient includ
 
 The Package default checkbox reads meta’s k.min default from its method formal. Unchecking it exposes an explicit minimum of 3 or more; meta itself requires at least 3. No RCMS ten-study gate applies to metafor mixed-effects Egger or extrapolation.
 
-Source owners: `small_study_effects_dialog.py:_preview_request`, `_update_controls`, `_request`, `run`; `r/RCMetaR/R/small_study_effects.R`. The UI has no per-test selector: R eligibility selects all available methods. Configure the dataset/metric to reach each required route rather than inventing a checkbox.
+The dialog in `src/rc_metastudio/analysis/small_study_effects_dialog.py` submits eligibility and analysis requests to `r/RCMetaR/R/small_study_effects.R`. R eligibility selects the available procedures. Configure the dataset and metric to exercise each route.
 
 | Data/metric | Required automatic route |
 | --- | --- |
@@ -60,7 +58,7 @@ Trim-and-fill uses `trim_fill_check`, `trim_fill_estimator_combo` (L0/R0), `trim
 
 Capture configuration and click `button_box` OK. Require hidden `failure_label` and check the semantic sections for the selected procedures. Trim-and-fill result sections use `small-study.trim-and-fill.<scenario>`. Retain the rendered images and editable plot artifacts for each requested and supported funnel before R quits.
 
-Invalid contour levels show `failure_label` inline, focus the contour field and leave Run enabled before any progress popup opens. Check that correction succeeds and the project stays intact. Diagnostic label policies only offer None/All; no pseudo-confidence/tau²/pooled overlays. Funnel presentation edits must preserve fitted statistics, Deeks ESS geometry and trim-and-fill augmentation.
+Invalid contour levels show `failure_label` inline, focus the contour field and leave Run enabled before any progress popup opens. Check that correction succeeds and the project stays intact. Diagnostic label policies offer None and All. The Deeks Results editor omits pseudo-confidence, tau² and pooled-overlay controls. Funnel presentation edits must preserve fitted statistics, Deeks ESS geometry and trim-and-fill augmentation.
 
 ## Statistical oracle requirements
 

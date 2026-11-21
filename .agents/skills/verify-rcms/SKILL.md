@@ -73,14 +73,14 @@ This runs the current-source R-stack lane (covering every distinct desktop quali
 
 The matrix includes all eight original New Dataset paths plus the HR/IRR metric variants, fixed estimator selection, binary/continuous cumulative/leave-one-out/subgroup/regression with frozen contracts, diagnostic sequential/subgroup/joint/combined metrics and three moderator shapes, extended binary/continuous small-study procedures, and diagnostic Deeks. The feature maps state each drive's proof strength and remaining checks.
 
-The 37 advanced workflows in `scripts/advanced_workflows.py` add nondefault inference/heterogeneity/CI choices with public numerical references, zero cells and inclusion changes, twelve calculator modes with persistence and independent post-reopen analysis, eleven plot editors with four decoded exports each, and structure/covariate/shell transactions. Run these through the same evidence helper, for example `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, and `project-table-covariates`. Never replace numerical comparisons with nonempty text or a render-only check.
+The advanced workflows in `scripts/advanced_workflows.py` add nondefault inference, heterogeneity and confidence-interval choices with public numerical references, zero cells and inclusion changes, calculator modes with persistence and independent post-reopen analysis, plot editors with decoded exports, and workspace transactions. The scenario registry in `tests/e2e/desktop_scenarios.py` lists the current drives. Examples include `options-binary`, `calculator-mode-back-continuous`, `plot-workflow-sroc`, `plot-workflow-trial-sequential`, and `project-table-covariates`. Numerical claims require numerical comparisons.
 
 The same scenarios are part of the R-stack CI E2E selection. Pytest calls the evidence helper too, so every run retains its inputs, transcript and manifest:
 
 Qualification runs each distinct analysis obligation through its strongest
-workflow. Nine standalone analyses are already executed in full by their plot
-workflows before editing and exporting; pytest omits those duplicate standalone
-runs. `PLOT_PRODUCERS` defines the actual producer calls and the derived
+workflow. The plot workflows exercise their producing analyses, including the
+BCG trial sequential analysis, before editing and exporting. Pytest omits the
+duplicate standalone runs. `PLOT_PRODUCERS` defines the producer calls and the derived
 `QUALIFICATION_SCENARIOS` selection. Standalone CLI names remain available for
 targeted debugging. See `docs/testing.md` for the mapping.
 Exact CLI aliases also run once: `results-window` through `ux-improvements`,
@@ -92,7 +92,7 @@ uv run python -m pytest tests/e2e -n auto -q
 
 For the normal edit loop, run the mapped scenario directly, or select affected cases with `pytest tests/e2e -n auto -k ...`. Use the complete warm matrix before review and the full profile when the change requires the R gates. An interrupted matrix resumes verified successes instead of repeating their work; any executable source or fixture change invalidates that evidence conservatively.
 
-The driver uses QAction handles, Qt widgets, actual editors, modal buttons, and the production storage/analysis path. Each child has separate application-data and analysis-scratch subdirectories in its owned working directory. `runtime.json` records those paths and confirms that Python and embedded R retain the caller's working directory. Qt test mode alone still shares a base directory across workers. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. These substitutions do not verify native application-data directory creation or OS file-picker behavior. CSV driving currently starts the import wizard at its CSV page; it does not prove the File menu or the earlier wizard pages. Record these entry-point limits rather than treating nearby coverage as proof.
+The driver uses QAction handles, Qt widgets, editors, modal buttons, and the production storage and analysis path. Each child owns its application-data and analysis-scratch subdirectories. `runtime.json` records those paths and confirms that Python and embedded R retain the caller's working directory. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. Native application-data creation and OS file-picker gestures require separate checks. The `csv` scenario starts at the CSV page. Use `xlsx-import` for the unified Import data action and Welcome wizard entry with controlled picker results, and `rm5-import` for RevMan entry and review.
 
 When a changed path is absent from the map or uses an unexercised entry point, extend the real driver or perform a targeted native drive. Assert observable data, numerical results, rendered output, saved state, and rollback as applicable. Exercise the failing trigger first and the recovered state afterward. Do not replace an unavailable production dependency with a mock or add source-string/constant inventories as evidence.
 
