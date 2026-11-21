@@ -1226,7 +1226,7 @@ test_that("subgroup display headings truncate without changing grouping state", 
   )
 })
 
-test_that("RevMan long study labels keep raw columns at the same positions", {
+test_that("RevMan gives longer study labels more room without widening data columns", {
   short.fixture <- metafor_continuous_fixture()
   short.fixture$params$fp_style <- "revman"
   short.res <- rma.uni(
@@ -1238,7 +1238,7 @@ test_that("RevMan long study labels keep raw columns at the same positions", {
     digits = short.fixture$params$digits
   )
   short.bundle <- rcmetar.regenerate.plot.data(short.fixture$data, short.res, short.fixture$params)
-  short.layout <- rcmetar.forest.revman.layout.coordinates(short.bundle)
+  short.plan <- rcmetar.forest.layout.preflight(short.bundle)
 
   long.fixture <- metafor_continuous_fixture()
   long.fixture$data@study.names <- paste(
@@ -1255,11 +1255,10 @@ test_that("RevMan long study labels keep raw columns at the same positions", {
     digits = long.fixture$params$digits
   )
   long.bundle <- rcmetar.regenerate.plot.data(long.fixture$data, long.res, long.fixture$params)
-  long.layout <- rcmetar.forest.revman.layout.coordinates(long.bundle)
+  long.plan <- rcmetar.forest.layout.preflight(long.bundle)
 
-  short.gap <- as.numeric(short.layout$ilab.xpos[[1]]) - short.layout$xlim[[1]]
-  long.gap <- as.numeric(long.layout$ilab.xpos[[1]]) - long.layout$xlim[[1]]
-  expect_equal(long.gap, short.gap)
+  expect_gt(long.plan$device$study_width, short.plan$device$study_width)
+  expect_equal(long.plan$device$column_widths, short.plan$device$column_widths)
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(long.bundle, png_path)
