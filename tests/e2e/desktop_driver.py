@@ -597,7 +597,7 @@ def sample_analysis(app, window, sample):
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.manuscript_text.toPlainText()
-        match = re.search(r"(4\.\de−03) to 1\.44\b", small_text)
+        match = re.search(r"\b0\.004 to 1\.44\b", small_text)
         assert match and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()

@@ -2,6 +2,7 @@
 import json
 import math
 from dataclasses import asdict
+from decimal import Decimal
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
@@ -122,7 +123,7 @@ def run(app, window, work, record):
                         from rc_metastudio.results.report import write_docx
 
                         fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
-                        displayed = f'{fitted_lower:.1e}'.replace('e-', 'e−')
+                        displayed = format(Decimal(f'{fitted_lower:.1e}'), 'f')
                         row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
                         assert row.startswith((f'0.123457 [{displayed}, ', f'0.123457 ({displayed} to ')), row
                         study = next(table for section in view.results.sections for table in section.tables
