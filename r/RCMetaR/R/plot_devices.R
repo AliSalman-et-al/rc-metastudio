@@ -70,7 +70,8 @@ rcmetar.plot.pixel.size <- function(size) {
 rcmetar.plot.raster.size <- function(size, keep.display, extension) {
     # Analysis previews stay bounded; an explicit publication DPI is never reduced.
     if (keep.display && is.null(size$dpi) && extension %in% c("png", "tif", "tiff") &&
-            prod(rcmetar.plot.pixel.size(size)) * 4 > 256 * 1024^2) {
+            (max(rcmetar.plot.pixel.size(size)) > 32000 ||
+             prod(rcmetar.plot.pixel.size(size)) * 4 > 256 * 1024^2)) {
         size$dpi <- min(120, sqrt(32 * 1024^2 / (size$width * size$height)))
     }
     size
@@ -209,6 +210,8 @@ rcmetar.render.plot_svg <- function(svg.path, size, draw) {
 rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     ext <- rcmetar.plot.file.extension(outpath)
     pixels <- rcmetar.plot.pixel.size(size)
+    if (ext %in% c("png", "tif", "tiff") && (max(pixels) > 32000 || prod(pixels) > 150e6))
+        stop("The bitmap is too large. Use a lower DPI or export a vector PDF or SVG.", call.=FALSE)
     if (identical(ext, "png")) {
         if (is.null(size$dpi)) {
             rsvg::rsvg_png(svg.path, outpath, width=pixels[["width"]], height=pixels[["height"]])
@@ -268,21 +271,26 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     tryCatch(writeLines(svg, output, useBytes=TRUE), finally=close(output))
 }
 
+.rcmetar.plot.caption.layout <- function(caption, size) {
+    if (!length(caption) || is.na(caption[[1]]) || !nzchar(caption[[1]])) return(NULL)
+    text <- gsub("[\r\n]+", " \u00b7 ", as.character(caption[[1]]))
+    cex <- size$caption.cex %||% 1.08
+    compact <- !is.null(size$caption.cex)
+    lines <- .rcmetar.wrap.plot.caption(text, size$width - if (compact) .15 else .6, cex)
+    height <- if (compact) .13 * length(lines) + .09 else .24 * length(lines) + .4
+    list(text=paste(lines, collapse="\n"), height=height, cex=cex, line=if (compact) .25 else 1)
+}
+
 rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, caption=NULL) {
-    if (length(caption) && !is.na(caption[[1]]) && nzchar(caption[[1]])) {
-        caption <- gsub("[\r\n]+", " \u00b7 ", as.character(caption[[1]]))
-        caption.cex <- size$caption.cex %||% 1.08
-        compact <- !is.null(size$caption.cex)
-        max.width <- size$width - if (compact) .15 else .6
-        lines <- .rcmetar.wrap.plot.caption(caption, max.width, caption.cex)
-        caption.height <- if (compact) .13 * length(lines) + .09 else .24 * length(lines) + .4
-        if (!isTRUE(size$caption.in.height)) size$height <- size$height + caption.height
+    caption <- .rcmetar.plot.caption.layout(caption, size)
+    if (!is.null(caption)) {
+        if (!isTRUE(size$caption.in.height)) size$height <- size$height + caption$height
         draw.plot <- draw
         draw <- function() {
-            graphics::par(omi=c(0, 0, caption.height, 0))
+            graphics::par(omi=c(0, 0, caption$height, 0))
             result <- draw.plot()
-            graphics::mtext(paste(lines, collapse="\n"), side=3, outer=TRUE,
-                            line=if (compact) .25 else 1, at=0.02, adj=0, cex=caption.cex, font=1, family="sans")
+            graphics::mtext(caption$text, side=3, outer=TRUE,
+                            line=caption$line, at=0.02, adj=0, cex=caption$cex, font=1, family="sans")
             result
         }
     }

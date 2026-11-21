@@ -67,7 +67,7 @@ def run_predictions(app, window, work, record):
                                   if ''.join(node.itertext()).startswith('Fixture ')]
                     lines = [node for node in svg.iter('{http://www.w3.org/2000/svg}line')
                              if abs(float(node.attrib['y1']) - float(node.attrib['y2'])) < .02
-                             and any(abs(float(node.attrib['y1']) - y) < 2 for y in study_rows)]
+                             and any(0 <= y - float(node.attrib['y1']) <= 4 for y in study_rows)]
                     colours = [match[1].upper() if (match := re.search(r'\bstroke:\s*(#[0-9A-Fa-f]{6})', node.get('style', '')))
                                else node.get('stroke') for node in lines]
                     expected_colour = '#5F4C9A' if style == 'bmj' else '#000000'
@@ -81,7 +81,7 @@ def run_predictions(app, window, work, record):
                     assert line.endswith(limits), (line, limits, reference)
                 assert 'Freeman' not in footer[-1]
                 if measure == 'PFT':
-                    assert any('Freeman–Tukey transformed proportion = 0' in line for line in figure), figure
+                    assert 'Freeman–Tukey transformed proportion = 0' in ' '.join(figure), figure
                 check_report(app, view, work, record)
                 if workflow in ('standard','subgroup'):
                     check_table_surface(app,view,work,record,'Prediction interval',f'PI-{measure}-{workflow}-{style}')

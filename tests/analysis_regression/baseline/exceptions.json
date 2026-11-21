@@ -547,6 +547,366 @@
           }
         }
       }
+    },
+    {
+      "id": "b1-print-forest-amino-binary-random",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-random"
+      ],
+      "affected_workflows": [
+        "amino-binary-random"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Forest plot": {
+          "before": {
+            "label": "Forest plot",
+            "name": "golden_amino_forest.png",
+            "type": "png",
+            "sha256": "4f37713cdb39ebd53151fc4a418f1f1638fba3a41ba10ff22d0d437e2e968d6f",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Forest plot",
+            "name": "golden_amino_forest.png",
+            "type": "png",
+            "sha256": "93a5984b33ce063241f60a827160e7df8a892f909629e9d1bceec69641a36c7d",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-continuous-random",
+      "status": "accepted",
+      "ids": [
+        "continuous-random"
+      ],
+      "affected_workflows": [
+        "continuous-random"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Forest plot": {
+          "before": {
+            "label": "Forest plot",
+            "name": "golden_continuous_forest.png",
+            "type": "png",
+            "sha256": "48010ef5cb8050286c1f1b099eda91b90e081b1447d5ce821929664b91e21aef",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Forest plot",
+            "name": "golden_continuous_forest.png",
+            "type": "png",
+            "sha256": "67d7d0109b51d6518ae7523f469fe9690c3306c59bff91ae6e5bc18596bf5154",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-lymph-diagnostic-random-dor",
+      "status": "accepted",
+      "ids": [
+        "lymph-diagnostic-random-dor"
+      ],
+      "affected_workflows": [
+        "lymph-diagnostic-random-dor"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Diagnostic odds ratio forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Diagnostic odds ratio forest plot": {
+          "before": {
+            "label": "Diagnostic odds ratio forest plot",
+            "name": "golden_lymph_forest_dor.png",
+            "type": "png",
+            "sha256": "e801b83f0d051f43e71aafae6ed6047657a452bfe0015970efe9a47e9bfedc28",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Diagnostic odds ratio forest plot",
+            "name": "golden_lymph_forest_dor.png",
+            "type": "png",
+            "sha256": "6a76cc75770ed9512fdd6e71cde15c72fa9c17ce7d676f3e474c7275e267af6d",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-amino-binary-cumulative",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-cumulative"
+      ],
+      "affected_workflows": [
+        "amino-binary-cumulative"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Cumulative forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Cumulative forest plot": {
+          "before": {
+            "label": "Cumulative forest plot",
+            "name": "golden_amino_cumulative_forest.png",
+            "type": "png",
+            "sha256": "423a7e63d1f74769bdc1ccbebbc3bcfddb105f0ae071632e5ae729822cca23b1",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Cumulative forest plot",
+            "name": "golden_amino_cumulative_forest.png",
+            "type": "png",
+            "sha256": "791d5580b658e4e1bb9d375a898209d94dc7f38fe0d4507631c3188db3f6692f",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-amino-binary-leave-one-out",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-leave-one-out"
+      ],
+      "affected_workflows": [
+        "amino-binary-leave-one-out"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Leave-one-out forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Leave-one-out forest plot": {
+          "before": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_amino_loo_forest.png",
+            "type": "png",
+            "sha256": "e90f52469415137be083e9adef5f5e71a4df61a8fb6c4398ab63cd32a9679b85",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_amino_loo_forest.png",
+            "type": "png",
+            "sha256": "44662032490014f8f09127bcf1d300a99af5bf14368cf476439828f9d2dcbc55",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-continuous-cumulative",
+      "status": "accepted",
+      "ids": [
+        "continuous-cumulative"
+      ],
+      "affected_workflows": [
+        "continuous-cumulative"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Cumulative forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Cumulative forest plot": {
+          "before": {
+            "label": "Cumulative forest plot",
+            "name": "golden_continuous_cumulative_forest.png",
+            "type": "png",
+            "sha256": "82669b47c213f3163427e5343474ed2a4b57fa3a4b7c8f8af1072c047482ca93",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Cumulative forest plot",
+            "name": "golden_continuous_cumulative_forest.png",
+            "type": "png",
+            "sha256": "627df25ecb06879110af703528c73d4a608fdb624266d7455cbaeb54fd8a9a49",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-continuous-leave-one-out",
+      "status": "accepted",
+      "ids": [
+        "continuous-leave-one-out"
+      ],
+      "affected_workflows": [
+        "continuous-leave-one-out"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Leave-one-out forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Leave-one-out forest plot": {
+          "before": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_continuous_loo_forest.png",
+            "type": "png",
+            "sha256": "b30fb8c2722428b7ae36e6b12ee391a99ce5b32dca3179890225739719fa9d8d",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Leave-one-out forest plot",
+            "name": "golden_continuous_loo_forest.png",
+            "type": "png",
+            "sha256": "f8248f80fedc58ddbbc54ec83344ce1943f0f8531e6d7cceb53c03fb166f32d3",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-amino-binary-subgroup",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-subgroup"
+      ],
+      "affected_workflows": [
+        "amino-binary-subgroup"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Subgroup forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Subgroup forest plot": {
+          "before": {
+            "label": "Subgroup forest plot",
+            "name": "golden_amino_subgroup_forest.png",
+            "type": "png",
+            "sha256": "a8d30cf97444d4a234685612bb5ea953f48506ba91f33449f2be20a0d5914e86",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Subgroup forest plot",
+            "name": "golden_amino_subgroup_forest.png",
+            "type": "png",
+            "sha256": "7851f47cdd672a26a66c552a6327dfc7327aeef9d4a201ec1df3ab2dc48c45e2",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "b1-print-forest-continuous-subgroup",
+      "status": "accepted",
+      "ids": [
+        "continuous-subgroup"
+      ],
+      "affected_workflows": [
+        "continuous-subgroup"
+      ],
+      "reason": "Batch B1 lays out forest figures at a fixed print font and physical width with measured columns and wrapped study labels.",
+      "approved_by": "Batch B1 request to redesign the forest presentation and update affected verification",
+      "approved_at": "2026-11-21",
+      "before_behavior": "The raster forest uses the historical expanded column layout and plot typography.",
+      "after_behavior": "The raster forest uses the new print-width layout and typography.",
+      "follow_up": "This binding covers the Windows figure only. Existing numerical values and tolerances are compared independently.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Subgroup forest plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Subgroup forest plot": {
+          "before": {
+            "label": "Subgroup forest plot",
+            "name": "golden_continuous_subgroup_forest.png",
+            "type": "png",
+            "sha256": "23fc098f17ab0736cdaf13a7a03e81c19107464647755ffc4f0aaf0efc91226a",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Subgroup forest plot",
+            "name": "golden_continuous_subgroup_forest.png",
+            "type": "png",
+            "sha256": "5173baaab5fb263dd58582bc64f6b08d3dc618fa141f4a065e967d1cad781139",
+            "metadata": {}
+          }
+        }
+      }
     }
   ]
 }

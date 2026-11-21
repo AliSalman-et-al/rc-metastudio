@@ -141,7 +141,7 @@ def check_direction_ink_gap(source, directions, width, height):
 
 
 def check_forest_footer(source, expected_directions=None):
-    """Measure rendered direction lines and the axis title, with each direction on one line."""
+    """Measure rendered direction lines and the axis title, including wrapped direction lines."""
     texts = list(ET.parse(source).iter('{http://www.w3.org/2000/svg}text'))
     directions = [node for node in texts if ''.join(node.itertext()).startswith('Favours')]
     if expected_directions is not None:

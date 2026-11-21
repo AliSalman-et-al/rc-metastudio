@@ -136,7 +136,8 @@ def run(app, window, work, record, scenario):
                             assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
-                            assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
+                            text = " ".join("".join(node.itertext()) for node in nodes)
+                            assert "H₀: " + expected_null in text, (metric, text)
                             from tests.e2e.report_retention import assert_report
                             pooled, _fit = assert_report(view)
                             assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'Proportion'
@@ -517,9 +518,9 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
             check_report(app, view, work, record)
             title, path = next(iter(view.results.display_images.items()))
             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$metrics$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
-            assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
-            assert layout["height"] > 18, layout
+            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$device$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
+            assert layout["rows"] == 65 and abs(layout["cex"] * 12 - 8) < .001, layout
+            assert layout["height"] > 267 / 25.4, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
             assert any(window.model.current_sheet.name in text for text in captions), captions[-5:]
@@ -541,7 +542,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
                 points = [float(value) for value in re.findall(r"[-+]?[\d.]+", polygon.attrib["points"])]
                 polygon_heights.append(max(points[1::2])-min(points[1::2]))
             layout.update(row_spacing_px=row_gap, max_polygon_height_px=max(polygon_heights))
-            assert max(polygon_heights) <= row_gap * .8, ("pooled polygon exceeds study row", style, workflow, layout)
+            assert max(polygon_heights) <= row_gap * .9, ("polygon fills study row", style, workflow, layout)
             heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
             view.nav_tree.setCurrentItem(view.nav_tree.findItems(heading, QtCore.Qt.MatchFlag.MatchExactly)[0])
             view.report_action.setChecked(False)

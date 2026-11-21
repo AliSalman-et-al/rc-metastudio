@@ -150,6 +150,12 @@ Require every selected family-specific parameter and point size to persist and r
 
 The shared Export as dialog exports each offered PDF/PNG/TIFF/SVG format to a test-owned file. Decode PDF page/render, both raster dimensions and white corner, and SVG rendering; require visible nonwhite plot content in each format. Cancel another save and preserve the plot/text and persisted files. Ordinary/contour/trimfill/Deeks display SVGs. Test their visible clipping through the production Qt SVG loader, not an unadapted QSvgRenderer that ignores clipPath. TIFF-specific R coverage independently checks white and half-transparent colored pixels plus DPI tags; a white-corner assertion alone misses incorrect colored compositing.
 
+Plot export starts at the figure's natural width. Check the minimum width text
+and the recommended width button in cm, mm and inches, and verify that the
+plot, report and table save pickers share the last successful destination.
+Retain the production PDF and DOCX, verify A4 margins and section order, and
+open the DOCX in Word to qualify its pagination.
+
 The phase 2 native export drive compares the requested physical width and height
 in every offered format at 85 and 180 mm. The figure title is opt-in for a
 standalone export. Use the live `plot-workflow-forest` drive for forest editing
@@ -166,13 +172,13 @@ and librsvg is not required: font rasterization and antialiasing differ. See the
 [SVG clipping report](../../../../docs/plot-rendering.md) for
 narrow-axis, nonwhite-background and high-resolution vector PDF evidence.
 
-`manuscript-split-figure` derives a 95-study project from the sample, fits it
-through the application, and exports the actual manuscript PDF. It requires
-multiple figure pages, renders those pages to check the area below each caption
-is clear, and rejects embedded raster images. It also derives empty SVG viewports
-from the resulting plot and requires blank Qt output. PDF rendering intersects
-the SVG viewports with the visible page slice because Qt symbol clipping replaces
-an existing painter clip.
+`manuscript-split-figure` derives a 95-study project from the sample and exports
+the manuscript PDF through the application. It requires multiple vector panels
+with study rows, column headers and an axis on each figure page. It checks that
+every study identifier appears once, renders each page to check for spill below
+the caption, and separately checks that zero-width SVG clips hide their contents.
+For Word and large export checks, retain both the original manuscript and rendered
+pages, the geometry of panel boundaries, and the raster limit alternatives.
 
 The `plot-workflow-*` scenarios allow 240 seconds for publication-resolution exports. The [scenario registry](../../../../tests/e2e/desktop_scenarios.py) sets longer limits for the six editors and 24 exports in each full ratio drive. TIFF conversion uses a packed native raster and preserves 600 dpi output. `family-export-decoded` records each completed format. Remaining controls, parameterless PNG, failed regeneration/promotion and native layout still require the targeted recipes above.
 
@@ -370,6 +376,13 @@ Automatic SVG sizing keeps declared plot text at least 9 pt and allows horizonta
 changing the last plot, applies a numeric list in BMJ, checks both column switches
 against SVG text and saved parameters,
 and compares every numeric fit field exactly before/after presentation edits.
+Set **Dataset → Effect direction** before running a comparative analysis. Check
+the neutral default, both sides of the null, and persistence after reopening the
+project. `ux-improvements` exercises direction after swapping arms and
+`audit-round3-arm-names` checks footer geometry with the configured arm names.
+For long cumulative and leave-one-out runs, capture an advancing fit count,
+Cancel, and confirm the setup remains visible with no result or error.
+
 `project-axis-sequential` checks the cumulative dataset-row ordering note once in
 the rendered plot and in report details, alongside its existing public-fit checks.
 

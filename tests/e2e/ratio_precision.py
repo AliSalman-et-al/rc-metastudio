@@ -2,6 +2,7 @@
 import json
 import math
 from dataclasses import asdict
+from decimal import Decimal
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
@@ -115,14 +116,15 @@ def run(app, window, work, record):
                     check_annotation_spacing(view, style=style)
                     labels = [''.join(n.itertext()) for path in view.results.display_images.values()
                               for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
-                    assert any('e−' in text or 'e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
+                    if mode == 'raw':
+                        assert any('e−' in text or 'e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
                     if mode == 'ratio':
                         from statistics import NormalDist
                         from zipfile import ZipFile
                         from rc_metastudio.results.report import write_docx
 
                         fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
-                        displayed = f'{fitted_lower:.1e}'.replace('e-', 'e−')
+                        displayed = format(Decimal(f'{fitted_lower:.1e}'), 'f')
                         row = next(text for text in labels if text.startswith(f'{expected["estimate"]:.6f} '))
                         assert row.startswith((f'0.123457 [{displayed}, ', f'0.123457 ({displayed} to ')), row
                         study = next(table for section in view.results.sections for table in section.tables

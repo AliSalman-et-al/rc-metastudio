@@ -2,36 +2,47 @@
 """Adapt R's rectangular SVG clips for Qt without changing exported artwork."""
 
 import gzip
+import re
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 
-def svg_bytes_for_qt(
-    path: str | Path, clip_bounds: tuple[float, float, float, float] | None = None
-) -> bytes:
+_FONT_STACK = re.compile(r"""(font-family\s*:\s*)("[^"]*"|'[^']*'|[^,;}]+)\s*,[^;}]+""", re.IGNORECASE)
+
+
+def svg_bytes_for_qt(path: str | Path) -> bytes:
     opener = gzip.open if str(path).lower().endswith(".svgz") else open
     with opener(path, "rb") as source:
         svg = source.read()
-    if b"clip-path" not in svg:
+    if b"clip-path" not in svg and b"font-family" not in svg.lower():
         return svg
 
     namespace = "http://www.w3.org/2000/svg"
     root = ET.fromstring(svg)
+    # Qt resolves a bare family name and can then apply its own glyph fallback.
+    def primary(match: re.Match[str]) -> str:
+        return match[1] + match[2].strip(" \"'")
+
+    for node in root.iter():
+        if style := node.get("style"):
+            node.set("style", _FONT_STACK.sub(primary, style))
+        if family := node.get("font-family"):
+            node.set("font-family", _FONT_STACK.sub(primary, f"font-family:{family}").partition(":")[2])
+        if node.tag == f"{{{namespace}}}style" and node.text:
+            node.text = _FONT_STACK.sub(primary, node.text)
     # Qt treats svglite's percentage canvas as 100 SVG units, not the viewBox.
-    _, _, canvas_width, canvas_height = root.attrib["viewBox"].split()
-    for canvas in root.findall(f"{{{namespace}}}g[@class='svglite']/{{{namespace}}}rect"):
-        for attribute, extent in (("width", canvas_width), ("height", canvas_height)):
-            if canvas.get(attribute) == "100%":
-                canvas.set(attribute, extent)
-        if clip_bounds is not None:
-            for attribute, value in zip(("x", "y", "width", "height"), clip_bounds):
-                canvas.set(attribute, str(value))
+    if view_box := root.get("viewBox"):
+        _, _, canvas_width, canvas_height = view_box.split()
+        for canvas in root.findall(f"{{{namespace}}}g[@class='svglite']/{{{namespace}}}rect"):
+            for attribute, extent in (("width", canvas_width), ("height", canvas_height)):
+                if canvas.get(attribute) == "100%":
+                    canvas.set(attribute, extent)
     clips = _rectangular_clips(root, namespace)
     groups = [(parent, node) for parent in root.iter() for node in parent
               if node.tag == f"{{{namespace}}}g" and node.get("clip-path") in clips
               and "transform" not in node.attrib]
     for index, (parent, node) in enumerate(groups):
-        _clip_group(parent, node, clips[node.get("clip-path")], index, clip_bounds, namespace)
+        _clip_group(parent, node, clips[node.get("clip-path")], index, namespace)
     ET.register_namespace("", namespace)
     ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
     return ET.tostring(root, encoding="utf-8")
@@ -49,16 +60,10 @@ def _rectangular_clips(root, namespace):
     return clips
 
 
-def _clip_group(parent, node, rectangle, index, clip_bounds, namespace):
+def _clip_group(parent, node, rectangle, index, namespace):
     node.attrib.pop("clip-path")
     x, y = rectangle.get("x", "0"), rectangle.get("y", "0")
     width, height = rectangle["width"], rectangle["height"]
-    if clip_bounds is not None:
-        left, top, span, extent = clip_bounds
-        right = min(float(x) + float(width), left + span)
-        bottom = min(float(y) + float(height), top + extent)
-        x, y = str(max(float(x), left)), str(max(float(y), top))
-        width, height = str(right - float(x)), str(bottom - float(y))
     if float(width) <= 0 or float(height) <= 0:
         parent.remove(node)
         return

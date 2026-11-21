@@ -164,11 +164,10 @@ def run(app, window, root, record, analyze):
     assert "REML" in changed.manuscript_text.toPlainText() or "Restricted" in changed.manuscript_text.toPlainText()
     record("review-settings-rerun", changed, plots=dict(changed.results.display_images), text=changed.manuscript_text.toPlainText())
     project_path = window.workspace.path
-    old_labels = window.model.current_sheet.settings.get("favours_labels")
+    old_direction = window.model.current_sheet.settings.get("effect_direction")
 
     def edit_replaced_project_plot(editor):
-        editor.favours_left.setText("Earlier project left")
-        editor.favours_right.setText("Earlier project right")
+        editor.figure_caption.setText("Earlier project caption")
         click(app, editor.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
 
     changed.report_action.setChecked(False)
@@ -176,13 +175,12 @@ def run(app, window, root, record, analyze):
     modal(app, EditPlotDialog, edit_replaced_project_plot, changed.edit_plot_action.trigger)
     edited_svg = next(iter(changed.results.display_images.values()))
     edited_caption = " ".join(ET.parse(edited_svg).getroot().itertext())
-    assert "Earlier project left" in edited_caption
-    assert "Earlier project right" in edited_caption
+    assert "Earlier project caption" in edited_caption
     assert window.workspace.path == project_path
-    assert window.model.current_sheet.settings.get("favours_labels") == old_labels
+    assert window.model.current_sheet.settings.get("effect_direction") == old_direction
     assert not window.workspace.is_dirty
     record("review-replaced-project-edit-stays-local", changed, project=str(project_path),
-           favours_labels=old_labels, plots={"Edited forest plot": edited_svg})
+           effect_direction=old_direction, plots={"Edited forest plot": edited_svg})
     changed.close()
     view.close()
 

@@ -80,6 +80,14 @@ class Sheet:
     # The last fit supplies TSA defaults for this open sheet without editing the project.
     last_meta_analysis: PooledAnalysis | None = field(default=None, repr=False, compare=False)
 
+    def effect_direction_arms(self) -> tuple[str, str]:
+        """The arms favoured below and above the null, in that order."""
+        direction = self.settings.get("effect_direction")
+        if len(self.arms) != 2 or direction not in ("below", "above"):
+            return "", ""
+        first, second = (arm.name for arm in self.arms)
+        return (first, second) if direction == "below" else (second, first)
+
 @dataclass
 class Dataset:
     title: str = ""

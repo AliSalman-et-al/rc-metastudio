@@ -96,10 +96,21 @@ class TsaRequest:
     correction: str = "only0"
     drop_double_zero: bool | None = None
     version: int = 1
+    arm1_above: bool = False
 
     def favoured_labels(self) -> tuple[str, str]:
         left, right = self.favours
         return (_without_favours(left), _without_favours(right))
+
+    def monitoring_sides(self) -> tuple[str, str]:
+        left, right = self.favoured_labels()
+        sides = (f"favouring {left}" if left else "below the null",
+                 f"favouring {right}" if right else "above the null")
+        return sides[::-1] if self.benefit_direction == "upper" else sides
+
+    @property
+    def benefit_direction(self) -> str:
+        return "upper" if self.arm1_above else "lower"
 
     @classmethod
     def from_sheet(cls, model: "DatasetTableModel", options: TsaOptions) -> "TsaRequest":
@@ -109,14 +120,14 @@ class TsaRequest:
             str(saved.get("method", "")), saved.get("parameters", {})
         )
         metric = str(model.current_effect)
-        favours = sheet.settings.get("favours_labels", ())
-        if len(favours) != 2:
-            favours = tuple("Favours " + name for name in model.arm_names)
+        below, above = sheet.effect_direction_arms()
+        favours = (f"Favours {below}" if below else "", f"Favours {above}" if above else "")
         return cls(
             sheet.family, metric, fit.model_for(sheet.family, metric), fit.tau_method,
             fit.inference, float(model.get_confidence_level()),
             (str(favours[0]), str(favours[1])), options,
             fit.adjustment, fit.correction, fit.drop_double_zero,
+            arm1_above=sheet.settings.get("effect_direction") == "above",
         )
 
     @property
@@ -132,12 +143,13 @@ class TsaRequest:
     def to_mapping(self) -> dict[str, object]:
         values = self.options.to_mapping()
         values.pop("test")
-        alternative = {"two-sided": "two-sided", "benefit": "lower", "harm": "upper"}[self.options.test]
+        opposite = "lower" if self.benefit_direction == "upper" else "upper"
+        alternative = {"two-sided": "two-sided", "benefit": self.benefit_direction, "harm": opposite}[self.options.test]
         values.update({
             "version": self.version, "metric": self.metric, "model": self.model,
             "rm.method": self.tau_method, "inference.method": self.inference, "conf.level": self.confidence,
             "adjust": self.adjustment, "correction.policy": self.correction, "drop00": self.drop_double_zero,
-            "alternative": alternative, "benefit.direction": "lower", "favours": self.favours,
+            "alternative": alternative, "benefit.direction": self.benefit_direction, "favours": self.favours,
         })
         return {key: value for key, value in values.items() if value is not None}
 
@@ -204,6 +216,7 @@ class TsaLook:
     study: str
     accrued: float
     fraction: float
+    estimate: float
     lower: float
     upper: float
     adjusted_lower: float | None
@@ -241,7 +254,7 @@ class TsaRun:
             row = {key: column[index] for key, column in looks.items()}
             return TsaLook(
                 str(row["study"]), float(row["accrued"]), float(row["fraction"]),
-                float(row["ci.lower"]), float(row["ci.upper"]),
+                float(row["estimate"]), float(row["ci.lower"]), float(row["ci.upper"]),
                 number(row, "adjusted.lower"), number(row, "adjusted.upper"), number(row, "lil.z"),
             )
 

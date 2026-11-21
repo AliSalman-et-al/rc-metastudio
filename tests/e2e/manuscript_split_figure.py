@@ -1,6 +1,8 @@
-"""Prove that a real tall forest PDF keeps figures out of its caption band."""
+"""Prove that a real tall forest PDF keeps complete rows, repeated context, and distinct captions."""
 
 import copy
+from collections import Counter
+import re
 import subprocess
 from pathlib import Path
 from uuid import uuid4
@@ -37,11 +39,17 @@ def run(app, window, work, root, record, analyze):
     (work / 'tall-forest-layout.xml').write_bytes(xml)
     pages = ET.fromstring(xml).findall('.//{*}page')
     checked = []
+    study_rows = Counter()
     for number, page in enumerate(pages, 1):
         words = page.findall('.//{*}word')
         captions = [word for word in words if word.text == 'Figure']
         if not captions:
             continue
+        tokens = [word.text or "" for word in words]
+        panel_rows = [match[0] for token in tokens if (match := re.match(r"Row\d{3}\b", token))]
+        assert len(panel_rows) >= 2, (number, "Figure page needs study rows")
+        assert "Study" in tokens and "ratio" in tokens, (number, "Missing headers or axis")
+        study_rows.update(panel_rows)
         caption_top = max(float(word.attrib['yMin']) for word in captions)
         caption_words = [word for word in words if abs(float(word.attrib['yMin']) - caption_top) < .5]
         caption_bottom = max(float(word.attrib['yMax']) for word in caption_words)
@@ -57,6 +65,8 @@ def run(app, window, work, root, record, analyze):
         checked.append(dict(page=number, caption_top=caption_top, caption_bottom=caption_bottom,
                             below_caption_pixels=colored, capture=str(prefix.with_suffix('.png'))))
     assert len(checked) >= 2, 'Fixture must split its forest across pages'
+    expected = Counter(f"Row{i:03}" for i in range(len(window.model.current_sheet.rows)))
+    assert study_rows == expected, (expected - study_rows, study_rows - expected)
     listing = subprocess.check_output([desktop_tool_executable('pdfimages'), '-list', str(path)], text=True)
     assert len(listing.strip().splitlines()) == 2, 'PDF forest was rasterized'
     record('split-forest-pdf', view, pdf=str(path), pages=checked, raster_images=0)

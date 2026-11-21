@@ -79,7 +79,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         else:
             self.tsa_x_axis.hide()
         self.default_panel.setTitle("Forest options")
-        self._setup_direction_labels()
         self.show_weight = QCheckBox("Show weight column", self)
         self.show_weight.setChecked(self._bool_param("fp_show_weight", True))
         self.show_weight.setVisible(plot_type in {"forest", "subgroup_forest"})
@@ -159,19 +158,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.show_i2.setVisible(self.plot_type in {"cumulative_forest", "leave_one_out_forest"})
         self.show_i2.setToolTip("Tables and reports always retain I² from each fitted subset.")
         self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
-
-    def _setup_direction_labels(self):
-        self.favours_left = QLineEdit(str(self._params.get("fp_favours_left") or ""), self)
-        self.favours_right = QLineEdit(str(self._params.get("fp_favours_right") or ""), self)
-        for row, (field, label) in enumerate(((self.favours_left, "Left direction label"), (self.favours_right, "Right direction label")), start=self.default_layout.rowCount()):
-            field.setAccessibleName(label)
-            field.setPlaceholderText("Optional: Favours …")
-            field.setToolTip("Leave empty unless the outcome's clinical direction is known.")
-            field.setMaxLength(120)
-            caption = QLabel(label, self)
-            caption.setBuddy(field)
-            self.default_layout.addWidget(caption, row, 0)
-            self.default_layout.addWidget(field, row, 1)
 
     def _request_sequence_rerun(self):
         # Draft appearance goes into the new setup; Cancel leaves this result intact.
@@ -370,8 +356,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._params = dict(self._default_params)
         self._load_params(self._image_path)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
-        self.favours_left.setText(str(self._params.get("fp_favours_left") or ""))
-        self.favours_right.setText(str(self._params.get("fp_favours_right") or ""))
         for control, key in ((self.axis_scale, "fp_axis_scale"), (self.study_order, "fp_study_order"),
                              (self.tsa_x_axis, "tsa_x_axis")):
             value = self._scalar(self._params.get(key))
@@ -667,8 +651,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_axis_scale": self.axis_scale.currentData(),
             "fp_show_i2": self.show_i2.isChecked(),
             "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
-            "fp_favours_left": self.favours_left.text().strip(),
-            "fp_favours_right": self.favours_right.text().strip(),
             "fp_show_col1": self.show_1.isChecked(),
             "fp_col1_str": qt_text.to_native_text(plot_text_value(self.col1_str_edit)),
             "fp_show_col2": self.show_2.isChecked(),

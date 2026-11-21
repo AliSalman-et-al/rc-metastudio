@@ -3,12 +3,15 @@
 \name{rcmetar-plot-bundle}
 \alias{rcmetar-plot-bundle}
 \alias{rcmetar.plot.bundle.params}
+\alias{rcmetar.forest.export.dimensions}
 \alias{rcmetar.prepare.plot.bundle.edit}
 \alias{rcmetar.render.plot.bundle}
 \alias{rcmetar.export.svg.artwork}
 \title{Read, edit, and render persisted plot bundles}
 \usage{
 rcmetar.plot.bundle.params(prefix)
+
+rcmetar.forest.export.dimensions(prefix, width, include_title = FALSE)
 
 rcmetar.prepare.plot.bundle.edit(
   prefix,
@@ -26,7 +29,8 @@ rcmetar.render.plot.bundle(
   height = NULL,
   dpi = 600,
   include_title = TRUE,
-  outline_text = TRUE
+  outline_text = TRUE,
+  page_height = NULL
 )
 
 rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
@@ -47,6 +51,8 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 
 \item{width, height}{The requested width and height in inches.}
 
+\item{page_height}{Maximum height in inches of a forest SVG panel.}
+
 \item{dpi}{The requested raster resolution in dots per inch.}
 
 \item{include_title}{Whether to draw the figure's title line on export.}
@@ -54,8 +60,9 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 \item{outline_text}{Whether to outline text in trial sequential SVG exports.}
 }
 \value{
-Parameters, a mapping from destination paths to staged files, or the
-rendered path, respectively. Missing bundles return \code{NULL}.
+Parameters, forest height and minimum width in inches, staged file
+mappings, or rendered paths, depending on the function. Missing bundles
+return \code{NULL}.
 }
 \description{
 Read, edit, and render persisted plot bundles.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import re
 from html import escape
+from decimal import Decimal
 from collections.abc import Iterable, Mapping, Sequence
 from typing import overload
 
@@ -174,7 +175,7 @@ def _reference_key(reference: str) -> str:
 def fixed_result_number(value: float, digits: int, *, preserve_positive: bool = False) -> str:
     formatted = f"{value:z,.{digits}f}"
     if preserve_positive and value > 0 and not formatted.strip("0."):
-        formatted = f"{value:.1e}"
+        formatted = f"{Decimal(f'{value:.2g}').normalize():f}"
     return formatted.replace("-", "\u2212", 1)
 
 
