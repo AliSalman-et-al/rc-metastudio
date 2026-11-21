@@ -1,6 +1,7 @@
 cff-version: 1.2.0
 message: "If you use RC MetaStudio in your research, please cite it using these metadata."
 type: software
+version: "0.7.0"
 title: "RC MetaStudio: open-source desktop software for meta-analysis"
 authors:
   - family-names: Salman

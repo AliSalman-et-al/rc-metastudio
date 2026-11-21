@@ -69,7 +69,7 @@ def load(name):
 
 def version_tree(tmp_path):
     for name in ('pyproject.toml', 'uv.lock', 'src/rc_metastudio/__init__.py',
-                 'r/RCMetaR/DESCRIPTION', 'CHANGELOG.md'):
+                 'r/RCMetaR/DESCRIPTION', 'CHANGELOG.md', 'CITATION.cff'):
         dest = tmp_path / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / name, dest)

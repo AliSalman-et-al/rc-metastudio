@@ -2,7 +2,7 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
-## Unreleased
+## 0.7.0 - 2026-11-21
 
 - Bundled nine published sample projects with cited source tables, descriptive names and analysis suggestions. The window title identifies samples, and saving a sample opens Save As.
 - Improved study entry, import validation and analysis setup. Missing inputs are shown before fitting, Results distinguish included and contributing studies, and changing settings replaces the previous result after a successful fit.
