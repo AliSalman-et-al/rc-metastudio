@@ -43,8 +43,16 @@ rcmetar.forest.axis.effect <- function(bundle, effect) {
 }
 
 rcmetar.forest.axis.alim <- function(bundle, fitted.range) {
-    if (!rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) return(fitted.range)
-    rcmetar.forest.axis.values(bundle, fitted.range)
+    limits <- if (!rcmetar.forest.natural.axis(bundle) || rcmetar.forest.proportion(bundle)) fitted.range else
+        rcmetar.forest.axis.values(bundle, fitted.range)
+    labels <- rcmetar.forest.direction.labels(bundle)
+    if (!any(nzchar(c(labels$left, labels$right)))) return(limits)
+    null <- rcmetar.metafor.refline(bundle)
+    if (!is.finite(null)) return(limits)
+    pad <- diff(limits) / 8
+    if (limits[1] >= null && !rcmetar.forest.has.explicit.axis.bound(bundle, "lower")) limits[1] <- null - pad
+    if (limits[2] <= null && !rcmetar.forest.has.explicit.axis.bound(bundle, "upper")) limits[2] <- null + pad
+    limits
 }
 
 rcmetar.forest.axis.title <- function(bundle) {

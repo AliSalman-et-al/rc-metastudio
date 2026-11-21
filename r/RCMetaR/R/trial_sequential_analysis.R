@@ -364,7 +364,7 @@
   vapply(x, function(value) format(value, big.mark=",", scientific=FALSE, trim=TRUE), character(1))
 }
 
-.tsa.number <- function(x) ifelse(is.na(x), "", sprintf("%.4g", x))
+.tsa.number <- function(x) ifelse(is.na(x), "", round.display(x, 2L))
 
 .tsa.interval <- function(lower, upper) {
   ifelse(is.na(lower), ifelse(is.na(upper), "", paste0("\u2264 ", .tsa.number(upper))),
@@ -665,12 +665,13 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   effect <- vapply(rows, `[[`, numeric(1), "effect")
   label <- vapply(rows, `[[`, character(1), "label")
   ris <- vapply(rows, function(row) row$summary$ris %||% NA_real_, numeric(1))
-  arms <- trimws(sub("^Favours ", "", s$favours %||% rcmetar.default.arm.labels(), ignore.case=TRUE))
-  if (s$benefit.direction == "upper") arms <- rev(arms)
+  arms <- trimws(sub("^Favours ", "", s$favours %||% c("", ""), ignore.case=TRUE))
+  sides <- ifelse(!is.na(arms) & nzchar(arms), paste("favouring", arms), c("below the null", "above the null"))
+  if (s$benefit.direction == "upper") sides <- rev(sides)
   conclusions <- vapply(rows, function(row) {
     if (is.null(row$summary)) return("Not estimable")
-    switch(row$summary$conclusion, "crossed-benefit"=paste("Crosses monitoring boundary favouring", arms[1]),
-      "crossed-harm"=paste("Crosses monitoring boundary favouring", arms[2]), "crossed-futility"="Crosses futility boundary",
+    switch(row$summary$conclusion, "crossed-benefit"=paste("Crosses monitoring boundary", sides[1]),
+      "crossed-harm"=paste("Crosses monitoring boundary", sides[2]), "crossed-futility"="Crosses futility boundary",
       "ris-reached"="Reaches required information size without crossing", "none"="Crosses no boundary")
   }, character(1))
   percent <- 100*looks$fraction

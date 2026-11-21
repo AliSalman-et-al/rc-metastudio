@@ -42,6 +42,7 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         "pyproject.toml",
         "uv.lock",
         "CHANGELOG.md",
+        "CITATION.cff",
         "src/rc_metastudio/__init__.py",
         "src/rc_metastudio/application_metadata.py",
         "r/RCMetaR/DESCRIPTION",
@@ -78,6 +79,7 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
     changelog = (tmp_path / "CHANGELOG.md").read_text("utf-8")
 
     assert pyproject["project"]["version"] == next_version
+    assert f'version: "{next_version}"' in (tmp_path / "CITATION.cff").read_text("utf-8").splitlines()
     assert package.__version__ == next_version
     assert application_metadata.VERSION == next_version
     assert rcmetar_fields["Version"] == next_version

@@ -29,7 +29,7 @@ REPO_ROOT = str(Path(__file__).resolve().parents[3])
 
 
 def _sample_project_path(name):
-    return os.path.join(REPO_ROOT, "sample_projects", name)
+    return os.path.join(REPO_ROOT, "tests", "fixtures", "desktop-projects", name)
 
 
 def _mark_workspace_saved(window):
@@ -818,20 +818,12 @@ def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo(monkey
         app.processEvents()
 
 
-def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
-    monkeypatch,
-):
+def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates():
     from rc_metastudio.analysis import subgroup_dialog as subgroup_analysis_dialog
 
     app, window = automation.start_automation()
-    warnings = []
     calls = []
 
-    monkeypatch.setattr(
-        subgroup_analysis_dialog.QMessageBox,
-        "warning",
-        lambda *args: warnings.append(args),
-    )
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
         window._add_new_covariate("dose", "continuous")
@@ -851,11 +843,6 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         form.get_selected_cov()
 
         assert calls == []
-        assert warnings
-        assert warnings[0][1:3] == (
-            "No covariate selected",
-            "Select a categorical covariate before running subgroup analysis.",
-        )
     finally:
         _mark_workspace_saved(window)
         window.close()
@@ -1967,7 +1954,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Text report", "Tables"]
+        assert nav_titles == ["Text report", "Data tables (CSV)"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -2338,7 +2325,7 @@ def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview
 def _assert_sample_projects_open_directory(directory):
     directory = os.path.abspath(directory)
     assert os.path.basename(directory) == "sample_projects"
-    assert os.path.exists(os.path.join(directory, "amino.rcms"))
+    assert os.path.exists(os.path.join(directory, "Binary - Aminoglycoside dosing, Barza 1996.rcms"))
     assert os.path.normcase(directory) != os.path.normcase(os.getcwd())
 
 

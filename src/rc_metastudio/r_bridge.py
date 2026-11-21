@@ -12,6 +12,7 @@ import os
 import re
 import sys
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
@@ -50,7 +51,7 @@ def _require_initialized_r() -> None:
     from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
     if _INITIALIZATION_ERROR is not None:
         raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
-    if "ro" not in globals():
+    if "ro" not in globals() or "_rinterface" not in globals():
         raise AnalysisBackendUnavailableError("R is still starting")
 
 
@@ -1003,6 +1004,34 @@ def _normalize_rcmetar_workflow(workflow):
     return workflow
 
 
+_sequential_progress: ContextVar[Callable[[int, int], bool] | None] = ContextVar("sequential_progress", default=None)
+
+
+@contextmanager
+def sequential_progress(progress: Callable[[int, int], bool]):
+    token = _sequential_progress.set(progress)
+    try:
+        yield
+    finally:
+        _sequential_progress.reset(token)
+
+
+@contextmanager
+def _r_sequential_progress(workflow: object):
+    progress = _sequential_progress.get()
+    if progress is None or workflow not in ("cumulative", "leave-one-out"):
+        yield
+        return
+    callback = _rinterface.rternalize(
+        lambda index, total: _rinterface.BoolSexpVector([progress(int(index[0]), int(total[0]))])
+    )
+    previous = execute_r_function("options", **{"rcmetar.sequential.progress": callback})
+    try:
+        yield
+    finally:
+        execute_r_function("options", previous)
+
+
 @serialized_r_call
 def run_versioned_analysis_request(
     request: Mapping[str, object],
@@ -1018,8 +1047,15 @@ def run_versioned_analysis_request(
 @serialized_r_call
 def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
     """Convert this frozen model and execute it within one R transaction."""
-    family, _, metric, _, _ = _validated_versioned_request(request)
+    family, _, metric, workflow, params = _validated_versioned_request(request)
     data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
+    if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
+        metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
+    ) and table_model.current_sheet is not None:
+        below, above = table_model.current_sheet.effect_direction_arms()
+        params = {**params, "fp_favours_left": f"Favours {below}" if below else "",
+                  "fp_favours_right": f"Favours {above}" if above else ""}
+        request = {**request, "params": params}
     return run_versioned_analysis_request(request, data)
 
 
@@ -1068,11 +1104,8 @@ def _execute_versioned_request(
         "params": _to_r_params(params),
         "workflow": _normalize_rcmetar_workflow(workflow),
     }
-    result = execute_r_function(
-        "rcmetar.run.analysis",
-        data,
-        _to_r_params(normalized),
-    )
+    with _r_sequential_progress(normalized["workflow"]):
+        result = execute_r_function("rcmetar.run.analysis", data, _to_r_params(normalized))
     return parse_out_results(result)
 
 
@@ -1171,7 +1204,8 @@ def _execute_versioned_requests(
     else:
         arguments["diagnostic.data"] = data
     try:
-        result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
+        with _r_sequential_progress(requests[0]["workflow"]):
+            result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
     except RRuntimeError as error:
         raise DiagnosticExecutionError(str(error)) from error
     return parse_out_results(result)
@@ -1197,11 +1231,25 @@ def prepare_plot_edit(
 
 
 @serialized_r_call
+def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> tuple[float, float] | None:
+    result = execute_r_function("rcmetar.forest.export.dimensions", prefix, width, include_title)
+    if _r_is_null(result):
+        return None
+    height, minimum_width = result
+    return float(height), float(minimum_width)
+
+
+@serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
-                       *, include_title: bool = True, outline_text: bool = True) -> bool:
+                       *, include_title: bool = True, outline_text: bool = True,
+                       width: float | None = None, dpi: int | None = None,
+                       page_height: float | None = None) -> tuple[str, ...]:
+    dimensions = {key: value for key, value in (
+        ("width", width), ("dpi", dpi), ("page_height", page_height),
+    ) if value is not None}
     result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
-                                include_title=include_title, outline_text=outline_text)
-    return not _r_is_null(result)
+                                include_title=include_title, outline_text=outline_text, **dimensions)
+    return () if _r_is_null(result) else tuple(str(path) for path in result)
 
 
 _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
@@ -1225,14 +1273,23 @@ def parse_out_results(result):
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
         parsed = _parse_display_results(result)
-        workflow = request.get('workflow', '')
-        packages = execution.get('packages')
-        software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
-        inference = execution.get('inference', ())
-        return replace(parsed, software=software, inference_methods=tuple(str(code) for code in inference),
-                       sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
+        return _with_execution_details(parsed, request, execution, result)
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
+
+
+def _with_execution_details(parsed, request, execution, result):
+    workflow = request.get('workflow', '')
+    packages = execution.get('packages')
+    software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
+    inference = execution.get('inference', ())
+    contributors = None
+    if 'res' in result:
+        fit = result['res']
+        if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
+            contributors = int(fit.rx2('k.yi')[0])
+    return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
+                   sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
 
 
 def _add_regression_reports(result, reports):

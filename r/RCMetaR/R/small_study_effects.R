@@ -311,7 +311,7 @@
         keys <- c(keys, "publication.bias.funnel")
     if ("Contour Funnel Plot" %in% displayed.plots)
         keys <- c(keys, "publication.bias.contour")
-    if ("Deeks Effective-Sample-Size Funnel Plot" %in% displayed.plots)
+    if (.small.study.deeks.title %in% displayed.plots)
         keys <- c(keys, "publication.bias.deeks")
     if (any(grepl("Trim-and-fill", displayed.plots, fixed=TRUE)))
         keys <- c(keys, "publication.bias.trimfill")
@@ -614,7 +614,7 @@
     if (metric == "DOR") summary <- c(
         summary,
         paste0("Continuity correction: ", as.character(params$correction.policy %||% "Studies with any zero cell")),
-        "Plot method: Deeks funnel plot using effective sample size"
+        "Plot method: Deeks asymmetry regression using effective sample size"
     )
     paste(summary, collapse="\n")
 }
@@ -1097,10 +1097,12 @@
     sub("^SE", "Standard error", display.standard.error.label(params))
 }
 
+.small.study.deeks.title <- "Deeks asymmetry regression plot"
+
 .small.study.base.plot <- function(kind, index, plot.data, pooled, params, metric,
                                    common.center, prepared, diagnostic.model) {
     title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
-        "Deeks Effective-Sample-Size Funnel Plot" else "Contour Funnel Plot"
+        .small.study.deeks.title else "Contour Funnel Plot"
     metric.label <- .small.study.metric.label(metric)
     xlab <- .small.study.plot.setting(
         params, "funnel.xlab", index, if (kind == "deeks") "1/sqrt(ESS)" else metric.label)
@@ -1415,17 +1417,18 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     metafor::rma.uni(yi=y[keep], sei=se[keep], method="REML")
 }
 
-.small.study.funnel.args <- function(settings, center, ratio=FALSE) {
+.small.study.funnel.args <- function(settings, center, se, ratio=FALSE) {
     args <- list(
         refline=center,
-        yaxis="sei", digits=2, level=settings$sampling.level, addtau2=settings$include.tau2,
+        yaxis="sei", ylim=c(max(se) * 1.06, 0),
+        digits=2, level=settings$sampling.level, addtau2=settings$include.tau2,
         xlab=settings$xlab, ylab=settings$ylab, atransf=if (ratio) exp else NULL,
         pch=settings$point.symbol, cex=settings$point.size, col=settings$point.color,
         bg=settings$point.color, back=settings$background.color,
         shade=if (settings$show.region) settings$region.color else NA,
         colref=NA,
         colci=if (settings$show.region) settings$reference.color else NA,
-        label=identical(settings$label.policy, "all"))
+        label=FALSE)
     if (!is.null(settings$xlim)) args$xlim <- settings$xlim
     if (ratio || !is.null(settings$at)) args$xaxt <- "n"
     args
@@ -1439,10 +1442,54 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
         vapply(display, format, character(1), trim=TRUE, scientific=FALSE)))
 }
 
-.small.study.label.outside <- function(y, se, center, settings, labels) {
-    if (!identical(settings$label.policy, "outside-pseudo-confidence-region")) return()
-    outside <- abs(y-center) > stats::qnorm((1 + settings$sampling.level/100)/2) * se
-    text(y[outside], se[outside], labels=labels[outside], pos=4, cex=.7)
+.small.study.place.labels <- function(x, y, labels, selected, settings) {
+    x <- graphics::grconvertX(x, to="inches")
+    y <- graphics::grconvertY(y, to="inches")
+    region <- c(graphics::grconvertX(0:1, from="npc", to="inches"),
+                graphics::grconvertY(0:1, from="npc", to="inches"))
+    visible <- x >= region[1] & x <= region[2] & y >= region[3] & y <= region[4]
+    pad <- .07 * settings$point.size
+    occupied <- cbind(x[visible]-pad, x[visible]+pad, y[visible]-pad, y[visible]+pad)
+    skipped <- 0L
+    for (i in which(selected & visible)) {
+        w <- graphics::strwidth(labels[i], cex=.7, units="inches") / 2 + .01
+        h <- graphics::strheight("Mg", cex=.7, units="inches") / 2 + .02
+        gap <- pad + .012 + seq(0, 1.04, by=.13)
+        centers <- cbind(
+            c(rbind(x[i]+gap+w, x[i]-gap-w, x[i], x[i])),
+            c(rbind(y[i], y[i], y[i]+gap+h, y[i]-gap-h))
+        )
+        placed <- FALSE
+        for (side in seq_len(nrow(centers))) {
+            cx <- centers[side, 1]
+            cy <- centers[side, 2]
+            box <- c(cx-w, cx+w, cy-h, cy+h)
+            if (any(box[c(1, 3)] <= region[c(1, 3)] | box[c(2, 4)] >= region[c(2, 4)]) ||
+                any(box[1] < occupied[, 2] & box[2] > occupied[, 1] &
+                    box[3] < occupied[, 4] & box[4] > occupied[, 3])) next
+            user.x <- function(value) graphics::grconvertX(value, from="inches")
+            user.y <- function(value) graphics::grconvertY(value, from="inches")
+            if (side > 4L) {
+                edge.x <- min(max(x[i], box[1]), box[2])
+                edge.y <- min(max(y[i], box[3]), box[4])
+                graphics::segments(user.x(x[i]), user.y(y[i]), user.x(edge.x), user.y(edge.y),
+                                   col=settings$point.color, lwd=.6)
+            }
+            graphics::text(user.x(cx), user.y(cy), labels[i], cex=.7)
+            occupied <- rbind(occupied, box)
+            placed <- TRUE
+            break
+        }
+        if (!placed) skipped <- skipped + 1L
+    }
+    if (skipped) graphics::mtext(sprintf("Labels without space: %d", skipped), side=3, adj=1, cex=.7)
+}
+
+.small.study.label.funnel <- function(x, se, center, settings, labels) {
+    if (settings$label.policy == "none") return()
+    selected <- if (settings$label.policy == "all") rep(TRUE, length(x)) else
+        abs(x-center) > stats::qnorm((1 + settings$sampling.level/100)/2) * se
+    .small.study.place.labels(x, se, labels, selected, settings)
 }
 
 .small.study.draw.guides <- function(settings, center) {
@@ -1455,7 +1502,8 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     predictor <- as.numeric(params$deeks.predictor %||% numeric())
     if (length(effective) != sum(keep))
         stop("persisted Deeks effective sample sizes do not match prepared effects")
-    plot(predictor, y[keep], xlab=settings$xlab, ylab=settings$ylab,
+    xlab <- if (settings$xlab == "1/sqrt(ESS)") expression(1/sqrt(ESS)) else settings$xlab
+    plot(predictor, y[keep], main=.small.study.deeks.title, xlab=xlab, ylab=settings$ylab, las=1,
          xlim=settings$xlim, xaxt=if (is.null(settings$at)) "s" else "n",
          pch=settings$point.symbol, cex=settings$point.size,
          col=settings$point.color, bg=settings$point.color)
@@ -1464,7 +1512,8 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     if (settings$show.regression && length(line) == 2L && all(is.finite(line)))
         abline(a=line[[1L]], b=line[[2L]], col=settings$reference.color)
     if (settings$label.policy == "all")
-        text(predictor, y[keep], labels=om.data@study.names[keep], pos=4, cex=.7)
+        .small.study.place.labels(predictor, y[keep], om.data@study.names[keep],
+                                  rep(TRUE, sum(keep)), settings)
 }
 
 .small.study.draw.standard.funnel <- function(om.data, res, params, settings,
@@ -1472,7 +1521,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     model <- .small.study.funnel.model(res, y, se, keep)
     center <- as.numeric(params$funnel.center %||% 0)
     ratio <- .small.study.funnel.ratio(params)
-    args <- .small.study.funnel.args(settings, center, ratio)
+    args <- .small.study.funnel.args(settings, center, se[keep], ratio)
     if (identical(settings$kind, "trimfill")) {
         # Draw the augmented data, retaining which studies were filled by meta.
         args$pch <- ifelse(params$trimfill.imputed[keep], 1L, settings$point.symbol)
@@ -1480,10 +1529,16 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.guides(settings, center)
     .small.study.draw.funnel.axis(settings, ratio)
-    .small.study.label.outside(y, se, center, settings, om.data@study.names)
-    if (identical(settings$kind, "trimfill"))
+    .small.study.label.funnel(y[keep], se[keep], center, settings, om.data@study.names[keep])
+    if (identical(settings$kind, "trimfill")) {
         graphics::legend("topright", c("Observed", "Imputed"), pch=c(settings$point.symbol, 1),
                          col=settings$point.color, bty="n")
+    } else if (settings$show.reference || settings$show.pooled) {
+        show <- c(settings$show.pooled, settings$show.reference)
+        graphics::legend("topright", c("Pooled estimate", "No effect")[show],
+                         lty=c(2, 1)[show], lwd=c(2, 1)[show],
+                         col=settings$reference.color, bty="n", cex=.8)
+    }
 }
 
 .small.study.draw.contour.funnel <- function(om.data, res, params, settings,
@@ -1496,7 +1551,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     levels <- sort(unique(levels[is.finite(levels) & levels > 0 & levels < 100]))
     if (!length(levels)) levels <- c(90, 95, 99)
     ratio <- .small.study.funnel.ratio(params)
-    args <- .small.study.funnel.args(settings, center, ratio)
+    args <- .small.study.funnel.args(settings, center, se[keep], ratio)
     args$refline <- 0
     args$level <- levels
     # Match metafor 5.0-1's scalar-shade expansion on our white device.
@@ -1506,7 +1561,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     do.call(metafor::funnel, c(list(model), args))
     .small.study.draw.guides(settings, center)
     .small.study.draw.funnel.axis(settings, ratio)
-    .small.study.label.outside(y, se, 0, settings, om.data@study.names)
+    .small.study.label.funnel(y[keep], se[keep], 0, settings, om.data@study.names[keep])
     thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
     bands <- c(paste0("P > ", thresholds[[1L]]),
                if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
@@ -1526,7 +1581,7 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     settings <- .small.study.funnel.settings(params)
     size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     rcmetar.render.plot_file(path, size, function() {
-        graphics::par(yaxs="i", xpd=FALSE, mar=c(6.2, 4.8, 3, 2))
+        graphics::par(xpd=FALSE, mar=c(6.2, 4.8, 3, 2))
         if (!is.null(settings$xlim)) graphics::par(xaxs="i")
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
             .small.study.draw.deeks(om.data, params, settings, y, se, keep)

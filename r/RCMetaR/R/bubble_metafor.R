@@ -136,12 +136,12 @@ rcmetar.bubble.atransf <- function(bundle) {
 
 rcmetar.bubble.measure.device <- function(bundle) {
     rcmetar.forest.with.measurement.device({
-        cex <- max(0.86, min(1.05, 1.05 - max(length(bundle$slab) - 30, 0) * 0.004))
-        label.width <- max(strwidth(c(bundle$xlabel, bundle$ylabel, bundle$slab), units="inches", cex=cex), na.rm=TRUE)
+        cex <- 8 / 12
+        label.width <- max(strwidth(c(bundle$xlabel, bundle$ylabel), units="inches", cex=cex), na.rm=TRUE)
         legend.width <- if (rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) 2.55 else 0
         list(
             width=max(7.2, min(14.5, 6.5 + min(label.width, 4) * 0.55 + legend.width)),
-            height=max(5.0, min(8.0, 4.8 + if (rcmetar.bubble.param.is.true(bundle, "bp_label_studies", FALSE)) 0.7 else 0)),
+            height=5,
             cex=cex,
             bg="white",
             dpi=300

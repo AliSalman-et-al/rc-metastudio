@@ -277,6 +277,7 @@ class AdaptiveWindowController(QObject):
         self._content_refit_pending = False
         self._runtime_clamp_pending = False
         self._first_show_pending = True
+        self._first_restore_geometry = QRect()
         self._normal_frame_geometry = QRect()
         self._window_handle = None
         self._runtime_screen = None
@@ -320,9 +321,20 @@ class AdaptiveWindowController(QObject):
             and not window.isFullScreen()
         ):
             self._normal_frame_geometry = QRect(window.frameGeometry())
-        if (watched is window and self.role == WindowRole.MAIN and window.isMaximized()
-                and event.type() in (QEvent.Type.Move, QEvent.Type.Resize)):
-            self.request_runtime_clamp()
+        if (
+            watched is window
+            and event.type() == QEvent.Type.WindowStateChange
+            and self._first_restore_geometry.isValid()
+            and window.isVisible()
+            and not (window.isMaximized() or window.isFullScreen() or window.isMinimized())
+        ):
+            target = self._first_restore_geometry
+            self._first_restore_geometry = QRect()
+            available = self._available_geometry()
+            if available.isValid():
+                target = clamp_frame_geometry(target, available)
+            self._set_outer_frame_geometry(target)
+            self._normal_frame_geometry = target
         if (watched is window and self.role == WindowRole.TRANSACTIONAL
                 and event.type() == QEvent.Type.Resize):
             self.request_runtime_clamp()
@@ -393,14 +405,16 @@ class AdaptiveWindowController(QObject):
             self._screen_placer(self.window, screen)
         if self.policy.first_use_behavior == FirstUseBehavior.MAXIMIZED:
             available = self._available_geometry()
-            if available.isValid() and self.window.size().isEmpty():
+            if available.isValid() and not self.window.isMaximized():
                 normal_frame = centered_bounded_geometry(
-                    self._preferred_outer_frame_size(),
+                    QSize(max(960, round(available.width() * 0.8)),
+                          max(640, round(available.height() * 0.8))),
                     available,
                     self._first_use_center(available),
                     maximum_fraction=self.policy.maximum_screen_fraction,
                 )
                 self._set_outer_frame_geometry(normal_frame)
+                self._first_restore_geometry = normal_frame
                 self._normal_frame_geometry = normal_frame
             # The maximized state is complete before first display. Reapplying
             # setWindowState() from the ensuing Show event can hide the native
@@ -470,6 +484,7 @@ class AdaptiveWindowController(QObject):
     def consume_first_use(self):
         """Suppress first-use sizing when a valid persisted state will restore."""
         self._first_show_pending = False
+        self._first_restore_geometry = QRect()
 
     def normal_frame_geometry(self):
         """Return the last user-owned non-maximized outer-frame rectangle."""
@@ -519,20 +534,17 @@ class AdaptiveWindowController(QObject):
         self._set_outer_frame_geometry(target)
 
     def _apply_runtime_clamp(self):
+        if self.window.isMaximized() or self.window.isFullScreen():
+            return
         available = self._available_geometry()
         if available.isValid():
-            # Maximized native frames can extend beyond the work area (Windows
-            # hides their resize borders). Only the client must fit in that state.
-            visible = self.window.geometry() if self.window.isMaximized() else self.window.frameGeometry()
-            if available.contains(visible):
+            current = self.window.frameGeometry()
+            if available.contains(current):
                 return
-            if self.window.isMaximized():
-                self.window.showNormal()
             if self.role == WindowRole.MAIN:
                 # The client minimum must leave room for native frame decorations.
                 self.window.setMinimumSize(self.window.minimumSize().boundedTo(
                     client_size_for_frame_size(available.size(), self._frame_margins())))
-            current = self.window.frameGeometry()
             target = clamp_frame_geometry(current, available)
             if target != current:
                 self._set_outer_frame_geometry(target)

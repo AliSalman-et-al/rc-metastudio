@@ -5,6 +5,7 @@
 from __future__ import annotations
 from rc_metastudio.domain_ids import ArmId, SheetId
 
+import json
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -88,6 +89,10 @@ from rc_metastudio.workspace.session import WorkspaceSession
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
 
+
+
+def _is_bundled_sample(path: str | Path) -> bool:
+    return Path(path).resolve().is_relative_to(Path(get_sample_projects_path()).resolve())
 
 
 def _resolve_open_file_path(file_path):
@@ -292,11 +297,30 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_new_dataset.setText("New project…")
         qt_layout.configure_main_toolbar(self.toolBar)
         self.analysis_button.setAccessibleName("Analyses")
-        self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
+        self.sample_menu = QtWidgets.QMenu("Open sample project", self)
+        sample_root = Path(get_sample_projects_path())
+        manifest = sample_root / "manifest.json"
+        entries = {}
+        if manifest.is_file():
+            entries = {item["file"]: item for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
+        order = {name: index for index, name in enumerate(entries)}
+        for path in sorted(sample_root.glob("*.rcms"), key=lambda path: (order.get(path.name, len(order)), path.name.casefold())):
+            entry = entries.get(path.name, {})
+            caption = entry.get("scientific_name") or path.stem
+            description = entry.get("description")
+            action = QAction(f"{caption} — {description}" if description else caption, self.sample_menu)
+            action.setData(path.name)
+            self.sample_menu.addAction(action)
+            connect_action(action, lambda sample=path: self.open(file_path=str(sample)))
+        self.sample_menu.setEnabled(bool(self.sample_menu.actions()))
+        self.start_page = start_page.StartPage(
+            self.action_new_dataset, self.action_import_csv, self.action_open, self,
+            sample_menu=self.sample_menu,
+        )
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
         for action in (self.action_new_dataset, self.action_open,
-                       self.action_open_recent_2.menuAction(), self.action_import_csv):
+                       self.action_open_recent_2.menuAction(), self.sample_menu.menuAction(), self.action_import_csv):
             self.menu_file.addAction(action)
         self.menu_file.addSeparator()
         self.menu_file.addActions([self.action_save, self.action_save_as])
@@ -309,6 +333,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout.replaceWidget(self.tableView, table_view)
         self.tableView.deleteLater()
         self.tableView = table_view
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.tableView.study_calculator_action)
         self.tableView.restore_column_widths(load_main_column_widths())
 
         self.confidence_button = QtWidgets.QPushButton(self.statusbar)
@@ -374,6 +400,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menuDataset.addSeparator()
         self.action_swap_arms = QAction(QtGui.QIcon(":/icons/actions/swap.svg"), "Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
+        self.effect_direction_menu = required(self.menuDataset.addMenu("Effect direction"), "effect direction")
+        self.effect_direction_menu.aboutToShow.connect(self._populate_effect_direction)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
@@ -506,6 +534,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_project_identity(self, state=None):
         path = self.workspace.path
         name = path.name if path is not None else "Untitled project"
+        if path is not None and _is_bundled_sample(path):
+            name = f"{path.stem.partition(' - ')[2] or path.stem} (sample)"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
         self.setWindowFilePath(str(path) if path is not None else "")
@@ -513,6 +543,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.statusbar.showMessage(state, 4000)
 
     def refresh_analysis_actions(self) -> None:
+        self.tableView.refresh_study_calculator()
         included = sum(not study.manually_excluded for study in self.model.get_studies())
         r_ready = r_runtime.is_ready()
         can_analyze = r_ready and included > 0
@@ -761,7 +792,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             else:
                 view.replace_trial_sequential_result(result, manuscript)
 
-        def reopen(_plot_parameters: dict[str, object]) -> None:
+        def reopen(_plot_parameters: dict[str, object], _origin: QtWidgets.QWidget | None = None) -> None:
             form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
                 model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
             )
@@ -910,7 +941,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = source_sheet or self.model.current_sheet
         identity = result.identity.splitlines()[0] if result.identity else ""
         plot_key = result.analysis_method + " | " + identity
-        saved_plots = sheet.settings.get("plot_overrides", {}).get(plot_key, {}) if sheet else {}
+        saved_plots = {
+            title: {key: value for key, value in overrides.items() if not key.startswith("fp_favours_")}
+            for title, overrides in sheet.settings.get("plot_overrides", {}).get(plot_key, {}).items()
+        } if sheet else {}
 
         def save_plot_override(title: str, overrides: dict[str, object]) -> None:
             def update(live_sheet: analysis_dataset.Sheet) -> None:
@@ -920,18 +954,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if self.workspace.edit_sheet(sheet, update):
                 self._update_project_identity()
 
-        def save_favours_labels(left: str, right: str) -> None:
-            def update(live_sheet: analysis_dataset.Sheet) -> None:
-                live_sheet.settings["favours_labels"] = [left, right]
-
-            if self.workspace.edit_sheet(sheet, update):
-                self._update_project_identity()
-
         try:
             form = results_window.ResultsWindow(
                 result, parent=self, change_settings=change_settings, manuscript=manuscript,
                 source_sheet_name=sheet.name if sheet else None,
-                save_favours_labels=save_favours_labels if sheet else None,
                 plot_overrides=saved_plots, save_plot_override=save_plot_override if sheet else None,
             )
         except Exception as e:
@@ -1175,19 +1201,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_swap_arms_enabled(self):
         sheet = self.model.current_sheet
         self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS))
+        self.effect_direction_menu.setEnabled(self.action_swap_arms.isEnabled())
+
+    def _populate_effect_direction(self) -> None:
+        self.effect_direction_menu.clear()
+        sheet = self.model.current_sheet
+        if sheet is None or len(sheet.arms) != 2:
+            return
+        first = sheet.arms[0].name
+        current = sheet.settings.get("effect_direction", "")
+        for value, label in (("", "Not shown"), ("below", f"Values below the null favour {first}"),
+                             ("above", f"Values above the null favour {first}")):
+            action = required(self.effect_direction_menu.addAction(label), "direction choice")
+            action.setCheckable(True)
+            action.setChecked(current == value)
+            action.triggered.connect(lambda checked=False, direction=value: self._set_effect_direction(sheet, direction))
+
+    def _set_effect_direction(self, sheet: analysis_dataset.Sheet, direction: str) -> None:
+        def update(live_sheet: analysis_dataset.Sheet) -> None:
+            live_sheet.settings["effect_direction"] = direction
+            live_sheet.settings.pop("favours_labels", None)
+        if self.workspace.edit_sheet(sheet, update):
+            self._update_project_identity()
 
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
         if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS:
             def swap():
                 sheet.arms.reverse()
-                if "favours_labels" in sheet.settings:
-                    sheet.settings["favours_labels"].reverse()
-                for plots in sheet.settings.get("plot_overrides", {}).values():
-                    for params in plots.values():
-                        left, right = "fp_favours_left", "fp_favours_right"
-                        if left in params and right in params:
-                            params[left], params[right] = params[right], params[left]
             self._sheet_change(sheet.id, swap)
 
     def _setup_sheet_strip(self):
@@ -1484,24 +1525,33 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def save(self, save_as=False, *, destination: str | Path | None = None):
         if destination is None:
-            destination = self.workspace.path
-            if destination is None or save_as:
-                suggested = str(destination) if destination is not None else os.path.join(
-                    get_user_documents_path(), self.model.get_name()
-                )
+            path = self.workspace.path
+            sample = path is not None and _is_bundled_sample(path)
+            if path is None or sample or save_as:
+                if path is None or sample:
+                    suggested = os.path.join(get_user_documents_path(), path.name if path else self.model.get_name())
+                else:
+                    suggested = str(path)
                 selected, _ = QFileDialog.getSaveFileName(
                     parent=self,
-                    caption="Save project",
+                    caption="Save project as" if path is not None else "Save project",
                     directory=suggested,
                     filter="RC MetaStudio projects (*.rcms)",
                 )
                 if not selected:
                     return None
                 destination = selected
+            else:
+                destination = path
 
         destination = str(destination)
         if not destination.lower().endswith(".rcms"):
             destination += ".rcms"
+
+        if _is_bundled_sample(destination):
+            QMessageBox.warning(self, "Choose a different location",
+                                "Save your project outside the bundled sample projects folder.")
+            return False
 
         durability_error = None
         try:

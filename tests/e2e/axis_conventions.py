@@ -107,6 +107,7 @@ def run(app, window, work, record, family):
             view = matrix(app, window, scenario, record, keep_results=True,
                           parameters={'fp_style': style}, metric_override=metric)
             texts = dict(view.texts)
+            reruns = []
             for section in view.results.sections:
                 if section.plot_kind != 'forest':
                     continue
@@ -169,24 +170,32 @@ def run(app, window, work, record, family):
                 record('axis-persisted-export', view, measure=measure, style=style, choice=other,
                        ticks=observed, plots={artifact.title:str(path)}, exports={'svg':str(exported)})
                 if adjustable:
-                    from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
-                    from rc_metastudio.results.window import ResultsWindow
-                    view.report_action.setChecked(True)
-                    app.processEvents()
-                    view.change_settings_action.trigger()
-                    app.processEvents()
-                    setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
-                    assert setup.current_param_vals.get('fp_axis_scale') == other, ('axis lost on analysis rerun', measure, style)
-                    record('axis-analysis-rerun-settings', setup, measure=measure, style=style, choice=other)
-                    click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
-                    rerun = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view)
-                    repeated = next(entry.artifact for entry in rerun._plots.values() if entry.artifact.title == artifact.title)
-                    assert check_axis(repeated.display_path(), other, ratio)
-                    record('axis-analysis-rerun', rerun, measure=measure, style=style, choice=other,
-                           plots={repeated.title:repeated.display_path()})
-                    rerun.close()
-                    app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
-                    assert sip.isdeleted(rerun), "closed result keeps its SVG scene alive"
+                    reruns.append((section.title, artifact.title, measure, other, ratio))
+
+            # Check each plot's original defaults before changing the analysis
+            # settings, which can apply the selected scale to sibling plots.
+            for section_title, plot_title, measure, other, ratio in reruns:
+                from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+                from rc_metastudio.results.window import ResultsWindow
+                nav = view.nav_tree.findItems(section_title, QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive)
+                assert len(nav) == 1, section_title
+                view.nav_tree.setCurrentItem(nav[0])
+                view.report_action.setChecked(True)
+                app.processEvents()
+                view.change_settings_action.trigger()
+                app.processEvents()
+                setup = next(widget for widget in app.topLevelWidgets() if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
+                assert setup.current_param_vals.get('fp_axis_scale') == other, ('axis lost on analysis rerun', measure, style)
+                record('axis-analysis-rerun-settings', setup, measure=measure, style=style, choice=other)
+                click(app, setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
+                rerun = next(widget for widget in app.topLevelWidgets() if isinstance(widget, ResultsWindow) and widget.isVisible() and widget is not view)
+                repeated = next(entry.artifact for entry in rerun._plots.values() if entry.artifact.title == plot_title)
+                assert check_axis(repeated.display_path(), other, ratio)
+                record('axis-analysis-rerun', rerun, measure=measure, style=style, choice=other,
+                       plots={repeated.title:repeated.display_path()})
+                app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+                assert sip.isdeleted(view), "replaced result keeps its SVG scene alive"
+                view = rerun
             view.close()
             app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
             assert sip.isdeleted(view), "closed result keeps its SVG scene alive"

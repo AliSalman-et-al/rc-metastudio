@@ -53,11 +53,13 @@ save.data <- function(om.data, res, params, plot.data=NULL, out.path=NULL) {
 #' @param staging.directory A caller-owned directory for staged files.
 #' @param svg.path The path to SVG artwork.
 #' @param width,height The requested width and height in inches.
+#' @param page_height Maximum height in inches of a forest SVG panel.
 #' @param dpi The requested raster resolution in dots per inch.
 #' @param include_title Whether to draw the figure's title line on export.
 #' @param outline_text Whether to outline text in trial sequential SVG exports.
-#' @return Parameters, a mapping from destination paths to staged files, or the
-#'   rendered path, respectively. Missing bundles return `NULL`.
+#' @return Parameters, forest height and minimum width in inches, staged file
+#'   mappings, or rendered paths, depending on the function. Missing bundles
+#'   return `NULL`.
 #' @name rcmetar-plot-bundle
 NULL
 
@@ -91,6 +93,17 @@ rcmetar.plot.bundle.params <- function(prefix) {
         sroc=list(draw=rcmetar.draw.sroc.plot, build=rcmetar.regenerate.plot.data, prefix="fp"),
         trial_sequential=list(draw=rcmetar.draw.tsa.plot, build=rcmetar.tsa.plot.data, prefix="fp"),
         stop(sprintf("Unknown plot regenerator: %s", regenerator), call.=FALSE))
+}
+
+#' @rdname rcmetar-plot-bundle
+#' @export
+rcmetar.forest.export.dimensions <- function(prefix, width, include_title=FALSE) {
+    bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")$plot.data
+    if (is.null(bundle) || !rcmetar.is.metafor.forest.bundle(bundle)) return(NULL)
+    plan <- rcmetar.forest.layout.preflight(bundle, width=width, measure.minimum=TRUE)
+    caption <- if (include_title) .rcmetar.plot.caption.layout(bundle$params$plot_caption, plan$device)
+    height <- plan$device$height + (caption$height %||% 0)
+    c(height=round(height * 72, 2) / 72, minimum_width=plan$device$min_width)
 }
 
 #' @rdname rcmetar-plot-bundle
@@ -143,7 +156,7 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 #' @rdname rcmetar-plot-bundle
 #' @export
 rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600,
-                                       include_title=TRUE, outline_text=TRUE) {
+                                       include_title=TRUE, outline_text=TRUE, page_height=NULL) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
@@ -157,6 +170,12 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
     if (!include_title) {
         bundle$plot.data$params$plot_caption <- NULL
         if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
+    }
+    if (identical(regenerator, "forest") && rcmetar.is.metafor.forest.bundle(bundle$plot.data)) {
+        if (!is.null(page_height) && !rcmetar.plot.file.extension(output.path) %in% c("svg", "svgz"))
+            stop("Paged forests require SVG output paths.", call.=FALSE)
+        rcmetar.forest <- rcmetar.draw.metafor.forest(bundle$plot.data, output.path, width, dpi, page_height)
+        return(if (is.null(page_height)) output.path else rcmetar.forest)
     }
     if (identical(regenerator, "trial_sequential")) {
         rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text))

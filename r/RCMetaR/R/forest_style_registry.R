@@ -20,18 +20,15 @@ rcmetar.metafor.style <- function(style) {
     registry <- list(
         default = list(
             ilab.for.data = rcmetar.default.ilab.for.data,
-            decorate.bundle = identity,
-            draw = rcmetar.draw.default.forest
+            decorate.bundle = identity
         ),
         revman = list(
             ilab.for.data = rcmetar.revman.ilab.for.data,
-            decorate.bundle = rcmetar.revman.decorate.bundle,
-            draw = rcmetar.draw.revman.forest
+            decorate.bundle = rcmetar.revman.decorate.bundle
         ),
         bmj = list(
             ilab.for.data = rcmetar.bmj.ilab.for.data,
-            decorate.bundle = rcmetar.bmj.decorate.bundle,
-            draw = rcmetar.draw.bmj.forest
+            decorate.bundle = rcmetar.bmj.decorate.bundle
         )
     )
     registry[[style]]

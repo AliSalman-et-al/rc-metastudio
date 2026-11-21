@@ -181,7 +181,16 @@ rcmetar.bmj.not_estimable <- function(bundle) {
 }
 
 rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
-    directions <- rcmetar.bmj.direction.lines(bundle, footer$right.x - footer$left.x, cex)
+    width <- footer$right.x - footer$left.x
+    directions <- rcmetar.bmj.direction.lines(bundle, width, cex)
+    used <- sum(vapply(directions, function(lines)
+        max(c(0, graphics::strwidth(lines, font=2, cex=cex))), numeric(1)))
+    if (used + graphics::strwidth("M", font=2, cex=cex) >= width) {
+        # A narrow axis can be shorter than the longest word. Keep BMJ's
+        # directions underneath it and let them extend towards the page edges.
+        footer$split.x <- footer$axis.x
+        return(rcmetar.draw.forest.direction.blocks(bundle, footer, y, cex, font=2))
+    }
     for (side in c("left", "right")) {
         lines <- directions[[side]]
         if (!length(lines)) next
@@ -195,7 +204,7 @@ rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
 
 rcmetar.bmj.study.header <- function(bundle) {
     header <- rcmetar.metafor.study.header(bundle)
-    if (header %in% c("Study", "Study or subgroup")) "Study or\nsubgroup" else header
+    if (header == "Study or subgroup") "Study or\nsubgroup" else header
 }
 
 
@@ -319,17 +328,20 @@ rcmetar.bmj.column.widths <- function(bundle, cex) {
         return(numeric(0))
     }
     widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
-        values <- c(bundle$ilab$matrix[, index], bundle$ilab$headers[[index]])
+        headers <- strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]]
+        values <- bundle$ilab$matrix[, index]
         key <- bundle$ilab$columns[[index]]$key
         values <- c(values, as.character(bundle$style_blocks$totals[[key]]))
         if (identical(key, "weight")) {
-            values <- c(values, "Weight", "(%)", "100.0")
-        } else {
-            values <- c(values, rcmetar.bmj.header.lines(bundle$ilab$columns[[index]]$group))
+            headers <- c(headers, "Weight", "(%)")
+            values <- c(values, "100.0")
+        } else if (grepl("_events_total$", key)) {
+            headers <- c(headers, rcmetar.bmj.header.lines(bundle$ilab$columns[[index]]$group))
         }
-        max(graphics::strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex), na.rm=TRUE)
+        max(graphics::strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex),
+            graphics::strwidth(headers, units="inches", cex=cex, font=2), na.rm=TRUE)
     }, numeric(1))
-    pmax(widths, 0.42)
+    pmax(widths, 0.18)
 }
 
 rcmetar.bmj.wrap.header <- function(label, width=24) {
@@ -359,9 +371,9 @@ rcmetar.bmj.direction.lines <- function(bundle, width, cex, units="user") {
     lines
 }
 
-rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user") {
+rcmetar.bmj.wrap.direction <- function(label, available, cex, units="user", font=2) {
     if (!nzchar(label)) return(character())
-    measure <- function(text) graphics::strwidth(text, cex=cex, font=2, units=units)
+    measure <- function(text) graphics::strwidth(text, cex=cex, font=font, units=units)
     if (measure(label) <= available) return(label)
     width <- max(1, floor(nchar(label) * available / measure(label)))
     repeat {
@@ -380,11 +392,8 @@ rcmetar.bmj.text.width <- function(values, cex, minimum=0) {
     max(minimum, max(graphics::strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex), na.rm=TRUE))
 }
 
-rcmetar.forest.bmj.device.metrics <- function(bundle) {
+rcmetar.forest.bmj.device.metrics <- function(bundle, cex=8 / 12) {
     rcmetar.forest.with.measurement.device({
-        display.rows <- rcmetar.forest.display.row.count(bundle)
-        text.floor <- 1.08
-        cex <- text.floor
         header.lines <- max(c(1, vapply(bundle$ilab$groups, function(group) {
             length(rcmetar.bmj.header.lines(group))
         }, integer(1))))
@@ -392,14 +401,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         weight.index <- rcmetar.bmj.column.index(bundle, "weight")
         left.indexes <- setdiff(seq_along(column.widths), weight.index)
         weight.width <- if (length(weight.index) == 1) column.widths[[weight.index]] else 0
-        column.gap <- 0.32
-        group.gap <- 0.42
-        study.width <- max(graphics::strwidth(
-            c(bundle$slab, "Study or\nsubgroup", rcmetar.bmj.study.header(bundle),
-                  unlist(strsplit(sub(" (", "\n(", rcmetar.forest.model.label(rcmetar.bmj.summary.result(bundle)), fixed=TRUE), "\n", fixed=TRUE))),
-            cex=cex,
-            units="inches", font=2
-        ), 1.35, na.rm=TRUE)
+        column.gap <- 2.5 / 25.4
         left.table.width <- if (length(left.indexes) > 0) {
             sum(column.widths[left.indexes]) + column.gap * max(length(left.indexes) - 1, 0)
         } else {
@@ -422,51 +424,41 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
             c(metric.header, rcmetar.forest.estimate.header(bundle, metric.header),
               rcmetar.bmj.effect.values(bundle), rcmetar.bmj.summary.label.for.bundle(bundle)),
             cex,
-            minimum=1.85
+            minimum=.9
         )
-        footer.width <- rcmetar.bmj.text.width(
-            c(bundle$style_blocks$heterogeneity, bundle$style_blocks$test_overall),
-            cex,
-            minimum=study.width
-        )
-        plot.width <- 3.7
-        study.gap <- 0.55
-        left.plot.gap <- 0.58
-        right.plot.gap <- 0.45
-        weight.effect.gap <- 0.48
-        right.margin <- 0.35
-        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width + 0.85)
+        study.gap <- column.gap
+        left.plot.gap <- 2.8 / 25.4
+        right.plot.gap <- .06
+        weight.effect.gap <- column.gap
+        right.margin <- .04
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
-        # The coordinate range includes 16% of the panel on each side. Include
-        # that space and the right graphics margin so measured text stays in inches.
-        width <- max(10.8, left.width + plot.width + right.width + 0.32 * plot.width + 0.16)
-        list(
-            width=width,
-            height=max(5.0, 3.35 + 0.30 * display.rows),
+        left.width <- study.gap + left.table.width + left.plot.gap
+        budget <- rcmetar.forest.width.budget(bundle, left.width + right.width + .04, cex)
+        left.width <- left.width + budget$study_width
+        inference <- c(bundle$style_blocks$heterogeneity, bundle$style_blocks$test_overall,
+                       rcmetar.forest.prediction.label(bundle))
+        inference <- unlist(lapply(inference, rcmetar.bmj.wrap.direction,
+                                   available=left.width - .15, cex=cex, units="inches", font=1))
+        c(budget, list(
             cex=cex,
-            text_floor=text.floor,
             bg="white",
-            display_rows=display.rows,
             header_lines=header.lines,
-            study_width=study.width,
             column_widths=column.widths,
             left_indexes=left.indexes,
             weight_index=weight.index,
             left_table_width=left.table.width,
-            plot_width=plot.width,
             weight_width=weight.width,
             effect_width=effect.width,
-            footer_width=footer.width,
             column_gap=column.gap,
-            group_gap=group.gap,
             study_gap=study.gap,
             left_plot_gap=left.plot.gap,
             right_plot_gap=right.plot.gap,
             weight_effect_gap=weight.effect.gap,
             right_margin=right.margin,
             left_width=left.width,
-            right_width=right.width
-        )
+            right_width=right.width,
+            inference=inference
+        ))
     })
 }
 
@@ -486,7 +478,7 @@ rcmetar.forest.bmj.layout.coordinates.from_size <- function(bundle, size) {
         alim[[1]] - size$left_width * user.per.inch,
         alim[[2]] + size$right_width * user.per.inch
     )
-    edge.pad <- 0.16 * span
+    edge.pad <- 0.02 * user.per.inch
     xlim <- c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad)
     plot.start <- size$left_width
     plot.end <- plot.start + size$plot_width
@@ -524,13 +516,12 @@ rcmetar.forest.bmj.layout.coordinates.from_size <- function(bundle, size) {
     )
 }
 
-rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
-    size <- rcmetar.forest.bmj.device.metrics(bundle)
-    size$size_policy <- size.policy
+rcmetar.forest.bmj.layout.preflight <- function(bundle) {
+    size <- bundle$size %||% rcmetar.forest.bmj.device.metrics(bundle)
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
     top.padding <- 3.2
-    bottom.padding <- 5.15
+    bottom.padding <- max(5.15, 2.15 + .85 * (length(size$inference) - 1L))
     rows <- list(
         k=k,
         study_rows=k:1,
@@ -567,33 +558,18 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle, size.policy="export") {
             groups=if (length(layout$group.xpos) > 0) names(layout$group.xpos) else character(0)
         ),
         footer=list(axis=rcmetar.bmj.axis.footer.layout(bundle, layout)),
-        warnings=rcmetar.forest.layout.cap.warnings(size),
         metrics=size,
         layout=layout
     )
 }
 
-rcmetar.draw.bmj.forest <- function(bundle, outpath) {
-    if (!inherits(bundle$res, "rma") && isTRUE(bundle$single_study)) {
-        return(rcmetar.draw.bmj.sequential.forest(bundle, outpath))
-    }
-    if (!inherits(bundle$res, "rma") || identical(bundle$forest_variant, "subgroup")) {
-        return(rcmetar.draw.bmj.default_like.forest(bundle, outpath))
-    }
-
-    plan <- rcmetar.forest.layout.preflight(bundle, style="bmj")
-    size <- plan$device
-    display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
-    rcmetar.render.plot_file(outpath, size, function() {
-
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
+rcmetar.draw.bmj.forest <- function(bundle, plan) {
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
     accent <- rcmetar.forest.accent.color(bundle$params)
     graphics::par(
         bg="white",
-        mar=c(1.0, 0, 1.6, 0.8),
+        mai=rcmetar.forest.margins(plan),
         mgp=c(3, 0.2, 0),
         tcl=-0.2,
         fg="#111111",
@@ -605,13 +581,12 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     layout <- plan$layout
     effect <- rcmetar.forest.study.effects(bundle)
     summary <- rcmetar.bmj.summary.effect(bundle)
-    bundle$style_blocks$heterogeneity <- rcmetar.bmj.heterogeneity.label(within(bundle, res <- summary$res))
-    bundle$style_blocks$test_overall <- rcmetar.bmj.test.overall.label(within(bundle, res <- summary$res))
     ilab <- rcmetar.bmj.display.ilab(bundle, summary$weights)
     method <- rcmetar.bmj.method.label(bundle)
     metric <- rcmetar.bmj.metric.label(bundle)
-    k <- plan$rows$k
+    k <- plan$rows$top
     rows <- plan$rows$study_rows
+    axis.offset <- plan$rows$axis_offset %||% 0
 
     plot.info <- suppressWarnings(metafor::forest.default(
         x=effect$yi,
@@ -642,31 +617,31 @@ rcmetar.draw.bmj.forest <- function(bundle, outpath) {
     ))
 
     graphics::par(xpd=NA)
-    rcmetar.draw.bmj.effects(rcmetar.forest.axis.effect(bundle, effect), rows, layout$alim, accent, summary$psize)
+    rcmetar.draw.bmj.effects(rcmetar.forest.axis.effect(bundle, effect), rows, layout$alim, accent, summary$psize * plan$typography$cex)
     graphics::segments(plot.info$xlim[1], k + 1.55, plot.info$xlim[2], k + 1.55, lwd=0.9, col="#a7a9ac")
     refline <- rcmetar.metafor.refline(bundle, layout$alim)
-    if (is.finite(refline)) graphics::segments(refline, -1.0, refline, k + 1.55, lwd=0.85, col="#a7a9ac")
+    if (is.finite(refline)) graphics::segments(refline, max(-1, axis.offset - 2.37), refline, k + 1.55, lwd=0.85, col="#a7a9ac")
     summary.x <- rcmetar.forest.axis.values(bundle, summary$yi)
     if (rcmetar.param.is.true(bundle$params, "fp_show_summary_line", TRUE) &&
             summary.x >= layout$alim[[1]] && summary.x <= layout$alim[[2]])
-        graphics::segments(summary.x, -0.65, summary.x, k, lwd=0.8, lty="33", col=accent)
+        graphics::segments(summary.x, max(-0.65, axis.offset - 2.37), summary.x, k, lwd=0.8, lty="33", col=accent)
 
     graphics::par(cex=plot.info$cex, font=2, col="#111111")
     rcmetar.draw.bmj.headers(bundle, layout, ilab, k, metric, method, plan$headers$show)
 
-    if (rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-        graphics::text(layout$annotation.xpos, -0.65, summary$label, adj=c(0, 0), font=1)
-    rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -0.65, accent, layout$alim)
+    if (plan$rows$summary && rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
+        graphics::text(layout$annotation.xpos, rcmetar.forest.row.baseline(-.65, 1),
+                       summary$label, adj=c(0, 0), font=1)
+    if (plan$rows$summary) rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -0.65, accent, layout$alim)
     graphics::par(cex=1)
-    rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex)
+    rcmetar.draw.bmj.axis(bundle, layout, plot.info$cex, axis.offset)
 
     graphics::par(cex=1, font=1, col="#111111")
     rcmetar.draw.forest.study.columns(bundle, rows, layout, ilab, plot.info$cex)
     rcmetar.draw.bmj.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
-    rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, summary$res)
+    rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, plan)
 
     invisible(bundle$changed.params)
-    }, display.path=display.path, caption=bundle$params$plot_caption)
 }
 
 rcmetar.bmj.summary.effect <- function(bundle) {
@@ -786,67 +761,51 @@ rcmetar.draw.bmj.study.effect.labels <- function(bundle, effect, layout, rows, c
             rcmetar.forest.effect.digits(bundle), bundle$params
         )
     }
-    graphics::text(layout$annotation.xpos, rows, labels, adj=c(0, 0), cex=cex)
+    graphics::text(layout$annotation.xpos, rcmetar.forest.row.baseline(rows, cex), labels, adj=c(0, 0), cex=cex)
 }
 
-rcmetar.draw.bmj.sequential.forest <- function(bundle, outpath) {
-    rcmetar.draw.revman.sequential.forest(bundle, outpath)
-}
-
-rcmetar.draw.bmj.default_like.forest <- function(bundle, outpath) {
-    default.bundle <- within(bundle, fp_style <- "default")
-    default.bundle$params$fp_accent_color <- rcmetar.forest.accent.color(bundle$params)
-    rcmetar.draw.default.forest(default.bundle, outpath)
-}
-
-rcmetar.draw.bmj.axis <- function(bundle, layout, cex) {
+rcmetar.draw.bmj.axis <- function(bundle, layout, cex, offset=0) {
     ticks <- rcmetar.forest.journal.axis.ticks(bundle, layout$alim)
     ticks <- rcmetar.forest.spaced.ticks(bundle, ticks, cex, layout$alim)
     labels <- rcmetar.forest.axis.labels(bundle, ticks)
-    y.axis <- -2.37
-    y.tick <- -2.21
-    y.label <- -2.83
-    span <- diff(layout$alim)
-    graphics::rect(layout$alim[[1]] - 0.04 * span, max(-6.05, graphics::grconvertY(0, from="ndc", to="user")), layout$alim[[2]] + 0.04 * span, -2.11, col="white", border=NA)
+    y.axis <- -2.37 + offset
+    y.tick <- y.axis + .16
+    y.label <- y.axis - graphics::strheight("Mg", cex=cex) * 1.4
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.9, col="#a7a9ac")
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8, col="#a7a9ac")
     # Use a common baseline even when digit heights differ between glyphs.
-    graphics::text(ticks, y.label - graphics::strheight("0", cex=cex) / 2,
+    graphics::text(ticks, y.label,
                    labels, cex=cex, col="#111111", adj=c(0.5, 0))
     invisible(NULL)
 }
 
-rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.res=NULL) {
+rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, plan) {
     graphics::par(xpd=NA)
-    if (!is.null(layout)) {
-        rcmetar.draw.bmj.total.row(bundle, x, layout, cex)
+    if (plan$rows$summary) {
+        rcmetar.draw.bmj.total.row(bundle, x, layout, cex, plan$summary_labels[[1L]])
+        inference <- plan$device$inference
+        if (length(inference)) {
+            graphics::text(x, -1.65 - plan$summary_extra[[1L]] - .85 * (seq_along(inference) - 1L),
+                           inference, adj=c(0, .5), cex=cex)
+        }
     }
-    if (nzchar(bundle$style_blocks$heterogeneity)) {
-        graphics::text(x, -1.65, bundle$style_blocks$heterogeneity, pos=4, cex=cex)
-    }
-    if (nzchar(bundle$style_blocks$test_overall)) {
-        graphics::text(x, -2.65, bundle$style_blocks$test_overall, pos=4, cex=cex)
-    }
-    prediction <- rcmetar.forest.prediction.label(bundle, summary.res)
-    if (nzchar(prediction)) graphics::text(x, -3.65, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
     # Reserve separate physical lines for the title and each direction block.
-    spacing <- graphics::strheight("M", cex=cex) * 2.2
-    label.y <- min(axis.footer$axis.label.y, -2.83 - spacing)
+    spacing <- graphics::strheight("Mg", cex=cex) * 1.65
+    label.y <- -2.37 + (plan$rows$axis_offset %||% 0) - spacing * 2
     if (nzchar(bundle$style_blocks$axis_label)) {
-        graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex)
+        graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex, adj=c(.5, 0))
     }
     rcmetar.draw.bmj.direction(bundle, axis.footer, label.y - spacing, cex)
     invisible(NULL)
 }
 
-rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
-    graphics::text(x, -0.65, paste0("Total (", display.confidence.level(bundle$params), "% CI)"),
-                   adj=c(0, 0), font=1, cex=cex)
+rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex, label) {
+    rcmetar.draw.forest.summary.label(x, -.65, label, cex, font=1)
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {
-            graphics::text(layout$ilab.xpos[[index]], -0.65,
+            graphics::text(layout$ilab.xpos[[index]], rcmetar.forest.row.baseline(-.65, cex),
                            rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[key]]),
                            adj=c(0.5, 0), font=1, cex=cex)
         }

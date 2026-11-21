@@ -1,0 +1,22 @@
+{
+  "amino.rcms": {
+    "tx A": "Intervention",
+    "tx B": "Control"
+  },
+  "bcg.rcms": {
+    "tx A": "BCG vaccine",
+    "tx B": "Control"
+  },
+  "continuous.rcms": {
+    "tx A": "Intervention",
+    "tx B": "Control"
+  },
+  "lymph.rcms": {
+    "test 1": "Index test",
+    "tx A": "Index test"
+  },
+  "meantime.rcms": {
+    "tx A": "Intervention",
+    "tx B": "Control"
+  }
+}

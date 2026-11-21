@@ -17,6 +17,7 @@ from tests.python.gui.qt_test_support import key_click, key_clicks, metric_actio
 
 from tests.e2e.desktop_scenarios import PLOT_PRODUCERS
 from tests.e2e.plot_observations import load_saved_analysis
+from tests.sample_projects import SAMPLE_FILES
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -203,7 +204,7 @@ def confidence_inclusion(app, window, record):
     from rc_metastudio.results import window as results_window
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
 
     def set_ci(dialog):
         dialog.confidence_level_spinbox.setValue(90)
@@ -354,14 +355,14 @@ def zero_cells(app, window, record):
     assert "Freeman–Tukey transformed proportion estimates were pooled" in view.manuscript.methods, view.manuscript.methods
     assert "(Freeman–Tukey transformed proportion)" in view.manuscript.title, view.manuscript.title
     assert "Participants in Control" not in report, report
-    assert "1,097" in report and "Participants in Intervention" in report, report
+    assert "1,097 participants)" in report and "Participants in Intervention" not in report, report
     assert "Comparison: Intervention / Control" not in manuscript, manuscript
     assert "Arm: Intervention" in manuscript, manuscript
     view.close()
     window.workspace.mark_saved()
 
     # One participant per group leaves no residual degrees of freedom for SMD.
-    assert window.open(str(ROOT / "sample_projects/continuous.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     metric_action(window.menuMetric, "SMD").trigger()
     model = window.model
     for column in (model.RAW_DATA[0], model.RAW_DATA[3]):
@@ -475,7 +476,6 @@ def plots(app, window, family, record, *, view=None):
             values["style"] = dialog.style_cbo.currentText()
         if family == "forest":
             values["bounds"] = (dialog.plot_lb_le.text(), dialog.plot_ub_le.text())
-            values["directions"] = (dialog.favours_left.text(), dialog.favours_right.text())
             values["order"] = dialog.study_order.currentData()
         return values
 
@@ -538,34 +538,15 @@ def plots(app, window, family, record, *, view=None):
                 click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         if family in {"forest", "cumulative", "leave-one-out", "subgroup"}:
             original_style = dialog.style_cbo.currentText()
-            original_directions = (dialog.favours_left.text(), dialog.favours_right.text())
-            for names in (("Intervention", "Control"), (
-                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-up",
-                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-through",
-            )):
-                dialog.favours_left.setText("Favours " + names[0])
-                dialog.favours_right.setText("Favours " + names[1])
-                for style in ("Default", "RevMan", "BMJ"):
-                    dialog.style_cbo.setCurrentText(style)
-                    assert dialog.style_cbo.currentText() == style
-                    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
-                    from rc_metastudio import r_bridge
-                    r_bridge.ro.globalenv["verified_footer_path"] = str(artifact.params_path) + ".plotdata"
-                    null_inside = bool(r_bridge.ro.r(
-                        "local({ state <- new.env(); load(verified_footer_path, envir=state); "
-                        "limits <- RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim; "
-                        "null <- RCMetaR:::rcmetar.metafor.refline(state$plot.data, limits); "
-                        "is.finite(null) && null > limits[[1]] && null < limits[[2]] })"
-                    )[0])
-                    expected = tuple("Favours " + name for name in names) if null_inside or style == "BMJ" else ()
-                    measurements = check_forest_footer(path, expected_directions=expected)
-                    retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
-                    retained.write_bytes(path.read_bytes())
-                    record("forest-footer-geometry", dialog, family=family, style=style,
-                           names=names, measurements=measurements, artifacts={"SVG": str(retained)})
+            for style in ("Default", "RevMan", "BMJ"):
+                dialog.style_cbo.setCurrentText(style)
+                assert dialog.style_cbo.currentText() == style
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                check_forest_footer(path, expected_directions=())
+                retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}.svg"
+                retained.write_bytes(path.read_bytes())
+                record("forest-footer-neutral", dialog, family=family, style=style, artifacts={"SVG": str(retained)})
             dialog.style_cbo.setCurrentText(original_style)
-            dialog.favours_left.setText(original_directions[0])
-            dialog.favours_right.setText(original_directions[1])
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
         for heading in ("figure_caption", "col1_str_edit", "col2_str_edit", "col3_str_edit", "col4_str_edit", "x_lbl_le", "x_label_edit", "y_label_edit"):
             control = getattr(dialog, heading, None)
@@ -618,14 +599,8 @@ def plots(app, window, family, record, *, view=None):
             if family == "forest":
                 dialog.plot_lb_le.setText("10")
                 dialog.plot_ub_le.setText("11")
-                assert [dialog.favours_left.text(), dialog.favours_right.text()] == ["Favours " + name for name in window.model.arm_names]
-                dialog.favours_left.setText("Favours treatment")
-                dialog.favours_right.setText("Favours control")
                 dialog.study_order.setCurrentIndex(dialog.study_order.findData("year"))
         box = dialog.button_box if funnel else dialog.buttonBox
-        if family == "forest":
-            dialog.content_scroll.ensureWidgetVisible(dialog.favours_right)
-            app.processEvents()
         dialog.content_scroll.ensureWidgetVisible(dialog.figure_caption)
         dialog.repaint()
         wait(250)
@@ -667,7 +642,7 @@ def plots(app, window, family, record, *, view=None):
             expected_params["fp_style"] = "revman"
         if family == "forest":
             expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
-            expected_params.update(fp_favours_left="Favours treatment", fp_favours_right="Favours control", fp_study_order="year")
+            expected_params.update(fp_study_order="year")
             from rc_metastudio import r_bridge
 
             r_bridge.ro.globalenv["verified_plot_path"] = (
@@ -966,6 +941,7 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
         name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
         assert f"*.{extension}" in name_filter, (extension, name_filter)
         assert destination.is_file(), destination
+        rendered_pages: list[QtGui.QImage] = []
         if extension == "svg":
             renderer = QSvgRenderer(str(destination))
             assert renderer.isValid()
@@ -974,14 +950,18 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
             painter = QtGui.QPainter(rendered)
             renderer.render(painter)
             painter.end()
+            rendered_pages.append(rendered)
         elif extension == "pdf":
             from PyQt6.QtPdf import QPdfDocument
 
             document = QPdfDocument(view)
             assert document.load(str(destination)) == QPdfDocument.Error.None_
-            assert document.pageCount() == 1
-            rendered = document.render(0, QtCore.QSize(400, 400))
-            assert not rendered.isNull()
+            assert document.pageCount() > 0
+            a4 = QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4).sizePoints()
+            for page in range(document.pageCount()):
+                if document.pageCount() > 1:
+                    assert document.pagePointSize(page).toSize() == a4
+                rendered_pages.append(document.render(page, QtCore.QSize(400, 400)))
             document.close()
         else:
             from PIL import Image
@@ -1003,7 +983,8 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
                     )
                     < 200
                 )
-        if extension in ("svg", "pdf"):
+        for rendered in rendered_pages:
+            assert not rendered.isNull()
             assert any(
                 rendered.pixelColor(x, y).lightness() < 200
                 for x in range(0, 400, 4)
@@ -1040,7 +1021,7 @@ def calculators(app, window, mode, record):
             family
         ]
         assert window.open(
-            str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+            str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True
         )
     kind = {
         "binary": BinaryDataDialog,
@@ -1822,7 +1803,7 @@ def calculators(app, window, mode, record):
 def table_covariates(app, window, record):
     from rc_metastudio.add_new_dialogs import AddCovariateDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     for name, kind in (("Dose", "continuous"), ("Region", "factor")):
 
         def add(dialog, name=name, kind=kind):
@@ -2140,7 +2121,7 @@ def shell(app, window, record):
     assert window.isMaximized() and not window.isFullScreen()
     record("startup-maximized-after-full-screen", window)
 
-    sample = str(ROOT / "sample_projects/amino.rcms")
+    sample = str(ROOT / "tests/fixtures/desktop-projects/amino.rcms")
     with patch.object(
         QtWidgets.QFileDialog, "getOpenFileName", return_value=(sample, "")
     ):
@@ -2161,7 +2142,7 @@ def shell(app, window, record):
     with patch.object(
         QtWidgets.QFileDialog,
         "getOpenFileName",
-        return_value=(str(ROOT / "sample_projects/continuous.rcms"), ""),
+        return_value=(str(ROOT / "tests/fixtures/desktop-projects/continuous.rcms"), ""),
     ):
         modal(app, QtWidgets.QMessageBox, cancel, window.action_open.trigger)
     assert window.model.get_studies(False)[0].label == "Unsaved study"

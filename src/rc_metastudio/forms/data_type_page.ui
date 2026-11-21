@@ -218,7 +218,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Proportions</string>
+        <string>Two-arm binary</string>
        </property>
        <property name="icon">
         <iconset resource="../images/icons.qrc">

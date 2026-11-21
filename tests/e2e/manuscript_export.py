@@ -16,6 +16,7 @@ from tests.python.gui.qt_test_support import mouse_click, required
 
 
 from tests.e2e.report_retention import assert_report as assert_manuscript_tables
+from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, root, record, analyze, *, direct_write=False):
@@ -259,7 +260,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     assert any(7 in row.covariate_values.values() for row in retained)
     assert len(retained) == 23, len(retained)
     record('legacy-row-boundaries', window, retained=len(retained), input=str(fixture))
-    with zipfile.ZipFile(root / 'sample_projects/amino.rcms') as archive:
+    with zipfile.ZipFile(root / 'tests/fixtures/desktop-projects/amino.rcms') as archive:
         members = {name: archive.read(name) for name in archive.namelist()}
     project = json.loads(members['project.json'])
     row = project['sheets'][0]['rows'][0]
@@ -284,7 +285,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     # Real result Methods must describe where correction enters each estimator.
     for method in ("binary.fixed.mh", "binary.fixed.peto"):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
         expected = "A continuity correction of 0.5 was applied to estimable individual study effects only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts. The 2 studies with no events in either arm had no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
@@ -304,7 +305,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         close_result(view)
     for sample, method in (("amino", "binary.random"), ("continuous", "continuous.random"), ("lymph", "diagnostic.reitsma"), ("Pignon2000-HR", "time_to_event.random")):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects' / (sample + '.rcms')), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method, estimator="DL" if sample in {"amino", "continuous"} else None)
         if sample == "amino":
@@ -378,7 +379,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                             right = numeric if row_index == 0 or cell.text in missing else numeric_export_cell(cell.text)
                             assert cell.paragraphs[0].alignment == (WD_ALIGN_PARAGRAPH.RIGHT if right else WD_ALIGN_PARAGRAPH.LEFT), (row_index, column, cell.text)
                 assert len(doc.inline_shapes) >= len(view.results.images)
-                assert all(round(s.width / 36000) in (85, 180) for s in doc.inline_shapes)
+                assert all(round(s.width / 36000) in (85, 170) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
                 text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
@@ -428,7 +429,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert report_numbers(view.manuscript.results).replace('\u00a0', ' ') in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
-            assert text.index('Supplementary details') > text.rindex('Figure ')
+            assert text.index('Supplementary details') < text.index('Figure ')
             if sample == 'amino':
                 assert view.manuscript.title == 'Clinical failure: random-effects meta-analysis (odds ratio)'
                 prediction_note = '95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.'
@@ -489,8 +490,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             app.processEvents()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
-    window.model.current_sheet.settings['favours_labels'] = ['Favours Control', 'Favours Intervention']
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
+    window.model.current_sheet.settings['effect_direction'] = 'above'
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random', estimator='DL')
     assert_manuscript_tables(view)
@@ -509,7 +510,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     for workflow in ('subgroup', 'meta-regression'):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         studies = window.model.get_studies()
         window.model.add_covariate('Group', 'factor', {s.label: 'A' if i % 2 else 'B' for i, s in enumerate(studies)})
         window.model.add_covariate('Dose', 'continuous', {s.label: float(i + 1) for i, s in enumerate(studies)})
@@ -541,7 +542,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         captions = [p.text for p in exported.paragraphs]
         assert any(p.startswith('Table ') for p in captions)
         if 'Supplementary details' in captions:
-            assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
+            assert captions.index('Supplementary details') < min(i for i, p in enumerate(captions) if p.startswith('Figure '))
         (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         record('manuscript-' + workflow, view, results=prose)
         close_result(view)
@@ -550,7 +551,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.results.window import ResultsWindow
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     errors = []
     def run_small_study():
         dialog = app.activeModalWidget()

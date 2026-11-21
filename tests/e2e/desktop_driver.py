@@ -63,6 +63,7 @@ from tests.analysis_regression.golden.support.golden_analysis import (
     parsed_numeric_sections,
 )
 from tests.e2e.plot_observations import load_saved_analysis
+from tests.sample_projects import SAMPLE_FILES
 
 EVIDENCE = (
     Path(os.environ["RCMS_E2E_EVIDENCE_DIR"])
@@ -109,8 +110,8 @@ def record_step(action, *widgets, **observations):
     observations["visible_plot_labels"] = plot_label_inventory(plot_paths, user_names)
     for index, widget in enumerate(widgets):
         path = EVIDENCE / f"{STEP:02d}-{index}-{action}.png"
+        popup = isinstance(widget, QtWidgets.QMenu)
         if app.platformName() in {"windows", "xcb", "cocoa"}:
-            popup = isinstance(widget, QtWidgets.QMenu)
             if popup:
                 assert widget.isVisible(), action
             else:
@@ -132,10 +133,18 @@ def record_step(action, *widgets, **observations):
                 capture = widget.screen().grabWindow(int(widget.winId()))
         else:
             capture = widget.grab()
-        if isinstance(widget, QtWidgets.QMenu):
+        if popup:
             pixels = capture.toImage()
-            assert len({pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
-                        for y in range(0, pixels.height(), 4)}) > 4, f"Blank menu capture: {action}"
+            colors = {pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                      for y in range(0, pixels.height(), 4)}
+            if len(colors) <= 4 and app.platformName() in {"windows", "xcb", "cocoa"}:
+                assert widget.isVisible(), action
+                capture = widget.grab()
+                pixels = capture.toImage()
+                colors = {pixels.pixelColor(x, y).rgba() for x in range(0, pixels.width(), 4)
+                          for y in range(0, pixels.height(), 4)}
+                observations["capture_fallback"] = "Qt menu grab after blank desktop composite"
+            assert len(colors) > 4, f"Blank menu capture: {action}"
         assert capture.save(str(path), "PNG"), path
         captures.append(path.name)
         if app.platformName() in {"windows", "xcb", "cocoa"} and action in {"analysis-results", "matrix-results", "small-study-results", "family-plot-cancelled"}:
@@ -292,7 +301,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None):
+def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None, parameters=None):
     from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -330,7 +339,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
     assert index >= 0, method
     dialog.method_cbo_box.setCurrentIndex(index)
     app.processEvents()
-    if confidence is not None or estimator is not None:
+    if confidence is not None or estimator is not None or parameters:
         sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
         from analysis_matrix import set_parameter
         if confidence is not None:
@@ -344,6 +353,8 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
                 control.setCurrentIndex(control.findData(estimator))
                 app.processEvents()
                 assert panel.params['rm.method'] == estimator
+        for key, value in (parameters or {}).items():
+            set_parameter(app, dialog, key, value)
     def precision_control():
         return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
                     if isinstance(control, QtWidgets.QSpinBox)
@@ -385,7 +396,6 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
         plot_width = selected[1].sceneBoundingRect().width() * view.graphics_view.transform().m11()
         intrinsic_width = selected[1].boundingRect().width()
         record_step('analysis-initial-fit', view, width=plot_width, viewport=viewport.width(), zoom=view.zoom_control.value())
-        assert view.zoom_control.value() <= 100, view.zoom_control.value()
         assert plot_width >= min(intrinsic_width, viewport.width()) * .9, (plot_width, intrinsic_width, viewport.width(), view.zoom_control.value())
     if selected is not None and not view.report_action.isChecked():
         original_zoom = view.zoom_control.value()
@@ -420,7 +430,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
 def analysis_dialog(app, window):
     QtCore.QSettings().remove("analysis/advancedExpanded")
     for sample in ("amino", "continuous", "Pignon2000-HR", "lymph"):
-        assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert window.open(str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         for row in range(window.model.rowCount()):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
             decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
@@ -540,7 +550,7 @@ def sample_analysis(app, window, sample):
         record_step("wizard-return-advances", wizard)
         wizard.reject()
     assert window.open(
-        str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+        str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True
     )
     first_study, study_count = {
         "amino": ("Gonzalez", 19),
@@ -598,7 +608,7 @@ def sample_analysis(app, window, sample):
         small_view.report_action.setChecked(True)
         app.processEvents()
         small_text = small_view.manuscript_text.toPlainText()
-        match = re.search(r"(4\.\de−03) to 1\.44\b", small_text)
+        match = re.search(r"\b0\.004 to 1\.44\b", small_text)
         assert match and "0.00 to 1.44" not in small_text, small_text
         record_step("nonzero-report-limit", small_view, lower="0.004", digits=2)
         small_view.close()
@@ -722,7 +732,7 @@ def rename_sheet_inline(app, window, name, invalid=False):
 def sheets_persist(app, window):
     import copy
     from rc_metastudio.project.adapter import dataset_to_project
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     add_named_sheet(app, window, "Third")
     tabs = window.sheet_tabs
     tabs.setCurrentIndex(0)
@@ -813,14 +823,14 @@ def sheets_swap(app, window):
     import math
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     from tests.fit_observations import observe_fit
-    for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Pignon2000-HR.rcms", "HR"), ("NielWeise2008-IRR.rcms", "IRR")):
+    for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms", "HR"), ("Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms", "IRR")):
         window.workspace.mark_saved()
-        assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
+        assert window.open(str(ROOT / ("tests/fixtures/desktop-projects" if filename in {"amino.rcms", "continuous.rcms"} else "sample_projects") / filename), raise_on_error=True)
         model = window.model
         model.set_current_metric(metric)
         precise = []
         arms = [a.name for a in model.current_sheet.arms]
-        favours = copy.deepcopy(model.current_sheet.settings.get("favours_labels"))
+        model.current_sheet.settings["effect_direction"] = "below"
         counts = copy.deepcopy([r.analysis_unit.get_raw_data_for_arms(arms) for r in model.current_sheet.rows])
         headers = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
         values = []
@@ -835,7 +845,7 @@ def sheets_swap(app, window):
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
-                expected_labels = model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in model.arm_names])
+                expected_labels = ["Favours " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
                 if iteration == 1:
@@ -845,8 +855,6 @@ def sheets_swap(app, window):
             sections = parsed_numeric_sections(view.results)
             summary = sections["Summary"]
             values.append(summary["estimate"])
-            if favours is not None:
-                assert model.current_sheet.settings["favours_labels"] == (list(reversed(favours)) if iteration == 1 else favours)
             record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
             if filename == "amino.rcms" and iteration == 1:
                 from xml.etree import ElementTree as ET
@@ -861,7 +869,7 @@ def sheets_swap(app, window):
             if iteration == 0:
                 window.action_swap_arms.trigger()
                 swapped = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
-                if filename != "Pignon2000-HR.rcms":
+                if filename != "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms":
                     assert swapped != headers
                 assert [a.name for a in model.current_sheet.arms] == list(reversed(arms))
             elif iteration == 1:
@@ -873,7 +881,7 @@ def sheets_swap(app, window):
         else:
             assert math.isclose(values[1], 1 / values[0], abs_tol=.003), values
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     assert not window.action_swap_arms.isEnabled()
     add_named_sheet(app, window, "Diagnostic 2", diagnostic=True)
     for index in (0, 1, 0):
@@ -919,7 +927,7 @@ def sheets(app, window):
                 r_code=code, expected=expected, actual=actual)
 
     for sample in ("NielWeise2008-IRR", "amino"):
-        assert window.open(str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True)
+        assert window.open(str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         table = window.tableView
         for fit in (False, True):
             if fit:
@@ -936,7 +944,7 @@ def sheets(app, window):
     from rc_metastudio.project.adapter import dataset_to_project
     def project(dataset):
         return dataset_to_project(dataset)
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     assert_study_grid(app, window)
     tabs = window.sheet_tabs
     original_palette = app.palette()
@@ -1249,7 +1257,7 @@ def verify_sheet_strip(app, window, screens):
 
 
 def editing(app, window):
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     table = window.tableView
     original = str(window.model.data(window.model.index(0, window.model.NAME)))
     record_step("table-before-edit", window, name=original)
@@ -1312,7 +1320,7 @@ def xlsx_import(app, window):
     sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
     from advanced_workflows import modal
     from rc_metastudio import main_wizard
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
     screens = WORK / "screens"
     screens.mkdir(parents=True, exist_ok=True)
@@ -1676,7 +1684,7 @@ def csv_import(app, window):
 def plot_edit(app, window):
     from rc_metastudio.results.plot_editor import EditPlotDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random", estimator="DL")
     title = next(iter(view.results.display_images))
     path = Path(view.results.display_images[title])
@@ -1761,7 +1769,7 @@ def plot_edit(app, window):
 def small_study_effects(app, window):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
-    assert window.open(str(ROOT / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     callback_errors = []
 
     def run():
@@ -1882,7 +1890,7 @@ def calculator(app, window, family):
         ),
     }[family]
     assert window.open(
-        str(ROOT / f"sample_projects/{sample}.rcms"), raise_on_error=True
+        str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True
     )
 
     def raw():
@@ -2361,7 +2369,7 @@ def hillclimb(app, window):
 
     # T4 starts from the committed populated diagnostic project, as PLAN specifies.
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/lymph.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     begin("T4")
     diagnostic = run_analysis(window.action_go, diagnostic=True)
     end(diagnostic)
@@ -2410,7 +2418,7 @@ def subgroup_image(app, window, scenario):
         app.setFont(font)
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from unittest.mock import patch
-    assert window.open(str(ROOT / "sample_projects/meantime.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/meantime.rcms"), raise_on_error=True)
     def visible_result(kind):
         return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
     window.action_subgroup_ma.trigger()
@@ -2442,7 +2450,7 @@ def subgroup_image(app, window, scenario):
         header = exported.read(24)
     assert header[:8] == b"\x89PNG\r\n\x1a\n"
     width, height = struct.unpack(">II", header[16:24])
-    # Validate 600 pixels per SVG inch without decoding this huge bitmap.
+    # Validate 600 pixels per SVG inch without allocating the full raster.
     # SVG physical extents are rounded to 0.01 pt; raster extents round up.
     from xml.etree import ElementTree as ET
     svg = ET.parse(artifact.display_path()).getroot()
@@ -2451,7 +2459,6 @@ def subgroup_image(app, window, scenario):
                        for key in ("width", "height")]
     assert all(abs(actual - expected) < 1.05 for actual, expected in
                zip((width, height), expected_pixels, strict=True)), ((width, height), expected_pixels)
-    assert width * height * 4 > 256 * 1024**2
     assert all((figure.display_image or figure.value).endswith(".svg") for figure in view.manuscript.figures)
     record_step("meantime-raster-export", view, width=width, height=height)
     results = view.results

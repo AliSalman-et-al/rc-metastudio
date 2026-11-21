@@ -48,11 +48,13 @@ These add to `editing`, `csv`, and the eight original New Dataset workflows plus
 
 ## Driving it with Qt E2E
 
-Preconditions: doctor passes; `sample_projects/amino.rcms` is readable; no user project is involved.
+Preconditions: doctor passes; `tests/fixtures/desktop-projects/amino.rcms` is readable; no user project is involved.
 
 - **Edit and persist.** Run `uv run python scripts/verify_rcms.py editing`. The driver opens the sample through the application's open path, edits the NAME column with a QLineEdit, sends Return, and triggers `action_undo`/`action_redo`. Save As uses an isolated file-picker destination. `workflow/edited.rcms` reopens with `München – edited`; `edit-reopened` captures the table and preserved save path after a corrupt open fails. The reopened data still analyze through real R.
 - **Import and persist.** Run `uv run python scripts/verify_rcms.py csv`. The wizard's `select_file_btn` loads a generated CSV. `csv-preview` shows three rows. The reopened `workflow/imported.rcms` contains `Alpha, München`, numeric Dose `7.0` and factor Region `South`; analysis displays the imported study weights.
 - **Entry reachability.** Editing/CSV call the open path directly and start CSV on its import page. New Dataset scenarios start at `action_new_dataset` and traverse real pages. For open menu/toolbar/shortcut/recent/startup or earlier CSV-page changes, add the exact entry drive. Handles: `action_open`, `action_save_as`, `action_save`, `action_import_csv`, `action_new_dataset`.
+
+- **Bundled sample protection.** `polish-journeys` opens every sample from the Welcome page, sample menu, File > Open and Recent. It checks Ctrl+S and Save on close, reopens each edited copy, checks the Recent entry and compares the original archive SHA-256 before and after. The drive uses a Qt Save As picker with an isolated output path.
 - `ux-improvements` adds a rejected header, deliberate unique-column mapping, duplicate mapping rejection, cleared-required-field rejection with both custom and exact headers, recovery without stale preview/payload, CSV-template headers, original raw counts/covariates after reopening, and inline duplicate covariate recovery. The CSV page keeps file selection when its picker is cancelled; errors disable completion and retain the file. Mapping and preview have separate tabs. Earlier import pages and native picker operation still need their own entry proof.
 
 ## Gotchas

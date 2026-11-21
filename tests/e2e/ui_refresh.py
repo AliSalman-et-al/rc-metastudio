@@ -94,9 +94,9 @@ def run(app, window, work, root, record, analyze):
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     from advanced_workflows import export_formats, modal
     drive(app, window, work, record)
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     view = analyze(app, window, 'binary.random')
-    assert [view.nav_tree.topLevelItem(i).text(0) for i in range(view.nav_tree.topLevelItemCount())] == ['Forest plot', 'Text report', 'Tables']
+    assert [view.nav_tree.topLevelItem(i).text(0) for i in range(view.nav_tree.topLevelItemCount())] == ['Forest plot', 'Text report', 'Data tables (CSV)']
     view.report_action.trigger()
     assert view.nav_tree.currentItem().text(0) == 'Text report'
     assert view.manuscript.methods in view.manuscript_text.toPlainText()

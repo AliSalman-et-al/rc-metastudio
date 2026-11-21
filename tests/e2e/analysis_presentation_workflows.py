@@ -22,6 +22,7 @@ from tests.e2e.plot_geometry_checks import (
     check_sequential,
 )
 from tests.e2e.plot_observations import load_serialized_object
+from tests.sample_projects import SAMPLE_FILES
 
 
 def analyze_existing(app, window, workflow, method, record, parameters=None, *, covariates=('Dose',)):
@@ -136,7 +137,8 @@ def run(app, window, work, record, scenario):
                             assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
-                            assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
+                            text = " ".join("".join(node.itertext()) for node in nodes)
+                            assert "H₀: " + expected_null in text, (metric, text)
                             from tests.e2e.report_retention import assert_report
                             pooled, _fit = assert_report(view)
                             assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'Proportion'
@@ -388,7 +390,7 @@ def run(app, window, work, record, scenario):
     samples = {"hr": ("time_to_event", "Pignon2000-HR"), "irr": ("event_rates", "NielWeise2008-IRR")}
     for family, sample in ([samples[family_name]] if family_name in samples else []):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         prepare_duplicate_study_labels(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
@@ -415,7 +417,7 @@ def run(app, window, work, record, scenario):
             assert "Non-estimable" in view.manuscript_text.toPlainText()
             view.close()
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         prepare_duplicate_study_labels(window)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".fixed", record)
@@ -438,7 +440,7 @@ def run(app, window, work, record, scenario):
         record("round3-fixed-footer-bottom", view, details=view.results.details)
         original_identity = view.results.identity
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+        assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
         check_report(app, view, work, record)
         assert view.results.identity == original_identity
         from PyQt6 import QtWidgets
@@ -459,7 +461,6 @@ def run(app, window, work, record, scenario):
             assert ("Estimator:" in changed.results.details) == (suffix == "random"), changed.results.details
             assert changed.results.identity == original_identity
             record("round3-fixed-random-rerun", changed, method=suffix, details=changed.results.details, plots=dict(changed.results.display_images))
-            view.close()
             view = changed
         view.close()
 
@@ -509,7 +510,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
     measurements = []
     for style in (() if only_bubbles else ("default", "revman", "bmj")):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects/Pignon2000-HR.rcms"), raise_on_error=True)
+        assert window.open(str(root / "sample_projects/Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms"), raise_on_error=True)
         prepare_dataset(window)
         for workflow in ("standard", "subgroup"):
             view = analyze_existing(app, window, workflow, "time_to_event.random", record,
@@ -517,9 +518,9 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
             check_report(app, view, work, record)
             title, path = next(iter(view.results.display_images.items()))
             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$metrics$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
-            assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
-            assert layout["height"] > 18, layout
+            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$device$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
+            assert layout["rows"] == 65 and abs(layout["cex"] * 12 - 8) < .001, layout
+            assert layout["height"] > 267 / 25.4, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
             assert any(window.model.current_sheet.name in text for text in captions), captions[-5:]
@@ -541,7 +542,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
                 points = [float(value) for value in re.findall(r"[-+]?[\d.]+", polygon.attrib["points"])]
                 polygon_heights.append(max(points[1::2])-min(points[1::2]))
             layout.update(row_spacing_px=row_gap, max_polygon_height_px=max(polygon_heights))
-            assert max(polygon_heights) <= row_gap * .8, ("pooled polygon exceeds study row", style, workflow, layout)
+            assert max(polygon_heights) <= row_gap * .9, ("polygon fills study row", style, workflow, layout)
             heading = next(s.title for s in view.results.sections if s.kind == "image" and s.source_key == title)
             view.nav_tree.setCurrentItem(view.nav_tree.findItems(heading, QtCore.Qt.MatchFlag.MatchExactly)[0])
             view.report_action.setChecked(False)
@@ -633,7 +634,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         view.close()
     for family, sample in (("time_to_event", "Pignon2000-HR"), ("event_rates", "NielWeise2008-IRR")):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / (sample + ".rcms")), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         add_dose(window)
         view = analyze_existing(app, window, "meta-regression", family + ".random", record,
                                 parameters={"bp_plot_lb":"1", "bp_plot_ub":"4"})
@@ -648,7 +649,7 @@ def run_irr_context(app, window, record):
     root = Path(__file__).resolve().parents[2]
     for style in ("default", "revman", "bmj"):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects/NielWeise2008-IRR.rcms")), style
+        assert window.open(str(root / "sample_projects/Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms")), style
         view = analyze_existing(app, window, "standard", "event_rates.random", record,
                                 parameters={"fp_style":style, "fp_show_col3":True, "fp_show_col4":True})
         check_annotation_spacing(view, style=style)

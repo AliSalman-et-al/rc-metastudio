@@ -13,9 +13,19 @@ from collections.abc import Mapping
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from PyQt6.QtCore import QMarginsF, QRectF, QSettings
+from PyQt6.QtGui import QPageSize, QPainter, QPdfWriter
+from PyQt6.QtSvg import QSvgRenderer
+
 from rc_metastudio import r_bridge
+from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.plot_capabilities import PlotRegenerator
 from rc_metastudio.r_call_serialization import serialized_r_call
+
+
+# Match RCMetaR's bitmap device guard.
+RASTER_MAX_DIMENSION = 32000
+RASTER_MAX_PIXELS = 150_000_000
 
 
 class PlotServiceError(RuntimeError):
@@ -91,9 +101,29 @@ class PlotService:
                      output_path: str, width: float, height: float, dpi: int,
                      include_title: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
+        geometry = r_bridge.forest_export_dimensions(params_path, width, include_title) if regenerator == "forest" else None
+        if geometry is not None:
+            height, minimum_width = geometry
+            if width < minimum_width - 1e-8:
+                raise PlotServiceError(f"Minimum width for this figure: {minimum_width * 25.4:.1f} mm")
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
-            if not r_bridge.render_plot_bundle(params_path, regenerator, str(source), include_title=include_title):
+            extension = Path(output_path).suffix.lower()
+            if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
+                page_width = min(width, 180 / 25.4)
+                if page_width < geometry[1] - 1e-8:
+                    raise PlotServiceError("This figure is too wide for A4. Turn off A4 pages to export a single PDF page.")
+                paths = r_bridge.render_plot_bundle(
+                    params_path, regenerator, str(source), include_title=include_title,
+                    width=page_width, page_height=250 / 25.4,
+                )
+                _write_a4_pdf(output_path, paths)
+                return
+            paths = r_bridge.render_plot_bundle(
+                params_path, regenerator, str(source), include_title=include_title,
+                width=width if regenerator == "forest" else None,
+            )
+            if not paths:
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             ET.register_namespace('', 'http://www.w3.org/2000/svg')
             ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
@@ -133,6 +163,30 @@ class PlotService:
         if not r_bridge.render_plot_bundle(params_path, regenerator, output_path,
                                            include_title=include_title, outline_text=outline_text):
             raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+
+
+def _paginate_pdf() -> bool:
+    return str(QSettings().value("export/paginate_pdf", True)).lower() == "true"
+
+
+def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
+    writer = QPdfWriter(output)
+    writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+    writer.setPageMargins(QMarginsF(15, 15, 15, 15))
+    writer.setResolution(600)
+    page = writer.pageLayout().paintRectPixels(writer.resolution())
+    painter = QPainter(writer)
+    try:
+        for index, path in enumerate(paths):
+            if index:
+                writer.newPage()
+            svg = QSvgRenderer(svg_bytes_for_qt(path))
+            bounds = svg.viewBoxF()
+            scale = min(writer.resolution() / 72, page.width() / bounds.width(), page.height() / bounds.height())
+            w, h = bounds.width() * scale, bounds.height() * scale
+            svg.render(painter, QRectF((page.width() - w) / 2, 0, w, h))
+    finally:
+        painter.end()
 
 
 def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float:

@@ -145,7 +145,7 @@ def visible_pdf_text(path, table_headers=()):
 
 
 
-def capture(view, directory):
+def capture(view, directory, *, system_clipboard=True):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     held = [dict(section=s.title, source=s.source_key, **asdict(t))
@@ -161,18 +161,26 @@ def capture(view, directory):
     target = directory / (key + "-" + uuid4().hex[:8])
     previous_cursor = view.manuscript_text.textCursor()
     view.manuscript_text.selectAll()
-    view.manuscript_text.copy()
+    if system_clipboard:
+        view.manuscript_text.copy()
+        source = required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report')
+        copied_html, copied_text = source.html(), source.text()
+    else:
+        source = view.manuscript_text.textCursor().selection()
+        copied_html, copied_text = source.toHtml(), source.toPlainText()
     view.manuscript_text.setTextCursor(previous_cursor)
     target.mkdir(exist_ok=True)
     report = view.manuscript
-    (target / 'copy.html').write_text(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html(), encoding="utf-8")
+    (target / 'copy.html').write_text(copied_html, encoding="utf-8")
+    (target / 'copy.txt').write_text(copied_text, encoding="utf-8")
+    assert copied_html and copied_text, f"Could not read the copied report: {target}"
     write_docx(report, target / 'report.docx')
     write_pdf(report, target / 'report.pdf')
     doc = Document(str(target / 'report.docx'))
     doc_tables = [[[c.text for c in row.cells] for row in table.rows] for table in doc.tables]
     pdf = visible_pdf_text(target / 'report.pdf', [table.headers for section in report.sections for table in section.tables])
     surfaces = {
-        'copy': required(QApplication.clipboard(), 'clipboard').text(),
+        'copy': copied_text,
         'pdf': pdf,
         'docx': '\n'.join([*(p.text for p in doc.paragraphs), *(c for t in doc_tables for r in t for c in r)]),
     }
@@ -186,7 +194,8 @@ def capture(view, directory):
                             if any(token not in tokens for token in numeric_tokens(value))]
         (target / (surface + '.txt')).write_text(text, encoding="utf-8")
     data = dict(title=report.title, held=held, held_text=held_text, held_notes=held_notes, presented=presented,
-                docx_tables=doc_tables, missing=missing, directory=str(target))
+                docx_tables=doc_tables, missing=missing, directory=str(target),
+                selection_source="system clipboard" if system_clipboard else "Qt selection")
     (target / 'audit.json').write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return data
 
@@ -370,7 +379,7 @@ def assert_retained_table(view, section, source):
     return tables[0]
 
 
-def assert_report(view):
+def assert_report(view, *, system_clipboard=True):
     from rc_metastudio.results.formatting import numeric_cell, report_cell, report_numbers
 
     report_text = view.manuscript.plain_text().casefold()
@@ -482,10 +491,10 @@ def assert_report(view):
                 assert not retained.tables
                 assert retained.paragraphs[:1] == (section.title + ':',)
                 assert retained.paragraphs[1:] == tuple(section.value.splitlines()) + section.paragraphs
-    data = capture(view, Path(sys.argv[2]) / 'report-retention')
+    data = capture(view, Path(sys.argv[2]) / 'report-retention', system_clipboard=system_clipboard)
     assert_exports(view, data)
     document = QTextDocument()
-    document.setHtml(required(required(QApplication.clipboard(), 'clipboard').mimeData(), 'copied report').html())
+    document.setHtml((Path(data['directory']) / 'copy.html').read_text(encoding='utf-8'))
     copied_lines = document.toPlainText().splitlines()
     for section in view.results.sections:
         if section.source_key == 'small-study.warning':

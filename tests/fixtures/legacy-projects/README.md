@@ -8,9 +8,9 @@ Do not regenerate them from the current project writer to make migration tests p
 
 | File | Bytes | Original Git blob | SHA-256 |
 | --- | ---: | --- | --- |
-| BCG.rcms | 4235 | `8d0ed88992e4af44710c96e44ba5d5700490f474` | `ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839` |
-| NielWeise2008-IRR.rcms | 1691 | `230f24bee6b159ba67bd915afd7019abe75e64ed` | `4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12` |
-| Pignon2000-HR.rcms | 5000 | `9f10c958242de65e73057a9b0c63ad8c6ff4328a` | `17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9` |
+| bcg.rcms | 4235 | `8d0ed88992e4af44710c96e44ba5d5700490f474` | `ee66fecdcf79a36f665a27b8b02509a4e3478cb6a00362fe4d6e9c7e63f0f839` |
+| Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms | 1691 | `230f24bee6b159ba67bd915afd7019abe75e64ed` | `4b0ba4c9c515da90a5768b4729886ccfb73a5ef4f239321ff1daca01b13ebb12` |
+| Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms | 5000 | `9f10c958242de65e73057a9b0c63ad8c6ff4328a` | `17e94f1436a1be97a5e14f3cf3ff8db3818198f4a1132ba0b32fb0976ade86f9` |
 | amino.rcms | 9501 | `8a270bb6a8fd780de1a7b85f0956c863af8f756b` | `374681cc5f740f06d39a117047e4133b745dd8ae30c4974f5ab7c9f94d90b763` |
 | continuous.rcms | 1802 | `456a5443d377e6f4297043f0247421627b3d3cac` | `025ae202f23eed7da8d5bc02aa0fa6d6e4d89b4f78179a5d1a3831c0a6d59093` |
 | lymph.rcms | 8180 | `3a8355dfba55125f538e87b405abbbcfb771f3cd` | `2af63bc180d118a1729b79327563bfbdc67de909296c5f8d07dda14cd84d4fcb` |

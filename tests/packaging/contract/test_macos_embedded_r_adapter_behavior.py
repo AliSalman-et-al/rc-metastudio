@@ -585,7 +585,7 @@ def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path)
                     "result_text": True,
                     "save_reopen": True,
                     "analysis_after_reopen": True,
-                    "converted_sample": "BCG.rcms",
+                    "converted_sample": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
                     "expected_normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
                     "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
                     "raw_summary_sha256": "a" * 64,
@@ -607,7 +607,7 @@ def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path)
                         "manifest_sha256": "c" * 64,
                         "projects": [
                             {
-                                "project": "BCG.rcms",
+                                "project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
                                 "sha256": "d" * 64,
                                 "semantic_sha256": "e" * 64,
                                 "opened_in_packaged_application": True,
@@ -635,7 +635,7 @@ def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path)
             {
                 "schema_version": 1,
                 "platform_plugin": "cocoa",
-                "project": "BCG.rcms",
+                "project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
                 "post_close": True,
                 "pid": 123,
             }

@@ -12,17 +12,19 @@ from PyQt6.QtWidgets import (
 from rc_metastudio import adaptive_window, qt_text
 from rc_metastudio.analysis.catalog import ALL_METRIC_NAMES
 from rc_metastudio.analysis.validation import normal_confidence_multiplier
+from rc_metastudio.calculators.controls import add_study_context
 from rc_metastudio.results.formatting import NUM_DIGITS, format_effect_number
 
 
 class RatioDataDialog(QDialog):
-    def __init__(self, analysis_unit, arm_names, metric, parent=None):
+    def __init__(self, analysis_unit, arm_names, metric, parent=None, *, study_name: str = ""):
         super().__init__(parent)
         self.analysis_unit = analysis_unit
         self.arm_names = arm_names
         self.effect_metric = metric
         self.setWindowTitle(f"{ALL_METRIC_NAMES[metric]} study data")
         layout = QVBoxLayout(self)
+        add_study_context(self, layout, study_name)
         self.help_text = QLabel()
         self.help_text.setWordWrap(True)
         layout.addWidget(self.help_text)

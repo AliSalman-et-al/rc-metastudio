@@ -5,9 +5,14 @@ import os
 import hashlib
 import importlib.util
 import json
+import tomllib
 from pathlib import Path
 
 repo_root = Path(SPECPATH).resolve().parents[1]
+project_version = os.environ.get("RCMS_PROJECT_VERSION")
+if project_version is None:
+    with (repo_root / "pyproject.toml").open("rb") as metadata:
+        project_version = tomllib.load(metadata)["project"]["version"]
 collection_spec = importlib.util.spec_from_file_location(
     "rcms_generated_ui_collection",
     repo_root / "packaging" / "pyinstaller" / "generated_ui_collection.py",
@@ -102,7 +107,7 @@ app = BUNDLE(
     bundle_identifier=os.environ.get(
         "RCMS_BUNDLE_IDENTIFIER", "org.researchconsultancy.rc-metastudio"
     ),
-    version=os.environ.get("RCMS_PROJECT_VERSION", "0.2.0"),
+    version=project_version,
     info_plist={
         "LSMinimumSystemVersion": os.environ.get("RCMS_MINIMUM_MACOS_VERSION", "14.0"),
         "NSHighResolutionCapable": True,

@@ -155,7 +155,7 @@ rcmetar.study.labels <- function(om.data) {
         for (index in which(has.year)) {
             year <- as.character(years[[index]])
             already.suffixed <- grepl(
-                paste0("(^|[^0-9])", year, "$"),
+                paste0("(^|[^0-9])", year, "[[:punct:]]*$"),
                 trimws(labels[[index]]),
                 perl=TRUE
             )
@@ -164,7 +164,7 @@ rcmetar.study.labels <- function(om.data) {
             }
         }
     }
-    rcmetar.truncate.plot.display.text(labels)
+    labels
 }
 
 rcmetar.bundle.transform <- function(bundle) {
@@ -311,7 +311,6 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
     # Earlier saved cumulative plots embedded the step count in each label.
     if (variant == "cumulative" && legacy.labels) labels <- mapply(function(label, i)
         sub(paste0(" \\(k = ", i, "\\)$"), "", label), labels, seq_along(labels), USE.NAMES=FALSE)
-    labels <- rcmetar.truncate.plot.display.text(labels)
 
     yi <- rcmetar.result.vector(results, "b")
     ci.lb <- rcmetar.result.vector(results, "ci.lb")
@@ -381,7 +380,6 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
     params <- rcmetar.normalize.plot.text.params(params)
 
     subgroup.list <- as.character(subgroup.data$subgroup.list)
-    display.subgroup.list <- rcmetar.truncate.plot.display.text(subgroup.list)
     grouped.data <- subgroup.data$grouped.data
     subgroup.results <- subgroup.data$results
     study.data <- grouped.data[seq_along(subgroup.list)]
@@ -471,7 +469,7 @@ rcmetar.build.subgroup.metafor.bundle <- function(om.data, params, subgroup.data
         changed.params = fields$changed.params,
         effect_display = fields$effect_display,
         subgroups = list(
-            names = display.subgroup.list,
+            names = rcmetar.truncate.plot.display.text(subgroup.list),
             results = subgroup.results[seq_along(subgroup.list)],
             overall = subgroup.results[[length(subgroup.list) + 1]],
             study_rows = unlist(study.rows, use.names=FALSE),
@@ -679,22 +677,24 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
 rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     ticks <- ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]]
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
+    null <- rcmetar.metafor.refline(bundle, alim)
+    if (is.finite(null)) ticks <- unique(c(ticks, null))
     labels <- rcmetar.forest.axis.labels(bundle, ticks)
     valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
     ticks <- ticks[valid]
     labels <- labels[valid]
     half.width <- graphics::strwidth(labels, cex=cex) / 2
-    gap <- graphics::strwidth("  ", cex=cex)
+    gap <- graphics::strwidth("    ", cex=cex)
     chosen <- integer(0)
-    # Keep the ratio null tick when it is present, then admit non-overlapping labels.
-    priority <- order(abs(ticks), ticks)
+    # Keep the null tick when it is visible.
+    priority <- order(ticks != null, abs(ticks), ticks, na.last=TRUE)
     for (index in priority) {
         if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {
             chosen <- c(chosen, index)
         }
     }
     # A central label can block both ends even when the two end labels fit.
-    if (length(chosen) < 2 && length(ticks) >= 2) {
+    if (length(chosen) < 2 && length(ticks) >= 2 && !is.finite(null)) {
         ends <- c(which.min(ticks), which.max(ticks))
         if (diff(range(ticks)) > sum(half.width[ends]) + gap) chosen <- ends
     }
@@ -856,37 +856,55 @@ rcmetar.metafor.group.headers <- function(bundle) {
 
 
 
-rcmetar.draw.metafor.forest <- function(bundle, outpath) {
+rcmetar.draw.metafor.forest <- function(bundle, outpath, width=NULL, dpi=NULL, page.height=NULL) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
-    style <- rcmetar.metafor.style(bundle$fp_style)
-    if (!is.null(style)) {
-        return(style$draw(bundle, outpath))
+    bundle <- rcmetar.forest.compact.headers(bundle)
+    plan <- rcmetar.forest.layout.preflight(bundle, width=width)
+    first.height <- page.height
+    if (!is.null(page.height)) {
+        caption <- .rcmetar.plot.caption.layout(bundle$params$plot_caption, plan$device)
+        first.height <- page.height - (caption$height %||% 0)
     }
-    rcmetar.draw.default.forest(bundle, outpath)
+    panels <- rcmetar.forest.paginate(bundle, plan, page.height, first.height)
+    paths <- if (length(panels) == 1L) outpath else
+        paste0(tools::file_path_sans_ext(outpath), "-", seq_along(panels), ".svg")
+    draw <- if (!is.null(plan$footer$axis)) {
+        if (plan$style$name == "bmj") rcmetar.draw.bmj.forest else rcmetar.draw.revman.forest
+    } else if (plan$rows$manual_sequential_labels && plan$style$name != "default") {
+        rcmetar.draw.revman.sequential.forest
+    } else {
+        rcmetar.draw.default.forest.panel
+    }
+    display <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
+    for (i in seq_along(panels)) {
+        panel <- panels[[i]]
+        panel$device$dpi <- dpi
+        figure <- bundle
+        figure$slab <- plan$labels
+        figure$subgroups <- panel$subgroups
+        rcmetar.render.plot_file(paths[[i]], panel$device, function() draw(figure, panel),
+            display.path=display, caption=if (i == 1L) bundle$params$plot_caption)
+    }
+    if (is.null(page.height)) invisible(bundle$changed.params) else paths
 }
 
-
-
-
-
-
-
-rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
+rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, cex, plan) {
     graphics::par(xpd=NA)
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
     rcmetar.draw.forest.study.columns(bundle, rows, layout, bundle$ilab, cex,
         font=ifelse(seq_along(rows) == 1L & isTRUE(bundle$has_overall), 2, 1))
-    if (isTRUE(bundle$has_overall) && length(rows) > 1) {
+    if (isTRUE(bundle$has_overall) && is.finite(rows[1]) && rows[1] == max(rows, na.rm=TRUE)) {
         graphics::segments(study.x, rows[1] - .5, annotation.x, rows[1] - .5, col="grey65", lwd=.6)
     }
-    if (!is.null(bundle$summary_res)) {
-        graphics::text(study.x, -0.5, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
-        rcmetar.draw.forest.inference(bundle, study.x, -0.5, cex, bundle$summary_res)
+    if (plan$rows$summary && !is.null(bundle$summary_res)) {
+        summary.y <- if (isTRUE(bundle$has_overall) && rows[1] < 0) -1.35 else -.5
+        rcmetar.draw.forest.summary.label(study.x, summary.y, plan$summary_labels[[1L]], cex)
+        rcmetar.draw.forest.inference(bundle, study.x, summary.y - plan$summary_extra[[1L]], cex, bundle$summary_res)
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
-        graphics::text(annotation.x, rows, labels, adj=c(1, 0), cex=cex, col="black")
+        graphics::text(annotation.x, rcmetar.forest.row.baseline(rows, cex), labels, adj=c(1, 0), cex=cex, col="black")
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE)) {
         first.row <- max(rows, na.rm=TRUE)
@@ -901,13 +919,21 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, k, cex) {
 }
 
 rcmetar.draw.forest.study.columns <- function(bundle, rows, layout, ilab, cex, font=1) {
+    baseline <- rcmetar.forest.row.baseline(rows, cex)
     if (rcmetar.param.is.true(bundle$params, "fp_show_col1", TRUE)) {
-        graphics::text(rcmetar.forest.study.x(layout), rows, bundle$slab,
+        lines <- strsplit(bundle$slab, "\n", fixed=TRUE)
+        wrapped <- lengths(lines) > 1L
+        spacing <- graphics::strheight("Mg", cex=cex) * .75
+        x <- rcmetar.forest.study.x(layout)
+        graphics::text(x, baseline + spacing * wrapped, vapply(lines, `[`, character(1), 1L),
                        adj=c(0, 0), cex=cex, col="black", font=font)
+        if (any(wrapped)) graphics::text(x, baseline[wrapped] - spacing,
+            vapply(lines[wrapped], `[[`, character(1), 2L), adj=c(0, 0), cex=cex,
+            col="black", font=rep_len(font, length(rows))[wrapped])
     }
     values <- rcmetar.forest.display.ilab(ilab$matrix)
     for (column in seq_len(ncol(values))) {
-        graphics::text(layout$ilab.xpos[column], rows, values[, column],
+        graphics::text(layout$ilab.xpos[column], baseline, values[, column],
                        adj=c(0.5, 0), cex=cex, col="black")
     }
 }
@@ -1018,7 +1044,8 @@ rcmetar.draw.metafor.single.study.interval.ends <- function(ci.lb, ci.ub, rows, 
 }
 
 rcmetar.draw.forest.refline <- function(plan, rows=plan$rows$study_rows) {
-    if (is.finite(plan$x$refline)) {
+    rows <- rows[is.finite(rows)]
+    if (is.finite(plan$x$refline) && length(rows)) {
         graphics::segments(plan$x$refline, min(rows) - 0.4,
                            plan$x$refline, max(rows) + 0.4,
                            lty=2, col="#888888")

@@ -7,7 +7,7 @@
 from contextlib import ExitStack
 from typing import TYPE_CHECKING, TypeGuard, cast
 
-from rc_metastudio.qt_layout import style_inline_error
+from rc_metastudio.qt_layout import configure_context_label, style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
 from PyQt6.QtGui import QAction, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
@@ -96,9 +96,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         confidence_level=None,
         calculator: CalculatorService | None = None,
         parent=None,
+        *,
+        study_name: str = "",
     ):
         super(ContinuousDataDialog, self).__init__(parent)
         self.setupUi(self)
+        calculator_controls.add_study_context(self, self.dialog_layout, study_name)
         self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.simple_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -129,6 +132,12 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self._effect_fields = calculator_controls.CalculatorEffectFields(
             self.effect_text_box, self.lower_text_box, self.upper_text_box,
         )
+        self.preview_source_label = QLabel(self.effect_group)
+        self.preview_source_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.preview_source_label.setForegroundRole(QPalette.ColorRole.PlaceholderText)
+        configure_context_label(self.preview_source_label)
+        self.effect_layout.addRow(self.preview_source_label)
+        self.preview_source_label.hide()
         self.wald_readout = calculator_effect_readout.make_wald_readout(self.dialog_layout, self.buttonBox)
         for editor in self._effect_fields.editors.values():
             editor.editingFinished.connect(app_error_handler.safe_slot(self._refresh_readout, parent=self))
@@ -675,10 +684,34 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         return "entered" if self._active_input_mode == "estimate" else "derived_preview"
 
     def _refresh_readout(self):
+        self.preview_source_label.hide()
+        if self._active_input_mode == "pre-post" and self.effect_text_box.text():
+            if not self._refresh_pre_post_source():
+                return
         calculator_effect_readout.update_wald_readout(
             self.wald_readout, self.analysis_unit, self.current_effect, self.arm_key,
             self.confidence_multiplier, "continuous", self._effect_source(),
         )
+
+    def _refresh_pre_post_source(self) -> bool:
+        arm_count = 2 if self.current_effect in CONTINUOUS_TWO_ARM_METRICS else 1
+        from_summaries = []
+        for row, arm in enumerate(self.arm_names[:arm_count]):
+            n, mean, sd, se = (self._get_float(row, col) for col in range(4))
+            if mean is None or ((n is None or sd is None) and (self.current_effect != "MD" or se is None)):
+                for editor in self._effect_fields.editors.values():
+                    editor.clear()
+                self.wald_readout.hide()
+                return False
+            if not required(self.simple_table.item(row, 0), "arm summary").data(Qt.ItemDataRole.UserRole + 1):
+                from_summaries.append(arm)
+        if from_summaries:
+            self.preview_source_label.setText(
+                "From arm summaries" if len(from_summaries) == arm_count
+                else f"From arm summaries for {from_summaries[0]} and pre/post summaries for the other arm."
+            )
+            self.preview_source_label.show()
+        return True
 
     def set_current_effect(self):
         calculator_effect_readout.populate_effect_ci_fields(

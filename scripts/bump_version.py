@@ -87,6 +87,11 @@ def main(argv: list[str] | None = None) -> int:
     root = args.root.resolve()
     replacements = [
         (
+            root / "CITATION.cff",
+            r'(?m)^version: "\d+\.\d+\.\d+"(?=\r?$)',
+            f'version: "{args.version}"',
+        ),
+        (
             root / "pyproject.toml",
             r'(?m)^version = "\d+\.\d+\.\d+"(?=\r?$)',
             f'version = "{args.version}"',

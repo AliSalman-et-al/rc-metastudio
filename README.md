@@ -22,7 +22,7 @@ The macOS release process includes signing and notarization. Windows and Linux a
 
 Start with **New project** to enter data, **Import data** for CSV, Excel or RevMan `.rm5` files, or **Open project** to continue a saved `.rcms` file. A project can contain independent outcome sheets.
 
-Follow [Your first meta-analysis](docs/tutorials/first-analysis.md) to open a public example, run a model and export its output. The [sample projects](sample_projects/README.md) cover binary, continuous, diagnostic, hazard-ratio and incidence-rate-ratio workflows. Their guide records source citations and provenance where known. The illustrative one-arm mean project contains synthetic data.
+Follow [Your first meta-analysis](docs/tutorials/first-analysis.md) to open a published example, run a model and export its output. The nine bundled projects use published data and cover binary, continuous, diagnostic, reported-effect, hazard-ratio and incidence-rate-ratio analyses. [Sample projects and sources](sample_projects/README.md)
 
 ## Analyses and output
 

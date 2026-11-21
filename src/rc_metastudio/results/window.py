@@ -21,6 +21,7 @@ from PyQt6.QtCore import (
     QObject,
     QPointF,
     QRectF,
+    QSettings,
     QTimer,
     QSignalBlocker,
     Qt,
@@ -274,17 +275,15 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         results: AnalysisResult,
         parent=None,
         plot_service: PlotService | None = None,
-        change_settings: Callable[[dict[str, object]], None] | None = None,
+        change_settings: Callable[[dict[str, object], QWidget], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
         *,
         source_sheet_name: str | None = None,
-        save_favours_labels: Callable[[str, str], None] | None = None,
         plot_overrides: dict[str, dict[str, object]] | None = None,
         save_plot_override: Callable[[str, dict[str, object]], None] | None = None,
     ):
 
         super(ResultsWindow, self).__init__(parent)
-        self._save_favours_labels = save_favours_labels
         self._plot_overrides = dict(plot_overrides or {})
         self._plot_defaults: dict[str, dict[str, object]] = {}
         self._save_plot_override = save_plot_override
@@ -424,7 +423,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._report_nav = QTreeWidgetItem(self.nav_tree, ["Text report"])
         self._report_nav.setToolTip(0, "Read the formatted analysis report")
         self._report_nav.setData(0, _REPORT_ANCHOR_ROLE, "")
-        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Tables"])
+        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Data tables (CSV)"])
         self._tables_nav.setToolTip(0, "Copy or export numerical tables")
         self._tables_nav.setDisabled(not self._report_tables)
         self._setup_results_actions()
@@ -507,7 +506,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _identity_facts(self, workflow, context, rest, description, separator):
         details = [workflow] if context and workflow != 'Meta-analysis' else []
-        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
+        model_info = dict(self.results.manuscript_model_info)
+        study_count = model_info.get('Studies included', model_info.get('Studies (k)'))
         models, confidence = self._identity_model_details(self.results.details)
         study_count = _identity_context_facts(rest, details, confidence, study_count)
         if separator:
@@ -525,7 +525,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self, source_name: str | None):
         identity = self.results.identity or "Analysis results"
-        self.setWindowTitle(identity.splitlines()[0])
         workflow, _, context = identity.partition(" — ")
         first, *rest = context.splitlines() if context else identity.splitlines()
         name, separator, description = first.partition(" · ")
@@ -534,6 +533,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             separator = ' · ' if first != source_name else ''
             description = first[len(source_name):].removeprefix(' · ')
         details = self._identity_facts(workflow, context, rest, description, separator)
+        self.setWindowTitle(self._result_window_title(identity, details))
         title_font = QFont(self.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
         title_font.setWeight(QFont.Weight.DemiBold)
@@ -555,6 +555,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.verticalLayout.setContentsMargins(margin, margin, margin, margin)
         self.verticalLayout.setSpacing(round(self.fontMetrics().height() * .5))
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+    def _result_window_title(self, identity: str, details: list[str]) -> str:
+        models, levels = self._identity_model_details(self.results.details)
+        title_facts = [model + (f" ({estimator})" if estimator else "") for model, estimator in models]
+        title_facts.extend(detail for detail in details if detail.startswith("Pooled display: "))
+        title_facts.extend(levels or [detail for detail in details if detail.endswith("% CI")])
+        return " · ".join((identity.splitlines()[0], *dict.fromkeys(title_facts)))
 
     def _refresh_header_palette(self):
         palette = QPalette(self.palette())
@@ -812,7 +819,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         mime.setText(stream.getvalue())
         mime.setHtml(table_html(headers, rows))
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Table copied", 4000)
+        scope = "Table" if headers else "Cell" if len(rows) == 1 and len(rows[0]) == 1 else "Selection"
+        self.statusbar.showMessage(f"{scope} copied", 4000)
 
     def _export_table(self):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -820,6 +828,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 stream.write(self._table_payload(","))
+            QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
             self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}", 4000)
 
     def _export_values(self):
@@ -839,6 +848,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     for q in quantities:
                         writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),
                                          q.scale, '' if q.level is None else f'{q.level:g}', cell))
+        QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
         self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}', 4000)
 
     def _show_tables(self):
@@ -869,7 +879,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcuts([QKeySequence("Ctrl+T"), QKeySequence("Ctrl+M")])
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        self.tables_action = QAction("Tables", self)
+        self.tables_action = QAction("Data tables (CSV)", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
@@ -1057,6 +1067,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             path = destination
             report = self.manuscript
             (write_docx if extension == "docx" else write_pdf)(report, path)
+            QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
     def _confirm_export_destination(self, selected, destination):
@@ -1073,7 +1084,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _export_name(self, title, extension):
         context = (self.results.identity or "Analysis results").split("\n")[0]
         name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
-        return name.strip(" .")[:160] + "." + extension
+        directory = Path(str(QSettings().value("export/last_directory", "")))
+        return str(directory / (name.strip(" .")[:160] + "." + extension))
 
     def _plot_entry(self, item: QTreeWidgetItem | None) -> _PlotEntry | None:
         if item is None:
@@ -1103,7 +1115,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params = self.plot_service.load_params(artifact.params_path)
             if params is not None:
                 plot_parameters = params
-        self._change_settings(plot_parameters)
+        self._change_settings(plot_parameters, self)
 
     def _edit_selected_plot(self):
         selected = self._selected_plot()
@@ -1638,7 +1650,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 reopen = self._change_settings
                 dialog.sequence_rerun.setEnabled(reopen is not None)
                 if reopen is not None:
-                    dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params()))
+                    dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params(), self))
 
         dialog.exec()
 
@@ -1662,11 +1674,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             updated_params=updated_params, output_path=outpath,
         )
 
-        if persist and regenerator == "forest" and self._save_favours_labels is not None:
-            self._save_favours_labels(
-                updated_params.get("fp_favours_left", ""),
-                updated_params.get("fp_favours_right", ""),
-            )
         if persist and self._save_plot_override is not None:
             exclusions = {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path",
                           "funnel.outpath", "funnel.kind", "funnel.index", "funnel.center"}
@@ -1713,11 +1720,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         source, ratio = figure_source(artifact.display_path())
         from PyQt6.QtSvg import QSvgRenderer
         text_per_inch = (0.0, 0.0)
+        forest_geometry = None
         if isinstance(source, QSvgRenderer):
             bounds = source.viewBoxF()
             width = bounds.width() / 72
             ratio = bounds.width() / bounds.height()
-            if artifact.params_path:
+            if artifact.params_path and artifact.capability.plot_kind in {
+                "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
+            }:
+                from functools import partial
+                from rc_metastudio import r_bridge
+                forest_geometry = partial(r_bridge.forest_export_dimensions, artifact.params_path)
+            elif artifact.params_path:
                 from tempfile import TemporaryDirectory
                 from rc_metastudio.results.plot_service import svg_text_points_per_inch
 
@@ -1735,6 +1749,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog = PlotExportDialog(
             artifact.export_formats(), width, width / ratio, self,
             resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
+            forest_geometry=forest_geometry,
             native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
         )
         if not dialog.exec():
@@ -1805,6 +1820,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 params_path=artifact.params_path,
                 output_path=destination,
             )
+        QSettings().setValue("export/last_directory", str(Path(destination).resolve().parent))
         self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}", 4000)
 
     def position(self):

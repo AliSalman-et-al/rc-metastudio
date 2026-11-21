@@ -96,7 +96,7 @@ def run(app, window, ROOT, WORK, record_step):
                        for group in subgroup_xml.iter('DICH_SUBGROUP')
                        for row in group.iter('DICH_DATA')}
     study_names = {study.get('ID'): study.get('NAME') for study in subgroup_xml.iter('STUDY')}
-    assert groups == {study_names[row.get('STUDY_ID')]: expected_groups.get(row.get('STUDY_ID'), '')
+    assert groups == {study_names[row.get('STUDY_ID')]: expected_groups.get(row.get('STUDY_ID'))
                       for row in subgroup_xml.iter('DICH_DATA')}
 
     subgroup_reference = WORK / 'subgroup-read-rm5.csv'
@@ -107,7 +107,7 @@ def run(app, window, ROOT, WORK, record_step):
         for ref in csv.DictReader(stream):
             if ref['type'] == 'D':
                 # read.rm5 prefixes group labels with comparison/outcome/group numbers.
-                assert ref['grplab'].endswith(groups[ref['studlab']])
+                assert ref['grplab'].endswith(groups[ref['studlab']] or '')
     window.set_model(subgroup_import.dataset)
     record_step('rm5-subgroup-covariate-imported', window, groups=groups,
                 reference=str(subgroup_reference))
@@ -115,6 +115,13 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     from rc_metastudio.results.window import ResultsWindow
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    selector = next(w for w in app.topLevelWidgets() if isinstance(w, SubgroupAnalysisDialog) and w.isVisible())
+    assert selector.missing_label.text() == "Missing subgroup for: ISIS-2 (1988). Assign a value or exclude the study."
+    assert not selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+    record_step('rm5-missing-subgroup-blocks-run', selector, missing=selector.missing_label.text())
+    selector.reject()
     # read.rm5 omits the ungrouped row: compare identical study sets.
     for row in subgroup_sheet.rows:
         row.include = bool(row.covariate_values[covariate])
@@ -151,6 +158,25 @@ def run(app, window, ROOT, WORK, record_step):
     assert len(actual) == len(expected) == 8
     assert all(abs(delta) <= 1e-6 for delta in differences[:6]), differences
     assert all(abs(delta) <= 1e-6 for delta in differences[6:]), differences
+    view.close()
+    missing_index = next(i for i, row in enumerate(subgroup_sheet.rows) if row.label == "ISIS-2")
+    model = window.model
+    assert model.setData(model.index(missing_index, model.columns.first_covariate), "Later trials")
+    assert model.setData(model.index(missing_index, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Checked.value,
+                         QtCore.Qt.ItemDataRole.CheckStateRole)
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    selector = next(w for w in app.topLevelWidgets() if isinstance(w, SubgroupAnalysisDialog) and w.isVisible())
+    assert not selector.missing_label.isVisible()
+    selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
+    setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData('binary.fixed.inv.var'))
+    setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click()
+    app.processEvents()
+    view = next(w for w in app.topLevelWidgets() if isinstance(w, ResultsWindow) and w.isVisible())
+    assert dict(view.results.manuscript_model_info)["Studies (k)"] == str(len(subgroup_sheet.rows))
+    record_step('rm5-assigned-subgroup-results', view)
     view.close()
     failures = []
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
@@ -219,7 +245,7 @@ def run(app, window, ROOT, WORK, record_step):
             assert any('unavailable' in d for d in imported.differences)
     assert not failures, failures
     with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Discard):
-        assert window.open(str(ROOT / 'sample_projects/amino.rcms'), raise_on_error=True)
+        assert window.open(str(ROOT / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     window.model.setData(window.model.index(0, window.model.NAME), 'Dirty study', QtCore.Qt.ItemDataRole.EditRole)
     before = dataset_to_project(window.model.dataset)
     state = (window.workspace.path, window.workspace.is_dirty, tuple(window.workspace._history))

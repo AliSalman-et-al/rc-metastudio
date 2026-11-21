@@ -1,45 +1,124 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, size.policy="export") {
+rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width=NULL,
+                                           measure.minimum=FALSE) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
     style <- if (is.null(style) || length(style) == 0) "default" else as.character(style[[1]])
+    bundle$target_width <- width
+    bundle$fp_style <- style
+    bundle <- rcmetar.forest.compact.headers(bundle)
+    bmj <- identical(style, "bmj") && inherits(bundle$res, "rma") &&
+        !identical(bundle$forest_variant, "subgroup")
+    bundle$size <- rcmetar.forest.measured.size(bundle, bmj, width, measure.minimum)
     if (identical(style, "revman") &&
             inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")) {
-        plan <- rcmetar.forest.revman.layout.preflight(bundle, size.policy=size.policy)
-    } else if (identical(style, "bmj") &&
-            inherits(bundle$res, "rma") &&
-            !identical(bundle$forest_variant, "subgroup")) {
-        plan <- rcmetar.forest.bmj.layout.preflight(bundle, size.policy=size.policy)
+        plan <- rcmetar.forest.revman.layout.preflight(bundle)
+    } else if (bmj) {
+        plan <- rcmetar.forest.bmj.layout.preflight(bundle)
     } else {
-        plan <- rcmetar.forest.default.layout.preflight(bundle, style=style, size.policy=size.policy)
+        plan <- rcmetar.forest.default.layout.preflight(bundle, style=style)
     }
     if (length(bundle$display_order) == length(plan$rows$study_rows)) {
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
-    direction <- rcmetar.forest.direction.metrics(bundle, plan)
-    plan$device$direction_lines <- direction$lines
-    plan$device$height <- plan$device$height + max(0, direction$lines - 2) * direction$spacing
-    # Reserve device space beyond the null for full-size direction labels.
-    if (direction$lines > 0 && rcmetar.forest.style(bundle$params) != "bmj") {
-        labels <- rcmetar.forest.direction.labels(bundle)
-        widths <- rcmetar.forest.with.measurement.device(
-            strwidth(paste0(unlist(labels[c("left", "right")]), "  "), units="inches",
-                     cex=plan$typography$cex.axis, font=if (style == "bmj") 2 else 1))
-        span <- diff(plan$x$xlim)
-        inches <- plan$device$width - 0.5
-        split <- plan$footer$axis$split.x
-        if (is.null(split)) split <- 0
-        available <- c(split - plan$x$xlim[[1]], plan$x$xlim[[2]] - split) / span * inches
-        extra <- pmax(0, widths - available)
-        plan$x$xlim <- plan$x$xlim + c(-extra[[1]], extra[[2]]) * span / inches
-        plan$layout$xlim <- plan$x$xlim
-        plan$device$width <- plan$device$width + sum(extra)
-    }
+    plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
-    plan$device$height <- plan$device$height + max(0, plan$headers$height - 0.5)
+    if (is.null(plan$footer$axis) && !plan$rows$manual_sequential_labels) {
+        study.header <- rcmetar.forest.wrap.summary.labels(plan$headers$study, plan$device$study_width, plan$typography$cex)
+        plan$headers$study <- paste(study.header[[1L]], collapse="\n")
+        plan$headers$height <- plan$headers$height + .12 * max(0, length(study.header[[1L]]) - 1L)
+    }
+    plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
+    subgroup <- identical(bundle$forest_variant, "subgroup")
+    model.labels <- rcmetar.forest.summary.model.labels(bundle, subgroup, bmj)
+    plan$summary_labels <- rcmetar.forest.wrap.summary.labels(
+        model.labels, plan$device$study_width, plan$typography$cex)
+    plan$summary_extra <- .86 * pmax(0, lengths(plan$summary_labels) - 1L)
+    plan <- rcmetar.forest.expand.wrapped.rows(bundle, plan, subgroup)
+    plan$rows$summary <- TRUE
+    rcmetar.forest.panel.height(plan)
+}
+
+rcmetar.forest.measured.size <- function(bundle, bmj, width, measure.minimum) {
+    measure <- if (bmj) rcmetar.forest.bmj.device.metrics else rcmetar.forest.default.device.metrics
+    bundle$size <- measure(bundle)
+    needs.smaller.type <- bundle$size$width > (width %||% (260 / 25.4)) + 1e-8
+    if (needs.smaller.type || measure.minimum) {
+        minimum <- measure(bundle, cex=7 / 12)
+        if (needs.smaller.type) bundle$size <- minimum
+        bundle$size$min_width <- minimum$min_width
+    }
+    bundle$size
+}
+
+rcmetar.forest.summary.model.labels <- function(bundle, subgroup, bmj) {
+    if (subgroup) {
+        vapply(c(bundle$subgroups$results, list(bundle$subgroups$overall)), rcmetar.forest.model.label, character(1))
+    } else if (bmj) {
+        paste0("Total (", display.confidence.level(bundle$params), "% CI)")
+    } else if (!isTRUE(bundle$single_study) || !is.null(bundle$summary_res)) {
+        rcmetar.forest.model.label(bundle$summary_res %||% bundle$res)
+    } else ""
+}
+
+rcmetar.forest.expand.wrapped.rows <- function(bundle, plan, subgroup) {
+    summary.rows <- c(bundle$subgroups$polygon_rows, bundle$subgroups$overall_row)
+    rows <- plan$rows$study_rows
+    extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .7, 0)
+    plan$rows$half_height <- (1 + extra) / 2
+    expand <- function(y) vapply(y, function(value) {
+        subtotal.space <- if (subgroup) sum(plan$summary_extra[summary.rows <= value]) else 0
+        value + sum(extra[rows < value]) + sum(extra[rows == value]) / 2 + subtotal.space
+    }, numeric(1))
+    plan$rows$study_rows <- expand(rows)
+    plan$rows$ylim <- expand(plan$rows$ylim)
+    plan$rows$top <- max(plan$rows$study_rows)
+    plan$subgroups <- bundle$subgroups
+    plan$subgroups$header_rows <- expand(bundle$subgroups$header_rows)
+    plan$subgroups$polygon_rows <- expand(bundle$subgroups$polygon_rows)
+    plan$subgroups$overall_row <- expand(bundle$subgroups$overall_row)
+    if (!subgroup) {
+        plan$rows$ylim[[1L]] <- plan$rows$ylim[[1L]] - plan$summary_extra[[1L]]
+        if (!is.null(plan$footer$axis)) plan$rows$axis_offset <- -plan$summary_extra[[1L]]
+    }
     plan
+}
+
+rcmetar.forest.panel.height <- function(plan) {
+    margins <- rcmetar.forest.margins(plan)
+    plan$device$height <- diff(plan$rows$ylim) * .145 + sum(margins[c(1, 3)]) +
+        plan$headers$height + if (!is.null(plan$footer$axis)) .15 * plan$device$direction_lines else 0
+    plan
+}
+
+rcmetar.forest.margins <- function(plan) {
+    if (!is.null(plan$footer$axis)) return(c(.2, 0, .36, 0))
+    bottom <- if (plan$device$direction_lines > 0) 2.2 + .85 * plan$device$direction_lines else 1.8
+    c(.2 * bottom, 0, if (plan$rows$manual_sequential_labels) .2 else .28, 0)
+}
+
+rcmetar.forest.width.budget <- function(bundle, fixed.width, cex) {
+    study.min <- 40 / 25.4
+    study.wanted <- max(c(study.min, graphics::strwidth(bundle$slab, units="inches", cex=cex)), na.rm=TRUE)
+    width <- bundle$target_width
+    natural <- is.null(width)
+    graph.min <- if (natural) 60 / 25.4 else 45 / 25.4
+    minimum <- fixed.width + study.min + graph.min
+    if (natural) {
+        width <- min(260 / 25.4, max(180 / 25.4, fixed.width + study.wanted + graph.min,
+                                    study.wanted / .45))
+    }
+    width <- max(width, minimum)
+    if (!natural) {
+        # Add the extra graph space gradually as the paper grows beyond manuscript width.
+        graph.min <- min(60 / 25.4, graph.min + max(0, width - 180 / 25.4),
+                         width - fixed.width - study.min)
+    }
+    study <- min(study.wanted, max(study.min, .45 * width), width - fixed.width - graph.min)
+    list(width=width, min_width=minimum, study_width=study,
+         plot_width=width - fixed.width - study)
 }
 
 rcmetar.forest.layout.plan <- function(
@@ -85,44 +164,11 @@ rcmetar.forest.layout.plan <- function(
     )
 }
 
-rcmetar.forest.layout.warning <- function(severity, code, message) {
-    list(severity=severity, code=code, message=message)
-}
-
-rcmetar.forest.layout.cap.warnings <- function(size, min.cex=0.78, max.height=Inf) {
-    warnings <- list()
-    text.floor <- if (!is.null(size$text_floor) && is.finite(size$text_floor)) size$text_floor else min.cex
-    if (!is.null(size$cex) && is.finite(size$cex) && size$cex < text.floor - 1e-8) {
-        warnings[[length(warnings) + 1]] <- rcmetar.forest.layout.warning(
-            "warning",
-            "text-scale-floor",
-            "Forest plot text scale reached the minimum readable size."
-        )
-    }
-    if (!is.null(size$height) && is.finite(size$height) && size$height >= max.height - 1e-8) {
-        warnings[[length(warnings) + 1]] <- rcmetar.forest.layout.warning(
-            "warning",
-            "device-height-cap",
-            "Forest plot height reached the configured export cap."
-        )
-    }
-    warnings
-}
-
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- rcmetar.scratch.path("INTER")
     rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
-    on.exit(grDevices::dev.off(), add=TRUE)
+    on.exit({ grDevices::dev.off(); unlink(scratch) }, add=TRUE)
     force(expr)
-}
-
-rcmetar.forest.display.row.count <- function(bundle) {
-    if (identical(bundle$forest_variant, "subgroup")) {
-        return(length(bundle$subgroups$study_rows) +
-            length(bundle$subgroups$header_rows) +
-            length(bundle$subgroups$polygon_rows) * 4 + 6)
-    }
-    nrow(bundle$ilab$matrix)
 }
 
 rcmetar.forest.is.sequential.variant <- function(bundle) {
@@ -145,70 +191,36 @@ rcmetar.forest.annotation.x <- function(layout) {
     layout$xlim[[2]]
 }
 
-rcmetar.forest.left.block.labels <- function(bundle) {
-    labels <- as.list(c(
-        bundle$slab,
-        rcmetar.metafor.study.header(bundle)
-    ))
-    labels <- c(
-        labels,
-        list(rcmetar.metafor.heterogeneity.measure.label(bundle))
-    )
-    if (identical(bundle$forest_variant, "subgroup")) {
-        labels <- c(
-            labels,
-            as.list(bundle$subgroups$names),
-            lapply(
-                bundle$subgroups$results,
-                rcmetar.forest.model.label
-            ),
-            list(rcmetar.forest.model.label(bundle$subgroups$overall))
-        )
-        if (!is.null(bundle$subgroups$difference_test)) {
-            labels <- c(
-                labels,
-                list(rcmetar.default.subgroup.difference.label(bundle$subgroups$difference_test, bundle$params))
-            )
-        }
-    }
-    Filter(function(label) {
-        length(label) > 0 && (is.expression(label) || !all(is.na(label)))
-    }, labels)
+rcmetar.forest.compact.headers <- function(bundle) {
+    headers <- bundle$ilab$headers
+    headers[headers == "Weight (%)"] <- "Weight\n(%)"
+    bundle$ilab$headers <- headers
+    bundle
 }
 
-rcmetar.forest.default.device.metrics <- function(bundle) {
+rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
     rcmetar.forest.with.measurement.device({
-        display.rows <- rcmetar.forest.display.row.count(bundle)
-        text.floor <- 1.08
-        cex <- text.floor
-        study.width <- max(strwidth(
-            c(bundle$slab, rcmetar.metafor.study.header(bundle), rcmetar.forest.model.label(bundle$res)),
-            units="inches",
-            cex=cex, font=2
-        ), na.rm=TRUE)
-        left.block.width <- max(vapply(
-            rcmetar.forest.left.block.labels(bundle),
-            function(label) max(strwidth(label, units="inches", cex=cex), na.rm=TRUE),
-            numeric(1)
-        ), na.rm=TRUE)
-        column.gap <- 0.34
-        block.gap <- 0.78
-        plot.width <- 3.5
+        column.gap <- 2.5 / 25.4
+        block.gap <- column.gap
         if (ncol(bundle$ilab$matrix) > 0) {
+            totals <- rcmetar.bmj.total.values(bundle)
             column.widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
-                values <- c(bundle$ilab$matrix[, index], bundle$ilab$headers[[index]])
                 key <- bundle$ilab$columns[[index]]$key
+                values <- c(strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]],
+                            as.character(totals[[key]]))
                 if (key == "weight") values <- c(values, "100.0%")
                 if (grepl("events|person_time|total|_n$|true_|false_", key) &&
                         rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
                     values <- c(values, as.character(sum(as.numeric(bundle$ilab$matrix[, index]))))
                 }
-                max(strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex, font=2), na.rm=TRUE)
+                max(strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex, font=2),
+                    strwidth(rcmetar.compact.numeric.labels(bundle$ilab$matrix[, index]),
+                             units="inches", cex=cex), na.rm=TRUE)
             }, numeric(1))
             group.headers <- rcmetar.metafor.group.headers(bundle)
             group.widths <- vapply(group.headers, function(group) {
                 lines <- unlist(strsplit(group, "\n", fixed=TRUE), use.names=FALSE)
-                max(strwidth(lines, units="inches", cex=cex), na.rm=TRUE)
+                max(strwidth(lines, units="inches", cex=cex, font=2), na.rm=TRUE)
             }, numeric(1))
             column.groups <- vapply(bundle$ilab$columns, function(column) column$group, character(1))
             for (group in bundle$ilab$groups) {
@@ -228,46 +240,41 @@ rcmetar.forest.default.device.metrics <- function(bundle) {
             column.widths <- numeric(0)
             group.widths <- numeric(0)
         }
+        effect.header <- sub(" [", "\n[", rcmetar.metafor.effect.header(bundle), fixed=TRUE)
         annotation.values <- if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
-            c(rcmetar.metafor.effect.header(bundle), rcmetar.metafor.effect.labels(bundle))
+            c(effect.header, rcmetar.metafor.effect.labels(bundle))
         } else {
             ""
         }
         annotation.width <- max(strwidth(annotation.values, units="inches", cex=cex, font=2), na.rm=TRUE)
-        ilab.width <- if (length(column.widths) > 0) {
-            sum(pmax(column.widths, 0.45)) + column.gap * (length(column.widths) - 1) + block.gap
-        } else {
-            0
-        }
-        left.width <- study.width + block.gap + ilab.width
-        sequential <- rcmetar.forest.is.sequential.variant(bundle)
-        vertical.margin <- if (sequential) 3.00 else 4.6
-        row.height <- if (sequential) 0.34 else 0.30
-        min.height <- if (sequential) 3.90 else 5.0
-        list(
-            width=max(9.5, left.width + plot.width + annotation.width + 1.5),
-            height=max(min.height, vertical.margin + row.height * display.rows),
+        column.widths <- pmax(column.widths, 0.15)
+        ilab.width <- if (length(column.widths)) {
+            sum(column.widths) + column.gap * (length(column.widths) - 1) + block.gap
+        } else 0
+        annotation.width <- annotation.width + 2.8 / 25.4
+        journal <- identical(bundle$fp_style, "revman") && inherits(bundle$res, "rma") &&
+            !identical(bundle$forest_variant, "subgroup")
+        edge <- if (journal) .13 else .04
+        fixed.width <- block.gap + ilab.width + annotation.width + edge
+        budget <- rcmetar.forest.width.budget(bundle, fixed.width, cex)
+        c(budget, list(
             cex=cex,
-            text_floor=text.floor,
             bg="white",
-            study_width=study.width,
-            left_block_width=left.block.width,
-            column_widths=pmax(column.widths, 0.45),
+            column_widths=column.widths,
             group_widths=group.widths,
             column_gap=column.gap,
             block_gap=block.gap,
-            left_width=left.width,
-            plot_width=plot.width,
-            annotation_width=annotation.width + 0.35,
-            display_rows=display.rows
-        )
+            left_width=budget$study_width + block.gap + ilab.width,
+            annotation_width=annotation.width,
+            effect_header=effect.header
+        ))
     })
 }
 
 rcmetar.forest.default.layout.coordinates <- function(bundle, size, alim) {
     span <- diff(alim)
     user.per.inch <- span / size$plot_width
-    edge.pad <- 0.18 * span
+    edge.pad <- 0.02 * user.per.inch
     base.xlim <- c(
         alim[1] - size$left_width * user.per.inch,
         alim[2] + size$annotation_width * user.per.inch
@@ -342,9 +349,8 @@ rcmetar.forest.default.rows <- function(bundle) {
     )
 }
 
-rcmetar.forest.default.layout.preflight <- function(bundle, style="default", size.policy="export") {
-    size <- rcmetar.forest.default.device.metrics(bundle)
-    size$size_policy <- size.policy
+rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
+    size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
     alim <- if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         rcmetar.forest.journal.ratio.alim(bundle)
     } else {
@@ -374,22 +380,11 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default", siz
         headers=list(
             show=rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE),
             study=rcmetar.metafor.study.header(bundle),
-            effect=rcmetar.metafor.effect.header(bundle)
+            effect=if (rows$manual_sequential_labels) rcmetar.metafor.effect.header(bundle) else size$effect_header
         ),
-        warnings=rcmetar.forest.layout.cap.warnings(size),
         metrics=size,
         layout=layout
     )
-}
-
-rcmetar.forest.revman.device.metrics <- function(bundle) {
-    size <- rcmetar.forest.default.device.metrics(bundle)
-    size$height <- max(4.5, 3.3 + 0.30 * size$display_rows)
-    if (size$width > 18) {
-        # The axis margins consume 57% of the panel, in addition to the right graphics margin.
-        size$width <- size$left_width + size$annotation_width + 1.57 * size$plot_width + 0.2
-    }
-    size
 }
 
 rcmetar.forest.has.explicit.axis.bound <- function(bundle, side=c("lower", "upper")) {
@@ -524,14 +519,13 @@ rcmetar.forest.journal.ratio.ticks <- function(alim) {
     ticks
 }
 
-rcmetar.forest.revman.layout.coordinates <- function(bundle) {
+rcmetar.forest.revman.layout.coordinates <- function(bundle, size=rcmetar.forest.default.device.metrics(bundle)) {
     if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         alim <- rcmetar.forest.journal.ratio.alim(bundle)
     } else {
         alim <- rcmetar.forest.journal.alim(bundle)
     }
     alim <- rcmetar.forest.axis.alim(bundle, alim)
-    size <- rcmetar.forest.revman.device.metrics(bundle)
     span <- diff(alim)
     user.per.inch <- span / size$plot_width
     left <- alim[1] - (size$left_width + size$annotation_width) * user.per.inch
@@ -542,8 +536,8 @@ rcmetar.forest.revman.layout.coordinates <- function(bundle) {
     group.xpos <- vapply(bundle$ilab$groups, function(group) {
         mean(ilab.xpos[column.groups == group])
     }, numeric(1))
-    base.xlim <- c(left, alim[2] + 0.25 * span)
-    edge.pad <- 0.16 * span
+    base.xlim <- c(left, alim[2] + 0.09 * user.per.inch)
+    edge.pad <- 0.02 * user.per.inch
     list(
         xlim=c(base.xlim[[1]] - edge.pad, base.xlim[[2]] + edge.pad),
         study.xpos=left,
@@ -578,18 +572,26 @@ rcmetar.forest.revman.axis.footer <- function(bundle, layout) {
     )
 }
 
-rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export") {
-    size <- rcmetar.forest.revman.device.metrics(bundle)
-    if (ncol(bundle$ilab$matrix) == 1) {
-        size$width <- max(size$width, rcmetar.forest.default.device.metrics(bundle)$width)
-    }
-    size$size_policy <- size.policy
-    layout <- rcmetar.forest.revman.layout.coordinates(bundle)
+rcmetar.forest.revman.layout.preflight <- function(bundle) {
+    size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
+    layout <- rcmetar.forest.revman.layout.coordinates(bundle, size)
+    ticks <- rcmetar.forest.journal.axis.ticks(bundle, layout$alim)
+    inference <- rcmetar.forest.with.measurement.device({
+        tick.width <- max(c(0, graphics::strwidth(rcmetar.forest.axis.labels(bundle, ticks),
+                                                 units="inches", cex=size$cex)))
+        available <- size$left_width + size$annotation_width - tick.width / 2 - 2.5 / 25.4
+        labels <- c(rcmetar.revman.heterogeneity.label(bundle), rcmetar.forest.test.overall.label(bundle),
+                    rcmetar.forest.prediction.label(bundle))
+        unlist(lapply(labels, function(label) {
+            if (!nzchar(label)) return("")
+            rcmetar.bmj.wrap.direction(label, available, size$cex, units="inches", font=1)
+        }), use.names=FALSE)
+    })
     k <- length(bundle$slab)
     rows <- list(
         k=k,
         study_rows=k:1,
-        ylim=c(-6.3, k + 4),
+        ylim=c(-6.3 - max(0, length(inference) - 3L), k + 4),
         top=k + 4,
         manual_sequential_labels=FALSE,
         max_group_header_lines=if (length(layout$group.xpos) > 0) 2 else 1
@@ -603,7 +605,7 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
         x=list(
             xlim=layout$xlim,
             alim=layout$alim,
-            at=rcmetar.forest.journal.axis.ticks(bundle, layout$alim),
+            at=ticks,
             refline=NA,
             xlab=""
         ),
@@ -621,9 +623,94 @@ rcmetar.forest.revman.layout.preflight <- function(bundle, size.policy="export")
             method=rcmetar.forest.journal.method.label(bundle),
             groups=if (length(layout$group.xpos) > 0) names(layout$group.xpos) else character(0)
         ),
-        footer=list(axis=rcmetar.forest.revman.axis.footer(bundle, layout)),
-        warnings=rcmetar.forest.layout.cap.warnings(size),
+        footer=list(axis=rcmetar.forest.revman.axis.footer(bundle, layout), inference=inference),
         metrics=size,
         layout=layout
     )
+}
+
+rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
+    if (is.null(height) || plan$device$height <= first.height) return(list(plan))
+    rows <- plan$rows$study_rows
+    studies <- order(rows, decreasing=TRUE)
+    if (isTRUE(bundle$has_overall)) studies <- studies[studies != 1L]
+    subgroup <- identical(bundle$forest_variant, "subgroup")
+    groups <- match(bundle$study_groups, unique(bundle$study_groups))
+    panel <- function(first, last) {
+        rcmetar.forest.page.panel(bundle, plan, rows, groups, subgroup,
+                                  studies[first:last], last == length(studies))
+    }
+    panels <- list()
+    first <- 1L
+    while (first <= length(studies)) {
+        limit <- if (first == 1L) first.height else height
+        last <- first
+        next.panel <- panel(first, last)
+        while (last < length(studies)) {
+            end <- last + 1L
+            candidate <- panel(first, end)
+            if (candidate$device$height > limit) break
+            last <- end
+            next.panel <- candidate
+        }
+        if (last == length(studies) - 1L) {
+            # Keep the last two together. If this panel is already the tail,
+            # preserve the indivisible block even on an undersized page.
+            last <- if (last > first) last - 1L else last + 1L
+            next.panel <- panel(first, last)
+        }
+        panels[[length(panels) + 1L]] <- next.panel
+        first <- last + 1L
+    }
+    panels
+}
+
+rcmetar.forest.page.panel <- function(bundle, plan, rows, groups, subgroup, selected, final) {
+    local <- plan
+    local$rows$summary <- final
+    bottom <- min(rows[selected])
+    if (subgroup) {
+        group.panel <- rcmetar.forest.page.subgroups(local$subgroups, plan$summary_extra, rows, groups, selected, final, bottom)
+        local$subgroups <- group.panel$subgroups
+        bottom <- group.panel$bottom
+    }
+    shift <- if (final) 0 else bottom - 1
+    local$rows$study_rows[-selected] <- NA_real_
+    local$rows$study_rows <- local$rows$study_rows - shift
+    if (isTRUE(bundle$has_overall) && final) local$rows$study_rows[[1L]] <- -.3
+    local$subgroups$header_rows <- local$subgroups$header_rows - shift
+    local$subgroups$polygon_rows <- local$subgroups$polygon_rows - shift
+    local$rows$top <- max(c(rows[selected] - shift, local$subgroups$header_rows), na.rm=TRUE)
+    local$rows$ylim[[2L]] <- local$rows$top + diff(c(max(c(rows, plan$subgroups$header_rows)), plan$rows$ylim[[2L]]))
+    if (!final) {
+        if (is.null(local$footer$axis)) {
+            local$rows$ylim[[1L]] <- 0
+        } else {
+            local$rows$axis_offset <- 2.3
+            local$rows$ylim[[1L]] <- -2.3
+        }
+    }
+    rcmetar.forest.panel.height(local)
+}
+
+rcmetar.forest.page.subgroups <- function(subgroups, summary.extra, rows, groups, selected, final, bottom) {
+    for (i in seq_along(subgroups$names)) {
+        visible <- selected[groups[selected] == i]
+        members <- which(groups == i)
+        if (!length(visible)) {
+            subgroups$header_rows[[i]] <- NA_real_
+            subgroups$polygon_rows[[i]] <- NA_real_
+            next
+        }
+        if (!members[which.max(rows[members])] %in% visible) {
+            subgroups$header_rows[[i]] <- max(rows[visible]) + 1.15
+            subgroups$names[[i]] <- paste0(subgroups$names[[i]], " (continued)")
+        }
+        if (!members[which.min(rows[members])] %in% visible) {
+            subgroups$polygon_rows[[i]] <- NA_real_
+        } else if (!final) {
+            bottom <- min(bottom, subgroups$polygon_rows[[i]] - summary.extra[[i]] - 3.5)
+        }
+    }
+    list(subgroups=subgroups, bottom=bottom)
 }

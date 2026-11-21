@@ -145,10 +145,10 @@ class TrialSequentialAnalysisDialog(QDialog):
 
     def _setup_design_fields(self, fields: QFormLayout, saved: TsaOptions) -> None:
         self._section(fields, "Design assumptions")
-        left, right = self.base_request.favoured_labels()
+        benefit, harm = self.base_request.monitoring_sides()
         self.test = self._choice("Test", [("Two-sided", "two-sided"),
-                                          (f"One-sided (favours {left})", "benefit"),
-                                          (f"One-sided (favours {right})", "harm")], saved.test)
+                                          (f"One-sided ({benefit})", "benefit"),
+                                          (f"One-sided ({harm})", "harm")], saved.test)
         self.alpha = self._percent("Type I error (α)", .01, 49.99, 100 * saved.alpha)
         self.power = self._percent("Power", 50.01, 99.99, 100 * saved.power)
         self.initial_alpha = self.alpha.value()

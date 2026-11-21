@@ -47,8 +47,8 @@ def capture_sensitivity(view, record, case, report):
     )
     assert "Sensitivity analyses repeated the analysis with alternative anticipated intervention effects." in view.manuscript.methods
     if case == "bcg":
-        assert table.rows[0][:3] == ("Primary (default)", "0.6835", "30.7%")
-        assert "Crosses monitoring boundary favouring BCG vaccine" in table.rows[0]
+        assert table.rows[0][:3] == ("Primary (default)", "0.68", "30.7%")
+        assert "Crosses monitoring boundary below the null" in table.rows[0]
         assert "1,232,589" in table.rows[1]
     columns = [i for i, header in enumerate(table.headers) if header not in ("Scenario", "Conclusion")]
     document = Document(str(Path(report["directory"]) / "report.docx"))
@@ -65,16 +65,19 @@ def capture_sensitivity(view, record, case, report):
 
 def input_project(work, case):
     if case in ("bcg", "peto", "hr"):
-        return ROOT / "sample_projects" / ("BCG.rcms" if case != "hr" else "Pignon2000-HR.rcms")
+        return ROOT / "sample_projects" / ("Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" if case != "hr" else "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms")
     binary = case == "rr-mh"
     stress = case == "stress"
     metric = "RR" if binary else "MD" if stress else case.upper()
-    arms = [analysis_dataset.Arm(ArmId(label), label) for label in ("Treatment", "Comparator")]
+    labels = ("The new extended therapy programme", "Conventional outpatient management") if stress else (
+        "Treatment", "Comparator",
+    )
+    arms = [analysis_dataset.Arm(ArmId(label), label) for label in labels]
     sheet = analysis_dataset.Sheet(
         SheetId("tsa"), f"TSA {case}", analysis_catalog.BINARY if binary else analysis_catalog.CONTINUOUS,
         "proportions" if binary else ("smd" if case == "smd" else "means"),
         "binary" if binary else "continuous", arms,
-        settings={"metric": metric, "favours_labels": ["Favours Treatment", "Favours Comparator"],
+        settings={"metric": metric, "effect_direction": "below",
                   "analysis": {"method": "binary.fixed.mh" if binary else "continuous.fixed"}},
     )
     raw = (
@@ -86,10 +89,6 @@ def input_project(work, case):
         )
     )
     if stress:
-        sheet.settings["favours_labels"] = [
-            "Favours the new extended therapy programme",
-            "Favours conventional outpatient management",
-        ]
         raw = tuple([[25 + 2*i, 4.5, 2], [25 + 2*i, 5, 2]] for i in range(36))
     for i, cells in enumerate(raw):
         unit = AnalysisUnit(sheet, cells, arm_names=[a.name for a in arms], arm_stable_ids=[a.id for a in arms])
@@ -136,7 +135,10 @@ def check_artwork(path, case, style, contract, *, percent=False):
         units = "percent" if percent else "participants"
         assert ticks[-2] == contract["peto"]["join_tick"][units], ticks
     favours = [node for node in text_nodes if (node.text or "").startswith("Favours")]
-    assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
+    if case in ("bcg", "peto", "hr"):
+        assert not favours, labels
+    else:
+        assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
     assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
                   if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
@@ -239,10 +241,10 @@ def run(app, window, work, record, case):
         assert window.open(str(path), raise_on_error=True)
 
     comparison = {
-        "bcg": "crossed the monitoring boundary favouring",
+        "bcg": "crossed the monitoring boundary below the null",
         "rr-mh": "crossed the futility boundary",
         "md": "crossed neither a monitoring nor a futility boundary",
-        "hr": "crossed the monitoring boundary favouring",
+        "hr": "crossed the monitoring boundary below the null",
     }.get(case)
 
     def configure(dialog):
@@ -256,8 +258,8 @@ def run(app, window, work, record, case):
         original = dialog.effect.text()
         if case == "bcg":
             assert original == "0.6835" and dialog.control.text() == "4.49"
-            for index, label in enumerate(dialog.base_request.favoured_labels(), 1):
-                assert dialog.test.itemText(index) == f"One-sided (favours {label})"
+            assert dialog.test.itemText(1) == "One-sided (below the null)"
+            assert dialog.test.itemText(2) == "One-sided (above the null)"
             record("tsa-dialog-default", dialog, input=str(path), effect=original, control=dialog.control.text())
             for field, value in ((dialog.effect, ".7"), (dialog.control, "5.00")):
                 field.selectAll()
@@ -352,8 +354,8 @@ def run(app, window, work, record, case):
         assert table.quantities[0][adjusted][0].value < .001
         assert "— Too little information for a finite TSA-adjusted interval." in view.manuscript.html()
         assert "Futility boundary" not in table.headers
-        assert "We pooled odds ratios (OR)" in view.manuscript.methods
-        assert "logarithm with λ = 2 (Hu 2007)" in view.manuscript.methods
+        assert "odds ratios (OR) were pooled" in view.manuscript.methods
+        assert "logarithm with λ = 2" in view.manuscript.methods
     if comparison is not None:
         assert comparison in view.manuscript.results, view.manuscript.results
     assert "Accrued information is" in view.manuscript.results

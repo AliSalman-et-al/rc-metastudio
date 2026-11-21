@@ -26,8 +26,9 @@ class _RecentPathLabel(QtWidgets.QLabel):
 
 
 class StartPage(QtWidgets.QScrollArea):
-    def __init__(self, create_action, import_action, open_action, parent=None):
+    def __init__(self, create_action, import_action, open_action, parent=None, *, sample_menu: QtWidgets.QMenu | None = None):
         super().__init__(parent)
+        self.sample_menu = sample_menu
         self.setObjectName('start_page')
         self.setAccessibleName('Start a project')
         self.setWidgetResizable(True)
@@ -103,7 +104,7 @@ class StartPage(QtWidgets.QScrollArea):
     def changeEvent(self, event: QtCore.QEvent | None) -> None:
         super().changeEvent(event)
         if event is not None and event.type() in (QtCore.QEvent.Type.PaletteChange, QtCore.QEvent.Type.ApplicationPaletteChange):
-            button = self.findChild(QtWidgets.QPushButton, 'empty_recent_import')
+            button = self.findChild(QtWidgets.QPushButton, 'empty_recent_sample')
             if button is not None:
                 button.setStyleSheet('QPushButton { color: ' + qt_layout.readable_link_color(self.palette()).name() + '; text-decoration: underline; }')
 
@@ -117,12 +118,13 @@ class StartPage(QtWidgets.QScrollArea):
                 widget.deleteLater()
         if not paths:
             self.recent_layout.addWidget(QtWidgets.QLabel('Projects you open or save will appear here.', self.recent_projects))
-            import_button = QtWidgets.QPushButton('Import data…', self.recent_projects)
-            import_button.setFlat(True)
-            import_button.setObjectName('empty_recent_import')
-            import_button.setStyleSheet('QPushButton { color: ' + qt_layout.readable_link_color(self.palette()).name() + '; text-decoration: underline; }')
-            import_button.clicked.connect(self.import_button.click)
-            self.recent_layout.addWidget(import_button, 1, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
+            if self.sample_menu is not None and self.sample_menu.isEnabled():
+                sample_button = QtWidgets.QPushButton("Open a sample project", self.recent_projects)
+                sample_button.setFlat(True)
+                sample_button.setObjectName("empty_recent_sample")
+                sample_button.setStyleSheet('QPushButton { color: ' + qt_layout.readable_link_color(self.palette()).name() + '; text-decoration: underline; }')
+                sample_button.setMenu(self.sample_menu)
+                self.recent_layout.addWidget(sample_button, 1, 0, QtCore.Qt.AlignmentFlag.AlignLeft)
         for index, path in enumerate(reversed(paths)):
             self._add_recent_project(index, path, open_project, locate_project, remove_project)
 

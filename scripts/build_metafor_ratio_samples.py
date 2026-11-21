@@ -68,7 +68,7 @@ def build(name, hazard, source):
                        data_type=data_type, sub_type=subtype, arms=arms, covariates=covariates,
                        settings=settings, rows=studies)])
     state = dict(schema_version=3, current_sheet_id="sheet:0")
-    filename = "Pignon2000-HR.rcms" if hazard else "NielWeise2008-IRR.rcms"
+    filename = "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms" if hazard else "Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms"
     path = SAMPLES / filename
     save_project(path, cast(JsonObject, project), state)
     loaded = load_project(path)
@@ -77,7 +77,15 @@ def build(name, hazard, source):
         file=filename, format_version=3, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
         semantic_sha256=hashlib.sha256((json.dumps(loaded.project, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")).hexdigest(),
         analysis_evidence="ratios-samples",
-        scientific_name=project["title"], analysis_family=family, study_count=len(rows),
+        scientific_name=path.stem, analysis_family=family, study_count=len(rows),
+        description=(
+            "Use this for pooling hazard ratios, chemotherapy-timing subgroups and trial sequential analysis."
+            if hazard else "Use this for events per catheter-day, raw Mantel–Haenszel and reported incidence rate ratios."
+        ),
+        source_reference=(
+            "Pignon JP, Bourhis J, Domenge C, Designe L. Chemotherapy added to locoregional treatment for head and neck squamous-cell carcinoma: three meta-analyses of updated individual data. Lancet. 2000;355:949–955."
+            if hazard else "Niel-Weise BS, Stijnen T, van den Broek PJ. Anti-infective-treated central venous catheters for total parenteral nutrition or chemotherapy: a systematic review. J Hosp Infect. 2008;69:114–123."
+        ),
         provenance=f"metadat::{name}; original data retained in sources/metadat-ratios.json",
         source_url=source["documentation"], source_doi=source["doi"],
         source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
@@ -92,10 +100,11 @@ def main():
     manifest_path = SAMPLES / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["version"] = 3
-    manifest["storage_note"] = "Schema-validated Versioned Project Format ZIP/JSON containers. format_version is the default for the original frozen sample corpus; per-project format_version overrides it for newer examples."
-    names = {item["file"] for item in additions}
-    manifest["projects"] = [item for item in manifest["projects"] if item["file"] not in names] + additions
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    manifest["storage_note"] = "Schema-validated Versioned Project Format ZIP/JSON containers."
+    entries = {item["file"]: item for item in manifest["projects"]}
+    entries.update((item["file"], item) for item in additions)
+    manifest["projects"] = sorted(entries.values(), key=lambda item: item["file"].split(" - ", 1)[0].casefold())
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     for item in additions:
         print(f"Built {item['file']}: {item['study_count']} studies")
 

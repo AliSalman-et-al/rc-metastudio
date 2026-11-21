@@ -39,28 +39,45 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
 }
 
 rcmetar.forest.direction.metrics <- function(bundle, plan) {
-    if (!is.null(plan$footer$axis) && !is.finite(plan$footer$axis$split.x)) return(list(lines=0, spacing=0))
-    labels <- unlist(rcmetar.forest.direction.labels(bundle)[c("left", "right")], use.names=FALSE)
-    if (rcmetar.forest.style(bundle$params) == "bmj" && any(nzchar(labels))) {
-        return(rcmetar.forest.with.measurement.device({
-            cex <- plan$typography$cex
-            panel.width <- diff(plan$x$alim) / diff(plan$x$xlim) * (plan$device$width - 0.6)
-            lines <- rcmetar.bmj.direction.lines(bundle, panel.width, cex, units="inches")
-            list(lines=max(lengths(lines)), spacing=0.32)
-        }))
-    }
-    list(lines=as.integer(any(nzchar(labels))), spacing=0)
+    labels <- rcmetar.forest.direction.labels(bundle)
+    if (!any(nzchar(c(labels$left, labels$right)))) return(0L)
+    bmj <- rcmetar.forest.style(bundle$params) == "bmj"
+    split <- rcmetar.metafor.refline(bundle, plan$x$alim)
+    if (!bmj && (!is.finite(split) || split <= plan$x$alim[[1L]] || split >= plan$x$alim[[2L]])) return(0L)
+    rcmetar.forest.with.measurement.device({
+        cex <- plan$typography$cex
+        limits <- plan$x$xlim
+        width <- plan$device$width - .29
+        if (bmj) {
+            panel.width <- diff(plan$x$alim) / diff(limits) * width
+            return(max(lengths(rcmetar.bmj.direction.lines(bundle, panel.width, cex, units="inches"))))
+        }
+        available <- c(split - limits[[1L]], limits[[2L]] - split) / diff(limits) * width - .10
+        max(lengths(Map(function(text, space) rcmetar.bmj.wrap.direction(text, space, cex, "inches", font=1),
+                       labels[c("left", "right")], available)))
+    })
+}
+
+rcmetar.forest.outward.directions <- function(bundle, split, cex, font=1) {
+    # Use the entire page width below the axis, keeping the null gutter.
+    bounds <- graphics::grconvertX(c(.08, grDevices::dev.size("in")[[1L]] - .08), "inches", "user")
+    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
+    at <- split + c(-gap, gap)
+    available <- c(at[[1L]] - bounds[[1L]], bounds[[2L]] - at[[2L]])
+    labels <- rcmetar.forest.direction.labels(bundle)
+    lines <- Map(function(text, space) rcmetar.bmj.wrap.direction(text, space, cex, font=font),
+                 labels[c("left", "right")], available)
+    list(at=at, lines=lines)
 }
 
 rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
-    labels <- rcmetar.forest.direction.labels(bundle)
-    # Qt trims outer SVG whitespace, so reserve the space in coordinates.
-    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
-    for (side in c("left", "right")) {
-        at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
-        if (nzchar(labels[[side]])) graphics::text(at,
-            top, labels[[side]], cex=cex, font=font, xpd=NA, adj=c(if (side == "left") 1 else 0, 0))
+    directions <- rcmetar.forest.outward.directions(bundle, footer$split.x, cex, font)
+    leading <- graphics::strheight("Mg", cex=cex, font=font) * 1.6
+    for (side in 1:2) {
+        lines <- directions$lines[[side]]
+        if (length(lines)) graphics::text(directions$at[[side]], top - (seq_along(lines) - 1L) * leading,
+            lines, cex=cex, font=font, xpd=NA, adj=c(as.integer(side == 1L), 0))
     }
     invisible(NULL)
 }
@@ -69,21 +86,42 @@ rcmetar.draw.forest.direction <- function(bundle, alim, cex) {
     # mtext cex is absolute; measure with the same scale, independent of forest().
     previous <- graphics::par(cex=1)
     on.exit(graphics::par(previous), add=TRUE)
-    labels <- rcmetar.forest.direction.labels(bundle)
     footer <- rcmetar.forest.revman.axis.footer(bundle, list(alim=alim))
     if (rcmetar.forest.style(bundle$params) == "bmj") {
         limits <- graphics::par("usr")[3:4]
-        y <- limits[[1]] - 4.5 * graphics::par("csi") * diff(limits) / graphics::par("pin")[[2]]
+        y <- limits[[1]] - 2.35 * graphics::par("csi") * diff(limits) / graphics::par("pin")[[2]]
         return(rcmetar.draw.bmj.direction(bundle, rcmetar.bmj.axis.footer.layout(bundle, list(alim=alim)), y, cex))
     }
     if (!is.finite(footer$split.x) || footer$split.x <= alim[[1]] || footer$split.x >= alim[[2]]) return(invisible(NULL))
-    gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
-    for (side in c("left", "right")) {
-        at <- footer[[paste0(side, ".x")]] + if (side == "left") -gap else gap
-        if (nzchar(labels[[side]])) graphics::mtext(labels[[side]], side=1,
-            line=4.5, at=at, cex=cex, adj=if (side == "left") 1 else 0, padj=0)
+    directions <- rcmetar.forest.outward.directions(bundle, footer$split.x, cex)
+    for (side in 1:2) {
+        lines <- directions$lines[[side]]
+        if (length(lines)) graphics::mtext(lines, side=1, line=2.1 + (seq_along(lines) - 1L) * .8,
+            at=directions$at[[side]], cex=cex, adj=as.integer(side == 1L), padj=0)
     }
     invisible(NULL)
+}
+
+rcmetar.draw.forest.axis <- function(bundle, plan) {
+    alim <- plan$x$alim
+    cex <- plan$typography$cex
+    ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, cex, alim)
+    y <- graphics::par("usr")[[3L]]
+    leading <- graphics::strheight("Mg", cex=cex) * 1.55
+    tick.end <- y - leading * .3
+    baseline <- tick.end - graphics::strheight("M", cex=cex) * 1.25
+    graphics::segments(alim[[1]], y, alim[[2]], y, xpd=NA)
+    if (length(ticks)) {
+        graphics::segments(ticks, y, ticks, tick.end, xpd=NA)
+        graphics::text(ticks, baseline, rcmetar.forest.axis.labels(bundle, ticks),
+                       cex=cex, adj=c(.5, 0), xpd=NA)
+    }
+    graphics::text(mean(alim), baseline - leading, plan$x$xlab, cex=cex, adj=c(.5, 0), xpd=NA)
+    invisible(NULL)
+}
+
+rcmetar.forest.row.baseline <- function(row, cex) {
+    row - graphics::strheight("M", cex=cex, font=1) / 2
 }
 
 rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_along(bundle$slab)) {
@@ -99,24 +137,17 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
         } else if (grepl("events|person_time|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
             total <- as.character(sum(as.numeric(values)))
         }
-        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, rcmetar.compact.numeric.labels(total), font=2, cex=cex)
+        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], rcmetar.forest.row.baseline(row, cex),
+            rcmetar.compact.numeric.labels(total), adj=c(.5, 0), font=2, cex=cex)
     }
     invisible(NULL)
 }
 
-rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
-    label <- rcmetar.forest.model.label(rcmetar.forest.summary.result(bundle))
-    keys <- vapply(bundle$ilab$columns, function(column) column$key, character(1))
-    indexes <- which(keys %in% names(bundle$style_blocks$totals))
-    if (length(indexes)) {
-        first <- indexes[[which.min(layout$ilab.xpos[indexes])]]
-        value <- rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[keys[[first]]]])
-        available <- layout$ilab.xpos[[first]] - x - graphics::strwidth(paste0(" ", value, " "), font=2, cex=cex) / 2 - graphics::strwidth("  ", font=2, cex=cex)
-        if (graphics::strwidth(label, font=2, cex=cex) > available) {
-            label <- sub(" (", "\n(", label, fixed=TRUE)
-        }
-    }
-    label
+rcmetar.draw.forest.summary.label <- function(x, row, lines, cex, font=2) {
+    if (length(lines))
+        graphics::text(x, rcmetar.forest.row.baseline(row, cex) - .86 * (seq_along(lines) - 1L), lines,
+                       adj=c(0, 0), font=font, cex=cex)
+    invisible(NULL)
 }
 
 rcmetar.heterogeneity.df <- function(res) {
@@ -158,7 +189,7 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, d
                 if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
-        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, font=1, cex=cex)
+        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], adj=c(0, .5), font=1, cex=cex)
     }
     invisible(NULL)
 }
@@ -184,14 +215,14 @@ rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     if (!nzchar(label)) return(invisible(NULL))
     lines <- strsplit(label, "\n", fixed=TRUE)[[1]]
     # Separate baselines using device text metrics; row coordinates shrink with k.
-    leading <- graphics::strheight("Mg", units="user") * 1.65
+    leading <- graphics::strheight("Mg", units="user") * 1.8
     positions <- y + ((length(lines) - 1) / 2 - seq_along(lines) + 1) * leading
     graphics::text(x, positions, lines, adj=adj)
 }
 
 rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
     headers <- bundle$ilab$headers
-    leading <- graphics::strheight("Mg", units="user") * 1.65
+    leading <- graphics::strheight("Mg", units="user") * 1.8
     lines <- function(label) length(strsplit(label, "\n", fixed=TRUE)[[1]])
     raw.height <- if (length(headers)) max(vapply(headers, lines, integer(1))) else 1
     # Anchor the lowest raw-header line above the rule, including descenders.
@@ -220,7 +251,7 @@ rcmetar.forest.header.height <- function(bundle, cex) {
         steps <- if (length(groups)) raw + count(groups) - 0.6 else raw - 1
         # Journal effect/method/CI headings have three lines.
         steps <- max(steps, if (bundle$fp_style == "default") 0 else 2)
-        h * (2.6 + steps * 1.65) + 0.15
+        h * (2.6 + steps * 1.8) + 0.15
     })
 }
 
@@ -236,7 +267,7 @@ rcmetar.forest.header.ylim <- function(plan, rule.y) {
             (2.2 * (plan$device$direction_lines + 1) + 1) / graphics::par("pin")[[2]]
         if (fraction + footer >= 1) stop("Device is too short for the measured forest footer.")
         # Solve header and footer clearance together in the final device's units.
-        span <- max(span, (rule.y + 4.1) / (1 - fraction - footer))
+        span <- max(span, (rule.y + 4.1 - (plan$rows$axis_offset %||% 0)) / (1 - fraction - footer))
     }
     ylim[[2]] <- max(ylim[[2]], rule.y + fraction * span)
     ylim[[1]] <- min(ylim[[1]], ylim[[2]] - span)
@@ -246,7 +277,7 @@ rcmetar.forest.header.ylim <- function(plan, rule.y) {
 rcmetar.draw.forest.effect.header <- function(x, rule.y, label, adj=0.5) {
     h <- graphics::strheight("Mg", units="user")
     lines <- length(strsplit(label, "\n", fixed=TRUE)[[1]])
-    y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.65
+    y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.8
     rcmetar.draw.forest.header(x, y, label, adj=adj)
 }
 

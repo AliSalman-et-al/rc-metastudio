@@ -6,8 +6,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from dataclasses import replace
 
+from PyQt6 import sip
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy, QWidget
 
 from rc_metastudio import adaptive_window, app_error_handler
 from rc_metastudio.analysis import progress_dialog
@@ -82,11 +83,16 @@ class SmallStudyEffectsDialog(
     def __init__(
         self, model, parent=None, analysis_service=None,
         *, on_result: AnalysisResultHandler | None = None,
+        initial_request: SmallStudyEffectsRequest | None = None,
+        replaces: QWidget | None = None,
+        source_sheet=None,
     ):
         super().__init__(parent)
         self.model = model
         self.analysis_service = analysis_service or SmallStudyEffectsService()
         self._on_result = on_result
+        self._replaces = replaces
+        self._source_sheet = source_sheet
         self.setupUi(self)
         for code, label in PLOT_STYLE_LABELS.items():
             self.style_combo.addItem(label, code)
@@ -95,6 +101,8 @@ class SmallStudyEffectsDialog(
         configure_context_label(self.automatic_test_label)
         self._configure_scroll_surfaces()
         self._configure_initial_values()
+        if initial_request is not None:
+            self._restore_request(initial_request)
         self._populate_context()
         self._update_controls()
         self.failure_label.clear()
@@ -104,6 +112,42 @@ class SmallStudyEffectsDialog(
             protect_scroll_settings(self.methods_scroll),
             protect_scroll_settings(self.plots_scroll),
         )
+
+    def _restore_request(self, request: SmallStudyEffectsRequest) -> None:
+        for funnel, checkbox in (
+            (FunnelKind.ORDINARY, self.ordinary_funnel_check),
+            (FunnelKind.CONTOUR, self.contour_funnel_check),
+            (FunnelKind.DEEKS, self.deeks_funnel_check),
+        ):
+            checkbox.setChecked(any(plot.kind == funnel for plot in request.plot_specs))
+        self.use_package_minimum_check.setChecked(request.k_min is None)
+        if request.k_min is not None:
+            self.minimum_studies_spin.setValue(request.k_min)
+        if request.correction_policy is not None:
+            self.correction_policy_combo.setCurrentText(request.correction_policy)
+        if request.plot_specs:
+            plot = request.plot_specs[0]
+            self.label_policy_combo.setCurrentText({
+                LabelPolicy.NONE: "None",
+                LabelPolicy.OUTSIDE_REGION: "Outside pseudo-confidence region",
+                LabelPolicy.ALL: "All",
+            }[plot.label_policy])
+            self.sampling_confidence_combo.setCurrentText(f"{plot.sampling_confidence_level:g}")
+            self.include_tau2_check.setChecked(plot.include_tau2)
+            self.point_size_spin.setValue(plot.point_size)
+            self.reference_line_check.setChecked(plot.reference_line_visible)
+            self.pooled_overlay_check.setChecked(plot.pooled_overlay_visible)
+            self.style_combo.setCurrentIndex(self.style_combo.findData(plot.style.value))
+        contour = next((plot for plot in request.plot_specs if plot.kind == FunnelKind.CONTOUR), None)
+        if contour is not None:
+            self.contour_levels_edit.setText(", ".join(f"{level:g}" for level in contour.contour_levels))
+        if request.sensitivity_specs:
+            sensitivity = request.sensitivity_specs[0]
+            self.trim_fill_check.setChecked(sensitivity.trim_and_fill)
+            self.trim_fill_estimator_combo.setCurrentText(sensitivity.estimator.value)
+            self.trim_fill_side_combo.setCurrentIndex(self.trim_fill_side_combo.findData(sensitivity.side.value))
+            self.trim_fill_model_combo.setCurrentIndex(self.trim_fill_model_combo.findData(sensitivity.model.value))
+            self.extrapolation_check.setChecked(sensitivity.extrapolation)
 
     def _configure_accessibility(self):
         """Give configuration controls stable names and plain-language help."""
@@ -495,12 +539,16 @@ class SmallStudyEffectsDialog(
         try:
             try:
                 result = self.analysis_service.execute(self.model, request)
-                result = self._with_report_identity(result)
+                result = self._with_report_identity(result, request)
             finally:
                 progress_dialog.dispose(progress)
             if self._on_result is None:
                 raise TypeError("small-study effects dialog has no results owner")
-            self._on_result(result, source_sheet=self.model.current_sheet)
+            source_sheet = self._source_sheet or self.model.current_sheet
+            shown = self._on_result(result, source_sheet=source_sheet,
+                                    change_settings=self._change_settings_callback(request, source_sheet))
+            if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
+                self._replaces.close()
             self.accept()
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
             self.failure_label.setText(str(error))
@@ -511,7 +559,24 @@ class SmallStudyEffectsDialog(
             if run_button is not None:
                 run_button.setEnabled(True)
 
-    def _with_report_identity(self, result):
+    def _change_settings_callback(self, request: SmallStudyEffectsRequest, source_sheet):
+        import copy
+        from rc_metastudio.workspace.table_model import DatasetTableModel
+
+        model = DatasetTableModel(copy.deepcopy(self.model.dataset), add_blank_study=False,
+                                  current_sheet_id=self.model.current_sheet_id)
+        parent, service, on_result = self.parentWidget(), self.analysis_service, self._on_result
+
+        def reopen(_plot_parameters, origin):
+            dialog = SmallStudyEffectsDialog(model, parent=parent, analysis_service=service,
+                                             initial_request=request, on_result=on_result,
+                                             replaces=origin, source_sheet=source_sheet)
+            dialog.exec()
+            dialog.deleteLater()
+
+        return reopen
+
+    def _with_report_identity(self, result, request: SmallStudyEffectsRequest):
         from rc_metastudio.analysis.identity import dataset_identity, metric_label
         metric = "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else metric_label(self.model)
         context = dataset_identity(self.model, metric)
@@ -519,7 +584,9 @@ class SmallStudyEffectsDialog(
         report = self._eligibility_report
         if report is not None:
             facts.extend(_eligibility_identity(report))
-        facts.append(f"{self.model.get_confidence_level():g}% CI")
+        model_label = "Random effects" if request.pooled_display.model.value == "random" else "Common effect"
+        facts.append(f"Pooled display: {model_label}")
+        facts.append(f"{request.confidence_level:g}% CI")
         result = replace(result, identity="Small-study effects — " + context + '\n' + ' · '.join(facts))
         details = next((section.value for section in result.sections if section.title == "Method details"), "")
         procedures = [line for line in details.splitlines() if line and not line[0].isspace()

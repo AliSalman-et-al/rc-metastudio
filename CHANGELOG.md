@@ -2,6 +2,14 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## 0.7.0 - 2026-11-21
+
+- Bundled nine published sample projects with cited source tables, descriptive names and analysis suggestions. The window title identifies samples, and saving a sample opens Save As.
+- Improved study entry, import validation and analysis setup. Missing inputs are shown before fitting, Results distinguish included and contributing studies, and changing settings replaces the previous result after a successful fit.
+- Added progress and cancellation for cumulative and leave-one-out fits.
+- Improved forest plot legibility and multi-page export in Default, BMJ and RevMan. Figures open at their natural export width with print-size guidance.
+- Refined funnel, Deeks, SROC and trial sequential figures. Added effect-direction choices and aligned PDF and Word manuscript layout.
+
 ## 0.6.1 - 2026-11-21
 
 ### Changed

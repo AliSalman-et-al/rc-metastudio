@@ -1,0 +1,468 @@
+{
+  "doi": "10.1136/bmj.312.7027.338",
+  "source": "BMJ page 340, Table 2; publication years from the cited studies on page 343.",
+  "publication_table": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/f462/2350289/b50d23ca0462/bmj00528-0022.png",
+  "publication_references": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/f462/2350289/3aab7ce52759/bmj00528-0025.png",
+  "arms": [
+    "Single daily dose",
+    "Multiple daily doses"
+  ],
+  "rows": [
+    {
+      "study": "Gonzalez",
+      "year": 1993,
+      "failure": [
+        [
+          6,
+          27
+        ],
+        [
+          9,
+          27
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          5,
+          27
+        ],
+        [
+          4,
+          27
+        ]
+      ]
+    },
+    {
+      "study": "Prins",
+      "year": 1993,
+      "failure": [
+        [
+          3,
+          59
+        ],
+        [
+          7,
+          64
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          2,
+          59
+        ],
+        [
+          11,
+          64
+        ]
+      ]
+    },
+    {
+      "study": "Giamarellou",
+      "year": 1991,
+      "failure": [
+        [
+          0,
+          30
+        ],
+        [
+          5,
+          30
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          3,
+          30
+        ],
+        [
+          1,
+          30
+        ]
+      ]
+    },
+    {
+      "study": "Maller",
+      "year": 1993,
+      "failure": [
+        [
+          19,
+          164
+        ],
+        [
+          13,
+          152
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          9,
+          164
+        ],
+        [
+          11,
+          152
+        ]
+      ]
+    },
+    {
+      "study": "Sturm",
+      "year": 1989,
+      "failure": [
+        [
+          0,
+          36
+        ],
+        [
+          2,
+          36
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          1,
+          36
+        ],
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    {
+      "study": "Marik",
+      "year": 1991,
+      "failure": [
+        [
+          26,
+          155
+        ],
+        [
+          49,
+          145
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          1,
+          155
+        ],
+        [
+          4,
+          145
+        ]
+      ]
+    },
+    {
+      "study": "Muijsken",
+      "year": 1988,
+      "failure": [
+        [
+          8,
+          32
+        ],
+        [
+          6,
+          35
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          2,
+          29
+        ],
+        [
+          5,
+          36
+        ]
+      ]
+    },
+    {
+      "study": "Vigano",
+      "year": 1992,
+      "failure": [
+        [
+          1,
+          74
+        ],
+        [
+          0,
+          70
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          2,
+          74
+        ],
+        [
+          2,
+          70
+        ]
+      ]
+    },
+    {
+      "study": "Hansen",
+      "year": 1988,
+      "failure": [
+        [
+          2,
+          28
+        ],
+        [
+          11,
+          31
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          0,
+          31
+        ],
+        [
+          3,
+          33
+        ]
+      ]
+    },
+    {
+      "study": "De Vries",
+      "year": 1990,
+      "failure": [
+        [
+          6,
+          80
+        ],
+        [
+          3,
+          76
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          9,
+          81
+        ],
+        [
+          8,
+          90
+        ]
+      ]
+    },
+    {
+      "study": "Mauracher",
+      "year": 1989,
+      "failure": [
+        [
+          0,
+          92
+        ],
+        [
+          6,
+          93
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          2,
+          92
+        ],
+        [
+          2,
+          93
+        ]
+      ]
+    },
+    {
+      "study": "Nordstrom",
+      "year": 1990,
+      "failure": [
+        [
+          3,
+          29
+        ],
+        [
+          4,
+          27
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          3,
+          29
+        ],
+        [
+          5,
+          25
+        ]
+      ]
+    },
+    {
+      "study": "Rozdzinski",
+      "year": 1993,
+      "failure": [
+        [
+          16,
+          71
+        ],
+        [
+          16,
+          72
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          3,
+          71
+        ],
+        [
+          4,
+          72
+        ]
+      ]
+    },
+    {
+      "study": "Ter Braak",
+      "year": 1990,
+      "failure": [
+        [
+          10,
+          69
+        ],
+        [
+          8,
+          72
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          14,
+          69
+        ],
+        [
+          17,
+          72
+        ]
+      ]
+    },
+    {
+      "study": "Tulkens",
+      "year": 1988,
+      "failure": [
+        [
+          0,
+          19
+        ],
+        [
+          0,
+          19
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          0,
+          19
+        ],
+        [
+          0,
+          19
+        ]
+      ]
+    },
+    {
+      "study": "Van der Auwera",
+      "year": 1991,
+      "failure": [
+        [
+          0,
+          30
+        ],
+        [
+          2,
+          30
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          1,
+          30
+        ],
+        [
+          3,
+          30
+        ]
+      ]
+    },
+    {
+      "study": "Klastersky",
+      "year": 1977,
+      "failure": [
+        [
+          11,
+          25
+        ],
+        [
+          3,
+          25
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          3,
+          25
+        ],
+        [
+          3,
+          25
+        ]
+      ]
+    },
+    {
+      "study": "Vanhaeverbeek",
+      "year": 1993,
+      "failure": [
+        [
+          0,
+          19
+        ],
+        [
+          0,
+          20
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          0,
+          19
+        ],
+        [
+          1,
+          20
+        ]
+      ]
+    },
+    {
+      "study": "Hollender",
+      "year": 1989,
+      "failure": [
+        [
+          0,
+          58
+        ],
+        [
+          1,
+          56
+        ]
+      ],
+      "nephrotoxicity": [
+        [
+          0,
+          58
+        ],
+        [
+          3,
+          56
+        ]
+      ]
+    }
+  ]
+}

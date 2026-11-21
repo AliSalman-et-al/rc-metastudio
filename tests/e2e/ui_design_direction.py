@@ -16,8 +16,13 @@ def navigation_selection_pixels(view):
     from PyQt6.QtGui import QPalette
     tree = view.nav_tree
     item = required(tree.currentItem(), 'selected Results section')
-    image = required(tree.viewport()).grab().toImage()
-    rect = tree.visualItemRect(item).intersected(image.rect())
+    viewport = required(tree.viewport())
+    image = view.grab().toImage()
+    dpr = image.devicePixelRatio()
+    rect = tree.visualItemRect(item).intersected(viewport.rect())
+    rect.translate(viewport.mapTo(view, QtCore.QPoint()))
+    rect = QtCore.QRect(round(rect.x() * dpr), round(rect.y() * dpr),
+                        round(rect.width() * dpr), round(rect.height() * dpr)).intersected(image.rect())
     highlight = QtWidgets.QApplication.palette().color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight)
     assert tree.palette().color(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight) == highlight
     count = sum(image.pixelColor(x, y).rgb() == highlight.rgb()
@@ -44,7 +49,7 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         assert not any(widget.isVisible() and widget.objectName() == 'Dialog' for widget in app.topLevelWidgets() if isinstance(widget, QtWidgets.QDialog))
         record('direction-home-disabled', window, reason=window.action_go.toolTip())
-        assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         window.showNormal()
         window.resize(1280, 800)
         window.activateWindow()
@@ -99,7 +104,7 @@ def run(app, window, work, root, record, analyze):
         wizard.reject()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/Pignon2000-HR.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'sample_projects/Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms'), raise_on_error=True)
     model = window.model
     unit = model.get_current_analysis_unit_for_study(0)
     dialog = RatioDataDialog(unit, model.arm_names, 'HR', parent=window)
@@ -134,7 +139,7 @@ def run(app, window, work, root, record, analyze):
 
     if phase == 'all':
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         view = analyze(app, window, 'binary.random', via_shortcut=True)
         first = required(view.nav_tree.topLevelItem(0))
         if view._plot_entry(first) is None:
@@ -146,8 +151,6 @@ def run(app, window, work, root, record, analyze):
                          if action.shortcut().toString() == 'Ctrl+0'), None)
         if fit_page is None:
             failures.append('Results has no Fit page action on Ctrl+0')
-        if view.zoom_control.value() > 100:
-            failures.append('Automatic first plot zoom exceeds 100%')
         record('direction-results-first-display', view, first=first.text(0), zoom=view.zoom_control.value())
         view.activateWindow()
         key_click(view, QtCore.Qt.Key.Key_M, QtCore.Qt.KeyboardModifier.ControlModifier)
@@ -185,10 +188,15 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         if fit_page is not None:
             view.activateWindow()
-            view._set_zoom(150)
+            automatic_zoom = view.zoom_control.value()
+            manual_zoom = 150 if automatic_zoom != 150 else 175
+            view.zoom_control.setValue(manual_zoom)
+            assert view.graphics_view.transform().m11() == manual_zoom / 100
             key_click(view, QtCore.Qt.Key.Key_0, QtCore.Qt.KeyboardModifier.ControlModifier)
             wait(100)
-            assert view.zoom_control.value() <= 100
+            assert view.zoom_control.value() == automatic_zoom
+            assert view.graphics_view.transform().m11() == 1
+            record('direction-results-zoom-reset', view, automatic_zoom=automatic_zoom, manual_zoom=manual_zoom)
             from advanced_workflows import modal
             from rc_metastudio.results.plot_editor import EditPlotDialog
             def close_editor(dialog):

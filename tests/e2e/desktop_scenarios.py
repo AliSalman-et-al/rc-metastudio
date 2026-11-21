@@ -226,6 +226,11 @@ SCENARIOS = {
     "review-workflows": Scenario(external("analysis_settings_workflows", review_args), 240),
     "subgroup-image": Scenario(local("subgroup_image", "subgroup-image"), 240),
     "subgroup-image-dark-large": Scenario(local("subgroup_image", "subgroup-image-dark-large"), 240),
+    "polish-journeys": Scenario(external("polish_journeys", standard_args), 480),
+    **{
+        f"sample-{example}": Scenario(external("published_samples", standard_args, example=example), 480)
+        for example in ("colditz", "barza", "poole", "kearon", "greenland", "abe", "feng")
+    },
     "doctor": Scenario(readiness, qualifies=False),
     "hillclimb": Scenario(local("hillclimb"), 600),
     "analysis-dialog": Scenario(local("analysis_dialog")),
@@ -240,7 +245,7 @@ SCENARIOS = {
     "results-values": Scenario(external("results_values", standard_args), 600),
     "amino": Scenario(local("sample_analysis", "amino")),
     "sheets": Scenario(local("sheets")),
-    "ui-crawl": Scenario(external("ui_crawl", lambda driver, *_: (driver,)), 600, qualifies=False),
+    "ui-crawl": Scenario(external("ui_crawl", lambda driver, *_: (driver,)), 900, qualifies=False),
     "rm5-import": Scenario(external("rm5_import", rm5_args), 240),
     "sheets-legacy": Scenario(local("sheets_legacy"), 600),
     "sheets-edges": Scenario(local("sheets_edges")),
