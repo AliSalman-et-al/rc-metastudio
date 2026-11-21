@@ -433,10 +433,16 @@ rcmetar.forest.bmj.device.metrics <- function(bundle) {
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
         fixed.width <- study.gap + left.table.width + left.plot.gap + right.width + .4
         study.width <- min(2.05, max(1.15, width - fixed.width - 1.10 * 1.12))
-        left.width <- study.width + study.gap + left.table.width + left.plot.gap
-        plot.width <- max(1.10, (width - fixed.width - study.width) / 1.12)
+        footer.width <- rcmetar.bmj.text.width(
+            c(bundle$style_blocks$heterogeneity, bundle$style_blocks$test_overall,
+              rcmetar.forest.prediction.label(bundle)),
+            cex
+        ) + .16
+        left.width <- max(study.width + study.gap + left.table.width + left.plot.gap, footer.width)
+        fixed.width <- left.width + right.width + .4
+        plot.width <- max(1.10, (width - fixed.width) / 1.12)
         list(
-            width=max(width, fixed.width + study.width + 1.12 * plot.width),
+            width=max(width, fixed.width + 1.12 * plot.width),
             cex=cex,
             bg="white",
             header_lines=header.lines,
