@@ -32,7 +32,9 @@ def run(app, window, work, root, record, analyze):
     assert sample_button.menu() is window.sample_menu
     assert window.sample_menu.menuAction() in window.menu_file.actions()
     record("sample-welcome", window)
-    window.menu_file.popup(window.menu_file.parentWidget().mapToGlobal(QtCore.QPoint()))
+    menu_bar = required(window.menuBar())
+    mouse_click(menu_bar, QtCore.Qt.MouseButton.LeftButton,
+                pos=menu_bar.actionGeometry(window.menu_file.menuAction()).center())
     app.processEvents()
     record("sample-file-menu", window.menu_file)
     window.menu_file.close()
