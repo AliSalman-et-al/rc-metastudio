@@ -12,6 +12,7 @@ import os
 import re
 import sys
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from types import ModuleType
@@ -31,7 +32,7 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
+from rc_metastudio.r_call_serialization import r_transaction, require_r_transaction, serialized_r_call as _serialized_r_call
 from rc_metastudio.analysis.catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.analysis.validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.analysis.study_selection import fit_raw_rows, raw_data_is_complete
@@ -1003,6 +1004,23 @@ def _normalize_rcmetar_workflow(workflow):
     return workflow
 
 
+@contextmanager
+def sequential_progress(progress: Callable[[int, int], bool] | None):
+    if progress is None:
+        yield
+        return
+    with r_transaction():
+        _require_initialized_r()
+        callback = _rinterface.rternalize(
+            lambda index, total: _rinterface.BoolSexpVector([progress(int(index[0]), int(total[0]))])
+        )
+        previous = execute_r_function("options", **{"rcmetar.sequential.progress": callback})
+        try:
+            yield
+        finally:
+            execute_r_function("options", previous)
+
+
 @serialized_r_call
 def run_versioned_analysis_request(
     request: Mapping[str, object],
@@ -1018,8 +1036,15 @@ def run_versioned_analysis_request(
 @serialized_r_call
 def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
     """Convert this frozen model and execute it within one R transaction."""
-    family, _, metric, _, _ = _validated_versioned_request(request)
+    family, _, metric, workflow, params = _validated_versioned_request(request)
     data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
+    if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
+        metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
+    ) and table_model.current_sheet is not None:
+        below, above = table_model.current_sheet.effect_direction_arms()
+        params = {**params, "fp_favours_left": f"Favours {below}" if below else "",
+                  "fp_favours_right": f"Favours {above}" if above else ""}
+        request = {**request, "params": params}
     return run_versioned_analysis_request(request, data)
 
 

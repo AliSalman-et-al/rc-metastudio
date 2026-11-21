@@ -882,15 +882,20 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
-        bar = progress_dialog.AnalysisProgressDialog(self, context=self.windowTitle())
+        repeated = self.analysis_type in {"cumulative", "leave-one-out"}
+        bar = progress_dialog.AnalysisProgressDialog(
+            self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
+        )
         bar.show()
         bar.repaint()
         try:
+            from rc_metastudio import r_bridge
             from rc_metastudio.results.report import ManuscriptReport
 
             source_sheet = self._rerun_source_sheet or self.model.current_sheet
             requests = self.analysis_requests() if regression is None else ()
-            result = self._execute_requests(requests) if regression is None else regression()
+            with r_bridge.sequential_progress(bar.track_fit if repeated else None):
+                result = self._execute_requests(requests) if regression is None else regression()
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
             manuscript = ManuscriptReport.from_result(result)
             change_settings = self._change_settings_callback(source_sheet)
@@ -898,6 +903,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if on_result is None:
                 raise RuntimeError("analysis configuration has no results owner")
         except Exception as error:
+            if bar.cancelled:
+                return
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.analysis_error_label.setText(
                 "No studies are included. Select Include for at least one study with complete data."

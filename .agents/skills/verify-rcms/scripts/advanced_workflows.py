@@ -475,7 +475,6 @@ def plots(app, window, family, record, *, view=None):
             values["style"] = dialog.style_cbo.currentText()
         if family == "forest":
             values["bounds"] = (dialog.plot_lb_le.text(), dialog.plot_ub_le.text())
-            values["directions"] = (dialog.favours_left.text(), dialog.favours_right.text())
             values["order"] = dialog.study_order.currentData()
         return values
 
@@ -538,34 +537,15 @@ def plots(app, window, family, record, *, view=None):
                 click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
         if family in {"forest", "cumulative", "leave-one-out", "subgroup"}:
             original_style = dialog.style_cbo.currentText()
-            original_directions = (dialog.favours_left.text(), dialog.favours_right.text())
-            for names in (("Intervention", "Control"), (
-                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-up",
-                "Intensive individualized cognitive behavioural therapy plus structured clinical follow-through",
-            )):
-                dialog.favours_left.setText("Favours " + names[0])
-                dialog.favours_right.setText("Favours " + names[1])
-                for style in ("Default", "RevMan", "BMJ"):
-                    dialog.style_cbo.setCurrentText(style)
-                    assert dialog.style_cbo.currentText() == style
-                    click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
-                    from rc_metastudio import r_bridge
-                    r_bridge.ro.globalenv["verified_footer_path"] = str(artifact.params_path) + ".plotdata"
-                    null_inside = bool(r_bridge.ro.r(
-                        "local({ state <- new.env(); load(verified_footer_path, envir=state); "
-                        "limits <- RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim; "
-                        "null <- RCMetaR:::rcmetar.metafor.refline(state$plot.data, limits); "
-                        "is.finite(null) && null > limits[[1]] && null < limits[[2]] })"
-                    )[0])
-                    expected = tuple("Favours " + name for name in names) if null_inside or style == "BMJ" else ()
-                    measurements = check_forest_footer(path, expected_directions=expected)
-                    retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}-arms-{len(names[0])}.svg"
-                    retained.write_bytes(path.read_bytes())
-                    record("forest-footer-geometry", dialog, family=family, style=style,
-                           names=names, measurements=measurements, artifacts={"SVG": str(retained)})
+            for style in ("Default", "RevMan", "BMJ"):
+                dialog.style_cbo.setCurrentText(style)
+                assert dialog.style_cbo.currentText() == style
+                click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
+                check_forest_footer(path, expected_directions=())
+                retained = Path(sys.argv[2]) / f"{family}-{style.split()[0]}.svg"
+                retained.write_bytes(path.read_bytes())
+                record("forest-footer-neutral", dialog, family=family, style=style, artifacts={"SVG": str(retained)})
             dialog.style_cbo.setCurrentText(original_style)
-            dialog.favours_left.setText(original_directions[0])
-            dialog.favours_right.setText(original_directions[1])
         field = dialog.x_label_edit if funnel else dialog.x_lbl_le
         for heading in ("figure_caption", "col1_str_edit", "col2_str_edit", "col3_str_edit", "col4_str_edit", "x_lbl_le", "x_label_edit", "y_label_edit"):
             control = getattr(dialog, heading, None)
@@ -618,14 +598,8 @@ def plots(app, window, family, record, *, view=None):
             if family == "forest":
                 dialog.plot_lb_le.setText("10")
                 dialog.plot_ub_le.setText("11")
-                assert [dialog.favours_left.text(), dialog.favours_right.text()] == ["Favours " + name for name in window.model.arm_names]
-                dialog.favours_left.setText("Favours treatment")
-                dialog.favours_right.setText("Favours control")
                 dialog.study_order.setCurrentIndex(dialog.study_order.findData("year"))
         box = dialog.button_box if funnel else dialog.buttonBox
-        if family == "forest":
-            dialog.content_scroll.ensureWidgetVisible(dialog.favours_right)
-            app.processEvents()
         dialog.content_scroll.ensureWidgetVisible(dialog.figure_caption)
         dialog.repaint()
         wait(250)
@@ -667,7 +641,7 @@ def plots(app, window, family, record, *, view=None):
             expected_params["fp_style"] = "revman"
         if family == "forest":
             expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
-            expected_params.update(fp_favours_left="Favours treatment", fp_favours_right="Favours control", fp_study_order="year")
+            expected_params.update(fp_study_order="year")
             from rc_metastudio import r_bridge
 
             r_bridge.ro.globalenv["verified_plot_path"] = (

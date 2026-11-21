@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent, QHideEvent, QShowEvent
-from PyQt6.QtWidgets import QApplication, QDialog, QLabel
+from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QPushButton
 
 from rc_metastudio import adaptive_window
 from rc_metastudio.qt_layout import configure_context_label
@@ -14,7 +14,8 @@ else:
 
 
 class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
-    def __init__(self, parent=None, *, operation="Fitting model and drawing plots…", context="", blocking=True):
+    def __init__(self, parent=None, *, operation="Fitting model and drawing plots…", context="", blocking=True,
+                 cancellable=False):
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.WindowTitleHint)
@@ -22,6 +23,8 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
         self.setAccessibleDescription(context)
         self._blocking = blocking
         self._wait_cursor_active = False
+        self.cancelled = False
+        self.cancel_button = QPushButton("Cancel", self) if cancellable else None
         self.operation_label = QLabel(operation, self)
         self.operation_label.setWordWrap(True)
         font = self.operation_label.font()
@@ -33,7 +36,11 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
             configure_context_label(label)
             self.verticalLayout.insertWidget(1, label)
         self.verticalLayout.insertSpacing(self.verticalLayout.count() - 1, self.fontMetrics().lineSpacing() // 2)
-        if blocking:
+        if self.cancel_button is not None:
+            self.setWindowModality(Qt.WindowModality.ApplicationModal)
+            self.cancel_button.clicked.connect(self.reject)
+            self.verticalLayout.addWidget(self.cancel_button)
+        elif blocking:
             explanation = QLabel("The window will respond again when the analysis finishes.", self)
             explanation.setWordWrap(True)
             self.verticalLayout.addWidget(explanation)
@@ -58,8 +65,22 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
             self._wait_cursor_active = False
         super().hideEvent(event)
 
+    def track_fit(self, index: int, total: int) -> bool:
+        self.progress_bar.setRange(0, total)
+        self.progress_bar.setValue(max(0, index - 1))
+        if index > total:
+            self.operation_label.setText("Drawing plots…")
+            if self.cancel_button is not None:
+                self.cancel_button.setEnabled(False)
+        else:
+            self.operation_label.setText(f"Fitting {index} of {total}…" if index else "Fitting overall model…")
+        QApplication.processEvents()
+        return not self.cancelled
+
     def reject(self):
-        pass
+        if self.cancel_button is not None:
+            self.cancelled = True
+            self.cancel_button.setEnabled(False)
 
     def closeEvent(self, event: QCloseEvent | None) -> None:
         if event is not None:

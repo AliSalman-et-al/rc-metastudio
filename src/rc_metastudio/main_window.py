@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
     QTableView,
 )
 import copy
+from dataclasses import replace
 
 if TYPE_CHECKING:
     from rc_metastudio.results.report import ManuscriptReport
@@ -374,6 +375,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.menuDataset.addSeparator()
         self.action_swap_arms = QAction(QtGui.QIcon(":/icons/actions/swap.svg"), "Swap intervention and control", self)
         self.menuDataset.addAction(self.action_swap_arms)
+        self.effect_direction_menu = required(self.menuDataset.addMenu("Effect direction"), "effect direction")
+        self.effect_direction_menu.aboutToShow.connect(self._populate_effect_direction)
         self.menuDataset.aboutToShow.connect(self._update_swap_arms_enabled)
         self.action_swap_arms.triggered.connect(self._swap_sheet_arms)
         self.workspace = WorkspaceSession()
@@ -910,7 +913,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = source_sheet or self.model.current_sheet
         identity = result.identity.splitlines()[0] if result.identity else ""
         plot_key = result.analysis_method + " | " + identity
-        saved_plots = sheet.settings.get("plot_overrides", {}).get(plot_key, {}) if sheet else {}
+        saved_plots = {
+            title: {key: value for key, value in overrides.items() if not key.startswith("fp_favours_")}
+            for title, overrides in sheet.settings.get("plot_overrides", {}).get(plot_key, {}).items()
+        } if sheet else {}
 
         def save_plot_override(title: str, overrides: dict[str, object]) -> None:
             def update(live_sheet: analysis_dataset.Sheet) -> None:
@@ -920,18 +926,21 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             if self.workspace.edit_sheet(sheet, update):
                 self._update_project_identity()
 
-        def save_favours_labels(left: str, right: str) -> None:
-            def update(live_sheet: analysis_dataset.Sheet) -> None:
-                live_sheet.settings["favours_labels"] = [left, right]
-
-            if self.workspace.edit_sheet(sheet, update):
-                self._update_project_identity()
+        if sheet and any(section.plot_kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"}
+                         for section in result.sections):
+            direction = sheet.effect_direction_arms()
+            if sheet.family == "diagnostic" or self.model.current_effect in analysis_catalog.ONE_ARM_METRICS:
+                direction = ("", "")
+            result = replace(result, manuscript_favours=direction if all(direction) else ())
+            if manuscript is not None and result.manuscript_favours:
+                below, above = result.manuscript_favours
+                manuscript = replace(manuscript, summary=(*manuscript.summary,
+                    f"Values below the null favour {below}, and values above the null favour {above}."))
 
         try:
             form = results_window.ResultsWindow(
                 result, parent=self, change_settings=change_settings, manuscript=manuscript,
                 source_sheet_name=sheet.name if sheet else None,
-                save_favours_labels=save_favours_labels if sheet else None,
                 plot_overrides=saved_plots, save_plot_override=save_plot_override if sheet else None,
             )
         except Exception as e:
@@ -1175,19 +1184,34 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_swap_arms_enabled(self):
         sheet = self.model.current_sheet
         self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS))
+        self.effect_direction_menu.setEnabled(self.action_swap_arms.isEnabled())
+
+    def _populate_effect_direction(self) -> None:
+        self.effect_direction_menu.clear()
+        sheet = self.model.current_sheet
+        if sheet is None or len(sheet.arms) != 2:
+            return
+        first = sheet.arms[0].name
+        current = sheet.settings.get("effect_direction", "")
+        for value, label in (("", "Not shown"), ("below", f"Values below the null favour {first}"),
+                             ("above", f"Values above the null favour {first}")):
+            action = required(self.effect_direction_menu.addAction(label), "direction choice")
+            action.setCheckable(True)
+            action.setChecked(current == value)
+            action.triggered.connect(lambda checked=False, direction=value: self._set_effect_direction(sheet, direction))
+
+    def _set_effect_direction(self, sheet: analysis_dataset.Sheet, direction: str) -> None:
+        def update(live_sheet: analysis_dataset.Sheet) -> None:
+            live_sheet.settings["effect_direction"] = direction
+            live_sheet.settings.pop("favours_labels", None)
+        if self.workspace.edit_sheet(sheet, update):
+            self._update_project_identity()
 
     def _swap_sheet_arms(self):
         sheet = self.model.current_sheet
         if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS:
             def swap():
                 sheet.arms.reverse()
-                if "favours_labels" in sheet.settings:
-                    sheet.settings["favours_labels"].reverse()
-                for plots in sheet.settings.get("plot_overrides", {}).values():
-                    for params in plots.values():
-                        left, right = "fp_favours_left", "fp_favours_right"
-                        if left in params and right in params:
-                            params[left], params[right] = params[right], params[left]
             self._sheet_change(sheet.id, swap)
 
     def _setup_sheet_strip(self):

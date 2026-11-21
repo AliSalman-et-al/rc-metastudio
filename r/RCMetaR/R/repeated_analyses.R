@@ -3,21 +3,36 @@
 
 cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulative meta-analysis of therapeutic trials for myocardial infarction." New England Journal of Medicine 327.4 (1992): 248-254.'
 
+.rcmetar.sequential.progress <- function(index, total) {
+    progress <- getOption("rcmetar.sequential.progress")
+    if (!is.null(progress) && !isTRUE(progress(as.integer(index), as.integer(total)))) {
+        stop("Sequential analysis cancelled.", call.=FALSE)
+    }
+}
+
 .rcmetar.sequential.fits <- function(data, leave.one.out, fit, full.fit) {
     studies <- seq_along(data@study.names)
-    subset.count <- if (leave.one.out) length(studies) else length(studies) - 1L
+    total <- length(studies)
+    subset.count <- if (leave.one.out) total else total - 1L
+    .rcmetar.sequential.progress(if (leave.one.out) 0L else 1L, total)
+    force(full.fit)
     fits <- lapply(seq_len(subset.count), function(i) {
+        .rcmetar.sequential.progress(if (leave.one.out) i else i + 1L, total)
         rows <- if (leave.one.out) studies[-i] else seq_len(i)
         fit(get.subset(data, rows))
     })
+    .rcmetar.sequential.progress(total + 1L, total)
     if (leave.one.out) c(list(full.fit), fits) else c(fits, list(full.fit))
 }
 
 .rcmetar.sequential.method <- function(data, method, params, leave.one.out=FALSE) {
     selected <- .rcmetar.method.registry()[[method]]
-    result <- selected$fit(data, params)
     fit <- function(subset) selected$overall(selected$fit(subset, params))
-    fits <- .rcmetar.sequential.fits(data, leave.one.out, fit, selected$overall(result))
+    result <- NULL
+    fits <- .rcmetar.sequential.fits(data, leave.one.out, fit, {
+        result <- selected$fit(data, params)
+        selected$overall(result)
+    })
     if (!leave.one.out) dim(fits) <- length(fits)
     list(result=result, fits=fits)
 }

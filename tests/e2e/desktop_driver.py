@@ -819,7 +819,7 @@ def sheets_swap(app, window):
         model.set_current_metric(metric)
         precise = []
         arms = [a.name for a in model.current_sheet.arms]
-        favours = copy.deepcopy(model.current_sheet.settings.get("favours_labels"))
+        model.current_sheet.settings["effect_direction"] = "below"
         counts = copy.deepcopy([r.analysis_unit.get_raw_data_for_arms(arms) for r in model.current_sheet.rows])
         headers = [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(model.columnCount())]
         values = []
@@ -834,7 +834,7 @@ def sheets_swap(app, window):
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
-                expected_labels = model.current_sheet.settings.get("favours_labels", ["Favours " + name for name in model.arm_names])
+                expected_labels = ["Favours " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
                 if iteration == 1:
@@ -844,8 +844,6 @@ def sheets_swap(app, window):
             sections = parsed_numeric_sections(view.results)
             summary = sections["Summary"]
             values.append(summary["estimate"])
-            if favours is not None:
-                assert model.current_sheet.settings["favours_labels"] == (list(reversed(favours)) if iteration == 1 else favours)
             record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
             if filename == "amino.rcms" and iteration == 1:
                 from xml.etree import ElementTree as ET

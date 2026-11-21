@@ -226,6 +226,8 @@ def _run(app, window, work, root, record, analyze):
     record("ux-analysis-recovered", recovered, plots=dict(recovered.results.display_images), texts=dict(recovered.texts))
     close_result(recovered)
     app.processEvents()
+    window.effect_direction_menu.aboutToShow.emit()
+    window.effect_direction_menu.actions()[1].trigger()
     view = analyze(app, window, "binary.random")
     for kind in ("pdf", "docx", "raster", "regenerated"):
         export_destination_case(view, work, record, kind)
@@ -438,59 +440,21 @@ def _run(app, window, work, root, record, analyze):
     record("ux-plot-toolbar", view, saved=str(plot_path), zoom=view.zoom_control.value(), plot_bounds=[plot_rect.left(), plot_rect.right()], viewport_width=view.graphics_view.viewport().width())
     record("slice2c-results-forest", view)
     close_result(view)
-    for custom in (False, True):
-        if custom:
-            edited = analyze(app, window, "binary.random")
-            from rc_metastudio.results.plot_editor import EditPlotDialog
-            editor_errors = []
-            editor_driven = []
-            waiting_callbacks = []
-            editor_timer = QtCore.QTimer(edited)
-            def customise():
-                dialog = app.activeModalWidget()
-                if not isinstance(dialog, EditPlotDialog) or not dialog.isVisible():
-                    waiting_callbacks.append(True)
-                    return
-                editor_timer.stop()
-                editor_driven.append(True)
-                try:
-                    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowExposed)(dialog, 5000)
-                    record("ux-custom-editor-visible", dialog)
-                    dialog.favours_left.setText("Favours custom first")
-                    dialog.favours_right.setText("Favours custom second")
-                    mouse_click(required(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
-                except BaseException as error:
-                    editor_errors.append(error)
-                    if dialog is not None:
-                        dialog.reject()
-            record("ux-custom-editor-before", edited)
-            editor_timer.timeout.connect(customise)
-            editor_timer.start(10)
-            try:
-                # Windows R calls can dispatch this callback while saved plot
-                # parameters load, before the editor exists. Prove that turn
-                # cannot consume the only attempt to operate the dialog.
-                deadline = QtCore.QDeadlineTimer(5000)
-                while not (waiting_callbacks or editor_errors or editor_driven or deadline.hasExpired()):
-                    wait(10)
-                assert waiting_callbacks
-                edited.edit_plot_action.trigger()
-            finally:
-                editor_timer.stop()
-                editor_timer.deleteLater()
-            assert editor_driven, "Edit plot did not open its editor"
-            assert not editor_errors, editor_errors
-            record("ux-custom-editor-after", edited, callbacks_before_editor=len(waiting_callbacks))
-            assert window.model.current_sheet.settings["favours_labels"] == ["Favours custom first", "Favours custom second"]
-            close_result(edited)
-        before = list(window.model.arm_names)
+    for direction in ("", "below", "above"):
+        window._populate_effect_direction()
+        action = window.effect_direction_menu.actions()[("", "below", "above").index(direction)]
+        action.trigger()
         window.action_swap_arms.trigger()
         swapped = analyze(app, window, "binary.random")
-        text = " ".join(" ".join(ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot().itertext()).split())
-        left, right = ("custom second", "custom first") if custom else (before[1], before[0])
-        assert text.index(left) < text.index(right), text
-        assert text.count("Favours") >= 2
-        record("favours-swapped", swapped, custom=custom, svg_text=text)
+        svg = ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot()
+        labels = {node.text: float(node.attrib["x"]) for node in svg.iter("{http://www.w3.org/2000/svg}text")
+                  if (node.text or "").startswith("Favours ")}
+        below, above = window.model.current_sheet.effect_direction_arms()
+        if not direction:
+            assert not labels
+        else:
+            assert labels[f"Favours {below}"] < labels[f"Favours {above}"]
+        record("effect-direction-swapped", swapped, direction=direction, labels=labels)
         close_result(swapped)
         window.action_swap_arms.trigger()
 
@@ -629,6 +593,8 @@ def _run(app, window, work, root, record, analyze):
     from rc_metastudio.results.plot_editor import EditPlotDialog
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    window.effect_direction_menu.aboutToShow.emit()
+    window.effect_direction_menu.actions()[1].trigger()
     continuous = analyze(app, window, 'continuous.random')
     def forest_nodes(result):
         artifact = result._selected_plot()[0]
