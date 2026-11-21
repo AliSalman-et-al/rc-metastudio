@@ -428,7 +428,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert report_numbers(view.manuscript.results).replace('\u00a0', ' ') in view.manuscript_text.toPlainText()
             assert all(value not in text for value in ('executed settings', 'Project:', '.rcms'))
             assert 'Supplementary details' in text
-            assert text.index('Supplementary details') > text.rindex('Figure ')
+            assert text.index('Supplementary details') < text.index('Figure ')
             if sample == 'amino':
                 assert view.manuscript.title == 'Clinical failure: random-effects meta-analysis (odds ratio)'
                 prediction_note = '95% prediction interval: the underlying effect in a new study; this is not the confidence interval of the pooled estimate.'
@@ -490,7 +490,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
 
     window.workspace.mark_saved()
     assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
-    window.model.current_sheet.settings['favours_labels'] = ['Favours Control', 'Favours Intervention']
+    window.model.current_sheet.settings['effect_direction'] = 'above'
     window.action_swap_arms.trigger()
     view = analyze(app, window, 'continuous.random', estimator='DL')
     assert_manuscript_tables(view)
@@ -541,7 +541,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         captions = [p.text for p in exported.paragraphs]
         assert any(p.startswith('Table ') for p in captions)
         if 'Supplementary details' in captions:
-            assert captions.index('Supplementary details') > max(i for i, p in enumerate(captions) if p.startswith('Figure '))
+            assert captions.index('Supplementary details') < min(i for i, p in enumerate(captions) if p.startswith('Figure '))
         (work / (workflow + '-prose.txt')).write_text('Methods\n' + view.manuscript.methods + '\n\nResults\n' + view.manuscript.results, encoding='utf-8')
         record('manuscript-' + workflow, view, results=prose)
         close_result(view)

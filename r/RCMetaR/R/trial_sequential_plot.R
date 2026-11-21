@@ -51,6 +51,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     x <- -graphics::xinch(offset)
     for (i in seq_along(favours)) {
         arm <- sub("^Favours([[:space:]]+|$)", "", trimws(favours[i]), ignore.case=TRUE)
+        if (is.na(arm) || !nzchar(arm)) next
         words <- strsplit(arm, "[[:space:]]+")[[1]]
         prefixes <- Reduce(paste, words, init="Favours", accumulate=TRUE)
         cex <- .9
@@ -192,7 +193,9 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     left <- tick.width + if (compact) .52 else .72
     legend.cex <- max(6/(12*size$cex), rcmetar.bubble.legend.cex())
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
-    legend.width <- max(inches(labels, legend.cex)) + if (compact) .39 else .51
+    # legend() includes the line sample, text inset and padding in character units.
+    legend.width <- max(inches(labels, legend.cex)) +
+        4.5 * graphics::par("cin")[1] * size$cex * legend.cex + .012 * size$width + .06
     legend.below <- (size$width - left - legend.width)/size$width <
         if (size$width <= 89/25.4 + .01) .60 else .72
     conventional.cex <- max(.8, 6/(12*size$cex))
@@ -383,7 +386,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     }
     if (panel$legend.below) {
         # Pack at most two rows against the device width, centring each row.
-        widths <- graphics::strwidth(labels, units="inches", cex=legend.cex) + .23
+        widths <- graphics::strwidth(labels, units="inches", cex=legend.cex) +
+            4 * graphics::par("cin")[1] * size$cex * legend.cex
         split <- if (sum(widths) <= size$width - .12) length(labels) else
             which.min(abs(cumsum(widths) - sum(widths)/2))
         rows <- list(seq_len(split))
@@ -396,7 +400,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
             y <- -limit - graphics::yinch(panel$bottom - .27 + (i - 1)*.12)
             legend <- do.call(graphics::legend,
                     c(list(x=center, y=y, legend=labels[row], xjust=.5, bty="n",
-                           xpd=NA, horiz=TRUE, text.col="#222222"), args))
+                           xpd=NA, horiz=TRUE, text.width=NA_real_, text.col="#222222"), args))
             draw.swatch(legend, labels[row])
         }
     } else {
@@ -439,7 +443,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     axes <- .tsa.plot.axes(looks, design$ris, percent)
     curves <- .tsa.plot.curves(looks, design, boundary, axes, last)
     annotation <- .tsa.plot.annotation(looks, design, last, hr)
-    favours <- params$favours %||% paste("Favours", rcmetar.default.arm.labels())
+    favours <- params$favours %||% character()
     title <- params$plot_caption
 
     draw <- function() {

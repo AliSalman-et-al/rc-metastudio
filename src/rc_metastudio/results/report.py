@@ -17,7 +17,7 @@ from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
-from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtCore import QMarginsF, QRectF, Qt
 from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
@@ -45,7 +45,9 @@ class AnalysisResultHandler(Protocol):
 
 
 _PACKAGE_REFERENCES = {
-    'meta': 'Balduzzi, S., Rücker, G., & Schwarzer, G. (2019). How to perform a meta-analysis with R: a practical tutorial. Evidence-Based Mental Health, 22(4), 153–160. doi:10.1136/ebmental-2019-300117.'
+    'meta': 'Balduzzi, S., Rücker, G., & Schwarzer, G. (2019). How to perform a meta-analysis with R: a practical tutorial. Evidence-Based Mental Health, 22(4), 153–160. doi:10.1136/ebmental-2019-300117.',
+    'metafor': 'Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. Journal of Statistical Software, 36(3), 1–48. doi:10.18637/jss.v036.i03.',
+    'gsDesign': 'Anderson, K. (2026). gsDesign: Group Sequential Design [R package]. https://CRAN.R-project.org/package=gsDesign.',
 }
 
 
@@ -813,7 +815,7 @@ class ManuscriptReport:
             parts.extend(('Model configuration', self.configuration))
         return '\n\n'.join(parts)
 
-    def html(self, supplementary=False, *, heading=True):
+    def html(self, supplementary=False, *, heading=True, figure_notes=True):
         parts = [f'<h1>{escape(self.title)}</h1><p>{escape(self.comparison)}</p>'] if heading else []
         for name, text in (('Methods', self.methods), ('Results', self.results)):
             if text.strip():
@@ -821,7 +823,7 @@ class ManuscriptReport:
                 parts.append(f'<a name="{name.lower()}"></a><h2>{name}</h2><p>{formatted}</p>')
         if supplementary:
             parts = []
-        else:
+        elif figure_notes:
             for number, figure in enumerate(self.figures, 1):
                 if figure.paragraphs:
                     parts.append(f'<p><b>Figure {number}. {escape(figure.title)}</b><br>'
@@ -850,20 +852,20 @@ def _tsa_accrued_number(value: float, hr: bool) -> str:
     return f"{number:,f}"
 
 
-def _tsa_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
+def _tsa_methods(run: "TsaRun", request: "TsaRequest", outcome: str) -> list[str]:
     from rc_metastudio.analysis.trial_sequential import EFFECT_SOURCES, HKSJ_NOTE
 
     options = request.options
     hr = request.metric == "HR"
     units = "units of statistical information" if hr else "participants"
     order = {"year": "publication-year order", "table": "table order"}[options.order]
-    left, right = request.favoured_labels()
-    test = {"two-sided": "two-sided test", "benefit": f"one-sided test favouring {left}",
-            "harm": f"one-sided test favouring {right}"}[options.test]
+    benefit, harm = request.monitoring_sides()
+    test = {"two-sided": "two-sided test", "benefit": f"one-sided test {benefit}",
+            "harm": f"one-sided test {harm}"}[options.test]
     measure_name = {"RR": "risk ratios", "OR": "odds ratios", "RD": "risk differences",
                     "MD": "mean differences", "HR": "hazard ratios"}[request.metric]
 
-    effect = f"{run.anticipated_effect:.4g}"
+    effect = f"{run.anticipated_effect:.2f}"
     effect_phrase = {"OR": "an OR", "RR": "an RR", "RD": "an RD", "MD": "a mean difference",
                      "HR": "an HR", "Peto OR": "a Peto OR"}[request.measure]
     source = (" (entered)" if run.effect_source == "user" else
@@ -872,7 +874,7 @@ def _tsa_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
     model = (f"random-effects model with the {request.tau_method} estimator of between-study variance"
              if request.model == "random" else request.model_label.replace("fixed", "fixed-effect") + " model")
     method = [
-        f"We pooled {measure_name} ({request.metric}) using a {model} and the Wald z statistic.",
+        f"For {outcome}, {measure_name} ({request.metric}) were pooled using a {model} and the Wald z statistic.",
         f"Studies were added in {order}.",
         f"The {ris_label} was {_tsa_accrued_number(run.ris, hr)} {units} using a {test} "
         f"with α = {options.alpha:g} and {options.power:.0%} power. "
@@ -885,7 +887,7 @@ def _tsa_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
         method.append(f"The control event proportion was {run.control_proportion:.2%} ({control}).")
     if request.metric == "MD" and run.variance is not None:
         variance = "entered" if run.variance_source == "user" else "fixed-effect-weighted pooled arm variance"
-        method.append(f"The participant variance was {run.variance:.4g} ({variance}).")
+        method.append(f"The participant variance was {run.variance:.2f} ({variance}).")
     method.append(_tsa_heterogeneity_prose(run, request, units))
     method.extend(_tsa_monitoring_methods(run, request))
     return method
@@ -901,7 +903,7 @@ def _tsa_heterogeneity_prose(run: "TsaRun", request: "TsaRequest", units: str) -
         size, note_units = ("required information", "units of information") if hr else ("required information size", units)
         return (f"The fixed-effect model does not adjust the information size for heterogeneity; "
                 f"a random-effects model gave D² = {d2:.1%} and a {size} of {ris} "
-                f"{note_units} (Wetterslev 2017).")
+                f"{note_units}.")
     if options.heterogeneity == "none":
         return "The analysis used no heterogeneity adjustment."
     measure, value = ("D²", run.d2) if options.heterogeneity == "d2" else ("I²", run.i2)
@@ -915,21 +917,19 @@ def _tsa_monitoring_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
     method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
     method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
     if run.lil_lambda is not None:
-        method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g} (Hu 2007).")
+        method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g}.")
     if run.excluded_studies:
         method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
     if options.manual_ris is None:
         method.append("Sensitivity analyses repeated the analysis with alternative anticipated intervention effects.")
-    method.append("The analysis used " + run.result.software.replace(", ", " and ") + ".")
-
     return method
 
 
 def _tsa_crossing_prose(run: "TsaRun", request: "TsaRequest") -> list[str]:
     hr = request.metric == "HR"
     units = "units of statistical information" if hr else "participants"
-    left, right = request.favoured_labels()
-    effect = f"{run.anticipated_effect:.4g}"
+    benefit, harm = request.monitoring_sides()
+    effect = f"{run.anticipated_effect:.2f}"
     crossing = run.crossing
     results: list[str] = []
     if crossing is not None:
@@ -939,8 +939,8 @@ def _tsa_crossing_prose(run: "TsaRun", request: "TsaRequest") -> list[str]:
             results.append(f"This suggests that an intervention effect of {effect} is unlikely, "
                            "without establishing its absence.")
         else:
-            favoured = left if run.conclusion == "crossed-benefit" else right
-            results.append(f"The cumulative Z-curve crossed the monitoring boundary favouring {favoured} {at}")
+            side = benefit if run.conclusion == "crossed-benefit" else harm
+            results.append(f"The cumulative Z-curve crossed the monitoring boundary {side} {at}")
     elif run.conclusion == "ris-reached":
         results.append("Accrued information reached the required information size without the cumulative Z-curve crossing a monitoring boundary.")
     elif run.conclusion == "none":
@@ -955,23 +955,23 @@ def _tsa_interval_prose(run: "TsaRun", confidence: float) -> list[str]:
     results: list[str] = []
     if run.crossing != final:
         results.append(f"Accrued information is {final.fraction:.0%} of the required information size.")
-    results.append(f"The conventional {confidence:g}% CI was {final.lower:.4g} to {final.upper:.4g}.")
+    results.append(f"The conventional estimate was {final.estimate:.2f} ({confidence:g}% CI {final.lower:.2f} to {final.upper:.2f}).")
     if final.fraction >= 1:
         results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
     elif final.adjusted_lower is not None and final.adjusted_upper is not None:
-        results.append(f"The TSA-adjusted CI was {final.adjusted_lower:.4g} to {final.adjusted_upper:.4g}.")
+        results.append(f"The TSA-adjusted CI was {final.adjusted_lower:.2f} to {final.adjusted_upper:.2f}.")
     elif final.adjusted_lower is not None:
-        results.append(f"The one-sided TSA-adjusted lower limit was {final.adjusted_lower:.4g}.")
+        results.append(f"The one-sided TSA-adjusted lower limit was {final.adjusted_lower:.2f}.")
     elif final.adjusted_upper is not None:
-        results.append(f"The one-sided TSA-adjusted upper limit was {final.adjusted_upper:.4g}.")
+        results.append(f"The one-sided TSA-adjusted upper limit was {final.adjusted_upper:.2f}.")
     if run.lil_lambda is not None:
-        results.append(f"The final penalised Z-score was {final.penalised_z:.4g}." if final.penalised_z is not None
+        results.append(f"The final penalised Z-score was {final.penalised_z:.2f}." if final.penalised_z is not None
                        else "The final penalised Z-score was unavailable at the accrued statistical information.")
     return results
 
 
 def _tsa_results(run: "TsaRun", request: "TsaRequest") -> tuple[str, ...]:
-    effect = f"{run.anticipated_effect:.4g}"
+    effect = f"{run.anticipated_effect:.2f}"
     results = _tsa_crossing_prose(run, request)
     results.extend(_tsa_interval_prose(run, request.confidence))
     if run.conclusion in {"crossed-benefit", "crossed-harm"}:
@@ -985,33 +985,45 @@ def _tsa_results(run: "TsaRun", request: "TsaRequest") -> tuple[str, ...]:
     return tuple(results)
 
 
-def _tsa_references(run: "TsaRun", request: "TsaRequest") -> ResultSection:
+def _tsa_references(run: "TsaRun", request: "TsaRequest") -> list[tuple[str, str]]:
     references = [
-        "Wetterslev J, Thorlund K, Brok J, Gluud C. J Clin Epidemiol. 2008;61:64–75.",
-        "Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol. 2009;9:86.",
-        "Lan KKG, DeMets DL. Discrete sequential boundaries for clinical trials. Biometrika. 1983;70:659–663.",
+        "Wetterslev, J., Thorlund, K., Brok, J., & Gluud, C. (2008). Trial sequential analysis may establish when firm evidence is reached in cumulative meta-analysis. Journal of Clinical Epidemiology, 61(1), 64–75. doi:10.1016/j.jclinepi.2007.03.013.",
+        "Wetterslev, J., Thorlund, K., Brok, J., & Gluud, C. (2009). Estimating required information size by quantifying diversity in random-effects model meta-analyses. BMC Medical Research Methodology, 9, 86. doi:10.1186/1471-2288-9-86.",
+        "Lan, K. K. G., & DeMets, D. L. (1983). Discrete sequential boundaries for clinical trials. Biometrika, 70(3), 659–663. doi:10.1093/biomet/70.3.659.",
     ]
     if (request.options.manual_ris is None or run.effect_source == "wetterslev-2017-nearest-95-ci" or run.control_source.startswith("wetterslev-2017")
-            or run.variance_source.startswith("wetterslev-2017")):
-        references.append("Wetterslev J, Jakobsen JC, Gluud C. BMC Med Res Methodol. 2017;17:39.")
+            or run.variance_source.startswith("wetterslev-2017") or run.fixed_effect_note is not None):
+        references.append("Wetterslev, J., Jakobsen, J. C., & Gluud, C. (2017). Trial sequential analysis in systematic reviews with meta-analysis. BMC Medical Research Methodology, 17, 39. doi:10.1186/s12874-017-0315-7.")
     if run.effect_source == "imberger-2016-10-percent-rrr":
-        references.append("Imberger G, Thorlund K, Gluud C, Wetterslev J. BMJ Open. 2016;6:e011890.")
+        references.append("Imberger, G., Thorlund, K., Gluud, C., & Wetterslev, J. (2016). False-positive findings in Cochrane meta-analyses with and without application of trial sequential analysis: an empirical review. BMJ Open, 6(8), e011890. doi:10.1136/bmjopen-2016-011890.")
     if run.lil_lambda is not None:
-        references.append("Hu M, Cappelleri JC, Lan KKG. Clin Trials. 2007;4:329–340.")
-    return ResultSection("trial-sequential.references", "text", 2, "References",
-                         "\n".join(references), "References", paragraphs=tuple(references))
+        references.append("Hu, M., Cappelleri, J. C., & Lan, K. K. G. (2007). Applying the law of iterated logarithm to control type I error in cumulative meta-analysis of binary outcomes. Clinical Trials, 4(4), 329–340. doi:10.1177/1740774507081219.")
+    return [(citation_text(), "software"), *[(_PACKAGE_REFERENCES[name], "package") for name in ("metafor", "gsDesign")],
+            *((reference, "method") for reference in references)]
 
 
 def trial_sequential_report(run: "TsaRun", request: "TsaRequest", context: str) -> ManuscriptReport:
     from rc_metastudio.analysis.trial_sequential import TSA_TITLE
 
+    outcome = context.split(" · ", 1)[0].splitlines()[0]
+    references = _tsa_references(run, request)
+    lines = tuple(f"{i}. {line}" for i, (line, _) in enumerate(references, 1))
+    bibliography = ResultSection("trial-sequential.references", "text", 2, "References",
+                                 "\n".join(lines), "References", paragraphs=lines)
+    methods = [_software_prose(run.result, references) + ".", *_tsa_methods(run, request, outcome)]
+    configuration = (
+        f"Outcome: {outcome}\nEffect measure: {request.measure}\nModel: {request.model_label}\n"
+        f"Conventional confidence level: {request.confidence:g}%\n"
+        f"TSA alpha: {request.options.alpha:g}\nPower: {request.options.power:.0%}"
+    )
     return ManuscriptReport(
-        TSA_TITLE, " ".join(_tsa_methods(run, request)), tuple(section for section in run.result.sections if section.tables),
-        (_tsa_references(run, request),), tuple(
+        f"{TSA_TITLE} — {outcome} ({request.measure})", " ".join(methods),
+        tuple(section for section in run.result.sections if section.tables),
+        (bibliography,), tuple(
             replace(section, paragraphs=("Marker area is proportional to the information each trial added.",))
             for section in run.result.sections if section.kind == "image"
         ),
-        _tsa_results(run, request), comparison=context.replace("\n", " · "),
+        _tsa_results(run, request), comparison=context.replace("\n", " · "), configuration=configuration,
     )
 
 
@@ -1114,6 +1126,10 @@ def _docx_styles(document):
         for attribute in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'):
             fonts.attrib.pop(qn('w:' + attribute), None)
         document.styles[name].font.color.rgb = RGBColor(0, 0, 0)
+    caption = document.styles['Caption']
+    caption.font.size = Pt(11)
+    caption.font.bold = True
+    caption.font.italic = False
     title_properties = document.styles['Title'].element.pPr
     if title_properties is not None:
         border = title_properties.find(qn('w:pBdr'))
@@ -1177,6 +1193,7 @@ def _docx_figures(document, figures):
                 image.save(buffer, "PNG")
                 paragraph = document.add_paragraph()
                 paragraph.paragraph_format.page_break_before = True
+                paragraph.paragraph_format.keep_with_next = True
                 paragraph.paragraph_format.space_after = Pt(0)
                 picture = paragraph.add_run().add_picture(
                     io.BytesIO(bytes(required(buffer.data().data(), "encoded figure"))), width=Mm(placed_width)
@@ -1193,7 +1210,8 @@ def _docx_figures(document, figures):
                         '<a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">'
                         f'<asvg:svgBlip r:embed="{relationship}"/></a:ext></a:extLst>'
                     ))
-                document.add_paragraph().add_run(_figure_caption(number, figure, bool(index))).bold = True
+                caption = document.add_paragraph(_figure_caption(number, figure, bool(index)), style='Caption')
+                caption.paragraph_format.keep_with_next = index == 0 and bool(figure.paragraphs)
                 if index == 0:
                     for note in figure.paragraphs:
                         document.add_paragraph(note)
@@ -1202,11 +1220,13 @@ def _docx_figures(document, figures):
 def write_docx(report, path):
     document = Document()
     _docx_styles(document)
+    compatibility = document.settings.element.xpath('./w:compat/w:compatSetting[@w:name="compatibilityMode"]')[0]
+    compatibility.set(qn('w:val'), '15')
     section = document.sections[0]
     section.page_width = Mm(210)
     section.page_height = Mm(297)
-    section.top_margin = section.bottom_margin = Mm(15)
-    section.left_margin = section.right_margin = Mm(15)
+    section.top_margin = section.bottom_margin = Mm(20)
+    section.left_margin = section.right_margin = Mm(20)
     document.add_heading(report.title, 0)
     document.add_paragraph(report.comparison)
     for heading, text in (('Methods', report.methods), ('Results', report.results)):
@@ -1216,15 +1236,12 @@ def write_docx(report, path):
             for part, italic in (_methods_fragments(text) if heading == 'Methods' else ((report_numbers(text), False),)):
                 paragraph.add_run(part).italic = italic
     _docx_sections(document, report, False)
-    _docx_figures(document, report.figures)
-    first_supplement = len(document.paragraphs)
     _docx_sections(document, report, True)
     if report.configuration:
         document.add_heading('Model configuration', 1)
-        for line in report.configuration.splitlines():
-            document.add_paragraph(line)
-    if report.figures and first_supplement < len(document.paragraphs):
-        document.paragraphs[first_supplement].paragraph_format.page_break_before = True
+        paragraph = document.add_paragraph(report.configuration)
+        paragraph.paragraph_format.keep_together = True
+    _docx_figures(document, report.figures)
     document.save(path)
 
 
@@ -1243,9 +1260,10 @@ def _print_document():
 def write_pdf(report, path):
     writer = QPdfWriter(str(path))
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+    writer.setPageMargins(QMarginsF(20, 20, 20, 20))
     writer.setResolution(600)
     document = _print_document()
-    document.setHtml(report.html())
+    document.setHtml(report.html(figure_notes=False) + report.html(supplementary=True))
     # QTextDocument prints paginated real tables; figures get their own pages so
     # long reports cannot overwrite a figure or split its caption.
     scale = writer.resolution() / 96
@@ -1257,7 +1275,7 @@ def write_pdf(report, path):
         _, ratio = figure_source(figure.display_image or figure.value)
         width_mm = page.width() / writer.resolution() * 25.4
         height_mm = page.height() / writer.resolution() * 25.4
-        mm = _figure_width(figure, ratio)
+        mm = min(width_mm, _figure_width(figure, ratio))
         available = _figure_height_budget(number, figure, width_mm, height_mm)
         with _figure_panels(figure, mm, available) as paths:
             for index, path_ in enumerate(paths):
@@ -1274,9 +1292,6 @@ def write_pdf(report, path):
                 painter.translate(0, h / scale + 12)
                 caption.drawContents(painter)
                 painter.restore()
-    if report.configuration or report.supplementary_sections:
-        document.setHtml(report.html(supplementary=True))
-        _print_pdf_pages(document, writer, painter, width, height, scale, first_page=True)
     painter.end()
 
 
@@ -1373,7 +1388,7 @@ def _style_docx_cell(cell, value, width, numeric, heading):
             run.bold = heading
 
 
-def _print_pdf_pages(document, writer, painter, width, height, scale, first_page=False):
+def _print_pdf_pages(document, writer, painter, width, height, scale):
     from PyQt6.QtCore import QSizeF
     from PyQt6.QtGui import QAbstractTextDocumentLayout
 
@@ -1387,9 +1402,13 @@ def _print_pdf_pages(document, writer, painter, width, height, scale, first_page
         height *= expansion
         scale /= expansion
         document.setPageSize(QSizeF(width, height))
+    _keep_pdf_blocks_together(document, height)
     _keep_pdf_tables_together(document, height)
+    # Start painting from a fresh layout after setting paragraph and table breaks.
+    document = document.clone()
+    document.setPageSize(QSizeF(width, height))
     for number in range(document.pageCount()):
-        if number or first_page:
+        if number:
             writer.newPage()
         painter.save()
         painter.scale(scale, scale)
@@ -1399,6 +1418,23 @@ def _print_pdf_pages(document, writer, painter, width, height, scale, first_page
         context.clip = QRectF(0, number * height, width, height)
         required(document.documentLayout(), "report document layout").draw(painter, context)
         painter.restore()
+
+
+def _keep_pdf_blocks_together(document, page_height):
+    from PyQt6.QtGui import QTextCursor, QTextFormat
+
+    layout = required(document.documentLayout(), "report document layout")
+    block = document.begin()
+    while block.isValid():
+        cursor = QTextCursor(block)
+        if cursor.currentTable() is None:
+            bounds = layout.blockBoundingRect(block)
+            if (bounds.height() < page_height - 2 * document.documentMargin()
+                    and int(bounds.top() / page_height) < int((bounds.bottom() - 1) / page_height)):
+                formatting = cursor.blockFormat()
+                formatting.setPageBreakPolicy(QTextFormat.PageBreakFlag.PageBreak_AlwaysBefore)
+                cursor.setBlockFormat(formatting)
+        block = block.next()
 
 
 def _keep_pdf_tables_together(document, page_height):
@@ -1414,10 +1450,14 @@ def _keep_pdf_tables_together(document, page_height):
         bottom = layout.frameBoundingRect(table).bottom()
         formatting = cursor.blockFormat()
         margin = 2 * document.documentMargin() + formatting.topMargin()
+        body = table.cellAt(table.format().headerRowCount(), 0)
+        first_row = layout.blockBoundingRect(body.firstCursorPosition().block()) if body.isValid() else caption
+        caption_page = int(caption.top() / page_height)
+        orphaned = int((first_row.bottom() - 1) / page_height) > caption_page
         # Keep a short table and its caption intact; longer tables retain Qt's
         # pagination and repeated headers.
-        if (bottom - caption.top() < page_height - margin
-                and int(caption.top() / page_height) != int((bottom - 1) / page_height)):
+        if orphaned or (bottom - caption.top() < page_height - margin
+                        and caption_page != int((bottom - 1) / page_height)):
             formatting.setPageBreakPolicy(QTextFormat.PageBreakFlag.PageBreak_AlwaysBefore)
             cursor.setBlockFormat(formatting)
 

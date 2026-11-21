@@ -32,12 +32,6 @@ class PlotExportDialog(QDialog):
         self._measure_timer.setInterval(150)
         self._measure_timer.timeout.connect(self._measure_width)
         self._width_inches = width
-        if resizable:
-            try:
-                saved_width = float(str(QSettings().value('export/width_inches', width)))
-            except ValueError:
-                saved_width = width
-            self._width_inches = min(200., max(.1, saved_width)) if math.isfinite(saved_width) else width
         layout = QFormLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         self.format_control = QComboBox(self)
@@ -46,7 +40,7 @@ class PlotExportDialog(QDialog):
         self.format_control.setCurrentIndex(max(0, self.format_control.findData(load_plot_export_format())))
         layout.addRow('Format', self.format_control)
         self.units = QComboBox(self)
-        self.units.addItems(['cm', 'in'])
+        self.units.addItems(['cm', 'mm', 'in'])
         self.units.setCurrentText(str(QSettings().value('export/units', 'cm')))
         layout.addRow('Units', self.units)
         self.width_control = QDoubleSpinBox(self)
@@ -113,7 +107,7 @@ class PlotExportDialog(QDialog):
             self._measure_width()
 
     def unit_factor(self) -> float:
-        return 2.54 if self.units.currentText() == 'cm' else 1.0
+        return {'cm': 2.54, 'mm': 25.4, 'in': 1.0}[self.units.currentText()]
 
     def _change_width(self):
         self._width_inches = self.width_control.value() / self.unit_factor()
@@ -124,8 +118,6 @@ class PlotExportDialog(QDialog):
             self.width_control.setRange(.1 * self.unit_factor(), 200 * self.unit_factor())
             self.width_control.setSuffix(' ' + self.units.currentText())
             self.width_control.setValue(self._width_inches * self.unit_factor())
-        if self.resizable:
-            self._width_inches = self.width_control.value() / self.unit_factor()
         self._width_changed()
 
     def _width_changed(self):
@@ -190,25 +182,27 @@ class PlotExportDialog(QDialog):
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster and not blocked)
         self.pixel_label.setText(f'{math.ceil(width * dpi)} × {math.ceil(height * dpi)} pixels')
+        units = self.units.currentText()
+        target_width = self._readable_width_value()
+        target = f"{target_width:.2f}".rstrip("0").rstrip(".") + f" {units}"
         if self._forest_geometry is not None:
             self.legibility_warning.setVisible(self._minimum_mm > 0)
-            self.legibility_warning.setText(f"Minimum width for this figure: {self._minimum_mm:g} mm")
-            self.use_readable_width.hide()
+            self.legibility_warning.setText(f"Minimum width for this figure: {target}")
+            self.use_readable_width.setVisible(not pending and width * 25.4 + 1e-8 < self._minimum_mm)
+            self.use_readable_width.setText(f"Use {target}")
             return
         smallest = self._width_inches * self.text_per_inch[self.include_title.isChecked()]
         warn = self.resizable and 0 < smallest < 6
         self.legibility_warning.setVisible(warn)
-        target_width = self._readable_width_value()
         self.use_readable_width.setVisible(warn and target_width <= self.width_control.maximum()
             and (not raster or self.dpi.value() <= self._largest_dpi(target_width / self.unit_factor())))
         if warn:
-            target = self._readable_width_mm()
+            text_size = f"{smallest:.2f}".rstrip("0").rstrip(".")
             self.legibility_warning.setText(
-                f"Smallest text would be {smallest:.2f}".rstrip("0") +
-                f" pt at {self._width_inches * 25.4:.3g} mm. "
-                f"This figure needs at least {target} mm wide for 6 pt text."
+                f"Smallest text would be {text_size} pt at {self.width_control.text()}. "
+                f"Use at least {target} for 6 pt text."
             )
-            self.use_readable_width.setText(f"Use {target} mm")
+            self.use_readable_width.setText(f"Use {target}")
 
     def dimensions(self) -> tuple[float, float, int]:
         width = self._width_inches
@@ -227,5 +221,4 @@ class PlotExportDialog(QDialog):
             QSettings().setValue('export/dpi', self.dpi.value())
             if self.format_control.currentData() == "pdf":
                 QSettings().setValue("export/paginate_pdf", self.paginate_pdf.isChecked())
-            QSettings().setValue('export/width_inches', self.dimensions()[0])
         super().accept()

@@ -21,6 +21,7 @@ from PyQt6.QtCore import (
     QObject,
     QPointF,
     QRectF,
+    QSettings,
     QTimer,
     QSignalBlocker,
     Qt,
@@ -820,6 +821,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if path:
             with Path(path).open("w", encoding="utf-8-sig", newline="") as stream:
                 stream.write(self._table_payload(","))
+            QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
             self.statusbar.showMessage(f"Saved table: {Path(path).resolve()}", 4000)
 
     def _export_values(self):
@@ -839,6 +841,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     for q in quantities:
                         writer.writerow((table.title, identity, header, q.role, '' if q.value is None else repr(q.value),
                                          q.scale, '' if q.level is None else f'{q.level:g}', cell))
+        QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
         self.statusbar.showMessage(f'Saved values: {Path(path).resolve()}', 4000)
 
     def _show_tables(self):
@@ -1057,6 +1060,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             path = destination
             report = self.manuscript
             (write_docx if extension == "docx" else write_pdf)(report, path)
+            QSettings().setValue("export/last_directory", str(Path(path).resolve().parent))
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
     def _confirm_export_destination(self, selected, destination):
@@ -1073,7 +1077,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
     def _export_name(self, title, extension):
         context = (self.results.identity or "Analysis results").split("\n")[0]
         name = re.sub(r'[<>:"/\\|?*\x00-\x1f]+', "-", context + " — " + title)
-        return name.strip(" .")[:160] + "." + extension
+        directory = Path(str(QSettings().value("export/last_directory", "")))
+        return str(directory / (name.strip(" .")[:160] + "." + extension))
 
     def _plot_entry(self, item: QTreeWidgetItem | None) -> _PlotEntry | None:
         if item is None:
@@ -1813,6 +1818,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 params_path=artifact.params_path,
                 output_path=destination,
             )
+        QSettings().setValue("export/last_directory", str(Path(destination).resolve().parent))
         self.statusbar.showMessage(f"Saved {export_format.extension.upper()} plot: {Path(destination).resolve()}", 4000)
 
     def position(self):
