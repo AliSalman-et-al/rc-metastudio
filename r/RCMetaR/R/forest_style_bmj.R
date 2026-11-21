@@ -181,7 +181,16 @@ rcmetar.bmj.not_estimable <- function(bundle) {
 }
 
 rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
-    directions <- rcmetar.bmj.direction.lines(bundle, footer$right.x - footer$left.x, cex)
+    width <- footer$right.x - footer$left.x
+    directions <- rcmetar.bmj.direction.lines(bundle, width, cex)
+    used <- sum(vapply(directions, function(lines)
+        max(c(0, graphics::strwidth(lines, font=2, cex=cex))), numeric(1)))
+    if (used + graphics::strwidth("M", font=2, cex=cex) >= width) {
+        # A narrow axis can be shorter than the longest word. Keep BMJ's
+        # directions underneath it and let them extend towards the page edges.
+        footer$split.x <- footer$axis.x
+        return(rcmetar.draw.forest.direction.blocks(bundle, footer, y, cex, font=2))
+    }
     for (side in c("left", "right")) {
         lines <- directions[[side]]
         if (!length(lines)) next

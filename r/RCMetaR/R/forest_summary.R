@@ -57,26 +57,26 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
     })
 }
 
-rcmetar.forest.outward.directions <- function(bundle, split, cex) {
+rcmetar.forest.outward.directions <- function(bundle, split, cex, font=1) {
     # Use the entire page width below the axis, keeping the null gutter.
     bounds <- graphics::grconvertX(c(.08, grDevices::dev.size("in")[[1L]] - .08), "inches", "user")
     gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     at <- split + c(-gap, gap)
     available <- c(at[[1L]] - bounds[[1L]], bounds[[2L]] - at[[2L]])
     labels <- rcmetar.forest.direction.labels(bundle)
-    lines <- Map(function(text, space) rcmetar.bmj.wrap.direction(text, space, cex, font=1),
+    lines <- Map(function(text, space) rcmetar.bmj.wrap.direction(text, space, cex, font=font),
                  labels[c("left", "right")], available)
     list(at=at, lines=lines)
 }
 
-rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex) {
+rcmetar.draw.forest.direction.blocks <- function(bundle, footer, top, cex, font=1) {
     if (!is.finite(footer$split.x) || abs(footer$split.x - footer$axis.x) >= footer$span / 2) return(invisible(NULL))
-    directions <- rcmetar.forest.outward.directions(bundle, footer$split.x, cex)
-    leading <- graphics::strheight("Mg", cex=cex) * 1.6
+    directions <- rcmetar.forest.outward.directions(bundle, footer$split.x, cex, font)
+    leading <- graphics::strheight("Mg", cex=cex, font=font) * 1.6
     for (side in 1:2) {
         lines <- directions$lines[[side]]
         if (length(lines)) graphics::text(directions$at[[side]], top - (seq_along(lines) - 1L) * leading,
-            lines, cex=cex, xpd=NA, adj=c(as.integer(side == 1L), 0))
+            lines, cex=cex, font=font, xpd=NA, adj=c(as.integer(side == 1L), 0))
     }
     invisible(NULL)
 }
