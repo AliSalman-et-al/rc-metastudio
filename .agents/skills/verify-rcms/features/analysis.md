@@ -262,11 +262,17 @@ opens and resaves a separate project containing the old `TX Mean` identifier,
 checks complete runtime preservation and continues through real analysis.
 The contextual CSV drive imports `Mean`, `TX Mean`, `TXMean` and `TX.Mean`
 headers through the actual wizard and retains each input/preview.
-`analysis-data-onearm-mean` also opens the synthetic bundled Mean example,
-checks its original measurements, saves/reopens a copy and compares displayed
-pooling with public `metafor::rma.uni` using independently constructed variances.
+`analysis-data-onearm-mean` opens the published Abe handgrip project, checks
+all six cohorts against the retained source, and saves and reopens a copy.
+It compares the displayed pooled mean and interval with direct
+`metafor::rma(measure="MN")` from the retained sample sizes, means and SDs.
 It also opens the one-arm calculator, checks its original measurements and
 observes that Cancel leaves the project unchanged.
+
+The `sample-*` scenarios open the published roster through the sample menu
+and compare model results with direct metafor, meta or mada fits. Run
+`ratios-samples` for the two ratio projects. The [sample coverage table](../../../../sample_projects/COVERAGE-PLAN.md)
+identifies the data, measures and methods for each project.
 Archive failure tests retain collision rejection and destination preservation;
 the R package tests cover old saved forests in Default/RevMan/BMJ.
 
