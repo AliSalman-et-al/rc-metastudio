@@ -222,7 +222,7 @@ def run(app, window, root, record, analyze):
         record(f"review-confidence-{confidence}-kh", changed,
                methods=changed.manuscript.methods, df=df,
                plots=dict(changed.results.display_images))
-        view.close()
+        assert sip.isdeleted(view) or not view.isVisible()
         view = changed
     view.close()
 
@@ -297,7 +297,7 @@ def run(app, window, root, record, analyze):
     record('review-package-convergence-error', failed, details=failed.analysis_error_details.toPlainText())
     failed.reject()
     changed.close()
-    view.close()
+    assert sip.isdeleted(view) or not view.isVisible()
 
     window.action_loo_ma.trigger()
     app.processEvents()

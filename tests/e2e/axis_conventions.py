@@ -184,9 +184,9 @@ def run(app, window, work, record, family):
                     assert check_axis(repeated.display_path(), other, ratio)
                     record('axis-analysis-rerun', rerun, measure=measure, style=style, choice=other,
                            plots={repeated.title:repeated.display_path()})
-                    rerun.close()
                     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
-                    assert sip.isdeleted(rerun), "closed result keeps its SVG scene alive"
+                    assert sip.isdeleted(view), "replaced result keeps its SVG scene alive"
+                    view = rerun
             view.close()
             app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
             assert sip.isdeleted(view), "closed result keeps its SVG scene alive"

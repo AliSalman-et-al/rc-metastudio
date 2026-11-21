@@ -120,18 +120,15 @@ def run(app, window, work, root, record, analyze):
     assert setup.analysis_error_panel.isVisible()
     if setup.specs_tab.tabText(setup.specs_tab.indexOf(setup.plot_tab)) != 'Forest plot':
         failures.append('Forest-only setup has a generic Plots tab')
-    for expanded in (False, True):
-        setup.analysis_error_toggle.setChecked(expanded)
-        wait(200)
-        viewport = required(setup.content_scroll_area.viewport())
-        advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
-        state = dict(height=setup.height(), viewport=viewport.height(), advanced=advanced.getRect())
-        observations['error-' + str(expanded)] = state
-        record('fable-analysis-error-' + str(expanded), setup, **state)
-        if expanded and setup.analysis_error_details.height() > setup.analysis_error_details.fontMetrics().lineSpacing() * 8 + 2 * setup.analysis_error_details.frameWidth() + 8:
-            failures.append('Technical error details occupy more than eight lines')
-        if not viewport.rect().contains(advanced):
-            failures.append('Method controls are clipped after analysis error, expanded=' + str(expanded))
+    assert not setup.analysis_error_toggle.isVisible()
+    wait(200)
+    viewport = required(setup.content_scroll_area.viewport())
+    advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
+    state = dict(height=setup.height(), viewport=viewport.height(), advanced=advanced.getRect())
+    observations['empty-selection'] = state
+    record('fable-empty-study-selection', setup, **state)
+    if not viewport.rect().contains(advanced):
+        failures.append('Method controls are clipped after the empty-selection message')
     setup.reject()
 
     window.workspace.mark_saved()
