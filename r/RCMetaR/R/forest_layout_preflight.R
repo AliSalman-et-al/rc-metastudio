@@ -33,7 +33,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
     rows <- plan$rows$study_rows
-    extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .8, 0)
+    extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .7, 0)
     plan$rows$half_height <- (1 + extra) / 2
     expand <- function(y) vapply(y, function(value)
         value + sum(extra[rows < value]) + sum(extra[rows == value]) / 2, numeric(1))
@@ -50,7 +50,7 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
 
 rcmetar.forest.panel.height <- function(plan) {
     margins <- rcmetar.forest.margins(plan)
-    plan$device$height <- diff(plan$rows$ylim) * .16 + sum(margins[c(1, 3)]) +
+    plan$device$height <- diff(plan$rows$ylim) * .145 + sum(margins[c(1, 3)]) +
         plan$headers$height + if (!is.null(plan$footer$axis)) .15 * plan$device$direction_lines else 0
     plan
 }
