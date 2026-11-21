@@ -320,7 +320,8 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     if (plan$rows$summary && !isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
         rcmetar.draw.forest.totals(bundle, layout, -1, size$cex)
     }
-    if (plan$rows$summary) rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), size$cex, plan)
+    if (plan$rows$summary && !identical(bundle$forest_variant, "subgroup"))
+        rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), size$cex, plan)
     rcmetar.draw.forest.direction(bundle, alim, size$cex)
 
     invisible(bundle$changed.params)
@@ -389,7 +390,7 @@ rcmetar.draw.default.headers <- function(bundle, plan) {
     rule.y <- max(c(rows, bundle$subgroups$header_rows), na.rm=TRUE) + 1
     graphics::segments(layout$xlim[[1]], rule.y, layout$xlim[[2]], rule.y, lwd=0.8)
     header.y <- rcmetar.draw.forest.column.headers(bundle, layout, rule.y)
-    graphics::text(rcmetar.forest.study.x(layout), header.y, plan$headers$study, adj=0)
+    rcmetar.draw.forest.header(rcmetar.forest.study.x(layout), header.y, plan$headers$study, adj=0)
     rcmetar.draw.forest.header(rcmetar.forest.annotation.x(layout), header.y, plan$headers$effect, adj=1)
     graphics::par(header.par)
 }

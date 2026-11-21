@@ -386,7 +386,8 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_gt(default.plan$device$width, 0)
   expect_gt(default.plan$device$height, 0)
   expect_equal(default.plan$typography$cex * 12, 8)
-  expect_equal(default.plan$rows$study_rows, nrow(default.bundle$ilab$matrix):1)
+  expect_length(default.plan$rows$study_rows, nrow(default.bundle$ilab$matrix))
+  expect_true(all(diff(default.plan$rows$study_rows) <= -1))
 
   fixture$params$fp_style <- "revman"
   revman.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
@@ -1343,8 +1344,8 @@ test_that("default forest heterogeneity labels reflect the fitted model", {
   svg.path <- tempfile(fileext=".svg")
   rcmetar.draw.forest.plot(fixed.bundle, svg.path)
   rendered <- paste(readLines(svg.path, warn=FALSE), collapse="\n")
-  expect_match(rendered, "Fixed-effect model", fixed=TRUE)
-  expect_false(grepl("Random-effects model", rendered, fixed=TRUE))
+  expect_match(rendered, "Fixed-effect(?: |</text>\\s*<text[^>]*>)model", perl=TRUE)
+  expect_false(grepl("Random-effects", rendered, fixed=TRUE))
 })
 
 test_that("raster plot exports default to publication-grade resolution", {

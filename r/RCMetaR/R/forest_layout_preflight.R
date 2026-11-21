@@ -31,6 +31,11 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     }
     plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
+    if (is.null(plan$footer$axis) && !plan$rows$manual_sequential_labels) {
+        study.header <- rcmetar.forest.wrap.summary.labels(plan$headers$study, plan$device$study_width, plan$typography$cex)
+        plan$headers$study <- paste(study.header[[1L]], collapse="\n")
+        plan$headers$height <- plan$headers$height + .12 * max(0, length(study.header[[1L]]) - 1L)
+    }
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
     subgroup <- identical(bundle$forest_variant, "subgroup")
     model.labels <- if (subgroup) {
@@ -79,12 +84,11 @@ rcmetar.forest.margins <- function(plan) {
     c(.2 * bottom, .12, if (plan$rows$manual_sequential_labels) .2 else .28, .12)
 }
 
-rcmetar.forest.width.budget <- function(width, fixed.width) {
-    study.min <- .73
+rcmetar.forest.width.budget <- function(width, fixed.width, study.min=.73) {
     graph.min <- 1.1
     minimum <- max(fixed.width + study.min + graph.min, (fixed.width + study.min) / .65)
     width <- max(width, minimum)
-    study <- min(2.05, width - fixed.width - max(graph.min, .35 * width))
+    study <- min(max(2.05, study.min), width - fixed.width - max(graph.min, .35 * width))
     list(width=width, min_width=minimum, study_width=study,
          plot_width=width - fixed.width - study)
 }
@@ -171,9 +175,11 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         column.gap <- 0.022
         block.gap <- 0.06
         if (ncol(bundle$ilab$matrix) > 0) {
+            totals <- rcmetar.bmj.total.values(bundle)
             column.widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
                 values <- c(bundle$ilab$matrix[, index], strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]])
                 key <- bundle$ilab$columns[[index]]$key
+                values <- c(values, as.character(totals[[key]]))
                 if (key == "weight") values <- c(values, "100.0%")
                 if (grepl("events|person_time|total|_n$|true_|false_", key) &&
                         rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
@@ -221,7 +227,9 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         edge <- if (journal) .13 else .04
         fixed.width <- block.gap + ilab.width + annotation.width + .24 + edge
         width <- bundle$target_width %||% (180 / 25.4)
-        budget <- rcmetar.forest.width.budget(width, fixed.width)
+        words <- strsplit(rcmetar.metafor.study.header(bundle), "[[:space:]]+")[[1L]]
+        study.min <- max(.73, strwidth(words, units="inches", font=2, cex=cex) + .025)
+        budget <- rcmetar.forest.width.budget(width, fixed.width, study.min)
         c(budget, list(
             cex=cex,
             bg="white",
