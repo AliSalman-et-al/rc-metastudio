@@ -587,9 +587,7 @@ def run(
             bundle = next(
                 b for b in curated_golden_bundles(str(root)) if b["id"] == case
             )
-            assert window.open(
-                str(root / "sample_projects" / bundle["dataset"]), raise_on_error=True
-            )
+            assert window.open(bundle["case"].dataset_path, raise_on_error=True)
             workflow = bundle["case"].requests[0].workflow
             method = bundle["method"]
             for cov in bundle["case"].covariates:
