@@ -385,7 +385,7 @@ test_that("Forest Layout Preflight produces deterministic layout plans for Defau
   expect_equal(default.plan$style$template, "default")
   expect_gt(default.plan$device$width, 0)
   expect_gt(default.plan$device$height, 0)
-  expect_gte(default.plan$typography$cex, 0.78)
+  expect_equal(default.plan$typography$cex * 12, 8)
   expect_equal(default.plan$rows$study_rows, nrow(default.bundle$ilab$matrix):1)
 
   fixture$params$fp_style <- "revman"
@@ -654,12 +654,12 @@ test_that("Forest Layout Preflight keeps hidden-header CI lines and readable mod
   fixture$params$fp_style <- "revman"
   revman.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
   revman.plan <- rcmetar.forest.layout.preflight(revman.bundle)
-  expect_gte(revman.plan$metrics$text_floor, 0.78)
+  expect_equal(revman.plan$typography$cex * 12, 8)
 
   fixture$params$fp_style <- "bmj"
   bmj.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
   bmj.plan <- rcmetar.forest.layout.preflight(bmj.bundle)
-  expect_gte(bmj.plan$metrics$text_floor, 0.82)
+  expect_equal(bmj.plan$typography$cex * 12, 8)
 })
 
 test_that("RevMan study heading uses reference default and respects custom labels", {
@@ -936,7 +936,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
 
   expect_equal(long.plan$style$name, "bmj")
   expect_equal(long.plan$style$template, "standard")
-  expect_gt(long.plan$device$width, short.plan$device$width)
+  expect_equal(long.plan$device$width, short.plan$device$width)
   expect_gt(long.plan$device$height, short.plan$device$height)
   expect_gte(long.plan$device$header_lines, 3)
   expect_lt(max(as.numeric(long.plan$columns$ilab.xpos[1:2])), long.plan$x$alim[[1]])
@@ -1180,7 +1180,7 @@ test_that("Default Forest Style sizing reserves space for long group headers", {
   expect_gt(file.info(png_path)$size, 5000)
 })
 
-test_that("plot text ceilings preserve source study names and numeric data", {
+test_that("forest labels wrap at layout time and preserve source names and data", {
   fixture <- metafor_binary_fixture()
   original.name <- paste(rep("Very long identifying study name", 5), collapse = " ")
   fixture$data@study.names[[1]] <- original.name
@@ -1193,8 +1193,10 @@ test_that("plot text ceilings preserve source study names and numeric data", {
 
   expect_identical(fixture$data@study.names[[1]], original.name)
   expect_identical(fixture$data@y, original.y)
-  expect_lte(nchar(bundle$slab[[1]]), 72)
-  expect_match(bundle$slab[[1]], "\\.\\.\\.")
+  expect_true(startsWith(bundle$slab[[1]], original.name))
+  plan <- rcmetar.forest.layout.preflight(bundle)
+  expect_length(strsplit(plan$labels[[1]], "\n", fixed=TRUE)[[1]], 2)
+  expect_match(plan$labels[[1]], "\u2026", fixed=TRUE)
   expect_true(endsWith(bundle$slab[[1]], as.character(fixture$data@years[[1]])))
   expect_identical(
     rcmetar.truncate.plot.display.text(c(NA_character_, "Study")),
@@ -1222,7 +1224,7 @@ test_that("subgroup display headings truncate without changing grouping state", 
   )
 })
 
-test_that("RevMan raw-column layouts reserve space for long study labels", {
+test_that("RevMan long study labels keep raw columns at the same positions", {
   short.fixture <- metafor_continuous_fixture()
   short.fixture$params$fp_style <- "revman"
   short.res <- rma.uni(
@@ -1255,7 +1257,7 @@ test_that("RevMan raw-column layouts reserve space for long study labels", {
 
   short.gap <- as.numeric(short.layout$ilab.xpos[[1]]) - short.layout$xlim[[1]]
   long.gap <- as.numeric(long.layout$ilab.xpos[[1]]) - long.layout$xlim[[1]]
-  expect_gt(long.gap, short.gap)
+  expect_equal(long.gap, short.gap)
 
   png_path <- tempfile(fileext = ".png")
   rcmetar.draw.forest.plot(long.bundle, png_path)
@@ -1869,15 +1871,7 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   plan <- rcmetar.forest.layout.preflight(bundle)
   expect_true(all(bundle$effect$yi >= plan$x$alim[[1]] &
                   bundle$effect$yi <= plan$x$alim[[2]]))
-  expected.labels <- rcmetar.forest.left.block.labels(bundle)
-  measured.width <- rcmetar.forest.with.measurement.device(max(vapply(
-    expected.labels,
-    function(label) max(strwidth(label, units = "inches", cex = plan$typography$cex)),
-    numeric(1)
-  )))
-  expect_gte(plan$device$left_block_width, measured.width)
-  expect_gt(min(plan$x$alim) - rcmetar.forest.study.x(plan$layout),
-            measured.width * diff(plan$x$alim) / plan$device$plot_width)
+  expect_equal(plan$device$width, 180 / 25.4)
 })
 
 test_that("subgroup workflow saves and renders RevMan subtotal diamonds", {

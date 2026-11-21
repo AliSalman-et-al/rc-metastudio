@@ -53,6 +53,7 @@ save.data <- function(om.data, res, params, plot.data=NULL, out.path=NULL) {
 #' @param staging.directory A caller-owned directory for staged files.
 #' @param svg.path The path to SVG artwork.
 #' @param width,height The requested width and height in inches.
+#' @param page_height Maximum height in inches of a forest SVG panel.
 #' @param dpi The requested raster resolution in dots per inch.
 #' @param include_title Whether to draw the figure's title line on export.
 #' @param outline_text Whether to outline text in trial sequential SVG exports.
@@ -143,7 +144,7 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
 #' @rdname rcmetar-plot-bundle
 #' @export
 rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=NULL, height=NULL, dpi=600,
-                                       include_title=TRUE, outline_text=TRUE) {
+                                       include_title=TRUE, outline_text=TRUE, page_height=NULL) {
     if (identical(regenerator, "funnel")) {
         bundle <- .rcmetar.read.plot.bundle(prefix, .rcmetar.plot.analysis.members)
         if (is.null(bundle)) return(NULL)
@@ -157,6 +158,12 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
     if (!include_title) {
         bundle$plot.data$params$plot_caption <- NULL
         if (identical(regenerator, "sroc")) bundle$plot.data$style$caption <- NULL
+    }
+    if (identical(regenerator, "forest") && rcmetar.is.metafor.forest.bundle(bundle$plot.data)) {
+        if (!is.null(page_height) && !rcmetar.plot.file.extension(output.path) %in% c("svg", "svgz"))
+            stop("Paged forests require SVG output paths.", call.=FALSE)
+        rcmetar.forest <- rcmetar.draw.metafor.forest(bundle$plot.data, output.path, width, dpi, page_height)
+        return(if (is.null(page_height)) output.path else rcmetar.forest)
     }
     if (identical(regenerator, "trial_sequential")) {
         rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text))

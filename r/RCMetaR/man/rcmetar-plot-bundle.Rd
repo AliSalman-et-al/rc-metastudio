@@ -26,7 +26,8 @@ rcmetar.render.plot.bundle(
   height = NULL,
   dpi = 600,
   include_title = TRUE,
-  outline_text = TRUE
+  outline_text = TRUE,
+  page_height = NULL
 )
 
 rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
@@ -47,6 +48,8 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 
 \item{width, height}{The requested width and height in inches.}
 
+\item{page_height}{Maximum height in inches of a forest SVG panel.}
+
 \item{dpi}{The requested raster resolution in dots per inch.}
 
 \item{include_title}{Whether to draw the figure's title line on export.}
@@ -55,7 +58,7 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 }
 \value{
 Parameters, a mapping from destination paths to staged files, or the
-rendered path, respectively. Missing bundles return \code{NULL}.
+rendered paths, respectively. Missing bundles return \code{NULL}.
 }
 \description{
 Read, edit, and render persisted plot bundles.

@@ -527,50 +527,31 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
     visible <- which(scalar.bool(style$show.labels, FALSE) &
         plot.data$fpr >= xlim[[1L]] & plot.data$fpr <= xlim[[2L]] &
         plot.data$sensitivity >= ylim[[1L]] & plot.data$sensitivity <= ylim[[2L]])
+    count <- length(visible)
+    if (count > 12L) visible <- visible[round(seq(1, count, length.out=12L))]
     label.x <- plot.data$fpr[visible]
     label.y <- plot.data$sensitivity[visible]
-    labels <- as.character(plot.data$study.names[visible])
-    key <- character()
+    labels <- rcmetar.truncate.plot.display.text(plot.data$study.names[visible], limit=40L)
     margins <- c(1.02, .82, .82, .42)
-    if (length(labels)) {
-        measure <- function() {
-            path <- tempfile(fileext=".svg")
-            rcmetar.open.svg_device(path, size)
-            on.exit({ grDevices::dev.off(); unlink(path) })
-            graphics::par(mai=margins)
-            graphics::plot.new()
-            graphics::plot.window(xlim, ylim, xaxs="i", yaxs="i")
-            if (!is.null(rcmetar.sroc.label.positions(label.x, label.y, labels, label.cex))) return(0)
-            max(graphics::strwidth(paste(seq_along(labels), labels), units="inches", cex=label.cex)) + .6
-        }
-        key.width <- measure()
-        if (key.width > 0) {
-            key <- paste(seq_along(labels), labels, sep=". ")
-            margins[[4L]] <- margins[[4L]] + key.width
-            size$width <- size$width + key.width
-            size$height <- max(size$height, sum(margins[c(1L, 3L)]) +
-                                    (length(key) + 2) * max(.16, label.cex * .21))
-        }
-    }
     draw.annotations <- function() {
         point <- plot.data$summary.point
         if (scalar.bool(style$show.summary, TRUE)) points(1 - point$specificity[["estimate"]], point$sensitivity[["estimate"]], pch=19, col=accent.color)
-        if (length(labels) && !length(key)) {
-            positions <- rcmetar.sroc.label.positions(label.x, label.y, labels, label.cex)
-            if (!is.null(positions)) {
-                graphics::segments(label.x, label.y,
-                    pmin(pmax(label.x, positions[, 1L]), positions[, 2L]),
-                    pmin(pmax(label.y, positions[, 3L]), positions[, 4L]), col="grey55")
-                graphics::text(positions[, 1L], positions[, 3L], labels, adj=c(0, 0), cex=label.cex)
+        if (length(labels)) {
+            chosen <- seq_along(labels)
+            repeat {
+                positions <- rcmetar.sroc.label.positions(label.x[chosen], label.y[chosen], labels[chosen], label.cex)
+                if (!is.null(positions) || !length(chosen)) break
+                chosen <- head(chosen, -1L)
             }
-        } else if (length(key)) {
-            sorted <- order(label.y, decreasing=TRUE)
-            rows <- seq(ylim[[2L]], ylim[[1L]], length.out=length(key) + 2L)[seq_along(key) + 1L]
-            edge <- xlim[[2L]] - .05 * diff(xlim)
-            graphics::segments(label.x[sorted], label.y[sorted], edge, rows, col="grey55")
-            graphics::text(edge, rows, sorted, pos=4, cex=label.cex)
-            graphics::text(xlim[[2L]] + .06 * diff(xlim), rows, key[sorted],
-                           adj=c(0, .5), cex=label.cex, xpd=NA)
+            if (length(chosen)) {
+                graphics::segments(label.x[chosen], label.y[chosen],
+                    pmin(pmax(label.x[chosen], positions[, 1L]), positions[, 2L]),
+                    pmin(pmax(label.y[chosen], positions[, 3L]), positions[, 4L]), col="grey55")
+                graphics::text(positions[, 1L], positions[, 3L], labels[chosen], adj=c(0, 0), cex=label.cex)
+            }
+            if (count > length(chosen))
+                graphics::mtext(sprintf("Study labels shown: %d of %d", length(chosen), count),
+                                side=1, line=3.8, cex=label.cex)
         }
         if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
             digits <- as.integer(style$digits %||% 3L)
