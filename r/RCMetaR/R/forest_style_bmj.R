@@ -562,8 +562,6 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle) {
 }
 
 rcmetar.draw.bmj.forest <- function(bundle, plan) {
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
     accent <- rcmetar.forest.accent.color(bundle$params)

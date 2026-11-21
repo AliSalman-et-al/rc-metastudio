@@ -219,8 +219,6 @@ rcmetar.revman.study.header <- function(bundle) {
 }
 
 rcmetar.draw.revman.forest <- function(bundle, plan) {
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
     graphics::par(
@@ -323,8 +321,6 @@ rcmetar.draw.revman.sequential.forest <- function(bundle, plan) {
     style <- plan$style$name
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
     graphics::par(
         bg="white",
         mai=rcmetar.forest.margins(plan),

@@ -278,8 +278,6 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     old.options <- options(na.action="na.pass")
     on.exit(options(old.options), add=TRUE)
     size <- plan$device
-    op <- graphics::par(no.readonly=TRUE)
-    on.exit(graphics::par(op), add=TRUE)
 
     rows <- plan$rows$study_rows
     alim <- plan$x$alim
