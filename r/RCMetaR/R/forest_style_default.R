@@ -347,7 +347,7 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
         forest.args$col <- NA
         do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
             ci.ub=effect$ci.ub, sei=bundle$effect$sei), forest.args))
-        rcmetar.draw.bmj.effects(effect, rows, alim, accent.color, forest.args$psize)
+        rcmetar.draw.bmj.effects(effect, rows, alim, accent.color, forest.args$psize * size$cex)
         return(invisible(NULL))
     }
     if (rcmetar.forest.natural.axis(bundle)) {
