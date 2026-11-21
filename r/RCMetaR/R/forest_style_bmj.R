@@ -398,7 +398,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle, cex=8 / 12) {
         weight.index <- rcmetar.bmj.column.index(bundle, "weight")
         left.indexes <- setdiff(seq_along(column.widths), weight.index)
         weight.width <- if (length(weight.index) == 1) column.widths[[weight.index]] else 0
-        column.gap <- .04
+        column.gap <- .035
         left.table.width <- if (length(left.indexes) > 0) {
             sum(column.widths[left.indexes]) + column.gap * max(length(left.indexes) - 1, 0)
         } else {
@@ -423,10 +423,10 @@ rcmetar.forest.bmj.device.metrics <- function(bundle, cex=8 / 12) {
             cex,
             minimum=.9
         )
-        study.gap <- .08
-        left.plot.gap <- .08
-        right.plot.gap <- .08
-        weight.effect.gap <- .06
+        study.gap <- .06
+        left.plot.gap <- .06
+        right.plot.gap <- .06
+        weight.effect.gap <- .04
         right.margin <- .04
         width <- bundle$target_width %||% (180 / 25.4)
         right.width <- right.plot.gap + weight.width + weight.effect.gap + effect.width + right.margin
