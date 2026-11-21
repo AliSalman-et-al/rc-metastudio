@@ -937,7 +937,8 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
 
   expect_equal(long.plan$style$name, "bmj")
   expect_equal(long.plan$style$template, "standard")
-  expect_equal(long.plan$device$width, short.plan$device$width)
+  expect_gt(long.plan$device$width, short.plan$device$width)
+  expect_lte(long.plan$device$width, 260 / 25.4)
   expect_gt(long.plan$device$height, short.plan$device$height)
   expect_gte(long.plan$device$header_lines, 3)
   expect_lt(max(as.numeric(long.plan$columns$ilab.xpos[1:2])), long.plan$x$alim[[1]])
@@ -1869,7 +1870,7 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   expect_true(file.exists(unname(result$images[[1]])))
   expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
 
-  plan <- rcmetar.forest.layout.preflight(bundle)
+  plan <- rcmetar.forest.layout.preflight(bundle, width = 180 / 25.4)
   expect_true(all(bundle$effect$yi >= plan$x$alim[[1]] &
                   bundle$effect$yi <= plan$x$alim[[2]]))
   measured.width <- rcmetar.forest.with.measurement.device(max(strwidth(

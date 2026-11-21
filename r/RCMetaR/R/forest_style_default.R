@@ -232,7 +232,7 @@ rcmetar.draw.default.subgroup.estimate <- function(bundle, layout, row, index, c
     label <- if (rcmetar.forest.style(bundle$params) == "bmj")
         paste0(values[[1]], " (", values[[2]], " to ", values[[3]], ")") else
         paste0(values[[1]], " [", values[[2]], ", ", values[[3]], "]")
-    graphics::text(rcmetar.forest.annotation.x(layout), row,
+    graphics::text(rcmetar.forest.annotation.x(layout), rcmetar.forest.row.baseline(row, cex),
         label, adj=c(1, 0), font=2, cex=cex)
     invisible(NULL)
 }
@@ -403,7 +403,8 @@ rcmetar.draw.default.annotations <- function(bundle, plan) {
         label.rows <- if (length(labels) == length(rows) + 1L) c(rows, if (plan$rows$summary) -1 else NA_real_) else rows
         fonts <- rep(1, length(labels))
         if (length(labels) == length(rows) + 1L) fonts[[length(fonts)]] <- 2
-        graphics::text(rcmetar.forest.annotation.x(layout), label.rows, labels, adj=c(1, .5), font=fonts, cex=size$cex)
+        graphics::text(rcmetar.forest.annotation.x(layout), rcmetar.forest.row.baseline(label.rows, size$cex),
+                       labels, adj=c(1, 0), font=fonts, cex=size$cex)
     }
 
 }

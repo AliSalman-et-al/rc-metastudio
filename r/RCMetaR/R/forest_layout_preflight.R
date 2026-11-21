@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width=180 / 25.4,
+rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width=NULL,
                                            measure.minimum=FALSE) {
     bundle$params$measure <- .rcmetar.canonical.metric(bundle$params$measure)
     style <- if (is.null(style) || length(style) == 0) "default" else as.character(style[[1]])
@@ -12,9 +12,10 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
         !identical(bundle$forest_variant, "subgroup")
     measure <- if (bmj) rcmetar.forest.bmj.device.metrics else rcmetar.forest.default.device.metrics
     bundle$size <- measure(bundle)
-    if (bundle$size$width > width + 1e-8 || measure.minimum) {
+    needs.smaller.type <- bundle$size$width > (width %||% (260 / 25.4)) + 1e-8
+    if (needs.smaller.type || measure.minimum) {
         minimum <- measure(bundle, cex=7 / 12)
-        if (bundle$size$width > width + 1e-8) bundle$size <- minimum
+        if (needs.smaller.type) bundle$size <- minimum
         bundle$size$min_width <- minimum$min_width
     }
     if (identical(style, "revman") &&
@@ -79,16 +80,29 @@ rcmetar.forest.panel.height <- function(plan) {
 }
 
 rcmetar.forest.margins <- function(plan) {
-    if (!is.null(plan$footer$axis)) return(c(.2, .12, .36, .12))
+    if (!is.null(plan$footer$axis)) return(c(.2, 0, .36, 0))
     bottom <- if (plan$device$direction_lines > 0) 2.2 + .85 * plan$device$direction_lines else 1.8
-    c(.2 * bottom, .12, if (plan$rows$manual_sequential_labels) .2 else .28, .12)
+    c(.2 * bottom, 0, if (plan$rows$manual_sequential_labels) .2 else .28, 0)
 }
 
-rcmetar.forest.width.budget <- function(width, fixed.width, study.min=.73) {
-    graph.min <- 1.1
-    minimum <- max(fixed.width + study.min + graph.min, (fixed.width + study.min) / .65)
+rcmetar.forest.width.budget <- function(bundle, fixed.width, cex) {
+    study.min <- 40 / 25.4
+    study.wanted <- max(c(study.min, graphics::strwidth(bundle$slab, units="inches", cex=cex)), na.rm=TRUE)
+    width <- bundle$target_width
+    natural <- is.null(width)
+    graph.min <- if (natural) 60 / 25.4 else 45 / 25.4
+    minimum <- fixed.width + study.min + graph.min
+    if (natural) {
+        width <- min(260 / 25.4, max(180 / 25.4, fixed.width + study.wanted + graph.min,
+                                    study.wanted / .45))
+    }
     width <- max(width, minimum)
-    study <- min(max(2.05, study.min), width - fixed.width - max(graph.min, .35 * width))
+    if (!natural) {
+        # Add the extra graph space gradually as the paper grows beyond manuscript width.
+        graph.min <- min(60 / 25.4, graph.min + max(0, width - 180 / 25.4),
+                         width - fixed.width - study.min)
+    }
+    study <- min(study.wanted, max(study.min, .45 * width), width - fixed.width - graph.min)
     list(width=width, min_width=minimum, study_width=study,
          plot_width=width - fixed.width - study)
 }
@@ -172,25 +186,27 @@ rcmetar.forest.compact.headers <- function(bundle) {
 
 rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
     rcmetar.forest.with.measurement.device({
-        column.gap <- 0.022
-        block.gap <- 0.06
+        column.gap <- 2.5 / 25.4
+        block.gap <- column.gap
         if (ncol(bundle$ilab$matrix) > 0) {
             totals <- rcmetar.bmj.total.values(bundle)
             column.widths <- vapply(seq_len(ncol(bundle$ilab$matrix)), function(index) {
-                values <- c(bundle$ilab$matrix[, index], strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]])
                 key <- bundle$ilab$columns[[index]]$key
-                values <- c(values, as.character(totals[[key]]))
+                values <- c(strsplit(bundle$ilab$headers[[index]], "\n", fixed=TRUE)[[1L]],
+                            as.character(totals[[key]]))
                 if (key == "weight") values <- c(values, "100.0%")
                 if (grepl("events|person_time|total|_n$|true_|false_", key) &&
                         rcmetar.raw.values.complete(bundle$ilab$matrix[, index])) {
                     values <- c(values, as.character(sum(as.numeric(bundle$ilab$matrix[, index]))))
                 }
-                max(strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex, font=2), na.rm=TRUE)
+                max(strwidth(rcmetar.compact.numeric.labels(values), units="inches", cex=cex, font=2),
+                    strwidth(rcmetar.compact.numeric.labels(bundle$ilab$matrix[, index]),
+                             units="inches", cex=cex), na.rm=TRUE)
             }, numeric(1))
             group.headers <- rcmetar.metafor.group.headers(bundle)
             group.widths <- vapply(group.headers, function(group) {
                 lines <- unlist(strsplit(group, "\n", fixed=TRUE), use.names=FALSE)
-                max(strwidth(lines, units="inches", cex=cex), na.rm=TRUE)
+                max(strwidth(lines, units="inches", cex=cex, font=2), na.rm=TRUE)
             }, numeric(1))
             column.groups <- vapply(bundle$ilab$columns, function(column) column$group, character(1))
             for (group in bundle$ilab$groups) {
@@ -225,11 +241,8 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         journal <- identical(bundle$fp_style, "revman") && inherits(bundle$res, "rma") &&
             !identical(bundle$forest_variant, "subgroup")
         edge <- if (journal) .13 else .04
-        fixed.width <- block.gap + ilab.width + annotation.width + .24 + edge
-        width <- bundle$target_width %||% (180 / 25.4)
-        words <- strsplit(rcmetar.metafor.study.header(bundle), "[[:space:]]+")[[1L]]
-        study.min <- max(.73, strwidth(words, units="inches", font=2, cex=cex) + .025)
-        budget <- rcmetar.forest.width.budget(width, fixed.width, study.min)
+        fixed.width <- block.gap + ilab.width + annotation.width + edge
+        budget <- rcmetar.forest.width.budget(bundle, fixed.width, cex)
         c(budget, list(
             cex=cex,
             bg="white",

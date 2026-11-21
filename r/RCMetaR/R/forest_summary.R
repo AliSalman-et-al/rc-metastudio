@@ -108,14 +108,20 @@ rcmetar.draw.forest.axis <- function(bundle, plan) {
     ticks <- rcmetar.forest.spaced.ticks(bundle, plan$x$at, cex, alim)
     y <- graphics::par("usr")[[3L]]
     leading <- graphics::strheight("Mg", cex=cex) * 1.55
+    tick.end <- y - leading * .3
+    baseline <- tick.end - graphics::strheight("M", cex=cex) * 1.25
     graphics::segments(alim[[1]], y, alim[[2]], y, xpd=NA)
     if (length(ticks)) {
-        graphics::segments(ticks, y, ticks, y - leading * .3, xpd=NA)
-        graphics::text(ticks, y - leading, rcmetar.forest.axis.labels(bundle, ticks),
+        graphics::segments(ticks, y, ticks, tick.end, xpd=NA)
+        graphics::text(ticks, baseline, rcmetar.forest.axis.labels(bundle, ticks),
                        cex=cex, adj=c(.5, 0), xpd=NA)
     }
-    graphics::text(mean(alim), y - 2 * leading, plan$x$xlab, cex=cex, adj=c(.5, 0), xpd=NA)
+    graphics::text(mean(alim), baseline - leading, plan$x$xlab, cex=cex, adj=c(.5, 0), xpd=NA)
     invisible(NULL)
+}
+
+rcmetar.forest.row.baseline <- function(row, cex) {
+    row - graphics::strheight("M", cex=cex, font=1) / 2
 }
 
 rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_along(bundle$slab)) {
@@ -131,15 +137,16 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
         } else if (grepl("events|person_time|total|_n$|true_|false_", key) && rcmetar.raw.values.complete(values)) {
             total <- as.character(sum(as.numeric(values)))
         }
-        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], row, rcmetar.compact.numeric.labels(total), font=2, cex=cex)
+        if (nzchar(total)) graphics::text(layout$ilab.xpos[[column]], rcmetar.forest.row.baseline(row, cex),
+            rcmetar.compact.numeric.labels(total), adj=c(.5, 0), font=2, cex=cex)
     }
     invisible(NULL)
 }
 
 rcmetar.draw.forest.summary.label <- function(x, row, lines, cex, font=2) {
     if (length(lines))
-        graphics::text(x, row - .86 * (seq_along(lines) - 1L), lines,
-                       adj=c(0, .5), font=font, cex=cex)
+        graphics::text(x, rcmetar.forest.row.baseline(row, cex) - .86 * (seq_along(lines) - 1L), lines,
+                       adj=c(0, 0), font=font, cex=cex)
     invisible(NULL)
 }
 

@@ -302,7 +302,8 @@ rcmetar.draw.revman.forest <- function(bundle, plan) {
 
     if (plan$rows$summary) graphics::segments(rcmetar.forest.study.x(layout), 0, layout$xlim[[2]], 0, lwd=0.6, col="#b8b8b8")
     if (plan$rows$summary && rcmetar.param.is.true(bundle$params, "fp_show_col2", TRUE))
-        graphics::text(layout$annotation.xpos, -1, summary$label, pos=2)
+        graphics::text(layout$annotation.xpos, rcmetar.forest.row.baseline(-1, 1),
+                       summary$label, adj=c(1, 0))
     if (plan$rows$summary) rcmetar.draw.revman.summary.diamond(rcmetar.forest.axis.effect(bundle, summary), -1, rcmetar.forest.accent.color(bundle$params), layout$alim)
     graphics::par(cex=1, font=1)
     rcmetar.draw.revman.axis(bundle, layout, plot.info$cex, axis.offset)
@@ -405,7 +406,7 @@ rcmetar.draw.revman.study.effect.labels <- function(bundle, effect, layout, rows
             ", ", rcmetar.format.interval.bound(upper, digits, bundle$params), "]"
         )
     }
-    graphics::text(layout$annotation.xpos, rows, labels, adj=c(1, .5), cex=cex)
+    graphics::text(layout$annotation.xpos, rcmetar.forest.row.baseline(rows, cex), labels, adj=c(1, 0), cex=cex)
 }
 
 rcmetar.draw.revman.summary.diamond <- function(summary, row, color, alim) {
@@ -439,12 +440,14 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout, plan) {
     rcmetar.draw.revman.total.row(bundle, x, layout, cex, plan$summary_labels[[1L]])
     extra <- plan$summary_extra[[1L]]
     if (length(bundle$style_blocks$total_events) > 0) {
-        graphics::text(x, -2 - extra, "Total events:", adj=c(0, .5), cex=cex)
+        baseline <- rcmetar.forest.row.baseline(-2 - extra, cex)
+        graphics::text(x, baseline, "Total events:", adj=c(0, 0), cex=cex)
         event.keys <- c("experimental_events", "control_events")
         for (key in event.keys) {
             index <- rcmetar.revman.column.index(bundle, key)
             if (length(index) == 1 && !is.null(bundle$style_blocks$total_events[[key]])) {
-                graphics::text(layout$ilab.xpos[[index]], -2 - extra, bundle$style_blocks$total_events[[key]], cex=cex)
+                graphics::text(layout$ilab.xpos[[index]], baseline, bundle$style_blocks$total_events[[key]],
+                               adj=c(.5, 0), cex=cex)
             }
         }
     }
@@ -476,7 +479,8 @@ rcmetar.draw.revman.total.row <- function(bundle, x, layout, cex, label) {
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.revman.column.index(bundle, key)
         if (length(index) == 1) {
-            graphics::text(layout$ilab.xpos[[index]], -1, rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[key]]), font=2, cex=cex)
+            graphics::text(layout$ilab.xpos[[index]], rcmetar.forest.row.baseline(-1, cex),
+                rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[key]]), adj=c(.5, 0), font=2, cex=cex)
         }
     }
     invisible(NULL)

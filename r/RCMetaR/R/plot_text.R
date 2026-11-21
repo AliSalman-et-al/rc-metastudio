@@ -53,25 +53,18 @@ rcmetar.normalize.plot.text.params <- function(params) {
     }
     params
 }
-rcmetar.forest.fit.prefix <- function(text, budget, measure) {
-    low <- 0L
-    high <- nchar(text)
-    while (low < high) {
-        middle <- (low + high + 1L) %/% 2L
-        if (measure(substr(text, 1L, middle)) <= budget) low <- middle
-        else high <- middle - 1L
-    }
-    substr(text, 1L, low)
-}
+rcmetar.forest.year.suffix <- "( \\([12][0-9]{3}\\)|,? [12][0-9]{3})$"
 
-rcmetar.forest.wrap.line <- function(text, width, measure) {
-    first <- rcmetar.forest.fit.prefix(text, width, measure)
-    if (!nzchar(first)) return(substr(text, 1L, 1L))
-    if (nchar(first) < nchar(text) &&
-            !startsWith(substring(text, nchar(first) + 1L), " ") &&
-            grepl(" ", first, fixed=TRUE))
-        first <- sub(" [^ ]*$", "", first)
-    first
+rcmetar.forest.wrap.line <- function(text, width, measure, keep.word=FALSE) {
+    breaks <- gregexpr(" +|(?<=[-\u2013])", text, perl=TRUE)[[1L]]
+    # Keep a trailing year together with the token that introduces it.
+    year <- regexpr(paste0("\\S+", rcmetar.forest.year.suffix), text, perl=TRUE)[[1L]]
+    if (year > 0L) breaks <- breaks[breaks <= year]
+    ends <- sort(unique(c(breaks[breaks > 1L] - 1L, nchar(text))))
+    prefixes <- trimws(substring(text, 1L, ends))
+    fits <- which(measure(prefixes) <= width)
+    if (length(fits)) return(prefixes[[tail(fits, 1L)]])
+    if (keep.word) prefixes[[1L]] else ""
 }
 
 rcmetar.forest.wrap.summary.labels <- function(labels, width, cex) {
@@ -80,7 +73,7 @@ rcmetar.forest.wrap.summary.labels <- function(labels, width, cex) {
         lapply(labels, function(label) {
             lines <- character()
             while (nzchar(label)) {
-                first <- rcmetar.forest.wrap.line(label, width, measure)
+                first <- rcmetar.forest.wrap.line(label, width, measure, keep.word=TRUE)
                 lines <- c(lines, first)
                 label <- trimws(substring(label, nchar(first) + 1L))
             }
@@ -91,22 +84,21 @@ rcmetar.forest.wrap.summary.labels <- function(labels, width, cex) {
 
 rcmetar.forest.wrap.labels <- function(labels, width, cex) {
     rcmetar.forest.with.measurement.device({
-        measure <- function(text) graphics::strwidth(text, units="inches", cex=cex, font=2)
+        measure <- function(text) graphics::strwidth(text, units="inches", cex=cex)
         wrap <- function(label, suffix="") {
-            label <- trimws(gsub("[[:space:]]+", " ", label))
+            label <- gsub(" +,", ",", trimws(gsub("[[:space:]]+", " ", label)))
             if (measure(paste0(label, suffix)) <= width) return(paste0(label, suffix))
-            year.pattern <- "( \\([12][0-9]{3}\\)|,? [12][0-9]{3})$"
-            year <- regmatches(label, regexpr(year.pattern, label))
-            year <- if (length(year)) year[[1L]] else ""
-            name <- sub(year.pattern, "", label)
-            first <- rcmetar.forest.wrap.line(name, width, measure)
-            rest <- trimws(substring(name, nchar(first) + 1L))
-            tail <- paste0(suffix, year)
-            if (measure(paste0(rest, tail)) > width) {
-                tail <- paste0("\u2026", tail)
-                rest <- trimws(rcmetar.forest.fit.prefix(rest, width - measure(tail), measure))
+            first <- rcmetar.forest.wrap.line(label, width, measure)
+            rest <- trimws(substring(label, nchar(first) + 1L))
+            if (measure(paste0(rest, suffix)) > width) {
+                year <- regmatches(rest, regexpr(rcmetar.forest.year.suffix, rest))
+                tail <- paste0("\u2026", suffix, paste0(year, collapse=""))
+                rest <- sub(rcmetar.forest.year.suffix, "", rest)
+                rest <- paste0(rcmetar.forest.wrap.line(rest, width - measure(tail), measure), tail)
+            } else {
+                rest <- paste0(rest, suffix)
             }
-            paste0(first, "\n", trimws(paste0(rest, tail)))
+            paste(c(first, rest)[nzchar(c(first, rest))], collapse="\n")
         }
         originals <- unique(labels)
         visible <- vapply(originals, wrap, character(1), USE.NAMES=FALSE)
