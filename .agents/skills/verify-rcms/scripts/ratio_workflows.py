@@ -366,6 +366,8 @@ def run(app, window, scenario, record):
             app.processEvents()
         set_parameter(app, dialog, "digits", 6)
         set_parameter(app, dialog, "conf.level", confidence)
+        if suffix == "mh" and workflow == "standard":
+            set_parameter(app, dialog, "drop00", "TRUE")
         if suffix == "random" or workflow == "meta-regression":
             set_parameter(app, dialog, "rm.method", "REML")
         record("ratio-analysis-configured", dialog, workflow=workflow, method=method, parameters=dict(dialog.current_param_vals))
