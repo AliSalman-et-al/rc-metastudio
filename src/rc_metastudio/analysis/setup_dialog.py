@@ -214,6 +214,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._replaces = replaces
         self._rerun_source_sheet = source_sheet
         self.setupUi(self)
+        self.outcome_label = QLabel(model.current_outcome_name, self)
+        self.outcome_label.setTextFormat(Qt.TextFormat.PlainText)
+        configure_context_label(self.outcome_label)
+        self.content_scroll_layout.insertWidget(0, self.outcome_label)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
             model,
@@ -280,10 +284,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         error_layout.addWidget(self.analysis_error_details)
         self.analysis_error_toggle.toggled.connect(self._expand_error_details)
         self.analysis_error_panel.hide()
-        self.outcome_label = QLabel(self.model.current_outcome_name, self)
-        self.outcome_label.setTextFormat(Qt.TextFormat.PlainText)
-        configure_context_label(self.outcome_label)
-        self.content_scroll_layout.insertWidget(0, self.outcome_label)
         self.content_scroll_layout.insertWidget(0, self.analysis_error_panel)
         if (
             not self.is_meta_regression

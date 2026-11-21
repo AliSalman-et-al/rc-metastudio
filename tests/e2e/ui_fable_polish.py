@@ -3,6 +3,7 @@ import json
 
 from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
+from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, root, record, analyze):
@@ -63,7 +64,7 @@ def run(app, window, work, root, record, analyze):
 
     for project in ('amino', 'continuous', 'lymph'):
         window.workspace.mark_saved()
-        assert window.open(str(root / f'sample_projects/{project}.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'sample_projects' / SAMPLE_FILES[project]), raise_on_error=True)
         model = window.model
         args = (model.get_current_analysis_unit_for_study(0), model.arm_names, model.get_current_arm_key())
         if project == 'lymph':
