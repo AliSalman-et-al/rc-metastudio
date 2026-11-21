@@ -275,7 +275,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         results: AnalysisResult,
         parent=None,
         plot_service: PlotService | None = None,
-        change_settings: Callable[[dict[str, object]], None] | None = None,
+        change_settings: Callable[[dict[str, object], QWidget], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
         *,
         source_sheet_name: str | None = None,
@@ -425,7 +425,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._report_nav = QTreeWidgetItem(self.nav_tree, ["Text report"])
         self._report_nav.setToolTip(0, "Read the formatted analysis report")
         self._report_nav.setData(0, _REPORT_ANCHOR_ROLE, "")
-        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Tables"])
+        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Data tables (CSV)"])
         self._tables_nav.setToolTip(0, "Copy or export numerical tables")
         self._tables_nav.setDisabled(not self._report_tables)
         self._setup_results_actions()
@@ -508,7 +508,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _identity_facts(self, workflow, context, rest, description, separator):
         details = [workflow] if context and workflow != 'Meta-analysis' else []
-        study_count = dict(self.results.manuscript_model_info).get('Studies (k)')
+        model_info = dict(self.results.manuscript_model_info)
+        study_count = model_info.get('Studies included', model_info.get('Studies (k)'))
         models, confidence = self._identity_model_details(self.results.details)
         study_count = _identity_context_facts(rest, details, confidence, study_count)
         if separator:
@@ -526,7 +527,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _setup_identity(self, source_name: str | None):
         identity = self.results.identity or "Analysis results"
-        self.setWindowTitle(identity.splitlines()[0])
         workflow, _, context = identity.partition(" — ")
         first, *rest = context.splitlines() if context else identity.splitlines()
         name, separator, description = first.partition(" · ")
@@ -535,6 +535,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             separator = ' · ' if first != source_name else ''
             description = first[len(source_name):].removeprefix(' · ')
         details = self._identity_facts(workflow, context, rest, description, separator)
+        models, levels = self._identity_model_details(self.results.details)
+        title_facts = [model + (f" ({estimator})" if estimator else "") for model, estimator in models]
+        title_facts.extend(detail for detail in details if detail.startswith("Pooled display: "))
+        title_facts.extend(levels or [detail for detail in details if detail.endswith("% CI")])
+        self.setWindowTitle(" · ".join((identity.splitlines()[0], *dict.fromkeys(title_facts))))
         title_font = QFont(self.font())
         title_font.setPointSizeF(title_font.pointSizeF() * 1.35)
         title_font.setWeight(QFont.Weight.DemiBold)
@@ -813,7 +818,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         mime.setText(stream.getvalue())
         mime.setHtml(table_html(headers, rows))
         required(QApplication.clipboard(), "system clipboard").setMimeData(mime)
-        self.statusbar.showMessage("Table copied", 4000)
+        scope = "Table" if headers else "Cell" if len(rows) == 1 and len(rows[0]) == 1 else "Selection"
+        self.statusbar.showMessage(f"{scope} copied", 4000)
 
     def _export_table(self):
         table = self._report_tables[self.table_selector.currentIndex()]
@@ -872,7 +878,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcuts([QKeySequence("Ctrl+T"), QKeySequence("Ctrl+M")])
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        self.tables_action = QAction("Tables", self)
+        self.tables_action = QAction("Data tables (CSV)", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
@@ -1108,7 +1114,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             params = self.plot_service.load_params(artifact.params_path)
             if params is not None:
                 plot_parameters = params
-        self._change_settings(plot_parameters)
+        self._change_settings(plot_parameters, self)
 
     def _edit_selected_plot(self):
         selected = self._selected_plot()
@@ -1643,7 +1649,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 reopen = self._change_settings
                 dialog.sequence_rerun.setEnabled(reopen is not None)
                 if reopen is not None:
-                    dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params()))
+                    dialog.rerun_requested.connect(lambda: reopen(dialog.plot_params(), self))
 
         dialog.exec()
 

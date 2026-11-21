@@ -3,6 +3,7 @@ import json
 
 from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
+from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, root, record, analyze):
@@ -37,7 +38,7 @@ def run(app, window, work, root, record, analyze):
     about.close()
     app.styleHints().setColorScheme(original_scheme)
 
-    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
     model = window.model
     calculator = ContinuousDataDialog(model.get_current_analysis_unit_for_study(0),
         model.arm_names, model.get_current_arm_key(), model.current_effect,
@@ -63,7 +64,7 @@ def run(app, window, work, root, record, analyze):
 
     for project in ('amino', 'continuous', 'lymph'):
         window.workspace.mark_saved()
-        assert window.open(str(root / f'sample_projects/{project}.rcms'), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[project]), raise_on_error=True)
         model = window.model
         args = (model.get_current_analysis_unit_for_study(0), model.arm_names, model.get_current_arm_key())
         if project == 'lymph':
@@ -90,7 +91,7 @@ def run(app, window, work, root, record, analyze):
         calculator.reject()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     window.model.add_covariate('Dose', 'continuous')
     regression = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, analysis_type='meta-regression')
     regression.show()
@@ -120,22 +121,19 @@ def run(app, window, work, root, record, analyze):
     assert setup.analysis_error_panel.isVisible()
     if setup.specs_tab.tabText(setup.specs_tab.indexOf(setup.plot_tab)) != 'Forest plot':
         failures.append('Forest-only setup has a generic Plots tab')
-    for expanded in (False, True):
-        setup.analysis_error_toggle.setChecked(expanded)
-        wait(200)
-        viewport = required(setup.content_scroll_area.viewport())
-        advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
-        state = dict(height=setup.height(), viewport=viewport.height(), advanced=advanced.getRect())
-        observations['error-' + str(expanded)] = state
-        record('fable-analysis-error-' + str(expanded), setup, **state)
-        if expanded and setup.analysis_error_details.height() > setup.analysis_error_details.fontMetrics().lineSpacing() * 8 + 2 * setup.analysis_error_details.frameWidth() + 8:
-            failures.append('Technical error details occupy more than eight lines')
-        if not viewport.rect().contains(advanced):
-            failures.append('Method controls are clipped after analysis error, expanded=' + str(expanded))
+    assert not setup.analysis_error_toggle.isVisible()
+    wait(200)
+    viewport = required(setup.content_scroll_area.viewport())
+    advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
+    state = dict(height=setup.height(), viewport=viewport.height(), advanced=advanced.getRect())
+    observations['empty-selection'] = state
+    record('fable-empty-study-selection', setup, **state)
+    if not viewport.rect().contains(advanced):
+        failures.append('Method controls are clipped after the empty-selection message')
     setup.reject()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/lymph.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/lymph.rcms'), raise_on_error=True)
     combined = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, diagnostic_metrics=['sens', 'spec', 'dor'])
     combined.show()
     combined.advanced_toggle.setChecked(True)

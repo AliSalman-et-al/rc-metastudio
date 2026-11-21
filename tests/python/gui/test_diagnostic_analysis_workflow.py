@@ -43,6 +43,17 @@ def _create_diagnostic_dataset(window):
     )
 
 
+def _add_diagnostic_study(window, *, entered=False):
+    model = window.model
+    assert model.setData(model.index(0, model.NAME), "Study")
+    unit = model.get_studies()[0].analysis_unit
+    if entered:
+        for metric, estimate in (("Sens", -0.1), ("Spec", 0.7)):
+            unit.set_effect_for_source("entered", metric, model.get_current_arm_key(), estimate, standard_error=0.2)
+    else:
+        unit.set_raw_data_for_arm(model.arm_names[0], [20, 10, 1, 80])
+
+
 def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
 
     app, window = automation.start_automation()
@@ -107,6 +118,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
     results = []
     try:
         _create_diagnostic_dataset(window)
+        _add_diagnostic_study(window)
 
         _set_backend(
             monkeypatch,
@@ -154,7 +166,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         form.run_ma()
 
         assert not shown
-        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
+        assert form.analysis_error_label.text() == "simulated diagnostic failure"
         assert form.analysis_error_details.isHidden()
         assert "simulated diagnostic failure" in form.analysis_error_details.toPlainText()
         form.analysis_error_toggle.click()
@@ -185,6 +197,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
     results = []
     try:
         _create_diagnostic_dataset(window)
+        _add_diagnostic_study(window)
 
         _set_backend(
             monkeypatch,
@@ -289,6 +302,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
     results = []
     try:
         _create_diagnostic_dataset(window)
+        _add_diagnostic_study(window, entered=True)
 
         monkeypatch.setattr(
             window.model, "included_studies_have_raw_data", lambda: False

@@ -80,7 +80,7 @@ def check_fixed_workflow(app, window, workflow, record):
         app.processEvents()
 
 
-def check_small_study_threshold(app, window, record):
+def check_small_study_threshold(app, window, record, *, system_clipboard=True):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.results.window import ResultsWindow
     model = window.model
@@ -121,7 +121,7 @@ def check_small_study_threshold(app, window, record):
         navigation_width = view.results_nav_splitter.sizes()[0]
         assert navigation_width <= max(20 * view.fontMetrics().height(), .22 * view.width()), (navigation_width, view.width())
         from tests.e2e.report_retention import assert_report
-        assert_report(view)
+        assert_report(view, system_clipboard=system_clipboard)
         view.close()
         from PyQt6.QtCore import QSettings
         from rc_metastudio.settings import RESULTS_WORKSPACE_GROUP
@@ -154,7 +154,7 @@ def check_small_study_threshold(app, window, record):
         assert 'Inference: Normal approximation' in view.results.details
         assert view.results_nav_splitter.sizes()[0] <= max(20 * view.fontMetrics().height(), .22 * view.width())
         record('singleton-package-warning-result', view, report=view.manuscript.plain_text())
-        assert_report(view)
+        assert_report(view, system_clipboard=system_clipboard)
         view.close()
         reopened = ResultsWindow(seven_study_results, parent=window)
         reopened.show()

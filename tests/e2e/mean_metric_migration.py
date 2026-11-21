@@ -43,34 +43,38 @@ def reopen_legacy_mean_project(app, window, record):
     app.processEvents()
     record("legacy-mean-resaved", window, metric=window.model.current_effect,
            exports={"canonical_project": str(window.workspace.path)})
+
+
 def open_mean_sample(app, window, record, root, work):
     """Prove sample measurements and archive round trips before real analysis."""
-    import shutil
     from rc_metastudio.project.adapter import dataset_to_project
 
-    source = work / "Illustrative-Mean.rcms"
-    shutil.copy2(root / "sample_projects/Illustrative-Mean.rcms", source)
+    source = root / "sample_projects/Single-arm mean - Handgrip strength in young adults, Abe 2025.rcms"
+    retained = root / "sample_projects/sources/abe2025.json"
+    rows = json.loads(retained.read_text(encoding="utf-8"))["rows"]
+    assert len(rows) == 5
+    measurements = [[row["n"], row["mean"], row["sd"]] for row in rows]
     assert window.open(str(source), raise_on_error=True)
     assert window.model.current_effect == "Mean"
     sheet = window.model.current_sheet
-    assert sheet.arms[0].name == "Participants"
-    assert [row.analysis_unit.get_raw_data_for_arm("Participants") for row in sheet.rows] == [
-        [20 + i, 4 + i, 2 + i] for i in range(6)
-    ]
+    arm = "Young adult volunteers"
+    assert sheet.arms[0].name == arm
+    assert [(row.label, row.year) for row in sheet.rows] == [(row["study"], row["year"]) for row in rows]
+    assert [row.analysis_unit.get_raw_data_for_arm(arm) for row in sheet.rows] == measurements
     before = dataset_to_project(window.model.dataset)
     from PyQt6 import QtWidgets
     from advanced_workflows import click, modal
     from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 
     def inspect_calculator(dialog):
-        assert dialog.arm_names == ["Participants"]
+        assert dialog.arm_names == [arm]
         assert dialog.simple_table.isRowHidden(1)
         values = []
         for column in range(3):
             item = dialog.simple_table.item(0, column)
             assert item is not None
             values.append(float(item.text()))
-        assert values == [20, 4, 2]
+        assert values == measurements[0]
         record("mean-sample-calculator", dialog, measurements=values)
         click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
 
@@ -80,21 +84,24 @@ def open_mean_sample(app, window, record, root, work):
     assert window.open(window.workspace.path, raise_on_error=True)
     assert dataset_to_project(window.model.dataset) == before
     record("mean-sample-reopened", window, exports={"input": str(source), "saved": str(window.workspace.path)})
+    return retained, sum(row["n"] for row in rows)
 
 
-def compare_mean_sample_analysis(view, record):
+def compare_mean_sample_analysis(view, record, retained):
     """Compare displayed pooling with independent public metafor inputs."""
     from rc_metastudio import r_bridge
     from rc_metastudio.r_call_serialization import r_transaction
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 
     with r_transaction():
-        expected = r_bridge.ro.r('''function() {
-            fit <- metafor::rma.uni(yi=4:9, vi=(2:7)^2/(20:25), method="DL")
+        expected = r_bridge.ro.r('''function(path) {
+            rows <- jsonlite::fromJSON(path)$rows
+            fit <- metafor::rma(measure="MN", mi=mean, sdi=sd, ni=n, data=rows, method="DL")
             c(estimate=as.numeric(fit$b), lower_bound=fit$ci.lb, upper_bound=fit$ci.ub)
-        }''')()
+        }''')(str(retained))
         reference = dict(zip(expected.names, map(float, expected)))
     summary = parsed_numeric_sections(view.results)["Summary"]
     for field, value in reference.items():
         assert abs(summary[field] - value) <= .00051, (field, summary, reference)
-    record("mean-sample-public-authority", view, observed=summary, expected=reference)
+    record("mean-sample-public-authority", view, observed=summary, expected=reference,
+           exports={"retained_source": str(retained)})

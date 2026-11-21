@@ -7,6 +7,7 @@ from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
 from tests.python.gui.qt_test_support import key_click, key_clicks
+from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, record):
@@ -22,7 +23,7 @@ def run(app, window, work, record):
     ):
         for mode in modes:
             window.workspace.mark_saved()
-            assert window.open(str(root/'sample_projects'/(sample+'.rcms')), raise_on_error=True)
+            assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
             def sheet_confidence(level):
                 from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
                 def change(dialog):

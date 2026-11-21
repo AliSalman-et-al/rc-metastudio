@@ -1868,7 +1868,7 @@
     "summary": null,
     "title": "Lymph"
   },
-  "project_file": "sample_projects/lymph.rcms",
+  "project_file": "tests/fixtures/desktop-projects/lymph.rcms",
   "schema_version": 1,
   "source_sha256": "9749e3fb75c6a87b29cecbd65f49b90b18b819c11c40dee0f2f3441d9e36f8f5"
 }

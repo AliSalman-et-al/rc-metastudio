@@ -30,7 +30,6 @@ from rc_metastudio.project.archive import (
 
 ROOT = Path(__file__).resolve().parents[3]
 SNAPSHOT_DIR = ROOT / "tests/python/fixtures/project_snapshots"
-SAMPLE_DIR = ROOT / "sample_projects"
 
 
 def _minimal_project() -> JsonObject:
@@ -334,7 +333,7 @@ def test_schema_rejects_values_outside_the_domain_vocabulary(
 @pytest.mark.parametrize(("sample", "mutation", "message"), [
     ("amino.rcms", lambda sheet: sheet["rows"].append(copy.deepcopy(sheet["rows"][0])), "duplicate identity"),
     ("amino.rcms", lambda sheet: sheet["arms"][1].update(id=sheet["arms"][0]["id"]), "duplicate identity"),
-    ("BCG.rcms", lambda sheet: sheet["covariates"].append(copy.deepcopy(sheet["covariates"][0])), "covariates: invalid or duplicate identity"),
+    ("bcg.rcms", lambda sheet: sheet["covariates"].append(copy.deepcopy(sheet["covariates"][0])), "covariates: invalid or duplicate identity"),
     ("amino.rcms", lambda sheet: sheet["rows"][0]["entered_effects"].append({"metric": "MD", "arms": [a["id"] for a in sheet["arms"][:2]], "values": {"est": .2, "lower": .1, "upper": .3, "SE": None}}), "metric conflicts with family"),
     ("amino.rcms", lambda sheet: next(iter(sheet["rows"][0]["raw_data"].values())).__setitem__(0, -1.0), "count data cannot be negative"),
 ], ids=["row-identifier", "arm-identifier", "covariate-identifier", "cross-family-metric", "numeric-domain"])
@@ -1016,25 +1015,19 @@ def _sheet_semantics(project):
 
 
 
-def test_all_committed_samples_match_the_frozen_semantics_and_round_trip(
+def test_frozen_desktop_fixtures_preserve_migrated_semantics_and_round_trip(
     tmp_path: Path,
 ) -> None:
     snapshot_paths = sorted(SNAPSHOT_DIR.glob("*.rcms.json"))
     assert snapshot_paths
-    sample_manifest = json.loads((SAMPLE_DIR / "manifest.json").read_text("utf-8"))
-    manifest_projects = {item["file"]: item for item in sample_manifest["projects"]}
-    # Frozen legacy values are compared with the current bundled sheet files.
-    assert sample_manifest["format_version"] == CURRENT_FORMAT_VERSION
+    fixture_dir = ROOT / "tests/fixtures/desktop-projects"
+    migrations = json.loads((fixture_dir / "arm-label-migration.json").read_text("utf-8"))
 
     for snapshot_path in snapshot_paths:
         snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
-        sample_path = SAMPLE_DIR / snapshot_path.stem
-        assert (
-            manifest_projects[sample_path.name]["sha256"]
-            == hashlib.sha256(sample_path.read_bytes()).hexdigest()
-        )
+        sample_path = fixture_dir / snapshot_path.stem
         loaded = load_project(sample_path)
-        replacements = manifest_projects[sample_path.name].get("arm_labels", {})
+        replacements = migrations[sample_path.name]
         def current_labels(value):
             if isinstance(value, str):
                 for old, new in replacements.items():

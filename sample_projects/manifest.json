@@ -2,164 +2,75 @@
   "manifest": "rc-metastudio-sample-projects",
   "version": 3,
   "format_version": 3,
-  "storage_note": "Schema-validated Versioned Project Format ZIP/JSON containers. format_version is the default for the original frozen sample corpus; per-project format_version overrides it for newer examples.",
+  "storage_note": "Schema-validated Versioned Project Format ZIP/JSON containers.",
   "projects": [
     {
-      "file": "amino.rcms",
-      "sha256": "75cd1523b8e39cc8e66699581bacce4d91e5a4de99a0d2aeef1356faa5efd8e4",
-      "semantic_sha256": "0b39d701160e6cbcfa88deedcba0dd94f8c40eb63078b64bc12a68170c1dddba",
-      "analysis_evidence": "amino-binary-random",
-      "scientific_name": "Aminoglycosides",
+      "file": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
+      "scientific_name": "Binary - BCG vaccine and tuberculosis, Colditz 1994",
+      "description": "Use this for two-arm event counts, latitude meta-regression and trial sequential analysis.",
+      "format_version": 3,
       "analysis_family": "binary",
-      "provenance": "Repository-owned representative project carried forward from the maintained RC MetaStudio sample corpus.",
-      "workflow_coverage": [
-        "standard binary analysis workflow",
-        "binary random-effects golden analysis coverage",
-        "packaged startup project smoke coverage",
-        "project open/save round trip coverage"
-      ],
-      "test_usage": [
-        "tests/python/fast/test_project_format.py",
-        "tests/python/gui/test_gui_binary_slice.py",
-        "tests/python/gui/test_metaform_automation_launch.py",
-        "tests/analysis_regression/golden/test_analysis_regression_compare.py",
-        "tests/packaging/contract/test_windows_distributable_contract.py"
-      ],
-      "arm_labels": {
-        "tx A": "Intervention",
-        "tx B": "Control"
-      },
-      "format_version": 3
+      "study_count": 13,
+      "source_reference": "Colditz GA, Brewer TF, Berkey CS, Wilson ME, Burdick E, Fineberg HV, Mosteller F. Efficacy of BCG vaccine in the prevention of tuberculosis: meta-analysis of the published literature. JAMA. 1994;271:698–702.",
+      "source_doi": "https://doi.org/10.1001/jama.1994.03510330076038",
+      "source_file": "sources/metadat-clinical.json",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
+      "sha256": "5349dc81fd6f2f43022116e37a93d11884681fef170a5d3dbb2b4f7c005a3100",
+      "semantic_sha256": "142a4dd9acf02e67b2eb4bb76fe2a472c3ee3f2d15cd301f815919afb390c5df"
     },
     {
-      "file": "BCG.rcms",
-      "sha256": "761a85cec578d5f1a039a646a6f2ea39dae7ecaf009bf3b3ecabc49969dab941",
-      "semantic_sha256": "133e21174694fc62b46794c5530a16cbbf13a0beac17df55a7b5e2433cb8a411",
-      "analysis_evidence": "bcg-binary-random",
-      "scientific_name": "BCG vaccine",
+      "file": "Binary - Aminoglycoside dosing, Barza 1996.rcms",
+      "scientific_name": "Binary - Aminoglycoside dosing, Barza 1996",
+      "description": "Use this for Mantel–Haenszel and Peto with studies that have zero events in both arms.",
+      "format_version": 3,
       "analysis_family": "binary",
-      "provenance": "Repository-owned representative project carried forward from the maintained RC MetaStudio sample corpus.",
-      "workflow_coverage": [
-        "binary project-load coverage",
-        "packaged sample-project layout coverage",
-        "project open/save round trip coverage"
-      ],
-      "test_usage": [
-        "tests/python/fast/test_project_format.py",
-        "tests/python/gui/test_gui_binary_slice.py",
-        "tests/packaging/contract/test_windows_distributable_contract.py"
-      ],
-      "arm_labels": {
-        "tx A": "BCG vaccine",
-        "tx B": "Control"
-      },
-      "format_version": 3
+      "study_count": 19,
+      "source_reference": "Barza M, Ioannidis JP, Cappelleri JC, Lau J. Single or multiple daily doses of aminoglycosides: a meta-analysis. BMJ. 1996;312:338–345.",
+      "source_doi": "https://doi.org/10.1136/bmj.312.7027.338",
+      "source_file": "sources/barza1996.json",
+      "source_sha256": "af5609a04310c2fa2740f017349555ae08dc6535b7411311b6a5857880d756de",
+      "sha256": "52586ff087b4e16ba2d18d0bf37f8bb706ed8ca37941cf0bcac13f3f9c1ef4a6",
+      "semantic_sha256": "e224ef48aef2ffdbdab91e0b0b7f53e8fc2c1728dadcc3947c4b5e50ebb68fc0"
     },
     {
-      "file": "continuous.rcms",
-      "sha256": "7c7e8aff04995ccf18d8030f0da0ffbbe8cfd89826451144054a0914e3590a83",
-      "semantic_sha256": "dd375422e0bb56ba7e27578e7408d0408c2f2b257ea4afc8ba31e5090a073b5d",
-      "analysis_evidence": "continuous-random",
-      "scientific_name": "Continuous outcome example",
+      "file": "Continuous - Monthly respiratory exacerbations, Poole 2003.rcms",
+      "scientific_name": "Continuous - Monthly respiratory exacerbations, Poole 2003",
+      "description": "Use this for mean differences, trial-duration subgroups, meta-regression and small-study effects.",
+      "format_version": 3,
       "analysis_family": "continuous",
-      "provenance": "Repository-owned representative project carried forward from the maintained RC MetaStudio sample corpus.",
-      "workflow_coverage": [
-        "continuous analysis workflow",
-        "continuous random-effects golden analysis coverage",
-        "project open/save round trip coverage"
-      ],
-      "test_usage": [
-        "tests/python/fast/test_project_format.py",
-        "tests/python/gui/test_gui_binary_slice.py",
-        "tests/python/gui/test_metaform_automation_launch.py",
-        "tests/analysis_regression/golden/test_analysis_regression_compare.py"
-      ],
-      "arm_labels": {
-        "tx A": "Intervention",
-        "tx B": "Control"
-      },
-      "format_version": 3
+      "study_count": 17,
+      "source_reference": "Poole PJ, Black PN. Mucolytic agents for chronic bronchitis or chronic obstructive pulmonary disease. Cochrane Database Syst Rev. 2003;1:CD001287.",
+      "source_doi": "https://doi.org/10.1002/14651858.CD001287",
+      "source_file": "sources/metadat-clinical.json",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
+      "sha256": "c4f0580647c5c75d11bf9863c65e142b28f03cee7953897f8dabc3b9006bc551",
+      "semantic_sha256": "e8d457b75f709961e53b047c44ad031b5a4fb86522272af41933424666f14551"
     },
     {
-      "file": "lymph.rcms",
-      "sha256": "6c7994b80762fa4d059bc3602cfa73b1f508ce825ccde24bc99313cfda3f3cfa",
-      "semantic_sha256": "c8b11f35219a2ce7eb7abc6f66de37ae2f760a8a61b68be155a3cc8c6653f6b7",
-      "analysis_evidence": "lymph-diagnostic-random-dor",
-      "scientific_name": "Lymph diagnostic accuracy",
+      "file": "Diagnostic accuracy - Ultrasound for deep vein thrombosis, Kearon 1998.rcms",
+      "scientific_name": "Diagnostic accuracy - Ultrasound for deep vein thrombosis, Kearon 1998",
+      "description": "Use this for paired sensitivity and specificity, SROC, patient-group regression and Deeks’ test.",
+      "format_version": 3,
       "analysis_family": "diagnostic",
-      "provenance": "Repository-owned representative project carried forward from the maintained RC MetaStudio sample corpus.",
-      "workflow_coverage": [
-        "diagnostic analysis workflow",
-        "diagnostic golden analysis coverage",
-        "project open/save round trip coverage"
-      ],
-      "test_usage": [
-        "tests/python/fast/test_project_format.py",
-        "tests/python/gui/test_gui_binary_slice.py",
-        "tests/python/gui/test_metaform_automation_launch.py",
-        "tests/analysis_regression/golden/test_analysis_regression_compare.py"
-      ],
-      "arm_labels": {
-        "test 1": "Index test",
-        "tx A": "Index test"
-      },
-      "format_version": 3
+      "study_count": 27,
+      "source_reference": "Kearon C, Julian JA, Newman TE, Ginsberg JS. Noninvasive diagnosis of deep venous thrombosis. Ann Intern Med. 1998;128:663–677.",
+      "source_doi": "https://doi.org/10.7326/0003-4819-128-8-199804150-00011",
+      "source_file": "sources/metadat-clinical.json",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
+      "sha256": "a596577c1a98c971d8aa0c0e9cdff2d6190f9487d97322430863bdcd57a88e5b",
+      "semantic_sha256": "3db33fcf282de4ac14cf72894d218d4b0ddee671b8fe99b5df23d751388a2c02"
     },
     {
-      "file": "meantime.rcms",
-      "sha256": "3824927a8acc8ccd51b64288593941d2809596034c2b8ee6bc1bcad50ecb94f7",
-      "semantic_sha256": "45af8304a96fbebd3d3d92853d3a1778d1735c4b84bd7feaa56154c69dc48bf1",
-      "analysis_evidence": "meantime-binary-random",
-      "scientific_name": "Meantime subgroup example",
-      "analysis_family": "binary",
-      "provenance": "Repository-owned representative project carried forward from the maintained RC MetaStudio sample corpus.",
-      "workflow_coverage": [
-        "factor covariate project-load coverage",
-        "subgroup analysis enablement coverage",
-        "project open/save round trip coverage"
-      ],
-      "test_usage": [
-        "tests/python/fast/test_project_format.py",
-        "tests/python/gui/test_gui_binary_slice.py",
-        "tests/python/gui/test_metaform_automation_launch.py"
-      ],
-      "arm_labels": {
-        "tx A": "Intervention",
-        "tx B": "Control"
-      },
-      "format_version": 3
-    },
-    {
-      "file": "Pignon2000-HR.rcms",
+      "file": "Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms",
       "format_version": 3,
-      "sha256": "adc3c127d972d13aa42383b6823774c75c6597002f387c0ff1caa463411f1001",
-      "semantic_sha256": "0df6cd9f9ed89f3b02cfbef640673327eb71d9165b19a28218b639ad9cea940c",
-      "analysis_evidence": "ratios-samples",
-      "scientific_name": "Pignon 2000 — Head and neck cancer",
-      "analysis_family": "time_to_event",
-      "study_count": 65,
-      "provenance": "metadat::dat.pignon2000; original data retained in sources/metadat-ratios.json",
-      "source_url": "https://wviechtb.github.io/metadat/reference/dat.pignon2000.html",
-      "source_doi": "https://doi.org/10.1016/S0140-6736(00)90011-4",
-      "source_sha256": "604c7087c8dd43f55d02bec119969c53232153f46a07172db1c54c9256a4a71c",
-      "workflow_coverage": [
-        "source data preservation",
-        "project open/save/reopen",
-        "pooled estimates compared with metafor"
-      ],
-      "test_usage": [
-        ".agents/skills/verify-rcms/scripts/ratio_workflows.py"
-      ]
-    },
-    {
-      "file": "NielWeise2008-IRR.rcms",
-      "format_version": 3,
-      "sha256": "22710e60d974be937d18fe0181692b1b4afa5888a99f1de43ab573e84e45b8d7",
+      "sha256": "8b10ed796aa2ab774d175c26f23c70197b436c52ca2acb95307939e464c35b37",
       "semantic_sha256": "92500d3d8359e1ee1927c0cd8a42b1ee43974b5985182ce0fe80715afde50a98",
       "analysis_evidence": "ratios-samples",
-      "scientific_name": "Niel-Weise 2008 — Catheter infections",
+      "scientific_name": "Event rates (IRR) - Catheter infections, Niel-Weise 2008",
       "analysis_family": "event_rates",
       "study_count": 9,
+      "description": "Use this for events per catheter-day, raw Mantel–Haenszel and reported incidence rate ratios.",
+      "source_reference": "Niel-Weise BS, Stijnen T, van den Broek PJ. Anti-infective-treated central venous catheters for total parenteral nutrition or chemotherapy: a systematic review. J Hosp Infect. 2008;69:114–123.",
       "provenance": "metadat::dat.nielweise2008; original data retained in sources/metadat-ratios.json",
       "source_url": "https://wviechtb.github.io/metadat/reference/dat.nielweise2008.html",
       "source_doi": "https://doi.org/10.1016/j.jhin.2008.02.020",
@@ -174,19 +85,69 @@
       ]
     },
     {
-      "file": "Illustrative-Mean.rcms",
+      "file": "Reported effects - Alcohol intake and breast cancer, Greenland 1992.rcms",
+      "scientific_name": "Reported effects - Alcohol intake and breast cancer, Greenland 1992",
+      "description": "Use this for pooling published coefficients with a confidence interval or a standard error.",
       "format_version": 3,
-      "sha256": "35319e4c6f9a964d9978b61f3184894a7ef6e531f10931e26b4c9b496d69b871",
-      "semantic_sha256": "3bc4be340fe19af6eae6f043c268d69ccbb60ce6d6ec1e7f0b6ed21923af7d13",
-      "provenance": "Synthetic illustrative values; no publication or clinical interpretation.",
-      "analysis_evidence": "analysis-data-onearm-mean",
+      "analysis_family": "continuous",
+      "study_count": 16,
+      "source_reference": "Greenland S, Longnecker MP. Methods for trend estimation from summarized dose-response data, with applications to meta-analysis. Am J Epidemiol. 1992;135:1301–1309.",
+      "source_doi": "https://doi.org/10.1093/oxfordjournals.aje.a116237",
+      "source_file": "sources/metadat-clinical.json",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
+      "sha256": "d648bd2036dc497a648b01955c39ade6d40ede9d616a35621273e14033374efa",
+      "semantic_sha256": "cfa36222a9859eed19aff1d680ff58ab098e36394ea266e990b46a4fee0f0e7a"
+    },
+    {
+      "file": "Single-arm mean - Handgrip strength in young adults, Abe 2025.rcms",
+      "scientific_name": "Single-arm mean - Handgrip strength in young adults, Abe 2025",
+      "description": "Use this for pooling measured grip strength in kilograms from one cohort per study.",
+      "format_version": 3,
+      "analysis_family": "continuous",
+      "study_count": 5,
+      "source_reference": "Abe T, Song JS, Dankel SJ, Viana RB, Abe A, Loenneke JP. Impact of potential moderating factors on absolute test-retest reliability of grip strength measurements in healthy populations: a systematic review with meta-analysis. J Sports Sci Med. 2025;24:543–554.",
+      "source_doi": "https://doi.org/10.52082/jssm.2025.543",
+      "source_file": "sources/abe2025.json",
+      "source_sha256": "998d1c28b1e8648b6596db4996ce7d3242ec12f15f44bf842d9e3e040aab1334",
+      "sha256": "bcef93008c20220cba0f017b8daf28c49d5e0500bc7ea3e75f207085ce2f7880",
+      "semantic_sha256": "829320679fd5f293f840de3639b619f8eb15e7d3352cc8f38caf9f51710e7be0"
+    },
+    {
+      "file": "Single-arm proportion - Depression after myocardial infarction, Feng 2019.rcms",
+      "scientific_name": "Single-arm proportion - Depression after myocardial infarction, Feng 2019",
+      "description": "Use this for pooling a prevalence from cases and totals and comparing proportion transformations.",
+      "format_version": 3,
+      "analysis_family": "binary",
+      "study_count": 16,
+      "source_reference": "Feng L, Li L, Liu W, Yang J, Wang Q, Shi L, Luo M. Prevalence of depression in myocardial infarction: A PRISMA-compliant meta-analysis. Medicine. 2019;98:e14596.",
+      "source_doi": "https://doi.org/10.1097/MD.0000000000014596",
+      "source_file": "sources/metadat-clinical.json",
+      "source_sha256": "623753a8d067424a7319613179acb5b0fdf41a51feaec8b1c5e4a1235a4fae03",
+      "sha256": "4f11f59e78d9da9faebc1af2adc6c8509333d118faf80c87037cbaac8ce00eb5",
+      "semantic_sha256": "27638e0286e594929d01f5bbeae751ce9f1e2643e93f6b44a4f4d5a0347b7208"
+    },
+    {
+      "file": "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms",
+      "format_version": 3,
+      "sha256": "414c76c489e533f02f47f806b98f0bc7c2324a1945fb50a2b189103a03f696c8",
+      "semantic_sha256": "0df6cd9f9ed89f3b02cfbef640673327eb71d9165b19a28218b639ad9cea940c",
+      "analysis_evidence": "ratios-samples",
+      "scientific_name": "Time-to-event (HR) - Head and neck cancer, Pignon 2000",
+      "analysis_family": "time_to_event",
+      "study_count": 65,
+      "description": "Use this for pooling hazard ratios, chemotherapy-timing subgroups and trial sequential analysis.",
+      "source_reference": "Pignon JP, Bourhis J, Domenge C, Designe L. Chemotherapy added to locoregional treatment for head and neck squamous-cell carcinoma: three meta-analyses of updated individual data. Lancet. 2000;355:949–955.",
+      "provenance": "metadat::dat.pignon2000; original data retained in sources/metadat-ratios.json",
+      "source_url": "https://wviechtb.github.io/metadat/reference/dat.pignon2000.html",
+      "source_doi": "https://doi.org/10.1016/S0140-6736(00)90011-4",
+      "source_sha256": "604c7087c8dd43f55d02bec119969c53232153f46a07172db1c54c9256a4a71c",
       "workflow_coverage": [
-        "raw one-arm Mean",
-        "save and reopen",
-        "pooling compared with metafor"
+        "source data preservation",
+        "project open/save/reopen",
+        "pooled estimates compared with metafor"
       ],
       "test_usage": [
-        "tests/e2e/mean_metric_migration.py"
+        ".agents/skills/verify-rcms/scripts/ratio_workflows.py"
       ]
     }
   ]

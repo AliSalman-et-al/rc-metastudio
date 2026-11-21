@@ -1,0 +1,1090 @@
+{
+  "package": "metadat",
+  "version": "1.6-0",
+  "license": "GPL (>= 2)",
+  "datasets": {
+    "dat.bcg": [
+      {
+        "trial": 1,
+        "author": "Aronson",
+        "year": 1948,
+        "tpos": 4,
+        "tneg": 119,
+        "cpos": 11,
+        "cneg": 128,
+        "ablat": 44,
+        "alloc": "random"
+      },
+      {
+        "trial": 2,
+        "author": "Ferguson & Simes",
+        "year": 1949,
+        "tpos": 6,
+        "tneg": 300,
+        "cpos": 29,
+        "cneg": 274,
+        "ablat": 55,
+        "alloc": "random"
+      },
+      {
+        "trial": 3,
+        "author": "Rosenthal et al",
+        "year": 1960,
+        "tpos": 3,
+        "tneg": 228,
+        "cpos": 11,
+        "cneg": 209,
+        "ablat": 42,
+        "alloc": "random"
+      },
+      {
+        "trial": 4,
+        "author": "Hart & Sutherland",
+        "year": 1977,
+        "tpos": 62,
+        "tneg": 13536,
+        "cpos": 248,
+        "cneg": 12619,
+        "ablat": 52,
+        "alloc": "random"
+      },
+      {
+        "trial": 5,
+        "author": "Frimodt-Moller et al",
+        "year": 1973,
+        "tpos": 33,
+        "tneg": 5036,
+        "cpos": 47,
+        "cneg": 5761,
+        "ablat": 13,
+        "alloc": "alternate"
+      },
+      {
+        "trial": 6,
+        "author": "Stein & Aronson",
+        "year": 1953,
+        "tpos": 180,
+        "tneg": 1361,
+        "cpos": 372,
+        "cneg": 1079,
+        "ablat": 44,
+        "alloc": "alternate"
+      },
+      {
+        "trial": 7,
+        "author": "Vandiviere et al",
+        "year": 1973,
+        "tpos": 8,
+        "tneg": 2537,
+        "cpos": 10,
+        "cneg": 619,
+        "ablat": 19,
+        "alloc": "random"
+      },
+      {
+        "trial": 8,
+        "author": "TPT Madras",
+        "year": 1980,
+        "tpos": 505,
+        "tneg": 87886,
+        "cpos": 499,
+        "cneg": 87892,
+        "ablat": 13,
+        "alloc": "random"
+      },
+      {
+        "trial": 9,
+        "author": "Coetzee & Berjak",
+        "year": 1968,
+        "tpos": 29,
+        "tneg": 7470,
+        "cpos": 45,
+        "cneg": 7232,
+        "ablat": 27,
+        "alloc": "random"
+      },
+      {
+        "trial": 10,
+        "author": "Rosenthal et al",
+        "year": 1961,
+        "tpos": 17,
+        "tneg": 1699,
+        "cpos": 65,
+        "cneg": 1600,
+        "ablat": 42,
+        "alloc": "systematic"
+      },
+      {
+        "trial": 11,
+        "author": "Comstock et al",
+        "year": 1974,
+        "tpos": 186,
+        "tneg": 50448,
+        "cpos": 141,
+        "cneg": 27197,
+        "ablat": 18,
+        "alloc": "systematic"
+      },
+      {
+        "trial": 12,
+        "author": "Comstock & Webster",
+        "year": 1969,
+        "tpos": 5,
+        "tneg": 2493,
+        "cpos": 3,
+        "cneg": 2338,
+        "ablat": 33,
+        "alloc": "systematic"
+      },
+      {
+        "trial": 13,
+        "author": "Comstock et al",
+        "year": 1976,
+        "tpos": 27,
+        "tneg": 16886,
+        "cpos": 29,
+        "cneg": 17825,
+        "ablat": 33,
+        "alloc": "systematic"
+      }
+    ],
+    "dat.poole2003": [
+      {
+        "author": "Bontognali",
+        "year": 1991,
+        "Ne": 30,
+        "Me": 0.7,
+        "Se": 3.76,
+        "Nc": 30,
+        "Mc": 1.27,
+        "Sc": 4.58,
+        "duration": "≤ 3 months"
+      },
+      {
+        "author": "Castiglioni",
+        "year": 1986,
+        "Ne": 311,
+        "Me": 0.1,
+        "Se": 0.21,
+        "Nc": 302,
+        "Mc": 0.2,
+        "Sc": 0.29,
+        "duration": "≤ 3 months"
+      },
+      {
+        "author": "Cremonini",
+        "year": 1986,
+        "Ne": 21,
+        "Me": 0.25,
+        "Se": 0.23,
+        "Nc": 20,
+        "Mc": 0.71,
+        "Sc": 0.29,
+        "duration": "≤ 3 months"
+      },
+      {
+        "author": "Grassi",
+        "year": 1994,
+        "Ne": 42,
+        "Me": 0.16,
+        "Se": 0.29,
+        "Nc": 41,
+        "Mc": 0.45,
+        "Sc": 0.43,
+        "duration": "≤ 3 months"
+      },
+      {
+        "author": "Jackson",
+        "year": 1984,
+        "Ne": 61,
+        "Me": 0.11,
+        "Se": 0,
+        "Nc": 60,
+        "Mc": 0.13,
+        "Sc": 0,
+        "duration": "≤ 3 months"
+      },
+      {
+        "author": "Allegra",
+        "year": 1996,
+        "Ne": 223,
+        "Me": 0.07,
+        "Se": 0.11,
+        "Nc": 218,
+        "Mc": 0.11,
+        "Sc": 0.14,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Babolini",
+        "year": 1980,
+        "Ne": 254,
+        "Me": 0.13,
+        "Se": 0.18,
+        "Nc": 241,
+        "Mc": 0.33,
+        "Sc": 0.27,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Boman",
+        "year": 1983,
+        "Ne": 98,
+        "Me": 0.2,
+        "Se": 0.27,
+        "Nc": 105,
+        "Mc": 0.32,
+        "Sc": 0.3,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Borgia",
+        "year": 1981,
+        "Ne": 10,
+        "Me": 0.05,
+        "Se": 0.08,
+        "Nc": 9,
+        "Mc": 0.15,
+        "Sc": 0.17,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Grassi",
+        "year": 1976,
+        "Ne": 35,
+        "Me": 0.14,
+        "Se": 0.15,
+        "Nc": 34,
+        "Mc": 0.27,
+        "Sc": 0.21,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Hansen",
+        "year": 1994,
+        "Ne": 59,
+        "Me": 0.11,
+        "Se": 0.15,
+        "Nc": 70,
+        "Mc": 0.16,
+        "Sc": 0.19,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "McGavin",
+        "year": 1985,
+        "Ne": 72,
+        "Me": 0.42,
+        "Se": 0.34,
+        "Nc": 76,
+        "Mc": 0.52,
+        "Sc": 0.35,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Meister",
+        "year": 1986,
+        "Ne": 90,
+        "Me": 0.15,
+        "Se": 0.15,
+        "Nc": 91,
+        "Mc": 0.2,
+        "Sc": 0.19,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Meister",
+        "year": 1999,
+        "Ne": 110,
+        "Me": 0.06,
+        "Se": 0,
+        "Nc": 105,
+        "Mc": 0.1,
+        "Sc": 0,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Nowak",
+        "year": 1999,
+        "Ne": 147,
+        "Me": 0.03,
+        "Se": 0.06,
+        "Nc": 148,
+        "Mc": 0.06,
+        "Sc": 0.12,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Olivieri",
+        "year": 1987,
+        "Ne": 110,
+        "Me": 0.18,
+        "Se": 0.31,
+        "Nc": 104,
+        "Mc": 0.33,
+        "Sc": 0.41,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Parr",
+        "year": 1987,
+        "Ne": 243,
+        "Me": 0.18,
+        "Se": 0.21,
+        "Nc": 210,
+        "Mc": 0.21,
+        "Sc": 0.21,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Pela",
+        "year": 1999,
+        "Ne": 83,
+        "Me": 0.17,
+        "Se": 0.18,
+        "Nc": 80,
+        "Mc": 0.29,
+        "Sc": 0.32,
+        "duration": "> 3 months"
+      },
+      {
+        "author": "Rasmussen",
+        "year": 1988,
+        "Ne": 44,
+        "Me": 0.13,
+        "Se": 0.21,
+        "Nc": 47,
+        "Mc": 0.14,
+        "Sc": 0.19,
+        "duration": "> 3 months"
+      }
+    ],
+    "dat.kearon1998": [
+      {
+        "id": 1,
+        "study": "Elias et al.",
+        "year": 1987,
+        "patients": "symptomatic",
+        "tp": 325,
+        "np": 333,
+        "tn": 483,
+        "nn": 505
+      },
+      {
+        "id": 2,
+        "study": "Appleman et al.",
+        "year": 1987,
+        "patients": "symptomatic",
+        "tp": null,
+        "np": null,
+        "tn": 47,
+        "nn": 49
+      },
+      {
+        "id": 3,
+        "study": "Vogel et al.",
+        "year": 1987,
+        "patients": "symptomatic",
+        "tp": 20,
+        "np": 25,
+        "tn": 29,
+        "nn": 29
+      },
+      {
+        "id": 4,
+        "study": "Cronan et al.",
+        "year": 1987,
+        "patients": "symptomatic",
+        "tp": 25,
+        "np": 28,
+        "tn": 23,
+        "nn": 23
+      },
+      {
+        "id": 5,
+        "study": "O'Leary et al.",
+        "year": 1988,
+        "patients": "symptomatic",
+        "tp": 22,
+        "np": 25,
+        "tn": 24,
+        "nn": 25
+      },
+      {
+        "id": 6,
+        "study": "Lensing et al.",
+        "year": 1989,
+        "patients": "symptomatic",
+        "tp": 70,
+        "np": 77,
+        "tn": 142,
+        "nn": 143
+      },
+      {
+        "id": 7,
+        "study": "Monreal et al.",
+        "year": 1989,
+        "patients": "symptomatic",
+        "tp": 40,
+        "np": 46,
+        "tn": 18,
+        "nn": 19
+      },
+      {
+        "id": 8,
+        "study": "Rose et al.",
+        "year": 1990,
+        "patients": "symptomatic",
+        "tp": 27,
+        "np": 34,
+        "tn": 36,
+        "nn": 41
+      },
+      {
+        "id": 9,
+        "study": "Mitchell et al.",
+        "year": 1991,
+        "patients": "symptomatic",
+        "tp": 25,
+        "np": 29,
+        "tn": 28,
+        "nn": 35
+      },
+      {
+        "id": 10,
+        "study": "Schindler et al.",
+        "year": 1990,
+        "patients": "symptomatic",
+        "tp": 40,
+        "np": 40,
+        "tn": 27,
+        "nn": 37
+      },
+      {
+        "id": 11,
+        "study": "Mattos et al.",
+        "year": 1992,
+        "patients": "symptomatic",
+        "tp": 39,
+        "np": 41,
+        "tn": 29,
+        "nn": 36
+      },
+      {
+        "id": 12,
+        "study": "Heijboer et al.",
+        "year": 1992,
+        "patients": "symptomatic",
+        "tp": 75,
+        "np": 97,
+        "tn": 59,
+        "nn": 60
+      },
+      {
+        "id": 13,
+        "study": "Quintavalla et al.",
+        "year": 1992,
+        "patients": "symptomatic",
+        "tp": 49,
+        "np": 50,
+        "tn": 50,
+        "nn": 50
+      },
+      {
+        "id": 14,
+        "study": "Bradley et al.",
+        "year": 1993,
+        "patients": "symptomatic",
+        "tp": 33,
+        "np": 34,
+        "tn": 75,
+        "nn": 75
+      },
+      {
+        "id": 15,
+        "study": "Aronen et al.",
+        "year": 1994,
+        "patients": "symptomatic",
+        "tp": 20,
+        "np": 23,
+        "tn": 64,
+        "nn": 64
+      },
+      {
+        "id": 16,
+        "study": "Burke et al.",
+        "year": 1994,
+        "patients": "symptomatic",
+        "tp": 94,
+        "np": 121,
+        "tn": 346,
+        "nn": 353
+      },
+      {
+        "id": 17,
+        "study": "Wells et al.",
+        "year": 1995,
+        "patients": "symptomatic",
+        "tp": 22,
+        "np": 25,
+        "tn": 45,
+        "nn": 47
+      },
+      {
+        "id": 18,
+        "study": "Atri et al.",
+        "year": 1996,
+        "patients": "symptomatic",
+        "tp": null,
+        "np": null,
+        "tn": null,
+        "nn": null
+      },
+      {
+        "id": 19,
+        "study": "Barnes et al.",
+        "year": 1989,
+        "patients": "asymptomatic",
+        "tp": 10,
+        "np": 25,
+        "tn": 47,
+        "nn": 53
+      },
+      {
+        "id": 20,
+        "study": "Borris et al.",
+        "year": 1989,
+        "patients": "asymptomatic",
+        "tp": 15,
+        "np": 24,
+        "tn": 29,
+        "nn": 32
+      },
+      {
+        "id": 21,
+        "study": "Borris et al.",
+        "year": 1990,
+        "patients": "asymptomatic",
+        "tp": 10,
+        "np": 14,
+        "tn": 44,
+        "nn": 47
+      },
+      {
+        "id": 22,
+        "study": "Barnes et al.",
+        "year": 1991,
+        "patients": "asymptomatic",
+        "tp": 13,
+        "np": 23,
+        "tn": 123,
+        "nn": 123
+      },
+      {
+        "id": 23,
+        "study": "Woolson et al.",
+        "year": 1990,
+        "patients": "asymptomatic",
+        "tp": 10,
+        "np": 32,
+        "tn": 55,
+        "nn": 56
+      },
+      {
+        "id": 24,
+        "study": "Woolson and Pottorff",
+        "year": 1991,
+        "patients": "asymptomatic",
+        "tp": 16,
+        "np": 61,
+        "tn": 184,
+        "nn": 186
+      },
+      {
+        "id": 25,
+        "study": "Ginsberg et al.",
+        "year": 1991,
+        "patients": "asymptomatic",
+        "tp": 12,
+        "np": 49,
+        "tn": 137,
+        "nn": 138
+      },
+      {
+        "id": 26,
+        "study": "Agnelli et al.",
+        "year": 1992,
+        "patients": "asymptomatic",
+        "tp": 13,
+        "np": 26,
+        "tn": 66,
+        "nn": 74
+      },
+      {
+        "id": 27,
+        "study": "Jongbloets et al.",
+        "year": 1994,
+        "patients": "asymptomatic",
+        "tp": 16,
+        "np": 80,
+        "tn": null,
+        "nn": null
+      },
+      {
+        "id": 28,
+        "study": "Davidson et al.",
+        "year": 1992,
+        "patients": "asymptomatic",
+        "tp": 24,
+        "np": 42,
+        "tn": 55,
+        "nn": 57
+      },
+      {
+        "id": 29,
+        "study": "Mattos et al.",
+        "year": 1992,
+        "patients": "asymptomatic",
+        "tp": 17,
+        "np": 27,
+        "tn": 85,
+        "nn": 91
+      },
+      {
+        "id": 30,
+        "study": "Elliot et al.",
+        "year": 1993,
+        "patients": "asymptomatic",
+        "tp": 5,
+        "np": 22,
+        "tn": 45,
+        "nn": 46
+      },
+      {
+        "id": 31,
+        "study": "Crippa et al.",
+        "year": 1995,
+        "patients": "asymptomatic",
+        "tp": 18,
+        "np": 31,
+        "tn": 240,
+        "nn": 245
+      },
+      {
+        "id": 32,
+        "study": "Magnusson et al.",
+        "year": 1996,
+        "patients": "asymptomatic",
+        "tp": 24,
+        "np": 28,
+        "tn": 104,
+        "nn": 104
+      },
+      {
+        "id": 33,
+        "study": "Atri et al.",
+        "year": 1996,
+        "patients": "asymptomatic",
+        "tp": 26,
+        "np": 55,
+        "tn": 81,
+        "nn": 89
+      },
+      {
+        "id": 34,
+        "study": "Lensing et al.",
+        "year": 1997,
+        "patients": "asymptomatic",
+        "tp": null,
+        "np": null,
+        "tn": null,
+        "nn": null
+      }
+    ],
+    "dat.greenland1992": [
+      {
+        "author": "Hiatt and Bawol",
+        "year": 1984,
+        "b": 0.00434,
+        "SE": 0.00247
+      },
+      {
+        "author": "Hiatt et al.",
+        "year": 1988,
+        "b": 0.0109,
+        "SE": 0.0041
+      },
+      {
+        "author": "Willett t al.",
+        "year": 1987,
+        "b": 0.0284,
+        "SE": 0.00564
+      },
+      {
+        "author": "Schatzkin et al.",
+        "year": 1987,
+        "b": 0.118,
+        "SE": 0.0476
+      },
+      {
+        "author": "Harvey et al.",
+        "year": 1987,
+        "b": 0.0121,
+        "SE": 0.00429
+      },
+      {
+        "author": "Rosenberg et al.",
+        "year": 1982,
+        "b": 0.087,
+        "SE": 0.0232
+      },
+      {
+        "author": "Webster et al.",
+        "year": 1983,
+        "b": 0.00311,
+        "SE": 0.00373
+      },
+      {
+        "author": "Paganini-Hill and Ross",
+        "year": 1983,
+        "b": 0,
+        "SE": 0.0094
+      },
+      {
+        "author": "Byers and Funch",
+        "year": 1982,
+        "b": 0.00597,
+        "SE": 0.00658
+      },
+      {
+        "author": "Rohan and McMichael",
+        "year": 1988,
+        "b": 0.0479,
+        "SE": 0.0205
+      },
+      {
+        "author": "Talamini et al.",
+        "year": 1984,
+        "b": 0.0389,
+        "SE": 0.00768
+      },
+      {
+        "author": "O'Connell et al.",
+        "year": 1987,
+        "b": 0.203,
+        "SE": 0.0946
+      },
+      {
+        "author": "Harris and Wynder",
+        "year": 1988,
+        "b": -0.00673,
+        "SE": 0.00419
+      },
+      {
+        "author": "Le et al.",
+        "year": 1984,
+        "b": 0.0111,
+        "SE": 0.00481
+      },
+      {
+        "author": "La Vecchia et al.",
+        "year": 1985,
+        "b": 0.0148,
+        "SE": 0.00635
+      },
+      {
+        "author": "Begg et al.",
+        "year": 1983,
+        "b": -0.000787,
+        "SE": 0.00867
+      }
+    ],
+    "dat.feng2019": [
+      {
+        "author": "Lauzon",
+        "year": 2003,
+        "region": "Canada",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 60,
+        "males": 78.9,
+        "first": 79.1,
+        "questionnaire": "BDI≥10",
+        "interview": null,
+        "timing": "2-3 days",
+        "depr": 191,
+        "n": 550
+      },
+      {
+        "author": "Dickens",
+        "year": 2007,
+        "region": "UK",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 60,
+        "males": 70.4,
+        "first": 84,
+        "questionnaire": "HADS≥17",
+        "interview": null,
+        "timing": "3.6 days",
+        "depr": 140,
+        "n": 588
+      },
+      {
+        "author": "Parashar",
+        "year": 2009,
+        "region": "USA",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 60.5,
+        "males": 66.5,
+        "first": 78.9,
+        "questionnaire": "PHQ-9≥10",
+        "interview": null,
+        "timing": "24-72 hours",
+        "depr": 538,
+        "n": 2411
+      },
+      {
+        "author": "Hosseini",
+        "year": 2011,
+        "region": "Iran",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 58,
+        "males": 69,
+        "first": 86.9,
+        "questionnaire": "BDI≥10",
+        "interview": null,
+        "timing": "15 days",
+        "depr": 531,
+        "n": 806
+      },
+      {
+        "author": "Kurdyak",
+        "year": 2011,
+        "region": "Canada",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 62.4,
+        "males": 70.4,
+        "first": null,
+        "questionnaire": "BCDRS≥4",
+        "interview": null,
+        "timing": "30 days",
+        "depr": 807,
+        "n": 1941
+      },
+      {
+        "author": "Myers",
+        "year": 2012,
+        "region": "Israel",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 52.3,
+        "males": 86,
+        "first": 88,
+        "questionnaire": "BDI≥10",
+        "interview": null,
+        "timing": "1 week",
+        "depr": 175,
+        "n": 632
+      },
+      {
+        "author": "Wheeler",
+        "year": 2012,
+        "region": "Australia",
+        "design": "RCT",
+        "source": "Hospital-based",
+        "age": 59,
+        "males": 74,
+        "first": null,
+        "questionnaire": "CES-D≥16",
+        "interview": null,
+        "timing": "12 months",
+        "depr": 132,
+        "n": 337
+      },
+      {
+        "author": "Larsen",
+        "year": 2014,
+        "region": "Denmark",
+        "design": "Longitudinal",
+        "source": "Population-based",
+        "age": 67,
+        "males": 69.2,
+        "first": 100,
+        "questionnaire": "HADS≥8",
+        "interview": null,
+        "timing": "12-14 weeks",
+        "depr": 167,
+        "n": 896
+      },
+      {
+        "author": "Schleifer",
+        "year": 1989,
+        "region": "USA",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 63.7,
+        "males": 64,
+        "first": 73,
+        "questionnaire": null,
+        "interview": "ADS",
+        "timing": "8-10 days",
+        "depr": 128,
+        "n": 283
+      },
+      {
+        "author": "Lane",
+        "year": 2000,
+        "region": "UK",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 62.7,
+        "males": 74.7,
+        "first": 78.4,
+        "questionnaire": "BDI≥10",
+        "interview": null,
+        "timing": "2-15 days",
+        "depr": 89,
+        "n": 288
+      },
+      {
+        "author": "Watkins",
+        "year": 2002,
+        "region": "USA",
+        "design": "Cross-sectional",
+        "source": "Hospital-based",
+        "age": 58.5,
+        "males": 58.3,
+        "first": 77.9,
+        "questionnaire": null,
+        "interview": "DIS",
+        "timing": "6 days",
+        "depr": 37,
+        "n": 204
+      },
+      {
+        "author": "Parakh",
+        "year": 2008,
+        "region": "USA",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 64.8,
+        "males": 57,
+        "first": 69.4,
+        "questionnaire": "BDI≥10",
+        "interview": "SCID",
+        "timing": "5 days",
+        "depr": 76,
+        "n": 284
+      },
+      {
+        "author": "Johansson",
+        "year": 2010,
+        "region": "Sweden",
+        "design": "Cross-sectional",
+        "source": "Hospital-based",
+        "age": 64,
+        "males": 70,
+        "first": 76.6,
+        "questionnaire": "HADS≥8",
+        "interview": null,
+        "timing": "4 months",
+        "depr": 41,
+        "n": 204
+      },
+      {
+        "author": "Crowe",
+        "year": 1996,
+        "region": "Canada",
+        "design": "RCT",
+        "source": "Hospital-based",
+        "age": 61,
+        "males": 87,
+        "first": 84,
+        "questionnaire": "Short form BDI>8",
+        "interview": null,
+        "timing": "2-14 days",
+        "depr": 72,
+        "n": 785
+      },
+      {
+        "author": "Hanssen",
+        "year": 2009,
+        "region": "Norway",
+        "design": "RCT",
+        "source": "Hospital-based",
+        "age": 60.2,
+        "males": 80.9,
+        "first": 88.5,
+        "questionnaire": "HADS-D≥8",
+        "interview": null,
+        "timing": "<3 months",
+        "depr": 33,
+        "n": 244
+      },
+      {
+        "author": "Frasure-Smith",
+        "year": 1993,
+        "region": "Canada",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 59.6,
+        "males": 78,
+        "first": 73,
+        "questionnaire": null,
+        "interview": "DIS",
+        "timing": "5-15 days",
+        "depr": 35,
+        "n": 222
+      },
+      {
+        "author": "Kaufmann",
+        "year": 1999,
+        "region": "USA",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 65,
+        "males": 65.6,
+        "first": 76.6,
+        "questionnaire": null,
+        "interview": "DIS",
+        "timing": "3-15 days",
+        "depr": 90,
+        "n": 331
+      },
+      {
+        "author": "Shiotani",
+        "year": 2002,
+        "region": "Japan",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": 63,
+        "males": 80.4,
+        "first": 87.7,
+        "questionnaire": "SDS≥40",
+        "interview": null,
+        "timing": "3 months",
+        "depr": 438,
+        "n": 1042
+      },
+      {
+        "author": "Welin",
+        "year": 2000,
+        "region": "Sweden",
+        "design": "Longitudinal",
+        "source": "Hospital-based",
+        "age": null,
+        "males": 83.6,
+        "first": 100,
+        "questionnaire": "SDS≥40",
+        "interview": null,
+        "timing": "3 months",
+        "depr": 98,
+        "n": 267
+      }
+    ]
+  }
+}

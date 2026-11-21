@@ -161,8 +161,9 @@ def _append_comparative_rows(sheet, outcome, records, studies, tag, fields, name
     name = sheet.name
     subgroups = {}
     for subgroup in outcome.iter(outcome.tag.replace('_OUTCOME', '_SUBGROUP')):
+        label = (subgroup.findtext('NAME') or '').strip()
         for record in subgroup.iter(tag):
-            subgroups[id(record)] = subgroup.findtext('NAME', 'Unnamed subgroup')
+            subgroups[id(record)] = label or None
     if subgroups:
         sheet.covariates.append({'id': uuid.uuid4().hex, 'name': outcome.findtext('SUBGROUP_LABEL', 'Subgroup'), 'data_type': 4})
     for record in records:
@@ -176,7 +177,7 @@ def _append_comparative_rows(sheet, outcome, records, studies, tag, fields, name
             row = _raw_row(sheet, record, study, names, fields)
             sheet.rows.append(row)
         if subgroups:
-            row.covariate_values[sheet.covariates[0]['id']] = subgroups.get(id(record), '')
+            row.covariate_values[sheet.covariates[0]['id']] = subgroups.get(id(record))
 
 
 def _import_outcome(dataset, comparison, outcome, multiple_comparisons, studies, differences, not_imported):

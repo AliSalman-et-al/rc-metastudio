@@ -9,7 +9,7 @@ from PyQt6 import QtCore, QtWidgets
 def check(app, window, root, work, record):
     from rc_metastudio.project.adapter import dataset_to_project
 
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     tabs = window.sheet_tabs
     assert tabs.count() >= 2
     tabs.setCurrentIndex(1)

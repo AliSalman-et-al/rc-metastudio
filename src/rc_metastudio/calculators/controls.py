@@ -8,6 +8,9 @@ from weakref import WeakKeyDictionary
 from PyQt6.QtCore import QSignalBlocker, Qt
 from PyQt6.QtGui import QBrush, QColor, QPainter, QPaintEvent
 from PyQt6.QtWidgets import (
+    QBoxLayout,
+    QDialog,
+    QLabel,
     QLineEdit,
     QSizePolicy,
     QStyle,
@@ -17,9 +20,19 @@ from PyQt6.QtWidgets import (
 )
 from rc_metastudio.analysis.validation import EMPTY_VALS, validate_confidence_interval_order
 from rc_metastudio import qt_text
+from rc_metastudio.qt_layout import configure_context_label
 
 
 CALC_NUM_DIGITS = 4
+
+
+def add_study_context(dialog: QDialog, layout: QBoxLayout, study_name: str) -> None:
+    if study_name:
+        dialog.setWindowTitle(f"Study data — {study_name}")
+        label = QLabel(study_name, dialog)
+        label.setTextFormat(Qt.TextFormat.PlainText)
+        configure_context_label(label)
+        layout.insertWidget(0, label)
 
 
 

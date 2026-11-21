@@ -61,8 +61,8 @@ def _validate_failed_analysis(failure: dict[str, object]) -> None:
         "configuration_visible": True,
         "progress_deleted": True,
         "error_visible": True,
-        "error_message": "native backend failure\nChange the method or study values identified above.",
-        "error_details": "native backend failure",
+        "error_message": "native backend failure",
+        "error_details": "RuntimeError: native backend failure",
         "details_visible": True,
         "run_enabled": True,
     }:
@@ -212,7 +212,7 @@ def main() -> int:
         app.processEvents()
 
     def make_configuration() -> analysis_setup_dialog.AnalysisSetupDialog:
-        project = document_to_runtime_project(load_project(repo_root / "sample_projects/amino.rcms"))
+        project = document_to_runtime_project(load_project(repo_root / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms"))
         model = DatasetTableModel(dataset=project.dataset, add_blank_study=False)
         if project.current_sheet_id is not None:
             model.set_current_sheet(project.current_sheet_id)

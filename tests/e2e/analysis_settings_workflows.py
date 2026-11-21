@@ -3,7 +3,7 @@
 import hashlib
 from pathlib import Path
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, sip
 from collections.abc import Iterable
 from typing import cast
 from xml.etree import ElementTree as ET
@@ -36,11 +36,11 @@ def run(app, window, root, record, analyze):
         assert len(paths) == 2, paths
         return {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
 
-    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
     first_plot = plot_hashes(view)
     first_numbers = parsed_numeric_sections(view.results)
-    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     window.action_go.trigger()
     app.processEvents()
     fresh_dialog = setup()
@@ -59,9 +59,10 @@ def run(app, window, root, record, analyze):
         "".join(node.itertext()) for node in ET.parse(fresh_svg).iter("{http://www.w3.org/2000/svg}text")
     }
     fresh_view.close()
-    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     assert view.result_identity.isVisible()
-    assert view.windowTitle() == "Meta-analysis — clinical failure · Binary · Odds ratio"
+    assert view.windowTitle().startswith("Meta-analysis — clinical failure · Binary · Odds ratio")
+    assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
     report = view.manuscript_text.toPlainText()
     from tests.e2e.report_retention import assert_report
     assert_report(view)
@@ -81,7 +82,8 @@ def run(app, window, root, record, analyze):
     key_clicks(dialog.x_lbl_le, "[default]")
     literal_view = submit(dialog)
     assert not first_plot.keys() & plot_hashes(literal_view).keys()
-    assert plot_hashes(view) == first_plot
+    assert sip.isdeleted(view) or not view.isVisible()
+    assert {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in first_plot} == first_plot
     literal_svg = next(iter(literal_view.results.display_images.values()))
     captions = {"".join(node.itertext()): node for node in ET.parse(literal_svg).iter("{http://www.w3.org/2000/svg}text")}
     assert "[default]" in captions, captions.keys()
@@ -92,8 +94,9 @@ def run(app, window, root, record, analyze):
     record("review-literal-axis-label", dialog, caption=dialog.x_lbl_le.text(),
            svg_caption=ET.tostring(captions["[default]"], encoding="unicode"))
     dialog.reject()
+    assert literal_view.isVisible()
     literal_view.close()
-    app.processEvents()
+    view = analyze(app, window, "binary.random")
     baseline = parsed_numeric_sections(view.results)
     params_path = next(iter(view.params_paths.values()))
     load_saved_analysis(params_path)
@@ -116,7 +119,7 @@ def run(app, window, root, record, analyze):
     record("review-report-top", view, text=report)
 
     # A result belongs to its original input even after the main window opens another project.
-    assert window.open(str(root / "sample_projects/continuous.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     for style, order in (("Default", "year"), ("RevMan", "year"), ("RevMan", "effect"), ("RevMan", "weight"), ("RevMan", "table")):
         view.change_settings_action.trigger()
         app.processEvents()
@@ -152,7 +155,8 @@ def run(app, window, root, record, analyze):
         axis_titles = ["".join(node.itertext()) for node in nodes
                        if float(node.attrib["y"]) > tick_baseline and "".join(node.itertext()) == "Odds ratio"]
         assert len(axis_titles) == 1 and "Odds ratio (log scale)" not in captions, captions
-        changed.close()
+        assert sip.isdeleted(view) or not view.isVisible()
+        view = changed
         app.processEvents()
     view.change_settings_action.trigger()
     app.processEvents()
@@ -182,9 +186,8 @@ def run(app, window, root, record, analyze):
     record("review-replaced-project-edit-stays-local", changed, project=str(project_path),
            effect_direction=old_direction, plots={"Edited forest plot": edited_svg})
     changed.close()
-    view.close()
 
-    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
     for confidence in (90, 99):
         view.change_settings_action.trigger()
@@ -217,7 +220,7 @@ def run(app, window, root, record, analyze):
         record(f"review-confidence-{confidence}-kh", changed,
                methods=changed.manuscript.methods, df=df,
                plots=dict(changed.results.display_images))
-        view.close()
+        assert sip.isdeleted(view) or not view.isVisible()
         view = changed
     view.close()
 
@@ -292,7 +295,7 @@ def run(app, window, root, record, analyze):
     record('review-package-convergence-error', failed, details=failed.analysis_error_details.toPlainText())
     failed.reject()
     changed.close()
-    view.close()
+    assert sip.isdeleted(view) or not view.isVisible()
 
     window.action_loo_ma.trigger()
     app.processEvents()

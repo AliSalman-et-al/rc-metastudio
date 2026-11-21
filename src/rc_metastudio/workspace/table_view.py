@@ -75,8 +75,12 @@ class DatasetTableView(QtWidgets.QTableView):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell or use the row calculator. Ctrl+Tab leaves the grid.")
+        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell, F4 to open the study calculator or Ctrl+Tab to leave the grid.")
 
+        self.study_calculator_action = QAction("Study calculator…", self)
+        self.study_calculator_action.setShortcut("F4")
+        self.study_calculator_action.setEnabled(False)
+        connect_action(self.study_calculator_action, lambda: self.row_header_clicked(self.currentIndex().row()))
         self.edit_transaction: Callable[[Callable[[], None]], None] | None = None
 
         header = required(self.horizontalHeader(), "workspace column header")
@@ -124,6 +128,7 @@ class DatasetTableView(QtWidgets.QTableView):
         finally:
             self._column_widths.end_schema_change()
         self._connect_column_model(model)
+        self.refresh_study_calculator()
         self.synchronize_column_widths()
 
     def restore_model(self, model):
@@ -131,6 +136,23 @@ class DatasetTableView(QtWidgets.QTableView):
         self._disconnect_column_model()
         QTableView.setModel(self, model)
         self._connect_column_model(model)
+        self.refresh_study_calculator()
+
+    def currentChanged(self, current, previous):
+        super().currentChanged(current, previous)
+        self.refresh_study_calculator()
+
+    def refresh_study_calculator(self):
+        self.study_calculator_action.setEnabled(self._can_open_study_calculator(self.currentIndex().row()))
+
+    def _can_open_study_calculator(self, row: int) -> bool:
+        from rc_metastudio import r_runtime
+        model = QTableView.model(self)
+        return (
+            r_runtime.is_ready() and model is not None
+            and 0 <= row < len(self.model().get_studies(False))
+            and bool(self.model()._study_for_row(row).label.strip())
+        )
 
     def _connect_column_model(self, model):
         if model is None:
@@ -183,7 +205,10 @@ class DatasetTableView(QtWidgets.QTableView):
         if event is None:
             return
         context_menu = QMenu(self)
-        study_index = self.rowAt(event.pos().y())
+        clicked = self.indexAt(event.pos())
+        if event.reason() == QtGui.QContextMenuEvent.Reason.Keyboard:
+            clicked = self.currentIndex()
+        study_index = clicked.row()
 
         sheet = self.model().current_sheet
         if sheet is None or not 0 <= study_index < len(sheet.rows):
@@ -214,6 +239,12 @@ class DatasetTableView(QtWidgets.QTableView):
         context_menu.addAction(action)
 
         context_menu.addSeparator()
+        calculator_action = required(context_menu.addAction(self.study_calculator_action.text()), "study calculator action")
+        calculator_action.setShortcut(self.study_calculator_action.shortcut())
+        calculator_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
+        calculator_action.setShortcutVisibleInContextMenu(True)
+        calculator_action.setEnabled(self._can_open_study_calculator(study_index))
+        connect_action(calculator_action, lambda: self.row_header_clicked(study_index))
         context_menu.addAction(delete_action)
         app_error_handler.popup_context_menu(
             context_menu, event.globalPos(), parent=self, event=event
@@ -429,10 +460,7 @@ class DatasetTableView(QtWidgets.QTableView):
         self.paste_from_clipboard(upper_left_index)
 
     def row_header_clicked(self, row):
-        from rc_metastudio import r_runtime
-        if not r_runtime.is_ready():
-            return
-        if row > len(self.model().get_studies(False)) - 1:
+        if not self._can_open_study_calculator(row):
             return
 
         signal_blocker = QSignalBlocker(self.vert_header)
@@ -445,6 +473,7 @@ class DatasetTableView(QtWidgets.QTableView):
             current_effect = self.model().current_effect
             arm_key = self.model().get_current_arm_key()
             data_type = self.model().get_current_data_type()
+            study_name = self.model()._study_for_row(row).label
 
             if data_type == "binary":
                 form = binary_data_dialog.BinaryDataDialog(
@@ -454,10 +483,11 @@ class DatasetTableView(QtWidgets.QTableView):
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
+                    study_name=study_name,
                 )
             elif data_type in ("time_to_event", "event_rates"):
                 from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
-                form = RatioDataDialog(analysis_unit, arm_names, current_effect, parent=self)
+                form = RatioDataDialog(analysis_unit, arm_names, current_effect, parent=self, study_name=study_name)
             elif data_type == "continuous":
                 form = continuous_data_dialog.ContinuousDataDialog(
                     analysis_unit,
@@ -466,6 +496,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     current_effect,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
+                    study_name=study_name,
                 )
             else:
                 form = diagnostic_data_dialog.DiagnosticDataDialog(
@@ -474,9 +505,8 @@ class DatasetTableView(QtWidgets.QTableView):
                     arm_key,
                     confidence_level=self.model().get_confidence_level(),
                     parent=self,
+                    study_name=study_name,
                 )
-            study_name = qt_text.to_native_text(self.model().data(self.model().index(row, self.model().NAME)))
-            form.setWindowTitle(f"Study data — {study_name}")
             if form.exec():
                 model = self.model()
 

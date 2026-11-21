@@ -14,7 +14,7 @@ from tests.python.gui.qt_test_support import mouse_click, key_click, metric_acti
 
 def table_editing_case(app, window, work, root, record, case):
     """Exercise table transactions; the clipboard substitute never touches the OS."""
-    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     table = window.tableView
     role = QtCore.Qt.ItemDataRole.EditRole
 
@@ -97,9 +97,12 @@ def table_editing_case(app, window, work, root, record, case):
         dataset = window.model.dataset
         dirty = window.workspace.is_dirty
         with patch.object(QtWidgets.QMessageBox, "warning") as error:
-            duplicate = window.model.current_sheet.rows[2].label
-            assert not table.paste_contents(window.model.index(0, window.model.NAME), [["Changed", "2000"], [duplicate, "2001"]])
-        assert "already exists" in error.call_args.args[2]
+            duplicate = window.model.current_sheet.rows[2]
+            assert not table.paste_contents(
+                window.model.index(0, window.model.NAME),
+                [["Changed", "2000"], [duplicate.label, str(duplicate.year or "")]],
+            )
+        assert "already exists in row 3" in error.call_args.args[2]
         assert window.model.dataset is dataset
         assert window.workspace.is_dirty == dirty
         assert cells() == before
@@ -191,7 +194,7 @@ def _run(app, window, work, root, record, analyze):
     record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):
         table_editing_case(app, window, work, root, record, case)
-    assert window.open(str(root / "sample_projects/amino.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     year = str(window.model.data(window.model.index(0, window.model.YEAR)))
     assert window.tableView.columnWidth(window.model.YEAR) >= window.tableView.fontMetrics().horizontalAdvance(year) + 8
     lower_column = window.model.OUTCOMES[1]
@@ -209,11 +212,17 @@ def _run(app, window, work, root, record, analyze):
     assert setup.analysis_error_label.isVisible()
     assert setup.analysis_error_toggle.hasFocus()
     assert "Unknown 'method' specified" in setup.analysis_error_label.text()
-    assert "Change the method" in setup.analysis_error_label.text()
     assert setup.analysis_error_details.isHidden()
     mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert setup.analysis_error_details.isVisible()
     assert "Unknown 'method' specified" in setup.analysis_error_details.toPlainText()
+    app.processEvents()
+    details = setup.analysis_error_details
+    assert details.height() <= details.fontMetrics().lineSpacing() * 8 + 2 * details.frameWidth() + 8
+    viewport = required(setup.content_scroll_area.viewport())
+    advanced = QtCore.QRect(setup.advanced_toggle.mapTo(viewport, QtCore.QPoint()), setup.advanced_toggle.size())
+    assert viewport.rect().contains(advanced), (viewport.rect(), advanced)
+    record("ux-expanded-analysis-error", setup, advanced=advanced.getRect(), details_height=details.height())
     mouse_click(setup.analysis_error_toggle, QtCore.Qt.MouseButton.LeftButton)
     assert not any(isinstance(widget, QtWidgets.QMessageBox) and widget.isVisible() for widget in app.topLevelWidgets())
     record("ux-inline-analysis-error", setup, message=setup.analysis_error_label.text())
@@ -299,9 +308,10 @@ def _run(app, window, work, root, record, analyze):
         for role in (QtGui.QPalette.ColorRole.WindowText, QtGui.QPalette.ColorRole.Text, QtGui.QPalette.ColorRole.ButtonText):
             palette.setColor(role, QtGui.QColor(text))
         palette.setColor(QtGui.QPalette.ColorRole.Base, QtGui.QColor(base))
+        palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(background))
         app.setPalette(palette)
         for page in ("forest", "manuscript", "tables"):
-            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Tables"}[page])
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Data tables (CSV)"}[page])
             view.nav_tree.setCurrentItem(item)
             app.processEvents()
             app.processEvents()
@@ -592,7 +602,7 @@ def _run(app, window, work, root, record, analyze):
     from analysis_matrix import run as matrix
     from rc_metastudio.results.plot_editor import EditPlotDialog
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
     window.effect_direction_menu.aboutToShow.emit()
     window.effect_direction_menu.actions()[1].trigger()
     continuous = analyze(app, window, 'continuous.random')
@@ -611,7 +621,7 @@ def _run(app, window, work, root, record, analyze):
     record('continuous-favours-whole-words', continuous, directions=direction_lines)
     close_result(continuous)
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/amino.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     bmj = analyze(app, window, 'binary.random')
     def bmj_style(dialog):
         dialog.style_cbo.setCurrentText('BMJ')
@@ -630,7 +640,7 @@ def _run(app, window, work, root, record, analyze):
     close_result(bmj)
     window.workspace.mark_saved()
     subgroup = matrix(app, window, 'analysis-amino-binary-subgroup', record, keep_results=True)
-    tables_item = next(item for item in subgroup.nav_tree.findItems('Tables', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
+    tables_item = next(item for item in subgroup.nav_tree.findItems('Data tables (CSV)', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
     subgroup.nav_tree.setCurrentItem(tables_item)
     app.processEvents()
     for index in range(subgroup.table_selector.count()):
@@ -691,7 +701,7 @@ def workspace_safety_case(app, window, work, root, record, case):
     from rc_metastudio.importing.tabular import CsvImportResult
     from rc_metastudio.workspace.table_model import DatasetTableModel
     source = work / 'source.rcms'
-    source.write_bytes((root / 'sample_projects/amino.rcms').read_bytes())
+    source.write_bytes((root / 'tests/fixtures/desktop-projects/amino.rcms').read_bytes())
     original = source.read_bytes()
     assert window.open(str(source), raise_on_error=True)
     model = window.model

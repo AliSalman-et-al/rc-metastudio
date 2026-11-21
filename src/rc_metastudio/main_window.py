@@ -5,6 +5,7 @@
 from __future__ import annotations
 from rc_metastudio.domain_ids import ArmId, SheetId
 
+import json
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -89,6 +90,10 @@ from rc_metastudio.workspace.session import WorkspaceSession
 DEFAULT_DATASET_NAME = "untitled_dataset"
 
 
+
+
+def _is_bundled_sample(path: str | Path) -> bool:
+    return Path(path).resolve().is_relative_to(Path(get_sample_projects_path()).resolve())
 
 
 def _resolve_open_file_path(file_path):
@@ -293,11 +298,30 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_new_dataset.setText("New project…")
         qt_layout.configure_main_toolbar(self.toolBar)
         self.analysis_button.setAccessibleName("Analyses")
-        self.start_page = start_page.StartPage(self.action_new_dataset, self.action_import_csv, self.action_open, self)
+        self.sample_menu = QtWidgets.QMenu("Open sample project", self)
+        sample_root = Path(get_sample_projects_path())
+        manifest = sample_root / "manifest.json"
+        entries = {}
+        if manifest.is_file():
+            entries = {item["file"]: item for item in json.loads(manifest.read_text(encoding="utf-8"))["projects"]}
+        order = {name: index for index, name in enumerate(entries)}
+        for path in sorted(sample_root.glob("*.rcms"), key=lambda path: (order.get(path.name, len(order)), path.name.casefold())):
+            entry = entries.get(path.name, {})
+            caption = entry.get("scientific_name") or path.stem
+            description = entry.get("description")
+            action = QAction(f"{caption} — {description}" if description else caption, self.sample_menu)
+            action.setData(path.name)
+            self.sample_menu.addAction(action)
+            connect_action(action, lambda sample=path: self.open(file_path=str(sample)))
+        self.sample_menu.setEnabled(bool(self.sample_menu.actions()))
+        self.start_page = start_page.StartPage(
+            self.action_new_dataset, self.action_import_csv, self.action_open, self,
+            sample_menu=self.sample_menu,
+        )
         self.verticalLayout_3.insertWidget(0, self.start_page)
         self.menu_file.clear()
         for action in (self.action_new_dataset, self.action_open,
-                       self.action_open_recent_2.menuAction(), self.action_import_csv):
+                       self.action_open_recent_2.menuAction(), self.sample_menu.menuAction(), self.action_import_csv):
             self.menu_file.addAction(action)
         self.menu_file.addSeparator()
         self.menu_file.addActions([self.action_save, self.action_save_as])
@@ -310,6 +334,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.verticalLayout.replaceWidget(self.tableView, table_view)
         self.tableView.deleteLater()
         self.tableView = table_view
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.tableView.study_calculator_action)
         self.tableView.restore_column_widths(load_main_column_widths())
 
         self.confidence_button = QtWidgets.QPushButton(self.statusbar)
@@ -509,6 +535,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_project_identity(self, state=None):
         path = self.workspace.path
         name = path.name if path is not None else "Untitled project"
+        if path is not None and _is_bundled_sample(path):
+            name = f"{path.stem.partition(' - ')[2] or path.stem} (sample)"
         dirty = self.workspace.is_dirty
         self.setWindowTitle(f"{name}{' *' if dirty else ''} — RC MetaStudio")
         self.setWindowFilePath(str(path) if path is not None else "")
@@ -516,6 +544,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.statusbar.showMessage(state, 4000)
 
     def refresh_analysis_actions(self) -> None:
+        self.tableView.refresh_study_calculator()
         included = sum(not study.manually_excluded for study in self.model.get_studies())
         r_ready = r_runtime.is_ready()
         can_analyze = r_ready and included > 0
@@ -764,7 +793,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             else:
                 view.replace_trial_sequential_result(result, manuscript)
 
-        def reopen(_plot_parameters: dict[str, object]) -> None:
+        def reopen(_plot_parameters: dict[str, object], _origin: QtWidgets.QWidget | None = None) -> None:
             form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
                 model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
             )
@@ -1508,24 +1537,33 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def save(self, save_as=False, *, destination: str | Path | None = None):
         if destination is None:
-            destination = self.workspace.path
-            if destination is None or save_as:
-                suggested = str(destination) if destination is not None else os.path.join(
-                    get_user_documents_path(), self.model.get_name()
-                )
+            path = self.workspace.path
+            sample = path is not None and _is_bundled_sample(path)
+            if path is None or sample or save_as:
+                if path is None or sample:
+                    suggested = os.path.join(get_user_documents_path(), path.name if path else self.model.get_name())
+                else:
+                    suggested = str(path)
                 selected, _ = QFileDialog.getSaveFileName(
                     parent=self,
-                    caption="Save project",
+                    caption="Save project as" if path is not None else "Save project",
                     directory=suggested,
                     filter="RC MetaStudio projects (*.rcms)",
                 )
                 if not selected:
                     return None
                 destination = selected
+            else:
+                destination = path
 
         destination = str(destination)
         if not destination.lower().endswith(".rcms"):
             destination += ".rcms"
+
+        if _is_bundled_sample(destination):
+            QMessageBox.warning(self, "Choose a different location",
+                                "Save your project outside the bundled sample projects folder.")
+            return False
 
         durability_error = None
         try:

@@ -3,7 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets, sip
 from tests.e2e.plot_observations import load_saved_analysis
 
 
@@ -38,7 +38,6 @@ def run_coefficients(app, window, work, record):
         }
 
     original_plots = plot_hashes(view)
-    original_report = view.manuscript.results
     view.change_settings_action.trigger()
     app.processEvents()
     dialog = next(
@@ -52,13 +51,14 @@ def run_coefficients(app, window, work, record):
         if isinstance(widget, results_window.ResultsWindow) and widget.isVisible() and widget is not view
     )
     rerun_plots = plot_hashes(rerun)
+    original_after = {path: hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in original_plots}
     record("coefficient-rerun-retains-original-plots", rerun,
-           original=original_plots, original_after=plot_hashes(view), rerun=rerun_plots)
+           original=original_plots, original_after=original_after, rerun=rerun_plots)
     assert len(original_plots) == len(rerun_plots) == 2
     assert not original_plots.keys() & rerun_plots.keys()
-    assert plot_hashes(view) == original_plots
-    assert view.manuscript.results == original_report
-    rerun.close()
+    assert original_after == original_plots
+    assert sip.isdeleted(view) or not view.isVisible()
+    view = rerun
 
     report = dict(view.texts)
     def record_bottom(action, **observations):

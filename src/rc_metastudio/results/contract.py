@@ -144,6 +144,7 @@ class AnalysisResult:
     manuscript_favours: tuple[str, ...] = ()
     manuscript_model_info: tuple[tuple[str, str], ...] = ()
     inference_methods: tuple[str, ...] = ()
+    contributing_studies: int | None = None
 
     def __post_init__(self) -> None:
         if len({section.semantic_id for section in self.sections}) != len(self.sections) or len(

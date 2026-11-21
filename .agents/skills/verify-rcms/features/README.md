@@ -11,6 +11,15 @@ Read the relevant feature before driving it. Start each scenario in the fresh ap
 | [Results, plot editing, and export](plots.md) | `plot-edit`, the general `plot-workflow-*` editor and decoded-export drives, and dedicated trial sequential and MH risk-difference drives | Remaining appearance controls, failed regeneration/IO recovery, parameterless PNG, native fractional DPI and long/narrow layouts |
 | [Small-study effects analysis](small-study-effects.md) | `small-study-effects`, `small-study-binary-extended`, `small-study-continuous-extended`, `small-study-diagnostic` | Low-heterogeneity Harbord; MD asymmetry; descriptive-only metrics; eligibility/error recovery; direct numerical asymmetry oracles |
 
+## Batch A journeys
+
+`polish-journeys` drives sample Save As, named incomplete studies, calculator
+entry from F4 and the grid menu, mapped CSV conflicts and repeated names across
+years, HR/IRR breadcrumbs, Results replacement and copy feedback. It compares
+Aminoglycosides Mantel–Haenszel and Peto counts with direct metafor fits. Use
+`--native` for the restored frame. `rm5-import` covers the inline missing subgroup
+and recovery after assignment.
+
 ## UX effort scoreboard
 
 `ui-design-direction` exercises Ctrl+M and Ctrl+1, lossless ratio input,

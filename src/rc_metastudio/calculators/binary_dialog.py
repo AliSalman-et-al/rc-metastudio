@@ -63,9 +63,12 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         confidence_level=None,
         calculator: CalculatorService | None = None,
         parent=None,
+        *,
+        study_name: str = "",
     ):
         super(BinaryDataDialog, self).__init__(parent)
         self.setupUi(self)
+        calculator_controls.add_study_context(self, self.dialog_layout, study_name)
         self.dialog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._configure_raw_data_table()
         self._configure_focus_revelation()

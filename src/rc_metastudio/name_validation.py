@@ -38,3 +38,13 @@ def validate_unique_name(entity, value, existing_names):
     if name in existing_names:
         raise ValueError(duplicate_message(entity, name))
     return name
+
+
+def study_identity(name: object, year: int | None) -> tuple[str, int]:
+    return normalize_name(name), year or 0
+
+
+def study_conflict(identity: tuple[str, int], row_number: int) -> str:
+    name, year = identity
+    display = f"‘{name}’ ({year})" if year else f"‘{name}’ with no year"
+    return f"Study {display} already exists in row {row_number}."

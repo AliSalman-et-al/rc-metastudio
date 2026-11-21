@@ -136,7 +136,7 @@ _CONTINUOUS_ONE_ARM_METRICS = tuple(analysis_catalog.CONTINUOUS_ONE_ARM_METRICS)
 _CONTINUOUS_TWO_ARM_METRICS = tuple(analysis_catalog.CONTINUOUS_TWO_ARM_METRICS)
 _RATIO_METRICS = ("HR", "IRR")
 _TWO_ARM_PROPORTIONS = DatasetKind(
-    "Two-arm proportions", "binary", "proportions", "two", "OR",
+    "Two-arm binary", "binary", "proportions", "two", "OR",
     tuple(analysis_catalog.BINARY_TWO_ARM_METRICS), "twoarm_proportions_Button", "two-arm-proportions.svg",
 )
 _HAZARD_RATIO = DatasetKind(
@@ -432,7 +432,6 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
         data_type = required(dataset_info["data_type"], "import data type")
         metric_choices = dataset_info["metric_choices"]
         default_effect = dataset_info["effect"]
-        self.setSubTitle(self.wizard().task_label + " · " + {"binary": "Two-arm binary" if dataset_info["arms"] == "two" else "Single-arm proportion", "continuous": "Continuous", "diagnostic": "Diagnostic accuracy", "time_to_event": "Time-to-event", "event_rates": "Event rates"}[data_type])
         self.metric_cbo_box.blockSignals(True)
         self.metric_cbo_box.clear()
         self.metric_cbo_box.blockSignals(False)
@@ -466,6 +465,15 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
 
     def _update_metric_description(self):
         metric = self.metric_cbo_box.currentData()
+        info = self.wizard().require_dataset_info()
+        label = {
+            "binary": "Two-arm binary" if info["arms"] == "two" else "Single-arm proportion",
+            "continuous": "Continuous",
+            "diagnostic": "Diagnostic accuracy",
+            "time_to_event": "Time-to-event",
+            "event_rates": "Event rates",
+        }.get(info["data_type"], "")
+        self.setSubTitle(f"{self.wizard().task_label} · {label}")
         definitions = {
             "OR": "Odds in the intervention arm divided by odds in the control arm.",
             "RR": "Risk in the intervention arm divided by risk in the control arm.",
@@ -713,12 +721,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         style_inline_error(self.import_status)
         if not self.file_path:
             return False
+        error_tab = self.preview_grp_box
         try:
             headers, rows = self._preview_source()
             info = self.wizard().require_dataset_info()
             data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
             columns = sheet_columns(data_type, info["sub_type"])
+            error_tab = self.mapping_table
             mapping = self._selected_mapping(columns, single_arm=info["arms"] == "one")
+            error_tab = self.preview_grp_box
             notices: list[str] = []
             result = self._normalize_preview(headers, rows, mapping, columns, notices)
             if not result.rows:
@@ -727,7 +738,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             self._show_ready_preview(result, columns, notices)
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
-            self.import_tabs.setCurrentWidget(self.mapping_table)
+            self.import_tabs.setCurrentWidget(error_tab)
             return False
         except Exception as error:
             self.import_status.setText(f"Could not preview the file: {error}")

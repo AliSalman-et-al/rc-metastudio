@@ -17,6 +17,7 @@ from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
+from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QMarginsF, QRectF, Qt
 from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
@@ -39,7 +40,7 @@ if TYPE_CHECKING:
 class AnalysisResultHandler(Protocol):
     def __call__(
         self, result: "AnalysisResult", /, *, source_sheet: "Sheet | None" = None,
-        change_settings: Callable[[dict[str, object]], None] | None = None,
+        change_settings: Callable[[dict[str, object], QWidget], None] | None = None,
         manuscript: "ManuscriptReport | None" = None,
     ) -> object: ...
 

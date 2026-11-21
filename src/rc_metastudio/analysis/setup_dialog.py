@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Method-selection dialog and analysis specification builder."""
 
-from rc_metastudio.qt_layout import DisclosureButton, style_inline_error, add_color_swatch, align_field_columns
-from PyQt6 import QtCore, QtWidgets
+from rc_metastudio.qt_layout import DisclosureButton, configure_context_label, style_inline_error, add_color_swatch, align_field_columns
+from PyQt6 import QtCore, QtWidgets, sip
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QResizeEvent, QCloseEvent, QHideEvent, QShowEvent, QPalette
 from PyQt6.QtWidgets import (
@@ -55,7 +55,10 @@ from rc_metastudio.results.plot_text import (
     plot_text_value,
     set_plot_text_value,
 )
-from rc_metastudio.analysis.catalog import ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS, REITSMA_METHOD
+from rc_metastudio.analysis.catalog import (
+    ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS,
+    RATIO_DATA_TYPES, RAW_COUNT_METHODS, REITSMA_METHOD,
+)
 from rc_metastudio.analysis.validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, parse_plot_bound, is_valid_plot_tick_list, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
 from rc_metastudio.settings import analysis_output_path
 from rc_metastudio.qt_object_guard import required
@@ -202,13 +205,19 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         *,
         on_result: "AnalysisResultHandler | None" = None,
         source_sheet: "Sheet | None" = None,
+        replaces: QtWidgets.QWidget | None = None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
         self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
         self._on_result = on_result
+        self._replaces = replaces
         self._rerun_source_sheet = source_sheet
         self.setupUi(self)
+        self.outcome_label = QLabel(model.current_outcome_name, self)
+        self.outcome_label.setTextFormat(Qt.TextFormat.PlainText)
+        configure_context_label(self.outcome_label)
+        self.content_scroll_layout.insertWidget(0, self.outcome_label)
         self._initialize_controls(external_params, analysis_type)
         self._initialize_analysis_state(
             model,
@@ -357,7 +366,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         details = copy.deepcopy(self.diagnostic_analysis_details)
         confidence = self.current_param_vals.get("conf.level", self.confidence_level)
 
-        def reopen(plot_params=None):
+        def reopen(plot_params: dict[str, object], origin: QtWidgets.QWidget):
             restored = copy.deepcopy(saved)
             parameters = copy.deepcopy(saved_parameters)
             if plot_params:
@@ -368,7 +377,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
                 analysis_service=service, initial_settings=restored, on_result=on_result,
-                source_sheet=source_sheet)
+                source_sheet=source_sheet, replaces=origin)
             form.show()
 
         return reopen
@@ -553,6 +562,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                   else layout.totalSizeHint().height())
         height += required(self.specs_tab.tabBar(), "analysis tabs").sizeHint().height()
         height += 2 * required(self.specs_tab.style(), "analysis tab style").pixelMetric(QtWidgets.QStyle.PixelMetric.PM_DefaultFrameWidth)
+        height += self.outcome_label.heightForWidth(self.specs_tab.width()) + self.content_scroll_layout.spacing()
         if hasattr(self, "analysis_error_panel") and not self.analysis_error_panel.isHidden():
             height += self.analysis_error_panel.sizeHint().height() + self.content_scroll_layout.spacing()
         return height
@@ -776,7 +786,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             )
             return self._prepare_analysis_result(result)
 
-        self._run_analysis(execute_regression)
+        self._run_analysis(execute_regression, regression_request=request)
 
     def _confirm_excluded_studies(self, names):
         excluded = ", ".join(names)
@@ -878,23 +888,35 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _prepare_analysis_result(self, result: AnalysisResult) -> AnalysisResult:
         return normalize_analysis_result(self._with_result_identity(result))
 
-    def _run_analysis(self, regression: Callable[[], AnalysisResult] | None = None):
+    def _run_analysis(
+        self, regression: Callable[[], AnalysisResult] | None = None, *,
+        regression_request: analysis_adapter.AnalysisRequest | None = None,
+    ):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
-        repeated = self.analysis_type in {"cumulative", "leave-one-out"}
-        bar = progress_dialog.AnalysisProgressDialog(
-            self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
-        )
-        bar.show()
-        bar.repaint()
+        bar = None
         try:
             from rc_metastudio.results.report import ManuscriptReport
 
-            bar.start_tracking()
             source_sheet = self._rerun_source_sheet or self.model.current_sheet
             requests = self.analysis_requests() if regression is None else ()
+            missing_inputs = self._missing_analysis_inputs(
+                (regression_request,) if regression_request is not None else requests
+            )
+            if missing_inputs:
+                self._show_analysis_error(missing_inputs)
+                return
+            repeated = self.analysis_type in {"cumulative", "leave-one-out"}
+            bar = progress_dialog.AnalysisProgressDialog(
+                self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
+            )
+            bar.show()
+            bar.repaint()
+            bar.start_tracking()
             result = self._execute_requests(requests) if regression is None else regression()
+            if bar.cancelled:
+                return
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
             manuscript = ManuscriptReport.from_result(result)
             change_settings = self._change_settings_callback(source_sheet)
@@ -902,29 +924,101 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if on_result is None:
                 raise RuntimeError("analysis configuration has no results owner")
         except Exception as error:
-            if bar.cancelled:
+            if bar is not None and bar.cancelled:
                 return
             app_error_handler.log_exception(type(error), error, error.__traceback__)
-            self.analysis_error_label.setText(
-                "No studies are included. Select Include for at least one study with complete data."
-                if not self.model.get_studies()
-                else re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
-                + "\nChange the method or study values identified above."
-            )
-            self.analysis_error_details.setPlainText(str(error))
-            self.analysis_error_panel.show()
-            self.analysis_error_label.show()
-            self._resize_on_reflow = True
-            self._schedule_local_reflow()
-            self.activateWindow()
-            self.analysis_error_toggle.setFocus()
+            message = re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
+            message = re.sub(r"(?m)^\w*(?:Error|Exception):\s*", "", message).strip()
+            # The input precheck should make this fallback unreachable for missing inputs.
+            if "Processing terminated since k = 0" in message:
+                message = "No study could contribute to this analysis. Check the study values and selected method."
+            self._show_analysis_error(message or "The analysis could not be completed.",
+                                      f"{type(error).__name__}: {error}")
             return
         finally:
-            progress_dialog.dispose(bar)
+            if bar is not None:
+                progress_dialog.dispose(bar)
         if source_sheet is not None and pooled_fit is not None:
             source_sheet.last_meta_analysis = pooled_fit
         self.done(QDialog.DialogCode.Accepted.value)
-        on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
+        shown = on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
+        if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
+            self._replaces.close()
+
+    def _show_analysis_error(self, message: str, details: str = "") -> None:
+        self.analysis_error_label.setText(message)
+        self.analysis_error_details.setPlainText(details)
+        self.analysis_error_toggle.setVisible(bool(details))
+        self.analysis_error_panel.show()
+        self.analysis_error_label.show()
+        self._resize_on_reflow = True
+        self._schedule_local_reflow()
+        self.activateWindow()
+        if details:
+            self.analysis_error_toggle.setFocus()
+
+    def _missing_analysis_inputs(self, requests: Sequence[analysis_adapter.AnalysisRequest]) -> str:
+        studies = self._manuscript_studies()
+        if not studies:
+            return ("No studies are included. Select Include for at least one study with complete data."
+                    if not self.model.get_studies() else "No included study has values for the selected covariates.")
+        selected_ids = {study.id for study in studies}
+        ratio_input = self.model.get_current_data_type(get_str=False) in RATIO_DATA_TYPES
+        arm_inputs = {
+            "binary": "events and totals",
+            "continuous": "sample size, mean, and standard deviation",
+            "event_rates": "events and person-time",
+        }.get(self.data_type)
+        for request in requests:
+            metric = request.metric
+            raw_required = request.method in RAW_COUNT_METHODS
+            fields = [column for column in self.model.columns.raw if not column.hidden]
+            if metric in ONE_ARM_METRICS:
+                fields = [column for column in fields if column.arm_index in (None, 0)]
+            missing = []
+            for index, study in enumerate(self.model.current_sheet.rows):
+                if study.id not in selected_ids:
+                    continue
+                raw = self.model.get_current_raw_data_for_study(index)
+                absent = [column for position, column in enumerate(fields)
+                          if position >= len(raw) or raw[position] in (None, "")]
+                has_raw = bool(fields) and not absent
+                has_effect = self.model.study_has_point_est(index, effect=metric)
+                if ratio_input:
+                    has_raw = (
+                        has_raw and has_effect
+                        and study.analysis_unit.ratio_input(self.model.arm_names).selected_source(raw, metric=metric) == "raw"
+                    )
+                if has_raw or (has_effect and not raw_required):
+                    break
+                if len(missing) == 3:
+                    continue
+                missing_fields = []
+                if arm_inputs and absent and absent == fields and {column.arm_index for column in fields} == {0, 1}:
+                    missing_fields.append(f"{arm_inputs} for both arms")
+                else:
+                    for arm, arm_name in enumerate(self.model.arm_names):
+                        arm_fields = [column for column in fields if column.arm_index == arm]
+                        arm_missing = [column for column in absent if column.arm_index == arm]
+                        if arm_inputs and arm_missing and arm_missing == arm_fields:
+                            missing_fields.append(f"{arm_inputs} for {arm_name}")
+                        else:
+                            missing_fields.extend(f"{column.field.label} ({arm_name})" for column in arm_missing)
+                    missing_fields.extend(column.field.label for column in absent if column.arm_index is None)
+                inputs = ", ".join(missing_fields)
+                if not raw_required:
+                    estimate = "an estimate with its confidence interval or standard error"
+                    inputs = f"{inputs}, or {estimate}" if inputs else estimate
+                if raw_required and not inputs and ratio_input:
+                    inputs = "events and person-time selected as the effect source"
+                name = f"{study.label} ({study.year})" if study.year else study.label
+                missing.append(f"{name} needs {inputs or 'valid study inputs'}.")
+            else:
+                if len(studies) > len(missing):
+                    missing.append(f"and {len(studies) - len(missing):,} more.")
+                prefix = f"{ALL_METRIC_NAMES.get(metric, metric)} — " if len(requests) > 1 else ""
+                return "No study has enough data to analyze. " + prefix + " ".join(missing)
+        return ""
 
     def _pooled_fit_for_sheet(
         self, requests: Sequence[analysis_adapter.AnalysisRequest],
@@ -987,10 +1081,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             methods += " " + correction
             details += "\n" + correction
         model_info = self._manuscript_model_info()
+        contributing = result.contributing_studies
+        included = len(self._manuscript_studies())
+        if contributing is not None and contributing < included:
+            model_info[:1] = [("Studies included", str(included)), ("Studies contributing", str(contributing))]
+        summary = context.split(". ")[0].rstrip(".") + "."
+        if contributing is not None and contributing < included:
+            summary += (f" {contributing} study contributed to the pooled estimate." if contributing == 1
+                        else f" {contributing} studies contributed to the pooled estimate.")
         arms = self._manuscript_arms()
         return replace(result, identity=identity, details=details,
                        analysis_method=self.current_method,
-                       manuscript_context=context.split(". ")[0].rstrip(".") + ".",
+                       manuscript_context=summary,
                        manuscript_title=title, manuscript_methods=methods,
                        manuscript_metric=metric, manuscript_arms=tuple(arms),
                        manuscript_favours=self._manuscript_favours(arms),
@@ -1031,8 +1133,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _manuscript_model_info(self):
         model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
-        model_info.extend((f"Participants in {name}", f"{total:g}")
-                          for name, total in self._manuscript_participants())
+        for name, total in self._manuscript_participants():
+            label = (
+                "Participants" if self.model.current_effect in ONE_ARM_METRICS else f"Participants in {name}"
+            )
+            model_info.append((label, f"{total:g}"))
         if self.data_type == "diagnostic":
             model_info.extend(self._diagnostic_participants(self._manuscript_raw_data()))
         return model_info
@@ -1073,8 +1178,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
-            context += f" ({total:,g} participants in {name}"
-            context += "".join(f", {total:,g} in {name}" for name, total in others) + ")"
+            if self.model.current_effect in ONE_ARM_METRICS:
+                context += f" ({total:,g} participants)"
+            else:
+                context += f" ({total:,g} participants in {name}"
+                context += "".join(f", {total:,g} in {name}" for name, total in others) + ")"
         if excluded:
             context += f"; {excluded:,} " + ("study was excluded" if excluded == 1 else "studies were excluded")
         context += "."

@@ -36,33 +36,12 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
 ):
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    class Model:
-        current_effect = "OR"
-        current_outcome_name = "Outcome"
-        arm_names = ["A", "B"]
+    from rc_metastudio.project import adapter, archive
+    from rc_metastudio.workspace.table_model import DatasetTableModel
 
-        def get_current_data_subtype(self):
-            return None
-
-
-        def get_studies(self, only_if_included=True):
-            return []
-
-        def get_current_raw_data(self):
-            return []
-
-        current_sheet = SimpleNamespace(id="sheet", name="Outcome", settings={}, covariates=[])
-        current_sheet_id = "sheet"
-        dataset = SimpleNamespace(sheets=[current_sheet])
-
-        def get_current_data_type(self):
-            return "binary"
-
-        def is_diagnostic(self):
-            return False
-
-        def included_studies_have_raw_data(self):
-            return True
+    sample = archive.load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms")
+    project = adapter.runtime_from_loaded_project(sample)
+    model = DatasetTableModel(project.dataset, add_blank_study=False, current_sheet_id=project.current_sheet_id)
 
     class Owner(QtWidgets.QWidget):
         def analysis(self, _result, *, source_sheet=None, change_settings=None, manuscript=None):
@@ -105,7 +84,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     monkeypatch.setattr(analysis_setup_dialog.AnalysisSetupDialog, "_change_settings_callback", lambda self, _sheet: lambda: None)
     owner = Owner()
     form = analysis_setup_dialog.AnalysisSetupDialog(
-        Model(), parent=owner, confidence_level=95.0, on_result=owner.analysis,
+        model, parent=owner, confidence_level=95.0, on_result=owner.analysis,
     )
 
     with pytest.raises(RuntimeError, match="owner callback failed"):
@@ -135,6 +114,13 @@ def _create_binary_dataset(window):
     )
 
 
+def _add_study(window, raw):
+    model = window.model
+    assert model.setData(model.index(0, model.NAME), "Study")
+    row = model.get_studies()[0]
+    row.analysis_unit.set_raw_data_for_arms(model.arm_names, raw)
+
+
 @pytest.mark.parametrize('failure', ['identity', 'report'])
 @pytest.mark.parametrize('content', ['inference', 'empty'])
 def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkeypatch, failure, content):
@@ -149,6 +135,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
     delivered = []
     try:
         _create_binary_dataset(window)
+        _add_study(window, [[1, 10], [2, 10]])
         monkeypatch.setattr(backend, 'dataset_to_simple_binary_r_object', lambda *a, **k: None)
         monkeypatch.setattr(backend, 'get_available_methods', lambda **k: {'Random': 'binary.random'})
         monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
@@ -233,6 +220,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
     results = []
     try:
         _create_binary_dataset(window)
+        _add_study(window, [[1, 10], [2, 10]])
 
         _set_backend(
             monkeypatch,
@@ -278,8 +266,8 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
 
         assert not shown
         assert "simulated R failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
-        assert "simulated R failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "simulated R failure"
+        assert "RuntimeError" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()
@@ -323,6 +311,8 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
                 },
             }
         )
+
+        _add_study(window, [[10, 1.0, 1.0], [10, 2.0, 1.0]])
 
         _set_backend(
             monkeypatch,
@@ -369,8 +359,8 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
 
         assert not shown
         assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
-        assert "simulated recompute failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "simulated recompute failure"
+        assert "RuntimeError" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()
@@ -460,8 +450,8 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
         assert "simulated setup failure" in form.analysis_error_details.toPlainText()
-        assert form.analysis_error_label.text() == "No studies are included. Select Include for at least one study with complete data."
-        assert "simulated setup failure" not in form.analysis_error_label.text()
+        assert form.analysis_error_label.text() == "simulated setup failure"
+        assert "RuntimeError" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()

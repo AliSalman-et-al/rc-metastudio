@@ -96,7 +96,7 @@ jobs:
         run: |
           Expand-Archive -LiteralPath candidate/artifacts/RCMetaStudio-windows-x64.zip -DestinationPath qualified/tree
           $exe = Get-ChildItem qualified/tree -Recurse -Filter RCMetaStudio.exe | Select-Object -First 1
-          $sample = Get-ChildItem qualified/tree -Recurse -Filter amino.rcms | Select-Object -First 1
+          $sample = Get-ChildItem qualified/tree -Recurse -Filter "Binary - Aminoglycoside dosing, Barza 1996.rcms" | Select-Object -First 1
           $runtimeProbe = Get-ChildItem qualified/tree -Recurse -Filter runtime-probe.json | Select-Object -First 1
           if (-not $exe -or -not $sample -or -not $runtimeProbe) { throw "Windows candidate is incomplete." }
           New-Item -ItemType Directory -Force qualified/diagnostics | Out-Null
@@ -114,7 +114,7 @@ jobs:
             --workflow-observation $workflowObservation `
             --surface-records $surfaceDirectory `
             --sample-observations $sampleObservations `
-            --sample amino.rcms --sample-root $sampleRoot `
+            --sample "Binary - Aminoglycoside dosing, Barza 1996.rcms" --sample-root $sampleRoot `
             --sample-path $sample.FullName `
             --executable $exe.FullName --runtime-probe $runtimeProbe.FullName `
             --surface-directory $surfaceDirectory --log-path $env:RCMS_AUTOMATION_SMOKE_LOG `
@@ -181,7 +181,7 @@ jobs:
           tar -xzf "candidate/artifacts/$artifact" -C qualified/tree
           root="$(find qualified/tree -mindepth 1 -maxdepth 1 -type d -name 'RCMetaStudio-linux-x64' -print -quit)"
           launcher="$root/LaunchRCMetaStudio.sh"
-          sample="$(find "$root" -path '*/sample_projects/BCG.rcms' -print -quit)"
+          sample="$(find "$root" -path '*/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms' -print -quit)"
           runtime_probe="$PWD/qualified/diagnostics/runtime-probe.json"
           python_exe="$(uv python find)"
           test -n "$root" && test -x "$launcher" && test -n "$sample"
@@ -200,7 +200,7 @@ jobs:
               --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
               --surface-records "$PWD/qualified/diagnostics/surface-records" \
               --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
-              --sample BCG.rcms --sample-root "$(dirname "$sample")" \
+              --sample "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" --sample-root "$(dirname "$sample")" \
               --sample-path "$sample" --executable "$launcher" \
               --runtime-probe "$runtime_probe" \
               --surface-directory "$PWD/qualified/diagnostics/surface-records" \
@@ -427,7 +427,7 @@ jobs:
           app="$(find qualified/tree -type d -name RCMetaStudio.app -print -quit)"
           app="$PWD/$app"
           executable="$app/Contents/MacOS/RCMetaStudio"
-          sample="$(find qualified/tree -path '*/sample_projects/BCG.rcms' -print -quit)"
+          sample="$(find qualified/tree -path '*/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms' -print -quit)"
           runtime_probe="$(find qualified/candidate-tree -path '*/qualification/runtime-probe.json' -print -quit)"
           test -n "$app" && test -x "$executable" && test -n "$sample" && test -n "$runtime_probe"
           sample="$PWD/$sample"
@@ -442,7 +442,7 @@ jobs:
               --workflow-observation "$PWD/qualified/diagnostics/workflow-observation.json" \
               --surface-records "$PWD/qualified/diagnostics/surface-records" \
               --sample-observations "$PWD/qualified/diagnostics/sample-observations.json" \
-              --sample BCG.rcms --sample-root "$(dirname "$sample")" \
+              --sample "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" --sample-root "$(dirname "$sample")" \
               --sample-path "$sample" --executable "$executable" \
               --runtime-probe "$runtime_probe" \
               --surface-directory "$PWD/qualified/diagnostics/surface-records" \
@@ -463,7 +463,7 @@ jobs:
                 --automation-startup-completion-marker "$PWD/qualified/diagnostics/startup-project-completion.json" \
                 --automation-pid-file "$PWD/qualified/diagnostics/startup-project.pid" \
                 --automation-smoke-log "$PWD/qualified/diagnostics/packaged-smoke.log" "$sample"
-          python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("project") == "BCG.rcms"' qualified/diagnostics/startup-project-completion.json
+          python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("project") == "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms"' qualified/diagnostics/startup-project-completion.json
           rm -f qualified/diagnostics/startup-project.pid
       - name: Record macOS trusted stages and final evidence
         shell: bash

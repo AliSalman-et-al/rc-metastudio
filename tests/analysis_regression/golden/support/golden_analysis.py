@@ -133,7 +133,7 @@ def curated_golden_bundles(root_dir=None):
     )
 
     def sample(name):
-        return os.path.join(root_dir, "sample_projects", name)
+        return os.path.join(root_dir, "tests", "fixtures", "desktop-projects", name)
 
     binary_params = dict(
         _common_plot_params(_analysis_output_path("golden_amino_forest.png")),

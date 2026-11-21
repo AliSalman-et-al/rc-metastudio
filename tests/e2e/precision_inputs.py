@@ -14,7 +14,7 @@ def run(app, window, record):
 
     work = Path(sys.argv[2])
     root = Path(__file__).resolve().parents[2]
-    assert window.open(str(root / 'sample_projects/continuous.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
 
     def edit(row, column, text=None):
         table = window.tableView

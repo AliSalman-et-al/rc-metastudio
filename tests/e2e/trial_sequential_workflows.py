@@ -65,7 +65,7 @@ def capture_sensitivity(view, record, case, report):
 
 def input_project(work, case):
     if case in ("bcg", "peto", "hr"):
-        return ROOT / "sample_projects" / ("BCG.rcms" if case != "hr" else "Pignon2000-HR.rcms")
+        return ROOT / "sample_projects" / ("Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" if case != "hr" else "Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms")
     binary = case == "rr-mh"
     stress = case == "stress"
     metric = "RR" if binary else "MD" if stress else case.upper()

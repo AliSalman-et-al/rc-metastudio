@@ -6,6 +6,10 @@ from typing import Literal
 
 AnalysisFamily = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 REITSMA_METHOD = "diagnostic.reitsma"
+RAW_COUNT_METHODS = frozenset({
+    "binary.fixed.mh", "binary.fixed.peto", "diagnostic.fixed.mh",
+    "diagnostic.fixed.peto", "event_rates.mh", REITSMA_METHOD,
+})
 
 BINARY_TWO_ARM_METRICS = ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
 
