@@ -1452,7 +1452,7 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     for (i in which(selected & visible)) {
         w <- graphics::strwidth(labels[i], cex=.7, units="inches") / 2
         h <- graphics::strheight("Mg", cex=.7, units="inches") / 2
-        gap <- pad + .012 + c(0, .13, .26, .39)
+        gap <- pad + .012 + seq(0, 1.04, by=.13)
         centers <- cbind(
             c(rbind(x[i]+gap+w, x[i]-gap-w, x[i], x[i])),
             c(rbind(y[i], y[i], y[i]+gap+h, y[i]-gap-h))

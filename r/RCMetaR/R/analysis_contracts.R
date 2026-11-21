@@ -113,16 +113,17 @@ format.summary.data <- function(x, ...) {
   for (col.index in 1:num.cols) {
     col.widths <- c(col.widths, max(nchar(as.character(table.data[, col.index]), type="width")))
   }
+  justification <- vapply(seq_len(num.cols), function(index)
+    rcmetar.summary.column.justification(table.data, index), character(1))
 
   rows <- character(num.rows)
   for (row.index in 1:num.rows) {
     cells <- c()
     for (col.index in 1:num.cols) {
       entry <- as.character(table.data[row.index, col.index])
-      justify <- rcmetar.summary.column.justification(table.data, col.index)
       # format.character() translates through the native locale before padding.
       padding <- strrep(" ", col.widths[col.index] - nchar(entry, type="width"))
-      cell <- if (justify == "right") paste0(padding, entry) else paste0(entry, padding)
+      cell <- if (justification[col.index] == "right") paste0(padding, entry) else paste0(entry, padding)
       cells <- c(cells, cell)
     }
     table.row <- paste(" ", paste(cells, collapse=col.spacing), sep="")
