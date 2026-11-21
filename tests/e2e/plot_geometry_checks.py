@@ -99,7 +99,7 @@ def check_annotation_spacing(view, *, style="default"):
                     assert min(points[1],points[3]) >= box[3]+2 or max(points[1],points[3]) <= box[2]-2, ('reference over footer', ''.join(footer.itertext()), points, box)
         captions = ["".join(node.itertext()) for node in nodes]
         assert not any(" · None" in caption for caption in captions), captions
-        tests = [caption for caption in captions if caption.startswith("Test for overall effect")]
+        tests = re.findall(r"Test for overall effect(?: \([^)]*\))?:", " ".join(captions))
         comparative = any(caption.casefold().startswith(("odds ratio", "hazard ratio", "incidence rate ratio", "mean difference", "standardized mean difference")) for caption in captions)
         assert tests, captions
         assert all(("H₀:" not in caption) if comparative else ("H₀:" in caption) for caption in tests), tests
