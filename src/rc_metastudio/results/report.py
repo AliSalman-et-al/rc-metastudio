@@ -17,7 +17,7 @@ from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.formatting import numeric_cell, numeric_columns, report_cell, report_numbers, table_html
 from html import escape
 import io
-from PyQt6.QtCore import QMarginsF, QRectF, Qt
+from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QFont, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
@@ -1241,7 +1241,6 @@ def write_pdf(report, path):
     writer = QPdfWriter(str(path))
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
     writer.setResolution(600)
-    writer.setPageMargins(QMarginsF(15, 15, 15, 15))
     document = _print_document()
     document.setHtml(report.html())
     # QTextDocument prints paginated real tables; figures get their own pages so

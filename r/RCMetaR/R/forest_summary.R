@@ -41,13 +41,14 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
 rcmetar.forest.direction.metrics <- function(bundle, plan) {
     labels <- rcmetar.forest.direction.labels(bundle)
     if (!any(nzchar(c(labels$left, labels$right)))) return(0L)
+    bmj <- rcmetar.forest.style(bundle$params) == "bmj"
     split <- rcmetar.metafor.refline(bundle, plan$x$alim)
-    if (!is.finite(split) || split <= plan$x$alim[[1L]] || split >= plan$x$alim[[2L]]) return(0L)
+    if (!bmj && (!is.finite(split) || split <= plan$x$alim[[1L]] || split >= plan$x$alim[[2L]])) return(0L)
     rcmetar.forest.with.measurement.device({
         cex <- plan$typography$cex
         limits <- plan$x$xlim
         width <- plan$device$width - .45
-        if (rcmetar.forest.style(bundle$params) == "bmj") {
+        if (bmj) {
             panel.width <- diff(plan$x$alim) / diff(limits) * width
             return(max(lengths(rcmetar.bmj.direction.lines(bundle, panel.width, cex, units="inches"))))
         }
