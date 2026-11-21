@@ -96,7 +96,7 @@ def run(app, window, ROOT, WORK, record_step):
                        for group in subgroup_xml.iter('DICH_SUBGROUP')
                        for row in group.iter('DICH_DATA')}
     study_names = {study.get('ID'): study.get('NAME') for study in subgroup_xml.iter('STUDY')}
-    assert groups == {study_names[row.get('STUDY_ID')]: expected_groups.get(row.get('STUDY_ID'), '')
+    assert groups == {study_names[row.get('STUDY_ID')]: expected_groups.get(row.get('STUDY_ID'))
                       for row in subgroup_xml.iter('DICH_DATA')}
 
     subgroup_reference = WORK / 'subgroup-read-rm5.csv'
@@ -107,7 +107,7 @@ def run(app, window, ROOT, WORK, record_step):
         for ref in csv.DictReader(stream):
             if ref['type'] == 'D':
                 # read.rm5 prefixes group labels with comparison/outcome/group numbers.
-                assert ref['grplab'].endswith(groups[ref['studlab']])
+                assert ref['grplab'].endswith(groups[ref['studlab']] or '')
     window.set_model(subgroup_import.dataset)
     record_step('rm5-subgroup-covariate-imported', window, groups=groups,
                 reference=str(subgroup_reference))
@@ -115,6 +115,13 @@ def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     from rc_metastudio.results.window import ResultsWindow
+    window.action_subgroup_ma.trigger()
+    app.processEvents()
+    selector = next(w for w in app.topLevelWidgets() if isinstance(w, SubgroupAnalysisDialog) and w.isVisible())
+    assert selector.missing_label.text() == "Missing subgroup for: ISIS-2 (1988). Assign a value or exclude the study."
+    assert not selector.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).isEnabled()
+    record_step('rm5-missing-subgroup-blocks-run', selector, missing=selector.missing_label.text())
+    selector.reject()
     # read.rm5 omits the ungrouped row: compare identical study sets.
     for row in subgroup_sheet.rows:
         row.include = bool(row.covariate_values[covariate])

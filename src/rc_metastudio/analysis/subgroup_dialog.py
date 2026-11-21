@@ -1,11 +1,12 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel
 
 from rc_metastudio import adaptive_controls
 from rc_metastudio import adaptive_window
-from rc_metastudio import app_error_handler
+from rc_metastudio import app_error_handler, qt_layout
 from rc_metastudio.analysis.catalog import FACTOR
 
 if TYPE_CHECKING:
@@ -24,8 +25,14 @@ class SubgroupAnalysisDialog(
         self.model = model
         self._on_selected = on_selected
         self.setupUi(self)
+        self.missing_label = QLabel(self)
+        self.missing_label.setTextFormat(Qt.TextFormat.PlainText)
+        qt_layout.configure_context_label(self.missing_label)
+        qt_layout.style_inline_error(self.missing_label)
+        self.verticalLayout.insertWidget(1, self.missing_label)
         self._populate_combo_box()
         adaptive_controls.configure_choice_control(self.covariate_combo_box)
+        self.covariate_combo_box.currentIndexChanged.connect(self._update_ok_button)
         self._update_ok_button()
         adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
@@ -36,28 +43,31 @@ class SubgroupAnalysisDialog(
         )
 
     def get_selected_cov(self):
-        selected_covariate = str(self.covariate_combo_box.currentText())
-        if not selected_covariate:
-            QMessageBox.warning(
-                self,
-                "No covariate selected",
-                "Select a categorical covariate before running subgroup analysis.",
-            )
-            return
-        self._on_selected(selected_covariate)
-        self.accept()
+        if self._update_ok_button():
+            self._on_selected(self.covariate_combo_box.currentText())
+            self.accept()
 
     def _update_ok_button(self):
+        identity = self.covariate_combo_box.currentData()
+        missing = []
+        if identity is not None:
+            for study in self.model.get_studies():
+                value = study.covariate_values.get(identity)
+                if value is None or not str(value).strip():
+                    missing.append(f"{study.label} ({study.year})" if study.year else study.label)
+        message = ""
+        if missing:
+            action = "Assign a value or exclude the study." if len(missing) == 1 else "Assign values or exclude these studies."
+            message = f"Missing subgroup for: {', '.join(missing)}. {action}"
+        self.missing_label.setText(message)
+        self.missing_label.setVisible(bool(message))
+        enabled = identity is not None and not missing
         ok_button = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         if ok_button is not None:
-            ok_button.setEnabled(self.covariate_combo_box.count() > 0)
+            ok_button.setEnabled(enabled)
+        return enabled
 
     def _populate_combo_box(self):
-        studies = self.model.get_studies(only_if_included=True)
-
         for cov in self.model.current_sheet.covariates:
-            if cov['data_type'] != FACTOR:
-                continue
-            covariate_values = [study.covariate_values[cov['id']] for study in studies]
-            if None not in covariate_values:
-                self.covariate_combo_box.addItem(cov['name'])
+            if cov['data_type'] == FACTOR:
+                self.covariate_combo_box.addItem(cov['name'], cov['id'])

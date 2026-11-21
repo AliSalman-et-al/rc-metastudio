@@ -818,20 +818,12 @@ def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo(monkey
         app.processEvents()
 
 
-def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
-    monkeypatch,
-):
+def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates():
     from rc_metastudio.analysis import subgroup_dialog as subgroup_analysis_dialog
 
     app, window = automation.start_automation()
-    warnings = []
     calls = []
 
-    monkeypatch.setattr(
-        subgroup_analysis_dialog.QMessageBox,
-        "warning",
-        lambda *args: warnings.append(args),
-    )
     try:
         assert window.open(_sample_project_path("amino.rcms")) is True
         window._add_new_covariate("dose", "continuous")
@@ -851,11 +843,6 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
         form.get_selected_cov()
 
         assert calls == []
-        assert warnings
-        assert warnings[0][1:3] == (
-            "No covariate selected",
-            "Select a categorical covariate before running subgroup analysis.",
-        )
     finally:
         _mark_workspace_saved(window)
         window.close()

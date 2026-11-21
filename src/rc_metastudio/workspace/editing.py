@@ -267,7 +267,11 @@ class WorkspaceEditingService:
             for section, field, value in zip(sections, fields, values):
                 if field is None:
                     raise ValueError(f"Study row {row + 1}, column {section}: Cannot edit that cell.")
-                rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
+                if section == STUDY_COLUMN:
+                    # The preview has validated the combination of name and year.
+                    rejection = self._edit_study_name(sheet, row, value, importing=True)
+                else:
+                    rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
                 if rejection is not None:
                     message = f"Study row {row + 1}, column {section}: {rejection.message}"
                     if section == STUDY_COLUMN or rejection.kind == "backend":
@@ -354,12 +358,12 @@ class WorkspaceEditingService:
         )
 
     @staticmethod
-    def _edit_study_name(sheet, row: int, value: object) -> CellRejection | None:
+    def _edit_study_name(sheet, row: int, value: object, *, importing: bool = False) -> CellRejection | None:
         try:
             name = name_validation.validate_required_name("study", value)
         except ValueError as error:
             return CellRejection(str(error))
-        if any(index != row and name_validation.normalize_name(study.label) == name
+        if not importing and any(index != row and name_validation.normalize_name(study.label) == name
                for index, study in enumerate(sheet.rows)):
             return CellRejection(f"Study name ‘{name}’ already exists. Use a unique name before pasting.")
         while len(sheet.rows) <= row:
