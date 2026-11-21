@@ -277,6 +277,7 @@ class AdaptiveWindowController(QObject):
         self._content_refit_pending = False
         self._runtime_clamp_pending = False
         self._first_show_pending = True
+        self._first_restore_geometry = QRect()
         self._normal_frame_geometry = QRect()
         self._window_handle = None
         self._runtime_screen = None
@@ -320,8 +321,20 @@ class AdaptiveWindowController(QObject):
             and not window.isFullScreen()
         ):
             self._normal_frame_geometry = QRect(window.frameGeometry())
-        if watched is window and event.type() == QEvent.Type.WindowStateChange:
-            self.request_runtime_clamp()
+        if (
+            watched is window
+            and event.type() == QEvent.Type.WindowStateChange
+            and self._first_restore_geometry.isValid()
+            and window.isVisible()
+            and not (window.isMaximized() or window.isFullScreen() or window.isMinimized())
+        ):
+            target = self._first_restore_geometry
+            self._first_restore_geometry = QRect()
+            available = self._available_geometry()
+            if available.isValid():
+                target = clamp_frame_geometry(target, available)
+            self._set_outer_frame_geometry(target)
+            self._normal_frame_geometry = target
         if (watched is window and self.role == WindowRole.TRANSACTIONAL
                 and event.type() == QEvent.Type.Resize):
             self.request_runtime_clamp()
@@ -401,6 +414,7 @@ class AdaptiveWindowController(QObject):
                     maximum_fraction=self.policy.maximum_screen_fraction,
                 )
                 self._set_outer_frame_geometry(normal_frame)
+                self._first_restore_geometry = normal_frame
                 self._normal_frame_geometry = normal_frame
             # The maximized state is complete before first display. Reapplying
             # setWindowState() from the ensuing Show event can hide the native
@@ -470,6 +484,7 @@ class AdaptiveWindowController(QObject):
     def consume_first_use(self):
         """Suppress first-use sizing when a valid persisted state will restore."""
         self._first_show_pending = False
+        self._first_restore_geometry = QRect()
 
     def normal_frame_geometry(self):
         """Return the last user-owned non-maximized outer-frame rectangle."""

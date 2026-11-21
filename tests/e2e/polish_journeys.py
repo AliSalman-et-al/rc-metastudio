@@ -155,10 +155,15 @@ def run(app, window, work, root, record, analyze):
     view = analyze(app, window, "binary.random")
     assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
     screen = required(view.screen()).availableGeometry()
+    assert view.isMaximized()
     view.showNormal()
     app.processEvents()
     frame = view.frameGeometry()
-    assert frame.width() >= min(screen.width(), 950) and frame.height() >= min(screen.height(), 630), frame
+    expected_width = min(screen.width(), max(960, round(screen.width() * .8)))
+    expected_height = min(screen.height(), max(640, round(screen.height() * .8)))
+    assert not view.isMaximized() and screen.contains(frame), (frame, screen)
+    assert abs(frame.width() - expected_width) <= 32, (frame, expected_width)
+    assert abs(frame.height() - expected_height) <= 48, (frame, expected_height)
     record("results-restored-normal-frame", view, frame=frame.getRect(), screen=screen.getRect())
     for method, label, confidence in (("binary.fixed.mh", "Mantel–Haenszel", 90), ("binary.fixed.peto", "Peto", 95)):
         view.change_settings_action.trigger()

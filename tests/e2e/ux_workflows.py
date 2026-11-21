@@ -708,13 +708,17 @@ def workspace_safety_case(app, window, work, root, record, case):
     if case in ('duplicate', 'placeholder', 'notifications'):
         if case == 'duplicate':
             before = window.workspace.runtime_digest
-            rows = len(model.current_sheet.rows)
+            studies = model.current_sheet.rows
+            rows = len(studies)
+            existing = studies[0]
+            same_year = next(index for index, study in enumerate(studies[1:], 1)
+                             if study.year == existing.year)
             def acknowledge():
                 for widget in app.topLevelWidgets():
                     if isinstance(widget, QtWidgets.QMessageBox):
                         widget.accept()
             QtCore.QTimer.singleShot(0, acknowledge)
-            assert not model.setData(model.index(rows, model.NAME), model.current_sheet.rows[0].label)
+            assert not model.setData(model.index(same_year, model.NAME), existing.label)
             assert len(model.current_sheet.rows) == rows
             assert window.workspace.runtime_digest == before
             assert not window.workspace.is_dirty and not window.workspace.can_undo
