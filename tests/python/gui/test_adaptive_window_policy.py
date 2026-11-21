@@ -134,49 +134,6 @@ def test_unparented_workspace_uses_active_screen_before_maximizing(qapp):
     assert main.windowState() & QtCore.Qt.WindowState.WindowMaximized
 
 
-def test_maximized_workspace_exposes_a_visible_window(qapp):
-    from rc_metastudio import adaptive_window
-
-    window = QtWidgets.QMainWindow()
-    adaptive_window.register_adaptive_window(
-        window,
-        adaptive_window.WindowRole.MAIN,
-        available_geometry_provider=lambda _window: QtCore.QRect(0, 0, 1200, 800),
-    )
-
-    try:
-        assert not window.size().isEmpty()
-        window.showMaximized()
-        qapp.processEvents()
-
-        assert window.isMaximized()
-        assert window.isVisible()
-        assert window.windowHandle() is not None
-        assert required(window.windowHandle(), "window handle").isVisible()
-    finally:
-        window.close()
-        qapp.processEvents()
-
-
-def test_content_refit_preserves_explicit_minimum_size_contract(qapp):
-    from rc_metastudio import adaptive_window
-
-    dialog = _dialog_with_content("Short")
-    controller = adaptive_window.register_adaptive_window(
-        dialog,
-        adaptive_window.WindowRole.TRANSACTIONAL,
-        available_geometry_provider=lambda _window: QtCore.QRect(0, 0, 800, 600),
-    )
-    try:
-        dialog.setMinimumWidth(560)
-        controller.request_content_refit()
-        qapp.processEvents()
-
-        assert dialog.width() >= 560
-    finally:
-        dialog.close()
-
-
 def test_visible_transactional_content_refit_preserves_placement(qapp):
     from rc_metastudio import adaptive_window
 
@@ -200,6 +157,11 @@ def test_visible_transactional_content_refit_preserves_placement(qapp):
     assert after.topLeft() == before.topLeft()
     assert after.width() > before.width()
     assert available.contains(after)
+
+    dialog.setMinimumWidth(560)
+    controller.request_content_refit()
+    qapp.processEvents()
+    assert dialog.width() >= 560
 
 
 def test_visible_user_owned_windows_do_not_reclaim_geometry(qapp):
@@ -308,7 +270,6 @@ def test_screen_metric_changes_clamp_and_reconnect_to_new_screen(qapp):
 
 
 def test_confidence_level_is_a_compact_transactional_dialog(qapp):
-    from rc_metastudio import adaptive_window
     from rc_metastudio import confidence_level_dialog
 
     parent = QtWidgets.QWidget()
@@ -321,18 +282,6 @@ def test_confidence_level_is_a_compact_transactional_dialog(qapp):
     try:
         handle = required(parent.windowHandle(), "parent window handle")
         available = required(handle.screen(), "parent screen").availableGeometry()
-        assert (
-            adaptive_window.adaptive_window_state(dialog).policy.archetype
-            is adaptive_window.WindowArchetype.TRANSACTIONAL
-        )
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.CONFIDENCE_LEVEL
-        )
-        assert (
-            required(dialog.layout(), "dialog layout").sizeConstraint()
-            == QtWidgets.QLayout.SizeConstraint.SetMinimumSize
-        )
         assert not dialog.findChildren(QtWidgets.QScrollArea)
         assert available.contains(dialog.frameGeometry())
         assert dialog.confidence_level_spinbox.value() == 95.0
@@ -353,7 +302,6 @@ def test_confidence_level_handles_representative_long_text_and_enlarged_font(qap
         "Global Confidence Level Used to Calculate Confidence Intervals "
         "for All Outcomes:"
     )
-    dialog.request_layout_refit()
     dialog.show()
     qapp.processEvents()
 

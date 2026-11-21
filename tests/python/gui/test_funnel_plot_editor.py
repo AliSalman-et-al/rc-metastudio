@@ -14,7 +14,7 @@ from rc_metastudio.results import (
     plot_service,
     window as results_window,
 )
-from rc_metastudio.results.contract import empty_analysis_result
+from rc_metastudio.results.contract import parse_analysis_result
 from rc_metastudio.results.plot_capabilities import PlotCapability
 from rc_metastudio.results.funnel_editor import FunnelPlotEditorDialog
 
@@ -292,7 +292,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         _funnel_capability(),
         params_path=str(base),
     )
-    window = results_window.ResultsWindow(empty_analysis_result())
+    window = results_window.ResultsWindow(parse_analysis_result({"version": 1, "sections": []}))
     regenerate_count = [0]
 
     def prepare(_prefix, regenerator, changed, output, directory):
@@ -349,7 +349,7 @@ def test_funnel_editor_rejects_svgz_output_path(qapp, tmp_path):
         _funnel_capability(),
         params_path="funnel",
     )
-    window = results_window.ResultsWindow(empty_analysis_result())
+    window = results_window.ResultsWindow(parse_analysis_result({"version": 1, "sections": []}))
     dialog = FunnelPlotEditorDialog(
         {**_params("ordinary"), "funnel.outpath": str(output)},
         artifact.image_path,

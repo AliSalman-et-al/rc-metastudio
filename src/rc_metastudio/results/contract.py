@@ -343,10 +343,6 @@ def _required_section_text(item: Mapping[str, object], field: str) -> str:
     raise ValueError(f"analysis result section {label} must be non-empty text")
 
 
-def empty_analysis_result() -> AnalysisResult:
-    return AnalysisResult(1, MappingProxyType({}), None, ())
-
-
 def parse_analysis_result(value: object) -> AnalysisResult:
     """Validate untrusted backend output before application code consumes it."""
     if not isinstance(value, Mapping):

@@ -32,13 +32,9 @@ class ConfidenceLevelDialog(
         self.confidence_level_spinbox.setValue(previous_value)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        self._layout_controller = adaptive_window.register_adaptive_window(
+        adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.CONFIDENCE_LEVEL
         )
-
-    def request_layout_refit(self):
-        """Coalesce a content-driven refit owned by this dialog."""
-        self._layout_controller.request_content_refit()
 
     def get_value(self):
         return self.confidence_level_spinbox.value()

@@ -2,6 +2,8 @@ import os
 import sys
 import threading
 
+import pytest
+
 
 sys.path.insert(0, os.path.abspath("src"))
 
@@ -54,31 +56,24 @@ def test_r_runtime_calls_are_serialized_across_threads():
     assert max_active_calls == 1
 
 
-def test_nested_result_parsing_remains_inside_one_reentrant_transaction():
+def test_nested_r_calls_keep_access_guarded_until_outer_call_returns():
     observations = []
 
     @r_call_serialization.serialized_r_call
     def parse_summary():
-        observations.append(r_call_serialization.r_transaction_active())
+        r_call_serialization.require_r_transaction()
+        observations.append("parsed")
 
     @r_call_serialization.serialized_r_call
     def analyze_and_parse():
-        observations.append(r_call_serialization.r_transaction_active())
         parse_summary()
-        observations.append(r_call_serialization.r_transaction_active())
+        r_call_serialization.require_r_transaction()
+        observations.append("completed")
 
     analyze_and_parse()
-    assert observations == [True, True, True]
-    assert r_call_serialization.r_transaction_active() is False
-
-
-def test_direct_rpy2_access_requires_gateway_transaction():
-    try:
+    assert observations == ["parsed", "completed"]
+    with pytest.raises(RuntimeError):
         r_call_serialization.require_r_transaction()
-    except RuntimeError as exc:
-        assert "R transaction" in str(exc)
-    else:
-        raise AssertionError("direct rpy2 access was accepted outside the gateway")
 
 
 def test_packaged_r_gateway_rejects_background_thread(monkeypatch):

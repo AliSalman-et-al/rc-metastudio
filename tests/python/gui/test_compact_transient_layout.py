@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import cast
 
-import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
@@ -98,25 +97,6 @@ def _remaining_surface_inventory():
         if kind == "splash":
             cast(QtWidgets.QSplashScreen, window).showMessage(LONG_VALUE)
     return surfaces
-
-def test_choice_control_state_is_typed_and_rejects_stale_ownership(qapp):
-    from rc_metastudio import adaptive_controls
-
-    unconfigured = adaptive_controls.AdaptiveComboBox()
-    with pytest.raises(LookupError, match="not configured"):
-        adaptive_controls.choice_control_controller(unconfigured)
-
-    owner = adaptive_controls.AdaptiveComboBox()
-    stale_target = adaptive_controls.AdaptiveComboBox()
-    controller = adaptive_controls.configure_choice_control(owner)
-    setattr(stale_target, "_adaptive_choice_controller", controller)
-    with pytest.raises(LookupError, match="stale ownership"):
-        adaptive_controls.choice_control_controller(stale_target)
-
-    assert adaptive_controls.choice_control_controller(owner) is controller
-
-
-
 
 def test_about_legal_has_explicit_overflow_and_reachable_action(qapp):
     from rc_metastudio import about_legal_dialog

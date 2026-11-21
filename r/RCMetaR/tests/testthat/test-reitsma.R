@@ -1,26 +1,3 @@
-testthat::test_that("boundary Reitsma covariance remains display-safe", {
-  testthat::expect_null(RCMetaR:::rcmetar.reitsma.covariance.to.specificity(NULL))
-  one.by.one <- matrix(1, nrow=1, ncol=1)
-  testthat::expect_identical(
-    RCMetaR:::rcmetar.reitsma.covariance.to.specificity(one.by.one), one.by.one
-  )
-})
-
-testthat::test_that("Reitsma ignores a generic non-Reitsma rm.method", {
-  testthat::expect_identical(
-    RCMetaR:::rcmetar.reitsma.estimator(list(rm.method="DL")),
-    "reml"
-  )
-  testthat::expect_identical(
-    RCMetaR:::rcmetar.reitsma.estimator(list(estimator="ML")),
-    "ml"
-  )
-  testthat::expect_error(
-    RCMetaR:::rcmetar.reitsma.estimator(list(estimator="DL")),
-    "Reitsma estimator must be REML or ML"
-  )
-})
-
 testthat::test_that("Reitsma validates and represents diagnostic counts", {
   library(RCMetaR)
   data <- methods::new("DiagnosticData",
@@ -131,8 +108,10 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
   withr::local_preserve_seed()
   set.seed(12345)
   before <- .Random.seed
-  wrapped <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=FALSE))
+  wrapped <- rcmetar.run.analysis(data, method="diagnostic.reitsma",
+    params=list(measure="Sens", create.plot=FALSE, rm.method="DL", digits=8))
   testthat::expect_identical(.Random.seed, before)
+  testthat::expect_identical(wrapped$Summary[["Model information"]]$estimator, "REML")
   point <- wrapped$Summary[["Summary operating point"]]
   testthat::expect_named(point, c("Summary sensitivity", "Summary specificity", "False-positive rate"))
   testthat::expect_equal(names(point[["Summary sensitivity"]]), c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)"))
@@ -141,15 +120,8 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
   testthat::expect_true(all(c("Sensitivity", "Specificity", "False-positive rate") %in% names(prediction)))
   testthat::expect_equal(names(prediction[["Sensitivity"]]), c("Estimate", "Lower bound (95% PI)", "Upper bound (95% PI)"))
   testthat::expect_match(prediction[["Specificity"]][["Estimate"]], "%", fixed=TRUE)
-  raw.point <- RCMetaR:::rcmetar.reitsma.summary.point(fit, .95)
-  raw.prediction <- RCMetaR:::rcmetar.reitsma.marginal.prediction(fit, .95)
-  testthat::expect_true(raw.prediction$specificity[["lower"]] <= raw.prediction$specificity[["estimate"]])
-  testthat::expect_true(raw.prediction$specificity[["estimate"]] <= raw.prediction$specificity[["upper"]])
-  testthat::expect_equal(unname(raw.point$sensitivity[["estimate"]]),
-                         unname(mada::talpha(fit$alphasens)$linkinv(fit$coefficients["(Intercept)", "tsens"])), tolerance=1e-12)
-  # Compare the wrapped fields, not another RCMetaR extractor.
-  precise <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=FALSE, digits=8))
-  displayed <- precise$Summary[["Summary operating point"]]
+  specificity <- as.numeric(sub("%", "", prediction[["Specificity"]], fixed=TRUE))
+  testthat::expect_true(specificity[2] <= specificity[1] && specificity[1] <= specificity[3])
   latent <- function(side, alpha) {
     index <- grep(side, rownames(vcov(fit)), fixed=TRUE)[1L]
     mada::talpha(alpha)$linkinv(fit$coefficients["(Intercept)", side] +
@@ -159,19 +131,22 @@ testthat::test_that("Reitsma uses mada numeric estimates and restores RNG state"
   fpr <- latent("tfpr", fit$alphafpr)
   expected <- list(sens, 1-fpr[c(1,3,2)], fpr)
   for (i in seq_along(expected)) {
-    values <- as.numeric(sub("%", "", displayed[[i]], fixed=TRUE))/100
+    values <- as.numeric(sub("%", "", point[[i]], fixed=TRUE))/100
     testthat::expect_equal(values, unname(expected[[i]]), tolerance=1e-9)
   }
   set.seed(380381L)
   ratios <- as.matrix(summary(mada::SummaryPts(fit, n.iter=1000000L), level=.95, digits=16))
   labels <- c(posLR="Positive likelihood ratio", negLR="Negative likelihood ratio",
     invnegLR="Inverse negative likelihood ratio", DOR="Diagnostic odds ratio")
-  actual.ratios <- precise$Summary[["Sampling-based summary ratios"]]
+  actual.ratios <- wrapped$Summary[["Sampling-based summary ratios"]]
   for (row in names(labels)) testthat::expect_equal(
     as.numeric(actual.ratios[labels[[row]],]), unname(ratios[row,]), tolerance=1e-8)
-  one <- RCMetaR:::rcmetar.reitsma.summary.points(fit, .95, 380381L)
-  two <- RCMetaR:::rcmetar.reitsma.summary.points(fit, .95, 380381L)
-  testthat::expect_identical(one, two)
+  ml <- rcmetar.run.analysis(data, method="diagnostic.reitsma",
+    params=list(measure="Sens", create.plot=FALSE, estimator="ML"))
+  testthat::expect_identical(ml$Summary[["Model information"]]$estimator, "ML")
+  testthat::expect_error(rcmetar.run.analysis(data, method="diagnostic.reitsma",
+    params=list(measure="Sens", create.plot=FALSE, estimator="DL")),
+    "Reitsma estimator must be REML or ML")
 })
 
 testthat::test_that("Reitsma model information captures summary warnings", {

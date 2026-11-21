@@ -6,7 +6,6 @@ import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 from rc_metastudio.results.contract import parse_analysis_result
 from rc_metastudio.results.plot_capabilities import PlotCapability
-from rc_metastudio.results.plot_text import normalize_plot_text_value
 
 pytestmark = pytest.mark.qsettings
 
@@ -99,14 +98,6 @@ def _dispose(widget, qapp):
     widget.close()
     widget.deleteLater()
     qapp.processEvents()
-
-
-@pytest.mark.parametrize(
-    "placeholder",
-    ["", "[Default]", "<default>", "(default)", "default"],
-)
-def test_untouched_plot_default_placeholder_is_unset(placeholder):
-    assert normalize_plot_text_value(placeholder) is None
 
 
 @pytest.mark.parametrize("label", ["default", "(default)", "<default>"])

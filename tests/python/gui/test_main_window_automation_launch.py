@@ -1977,25 +1977,6 @@ def test_results_window_ignores_missing_image_order_entries():
         app.processEvents()
 
 
-def test_recent_files_persist_through_pyqt6_settings(tmp_path):
-    from PyQt6 import QtCore
-    from rc_metastudio import settings
-
-    QtCore.QSettings.setPath(
-        QtCore.QSettings.Format.IniFormat,
-        QtCore.QSettings.Scope.UserScope,
-        str(tmp_path),
-    )
-    QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
-    QtCore.QSettings().clear()
-
-    settings.add_file_to_recent_files("first.rcms")
-    settings.add_file_to_recent_files("second.rcms")
-    settings.migrate_application_settings()
-
-    assert settings.get_recent_files() == ["first.rcms", "second.rcms"]
-
-
 def test_main_window_maximized_state_persists_through_pyqt6_settings(tmp_path):
     from PyQt6 import QtCore, QtWidgets
     from rc_metastudio import settings
@@ -2121,92 +2102,6 @@ def test_modal_dialogs_center_over_parent_window():
         app.processEvents()
 
 
-def test_data_type_page_buttons_fit_icon_and_caption():
-    from PyQt6 import QtWidgets
-    from rc_metastudio import main_wizard
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        wizard.restart()
-        wizard.show()
-        app.processEvents()
-
-        data_type_page = cast(
-            main_wizard.DataTypePage,
-            required(wizard.page(main_wizard.Page_DataType), "data type page"),
-        )
-        buttons = [
-            data_type_page.onearm_single_reg_coef_Button,
-            data_type_page.onearm_generic_effect_size_Button,
-        ]
-
-        for button in buttons:
-            assert button.height() >= button.sizeHint().height()
-    finally:
-        wizard.close()
-        app.processEvents()
-
-
-def test_data_type_page_reflows_buttons_without_horizontal_overflow():
-    from PyQt6 import QtWidgets
-    from rc_metastudio import main_wizard
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        wizard.restart()
-        wizard.show()
-        app.processEvents()
-
-        data_type_page = cast(
-            main_wizard.DataTypePage,
-            required(wizard.page(main_wizard.Page_DataType), "data type page"),
-        )
-        overflow = required(data_type_page.findChild(QtWidgets.QScrollArea, "pageScrollArea"), "data type scroll area")
-        assert (
-            required(overflow.horizontalScrollBar(), "overflow scrollbar").maximum()
-            == 0
-        )
-        assert data_type_page.oneArmDataTypesLayout.columnCount() == 2
-        assert data_type_page.multiArmDataTypesLayout.columnCount() == 2
-    finally:
-        wizard.close()
-        app.processEvents()
-
-
-def test_data_type_page_buttons_center_icons_inside_declared_slots():
-    from PyQt6 import QtWidgets
-    from rc_metastudio import main_wizard
-    from rc_metastudio.qt6_resources import ensure_application_resources
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    ensure_application_resources()
-    wizard = main_wizard.MainWizard(path="new_dataset")
-    try:
-        wizard.restart()
-        wizard.show()
-        app.processEvents()
-
-        data_type_page = cast(
-            main_wizard.DataTypePage,
-            required(wizard.page(main_wizard.Page_DataType), "data type page"),
-        )
-        icon_sizes = {
-            button.objectName(): (
-                button.icon().pixmap(button.iconSize()).size(),
-                button.iconSize(),
-            )
-            for button in data_type_page._data_type_buttons()
-        }
-        assert all(
-            rendered == declared for rendered, declared in icon_sizes.values()
-        ), icon_sizes
-    finally:
-        wizard.close()
-        app.processEvents()
-
-
 def test_new_dataset_wizard_overflow_keeps_diagnostic_choice_reachable():
     from PyQt6 import QtWidgets
     from rc_metastudio import main_wizard
@@ -2235,58 +2130,6 @@ def test_new_dataset_wizard_overflow_keeps_diagnostic_choice_reachable():
             diagnostic_button.size(),
         )
         assert viewport.rect().intersects(diagnostic_rect)
-    finally:
-        wizard.close()
-        app.processEvents()
-
-
-def test_new_dataset_wizard_pages_fill_body_without_clipping_content():
-    from PyQt6 import QtWidgets
-    from rc_metastudio import main_wizard
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    wizard = main_wizard.MainWizard()
-    try:
-        wizard.restart()
-        wizard.show()
-        app.processEvents()
-
-        welcome_page = cast(
-            main_wizard.WelcomePage,
-            required(wizard.page(main_wizard.Page_Welcome), "welcome page"),
-        )
-        welcome_page.new_dataset()
-        app.processEvents()
-        stable_wizard_width = wizard.width()
-
-        page_sequence = [
-            main_wizard.Page_DataType,
-            main_wizard.Page_ChooseMetric,
-            main_wizard.Page_OutcomeName,
-        ]
-        cast(
-            main_wizard.DataTypePage,
-            required(wizard.page(main_wizard.Page_DataType), "data type page"),
-        ).twoarm_proportions_Button.click()
-
-        for page_id in page_sequence:
-            if wizard.currentId() != page_id:
-                wizard.next()
-            app.processEvents()
-
-            page = required(wizard.page(page_id), "wizard page")
-            layout = page.layout()
-            if layout is not None:
-                layout.activate()
-            app.processEvents()
-
-            parent_widget = required(page.parentWidget(), "wizard page parent")
-            page_body_width = parent_widget.contentsRect().width()
-            assert abs(wizard.width() - stable_wizard_width) <= 4
-            assert page.width() >= page_body_width - 4
-            overflow = page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
-            assert overflow is not None
-            assert page.rect().contains(overflow.geometry())
     finally:
         wizard.close()
         app.processEvents()

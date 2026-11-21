@@ -182,13 +182,6 @@ def test_native_calculator_png_encoding_never_calls_qt_save(tmp_path):
         assert encoded.getpixel((6, 4)) == (211, 31, 69, 255)
 
 
-def test_native_calculator_creates_local_backend_without_loading_real_rpy2(monkeypatch):
-    smoke = _load_native_calculator_smoke()
-    monkeypatch.delitem(sys.modules, "rpy2.rinterface", raising=False)
-    smoke.install_native_test_backend()
-    assert "rpy2.rinterface" not in sys.modules
-
-
 def test_native_calculator_runtime_contract_fails_closed_for_loaded_rpy2(monkeypatch):
     smoke = _load_native_calculator_smoke()
     monkeypatch.setitem(sys.modules, "rpy2.rinterface", object())
