@@ -52,6 +52,7 @@ def open_mean_sample(app, window, record, root, work):
     source = root / "sample_projects/Single-arm mean - Handgrip strength in young adults, Abe 2025.rcms"
     retained = root / "sample_projects/sources/abe2025.json"
     rows = json.loads(retained.read_text(encoding="utf-8"))["rows"]
+    assert len(rows) == 5
     measurements = [[row["n"], row["mean"], row["sd"]] for row in rows]
     assert window.open(str(source), raise_on_error=True)
     assert window.model.current_effect == "Mean"

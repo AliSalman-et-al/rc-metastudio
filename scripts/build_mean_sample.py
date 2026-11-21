@@ -17,7 +17,7 @@ def main():
         "Single-arm mean", "Handgrip strength in young adults, Abe 2025",
         "Abe T, Song JS, Dankel SJ, Viana RB, Abe A, Loenneke JP. Impact of potential moderating factors on absolute test-retest reliability of grip strength measurements in healthy populations: a systematic review with meta-analysis. J Sports Sci Med. 2025;24:543–554.",
         retained["doi"], "pooling measured grip strength in kilograms from one cohort per study.",
-        source, "The dynamometers, testing protocols and populations differ. One cohort consists of trained male basketball players. The pooled mean is an instructional example only. Values use the kilogram-force (kg) scale of the dynamometers.",
+        source, "Five cohorts of young adult volunteers provide first-session handgrip measurements. The dynamometers, testing protocols and cohorts differ, so the pooled mean is an instructional example only. Values use the kilogram-force (kg) scale of the dynamometers.",
         [sheet(0, "First-session handgrip strength (kg)", "continuous", "mean", "Mean",
                ["Young adult volunteers"], rows, [("Dynamometer", 4), ("Tested hand", 4)])],
     )

@@ -231,8 +231,8 @@ def run(app, window, work, root, record, analyze):
     open_sample("Single-arm mean - Handgrip strength in young adults, Abe 2025")
     window.model.rename_arm(window.model.arm_names[0], "Custom cohort")
     mean = analyze(app, window, "continuous.random")
-    assert "265 participants)" in mean.manuscript.results and "participants in Custom cohort" not in mean.manuscript.results
-    assert dict(mean.results.manuscript_model_info)["Participants"] == "265"
+    assert "235 participants)" in mean.manuscript.results and "participants in Custom cohort" not in mean.manuscript.results
+    assert dict(mean.results.manuscript_model_info)["Participants"] == "235"
     mean.report_action.trigger()
     record("one-arm-participant-prose", mean, prose=mean.manuscript.results)
     mean.close()

@@ -104,13 +104,13 @@
       "description": "Use this for pooling measured grip strength in kilograms from one cohort per study.",
       "format_version": 3,
       "analysis_family": "continuous",
-      "study_count": 6,
+      "study_count": 5,
       "source_reference": "Abe T, Song JS, Dankel SJ, Viana RB, Abe A, Loenneke JP. Impact of potential moderating factors on absolute test-retest reliability of grip strength measurements in healthy populations: a systematic review with meta-analysis. J Sports Sci Med. 2025;24:543–554.",
       "source_doi": "https://doi.org/10.52082/jssm.2025.543",
       "source_file": "sources/abe2025.json",
-      "source_sha256": "cab6e3233deadce8f23ec8470a223c71301f98aef4e600feb7107e02ef8c73e4",
-      "sha256": "c7d287f79f2def4ce142d16d31d1d91859fb6934e05665155e77e4eb672fa502",
-      "semantic_sha256": "e7621d79373c22c3056180262aa3810b1bf2d89dfa7c55402a1da8d588ab067d"
+      "source_sha256": "998d1c28b1e8648b6596db4996ce7d3242ec12f15f44bf842d9e3e040aab1334",
+      "sha256": "bcef93008c20220cba0f017b8daf28c49d5e0500bc7ea3e75f207085ce2f7880",
+      "semantic_sha256": "829320679fd5f293f840de3639b619f8eb15e7d3352cc8f38caf9f51710e7be0"
     },
     {
       "file": "Single-arm proportion - Depression after myocardial infarction, Feng 2019.rcms",

@@ -263,7 +263,7 @@ checks complete runtime preservation and continues through real analysis.
 The contextual CSV drive imports `Mean`, `TX Mean`, `TXMean` and `TX.Mean`
 headers through the actual wizard and retains each input/preview.
 `analysis-data-onearm-mean` opens the published Abe handgrip project, checks
-all six cohorts against the retained source, and saves and reopens a copy.
+all five cohorts against the retained source, and saves and reopens a copy.
 It compares the displayed pooled mean and interval with direct
 `metafor::rma(measure="MN")` from the retained sample sizes, means and SDs.
 It also opens the one-arm calculator, checks its original measurements and

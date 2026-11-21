@@ -4,20 +4,10 @@
   "table": "https://jssm.org/tablejssm-24-543.xml/table003.xml",
   "unit": "kg on the dynamometer scale (kilogram-force)",
   "excluded": {
-    "Cildan Uysal 2022": "The accessible primary abstract confirms the 50-person cohort and protocol but omits the first-session mean and SD. The secondary extraction alone is insufficient. DOI 10.1016/j.hansur.2022.02.007."
+    "Cildan Uysal 2022": "The accessible primary abstract confirms the 50-person cohort and protocol but omits the first-session mean and SD. The secondary extraction alone is insufficient. DOI 10.1016/j.hansur.2022.02.007.",
+    "Gerodimos 2012": "Primary Tables 1 and 2 confirm 30 adult male basketball players and first-session preferred-hand grip strength of 66.49 kg (SD 9.33). This cohort was considered and excluded because it is a selected athletic population. DOI 10.2478/v10078-012-0003-y."
   },
   "rows": [
-    {
-      "study": "Gerodimos",
-      "year": 2012,
-      "n": 30,
-      "mean": 66.49,
-      "sd": 9.33,
-      "device": "Jamar",
-      "hand": "Preferred",
-      "doi": "10.2478/v10078-012-0003-y",
-      "check": "Primary Table 2, adult cohort, preferred hand, Test (kg). Exact match. The 30 healthy male basketball players (mean age 26.06) form a separate cohort from the youth participants."
-    },
     {
       "study": "Savva et al.",
       "year": 2013,

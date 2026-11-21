@@ -16,7 +16,7 @@ Open a bundled example from **File > Open sample project** or from the Welcome p
 
 See the [coverage table](COVERAGE-PLAN.md) for the analyses by project and [retained source records](sources/README.md) for the row checks and exclusions.
 
-In the Abe handgrip project, dynamometers, measurement protocols and cohorts differ. The pooled mean is an instructional example only. One cohort consists of trained male basketball players.
+The Abe handgrip project uses five general-volunteer cohorts with 235 participants. Dynamometers, measurement protocols and cohorts differ, so the pooled mean is an instructional example only.
 
 The existing desktop calculator fixture exercises pre/post inputs with a paired correlation.
 
