@@ -1092,8 +1092,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _manuscript_model_info(self):
         model_info = [("Studies (k)", str(len(self._manuscript_studies())))]
-        model_info.extend(("Participants" if self.model.current_effect in ONE_ARM_METRICS else f"Participants in {name}", f"{total:g}")
-                          for name, total in self._manuscript_participants())
+        for name, total in self._manuscript_participants():
+            label = (
+                "Participants" if self.model.current_effect in ONE_ARM_METRICS
+                and name.casefold() in {"group", "participants"} else f"Participants in {name}"
+            )
+            model_info.append((label, f"{total:g}"))
         if self.data_type == "diagnostic":
             model_info.extend(self._diagnostic_participants(self._manuscript_raw_data()))
         return model_info
@@ -1134,7 +1138,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         participants = self._manuscript_participants()
         if participants:
             (name, total), *others = participants
-            if self.model.current_effect in ONE_ARM_METRICS:
+            if self.model.current_effect in ONE_ARM_METRICS and name.casefold() in {"group", "participants"}:
                 context += f" ({total:,g} participants)"
             else:
                 context += f" ({total:,g} participants in {name}"

@@ -1232,7 +1232,7 @@ def parse_out_results(result):
         contributors = None
         if request.get('method') in ('binary.fixed.mh', 'binary.fixed.peto') and 'res' in result:
             fit = result['res']
-            if 'k.yi' in fit.names:
+            if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
                 contributors = int(fit.rx2('k.yi')[0])
         return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
                        sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))

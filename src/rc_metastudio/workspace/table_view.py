@@ -491,6 +491,8 @@ class DatasetTableView(QtWidgets.QTableView):
             layout = required(form.layout(), "calculator layout")
             if isinstance(layout, QtWidgets.QBoxLayout):
                 layout.insertWidget(0, study_label)
+            if isinstance(form, binary_data_dialog.BinaryDataDialog):
+                form._set_content_preferred_width()
             if form.exec():
                 model = self.model()
 
