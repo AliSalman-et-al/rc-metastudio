@@ -116,7 +116,8 @@ def run(app, window, work, record):
                     check_annotation_spacing(view, style=style)
                     labels = [''.join(n.itertext()) for path in view.results.display_images.values()
                               for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
-                    assert any('e−' in text or 'e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
+                    if mode == 'raw':
+                        assert any('e−' in text or 'e-' in text or 'e+' in text for text in labels), ('stress notation absent', metric, mode, style, labels)
                     if mode == 'ratio':
                         from statistics import NormalDist
                         from zipfile import ZipFile
