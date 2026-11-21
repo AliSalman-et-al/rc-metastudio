@@ -796,7 +796,7 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout=NULL, summary.
     if (show.summary && nzchar(prediction)) graphics::text(x, -3.65, prediction, pos=4, cex=cex)
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
     # Reserve separate physical lines for the title and each direction block.
-    spacing <- graphics::strheight("M", cex=cex) * 2.2
+    spacing <- graphics::strheight("M", cex=cex) * 2.3
     label.y <- min(axis.footer$axis.label.y, -2.83 - spacing)
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex)
