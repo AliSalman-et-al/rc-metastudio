@@ -582,7 +582,7 @@
             "label": "Forest plot",
             "name": "golden_amino_forest.png",
             "type": "png",
-            "sha256": "1914b1e15bce5c7545330dd1f9c60ede6585d5cac5effebbaa010f2320b684df",
+            "sha256": "99d34dc612745ff4a2489078e5e13c902607c890ddba34670d11e6fae4f41953",
             "metadata": {}
           }
         }
@@ -622,7 +622,7 @@
             "label": "Forest plot",
             "name": "golden_continuous_forest.png",
             "type": "png",
-            "sha256": "60e3ff7f21affe1e4726ca0bed53aded0fa939dcc8ac79bb0df327f29898aca4",
+            "sha256": "fb513ea333a1e1a69ed569112c1df34260c6b3a7acd604e07cc3db4fd94412d4",
             "metadata": {}
           }
         }
@@ -662,7 +662,7 @@
             "label": "Diagnostic odds ratio forest plot",
             "name": "golden_lymph_forest_dor.png",
             "type": "png",
-            "sha256": "0623592580b5513b2191d76550169149f9f4c2fdc1130edd2bad47f5748027a1",
+            "sha256": "cd32e4ad88ea3730890028d754adf403419afe31aa1e2783614879e882bc472e",
             "metadata": {}
           }
         }
@@ -702,7 +702,7 @@
             "label": "Cumulative forest plot",
             "name": "golden_amino_cumulative_forest.png",
             "type": "png",
-            "sha256": "34d559d80cf14cb456b03e7fa411ada43fe79bc60351e58d46e00619bce3e175",
+            "sha256": "82e077f87372b07fc4581c1ddc625adb26dfa1b116d41fc2c028693bc20b5833",
             "metadata": {}
           }
         }
@@ -742,7 +742,7 @@
             "label": "Leave-one-out forest plot",
             "name": "golden_amino_loo_forest.png",
             "type": "png",
-            "sha256": "a4be95469f137a99917ee917c0c8359992564fba35c605f8f316845def797c2e",
+            "sha256": "16b5df8aeb1a04e34a075fb92ae937875b5e913ee520082cb2591759b0720b80",
             "metadata": {}
           }
         }
@@ -782,7 +782,7 @@
             "label": "Cumulative forest plot",
             "name": "golden_continuous_cumulative_forest.png",
             "type": "png",
-            "sha256": "568d55228a86783eaf8a410f2262395c90ba821cacb57d16fdc07cc8e8137700",
+            "sha256": "248662dda53474c96c56df15d72590b47a1d981960397bb4930c45536d1d260d",
             "metadata": {}
           }
         }
@@ -822,7 +822,7 @@
             "label": "Leave-one-out forest plot",
             "name": "golden_continuous_loo_forest.png",
             "type": "png",
-            "sha256": "9f29d219a8f27587d7573e62dfcd3e844d308c84170dd71a760a5c4f59eabafd",
+            "sha256": "239e4d9e2de80f02a4734bbc56bc558a9e7ecaf01df5e2f8ff930e3da1dab803",
             "metadata": {}
           }
         }
@@ -862,7 +862,7 @@
             "label": "Subgroup forest plot",
             "name": "golden_amino_subgroup_forest.png",
             "type": "png",
-            "sha256": "14685ece9ee00d29f007252b27a10717743ac30ba17301107986a4e1902e83c1",
+            "sha256": "3d24d54553e6a4cd4daa615289873ab212a33bb189ed9474ae379d6a221a90db",
             "metadata": {}
           }
         }
@@ -902,7 +902,7 @@
             "label": "Subgroup forest plot",
             "name": "golden_continuous_subgroup_forest.png",
             "type": "png",
-            "sha256": "30032a1d43dc22516fc47991dea64f23abb6c82a7e7f8a08ea9483ac73daeb8e",
+            "sha256": "43037b6a4b45f37a202e86f7ed88918e541bf59fe91ccbb1649a145f240e4d86",
             "metadata": {}
           }
         }
