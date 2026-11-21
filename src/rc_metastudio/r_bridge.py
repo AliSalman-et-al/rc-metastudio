@@ -1197,6 +1197,15 @@ def prepare_plot_edit(
 
 
 @serialized_r_call
+def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> tuple[float, float] | None:
+    result = execute_r_function("rcmetar.forest.export.dimensions", prefix, width, include_title)
+    if _r_is_null(result):
+        return None
+    height, minimum_width = result
+    return float(height), float(minimum_width)
+
+
+@serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
                        *, include_title: bool = True, outline_text: bool = True,
                        width: float | None = None, dpi: int | None = None,

@@ -101,6 +101,11 @@ class PlotService:
                      output_path: str, width: float, height: float, dpi: int,
                      include_title: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
+        geometry = r_bridge.forest_export_dimensions(params_path, width, include_title) if regenerator == "forest" else None
+        if geometry is not None:
+            height, minimum_width = geometry
+            if width < minimum_width - 1e-8:
+                raise PlotServiceError(f"Minimum width for this figure: {minimum_width * 25.4:.1f} mm")
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
             paths = r_bridge.render_plot_bundle(
@@ -110,19 +115,16 @@ class PlotService:
             if not paths:
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
             extension = Path(output_path).suffix.lower()
-            if regenerator == "forest":
-                _, _, planned_width, planned_height = map(float, ET.parse(source).getroot().attrib["viewBox"].split())
-                if extension == ".pdf" and planned_height > 267 / 25.4 * 72 and _paginate_pdf():
-                    paths = r_bridge.render_plot_bundle(
-                        params_path, regenerator, str(source), include_title=include_title,
-                        width=min(width, 180 / 25.4), page_height=250 / 25.4,
-                    )
-                    _write_a4_pdf(output_path, paths)
-                    return
-                # The forest layout owns the row pitch. Keep the requested
-                # publication size for legacy layouts narrower than their columns.
-                if abs(planned_width - width * 72) <= .02:
-                    height = planned_height / 72
+            if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
+                page_width = min(width, 180 / 25.4)
+                if page_width < geometry[1] - 1e-8:
+                    raise PlotServiceError("This figure is too wide for A4. Turn off A4 pages to export a single PDF page.")
+                paths = r_bridge.render_plot_bundle(
+                    params_path, regenerator, str(source), include_title=include_title,
+                    width=page_width, page_height=250 / 25.4,
+                )
+                _write_a4_pdf(output_path, paths)
+                return
             ET.register_namespace('', 'http://www.w3.org/2000/svg')
             ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
             tree = ET.parse(source)

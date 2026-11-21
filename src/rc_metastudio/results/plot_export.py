@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Publication export controls with proportional physical dimensions."""
+"""Publication export controls and physical size validation."""
 
 import math
+from collections.abc import Callable
 
-from PyQt6.QtCore import QSettings, QSignalBlocker
+from PyQt6.QtCore import QSettings, QSignalBlocker, QTimer
 from rc_metastudio.qt_object_guard import required
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QPushButton, QSpinBox
 
@@ -12,13 +13,24 @@ from rc_metastudio.settings import load_plot_export_format, save_plot_export_for
 
 
 class PlotExportDialog(QDialog):
-    def __init__(self, formats, width: float, height: float, parent=None, *, resizable: bool = True, native_dpi: int = 96, text_per_inch: tuple[float, float] = (0, 0)):
+    def __init__(self, formats, width: float, height: float, parent=None, *,
+                 resizable: bool = True, native_dpi: int = 96,
+                 text_per_inch: tuple[float, float] = (0, 0),
+                 forest_geometry: Callable[[float, bool], tuple[float, float] | None] | None = None):
         super().__init__(parent)
         self.setWindowTitle('Export plot')
         self.setMinimumWidth(360)
         self.ratio = height / width
         self.resizable = resizable
         self.text_per_inch = text_per_inch
+        self._forest_geometry = forest_geometry
+        self._layout_height: float | None = None
+        self._minimum_mm = 0.0
+        self._layout_error = ""
+        self._measure_timer = QTimer(self)
+        self._measure_timer.setSingleShot(True)
+        self._measure_timer.setInterval(150)
+        self._measure_timer.timeout.connect(self._measure_width)
         self._width_inches = width
         if resizable:
             try:
@@ -80,7 +92,7 @@ class PlotExportDialog(QDialog):
         self.use_readable_width.clicked.connect(self._set_readable_width)
         layout.addRow(self.use_readable_width)
         self.include_title = QCheckBox("Include title line", self)
-        self.include_title.toggled.connect(self._refresh)
+        self.include_title.toggled.connect(self._width_changed)
         if resizable:
             layout.addRow(self.include_title)
         else:
@@ -93,14 +105,19 @@ class PlotExportDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addRow(buttons)
-        self._refresh()
+        self._measure_width()
+        if self._forest_geometry is not None and self._width_inches * 25.4 < self._minimum_mm:
+            with QSignalBlocker(self.width_control):
+                self.width_control.setValue(self._readable_width_value())
+            self._width_inches = self.width_control.value() / self.unit_factor()
+            self._measure_width()
 
     def unit_factor(self) -> float:
         return 2.54 if self.units.currentText() == 'cm' else 1.0
 
     def _change_width(self):
         self._width_inches = self.width_control.value() / self.unit_factor()
-        self._refresh()
+        self._width_changed()
 
     def _change_units(self):
         with QSignalBlocker(self.width_control):
@@ -109,9 +126,29 @@ class PlotExportDialog(QDialog):
             self.width_control.setValue(self._width_inches * self.unit_factor())
         if self.resizable:
             self._width_inches = self.width_control.value() / self.unit_factor()
+        self._width_changed()
+
+    def _width_changed(self):
+        if self._forest_geometry is not None:
+            self._measure_timer.start()
         self._refresh()
 
-    def _readable_width_mm(self) -> int:
+    def _measure_width(self):
+        self._layout_error = ""
+        if self._forest_geometry is not None:
+            try:
+                dimensions = self._forest_geometry(self._width_inches, self.include_title.isChecked())
+                if dimensions is None:
+                    raise ValueError("Plot layout is unavailable.")
+                self._layout_height, minimum = dimensions
+                self._minimum_mm = math.ceil(minimum * 254 - 1e-9) / 10
+            except Exception as error:
+                self._layout_error = str(error)
+        self._refresh()
+
+    def _readable_width_mm(self) -> float:
+        if self._forest_geometry is not None:
+            return self._minimum_mm
         rate = self.text_per_inch[self.include_title.isChecked()]
         return math.ceil(6 * 25.4 / rate) if rate else 0
 
@@ -122,30 +159,42 @@ class PlotExportDialog(QDialog):
         self.width_control.setValue(self._readable_width_value())
 
     def _largest_dpi(self, width: float) -> int:
-        height = width * self.ratio
+        height = self._layout_height if self._layout_height is not None else width * self.ratio
         dpi = min(self.dpi.maximum(), math.floor(min(
             RASTER_MAX_DIMENSION / max(width, height),
             math.sqrt(RASTER_MAX_PIXELS / (width * height)),
         )))
-        while dpi > 0 and math.ceil(width * dpi) * math.ceil(height * dpi) > RASTER_MAX_PIXELS:
+        while dpi > 0:
+            w, h = math.ceil(width * dpi), math.ceil(height * dpi)
+            if max(w, h) <= RASTER_MAX_DIMENSION and w * h <= RASTER_MAX_PIXELS:
+                break
             dpi -= 1
         return dpi
 
     def _refresh(self):
-        self.height_label.setText(f'{self.width_control.value() * self.ratio:.2f} {self.units.currentText()}')
+        width, height, dpi = self.dimensions()
+        pending = self._measure_timer.isActive()
+        blocked = pending or bool(self._layout_error) or width * 25.4 + 1e-8 < self._minimum_mm
+        self.height_label.setText("Measuring…" if pending else f'{height * self.unit_factor():.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')
         max_dpi = self._largest_dpi(self._width_inches)
-        oversized = self.resizable and raster and self.dpi.value() > max_dpi
-        self.save_button.setEnabled(not oversized)
-        self.raster_limit.setVisible(oversized)
-        self.raster_limit.setText("This image is too large at the selected DPI. Use a lower DPI or export a vector PDF or SVG.")
+        oversized = not blocked and self.resizable and raster and dpi > max_dpi
+        self.save_button.setEnabled(not blocked and not oversized)
+        self.raster_limit.setVisible(oversized or bool(self._layout_error))
+        self.raster_limit.setText(self._layout_error or "This image is too large at the selected DPI. Use a lower DPI or export a vector PDF or SVG.")
         self.use_max_dpi.setVisible(oversized and max_dpi >= self.dpi.minimum())
         self.use_max_dpi.setText(f"Use {max_dpi} DPI")
         self.use_vector.setVisible(oversized and self.format_control.findData("pdf") >= 0)
         self.paginate_pdf.setVisible(self.resizable and self.format_control.currentData() == "pdf"
-                                     and self._width_inches * self.ratio > 267 / 25.4)
+                                     and not blocked and height > 267 / 25.4)
         self.dpi.setEnabled(self.resizable and raster)
-        self.pixel_label.setVisible(raster)
+        self.pixel_label.setVisible(raster and not blocked)
+        self.pixel_label.setText(f'{math.ceil(width * dpi)} × {math.ceil(height * dpi)} pixels')
+        if self._forest_geometry is not None:
+            self.legibility_warning.setVisible(self._minimum_mm > 0)
+            self.legibility_warning.setText(f"Minimum width for this figure: {self._minimum_mm:g} mm")
+            self.use_readable_width.hide()
+            return
         smallest = self._width_inches * self.text_per_inch[self.include_title.isChecked()]
         warn = self.resizable and 0 < smallest < 6
         self.legibility_warning.setVisible(warn)
@@ -160,13 +209,16 @@ class PlotExportDialog(QDialog):
                 f"This figure needs at least {target} mm wide for 6 pt text."
             )
             self.use_readable_width.setText(f"Use {target} mm")
-        self.pixel_label.setText(f'{math.ceil(self._width_inches * self.dpi.value())} × {math.ceil(self._width_inches * self.ratio * self.dpi.value())} pixels')
 
     def dimensions(self) -> tuple[float, float, int]:
         width = self._width_inches
-        return width, width * self.ratio, self.dpi.value()
+        height = self._layout_height if self._layout_height is not None else width * self.ratio
+        return width, height, self.dpi.value()
 
     def accept(self):
+        if self._measure_timer.isActive():
+            self._measure_timer.stop()
+            self._measure_width()
         if not self.save_button.isEnabled():
             return
         save_plot_export_format(self.format_control.currentData())

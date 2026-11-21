@@ -1713,11 +1713,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         source, ratio = figure_source(artifact.display_path())
         from PyQt6.QtSvg import QSvgRenderer
         text_per_inch = (0.0, 0.0)
+        forest_geometry = None
         if isinstance(source, QSvgRenderer):
             bounds = source.viewBoxF()
             width = bounds.width() / 72
             ratio = bounds.width() / bounds.height()
-            if artifact.params_path:
+            if artifact.params_path and artifact.capability.plot_kind in {
+                "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
+            }:
+                from functools import partial
+                from rc_metastudio import r_bridge
+                forest_geometry = partial(r_bridge.forest_export_dimensions, artifact.params_path)
+            elif artifact.params_path:
                 from tempfile import TemporaryDirectory
                 from rc_metastudio.results.plot_service import svg_text_points_per_inch
 
@@ -1735,6 +1742,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         dialog = PlotExportDialog(
             artifact.export_formats(), width, width / ratio, self,
             resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
+            forest_geometry=forest_geometry,
             native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
         )
         if not dialog.exec():

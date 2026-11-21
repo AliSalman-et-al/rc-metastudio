@@ -3,12 +3,15 @@
 \name{rcmetar-plot-bundle}
 \alias{rcmetar-plot-bundle}
 \alias{rcmetar.plot.bundle.params}
+\alias{rcmetar.forest.export.dimensions}
 \alias{rcmetar.prepare.plot.bundle.edit}
 \alias{rcmetar.render.plot.bundle}
 \alias{rcmetar.export.svg.artwork}
 \title{Read, edit, and render persisted plot bundles}
 \usage{
 rcmetar.plot.bundle.params(prefix)
+
+rcmetar.forest.export.dimensions(prefix, width, include_title = FALSE)
 
 rcmetar.prepare.plot.bundle.edit(
   prefix,
@@ -57,8 +60,9 @@ rcmetar.export.svg.artwork(svg.path, output.path, width, height, dpi)
 \item{outline_text}{Whether to outline text in trial sequential SVG exports.}
 }
 \value{
-Parameters, a mapping from destination paths to staged files, or the
-rendered paths, respectively. Missing bundles return \code{NULL}.
+Parameters, forest height and minimum width in inches, staged file
+mappings, or rendered paths, depending on the function. Missing bundles
+return \code{NULL}.
 }
 \description{
 Read, edit, and render persisted plot bundles.
