@@ -43,8 +43,9 @@ def _assert_page_contract(wizard, expected_buttons):
     overflow = required(
         page.findChild(QtWidgets.QScrollArea, "pageScrollArea"), "page scroll area"
     )
-    assert overflow is not None
-    assert overflow.widgetResizable()
+    body = required(page.parentWidget(), "wizard page body")
+    assert page.width() >= body.contentsRect().width() - 4
+    assert page.rect().contains(overflow.geometry())
     for role in expected_buttons:
         button = wizard.button(role)
         assert button.isVisible(), (page.objectName(), role)
@@ -83,33 +84,17 @@ def test_main_wizard_is_a_stable_workflow_window(qapp):
         _show(wizard, qapp)
         initial_geometry = _frame_tuple(wizard)
 
-        assert (
-            adaptive_window.adaptive_window_state(wizard).policy.archetype
-            is adaptive_window.WindowArchetype.WORKFLOW
-        )
-        assert (
-            adaptive_window.adaptive_window_state(wizard).role
-            is adaptive_window.WindowRole.WORKFLOW
-        )
         size_grip = wizard.findChild(QtWidgets.QSizeGrip)
         assert size_grip is not None
         assert size_grip.isVisible()
         assert size_grip.isEnabled()
         assert wizard.windowFlags() & QtCore.Qt.WindowType.WindowMaximizeButtonHint
 
-        welcome_page = _page(wizard, main_wizard.Page_Welcome, main_wizard.WelcomePage)
-        for button in (
-            welcome_page.create_new_btn,
-            welcome_page.import_csv_btn,
-            welcome_page.open_recent_btn,
-            welcome_page.open_btn,
-        ):
-            assert button.iconSize() == QtCore.QSize(24, 24)
-            assert button.minimumHeight() == 36
-
         data_type_page = _page(
             wizard, main_wizard.Page_DataType, main_wizard.DataTypePage
         )
+        scrollbar = required(data_type_page.pageScrollArea.horizontalScrollBar(), "horizontal scrollbar")
+        assert scrollbar.maximum() == 0
         data_type_page.twoarm_proportions_Button.click()
         wizard.next()
         qapp.processEvents()

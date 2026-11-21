@@ -44,7 +44,10 @@ def _valid_bundle(root: Path) -> None:
         "regenerator": "forest",
         "styleable": True,
     }
-    for scale in native_results_smoke.SCALE_FACTORS:
+    for scale, (x, y, width, height) in (
+        (1.0, (10, 20, 100, 80)),
+        (1.5, (15, 30, 150, 120)),
+    ):
         slug = str(scale).replace(".", "_")
         artifact = root / f"forest-{slug}.svg"
         artifact.write_text(
@@ -56,8 +59,6 @@ def _valid_bundle(root: Path) -> None:
         captures = {}
         for name in ("results",):
             path = root / f"{name}-{slug}.png"
-            width = native_results_smoke.logical_extent_to_physical_pixels(100.0, scale)
-            height = native_results_smoke.logical_extent_to_physical_pixels(80.0, scale)
             _write_png(path, width, height)
             captures[name] = {
                 "attempts": 1,
@@ -67,12 +68,8 @@ def _valid_bundle(root: Path) -> None:
                 "logical_frame": {"x": 10, "y": 20, "width": 100, "height": 80},
                 "path": path.name,
                 "physical_crop": {
-                    "x": native_results_smoke.logical_extent_to_physical_pixels(
-                        10.0, scale
-                    ),
-                    "y": native_results_smoke.logical_extent_to_physical_pixels(
-                        20.0, scale
-                    ),
+                    "x": x,
+                    "y": y,
                     "width": width,
                     "height": height,
                 },
@@ -208,14 +205,13 @@ def test_native_results_evidence_uses_exact_capture_dpr_for_physical_geometry(
     capture = record["captures"]["results"]
     capture["device_pixel_ratio"] = 1.009
     capture["image_device_pixel_ratio"] = 1.009
-    width = native_results_smoke.logical_extent_to_physical_pixels(100, 1.009)
-    height = native_results_smoke.logical_extent_to_physical_pixels(80, 1.009)
+    width, height = 101, 81
     image = tmp_path / capture["path"]
     _write_png(image, width, height)
     capture["pixel_size"] = [width, height]
     capture["physical_crop"] = {
-        "x": native_results_smoke.logical_extent_to_physical_pixels(10, 1.009),
-        "y": native_results_smoke.logical_extent_to_physical_pixels(20, 1.009),
+        "x": 10,
+        "y": 20,
         "width": width,
         "height": height,
     }
