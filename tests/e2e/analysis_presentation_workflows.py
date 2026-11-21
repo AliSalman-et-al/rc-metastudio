@@ -136,7 +136,8 @@ def run(app, window, work, record, scenario):
                             assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
-                            assert any("H₀: " + expected_null in "".join(node.itertext()) for node in nodes), (metric, ["".join(node.itertext()) for node in nodes])
+                            text = " ".join("".join(node.itertext()) for node in nodes)
+                            assert "H₀: " + expected_null in text, (metric, text)
                             from tests.e2e.report_retention import assert_report
                             pooled, _fit = assert_report(view)
                             assert len(pooled.rows) == 1 and pooled.rows[0][0] == 'Proportion'
