@@ -1450,8 +1450,8 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     occupied <- cbind(x[visible]-pad, x[visible]+pad, y[visible]-pad, y[visible]+pad)
     skipped <- 0L
     for (i in which(selected & visible)) {
-        w <- graphics::strwidth(labels[i], cex=.7, units="inches") / 2
-        h <- graphics::strheight("Mg", cex=.7, units="inches") / 2
+        w <- graphics::strwidth(labels[i], cex=.7, units="inches") / 2 + .01
+        h <- graphics::strheight("Mg", cex=.7, units="inches") / 2 + .02
         gap <- pad + .012 + seq(0, 1.04, by=.13)
         centers <- cbind(
             c(rbind(x[i]+gap+w, x[i]-gap-w, x[i], x[i])),
