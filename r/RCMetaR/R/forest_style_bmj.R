@@ -638,9 +638,7 @@ rcmetar.draw.bmj.forest <- function(bundle, plan) {
     graphics::par(cex=1, font=1, col="#111111")
     rcmetar.draw.forest.study.columns(bundle, rows, layout, ilab, plot.info$cex)
     rcmetar.draw.bmj.study.effect.labels(bundle, effect, layout, rows, plot.info$cex)
-    rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout,
-                                  if (plan$rows$summary) plan$device$inference else character(),
-                                  show.summary=plan$rows$summary, axis.offset=axis.offset)
+    rcmetar.draw.bmj.bottom.blocks(bundle, rcmetar.forest.study.x(layout), plot.info$cex, layout, plan)
 
     invisible(bundle$changed.params)
 }
@@ -780,18 +778,20 @@ rcmetar.draw.bmj.axis <- function(bundle, layout, cex, offset=0) {
     invisible(NULL)
 }
 
-rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, inference, show.summary, axis.offset) {
+rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, plan) {
     graphics::par(xpd=NA)
-    if (show.summary && !is.null(layout)) {
-        rcmetar.draw.bmj.total.row(bundle, x, layout, cex)
-    }
-    if (length(inference)) {
-        graphics::text(x, -1.65 - .85 * (seq_along(inference) - 1L), inference, pos=4, cex=cex)
+    if (plan$rows$summary) {
+        rcmetar.draw.bmj.total.row(bundle, x, layout, cex, plan$summary_labels[[1L]])
+        inference <- plan$device$inference
+        if (length(inference)) {
+            graphics::text(x, -1.65 - plan$summary_extra[[1L]] - .85 * (seq_along(inference) - 1L),
+                           inference, adj=c(0, .5), cex=cex)
+        }
     }
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
     # Reserve separate physical lines for the title and each direction block.
     spacing <- graphics::strheight("Mg", cex=cex) * 1.65
-    label.y <- -2.37 + axis.offset - spacing * 2
+    label.y <- -2.37 + (plan$rows$axis_offset %||% 0) - spacing * 2
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex, adj=c(.5, 0))
     }
@@ -799,9 +799,8 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, inference, sh
     invisible(NULL)
 }
 
-rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex) {
-    graphics::text(x, -0.65, paste0("Total (", display.confidence.level(bundle$params), "% CI)"),
-                   adj=c(0, 0), font=1, cex=cex)
+rcmetar.draw.bmj.total.row <- function(bundle, x, layout, cex, label) {
+    rcmetar.draw.forest.summary.label(x, -.65, label, cex, font=1)
     for (key in names(bundle$style_blocks$totals)) {
         index <- rcmetar.bmj.column.index(bundle, key)
         if (length(index) == 1) {

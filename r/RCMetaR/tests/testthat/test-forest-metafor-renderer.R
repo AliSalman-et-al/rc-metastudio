@@ -1871,6 +1871,14 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   plan <- rcmetar.forest.layout.preflight(bundle)
   expect_true(all(bundle$effect$yi >= plan$x$alim[[1]] &
                   bundle$effect$yi <= plan$x$alim[[2]]))
+  measured.width <- rcmetar.forest.with.measurement.device(max(strwidth(
+    unlist(plan$summary_labels), units = "inches", cex = plan$typography$cex, font = 2
+  )))
+  expect_lte(measured.width, plan$device$study_width)
+  first.column.left <- plan$layout$ilab.xpos[[1L]] -
+    plan$device$column_widths[[1L]] / 2 * diff(plan$x$alim) / plan$device$plot_width
+  expect_gt(first.column.left - rcmetar.forest.study.x(plan$layout),
+            measured.width * diff(plan$x$alim) / plan$device$plot_width)
   expect_equal(plan$device$width, 180 / 25.4)
 })
 

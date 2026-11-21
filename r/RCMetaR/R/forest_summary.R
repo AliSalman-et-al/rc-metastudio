@@ -136,19 +136,11 @@ rcmetar.draw.forest.totals <- function(bundle, layout, row, cex, indexes=seq_alo
     invisible(NULL)
 }
 
-rcmetar.forest.summary.row.label <- function(bundle, layout, x, cex) {
-    label <- rcmetar.forest.model.label(rcmetar.forest.summary.result(bundle))
-    keys <- vapply(bundle$ilab$columns, function(column) column$key, character(1))
-    indexes <- which(keys %in% names(bundle$style_blocks$totals))
-    if (length(indexes)) {
-        first <- indexes[[which.min(layout$ilab.xpos[indexes])]]
-        value <- rcmetar.compact.numeric.labels(bundle$style_blocks$totals[[keys[[first]]]])
-        available <- layout$ilab.xpos[[first]] - x - graphics::strwidth(paste0(" ", value, " "), font=2, cex=cex) / 2 - graphics::strwidth("  ", font=2, cex=cex)
-        if (graphics::strwidth(label, font=2, cex=cex) > available) {
-            label <- sub(" (", "\n(", label, fixed=TRUE)
-        }
-    }
-    label
+rcmetar.draw.forest.summary.label <- function(x, row, lines, cex, font=2) {
+    if (length(lines))
+        graphics::text(x, row - .86 * (seq_along(lines) - 1L), lines,
+                       adj=c(0, .5), font=font, cex=cex)
+    invisible(NULL)
 }
 
 rcmetar.heterogeneity.df <- function(res) {
@@ -190,7 +182,7 @@ rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, d
                 if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
     for (index in seq_along(labels)) {
-        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], pos=4, font=1, cex=cex)
+        if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], adj=c(0, .5), font=1, cex=cex)
     }
     invisible(NULL)
 }

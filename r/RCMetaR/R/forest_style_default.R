@@ -175,7 +175,7 @@ rcmetar.draw.default.summary.diamond <- function(res, row, color, alim, bundle) 
     invisible(NULL)
 }
 
-rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout, summary) {
+rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout, plan) {
     accent <- rcmetar.forest.accent.color(bundle$params)
     for (i in seq_along(bundle$subgroups$names)) {
         if (!is.finite(bundle$subgroups$header_rows[[i]])) next
@@ -195,17 +195,15 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout, summary) {
         group.bundle$sample_sizes <- bundle$sample_sizes[indexes]
         rcmetar.draw.default.summary.diamond(bundle$subgroups$results[[i]],
             bundle$subgroups$polygon_rows[[i]], accent, layout$alim, group.bundle)
-        graphics::text(x, bundle$subgroups$polygon_rows[[i]],
-            rcmetar.forest.model.label(bundle$subgroups$results[[i]]), pos=4, font=2, cex=cex)
-        indexes <- which(bundle$study_groups == unique(bundle$study_groups)[[i]])
+        rcmetar.draw.forest.summary.label(x, bundle$subgroups$polygon_rows[[i]], plan$summary_labels[[i]], cex)
         rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$polygon_rows[[i]], cex, indexes)
         summary.index <- sum(vapply(unique(bundle$study_groups)[seq_len(i)],
             function(group) sum(bundle$study_groups == group), integer(1))) + i
         rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$polygon_rows[[i]], summary.index, cex)
-        rcmetar.draw.forest.inference(group.bundle, x, bundle$subgroups$polygon_rows[[i]], cex,
+        rcmetar.draw.forest.inference(group.bundle, x, bundle$subgroups$polygon_rows[[i]] - plan$summary_extra[[i]], cex,
             bundle$subgroups$results[[i]])
     }
-    if (!summary) return(invisible(NULL))
+    if (!plan$rows$summary) return(invisible(NULL))
     graphics::segments(
         x,
         bundle$subgroups$overall_row + 1,
@@ -215,11 +213,12 @@ rcmetar.draw.default.subgroups <- function(bundle, x, cex, layout, summary) {
     )
     rcmetar.draw.default.summary.diamond(bundle$subgroups$overall,
         bundle$subgroups$overall_row, accent, layout$alim, bundle)
-    graphics::text(x, bundle$subgroups$overall_row, rcmetar.forest.model.label(bundle$subgroups$overall), pos=4, font=2, cex=cex)
+    overall <- length(plan$summary_labels)
+    rcmetar.draw.forest.summary.label(x, bundle$subgroups$overall_row, plan$summary_labels[[overall]], cex)
     rcmetar.draw.forest.totals(bundle, layout, bundle$subgroups$overall_row, cex)
     rcmetar.draw.default.subgroup.estimate(bundle, layout, bundle$subgroups$overall_row,
         length(bundle$effect_display$y.disp), cex)
-    rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row, cex,
+    rcmetar.draw.forest.inference(bundle, x, bundle$subgroups$overall_row - plan$summary_extra[[overall]], cex,
         bundle$subgroups$overall, difference=bundle$subgroups$difference_test)
     invisible(NULL)
 }
@@ -248,16 +247,14 @@ rcmetar.default.subgroup.difference.label <- function(test, params=NULL) {
            ", df = ", test$df, " (", rcmetar.forest.p.value.label(test$QMp, digits), ")")
 }
 
-rcmetar.draw.default.heterogeneity <- function(bundle, x, cex) {
+rcmetar.draw.default.heterogeneity <- function(bundle, x, cex, plan) {
     if (isTRUE(bundle$single_study)) {
         if (!rcmetar.forest.is.sequential.variant(bundle))
-            graphics::text(x, -2, "Heterogeneity: \u2014", pos=4, cex=cex)
+            graphics::text(x, -2, "Heterogeneity: \u2014", adj=c(0, .5), cex=cex)
         return(invisible(NULL))
     }
-    label <- rcmetar.forest.model.label(bundle$res)
-    if (ncol(bundle$ilab$matrix)) label <- sub(" (", "\n(", label, fixed=TRUE)
-    graphics::text(x, -.75, label, adj=c(0, .5), font=2, cex=cex)
-    rcmetar.draw.forest.inference(bundle, x, -1, cex)
+    rcmetar.draw.forest.summary.label(x, -1, plan$summary_labels[[1L]], cex)
+    rcmetar.draw.forest.inference(bundle, x, -1 - plan$summary_extra[[1L]], cex)
     invisible(NULL)
 }
 
@@ -314,7 +311,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     rcmetar.draw.default.annotations(bundle, plan)
 
     if (identical(bundle$forest_variant, "subgroup")) {
-        rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex, layout, plan$rows$summary)
+        rcmetar.draw.default.subgroups(bundle, rcmetar.forest.study.x(layout), size$cex, layout, plan)
     }
 
     if (plan$headers$show && !manual.sequential.labels) {
@@ -323,7 +320,7 @@ rcmetar.draw.default.forest.panel <- function(bundle, plan) {
     if (plan$rows$summary && !isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
         rcmetar.draw.forest.totals(bundle, layout, -1, size$cex)
     }
-    if (plan$rows$summary) rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), cex=size$cex)
+    if (plan$rows$summary) rcmetar.draw.default.heterogeneity(bundle, rcmetar.forest.study.x(layout), size$cex, plan)
     rcmetar.draw.forest.direction(bundle, alim, size$cex)
 
     invisible(bundle$changed.params)
@@ -353,7 +350,7 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
         do.call(metafor::forest.default, c(list(x=effect$yi, ci.lb=effect$ci.lb,
             ci.ub=effect$ci.ub, sei=if (inherits(bundle$res, "rma")) sqrt(bundle$res$vi) else bundle$effect$sei), forest.args))
         rcmetar.draw.metafor.single.study.interval.ends(effect$ci.lb, effect$ci.ub, rows, alim, accent.color)
-        if (manual.sequential.labels) rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan$rows$summary)
+        if (manual.sequential.labels) rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan)
         if (plan$rows$summary && !isTRUE(bundle$single_study) && !identical(bundle$forest_variant, "subgroup")) {
             rcmetar.draw.default.summary.diamond(bundle$res, -1, accent.color, alim, bundle)
         }
@@ -369,7 +366,7 @@ rcmetar.draw.default.study.marks <- function(bundle, plan, forest.args, raw.effe
         ))
         if (manual.sequential.labels) {
             rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
-            rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan$rows$summary)
+            rcmetar.draw.metafor.sequential.text(bundle, rows, layout, size$cex, plan)
         } else {
             rcmetar.draw.metafor.single.study.accent(bundle, rows, alim, accent.color)
         }

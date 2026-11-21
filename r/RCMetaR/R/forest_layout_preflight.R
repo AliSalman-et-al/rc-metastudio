@@ -32,11 +32,25 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     plan$labels <- rcmetar.forest.wrap.labels(bundle$slab, plan$device$study_width, plan$typography$cex)
+    subgroup <- identical(bundle$forest_variant, "subgroup")
+    model.labels <- if (subgroup) {
+        vapply(c(bundle$subgroups$results, list(bundle$subgroups$overall)), rcmetar.forest.model.label, character(1))
+    } else if (bmj) {
+        paste0("Total (", display.confidence.level(bundle$params), "% CI)")
+    } else if (!isTRUE(bundle$single_study) || !is.null(bundle$summary_res)) {
+        rcmetar.forest.model.label(bundle$summary_res %||% bundle$res)
+    } else ""
+    plan$summary_labels <- rcmetar.forest.wrap.summary.labels(
+        model.labels, plan$device$study_width, plan$typography$cex)
+    plan$summary_extra <- .86 * pmax(0, lengths(plan$summary_labels) - 1L)
+    summary.rows <- c(bundle$subgroups$polygon_rows, bundle$subgroups$overall_row)
     rows <- plan$rows$study_rows
     extra <- ifelse(grepl("\n", plan$labels, fixed=TRUE), .7, 0)
     plan$rows$half_height <- (1 + extra) / 2
-    expand <- function(y) vapply(y, function(value)
-        value + sum(extra[rows < value]) + sum(extra[rows == value]) / 2, numeric(1))
+    expand <- function(y) vapply(y, function(value) {
+        subtotal.space <- if (subgroup) sum(plan$summary_extra[summary.rows <= value]) else 0
+        value + sum(extra[rows < value]) + sum(extra[rows == value]) / 2 + subtotal.space
+    }, numeric(1))
     plan$rows$study_rows <- expand(rows)
     plan$rows$ylim <- expand(plan$rows$ylim)
     plan$rows$top <- max(plan$rows$study_rows)
@@ -44,6 +58,10 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
     plan$subgroups$header_rows <- expand(bundle$subgroups$header_rows)
     plan$subgroups$polygon_rows <- expand(bundle$subgroups$polygon_rows)
     plan$subgroups$overall_row <- expand(bundle$subgroups$overall_row)
+    if (!subgroup) {
+        plan$rows$ylim[[1L]] <- plan$rows$ylim[[1L]] - plan$summary_extra[[1L]]
+        if (!is.null(plan$footer$axis)) plan$rows$axis_offset <- -plan$summary_extra[[1L]]
+    }
     plan$rows$summary <- TRUE
     rcmetar.forest.panel.height(plan)
 }
@@ -593,7 +611,7 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
                 if (!members[which.min(rows[members])] %in% visible) {
                     local$subgroups$polygon_rows[[i]] <- NA_real_
                 } else if (!final) {
-                    bottom <- min(bottom, local$subgroups$polygon_rows[[i]] - 3.5)
+                    bottom <- min(bottom, local$subgroups$polygon_rows[[i]] - plan$summary_extra[[i]] - 3.5)
                 }
             }
         }
@@ -622,14 +640,18 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
         last <- first
         next.panel <- panel(first, last)
         while (last < length(studies)) {
-            end <- if (last + 1L == length(studies) - 1L) last + 2L else last + 1L
+            end <- last + 1L
             candidate <- panel(first, end)
             if (candidate$device$height > limit) break
             last <- end
             next.panel <- candidate
         }
-        if (next.panel$device$height > limit || (first == last && last == length(studies)))
-            stop("The page is too short for the forest rows and axis.", call.=FALSE)
+        if (last == length(studies) - 1L) {
+            # Keep the last two together. If this panel is already the tail,
+            # preserve the indivisible block even on an undersized page.
+            last <- if (last > first) last - 1L else last + 1L
+            next.panel <- panel(first, last)
+        }
         panels[[length(panels) + 1L]] <- next.panel
         first <- last + 1L
     }

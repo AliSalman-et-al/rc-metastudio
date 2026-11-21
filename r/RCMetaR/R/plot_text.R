@@ -53,31 +53,60 @@ rcmetar.normalize.plot.text.params <- function(params) {
     }
     params
 }
+rcmetar.forest.fit.prefix <- function(text, budget, measure) {
+    low <- 0L
+    high <- nchar(text)
+    while (low < high) {
+        middle <- (low + high + 1L) %/% 2L
+        if (measure(substr(text, 1L, middle)) <= budget) low <- middle
+        else high <- middle - 1L
+    }
+    substr(text, 1L, low)
+}
+
+rcmetar.forest.wrap.line <- function(text, width, measure) {
+    first <- rcmetar.forest.fit.prefix(text, width, measure)
+    if (!nzchar(first)) return(substr(text, 1L, 1L))
+    if (nchar(first) < nchar(text) &&
+            !startsWith(substring(text, nchar(first) + 1L), " ") &&
+            grepl(" ", first, fixed=TRUE))
+        first <- sub(" [^ ]*$", "", first)
+    first
+}
+
+rcmetar.forest.wrap.summary.labels <- function(labels, width, cex) {
+    rcmetar.forest.with.measurement.device({
+        measure <- function(text) graphics::strwidth(text, units="inches", cex=cex, font=2)
+        lapply(labels, function(label) {
+            lines <- character()
+            while (nzchar(label)) {
+                first <- rcmetar.forest.wrap.line(label, width, measure)
+                lines <- c(lines, first)
+                label <- trimws(substring(label, nchar(first) + 1L))
+            }
+            lines
+        })
+    })
+}
+
 rcmetar.forest.wrap.labels <- function(labels, width, cex) {
     rcmetar.forest.with.measurement.device({
         measure <- function(text) graphics::strwidth(text, units="inches", cex=cex, font=2)
-        fit <- function(text, budget) {
-            low <- 0L
-            high <- nchar(text)
-            while (low < high) {
-                middle <- (low + high + 1L) %/% 2L
-                if (measure(substr(text, 1L, middle)) <= budget) low <- middle
-                else high <- middle - 1L
-            }
-            substr(text, 1L, low)
-        }
         wrap <- function(label, suffix="") {
             label <- trimws(gsub("[[:space:]]+", " ", label))
             if (measure(paste0(label, suffix)) <= width) return(paste0(label, suffix))
-            first <- fit(label, width)
-            if (!startsWith(substring(label, nchar(first) + 1L), " ") && grepl(" ", first, fixed=TRUE))
-                first <- sub(" [^ ]*$", "", first)
-            rest <- trimws(substring(label, nchar(first) + 1L))
-            if (measure(paste0(rest, suffix)) > width) {
-                suffix <- paste0("\u2026", suffix)
-                rest <- trimws(fit(rest, width - measure(suffix)))
+            year.pattern <- "( \\([12][0-9]{3}\\)|,? [12][0-9]{3})$"
+            year <- regmatches(label, regexpr(year.pattern, label))
+            year <- if (length(year)) year[[1L]] else ""
+            name <- sub(year.pattern, "", label)
+            first <- rcmetar.forest.wrap.line(name, width, measure)
+            rest <- trimws(substring(name, nchar(first) + 1L))
+            tail <- paste0(suffix, year)
+            if (measure(paste0(rest, tail)) > width) {
+                tail <- paste0("\u2026", tail)
+                rest <- trimws(rcmetar.forest.fit.prefix(rest, width - measure(tail), measure))
             }
-            paste0(first, "\n", rest, suffix)
+            paste0(first, "\n", trimws(paste0(rest, tail)))
         }
         originals <- unique(labels)
         visible <- vapply(originals, wrap, character(1), USE.NAMES=FALSE)

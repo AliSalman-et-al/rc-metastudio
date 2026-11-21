@@ -888,7 +888,7 @@ rcmetar.draw.metafor.forest <- function(bundle, outpath, width=NULL, dpi=NULL, p
     if (is.null(page.height)) invisible(bundle$changed.params) else paths
 }
 
-rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, cex, summary) {
+rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, cex, plan) {
     graphics::par(xpd=NA)
     study.x <- rcmetar.forest.study.x(layout)
     annotation.x <- rcmetar.forest.annotation.x(layout)
@@ -897,10 +897,10 @@ rcmetar.draw.metafor.sequential.text <- function(bundle, rows, layout, cex, summ
     if (isTRUE(bundle$has_overall) && is.finite(rows[1]) && rows[1] == max(rows, na.rm=TRUE)) {
         graphics::segments(study.x, rows[1] - .5, annotation.x, rows[1] - .5, col="grey65", lwd=.6)
     }
-    if (summary && !is.null(bundle$summary_res)) {
+    if (plan$rows$summary && !is.null(bundle$summary_res)) {
         summary.y <- if (isTRUE(bundle$has_overall) && rows[1] < 0) -1.35 else -.5
-        graphics::text(study.x, summary.y, rcmetar.forest.model.label(bundle$summary_res), pos=4, font=2, cex=cex)
-        rcmetar.draw.forest.inference(bundle, study.x, summary.y, cex, bundle$summary_res)
+        rcmetar.draw.forest.summary.label(study.x, summary.y, plan$summary_labels[[1L]], cex)
+        rcmetar.draw.forest.inference(bundle, study.x, summary.y - plan$summary_extra[[1L]], cex, bundle$summary_res)
     }
     if (rcmetar.param.is.true(bundle$params, "fp_show_annotation", TRUE)) {
         labels <- rcmetar.metafor.effect.labels(bundle)
