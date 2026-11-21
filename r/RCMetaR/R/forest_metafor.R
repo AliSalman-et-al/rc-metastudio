@@ -677,6 +677,8 @@ rcmetar.metafor.axis.ticks <- function(bundle, alim) {
 rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     ticks <- ticks[is.finite(ticks) & ticks >= alim[[1]] & ticks <= alim[[2]]]
     if (!rcmetar.is.plot.default.text(bundle$params$fp_xticks)) return(ticks)
+    null <- rcmetar.metafor.refline(bundle, alim)
+    if (is.finite(null)) ticks <- unique(c(ticks, null))
     labels <- rcmetar.forest.axis.labels(bundle, ticks)
     valid <- is.finite(ticks) & !is.na(labels) & nzchar(labels)
     ticks <- ticks[valid]
@@ -684,15 +686,15 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     half.width <- graphics::strwidth(labels, cex=cex) / 2
     gap <- graphics::strwidth("  ", cex=cex)
     chosen <- integer(0)
-    # Keep the ratio null tick when it is present, then admit non-overlapping labels.
-    priority <- order(abs(ticks), ticks)
+    # Keep the null tick when it is visible.
+    priority <- order(ticks != null, abs(ticks), ticks, na.last=TRUE)
     for (index in priority) {
         if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {
             chosen <- c(chosen, index)
         }
     }
     # A central label can block both ends even when the two end labels fit.
-    if (length(chosen) < 2 && length(ticks) >= 2) {
+    if (length(chosen) < 2 && length(ticks) >= 2 && !is.finite(null)) {
         ends <- c(which.min(ticks), which.max(ticks))
         if (diff(range(ticks)) > sum(half.width[ends]) + gap) chosen <- ends
     }

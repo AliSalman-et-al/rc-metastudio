@@ -517,9 +517,9 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
             check_report(app, view, work, record)
             title, path = next(iter(view.results.display_images.items()))
             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$metrics$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
-            assert layout["rows"] == 65 and layout["cex"] >= 1.08, layout
-            assert layout["height"] > 18, layout
+            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$device$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
+            assert layout["rows"] == 65 and abs(layout["cex"] * 12 - 8) < .001, layout
+            assert layout["height"] > 267 / 25.4, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
             captions = ["".join(n.itertext()) for n in nodes]
             assert any(window.model.current_sheet.name in text for text in captions), captions[-5:]

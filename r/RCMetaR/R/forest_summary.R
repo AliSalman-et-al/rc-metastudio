@@ -199,14 +199,14 @@ rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     if (!nzchar(label)) return(invisible(NULL))
     lines <- strsplit(label, "\n", fixed=TRUE)[[1]]
     # Separate baselines using device text metrics; row coordinates shrink with k.
-    leading <- graphics::strheight("Mg", units="user") * 1.65
+    leading <- graphics::strheight("Mg", units="user") * 1.8
     positions <- y + ((length(lines) - 1) / 2 - seq_along(lines) + 1) * leading
     graphics::text(x, positions, lines, adj=adj)
 }
 
 rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
     headers <- bundle$ilab$headers
-    leading <- graphics::strheight("Mg", units="user") * 1.65
+    leading <- graphics::strheight("Mg", units="user") * 1.8
     lines <- function(label) length(strsplit(label, "\n", fixed=TRUE)[[1]])
     raw.height <- if (length(headers)) max(vapply(headers, lines, integer(1))) else 1
     # Anchor the lowest raw-header line above the rule, including descenders.
@@ -235,7 +235,7 @@ rcmetar.forest.header.height <- function(bundle, cex) {
         steps <- if (length(groups)) raw + count(groups) - 0.6 else raw - 1
         # Journal effect/method/CI headings have three lines.
         steps <- max(steps, if (bundle$fp_style == "default") 0 else 2)
-        h * (2.6 + steps * 1.65) + 0.15
+        h * (2.6 + steps * 1.8) + 0.15
     })
 }
 
@@ -261,7 +261,7 @@ rcmetar.forest.header.ylim <- function(plan, rule.y) {
 rcmetar.draw.forest.effect.header <- function(x, rule.y, label, adj=0.5) {
     h <- graphics::strheight("Mg", units="user")
     lines <- length(strsplit(label, "\n", fixed=TRUE)[[1]])
-    y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.65
+    y <- rule.y + h * 1.6 + (lines - 1) / 2 * h * 1.8
     rcmetar.draw.forest.header(x, y, label, adj=adj)
 }
 
