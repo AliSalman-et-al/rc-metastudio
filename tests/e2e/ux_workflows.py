@@ -14,7 +14,7 @@ from tests.python.gui.qt_test_support import mouse_click, key_click, metric_acti
 
 def table_editing_case(app, window, work, root, record, case):
     """Exercise table transactions; the clipboard substitute never touches the OS."""
-    assert window.open(str(root / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     table = window.tableView
     role = QtCore.Qt.ItemDataRole.EditRole
 
@@ -194,7 +194,7 @@ def _run(app, window, work, root, record, analyze):
     record("ux-empty-workspace", window, guidance=window.start_page.accessibleName(), device_pixel_ratio=window.devicePixelRatioF(), logical_size=[window.width(), window.height()])
     for case in ("sorted-paste", "sparse-fill", "quoted-copy", "sparse-copy", "invalid-paste"):
         table_editing_case(app, window, work, root, record, case)
-    assert window.open(str(root / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     year = str(window.model.data(window.model.index(0, window.model.YEAR)))
     assert window.tableView.columnWidth(window.model.YEAR) >= window.tableView.fontMetrics().horizontalAdvance(year) + 8
     lower_column = window.model.OUTCOMES[1]
@@ -636,7 +636,7 @@ def _run(app, window, work, root, record, analyze):
     from analysis_matrix import run as matrix
     from rc_metastudio.results.plot_editor import EditPlotDialog
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/Continuous - Blood pressure.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
     continuous = analyze(app, window, 'continuous.random')
     def forest_nodes(result):
         artifact = result._selected_plot()[0]
@@ -653,7 +653,7 @@ def _run(app, window, work, root, record, analyze):
     record('continuous-favours-whole-words', continuous, directions=direction_lines)
     close_result(continuous)
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     bmj = analyze(app, window, 'binary.random')
     def bmj_style(dialog):
         dialog.style_cbo.setCurrentText('BMJ')
@@ -733,7 +733,7 @@ def workspace_safety_case(app, window, work, root, record, case):
     from rc_metastudio.importing.tabular import CsvImportResult
     from rc_metastudio.workspace.table_model import DatasetTableModel
     source = work / 'source.rcms'
-    source.write_bytes((root / 'sample_projects/Binary - Aminoglycosides.rcms').read_bytes())
+    source.write_bytes((root / 'tests/fixtures/desktop-projects/amino.rcms').read_bytes())
     original = source.read_bytes()
     assert window.open(str(source), raise_on_error=True)
     model = window.model

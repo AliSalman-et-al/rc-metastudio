@@ -128,14 +128,14 @@ def run(app, window, work, root, record, analyze):
         ('lymph', 'diagnostic.reitsma', 'Reitsma'),
     ):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects' / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         if label == 'SMD':
             window.model.set_current_metric('SMD')
         inspect(analyze(app, window, method, confidence=90), label)
 
     for workflow in ('cumulative', 'leave-one-out', 'subgroup', 'subgroup-t', 'meta-regression', 'adjusted-means'):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         studies = window.model.get_studies()
         window.model.add_covariate('Group', 'factor', {s.label: 'A' if i % 2 else 'B' for i, s in enumerate(studies)})
         window.model.add_covariate('Dose', 'continuous', {s.label: float(i+1) for i, s in enumerate(studies)})

@@ -97,15 +97,15 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     surfaces_path = tmp_path / "surfaces.json"
     surfaces_path.write_text("[]", encoding="utf-8")
     samples_path = tmp_path / "samples.json"
-    samples_path.write_text(json.dumps({"passed": True, "manifest_sha256": digest, "projects": [{"project": "Binary - BCG vaccine and tuberculosis.rcms", "sha256": digest, "semantic_sha256": digest, "opened_in_packaged_application": True}]}), encoding="utf-8")
+    samples_path.write_text(json.dumps({"passed": True, "manifest_sha256": digest, "projects": [{"project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", "sha256": digest, "semantic_sha256": digest, "opened_in_packaged_application": True}]}), encoding="utf-8")
     output = tmp_path / "evidence.json"
-    evidence = assembler.assemble(workflow_observation=workflow_path, surface_records=surfaces_path, sample_observations=samples_path, sample="Binary - BCG vaccine and tuberculosis.rcms", output=output)
+    evidence = assembler.assemble(workflow_observation=workflow_path, surface_records=surfaces_path, sample_observations=samples_path, sample="Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", output=output)
     assert (output.with_suffix(".plots") / "0-forest.svg").read_bytes() == (tmp_path / "forest.svg").read_bytes()
     assert (output.with_suffix(".plots") / "1-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     assert (output.with_suffix(".plots") / "2-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     expected = hashlib.sha256(b"Binary Random-Effects Model Estimate 1").hexdigest()
     assert evidence["workflows"]["normalized_summary_sha256"] == expected
-    monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "Binary - BCG vaccine and tuberculosis.rcms", expected)
+    monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", expected)
     inspect_macos_deployment.validate_packaged_workflow_evidence(evidence)
     log = tmp_path / "smoke.log"
     log.write_text("packaged-workflow:post-close\n", encoding="utf-8")
@@ -122,7 +122,7 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
         samples_path.write_text(json.dumps(samples))
         with pytest.raises(ValueError, match="sample observation"):
             assembler.assemble(workflow_observation=workflow_path, surface_records=surfaces_path,
-                sample_observations=samples_path, sample="Binary - BCG vaccine and tuberculosis.rcms", output=tmp_path / "bad.json")
+                sample_observations=samples_path, sample="Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", output=tmp_path / "bad.json")
         assert not (tmp_path / "bad.json").exists()
 
 
@@ -168,7 +168,7 @@ def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_pat
         encoding="utf-8",
     )
     samples = tmp_path / "samples.json"
-    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
     output = tmp_path / "packaged-smoke.json"
     monkeypatch.setattr(
         assembler,
@@ -192,7 +192,7 @@ def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_pat
             "--sample-observations",
             str(samples),
             "--sample",
-            "Binary - BCG vaccine and tuberculosis.rcms",
+            "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
             "--sample-path",
             str(tmp_path / "sample.rcms"),
             "--executable",
@@ -228,7 +228,7 @@ def test_assembler_analyzes_equivalent_locale_edits(monkeypatch, tmp_path):
     operation_dir = tmp_path / "operations"
     operation_dir.mkdir()
     assembler._capture_workflow_operations(
-        tmp_path / "RCMetaStudio", tmp_path / "Binary - BCG vaccine and tuberculosis.rcms", operation_dir
+        tmp_path / "RCMetaStudio", tmp_path / "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", operation_dir
     )
 
     locale_edits = [
@@ -318,11 +318,11 @@ def test_assembler_rejects_unobserved_reopen_analysis(tmp_path):
     surfaces = tmp_path / "surfaces.json"
     surfaces.write_text("[]", encoding="utf-8")
     samples = tmp_path / "samples.json"
-    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
     def assemble():
         workflow.write_text(json.dumps(observation), encoding="utf-8")
         return assembler.assemble(workflow_observation=workflow, surface_records=surfaces,
-            sample_observations=samples, sample="Binary - BCG vaccine and tuberculosis.rcms", output=tmp_path / "out.json")
+            sample_observations=samples, sample="Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", output=tmp_path / "out.json")
     assert assemble()["passed"]
     observation["analysis_after_reopen_observed"] = False
     with pytest.raises(ValueError, match="workflow observation contains an unsuccessful operation"):
@@ -356,6 +356,6 @@ def test_assembler_rejects_reused_locale_operation_observation(tmp_path):
     surfaces = tmp_path / "surfaces.json"
     surfaces.write_text("[]", encoding="utf-8")
     samples = tmp_path / "samples.json"
-    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
+    samples.write_text(json.dumps({"passed": True, "manifest_sha256": "a"*64, "projects": [{"project": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", "sha256": "b"*64, "semantic_sha256": "c"*64, "opened_in_packaged_application": True}]}), encoding="utf-8")
     with pytest.raises(ValueError, match="distinct locale operations"):
-        assembler.assemble(workflow_observation=workflow, surface_records=surfaces, sample_observations=samples, sample="Binary - BCG vaccine and tuberculosis.rcms", output=tmp_path / "out.json")
+        assembler.assemble(workflow_observation=workflow, surface_records=surfaces, sample_observations=samples, sample="Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", output=tmp_path / "out.json")

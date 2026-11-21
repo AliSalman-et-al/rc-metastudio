@@ -49,7 +49,7 @@ def run(app, window, work, root, record, analyze):
         wait(100)
         assert not any(widget.isVisible() and widget.objectName() == 'Dialog' for widget in app.topLevelWidgets() if isinstance(widget, QtWidgets.QDialog))
         record('direction-home-disabled', window, reason=window.action_go.toolTip())
-        assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         window.showNormal()
         window.resize(1280, 800)
         window.activateWindow()
@@ -139,7 +139,7 @@ def run(app, window, work, root, record, analyze):
 
     if phase == 'all':
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+        assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         view = analyze(app, window, 'binary.random', via_shortcut=True)
         first = required(view.nav_tree.topLevelItem(0))
         if view._plot_entry(first) is None:

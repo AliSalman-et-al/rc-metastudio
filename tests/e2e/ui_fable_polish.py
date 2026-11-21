@@ -38,7 +38,7 @@ def run(app, window, work, root, record, analyze):
     about.close()
     app.styleHints().setColorScheme(original_scheme)
 
-    assert window.open(str(root / 'sample_projects/Continuous - Blood pressure.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/continuous.rcms'), raise_on_error=True)
     model = window.model
     calculator = ContinuousDataDialog(model.get_current_analysis_unit_for_study(0),
         model.arm_names, model.get_current_arm_key(), model.current_effect,
@@ -64,7 +64,7 @@ def run(app, window, work, root, record, analyze):
 
     for project in ('amino', 'continuous', 'lymph'):
         window.workspace.mark_saved()
-        assert window.open(str(root / 'sample_projects' / SAMPLE_FILES[project]), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[project]), raise_on_error=True)
         model = window.model
         args = (model.get_current_analysis_unit_for_study(0), model.arm_names, model.get_current_arm_key())
         if project == 'lymph':
@@ -91,7 +91,7 @@ def run(app, window, work, root, record, analyze):
         calculator.reject()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     window.model.add_covariate('Dose', 'continuous')
     regression = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, analysis_type='meta-regression')
     regression.show()
@@ -133,7 +133,7 @@ def run(app, window, work, root, record, analyze):
     setup.reject()
 
     window.workspace.mark_saved()
-    assert window.open(str(root / 'sample_projects/Diagnostic accuracy - LAG positivity.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/lymph.rcms'), raise_on_error=True)
     combined = AnalysisSetupDialog(window.model, parent=window, confidence_level=95, diagnostic_metrics=['sens', 'spec', 'dor'])
     combined.show()
     combined.advanced_toggle.setChecked(True)

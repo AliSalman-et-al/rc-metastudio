@@ -307,7 +307,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
 ):
     from rc_metastudio.project import archive as project_format
 
-    source = project_format.load_project(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
+    source = project_format.load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
     sheet = next(item for item in _json_maps(project["sheets"]) if item["name"] == "nephrotoxic")
     _json_list(sheet["arms"]).reverse()
@@ -343,7 +343,7 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
     from rc_metastudio import app_error_handler, r_bridge
     from rc_metastudio.project import archive as project_format
 
-    source = project_format.load_project(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
+    source = project_format.load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
     project = _json_map(copy.deepcopy(source.project))
     first, second = _json_maps(project["sheets"])
     for sheet in (first, second):
@@ -438,7 +438,7 @@ def test_failed_calculator_projection_keeps_study_and_history(
     monkeypatch.setattr(binary_data_dialog, "BinaryDataDialog", AcceptCalculatorEdit)
     app, window = automation.start_automation()
     try:
-        assert window.open(str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms"), raise_on_error=True)
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms"), raise_on_error=True)
         metric = window.model.current_effect
         arm_key = window.model.get_current_arm_key()
 
@@ -481,7 +481,7 @@ def test_new_dataset_clears_previous_project_destination_and_starts_dirty(
     app, window = automation.start_automation()
     previous_project = tmp_path / "previous.rcms"
     try:
-        assert window.open(str(ROOT / "sample_projects" / "Diagnostic accuracy - LAG positivity.rcms")) is True
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects" / "lymph.rcms")) is True
         monkeypatch.setattr(
             QtWidgets.QFileDialog,
             "getSaveFileName",
@@ -532,7 +532,7 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
     candidate.write_text("Study,Year,Events,Total\nCandidate,2024,1,10\n", encoding="utf-8")
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName",
                         lambda *_args, **_kwargs: (str(candidate), "CSV"))
-    target = str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
+    target = str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
     for source_path in ("new_dataset", "csv_import"):
         app, window = automation.start_automation()
         import_errors = []
@@ -623,7 +623,7 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
         lambda _parent, title, message: critical_messages.append((title, message)),
     )
     try:
-        good = ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms"
+        good = ROOT / "tests/fixtures/desktop-projects" / "amino.rcms"
         assert window.open(str(good)) is True
         prior_path = window.workspace.path
         prior_title = window.model.dataset.title
@@ -740,7 +740,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
         ),
     )
     try:
-        assert window.open(str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")) is True
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")) is True
         for fault in ("add", "menu"):
             destination = tmp_path / f"saved-despite-{fault}.rcms"
             window.model.dataset.notes = f"durable-{fault}"
@@ -822,7 +822,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         ),
     )
     try:
-        assert window.open(str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")) is True
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")) is True
         destination = tmp_path / "durability.rcms"
         window.model.dataset.notes = "save-as installed"
         window.data_dirtied()
@@ -880,7 +880,7 @@ def test_post_replace_durability_failure_commits_save_and_authorizes_next_action
         assert saved_dataset["notes"] == "save installed"
         assert warnings[-1][0] == "Project saved, but not confirmed"
 
-        assert window.open(str(ROOT / "sample_projects" / "Binary - BCG vaccine and tuberculosis.rcms")) is True
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects" / "bcg.rcms")) is True
         assert window.model.dataset.title == "BCG"
     finally:
         _close_shell(app, window)
@@ -898,8 +898,8 @@ def test_open_rolls_back_constructor_rebind_and_ui_initialization_failures(
         "critical",
         lambda _parent, title, message: errors.append((title, message)),
     )
-    source = str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
-    candidate = str(ROOT / "sample_projects" / "Binary - BCG vaccine and tuberculosis.rcms")
+    source = str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
+    candidate = str(ROOT / "tests/fixtures/desktop-projects" / "bcg.rcms")
     try:
         assert window.open(source) is True
         old_model = window.model
@@ -1017,8 +1017,8 @@ def test_late_cross_family_open_failure_restores_projected_controls_both_directi
         "critical",
         lambda _parent, title, message: errors.append((title, message)),
     )
-    binary = str(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
-    original = project_format.load_project(ROOT / "sample_projects" / "Continuous - Blood pressure.rcms")
+    binary = str(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
+    original = project_format.load_project(ROOT / "tests/fixtures/desktop-projects" / "continuous.rcms")
     project = _json_map(copy.deepcopy(original.project))
     active_sheet = next(
         sheet for sheet in _json_maps(project["sheets"])
@@ -1060,8 +1060,8 @@ def test_late_cross_family_open_failure_restores_projected_controls_both_directi
 
 def test_opening_a_second_project_updates_the_status_path_atomically(qapp):
     app, window = automation.start_automation()
-    first = str(ROOT / "sample_projects" / "Diagnostic accuracy - LAG positivity.rcms")
-    second = str(ROOT / "sample_projects" / "Binary - BCG vaccine and tuberculosis.rcms")
+    first = str(ROOT / "tests/fixtures/desktop-projects" / "lymph.rcms")
+    second = str(ROOT / "tests/fixtures/desktop-projects" / "bcg.rcms")
     try:
         assert window.open(first) is True
         assert window.windowFilePath() == first

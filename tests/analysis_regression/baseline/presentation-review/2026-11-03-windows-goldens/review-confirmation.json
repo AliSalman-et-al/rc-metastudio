@@ -20,7 +20,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Binary - Aminoglycosides.rcms",
+          "dataset": "amino.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "amino-binary-random",
@@ -49,7 +49,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "continuous-random",
@@ -78,7 +78,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+          "dataset": "lymph.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "lymph-diagnostic-random-dor",
@@ -109,7 +109,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Binary - Aminoglycosides.rcms",
+          "dataset": "amino.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "amino-binary-cumulative",
@@ -138,7 +138,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Binary - Aminoglycosides.rcms",
+          "dataset": "amino.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "amino-binary-leave-one-out",
@@ -167,7 +167,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "continuous-cumulative",
@@ -196,7 +196,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "continuous-leave-one-out",
@@ -225,7 +225,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Text section Summary changed.",
           "exception": "PR #349 intentionally improves meta-regression summary and reference text.",
           "id": "continuous-meta-regression",
@@ -234,7 +234,7 @@
         },
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "continuous-meta-regression",
@@ -265,7 +265,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Binary - Aminoglycosides.rcms",
+          "dataset": "amino.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "amino-binary-subgroup",
@@ -294,7 +294,7 @@
       "accepted_exceptions": [
         {
           "classification": "accepted_exception",
-          "dataset": "Continuous - Blood pressure.rcms",
+          "dataset": "continuous.rcms",
           "detail": "Unexpected text section Inference Method was produced.",
           "exception": "PR #349 intentionally exposes the selected inference method in result output.",
           "id": "continuous-subgroup",

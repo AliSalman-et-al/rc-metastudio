@@ -36,11 +36,11 @@ def run(app, window, root, record, analyze):
         assert len(paths) == 2, paths
         return {str(path): hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
 
-    assert window.open(str(root / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
     first_plot = plot_hashes(view)
     first_numbers = parsed_numeric_sections(view.results)
-    assert window.open(str(root / "sample_projects/Continuous - Blood pressure.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     window.action_go.trigger()
     app.processEvents()
     fresh_dialog = setup()
@@ -59,7 +59,7 @@ def run(app, window, root, record, analyze):
         "".join(node.itertext()) for node in ET.parse(fresh_svg).iter("{http://www.w3.org/2000/svg}text")
     }
     fresh_view.close()
-    assert window.open(str(root / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     assert view.result_identity.isVisible()
     assert view.windowTitle().startswith("Meta-analysis — clinical failure · Binary · Odds ratio")
     assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
@@ -119,7 +119,7 @@ def run(app, window, root, record, analyze):
     record("review-report-top", view, text=report)
 
     # A result belongs to its original input even after the main window opens another project.
-    assert window.open(str(root / "sample_projects/Continuous - Blood pressure.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     for style, order in (("Default", "year"), ("RevMan", "year"), ("RevMan", "effect"), ("RevMan", "weight"), ("RevMan", "table")):
         view.change_settings_action.trigger()
         app.processEvents()
@@ -189,7 +189,7 @@ def run(app, window, root, record, analyze):
            favours_labels=old_labels, plots={"Edited forest plot": edited_svg})
     changed.close()
 
-    assert window.open(str(root / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random")
     for confidence in (90, 99):
         view.change_settings_action.trigger()

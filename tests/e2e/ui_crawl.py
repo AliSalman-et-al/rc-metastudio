@@ -12,7 +12,7 @@ def analysis_setup(driver, capture, missing):
                            ("diagnostic", "lymph"), ("hr", "Pignon2000-HR"),
                            ("irr", "NielWeise2008-IRR")):
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         diagnostic_metrics = ["dor"] if family == "diagnostic" else None
         form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95,
                                    diagnostic_metrics=diagnostic_metrics)
@@ -27,7 +27,7 @@ def analysis_setup(driver, capture, missing):
         capture(f"E-{family}-plots", form)
         form.close()
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     original_record = driver.record_step
     driver.record_step = lambda *args, **kwargs: None
     try:
@@ -51,7 +51,7 @@ def analysis_setup(driver, capture, missing):
             form.close()
     from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     driver.window.action_go.trigger()
     driver.app.processEvents()
     form = next(w for w in driver.app.topLevelWidgets() if isinstance(w, DiagnosticMetricsDialog) and w.isVisible())
@@ -60,7 +60,7 @@ def analysis_setup(driver, capture, missing):
     capture("E-diagnostic-metrics", form)
     form.close()
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     form = SmallStudyEffectsDialog(driver.window.model, parent=driver.window,
                                  analysis_service=driver.window.small_study_effects_service)
@@ -91,7 +91,7 @@ def analysis_setup(driver, capture, missing):
 
 def results(driver, capture, missing):
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     original = driver.record_step
     driver.record_step = lambda *args, **kwargs: None
     try:
@@ -179,7 +179,7 @@ def plots(driver, capture, missing):
                                    ("diagnostic", "lymph", "diagnostic.random"),
                                    ("hr", "Pignon2000-HR", "time_to_event.random")):
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         original = driver.record_step
         driver.record_step = lambda *args, **kwargs: None
         try:
@@ -396,7 +396,7 @@ def imports(driver, capture, missing):
 
 def shell(driver, capture, missing):
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     assert driver.window.menu_file.actions() == [
         driver.window.action_new_dataset, driver.window.action_open,
         driver.window.action_open_recent_2.menuAction(), driver.window.action_import_csv,
@@ -448,7 +448,7 @@ def dialogs(driver, capture, missing):
     from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
     from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     driver.window.model.add_covariate("Dose", "continuous")
     sheet = driver.window.model.current_sheet
     for detail, form in (
@@ -484,7 +484,7 @@ def calculators(driver, capture, missing, prefix="D", families=None):
         if families and family not in families:
             continue
         driver.window.workspace.mark_saved()
-        assert driver.window.open(str(driver.ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert driver.window.open(str(driver.ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         model = driver.window.model
         unit = model.get_current_analysis_unit_for_study(0)
         if kind is RatioDataDialog:
@@ -622,7 +622,7 @@ def structure(driver, capture, missing):
     from rc_metastudio import main_wizard as wizard
     from rc_metastudio.edit_name_dialogs import EditArmNameDialog
     driver.window.workspace.mark_saved()
-    assert driver.window.open(str(driver.ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert driver.window.open(str(driver.ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     table = driver.window.tableView
     driver.window.model.add_covariate("Dose", "continuous")
     table.synchronize_column_widths()
@@ -774,7 +774,7 @@ def run(driver):
             import shutil
             from datetime import datetime
             recent = driver.WORK / 'Recent project.rcms'
-            shutil.copyfile(driver.ROOT / 'sample_projects/Binary - Aminoglycosides.rcms', recent)
+            shutil.copyfile(driver.ROOT / 'tests/fixtures/desktop-projects/amino.rcms', recent)
             modified = datetime(2026, 11, 5, 12).timestamp()
             os.utime(recent, (modified, modified))
             driver.window.start_page.set_recent_projects([str(recent)], driver.window.open)

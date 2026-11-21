@@ -1248,7 +1248,7 @@
     "summary": null,
     "title": "BCG"
   },
-  "project_file": "sample_projects/Binary - BCG vaccine and tuberculosis.rcms",
+  "project_file": "tests/fixtures/desktop-projects/bcg.rcms",
   "schema_version": 1,
   "source_sha256": "9eb3621ba9a84d9a7a08b22aa94fb9273df1140f49d4de6db3b51fa57f09f75f"
 }

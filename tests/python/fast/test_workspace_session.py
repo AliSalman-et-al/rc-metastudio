@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[3]
 def test_abort_restores_nested_edit_without_consuming_existing_redo():
     # Failure modes: partial mutations survive, redo disappears, nested close
     # commits an aborted graph, or the next operation inherits stale depth.
-    session = WorkspaceSession(load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     required(session.runtime, "workspace runtime").dataset.title = "first edit"
     session.checkpoint()
     assert session.undo()
@@ -40,7 +40,7 @@ def test_abort_restores_nested_edit_without_consuming_existing_redo():
 
 
 def test_history_retention_does_not_alias_live_edits():
-    session = WorkspaceSession(load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     for index in range(105):
         required(session.runtime, "workspace runtime").dataset.title = f"edit {index}"
         session.checkpoint()
@@ -58,7 +58,7 @@ def test_history_retention_does_not_alias_live_edits():
 
 
 def test_failed_transaction_serialization_remains_abortable():
-    session = WorkspaceSession(load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     before = session.document
     session.begin_change()
     required(session.runtime, "workspace runtime").dataset.sheets[0].settings["bad"] = float("nan")
@@ -70,7 +70,7 @@ def test_failed_transaction_serialization_remains_abortable():
 
 
 def test_save_cannot_publish_a_half_finished_transaction(tmp_path):
-    session = WorkspaceSession(load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     session.begin_change()
     required(session.runtime, "workspace runtime").dataset.title = "unfinished"
     target = tmp_path / "unfinished.rcms"
@@ -83,7 +83,7 @@ def test_save_cannot_publish_a_half_finished_transaction(tmp_path):
 
 @pytest.mark.parametrize("committed_sheet", [0, 1])
 def test_redo_restores_committed_sheet_after_unrelated_navigation(committed_sheet):
-    session = WorkspaceSession(load_project(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     runtime = required(session.runtime, "workspace runtime")
     selected = runtime.dataset.sheets[committed_sheet].id
     runtime.dataset.title = "changed"
@@ -98,7 +98,7 @@ def test_redo_restores_committed_sheet_after_unrelated_navigation(committed_shee
 
 
 def test_nested_transactions_publish_one_history_entry() -> None:
-    document = load_project(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
+    document = load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
     session = WorkspaceSession(document)
     runtime = session.runtime
     assert runtime is not None
@@ -119,8 +119,8 @@ def test_nested_transactions_publish_one_history_entry() -> None:
 
 
 def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> None:
-    document = load_project(ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms")
-    source = ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms"
+    document = load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
+    source = ROOT / "tests/fixtures/desktop-projects" / "amino.rcms"
     session = WorkspaceSession(document, source)
     required(session.runtime, "workspace runtime").dataset.title = "Edited before failed install"
     session.checkpoint()
@@ -129,7 +129,7 @@ def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> N
 
     with pytest.raises(RuntimeError, match="adapter failed"):
         session.open(
-            ROOT / "sample_projects" / "Continuous - Blood pressure.rcms",
+            ROOT / "tests/fixtures/desktop-projects" / "continuous.rcms",
             install=lambda _candidate: (_ for _ in ()).throw(
                 RuntimeError("adapter failed")
             ),
@@ -145,7 +145,7 @@ def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> N
 def test_durability_failure_commits_the_installed_document(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    document = load_project(ROOT / "sample_projects" / "Continuous - Blood pressure.rcms")
+    document = load_project(ROOT / "tests/fixtures/desktop-projects" / "continuous.rcms")
     session = WorkspaceSession(document)
     destination = tmp_path / "durability.rcms"
     runtime = session.runtime
@@ -168,7 +168,7 @@ def test_durability_failure_commits_the_installed_document(
 
 
 def test_save_marks_only_successfully_written_snapshot_clean(tmp_path: Path) -> None:
-    document = load_project(ROOT / "sample_projects" / "Continuous - Blood pressure.rcms")
+    document = load_project(ROOT / "tests/fixtures/desktop-projects" / "continuous.rcms")
     session = WorkspaceSession(document)
     required(session.runtime, "workspace runtime").dataset.title = "Saved"
     session.checkpoint()

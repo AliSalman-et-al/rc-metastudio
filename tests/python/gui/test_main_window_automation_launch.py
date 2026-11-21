@@ -29,7 +29,7 @@ REPO_ROOT = str(Path(__file__).resolve().parents[3])
 
 
 def _sample_project_path(name):
-    return os.path.join(REPO_ROOT, "sample_projects", name)
+    return os.path.join(REPO_ROOT, "tests", "fixtures", "desktop-projects", name)
 
 
 def _mark_workspace_saved(window):
@@ -227,7 +227,7 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
         # about replacing that dataset in the same window, so authorize the open
         # without driving the separate interactive save-confirmation contract.
         _mark_workspace_saved(window)
-        project_path = _sample_project_path("Binary - Aminoglycosides.rcms")
+        project_path = _sample_project_path("amino.rcms")
         project = project_format.load_project(project_path).project
         expected_dataset = project_adapter.dataset_to_project(
             project_adapter.project_to_dataset(project)
@@ -256,7 +256,7 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
 
 @pytest.mark.parametrize(
     "sample_project",
-    ["Binary - Aminoglycosides.rcms", "Continuous - Blood pressure.rcms", "Diagnostic accuracy - LAG positivity.rcms", "Binary subgroups - Mortality by treatment group.rcms"],
+    ["amino.rcms", "continuous.rcms", "lymph.rcms", "meantime.rcms"],
 )
 def test_main_data_grid_leaves_spare_width_outside_data_columns(
     sample_project, monkeypatch
@@ -287,8 +287,8 @@ def test_main_data_grid_leaves_spare_width_outside_data_columns(
 def test_frozen_startup_argv_resolves_project_argument(has_project_argument):
     from rc_metastudio import launch
 
-    sample_project = _sample_project_path("Binary - Aminoglycosides.rcms")
-    other_project = _sample_project_path("Continuous - Blood pressure.rcms")
+    sample_project = _sample_project_path("amino.rcms")
+    other_project = _sample_project_path("continuous.rcms")
     argv = launch.resolve_startup_argv(
         argv=["RCMetaStudio.exe", sample_project]
         if has_project_argument else ["RCMetaStudio.exe"],
@@ -306,7 +306,7 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
     from rc_metastudio import automation
     from rc_metastudio import launch
 
-    sample_project = _sample_project_path("Binary - Aminoglycosides.rcms")
+    sample_project = _sample_project_path("amino.rcms")
     invocation = tmp_path / "invocation"
     appdata = tmp_path / "appdata"
     invocation.mkdir()
@@ -402,7 +402,7 @@ def test_meantime_sample_project_loads_native_factor_covariate():
     r_bridge.initialize_r()
     from tests.analysis_regression.golden.support import headless_analysis
 
-    model = headless_analysis.load_dataset_model(_sample_project_path("Binary subgroups - Mortality by treatment group.rcms"))
+    model = headless_analysis.load_dataset_model(_sample_project_path("meantime.rcms"))
     dataset = model.current_sheet
 
     assert ("treatment group", 4) in [
@@ -422,7 +422,7 @@ def test_change_covariate_type_model_returns_native_values_and_accepts_native_ed
 
     app, window = automation.start_automation()
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
         dataset = window.model.current_sheet
         window.model.add_covariate(
             "Dose",
@@ -527,7 +527,7 @@ def test_factor_covariate_edits_render_as_native_paint_text():
 
     app, window = automation.start_automation()
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
         model = window.tableView.model()
         covariate = model.add_covariate("Region", "factor")
         factor_column = model.columnCount() - 1
@@ -595,7 +595,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     )
 
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
 
         window.action_go.trigger()
         specs = window.findChildren(
@@ -679,7 +679,7 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
     )
 
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
 
         window.action_go.trigger()
         specs = window.findChildren(
@@ -760,7 +760,7 @@ def test_diagnostic_metric_dialog_fits_checkbox_group_labels():
     form = None
 
     try:
-        assert window.open(_sample_project_path("Diagnostic accuracy - LAG positivity.rcms")) is True
+        assert window.open(_sample_project_path("lymph.rcms")) is True
 
         form = diagnostic_metrics_dialog.DiagnosticMetricsDialog(
             window.model, lambda _metrics: True, parent=window
@@ -784,7 +784,7 @@ def test_analysis_actions_follow_data_readiness_covariate_delete_and_undo(monkey
     app, window = automation.start_automation()
 
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
         assert window.model.current_sheet.covariates == []
         assert window.action_go.isEnabled()
         assert not window.action_meta_regression.isEnabled()
@@ -825,7 +825,7 @@ def test_subgroup_dialog_disables_ok_and_does_not_run_without_factor_covariates(
     calls = []
 
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms")) is True
+        assert window.open(_sample_project_path("amino.rcms")) is True
         window._add_new_covariate("dose", "continuous")
         form = subgroup_analysis_dialog.SubgroupAnalysisDialog(
             window.model, calls.append, parent=window
@@ -2325,7 +2325,7 @@ def test_csv_import_wizard_reports_preview_errors(tmp_path, monkeypatch, preview
 def _assert_sample_projects_open_directory(directory):
     directory = os.path.abspath(directory)
     assert os.path.basename(directory) == "sample_projects"
-    assert os.path.exists(os.path.join(directory, "Binary - Aminoglycosides.rcms"))
+    assert os.path.exists(os.path.join(directory, "Binary - Aminoglycoside dosing, Barza 1996.rcms"))
     assert os.path.normcase(directory) != os.path.normcase(os.getcwd())
 
 
@@ -2373,7 +2373,7 @@ def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypat
     monkeypatch.setattr(r_runtime, "_READY", False)
     app, window = launch.compose_application(app=qapp, r_loader=lambda *_: None)
     try:
-        assert window.open(_sample_project_path("Binary - Aminoglycosides.rcms"))
+        assert window.open(_sample_project_path("amino.rcms"))
         rows = window.model.current_sheet.rows
         for index in range(len(rows)):
             assert window.model.setData(window.model.index(index, window.model.INCLUDE_STUDY),

@@ -22,7 +22,7 @@ def run(app, window, work, record):
     ):
         for mode in modes:
             window.workspace.mark_saved()
-            assert window.open(str(root/'sample_projects'/SAMPLE_FILES[sample]), raise_on_error=True)
+            assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
             def sheet_confidence(level):
                 from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
                 def change(dialog):

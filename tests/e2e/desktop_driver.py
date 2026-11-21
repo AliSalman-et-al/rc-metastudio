@@ -301,7 +301,7 @@ def doctor(app, window):
     record_step("ready", window, runtime=identity)
 
 
-def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None):
+def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, via_shortcut=False, diagnostic_metrics=None, parameters=None):
     from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
     assert window.action_go.isEnabled()
@@ -339,7 +339,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
     assert index >= 0, method
     dialog.method_cbo_box.setCurrentIndex(index)
     app.processEvents()
-    if confidence is not None or estimator is not None:
+    if confidence is not None or estimator is not None or parameters:
         sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
         from analysis_matrix import set_parameter
         if confidence is not None:
@@ -353,6 +353,8 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
                 control.setCurrentIndex(control.findData(estimator))
                 app.processEvents()
                 assert panel.params['rm.method'] == estimator
+        for key, value in (parameters or {}).items():
+            set_parameter(app, dialog, key, value)
     def precision_control():
         return next(control for control in [*dialog.current_widgets, *dialog._shared_diagnostic_widgets]
                     if isinstance(control, QtWidgets.QSpinBox)
@@ -429,7 +431,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
 def analysis_dialog(app, window):
     QtCore.QSettings().remove("analysis/advancedExpanded")
     for sample in ("amino", "continuous", "Pignon2000-HR", "lymph"):
-        assert window.open(str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         for row in range(window.model.rowCount()):
             texts = [str(window.model.data(window.model.index(row, column))) for column in window.model.OUTCOMES[:3]]
             decimals = [len(text.split(".")[1]) for text in texts if "." in text and text.replace(".", "", 1).replace("-", "", 1).isdigit() and (float(text) == 0 or abs(float(text)) >= .01)]
@@ -549,7 +551,7 @@ def sample_analysis(app, window, sample):
         record_step("wizard-return-advances", wizard)
         wizard.reject()
     assert window.open(
-        str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
+        str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True
     )
     first_study, study_count = {
         "amino": ("Gonzalez", 19),
@@ -731,7 +733,7 @@ def rename_sheet_inline(app, window, name, invalid=False):
 def sheets_persist(app, window):
     import copy
     from rc_metastudio.project.adapter import dataset_to_project
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     add_named_sheet(app, window, "Third")
     tabs = window.sheet_tabs
     tabs.setCurrentIndex(0)
@@ -822,9 +824,9 @@ def sheets_swap(app, window):
     import math
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
     from tests.fit_observations import observe_fit
-    for filename, metric in (("Binary - Aminoglycosides.rcms", "OR"), ("Binary - Aminoglycosides.rcms", "RD"), ("Continuous - Blood pressure.rcms", "MD"), ("Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms", "HR"), ("Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms", "IRR")):
+    for filename, metric in (("amino.rcms", "OR"), ("amino.rcms", "RD"), ("continuous.rcms", "MD"), ("Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms", "HR"), ("Event rates (IRR) - Catheter infections, Niel-Weise 2008.rcms", "IRR")):
         window.workspace.mark_saved()
-        assert window.open(str(ROOT / "sample_projects" / filename), raise_on_error=True)
+        assert window.open(str(ROOT / ("tests/fixtures/desktop-projects" if filename in {"amino.rcms", "continuous.rcms"} else "sample_projects") / filename), raise_on_error=True)
         model = window.model
         model.set_current_metric(metric)
         precise = []
@@ -857,7 +859,7 @@ def sheets_swap(app, window):
             if favours is not None:
                 assert model.current_sheet.settings["favours_labels"] == (list(reversed(favours)) if iteration == 1 else favours)
             record_step("swap-pooled-analysis", view, file=filename, iteration=iteration, sections=sections)
-            if filename == "Binary - Aminoglycosides.rcms" and iteration == 1:
+            if filename == "amino.rcms" and iteration == 1:
                 from xml.etree import ElementTree as ET
                 for title, params_path in view.results.image_params_paths.items():
                     exported = WORK / "amino-swapped-forest.svg"
@@ -882,7 +884,7 @@ def sheets_swap(app, window):
         else:
             assert math.isclose(values[1], 1 / values[0], abs_tol=.003), values
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     assert not window.action_swap_arms.isEnabled()
     add_named_sheet(app, window, "Diagnostic 2", diagnostic=True)
     for index in (0, 1, 0):
@@ -928,7 +930,7 @@ def sheets(app, window):
                 r_code=code, expected=expected, actual=actual)
 
     for sample in ("NielWeise2008-IRR", "amino"):
-        assert window.open(str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True)
         table = window.tableView
         for fit in (False, True):
             if fit:
@@ -945,7 +947,7 @@ def sheets(app, window):
     from rc_metastudio.project.adapter import dataset_to_project
     def project(dataset):
         return dataset_to_project(dataset)
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     assert_study_grid(app, window)
     tabs = window.sheet_tabs
     original_palette = app.palette()
@@ -1258,7 +1260,7 @@ def verify_sheet_strip(app, window, screens):
 
 
 def editing(app, window):
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     table = window.tableView
     original = str(window.model.data(window.model.index(0, window.model.NAME)))
     record_step("table-before-edit", window, name=original)
@@ -1321,7 +1323,7 @@ def xlsx_import(app, window):
     sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
     from advanced_workflows import modal
     from rc_metastudio import main_wizard
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
     screens = WORK / "screens"
     screens.mkdir(parents=True, exist_ok=True)
@@ -1685,7 +1687,7 @@ def csv_import(app, window):
 def plot_edit(app, window):
     from rc_metastudio.results.plot_editor import EditPlotDialog
 
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     view = analyze(app, window, "binary.random", estimator="DL")
     title = next(iter(view.results.display_images))
     path = Path(view.results.display_images[title])
@@ -1770,7 +1772,7 @@ def plot_edit(app, window):
 def small_study_effects(app, window):
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
-    assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     callback_errors = []
 
     def run():
@@ -1891,7 +1893,7 @@ def calculator(app, window, family):
         ),
     }[family]
     assert window.open(
-        str(ROOT / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
+        str(ROOT / SAMPLE_FILES[sample]), raise_on_error=True
     )
 
     def raw():
@@ -2370,7 +2372,7 @@ def hillclimb(app, window):
 
     # T4 starts from the committed populated diagnostic project, as PLAN specifies.
     window.workspace.mark_saved()
-    assert window.open(str(ROOT / "sample_projects/Diagnostic accuracy - LAG positivity.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     begin("T4")
     diagnostic = run_analysis(window.action_go, diagnostic=True)
     end(diagnostic)
@@ -2419,7 +2421,7 @@ def subgroup_image(app, window, scenario):
         app.setFont(font)
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from unittest.mock import patch
-    assert window.open(str(ROOT / "sample_projects/Binary subgroups - Mortality by treatment group.rcms"), raise_on_error=True)
+    assert window.open(str(ROOT / "tests/fixtures/desktop-projects/meantime.rcms"), raise_on_error=True)
     def visible_result(kind):
         return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
     window.action_subgroup_ma.trigger()

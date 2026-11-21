@@ -269,7 +269,7 @@ def test_evidence_runner_captures_all_archetypes_and_runtime_contracts(
 ):
     from scripts import adaptive_layout_evidence
 
-    sample = ROOT / "sample_projects" / "Binary - Aminoglycosides.rcms"
+    sample = ROOT / "tests/fixtures/desktop-projects" / "amino.rcms"
     output = tmp_path / "native-evidence"
     os.chdir(ROOT)
     adaptive_layout_evidence.configure_isolated_evidence_settings(output)
@@ -414,7 +414,7 @@ def test_runtime_resize_records_a_real_change_and_reachable_table(qapp, monkeypa
     from scripts import adaptive_layout_evidence as evidence
     app, window = automation.start_automation()
     try:
-        assert window.open(str(ROOT / "sample_projects/Binary - Aminoglycosides.rcms"))
+        assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
         window.showNormal()
         window.resize(800, 600)
         app.processEvents()

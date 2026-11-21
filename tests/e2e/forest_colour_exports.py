@@ -63,7 +63,7 @@ def run_colours(app, window, work, record):
         window.workspace.mark_saved()
         if scenario in ('HR','IRR'):
             sample = 'Pignon2000-HR' if scenario == 'HR' else 'NielWeise2008-IRR'
-            assert window.open(str(Path(__file__).resolve().parents[2]/'sample_projects'/SAMPLE_FILES[sample]),raise_on_error=True)
+            assert window.open(str(Path(__file__).resolve().parents[2] / SAMPLE_FILES[sample]),raise_on_error=True)
             view = analyze_existing(app,window,'standard','time_to_event.random' if scenario == 'HR' else 'event_rates.random',record,{'fp_style':'default','digits':3})
         else:
             view = matrix(app,window,scenario,record,keep_results=True,metric_override=metric,parameters={'fp_style':'default'})

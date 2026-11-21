@@ -7,7 +7,7 @@
     "rows": [
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.calculation_scale.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -15,7 +15,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.calculation_scale.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -23,7 +23,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.calculation_scale.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -31,7 +31,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.calculation_scale.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -39,7 +39,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -47,7 +47,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -55,7 +55,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -63,7 +63,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -71,7 +71,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -79,7 +79,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -87,7 +87,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -95,7 +95,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -103,7 +103,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -111,7 +111,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.de_vries matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -119,7 +119,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.giamarellou matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -127,7 +127,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.gonzalez matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -135,7 +135,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.hansen matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -143,7 +143,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.hollender matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -151,7 +151,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.klastersky matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -159,7 +159,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.maller matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -167,7 +167,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.marik matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -175,7 +175,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.mauracher matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -183,7 +183,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.muijsken matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -191,7 +191,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.nordstrom matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -199,7 +199,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.prins matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -207,7 +207,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.rozdzinski matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -215,7 +215,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.sturm matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -223,7 +223,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.ter_braak matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -231,7 +231,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.tulkens matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -239,7 +239,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.van_der_auwera matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -247,7 +247,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.vanhaeverbeek matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -255,7 +255,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.vigano matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -263,7 +263,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section References matched.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -271,7 +271,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Summary matched.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -279,7 +279,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Weights matched.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -287,7 +287,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "amino-binary-random",
@@ -296,7 +296,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Artifact Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -304,7 +304,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -312,7 +312,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -320,7 +320,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -328,7 +328,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -336,7 +336,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -344,7 +344,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -352,7 +352,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -360,7 +360,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -368,7 +368,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -376,7 +376,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -384,7 +384,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.carroll matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -392,7 +392,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.donat matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -400,7 +400,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.grant matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -408,7 +408,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.peck matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -416,7 +416,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.stewart matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -424,7 +424,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.young matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -432,7 +432,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section References matched.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -440,7 +440,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Summary matched.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -448,7 +448,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Weights matched.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -456,7 +456,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "continuous-random",
@@ -465,7 +465,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Artifact Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -473,7 +473,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.calculation_scale.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -483,7 +483,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.calculation_scale.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -493,7 +493,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.calculation_scale.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -503,7 +503,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.calculation_scale.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -513,7 +513,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -523,7 +523,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.heterogeneity_df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -533,7 +533,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.heterogeneity_p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -543,7 +543,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -553,7 +553,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -563,7 +563,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -573,7 +573,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -583,7 +583,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.study_count matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -593,7 +593,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.tau_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -603,7 +603,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Odds Ratio Summary.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -613,7 +613,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Text section Odds Ratio Summary matched.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -623,7 +623,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Text section References matched.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -633,7 +633,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "lymph-diagnostic-random-dor",
@@ -644,7 +644,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Artifact Odds Ratio Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -654,7 +654,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.gonzalez.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -662,7 +662,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.gonzalez.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -670,7 +670,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.gonzalez.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -678,7 +678,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.gonzalez.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -686,7 +686,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.gonzalez.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -694,7 +694,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_de_vries.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -702,7 +702,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_de_vries.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -710,7 +710,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_de_vries.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -718,7 +718,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_de_vries.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -726,7 +726,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_de_vries.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -734,7 +734,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_giamarellou.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -742,7 +742,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_giamarellou.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -750,7 +750,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_giamarellou.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -758,7 +758,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_giamarellou.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -766,7 +766,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_giamarellou.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -774,7 +774,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hansen.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -782,7 +782,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hansen.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -790,7 +790,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hansen.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -798,7 +798,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hansen.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -806,7 +806,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hansen.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -814,7 +814,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hollender.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -822,7 +822,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hollender.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -830,7 +830,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hollender.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -838,7 +838,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hollender.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -846,7 +846,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_hollender.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -854,7 +854,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_klastersky.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -862,7 +862,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_klastersky.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -870,7 +870,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_klastersky.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -878,7 +878,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_klastersky.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -886,7 +886,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_klastersky.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -894,7 +894,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_maller.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -902,7 +902,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_maller.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -910,7 +910,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_maller.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -918,7 +918,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_maller.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -926,7 +926,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_maller.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -934,7 +934,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_marik.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -942,7 +942,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_marik.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -950,7 +950,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_marik.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -958,7 +958,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_marik.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -966,7 +966,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_marik.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -974,7 +974,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_mauracher.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -982,7 +982,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_mauracher.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -990,7 +990,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_mauracher.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -998,7 +998,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_mauracher.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1006,7 +1006,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_mauracher.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1014,7 +1014,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_muijsken.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1022,7 +1022,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_muijsken.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1030,7 +1030,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_muijsken.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1038,7 +1038,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_muijsken.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1046,7 +1046,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_muijsken.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1054,7 +1054,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_nordstrom.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1062,7 +1062,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_nordstrom.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1070,7 +1070,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_nordstrom.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1078,7 +1078,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_nordstrom.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1086,7 +1086,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_nordstrom.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1094,7 +1094,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_prins.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1102,7 +1102,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_prins.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1110,7 +1110,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_prins.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1118,7 +1118,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_prins.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1126,7 +1126,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_prins.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1134,7 +1134,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_rozdzinski.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1142,7 +1142,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_rozdzinski.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1150,7 +1150,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_rozdzinski.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1158,7 +1158,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_rozdzinski.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1166,7 +1166,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_rozdzinski.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1174,7 +1174,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_sturm.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1182,7 +1182,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_sturm.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1190,7 +1190,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_sturm.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1198,7 +1198,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_sturm.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1206,7 +1206,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_sturm.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1214,7 +1214,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_ter_braak.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1222,7 +1222,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_ter_braak.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1230,7 +1230,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_ter_braak.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1238,7 +1238,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_ter_braak.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1246,7 +1246,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_ter_braak.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1254,7 +1254,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_tulkens.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1262,7 +1262,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_tulkens.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1270,7 +1270,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_tulkens.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1278,7 +1278,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_tulkens.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1286,7 +1286,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_tulkens.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1294,7 +1294,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_van_der_auwera.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1302,7 +1302,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_van_der_auwera.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1310,7 +1310,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_van_der_auwera.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1318,7 +1318,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_van_der_auwera.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1326,7 +1326,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_van_der_auwera.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1334,7 +1334,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vanhaeverbeek.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1342,7 +1342,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vanhaeverbeek.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1350,7 +1350,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vanhaeverbeek.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1358,7 +1358,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vanhaeverbeek.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1366,7 +1366,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vanhaeverbeek.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1374,7 +1374,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vigano.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1382,7 +1382,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vigano.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1390,7 +1390,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vigano.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1398,7 +1398,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vigano.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1406,7 +1406,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Cumulative Summary.model.through_vigano.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1414,7 +1414,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Cumulative Summary matched.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1422,7 +1422,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section References matched.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1430,7 +1430,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "amino-binary-cumulative",
@@ -1439,7 +1439,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Artifact Cumulative Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -1447,7 +1447,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1455,7 +1455,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1463,7 +1463,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1471,7 +1471,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1479,7 +1479,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1487,7 +1487,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_de_vries.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1495,7 +1495,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_de_vries.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1503,7 +1503,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_de_vries.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1511,7 +1511,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_de_vries.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1519,7 +1519,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_de_vries.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1527,7 +1527,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_giamarellou.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1535,7 +1535,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_giamarellou.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1543,7 +1543,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_giamarellou.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1551,7 +1551,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_giamarellou.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1559,7 +1559,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_giamarellou.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1567,7 +1567,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_gonzalez.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1575,7 +1575,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_gonzalez.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1583,7 +1583,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_gonzalez.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1591,7 +1591,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_gonzalez.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1599,7 +1599,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_gonzalez.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1607,7 +1607,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hansen.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1615,7 +1615,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hansen.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1623,7 +1623,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hansen.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1631,7 +1631,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hansen.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1639,7 +1639,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hansen.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1647,7 +1647,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hollender.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1655,7 +1655,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hollender.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1663,7 +1663,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hollender.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1671,7 +1671,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hollender.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1679,7 +1679,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_hollender.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1687,7 +1687,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_klastersky.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1695,7 +1695,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_klastersky.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1703,7 +1703,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_klastersky.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1711,7 +1711,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_klastersky.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1719,7 +1719,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_klastersky.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1727,7 +1727,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_maller.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1735,7 +1735,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_maller.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1743,7 +1743,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_maller.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1751,7 +1751,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_maller.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1759,7 +1759,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_maller.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1767,7 +1767,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_marik.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1775,7 +1775,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_marik.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1783,7 +1783,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_marik.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1791,7 +1791,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_marik.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1799,7 +1799,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_marik.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1807,7 +1807,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_mauracher.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1815,7 +1815,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_mauracher.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1823,7 +1823,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_mauracher.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1831,7 +1831,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_mauracher.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1839,7 +1839,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_mauracher.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1847,7 +1847,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_muijsken.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1855,7 +1855,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_muijsken.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1863,7 +1863,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_muijsken.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1871,7 +1871,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_muijsken.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1879,7 +1879,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_muijsken.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1887,7 +1887,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_nordstrom.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1895,7 +1895,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_nordstrom.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1903,7 +1903,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_nordstrom.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1911,7 +1911,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_nordstrom.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1919,7 +1919,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_nordstrom.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1927,7 +1927,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_prins.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1935,7 +1935,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_prins.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1943,7 +1943,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_prins.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1951,7 +1951,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_prins.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1959,7 +1959,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_prins.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1967,7 +1967,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_rozdzinski.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1975,7 +1975,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_rozdzinski.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1983,7 +1983,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_rozdzinski.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1991,7 +1991,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_rozdzinski.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -1999,7 +1999,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_rozdzinski.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2007,7 +2007,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_sturm.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2015,7 +2015,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_sturm.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2023,7 +2023,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_sturm.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2031,7 +2031,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_sturm.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2039,7 +2039,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_sturm.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2047,7 +2047,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_ter_braak.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2055,7 +2055,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_ter_braak.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2063,7 +2063,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_ter_braak.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2071,7 +2071,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_ter_braak.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2079,7 +2079,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_ter_braak.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2087,7 +2087,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_tulkens.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2095,7 +2095,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_tulkens.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2103,7 +2103,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_tulkens.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2111,7 +2111,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_tulkens.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2119,7 +2119,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_tulkens.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2127,7 +2127,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_van_der_auwera.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2135,7 +2135,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_van_der_auwera.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2143,7 +2143,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_van_der_auwera.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2151,7 +2151,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_van_der_auwera.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2159,7 +2159,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_van_der_auwera.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2167,7 +2167,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2175,7 +2175,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2183,7 +2183,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2191,7 +2191,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2199,7 +2199,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vanhaeverbeek.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2207,7 +2207,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vigano.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2215,7 +2215,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vigano.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2223,7 +2223,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vigano.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2231,7 +2231,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vigano.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2239,7 +2239,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Leave-one-out Summary.model.without_vigano.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2247,7 +2247,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Leave-one-out Summary matched.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2255,7 +2255,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section References matched.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2263,7 +2263,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "amino-binary-leave-one-out",
@@ -2272,7 +2272,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Artifact Leave-one-out Forest plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -2280,7 +2280,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.carroll.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2288,7 +2288,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.carroll.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2296,7 +2296,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.carroll.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2304,7 +2304,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.carroll.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2312,7 +2312,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_donat.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2320,7 +2320,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_donat.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2328,7 +2328,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_donat.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2336,7 +2336,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_donat.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2344,7 +2344,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_donat.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2352,7 +2352,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_grant.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2360,7 +2360,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_grant.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2368,7 +2368,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_grant.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2376,7 +2376,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_grant.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2384,7 +2384,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_grant.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2392,7 +2392,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_peck.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2400,7 +2400,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_peck.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2408,7 +2408,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_peck.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2416,7 +2416,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_peck.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2424,7 +2424,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_peck.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2432,7 +2432,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_stewart.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2440,7 +2440,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_stewart.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2448,7 +2448,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_stewart.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2456,7 +2456,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_stewart.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2464,7 +2464,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_stewart.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2472,7 +2472,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_young.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2480,7 +2480,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_young.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2488,7 +2488,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_young.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2496,7 +2496,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_young.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2504,7 +2504,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Cumulative Summary.model.through_young.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2512,7 +2512,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Cumulative Summary matched.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2520,7 +2520,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section References matched.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2528,7 +2528,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "continuous-cumulative",
@@ -2537,7 +2537,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Artifact Cumulative Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -2545,7 +2545,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2553,7 +2553,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2561,7 +2561,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2569,7 +2569,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2577,7 +2577,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2585,7 +2585,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_carroll.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2593,7 +2593,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_carroll.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2601,7 +2601,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_carroll.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2609,7 +2609,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_carroll.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2617,7 +2617,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_carroll.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2625,7 +2625,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_donat.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2633,7 +2633,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_donat.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2641,7 +2641,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_donat.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2649,7 +2649,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_donat.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2657,7 +2657,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_donat.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2665,7 +2665,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_grant.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2673,7 +2673,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_grant.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2681,7 +2681,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_grant.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2689,7 +2689,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_grant.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2697,7 +2697,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_grant.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2705,7 +2705,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_peck.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2713,7 +2713,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_peck.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2721,7 +2721,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_peck.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2729,7 +2729,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_peck.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2737,7 +2737,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_peck.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2745,7 +2745,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_stewart.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2753,7 +2753,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_stewart.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2761,7 +2761,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_stewart.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2769,7 +2769,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_stewart.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2777,7 +2777,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_stewart.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2785,7 +2785,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_young.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2793,7 +2793,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_young.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2801,7 +2801,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_young.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2809,7 +2809,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_young.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2817,7 +2817,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Leave-one-out Summary.model.without_young.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2825,7 +2825,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Leave-one-out Summary matched.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2833,7 +2833,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section References matched.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2841,7 +2841,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "continuous-leave-one-out",
@@ -2850,7 +2850,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Artifact Leave-one-out Forest plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -2858,7 +2858,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.golden_year.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2866,7 +2866,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.golden_year.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2874,7 +2874,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.golden_year.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2882,7 +2882,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.golden_year.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2890,7 +2890,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.golden_year.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2898,7 +2898,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.intercept.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2906,7 +2906,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.intercept.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2914,7 +2914,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.intercept.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2922,7 +2922,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.intercept.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2930,7 +2930,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.model.intercept.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2938,7 +2938,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Summary.omnibus.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2946,7 +2946,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.de_vries matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2954,7 +2954,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.giamarellou matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2962,7 +2962,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.gonzalez matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2970,7 +2970,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.hansen matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2978,7 +2978,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.hollender matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2986,7 +2986,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.klastersky matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -2994,7 +2994,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.maller matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3002,7 +3002,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.marik matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3010,7 +3010,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.mauracher matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3018,7 +3018,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.muijsken matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3026,7 +3026,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.nordstrom matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3034,7 +3034,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.prins matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3042,7 +3042,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.rozdzinski matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3050,7 +3050,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.sturm matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3058,7 +3058,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.ter_braak matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3066,7 +3066,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.tulkens matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3074,7 +3074,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.van_der_auwera matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3082,7 +3082,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.vanhaeverbeek matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3090,7 +3090,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Weights.weight.vigano matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3098,7 +3098,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section References matched.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3106,7 +3106,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Summary changed.",
         "exception": "PR #349 intentionally improves meta-regression summary and reference text.",
         "id": "amino-binary-meta-regression",
@@ -3115,7 +3115,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Weights matched.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3123,7 +3123,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "amino-binary-meta-regression",
@@ -3132,7 +3132,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Artifact Regression Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3140,7 +3140,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.golden_year.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3148,7 +3148,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.golden_year.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3156,7 +3156,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.golden_year.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3164,7 +3164,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.golden_year.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3172,7 +3172,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.golden_year.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3180,7 +3180,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.intercept.coefficient matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3188,7 +3188,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.intercept.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3196,7 +3196,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.intercept.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3204,7 +3204,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.intercept.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3212,7 +3212,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.model.intercept.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3220,7 +3220,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Summary.omnibus.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3228,7 +3228,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.carroll matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3236,7 +3236,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.donat matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3244,7 +3244,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.grant matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3252,7 +3252,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.peck matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3260,7 +3260,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.stewart matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3268,7 +3268,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Weights.weight.young matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3276,7 +3276,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section References matched.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3284,7 +3284,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Summary changed.",
         "exception": "PR #349 intentionally improves meta-regression summary and reference text.",
         "id": "continuous-meta-regression",
@@ -3293,7 +3293,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Weights matched.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3301,7 +3301,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "continuous-meta-regression",
@@ -3310,7 +3310,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Artifact Regression Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3318,7 +3318,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.overall.df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3326,7 +3326,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.overall.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3334,7 +3334,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3342,7 +3342,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.overall.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3350,7 +3350,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_early.df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3358,7 +3358,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_early.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3366,7 +3366,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3374,7 +3374,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_early.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3382,7 +3382,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_late.df matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3390,7 +3390,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_late.i_squared matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3398,7 +3398,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3406,7 +3406,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.heterogeneity.subgroup_late.q matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3414,7 +3414,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3422,7 +3422,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3430,7 +3430,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3438,7 +3438,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3446,7 +3446,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.studies matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3454,7 +3454,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3462,7 +3462,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.overall.z_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3470,7 +3470,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3478,7 +3478,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3486,7 +3486,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3494,7 +3494,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3502,7 +3502,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.studies matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3510,7 +3510,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3518,7 +3518,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.z_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3526,7 +3526,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3534,7 +3534,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3542,7 +3542,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3550,7 +3550,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3558,7 +3558,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.studies matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3566,7 +3566,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3574,7 +3574,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.z_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3582,7 +3582,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section References matched.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3590,7 +3590,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Text section Subgroup Summary matched.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3598,7 +3598,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "amino-binary-subgroup",
@@ -3607,7 +3607,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Artifact Subgroup Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3615,7 +3615,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.overall.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3623,7 +3623,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.overall.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3631,7 +3631,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.overall.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3639,7 +3639,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.overall.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3647,7 +3647,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.overall.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3655,7 +3655,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3663,7 +3663,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3671,7 +3671,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3679,7 +3679,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3687,7 +3687,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_early.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3695,7 +3695,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.estimate matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3703,7 +3703,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.lower_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3711,7 +3711,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.p_value matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3719,7 +3719,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.standard_error matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3727,7 +3727,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Subgroup Summary.model.subgroup_late.upper_bound matched within tolerance abs 0.001 / rel 1e-09.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3735,7 +3735,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section References matched.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3743,7 +3743,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Text section Subgroup Summary matched.",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3751,7 +3751,7 @@
       },
       {
         "classification": "accepted_exception",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Unexpected text section Inference Method was produced.",
         "exception": "PR #349 intentionally exposes the selected inference method in result output.",
         "id": "continuous-subgroup",
@@ -3760,7 +3760,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Artifact Subgroups Forest Plot descriptor matched; content SHA-256 was validated but byte equality was not required by the cross-platform artifact policy (Windows -> Linux).",
         "id": "continuous-subgroup",
         "method": "continuous.random",
@@ -3768,7 +3768,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "amino-binary-random",
         "method": "binary.random",
@@ -3776,7 +3776,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "continuous-random",
         "method": "continuous.random",
@@ -3784,7 +3784,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Diagnostic accuracy - LAG positivity.rcms",
+        "dataset": "lymph.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "lymph-diagnostic-random-dor",
         "method": [
@@ -3794,7 +3794,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "amino-binary-cumulative",
         "method": "binary.random",
@@ -3802,7 +3802,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "amino-binary-leave-one-out",
         "method": "binary.random",
@@ -3810,7 +3810,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "continuous-cumulative",
         "method": "continuous.random",
@@ -3818,7 +3818,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "continuous-leave-one-out",
         "method": "continuous.random",
@@ -3826,7 +3826,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "amino-binary-meta-regression",
         "method": "meta.regression",
@@ -3834,7 +3834,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "continuous-meta-regression",
         "method": "meta.regression",
@@ -3842,7 +3842,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Binary - Aminoglycosides.rcms",
+        "dataset": "amino.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "amino-binary-subgroup",
         "method": "binary.random",
@@ -3850,7 +3850,7 @@
       },
       {
         "classification": "pass",
-        "dataset": "Continuous - Blood pressure.rcms",
+        "dataset": "continuous.rcms",
         "detail": "Plot descriptor matched the committed oracle-bound contract.",
         "id": "continuous-subgroup",
         "method": "continuous.random",

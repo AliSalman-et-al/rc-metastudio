@@ -491,7 +491,7 @@ def test_calculator_can_be_reopened_after_a_failed_open(
     from tests.analysis_regression.golden.support.headless_analysis import load_dataset_model
 
     view = dataset_table_view.DatasetTableView()
-    model = load_dataset_model(ROOT / "sample_projects/Continuous - Blood pressure.rcms")
+    model = load_dataset_model(ROOT / "tests/fixtures/desktop-projects/continuous.rcms")
     view.setModel(model)
     with monkeypatch.context() as failure:
         failure.setattr(

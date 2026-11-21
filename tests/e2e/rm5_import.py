@@ -245,7 +245,7 @@ def run(app, window, ROOT, WORK, record_step):
             assert any('unavailable' in d for d in imported.differences)
     assert not failures, failures
     with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Discard):
-        assert window.open(str(ROOT / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+        assert window.open(str(ROOT / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     window.model.setData(window.model.index(0, window.model.NAME), 'Dirty study', QtCore.Qt.ItemDataRole.EditRole)
     before = dataset_to_project(window.model.dataset)
     state = (window.workspace.path, window.workspace.is_dirty, tuple(window.workspace._history))

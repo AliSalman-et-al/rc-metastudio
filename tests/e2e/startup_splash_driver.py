@@ -106,7 +106,7 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         def observed_composition(**kwargs):
             return compose(**kwargs, phase_callback=observe)
         marker = output / "project-opened.json"
-        sample = Path(__file__).resolve().parents[2] / "sample_projects/Binary - Aminoglycosides.rcms"
+        sample = Path(__file__).resolve().parents[2] / "tests/fixtures/desktop-projects/amino.rcms"
         with patch.object(launch, "compose_application", observed_composition), patch.object(sys, "argv", [
             "rc-metastudio", "--automation-startup-project-smoke",
             "--automation-startup-completion-marker", str(marker), str(sample),
@@ -147,7 +147,7 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         assert window.statusBar().currentMessage() == ""
         assert r_runtime.is_ready() is not args.failure
         assert bool(errors) is args.failure
-        assert window.open(str(Path(__file__).resolve().parents[2] / "sample_projects/Binary - Aminoglycosides.rcms"))
+        assert window.open(str(Path(__file__).resolve().parents[2] / "tests/fixtures/desktop-projects/amino.rcms"))
         assert window.model.rowCount() > 0
         assert window.action_go.isEnabled() is not args.failure
         if args.failure:

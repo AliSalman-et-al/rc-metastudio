@@ -96,6 +96,8 @@ def run(
         and parameters is None
         and metric_override is None
     )
+    mean_source = None
+    participant_count = 135
     work = Path(__import__("sys").argv[2])
 
     def click(widget):
@@ -193,7 +195,7 @@ def run(
             assert "Other group" not in manuscript, manuscript
             assert f"Arm: {participant_arm}" in manuscript, manuscript
             if scenario in {"analysis-data-onearm-mean", "analysis-data-onearm-proportion"}:
-                assert re.search(r"Participants\s+135\b", text), text
+                assert re.search(rf"Participants\s+{participant_count}\b", text), text
             else:
                 assert 'Participants' not in text, text
         if scenario.startswith("analysis-diagnostic-regression"):
@@ -438,7 +440,7 @@ def run(
         record("data-reopened", window, data_type=name, metric=metric, cells=after)
         if exercise_mean_sample:
             from tests.e2e.mean_metric_migration import open_mean_sample
-            open_mean_sample(app, window, record, root, work)
+            mean_source, participant_count = open_mean_sample(app, window, record, root, work)
         if name == "generic-effect":
             from advanced_workflows import modal
             from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
@@ -481,7 +483,7 @@ def run(
             "small-study-diagnostic": "lymph",
         }[scenario]
         assert window.open(
-            str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
+            str(root / SAMPLE_FILES[sample]), raise_on_error=True
         )
         if sample == "continuous":
             import copy
@@ -610,12 +612,12 @@ def run(
                 "diagnostic": "lymph",
             }[family]
             assert window.open(
-                str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True
+                str(root / SAMPLE_FILES[sample]), raise_on_error=True
             )
             workflow = "standard"
             method = case if case in FIXED else "diagnostic.random"
             if case.startswith("category-"):
-                assert window.open(str(root / "sample_projects/Binary subgroups - Mortality by treatment group.rcms"), raise_on_error=True)
+                assert window.open(str(root / "tests/fixtures/desktop-projects/meantime.rcms"), raise_on_error=True)
                 workflow = "meta-regression"
                 method = "binary.random"
             if case == "diagnostic-joint":
@@ -753,7 +755,8 @@ def run(
     view = observe()
     if exercise_mean_sample:
         from tests.e2e.mean_metric_migration import compare_mean_sample_analysis
-        compare_mean_sample_analysis(view, record)
+        assert mean_source is not None
+        compare_mean_sample_analysis(view, record, mean_source)
     if scenario.startswith("analysis-category-"):
         view.close()
         return

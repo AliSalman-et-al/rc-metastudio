@@ -226,7 +226,11 @@ SCENARIOS = {
     "review-workflows": Scenario(external("analysis_settings_workflows", review_args), 240),
     "subgroup-image": Scenario(local("subgroup_image", "subgroup-image"), 240),
     "subgroup-image-dark-large": Scenario(local("subgroup_image", "subgroup-image-dark-large"), 240),
-    "polish-journeys": Scenario(external("polish_journeys", standard_args), 240),
+    "polish-journeys": Scenario(external("polish_journeys", standard_args), 480),
+    **{
+        f"sample-{example}": Scenario(external("published_samples", standard_args, example=example), 480)
+        for example in ("colditz", "barza", "poole", "kearon", "greenland", "abe", "feng")
+    },
     "doctor": Scenario(readiness, qualifies=False),
     "hillclimb": Scenario(local("hillclimb"), 600),
     "analysis-dialog": Scenario(local("analysis_dialog")),

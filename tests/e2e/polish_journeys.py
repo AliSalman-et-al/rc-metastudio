@@ -1,6 +1,7 @@
 """Audit journeys with real Qt, RCMetaR and the bundled projects."""
 import csv
 import hashlib
+import json
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, sip
@@ -10,49 +11,28 @@ from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
 from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 from rc_metastudio.results.window import ResultsWindow
-from tests.python.gui.qt_test_support import key_click, mouse_click, required
+from rc_metastudio.settings import get_recent_files, remove_recent_file
+from tests.python.gui.qt_test_support import key_click, mouse_click, required, wait
 
 
-def run(app, window, work, root, record, analyze):
+def open_sample_menu_action(window, filename):
+    next(action for action in window.sample_menu.actions() if action.data() == filename).trigger()
+    assert window.workspace.path.name == filename
+
+
+def check_sample_saves(app, window, work, sample, number, record):
     from advanced_workflows import modal
-    from analysis_matrix import set_parameter
-    from tests.e2e.plot_observations import load_saved_analysis
-    from rc_metastudio import r_bridge
-    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
-
-    def visible(kind):
-        app.processEvents()
-        return next(widget for widget in app.topLevelWidgets()
-                    if isinstance(widget, kind) and widget.isVisible())
-
-    def open_sample(label):
-        next(action for action in window.sample_menu.actions() if action.text() == label).trigger()
-        app.processEvents()
-        assert window.workspace.path.name == label + ".rcms"
 
     sample_button = required(window.start_page.findChild(QtWidgets.QPushButton, "empty_recent_sample"))
-    assert sample_button.menu() is window.sample_menu
-    assert window.sample_menu.menuAction() in window.menu_file.actions()
-    assert not window.tableView.study_calculator_action.isEnabled()
-    record("sample-welcome", window)
-    menu_bar = required(window.menuBar())
-    mouse_click(menu_bar, QtCore.Qt.MouseButton.LeftButton,
-                pos=menu_bar.actionGeometry(window.menu_file.menuAction()).center())
-    app.processEvents()
-    record("sample-file-menu", window.menu_file)
-    window.menu_file.close()
-    sample = root / "sample_projects/Binary - BCG vaccine and tuberculosis.rcms"
+    assert sample_button.isVisible() and sample_button.menu() is window.sample_menu
     original = hashlib.sha256(sample.read_bytes()).hexdigest()
-    sample_label = sample.stem
-    assert [action.text() for action in window.sample_menu.actions()] == sorted(
-        path.stem for path in sample.parent.glob("*.rcms")
-    )
 
     def open_welcome_sample():
         window.sample_menu.popup(sample_button.mapToGlobal(sample_button.rect().bottomLeft()))
-        record("sample-welcome-menu", window.sample_menu)
+        app.processEvents()
+        record(f"sample-{number}-welcome-menu", window.sample_menu)
+        open_sample_menu_action(window, sample.name)
         window.sample_menu.close()
-        open_sample(sample_label)
 
     def open_file_sample():
         with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(sample), "")):
@@ -63,23 +43,22 @@ def run(app, window, work, root, record, analyze):
              if action.data() == str(sample)).trigger()
 
     get_save_file_name = QtWidgets.QFileDialog.getSaveFileName
-    quit_on_close = app.quitOnLastWindowClosed()
-    app.setQuitOnLastWindowClosed(False)
     window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, False)
     try:
         for route, open_project in (
             ("welcome", open_welcome_sample),
-            ("sample-menu", lambda: open_sample(sample_label)),
+            ("sample-menu", lambda: open_sample_menu_action(window, sample.name)),
             ("file-open", open_file_sample),
             ("recent", open_recent_sample),
         ):
             open_project()
+            app.processEvents()
             assert window.workspace.path == sample
-            assert "BCG vaccine and tuberculosis (sample)" in window.windowTitle()
-            label = f"Edited BCG study via {route}"
+            assert "(sample)" in window.windowTitle()
+            label = f"Edited study via {route}"
             assert window.model.setData(window.model.index(0, window.model.NAME), label)
             assert window.workspace.is_dirty
-            saved = work / f"bcg-{route}-copy.rcms"
+            saved = work / f"sample-{number}-{route}.rcms"
             picker_count = 0
 
             def pick_destination(**kwargs):
@@ -92,7 +71,7 @@ def run(app, window, work, root, record, analyze):
                 def drive_picker(dialog):
                     assert dialog.windowTitle() == "Save project as"
                     dialog.selectFile(str(saved))
-                    record(f"sample-{route}-{'close' if submit else 'ctrl-s'}-save-as", dialog)
+                    record(f"sample-{number}-{route}-{'close' if submit else 'ctrl-s'}-save-as", dialog)
                     if submit:
                         dialog.accept()
                     else:
@@ -107,15 +86,18 @@ def run(app, window, work, root, record, analyze):
 
             def save_on_close(dialog):
                 assert dialog.windowTitle() == "Unsaved changes"
-                record(f"sample-{route}-unsaved-changes", dialog)
+                record(f"sample-{number}-{route}-unsaved-changes", dialog)
                 required(dialog.button(QtWidgets.QMessageBox.StandardButton.Save)).click()
 
             with patch.object(QtWidgets.QFileDialog, "getSaveFileName", side_effect=pick_destination):
                 window.activateWindow()
+                app.setActiveWindow(window)
                 window.tableView.setFocus()
-                app.processEvents()
+                wait(100)
                 key_click(window.tableView, QtCore.Qt.Key.Key_S, QtCore.Qt.KeyboardModifier.ControlModifier)
-                assert picker_count == 1 and window.workspace.path == sample and window.workspace.is_dirty
+                assert picker_count == 1 and window.workspace.path == sample and window.workspace.is_dirty, (
+                    sample.name, route, picker_count, app.activeWindow(), app.focusWidget()
+                )
                 modal(app, QtWidgets.QMessageBox, save_on_close, window.close)
             assert picker_count == 2 and saved.is_file() and window.workspace.path == saved
             assert hashlib.sha256(sample.read_bytes()).hexdigest() == original
@@ -123,12 +105,52 @@ def run(app, window, work, root, record, analyze):
             window.show()
             assert window.open(str(saved), raise_on_error=True)
             assert window.model.current_sheet.rows[0].label == label and "(sample)" not in window.windowTitle()
-            record(f"sample-{route}-copy-reopened", window, file=str(saved), original_sha256=original)
+            record(f"sample-{number}-{route}-copy-reopened", window, file=str(saved), original_sha256=original)
     finally:
         window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        app.setQuitOnLastWindowClosed(quit_on_close)
 
-    open_sample("Binary - Aminoglycosides")
+def run(app, window, work, root, record, analyze):
+    from advanced_workflows import modal
+    from analysis_matrix import set_parameter
+    from tests.e2e.plot_observations import load_saved_analysis
+    from rc_metastudio import r_bridge
+    from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
+
+    def visible(kind):
+        app.processEvents()
+        return next(widget for widget in app.topLevelWidgets()
+                    if isinstance(widget, kind) and widget.isVisible())
+
+    def open_sample(label):
+        open_sample_menu_action(window, label + ".rcms")
+
+    assert not window.tableView.study_calculator_action.isEnabled()
+    entries = json.loads((root / "sample_projects/manifest.json").read_text(encoding="utf-8"))["projects"]
+    assert [action.data() for action in window.sample_menu.actions()] == [entry["file"] for entry in entries]
+    assert [action.text() for action in window.sample_menu.actions()] == [
+        f"{entry['scientific_name']} — {entry['description']}" for entry in entries
+    ]
+    assert window.sample_menu.menuAction() in window.menu_file.actions()
+    menu_bar = required(window.menuBar())
+    mouse_click(menu_bar, QtCore.Qt.MouseButton.LeftButton,
+                pos=menu_bar.actionGeometry(window.menu_file.menuAction()).center())
+    app.processEvents()
+    record("sample-file-menu", window.menu_file)
+    window.menu_file.close()
+
+    for number, entry in enumerate(entries, start=1):
+        for recent in get_recent_files():
+            remove_recent_file(recent)
+        sample_window = type(window)()
+        sample_window.start()
+        try:
+            check_sample_saves(app, sample_window, work, root / "sample_projects" / entry["file"], number, record)
+        finally:
+            sample_window.workspace.mark_saved()
+            sample_window.close()
+    window.activateWindow()
+    app.setActiveWindow(window)
+    open_sample("Binary - Aminoglycoside dosing, Barza 1996")
 
     view = analyze(app, window, "binary.random")
     assert "Random-effects" in view.windowTitle() and "95% CI" in view.windowTitle()
@@ -206,17 +228,17 @@ def run(app, window, work, root, record, analyze):
     record("small-study-results-replaced", changed)
     changed.close()
 
-    open_sample("Single-arm mean - Synthetic measurements")
+    open_sample("Single-arm mean - Handgrip strength in young adults, Abe 2025")
     window.model.rename_arm(window.model.arm_names[0], "Custom cohort")
     mean = analyze(app, window, "continuous.random")
-    assert "135 participants)" in mean.manuscript.results and "participants in Custom cohort" not in mean.manuscript.results
-    assert dict(mean.results.manuscript_model_info)["Participants"] == "135"
+    assert "265 participants)" in mean.manuscript.results and "participants in Custom cohort" not in mean.manuscript.results
+    assert dict(mean.results.manuscript_model_info)["Participants"] == "265"
     mean.report_action.trigger()
     record("one-arm-participant-prose", mean, prose=mean.manuscript.results)
     mean.close()
 
     window.workspace.mark_saved()
-    open_sample("Continuous - Blood pressure")
+    open_sample("Continuous - Monthly respiratory exacerbations, Poole 2003")
     table = window.tableView
     table.setCurrentIndex(window.model.index(0, window.model.NAME))
     table.setFocus()

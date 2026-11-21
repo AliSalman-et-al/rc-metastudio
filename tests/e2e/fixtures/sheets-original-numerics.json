@@ -1,6 +1,6 @@
 [
   {
-    "file": "Binary - BCG vaccine and tuberculosis.rcms",
+    "file": "bcg.rcms",
     "pair": {
       "outcome": "tuberculosis",
       "follow_up": "first",
@@ -176,7 +176,7 @@
     }
   },
   {
-    "file": "Binary - Aminoglycosides.rcms",
+    "file": "amino.rcms",
     "pair": {
       "outcome": "clinical failure",
       "follow_up": "first",
@@ -225,7 +225,7 @@
     }
   },
   {
-    "file": "Binary - Aminoglycosides.rcms",
+    "file": "amino.rcms",
     "pair": {
       "outcome": "nephrotoxic",
       "follow_up": "first",
@@ -274,7 +274,7 @@
     }
   },
   {
-    "file": "Continuous - Blood pressure.rcms",
+    "file": "continuous.rcms",
     "pair": {
       "outcome": "blood pressure",
       "follow_up": "first",
@@ -307,7 +307,7 @@
     }
   },
   {
-    "file": "Diagnostic accuracy - LAG positivity.rcms",
+    "file": "lymph.rcms",
     "pair": {
       "outcome": "LAG positive",
       "follow_up": "first",
@@ -368,7 +368,7 @@
     }
   },
   {
-    "file": "Binary subgroups - Mortality by treatment group.rcms",
+    "file": "meantime.rcms",
     "pair": {
       "outcome": "Death",
       "follow_up": "first",

@@ -389,7 +389,7 @@ def run(app, window, work, record, scenario):
     samples = {"hr": ("time_to_event", "Pignon2000-HR"), "irr": ("event_rates", "NielWeise2008-IRR")}
     for family, sample in ([samples[family_name]] if family_name in samples else []):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         prepare_duplicate_study_labels(window)
         model = window.model
         assert model.setData(model.index(1, model.INCLUDE_STUDY), QtCore.Qt.CheckState.Unchecked, QtCore.Qt.ItemDataRole.CheckStateRole)
@@ -416,7 +416,7 @@ def run(app, window, work, record, scenario):
             assert "Non-estimable" in view.manuscript_text.toPlainText()
             view.close()
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         prepare_duplicate_study_labels(window)
         for workflow in ("cumulative", "leave-one-out", "subgroup"):
             view = analyze_existing(app, window, workflow, family + ".fixed", record)
@@ -439,7 +439,7 @@ def run(app, window, work, record, scenario):
         record("round3-fixed-footer-bottom", view, details=view.results.details)
         original_identity = view.results.identity
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects/Continuous - Blood pressure.rcms"), raise_on_error=True)
+        assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
         check_report(app, view, work, record)
         assert view.results.identity == original_identity
         from PyQt6 import QtWidgets
@@ -633,7 +633,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
         view.close()
     for family, sample in (("time_to_event", "Pignon2000-HR"), ("event_rates", "NielWeise2008-IRR")):
         window.workspace.mark_saved()
-        assert window.open(str(root / "sample_projects" / SAMPLE_FILES[sample]), raise_on_error=True)
+        assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
         add_dose(window)
         view = analyze_existing(app, window, "meta-regression", family + ".random", record,
                                 parameters={"bp_plot_lb":"1", "bp_plot_ub":"4"})

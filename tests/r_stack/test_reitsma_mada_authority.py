@@ -189,7 +189,7 @@ _HEADLESS_ADAPTER_DRIVER = textwrap.dedent(
 
     from rc_metastudio.r_call_serialization import r_transaction
 
-    sample = os.path.join(repo_root, "sample_projects", "Diagnostic accuracy - LAG positivity.rcms")
+    sample = os.path.join(repo_root, "tests", "fixtures", "desktop-projects", "lymph.rcms")
     univariate_requests = tuple(
         analysis_adapter.make_analysis_request(
             data_type="diagnostic", workflow="standard", method="diagnostic.random",

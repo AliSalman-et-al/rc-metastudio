@@ -4906,7 +4906,7 @@
     "summary": null,
     "title": "meantime"
   },
-  "project_file": "sample_projects/Binary subgroups - Mortality by treatment group.rcms",
+  "project_file": "tests/fixtures/desktop-projects/meantime.rcms",
   "schema_version": 1,
   "source_sha256": "58d12ce1d141ce9c40fb77af2d7f8d6012b1a851e1cf96a4f273b109f0613488"
 }

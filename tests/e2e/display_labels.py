@@ -128,7 +128,7 @@ def run(app, window, record):
             matrix(app, window, 'analysis-data-' + family, observe)
         else:
             sample = 'Pignon2000-HR' if family == 'hr' else 'NielWeise2008-IRR'
-            assert window.open(str(root / 'sample_projects' / SAMPLE_FILES[sample]), raise_on_error=True)
+            assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)
             view = analyze_existing(app, window, 'standard', 'time_to_event.random' if family == 'hr' else 'event_rates.random', observe)
             view.close()
         menus(window.menuBar())

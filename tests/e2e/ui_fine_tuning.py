@@ -87,7 +87,7 @@ def run(app, window, work, root, record, analyze):
     from rc_metastudio.main_wizard import MainWizard, Page_CsvImport, CsvImportPage
     from tests.e2e.report_retention import assert_report
 
-    assert window.open(str(root / 'sample_projects/Binary - Aminoglycosides.rcms'), raise_on_error=True)
+    assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     window.showNormal()
     window.resize(1280, 800)
     setup = AnalysisSetupDialog(window.model, parent=window, confidence_level=95)
