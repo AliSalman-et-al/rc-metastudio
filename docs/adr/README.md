@@ -17,6 +17,7 @@ historical evidence. Use [CONTEXT.md](../../CONTEXT.md) for domain terms.
 | [0009: Release platforms](0009-support-qualified-release-platforms.md) | Supported targets, private runtime and trust profiles |
 | [0010: HR and IRR](0010-distinguish-hazard-and-incidence-rate-ratios.md) | Measures, selected sources, confidence and zero handling |
 | [0011: Trial sequential analysis](0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md) | Authority exception, owned formulas, defaults and references |
+| [0012: Persistent R worker](0012-supervise-a-persistent-r-worker.md) | Process isolation, job protocol, cancellation and publication |
 
 The documentation cleanup consolidated sixteen earlier records into the first ten. The eleventh records trial sequential analysis.
 Git retains their original text and numbering; historical audit/oracle records
