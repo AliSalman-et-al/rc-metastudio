@@ -14,20 +14,29 @@ pinned R package versions. Load the workflow namespaces and initialize the
 production graphics devices before marking the child ready. Repeat that warmup
 on every respawn.
 
-Use stdin and stdout for UTF-8 JSON frames with an eight-digit ASCII hex byte
-length. R exposes binary stdin and byte-preserving text output on stdout.
-R sends console output to stderr with `sink()`. Qt drains stderr separately.
+Use stdin and stdout for UTF-8 JSON frames. A fixed marker precedes an
+eight-digit ASCII hex byte length. Qt drains every complete frame and logs
+bytes emitted outside frames. R sends console output to stderr with
+`sink()` and clears the output sink stack before writing each reply.
 Pipes avoid a listening port, authentication and firewall prompts. Consider
 loopback TCP only if pipes fail platform qualification.
 
-Each request has a version, ID and typed operation. A job returns one matching
-terminal response with its operation's result or a cancellation or failure.
+Each request has a version, ID and typed operation. A job can send progress
+frames and returns one matching terminal response with its result,
+cancellation or failure.
 Reject malformed frames, unexpected IDs and oversized messages. Only one job
 uses the child at a time. Keep the Qt event loop running while it is busy.
-Cancel marks the current job for cooperative exit at a checkpoint. If the
-child hangs or misses the cancellation deadline, terminate it and start a new
-child. A crash also starts a fresh child. Surface the interrupted job to the
-user and allow an explicit retry.
+Calculator and preview jobs declare short deadlines. Fits, trial sequential
+analysis, plots and exports have no wall-clock deadline. Progress frames
+serve as heartbeats. A missing heartbeat reports a stall while leaving
+Cancel available, since long native calls can finish without a checkpoint.
+Cancel marks the current job for cooperative exit. If the child misses the
+cancellation grace period, terminate it and start a new child. A crash also
+starts a fresh child. Surface the interrupted job and allow an explicit retry.
+
+Bind the worker to the desktop lifetime. Windows uses a kill-on-close Job
+Object. Linux uses a separate process group and a parent watcher. macOS
+combines stdin EOF with a parent watcher that can stop a busy child.
 
 Qt owns project state, cached previews and the files it publishes. R owns
 the interpreter, numerical objects and graphics devices. Bind each job to

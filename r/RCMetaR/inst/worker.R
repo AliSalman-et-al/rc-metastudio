@@ -5,16 +5,38 @@ local({
     sink(stderr())
     options(warn=1)
     limit <- 16L * 1024L^2
+    magic <- "\x1eRCMS"
+
+    if (!requireNamespace("jsonlite", quietly=TRUE)) {
+        message("The R worker requires the jsonlite package. Reinstall the configured R runtime.")
+        quit(save="no", status=1L)
+    }
+
+    read_exact <- function(size) {
+        result <- raw(size)
+        offset <- 0L
+        while (offset < size) {
+            chunk <- readBin(input, "raw", size - offset)
+            if (!length(chunk)) return(result[seq_len(offset)])
+            result[offset + seq_along(chunk)] <- chunk
+            offset <- offset + length(chunk)
+        }
+        result
+    }
 
     read_frame <- function() {
-        header <- readBin(input, "raw", 8L)
+        header <- read_exact(nchar(magic) + 8L)
         if (!length(header)) return(NULL)
-        if (length(header) != 8L) stop("Truncated frame length")
-        size <- strtoi(rawToChar(header), base=16L)
+        if (length(header) != nchar(magic) + 8L) stop("Truncated frame header")
+        header <- rawToChar(header)
+        if (!startsWith(header, magic)) stop("Invalid frame marker")
+        size <- strtoi(substring(header, nchar(magic) + 1L), base=16L)
         if (is.na(size) || size < 1L || size > limit) stop("Invalid frame length")
-        bytes <- readBin(input, "raw", size)
+        bytes <- read_exact(size)
         if (length(bytes) != size) stop("Truncated frame")
-        jsonlite::fromJSON(rawToChar(bytes), simplifyVector=FALSE)
+        text <- rawToChar(bytes)
+        Encoding(text) <- "UTF-8"
+        jsonlite::fromJSON(text, simplifyVector=FALSE)
     }
 
     reply <- function(id, status, result=NULL, message=NULL) {
@@ -26,25 +48,30 @@ local({
         if (size > limit) stop("Response exceeds frame limit")
         # R's stdout is text-only. JSON escapes control bytes, and useBytes
         # preserves UTF-8 without locale conversion.
-        sink()
+        while (sink.number() > 0L) sink()
         on.exit(sink(stderr()))
-        writeLines(paste0(sprintf("%08x", size), body), stdout(), sep="", useBytes=TRUE)
+        writeLines(paste0(magic, sprintf("%08x", size), body), stdout(), sep="", useBytes=TRUE)
         flush(stdout())
     }
 
     warm <- function(expected) {
         path <- find.package("RCMetaR")
-        stamp <- readLines(file.path(path, "source.sha256"), warn=FALSE)
-        version <- as.character(utils::packageVersion("RCMetaR"))
+        stamp_file <- file.path(path, "source.sha256")
+        stamp <- if (file.exists(stamp_file)) {
+            tryCatch(suppressWarnings(readLines(stamp_file, n=1L, warn=FALSE))[1L],
+                     error=function(error) NA_character_)
+        } else NA_character_
+        version <- utils::packageDescription("RCMetaR", lib.loc=dirname(path), fields="Version")
         if (!identical(version, expected$version) || !identical(stamp, expected$source))
             stop("The installed RCMetaR does not match this version of RC MetaStudio.")
         if (as.character(getRversion()) != expected$pins$R)
             stop("The R worker has the wrong R version.")
         packages <- setdiff(names(expected$pins), "R")
         for (package in packages) {
-            actual <- utils::packageDescription(package, fields="Version")
-            if (actual != expected$pins[[package]])
-                stop(sprintf("%s requires version %s, found %s.", package, expected$pins[[package]], actual))
+            actual <- suppressWarnings(utils::packageDescription(package, fields="Version"))
+            if (!identical(actual, expected$pins[[package]]))
+                stop(sprintf("%s requires version %s, found %s.", package, expected$pins[[package]],
+                             if (is.na(actual)) "no installed package" else actual), call.=FALSE)
         }
         library("RCMetaR", lib.loc=dirname(path))
         for (package in c(packages, "grid")) loadNamespace(package)
@@ -65,12 +92,20 @@ local({
         for (path in files[-1L]) RCMetaR:::rcmetar.export.svg_render(files[1L], path, size)
     }
 
+    decode_wire <- function(value) {
+        if (!is.list(value)) return(value)
+        if ("$num" %in% names(value)) {
+            tag <- value[["$num"]]
+            if (length(value) == 1L && identical(tag, "+Inf")) return(Inf)
+            if (length(value) == 1L && identical(tag, "-Inf")) return(-Inf)
+            stop("Invalid wire number", call.=FALSE)
+        }
+        lapply(value, decode_wire)
+    }
+
     number <- function(value) {
         if (is.null(value)) return(NA_real_)
-        if (is.list(value)) {
-            return(switch(value[["$num"]], "+Inf"=Inf, "-Inf"=-Inf, stop("Invalid wire number")))
-        }
-        if (!is.numeric(value) || length(value) != 1L) stop("Expected a number")
+        if (!is.numeric(value) || length(value) != 1L) stop("Expected a number", call.=FALSE)
         value
     }
 
@@ -147,6 +182,7 @@ local({
             next
         }
         tryCatch({
+            request$job <- decode_wire(request$job)
             value <- if (identical(request$job$type, "previews")) {
                 previews(request$job)
             } else if (identical(request$job$type, "calculator")) {

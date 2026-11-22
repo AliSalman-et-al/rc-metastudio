@@ -294,7 +294,10 @@ def _worker_calculate(
     kind: r_worker.CalculatorKind, args: Mapping[str, object], *, vector: bool = False,
 ):
     with r_execution():
-        return r_worker.current_worker().call({"type": "calculator", "kind": kind, "args": args, "vector": vector})
+        return r_worker.current_worker().call(
+            {"type": "calculator", "kind": kind, "args": args, "vector": vector},
+            timeout_ms=r_worker.CALCULATOR_DEADLINE_MS,
+        )
 
 
 @serialized_r_call
