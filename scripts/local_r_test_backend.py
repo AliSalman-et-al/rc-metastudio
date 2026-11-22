@@ -30,7 +30,9 @@ def create() -> SimpleNamespace:
     backend.study_effect_previews = lambda rows, _family, _metric, metrics, _level: [
         [(1.0, 0.5, 1.5, 1.0, 0.5, 1.5)] * len(metrics) for _ in rows
     ]
-    backend.effect_for_study = lambda *_args, **_kwargs: {"calc_scale": (1.0, 0.5, 1.5)}
+    backend.effect_for_study = lambda *_args, **_kwargs: {
+        "calc_scale": (1.0, 0.5, 1.5), "display_scale": (1.0, 0.5, 1.5),
+    }
     backend.continuous_effect_for_study = backend.effect_for_study
     backend.diagnostic_effects_for_study = lambda *_args, metrics=("Spec", "Sens"), **_kwargs: {
         metric: {"calc_scale": (1.0, 0.5, 1.5)} for metric in metrics

@@ -29,7 +29,8 @@ def _scale(value: object, *_args: object, **_kwargs: object) -> object:
 
 
 def _effect(*_args: object, **_kwargs: object) -> dict[str, tuple[float, float, float]]:
-    return {"calc_scale": (1.0, 0.5, 1.5)}
+    values = (1.0, 0.5, 1.5)
+    return {"calc_scale": values, "display_scale": values}
 
 
 def _diagnostic_effects(
