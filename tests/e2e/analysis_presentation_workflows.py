@@ -414,7 +414,7 @@ def run(app, window, work, record, scenario):
             view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)
             check_report(app, view, work, record)
             check_sequential(view, "leave-one-out", record)
-            assert "Non-estimable" in view.manuscript_text.toPlainText()
+            assert "Not estimable" in view.manuscript_text.toPlainText()
             view.close()
         window.workspace.mark_saved()
         assert window.open(str(root / SAMPLE_FILES[sample]), raise_on_error=True)

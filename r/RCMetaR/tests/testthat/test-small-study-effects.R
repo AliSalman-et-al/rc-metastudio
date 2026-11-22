@@ -31,7 +31,7 @@ test_that("publication-bias confidence level controls intervals and labels", {
   expect_equal(RCMetaR:::.small.study.meta.level(90), .9)
   expect_error(
     RCMetaR:::.small.study.confidence.level(list(conf.level=numeric())),
-    "finite percentage"
+    "strictly between 0% and 100%"
   )
   expect_identical(RCMetaR:::.small.study.confidence.label(90, short=TRUE), "90% CI")
   expect_identical(RCMetaR:::.small.study.confidence.label(90), "90% confidence interval")
@@ -430,7 +430,7 @@ test_that("generic guardrails expose hard minimum and automatic k guard", {
   expect_match(disabled$Warning, "at least 10 usable studies", fixed=TRUE)
   expect_match(disabled$Warning, "4 usable studies were available", fixed=TRUE)
   expect_length(disabled$eligibility$`standard.error.range`, 2)
-  expect_match(disabled$`Data and eligibility`, "Observed standard-error range: \\[0\\.1, 0\\.13\\]", fixed=FALSE)
+  expect_match(disabled$`Data and eligibility`, "Observed standard-error range: 0\\.1 to 0\\.13", fixed=FALSE)
 
   automatic <- rcmetar.run.small.study.effects(make_data(4), list(
     version=1L, data.type="continuous", metric="MD", funnels="ordinary",

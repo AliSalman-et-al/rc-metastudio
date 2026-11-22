@@ -11,6 +11,10 @@ TEXT_SETTERS = {
     "setAccessibleDescription", "setAccessibleName", "setPlaceholderText",
     "setStatusTip", "setText", "setToolTip", "setWhatsThis", "setWindowTitle",
 }
+R_UI_LITERAL = re.compile(
+    r"""(?:\b(?:stop|warning)\(\s*|["'](?:description|pretty\.name)["']\s*=\s*)"""
+    r"""(["'])((?:\\.|(?!\1)[^\\])*)\1"""
+)
 RULES = {
     "straight quotes": re.compile("[‘’“”]"),
     "outcome and effect measure": re.compile(r"\b(?:sheets?|metrics?)\b", re.I),
@@ -44,6 +48,11 @@ def _visible_copy():
     for project in json.loads(manifest.read_text(encoding="utf-8"))["projects"]:
         for key in ("scientific_name", "description"):
             yield manifest.name, project[key]
+    for path in sorted((ROOT / "r/RCMetaR/R").glob("*.R")):
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not line.lstrip().startswith("#"):
+                for match in R_UI_LITERAL.finditer(line):
+                    yield f"{path.name}:{line_number}", match[2]
 
 
 def test_user_facing_copy_conventions():

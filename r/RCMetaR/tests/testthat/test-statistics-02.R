@@ -35,7 +35,7 @@ test_that("bootstrap pooled and coefficient intervals preserve requested coverag
   p <- s2_params(conf.level=level,histogram.title="Proof",histogram.xlab="Effect")
   a <- boot::boot.ci(b,type="norm",conf=level/100)$normal
   x <- boot.ma.output.results(b,p,tempfile(tmpdir=rcmetar.scratch.path(),fileext=".png"))
-  expect_match(x$Summary,paste0(level,"% Confidence"),fixed=TRUE)
+  expect_match(x$Summary,paste0(level,"% confidence"),fixed=TRUE)
   c <- calc.meta.reg.coeffs.and.cis(b,level)
   expect_equal(c$ci.lb,unname(a[2])); expect_equal(c$ci.ub,unname(a[3]))
  }
@@ -114,7 +114,7 @@ test_that("public bootstrap uses selected output coverage", {
  bootstrap.plot.path=tempfile(tmpdir=rcmetar.scratch.path(),fileext=".png"),histogram.title="Proof",histogram.xlab="Effect")
  withr::local_seed(52)
  x <- rcmetar.run.analysis(s2_data(),method="continuous.fixed",params=p,workflow="bootstrap")
- expect_match(x$Summary,"90% Confidence",fixed=TRUE)
+ expect_match(x$Summary,"90% confidence",fixed=TRUE)
 })
 
 test_that("bootstrap without an explicit output keeps each histogram in owned scratch", {

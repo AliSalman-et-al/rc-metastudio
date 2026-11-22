@@ -943,7 +943,7 @@
             paste0("  Weighting: ", .small.study.text(x$weighting, "not recorded")),
             paste0("  Inference: ", .small.study.text(x$inference %||% x$model, "not recorded")),
             paste0("  Degrees of freedom: ", .small.study.number(x$df %||% NA_real_)),
-            paste0("  Exact p-value: ", .small.study.exact.number(p.value)),
+            paste0("  Exact P value: ", .small.study.exact.number(p.value)),
             paste0("  Call: ", .small.study.text(x$call, "not recorded"))
         )
         paste(lines, collapse="\n")

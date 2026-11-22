@@ -2,7 +2,7 @@
 
 Base: 7dec12db. Entries are keyed by row number in Gemini’s replacements.csv. File and line refer to the audit location.
 
-Totals: 378 applied, 50 changed, 59 skipped. The table includes all 33 meaning-change verdicts.
+Totals: 377 applied, 52 changed, 58 skipped. The table includes all 33 meaning-change verdicts.
 
 | # | Audit location | Outcome | Reason / meaning-change verdict |
 |---:|---|---|---|
@@ -31,7 +31,7 @@ Totals: 378 applied, 50 changed, 59 skipped. The table includes all 33 meaning-c
 | 23 | `r/RCMetaR/R/forest_summary.R:316` | changed | **Meaning:** The branch formats a non-finite P value. Missing inferential output does not establish that a statistic is impossible to estimate. |
 | 24 | `src/rc_metastudio/results/plot_text.py:26` | changed | **Meaning:** This shared configurator covers axis and forest heading fields. Only automatic arm headings have the stated wrapping guarantee. |
 | 25 | `src/rc_metastudio/results/plot_text.py:42` | changed | **Meaning:** The phrase is appended every time an automatic value is loaded. A different append string would still repeat it. Removed the append separately and set the automatic help only on fields without help. |
-| 26 | `src/rc_metastudio/importing/tabular.py:445` | applied | Grammar bug: outputs '1 formula cells use their saved values.' when one formula cell is present. |
+| 26 | `src/rc_metastudio/importing/tabular.py:445` | changed | Used a count label to avoid plural agreement and a new branch. Grammar bug: outputs '1 formula cells use their saved values.' when one formula cell is present. |
 | 27 | `src/rc_metastudio/results/report.py:675` | changed | **Meaning:** These calls construct pooled tables, which should still say Effect. Set Term on the coefficient table in _regression_section instead. |
 | 28 | `src/rc_metastudio/results/report.py:677` | changed | **Meaning:** These calls construct pooled tables, which should still say Effect. Set Term on the coefficient table in _regression_section instead. |
 | 29 | `src/rc_metastudio/forms/main_window.ui:14` | applied | Missing space in product name ('RCMetaStudio') contradicts CONTEXT.md ('RC MetaStudio') and causes Qt to append ' - RC MetaStudio' creating a doubled title. |
@@ -215,7 +215,7 @@ Totals: 378 applied, 50 changed, 59 skipped. The table includes all 33 meaning-c
 | 207 | `src/rc_metastudio/analysis/catalog.py:152` | skipped | This default is part of project data and one-arm caption/header suppression. A literal-only rename would change existing project display behavior. Preserved legacy default handling. |
 | 208 | `src/rc_metastudio/analysis/diagnostic_metrics_dialog.py:71` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
 | 209 | `src/rc_metastudio/analysis/diagnostic_metrics_dialog.py:72` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
-| 210 | `src/rc_metastudio/analysis/diagnostic_metrics_dialog.py:103` | skipped | Old literal no longer exists at this surface in current HEAD. |
+| 210 | `src/rc_metastudio/analysis/diagnostic_metrics_dialog.py:103` | changed | The warning is now split across adjacent literals. Updated the surviving effect-measure wording. |
 | 211 | `src/rc_metastudio/analysis/diagnostic_metrics_dialog.py:113` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
 | 212 | `src/rc_metastudio/analysis/identity.py:107` | skipped | This default is part of project data and one-arm caption/header suppression. A literal-only rename would change existing project display behavior. Preserved legacy default handling. |
 | 213 | `src/rc_metastudio/analysis/setup_dialog.py:2160` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |

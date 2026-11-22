@@ -110,9 +110,9 @@ continuous.fixed.pretty.names <- function() {
      "description" = "Performs fixed-effect meta-analysis with inverse variance weighting.",
      "inference.method"=rcmetar.inference.method.metadata(),
      "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-     "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+     "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
      "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-     "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Continuity correction is only used for analyses based on zero cells in count data.")
+     "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Continuity correction applies to count data.")
       )
 }
 
@@ -206,9 +206,9 @@ continuous.random.pretty.names <- function() {
     "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
     "inference.method"=rcmetar.inference.method.metadata(),
     "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-    "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+    "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
     "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-    "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Continuity correction is only used for analyses based on zero cells in count data.")
+    "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Continuity correction applies to count data.")
     )
 }
 

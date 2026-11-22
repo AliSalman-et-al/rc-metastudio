@@ -128,7 +128,7 @@ meta.regression.pretty.names <- function() {
             "rm.method.names"=rcmetar.random.effects.method.names()),
         "inference.method"=rcmetar.inference.method.metadata(),
         "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3")
+        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places.")
     )
 }
 

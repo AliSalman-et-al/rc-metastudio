@@ -207,7 +207,7 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "jointly models sensitivity and false-positive rate")
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "Reference rows equal 1")
   testthat::expect_true(all(c("Sensitivity coefficients", "Specificity coefficients", "Moderator coding", "Moderator block tests") %in% names(result$Summary)))
-  residual.i2 <- result$Summary[["Residual diagnostic I-squared"]][["I-squared estimates"]]
+  residual.i2 <- result$Summary[["Residual diagnostic I\u00b2"]][["I-squared estimates"]]
   testthat::expect_true(is.data.frame(residual.i2))
   testthat::expect_identical(colnames(residual.i2), c("Measure", "I-squared (%)"))
   testthat::expect_true(all(grepl("%$", residual.i2[["I-squared (%)"]])))
@@ -233,7 +233,7 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
   )
   testthat::expect_identical(
     vapply(plots$sections, function(section) section$title, character(1)),
-    c("Sensitivity Moderator Coefficients", "Specificity Moderator Coefficients")
+    c("Sensitivity moderator coefficients", "Specificity moderator coefficients")
   )
   advertised <- rcmetar.analysis.plot.capabilities(
     "diagnostic", "diagnostic.reitsma", "meta-regression"

@@ -718,7 +718,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
                      workflow, paste(setdiff(methods, supported), collapse=", ")), call.=FALSE)
     }
     joint <- which(methods == "diagnostic.reitsma")
-    if (length(joint) > 1L) stop("Only one diagnostic.reitsma request is allowed; use joint.metrics for Sensitivity and Specificity.", call.=FALSE)
+    if (length(joint) > 1L) stop("Only one Reitsma bivariate model can be fitted per analysis. Select sensitivity and specificity for a joint fit.", call.=FALSE)
     list(requests=requests, methods=methods, workflow=workflow, legacy=legacy,
          fit.order=c(joint, setdiff(seq_along(requests), joint)))
 }
@@ -887,7 +887,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
 
     if (!is.null(params$measure) && !identical(as.character(params$measure), metric)) {
-        stop("Analysis request metric does not match params$measure.", call.=FALSE)
+        stop("The requested effect measure does not match the effect measure in the analysis settings.", call.=FALSE)
     }
 
     if (identical(data.type, "binary") && identical(metric, "PFT")) {

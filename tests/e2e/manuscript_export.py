@@ -288,7 +288,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
-        expected = "A continuity correction of 0.5 was applied to estimable individual study effects only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts. The 2 studies with no events in either arm had no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
+        expected = "A continuity correction of 0.5 was applied to estimable individual study effects only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate used the original counts. The 2 studies with no events in either arm had no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         for suffix in ('pdf', 'docx'):

@@ -170,7 +170,7 @@ binary.fixed.inv.var.pretty.names <- function() {
                          "description" = "Performs fixed-effect meta-analysis with inverse variance weighting.",
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                           )
@@ -280,7 +280,7 @@ binary.fixed.mh.pretty.names <- function() {
     pretty.names <- list("pretty.name"="Binary fixed-effect Mantel\u2013Haenszel",
                          "description" = "Performs fixed-effect meta-analysis using the Mantel\u2013Haenszel method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                           )
@@ -392,7 +392,7 @@ binary.fixed.peto.pretty.names <- function() {
     pretty.names <- list("pretty.name"="Binary fixed-effect Peto",
                          "description" = "Performs fixed-effect meta-analysis using the Peto method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                          )
@@ -486,7 +486,7 @@ binary.random.pretty.names <- function() {
                          "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+                         "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
                          "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                          )

@@ -1149,7 +1149,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     bundle <- rcmetar.reitsma.coefficient.bundle(spec$data, scale, plot.params)
     plot.params$reitsma.coefficient.geometry <- bundle
     rcmetar.draw.reitsma.coefficient(bundle, path)
-    list(title=paste(scale, "Moderator coefficients"), path=path,
+    list(title=paste(scale, "moderator coefficients"), path=path,
          params.path=save.data(reg.data, fit, plot.params, bundle))
 }
 

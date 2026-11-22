@@ -665,8 +665,8 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   effect <- vapply(rows, `[[`, numeric(1), "effect")
   label <- vapply(rows, `[[`, character(1), "label")
   ris <- vapply(rows, function(row) row$summary$ris %||% NA_real_, numeric(1))
-  arms <- trimws(sub("^Favours ", "", s$favours %||% c("", ""), ignore.case=TRUE))
-  sides <- ifelse(!is.na(arms) & nzchar(arms), paste("favouring", arms), c("below the null", "above the null"))
+  arms <- trimws(sub("^Favou?rs ", "", s$favours %||% c("", ""), ignore.case=TRUE))
+  sides <- ifelse(!is.na(arms) & nzchar(arms), paste("favoring", arms), c("below the null", "above the null"))
   if (s$benefit.direction == "upper") sides <- rev(sides)
   conclusions <- vapply(rows, function(row) {
     if (is.null(row$summary)) return("Not estimable")

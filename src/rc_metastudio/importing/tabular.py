@@ -442,7 +442,7 @@ def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numer
             result.append(values)
         if notices is not None:
             if formulas:
-                notices.append(f"{formulas} formula {'cell uses its saved value' if formulas == 1 else 'cells use their saved values'}.")
+                notices.append(f"Formula cells using saved values: {formulas}.")
             if dates:
                 notices.append("Dates use their year: " + ", ".join(dates) + ".")
         return (result[0], result[1:], names, selected) if has_headers else ([], result, names, selected)

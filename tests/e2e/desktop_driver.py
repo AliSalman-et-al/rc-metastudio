@@ -1496,7 +1496,7 @@ def xlsx_import(app, window):
             target.writestr(item, content)
     select(cached_path)
     assert page.isComplete(), page.import_status.text()
-    assert "1 formula cells use their saved values" in page.import_status.text()
+    assert "Formula cells using saved values: 1" in page.import_status.text()
     assert required(page.csv_data(), "import preview").rows[0][2] == "2"
     select(path)
 
