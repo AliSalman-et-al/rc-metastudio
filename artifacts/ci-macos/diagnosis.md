@@ -13,7 +13,7 @@ Qt/PyQt profile and the 14.0 inspection floor.
 | Build or install work | Baseline elapsed | PR change |
 | --- | ---: | --- |
 | qtbase, including qmake and rcc, first to last Ninja task | 11m 49s median, n=2 | Use the wheel runtime and prebuilt official rcc |
-| qtsvg, first to last Ninja task | See timestamp breakdown below | Use the wheel runtime |
+| qtsvg, first to last Ninja task | 22s median, n=2 | Use the wheel runtime |
 | Qt source fetch, configure, compile and install, up to PyQt build | 13m 28s median, n=2 | No Qt SDK or tooling compilation |
 | PyQt6 sdist to native wheel | 34m 37s median, n=2 | Use the locked PyQt6 wheel |
 | RC MetaStudio editable Python wheel metadata | About 2s per package run | Retained, pure Python |
@@ -30,7 +30,11 @@ its arm64 API binding links to the global R framework and BLAS. The package
 requires one arm64 API bridge built against its private R framework. Retain
 that build on a cache miss and keep its existing runtime, relocation and hash
 checks. The source/platform job separately exercises an API build against its
-runner-installed R. Those cache inputs are distinct.
+runner-installed R. The API wheel build there took 9.5s median and editable
+application wheel generation took 4.4s median, both across nine runs.
+The focused contracts job showed no third-party compilation. All 79 locked
+third-party packages selected for CPython 3.14 on macOS arm64 have compatible
+wheel tags.
 
 ## Baseline
 

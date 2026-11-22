@@ -238,7 +238,12 @@ export RCMS_CRAN_REPO="$pinned_cran_repo"
 
 if [ "$pr_wheels" = true ]; then
   step "Installing locked macOS dependency wheels"
-  (cd "$repo_root" && uv sync --locked --no-build --no-install-project --no-install-package rpy2-rinterface)
+  (
+    cd "$repo_root"
+    uv sync --locked --no-build --no-install-project --no-install-package rpy2-rinterface
+    # Staging scripts import the editable application before the API bridge is built.
+    uv sync --locked --no-install-package rpy2-rinterface
+  )
 elif [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
   # Both the wheel and official binary SDK were linked for 14.4. Build Qt
