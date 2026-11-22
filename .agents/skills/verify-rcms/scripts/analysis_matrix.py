@@ -561,7 +561,7 @@ def run(
         for package in ('metafor', 'meta'):
             assert package + ' (version ' + r_bridge.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
         assert window.model.current_sheet.name.casefold() in view.manuscript.title.casefold()
-        assert view.manuscript.comparison == view.results.identity.splitlines()[1]
+        assert view.manuscript.comparison == "\n".join(view.results.identity.splitlines()[1:-1])
         assert_report(view, system_clipboard=system_clipboard)
         references = [section for section in view.manuscript.sections if section.source_key == 'References']
         assert len(references) == 1 and not references[0].tables
