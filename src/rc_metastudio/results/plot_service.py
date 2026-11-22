@@ -114,17 +114,7 @@ class PlotService:
             source = Path(directory) / 'plot.svg'
             extension = Path(output_path).suffix.lower()
             if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
-                page_width = min(width, 180 / 25.4)
-                if page_width < geometry[1] - 1e-8:
-                    raise PlotServiceError("This figure is too wide for A4. Turn off A4 pages to export a single PDF page.")
-                paths = r_bridge.render_plot_bundle(
-                    params_path, regenerator, str(source), include_title=include_title,
-                    width=page_width, page_height=250 / 25.4,
-                )
-                with staged_output(output_path) as temporary:
-                    if not paths:
-                        raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
-                    compose_export(lambda: _write_a4_pdf(str(temporary), paths))
+                _export_paged_forest(params_path, source, output_path, width, geometry[1], include_title)
                 return
             paths = r_bridge.render_plot_bundle(
                 params_path, regenerator, str(source), include_title=include_title,
@@ -151,6 +141,21 @@ class PlotService:
             if not r_bridge.render_plot_bundle(params_path, regenerator, str(temporary),
                                                include_title=include_title, outline_text=outline_text):
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+
+
+def _export_paged_forest(prefix: str, source: Path, destination: str, width: float,
+                         minimum_width: float, include_title: bool) -> None:
+    page_width = min(width, 180 / 25.4)
+    if page_width < minimum_width - 1e-8:
+        raise PlotServiceError("This figure is too wide for A4. Turn off A4 pages to export a single PDF page.")
+    paths = r_bridge.render_plot_bundle(
+        prefix, "forest", str(source), include_title=include_title,
+        width=page_width, page_height=250 / 25.4,
+    )
+    if not paths:
+        raise PlotServiceError(f"Stored forest plot bundle is incomplete: {prefix}")
+    with staged_output(destination) as temporary:
+        compose_export(lambda: _write_a4_pdf(str(temporary), paths))
 
 
 def _size_export_svg(source: Path, destination: Path, width: float, height: float) -> None:
