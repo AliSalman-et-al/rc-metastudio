@@ -37,21 +37,6 @@ def step(message: str) -> None:
     print(f"[RCMetaR-r-stack] {message}", flush=True)
 
 
-def verify_rpy2_identities(python: str = sys.executable) -> dict[str, str]:
-    required_versions = r_support.locked_rpy2_versions()
-    observed = run_json(
-        [python, "-c", "import json; from importlib.metadata import version; "
-         "print(json.dumps({name: version(name) for name in "
-         + repr(list(required_versions)) + "}))"],
-        cwd=Path(__file__).resolve().parents[1],
-    )
-    for distribution, required in required_versions.items():
-        if observed.get(distribution) != required:
-            raise VerificationError(
-                f"{distribution} identity mismatch: expected {required}, observed {observed.get(distribution)}"
-            )
-    step("Locked rpy2 identities verified: " + json.dumps(observed, sort_keys=True))
-    return observed
 
 
 def run(
@@ -122,7 +107,6 @@ def isolated_r_env(
         env["PATH"] = os.pathsep.join(
             [*(str(path) for path in r_path_entries), env.get("PATH", "")]
         )
-    env.setdefault("RPY2_CFFI_MODE", "API")
     env.setdefault("_R_CHECK_FORCE_SUGGESTS_", "false")
     return env
 
@@ -468,7 +452,6 @@ def verify(args: argparse.Namespace) -> None:
     base_env["RCMS_RSCRIPT"] = str(rscript)
     cran_repo = r_support.configure_binary_repository(root, base_env, python, args.cran_repo)
 
-    verify_rpy2_identities(python)
 
     run([python, R_MANIFEST_VALIDATOR, "--root", root], cwd=root, env=base_env)
 

@@ -177,7 +177,7 @@ uv run python -m pytest tests/e2e -n auto -k '<selection>'
 
 | Suite | Scope |
 | --- | --- |
-| `tests/e2e` | Real Qt 6 and embedded R desktop workflows with numerical, geometry and persistence checks |
+| `tests/e2e` | Real Qt 6 and R worker desktop workflows with numerical, geometry and persistence checks |
 | `tests/python/fast` | Archive corruption, atomic durability, rollback, concurrency, boundary validation |
 | `tests/python/gui` | Layout, keyboard focus, dialog edge cases, and failure recovery outside E2E |
 | `tests/analysis_regression/golden` | Frozen numerical and presentation regression contracts (see [baseline provenance](../tests/analysis_regression/baseline/presentation-review/README.md)) |
@@ -306,7 +306,7 @@ Start at the boundary responsible for the behavior and follow its callers. File 
 | `workspace/` | Session undo/redo (100 steps), sheet editing, column rules, Qt table | Stable IDs, atomic edits and rollback |
 | `importing/` | CSV, `.xlsx`, and RevMan `.rm5` ingestion | Validated previews and atomic sheet publication |
 | `analysis/` | Catalog (`catalog.py`), validation (`validation.py`), requests (`requests.py`), setup, small-study effects, TSA | Catalog/validation stay Qt-free; real R authority; never move statistical policy into widgets |
-| `r_runtime.py`, `r_bridge.py` | Explicit R startup and versioned Python–R boundary | Fail-closed startup; exact producer quantities |
+| `r_runtime.py`, `r_worker.py` | Explicit R startup and versioned Python–R boundary | Fail-closed startup; exact producer quantities |
 | `results/` | Result contract, formatting (`formatting.py`), report (`report.py`), plot editors/export, SVG adapter | Exact numerical quantities (never parse formatted text); preserve prior plot on edit failure |
 | `calculators/` | Controls (`controls.py`), effect readout (`effect_readout.py`), dialog-local history (`edit_history.py`), four dialogs | Controls do not depend on readouts/history; history is Qt/R-free |
 | `forms/*.ui`, `qt_layout.py` | Editable Qt Designer forms and adaptive layout helpers | Generated modules stay out of source; preserve form manifest and keyboard/DPI behavior |

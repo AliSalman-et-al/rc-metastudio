@@ -14,7 +14,7 @@ import sys
 from typing import Literal, TypedDict, cast
 import weakref
 
-from PyQt6.QtCore import QCoreApplication, QEventLoop, QObject, QProcess, QProcessEnvironment, QTemporaryDir, QTimer, Qt, pyqtSignal
+from PyQt6.QtCore import QCoreApplication, QEventLoop, QObject, QProcess, QProcessEnvironment, QTemporaryDir, QThread, QTimer, Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from rc_metastudio import r_runtime
@@ -29,6 +29,7 @@ _FRAME_LIMIT = 16 * 1024**2
 _STARTUP_MS = 90_000
 CALCULATOR_DEADLINE_MS = 30_000
 PREVIEW_DEADLINE_MS = 30_000
+CATALOG_DEADLINE_MS = 30_000
 _CANCEL_MS = 1_500
 _HEARTBEAT_MS = 10_000
 _LOG = logging.getLogger(__name__)
@@ -63,6 +64,37 @@ class AnalysisJob(TypedDict):
     request: Mapping[str, object] | Sequence[Mapping[str, object]]
     stage: str
     plot: Mapping[str, object]
+
+
+class AvailableMethodsJob(TypedDict):
+    type: Literal["available_methods"]
+    family: str
+    columns: Mapping[str, object]
+    metrics: Sequence[str]
+    workflow: str
+
+
+class MethodParametersJob(TypedDict):
+    type: Literal["method_parameters"]
+    method: str
+
+
+class PlotCapabilitiesJob(TypedDict):
+    type: Literal["plot_capabilities"]
+    family: str
+    method: str
+    workflow: str
+
+
+class RuntimeInfo(TypedDict):
+    version: str
+    home: str
+    cwd: str
+    libraries: list[str]
+    packages: dict[str, str]
+
+
+CatalogJob = AvailableMethodsJob | MethodParametersJob | PlotCapabilitiesJob
 
 
 class PlotParametersJob(TypedDict):
@@ -108,7 +140,7 @@ class ArtworkExportJob(TypedDict):
 
 
 PlotJob = PlotParametersJob | PlotGeometryJob | PlotEditJob | PlotRenderJob | ArtworkExportJob
-WorkerJob = CalculatorJob | PreviewJob | AnalysisJob | PlotJob
+WorkerJob = CalculatorJob | PreviewJob | AnalysisJob | PlotJob | CatalogJob
 
 
 class _Reply(TypedDict):
@@ -136,10 +168,6 @@ class _Pending:
 
     def finished(self) -> bool:
         return self.reply is not None or self.error is not None
-
-
-def enabled() -> bool:
-    return os.environ.get("RCMS_R_BACKEND") == "worker"
 
 
 def _encode_numbers(value: object) -> object:
@@ -181,7 +209,7 @@ def _runtime_paths() -> tuple[Path, Path]:
     if not (home := os.environ.get("R_HOME")):
         raise RWorkerError("The R worker could not locate R. Reinstall the configured R runtime.")
     r_home = Path(home)
-    program = r_home / ("bin/x64/Rterm.exe" if sys.platform == "win32" else "bin/R")
+    program = r_home / ("bin/x64/Rterm.exe" if sys.platform == "win32" else "bin/Rscript")
     libraries = [Path(path) for name in ("R_LIBS", "R_LIBS_USER", "R_LIBS_SITE")
                  for path in os.environ.get(name, "").split(os.pathsep) if path]
     libraries.append(r_home / "library")
@@ -202,7 +230,9 @@ class RWorker(QObject):
         version, source = expected_source()
         self._startup = _frame(0, {"version": version, "source": source, "pins": runtime_versions()})
         program, script = _runtime_paths()
-        executable, args = worker_command(str(program), ["--vanilla", "--no-echo", "-f", str(script)])
+        # Start Rterm directly on Windows so the job object owns the interpreter PID.
+        script_args = ["--no-echo", "-f", str(script)] if sys.platform == "win32" else [str(script)]
+        executable, args = worker_command(str(program), ["--vanilla", *script_args])
         self._process = QProcess(self)
         self._process.setProgram(executable)
         self._process.setArguments(args)
@@ -224,6 +254,7 @@ class RWorker(QObject):
         self._heartbeat.timeout.connect(lambda: self.heartbeat_missing.emit(True))
         self._watch_heartbeat = False
         self._ready = False
+        self._runtime: RuntimeInfo | None = None
         self._restart = False
         self._start_scheduled = False
         self._windows_job: WindowsWorkerJob | None = None
@@ -264,6 +295,8 @@ class RWorker(QObject):
             self.changed.emit()
             return
         env = QProcessEnvironment.systemEnvironment()
+        if sys.platform == "linux" and getattr(sys, "frozen", False):
+            env.insert("LD_LIBRARY_PATH", str(Path(env.value("R_HOME")) / "lib"))
         directory = self._control.path()
         for name in ("RCMS_WORKER_CONTROL", "TMPDIR", "TMP", "TEMP"):
             env.insert(name, directory)
@@ -331,6 +364,7 @@ class RWorker(QObject):
             return
         if not self._ready and reply["id"] == 0:
             if reply["status"] == "ok":
+                self._runtime = _runtime_info(reply["result"])
                 self._ready = True
             else:
                 self._startup_error = f"The R worker could not start. {reply['message']}"
@@ -412,6 +446,11 @@ class RWorker(QObject):
         self._wait(lambda: self._ready or self._startup_error is not None or self._closed)
         if not self._ready:
             raise RWorkerError(self._startup_error or "The R worker is closed.")
+
+    def runtime_info(self) -> RuntimeInfo:
+        self.ensure_ready()
+        assert self._runtime is not None
+        return self._runtime
 
     def _wait(self, done: Callable[[], bool], *, allow_input: bool = False, delay_ms: int = 0) -> None:
         loop = QEventLoop()
@@ -516,6 +555,9 @@ class RWorker(QObject):
             "plot_edit": "Applying plot edits…",
             "plot_render": "Rendering plot artwork…",
             "artwork_export": "Converting plot artwork…",
+            "available_methods": "Checking available analysis methods…",
+            "method_parameters": "Reading analysis settings…",
+            "plot_capabilities": "Checking available plots…",
         }.get(kind, "Fitting model and drawing plots…")
         dialog = QProgressDialog(label, "Cancel", 0, 0, QApplication.activeWindow())
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
@@ -559,6 +601,14 @@ class RWorker(QObject):
         self.changed.emit()
 
 
+def _runtime_info(result: object) -> RuntimeInfo:
+    match result:
+        case {"version": str(), "home": str(), "cwd": str(), "libraries": list(), "packages": dict()}:
+            return cast(RuntimeInfo, result)
+        case _:
+            raise ValueError("The R worker returned an invalid runtime identity.")
+
+
 def _parse_reply(reply: object) -> _Reply:
     if not isinstance(reply, dict):
         raise ValueError("expected a response object")
@@ -595,10 +645,20 @@ def _deliver_result(pending: _Pending, deliver: Callable[[object, Exception | No
         deliver(result, None)
 
 
+def foreground_busy() -> bool:
+    app = QCoreApplication.instance()
+    if app is None:
+        return False
+    worker = app.findChild(RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)
+    return worker is not None and worker._pending is not None and worker._background is None
+
+
 def current_worker() -> RWorker:
     app = QCoreApplication.instance()
     if app is None:
         raise RWorkerError("The R worker needs the desktop application.")
+    if QThread.currentThread() != app.thread():
+        raise RWorkerError("R jobs must be submitted from the application thread.")
     worker = app.findChild(RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)
     if worker is None:
         worker = RWorker(app)

@@ -63,8 +63,8 @@ def drive(app, window, work, record):
             assert button.width() == width
             assert 'Qt ' in app.clipboard().text() and 'R version' in app.clipboard().text()
             assert 'Visit website' in dialog.content_scroll_area.toPlainText()
-            from rc_metastudio import r_bridge
-            short_r = r_bridge.get_r_version_string().removeprefix('R version ').split()[0]
+            from rc_metastudio import r_operations
+            short_r = r_operations.get_r_version_string().removeprefix('R version ').split()[0]
             assert 'R ' + short_r in dialog.content_scroll_area.toPlainText()
             document = dialog.content_scroll_area.document()
             assert document is not None

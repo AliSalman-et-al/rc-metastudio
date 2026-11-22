@@ -1,5 +1,7 @@
 """Reitsma coefficient-axis settings, persistence and exported intervals."""
 
+from tests.e2e import r_oracle
+
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +13,7 @@ def run_coefficients(app, window, work, record):
     from analysis_matrix import run as matrix, set_parameter
     from advanced_workflows import modal, click, export_formats
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results import window as results_window
     from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.e2e.axis_conventions import check_axis
@@ -81,7 +83,7 @@ def run_coefficients(app, window, work, record):
         artifact, _ = view._selected_plot()
         load_saved_analysis(artifact.params_path, include_plot_data=True)
         expression = 'jsonlite::toJSON(plot.data[c("estimate","ci.lb","ci.ub")],digits=16)'
-        before = str(r_bridge.execute_r_string(expression)[0])
+        before = str(r_oracle.evaluate(expression)[0])
         observed = check_axis(artifact.display_path(), 'transformed', ratio=True)
         record('coefficient-log-default', view, title=title, ticks=observed, coefficients=json.loads(before), plots={title:artifact.display_path()})
         record_bottom('coefficient-log-default-bottom', title=title, ticks=observed, plots={title:artifact.display_path()})
@@ -93,7 +95,7 @@ def run_coefficients(app, window, work, record):
             click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
         modal(app, EditPlotDialog, edit, view.edit_plot_action.trigger)
         load_saved_analysis(artifact.params_path, include_plot_data=True)
-        assert str(r_bridge.execute_r_string(expression)[0]) == before
+        assert str(r_oracle.evaluate(expression)[0]) == before
         assert dict(view.texts) == report
         linear = check_axis(artifact.display_path(), 'natural', ratio=True)
         def reopen(dialog):

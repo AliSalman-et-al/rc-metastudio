@@ -17,31 +17,21 @@ from rc_metastudio.r_worker import CalculatorJob
 
 
 def run(app, window, work: Path, root: Path, record_step, _analyze):
-    from rc_metastudio import r_bridge, r_worker
+    from rc_metastudio import r_operations, r_worker
     from rc_metastudio.calculators.service import CalculatorService
 
     worker = r_worker.current_worker()
     first_pid = worker.pid
     assert first_pid > 0
-    operations = _operations(CalculatorService(), r_bridge)
-    operations.update(_edge_operations(CalculatorService(), r_bridge))
-    with patch.dict("os.environ", {"RCMS_R_BACKEND": "embedded"}):
-        embedded, embedded_ms = _measure(operations)
+    operations = _operations(CalculatorService(), r_operations)
+    operations.update(_edge_operations(CalculatorService(), r_operations))
     observed, worker_ms = _measure(operations)
-    (work / "worker-parity.json").write_text(
-        json.dumps({
-            "embedded": {name: repr(value) for name, value in embedded.items()},
-            "worker": {name: repr(value) for name, value in observed.items()},
-            "embedded_ms": embedded_ms, "worker_ms": worker_ms,
-        }, indent=2), encoding="utf-8",
-    )
-    for name in operations:
-        assert observed[name] == embedded[name], (name, observed[name], embedded[name])
     for name in ("diagnostic_imputation", "diagnostic_ci_imputation"):
         assert all(observed[name][cell] is not None for cell in ("TP", "FN", "FP", "TN"))
     assert observed["diagnostic_imputation"] != observed["diagnostic_ci_imputation"]
     assert len(observed["smd_multiple_roots"]["n2"]) == 2
-    record_step("worker-parity", window, operations=list(operations), pid=first_pid)
+    (work / "calculator-timings.json").write_text(json.dumps(worker_ms, indent=2), encoding="utf-8")
+    record_step("worker-calculators", window, operations=list(operations), pid=first_pid)
 
     source = root / "tests/fixtures/desktop-projects/amino.rcms"
     candidate = root / "tests/e2e/fixtures/400-study-forest.rcms"
@@ -74,6 +64,7 @@ def run(app, window, work: Path, root: Path, record_step, _analyze):
     assert window.model.rowCount() == original_rows
     assert window.open(str(candidate), raise_on_error=True)
     assert len(window.model.get_studies(only_if_included=False)) == 400
+    assert _measure(operations)[0] == observed
     record_step("worker-respawned", window, pid=worker.pid, committed_sha256=original_hash,
                 reopen_seconds=perf_counter() - start)
 
@@ -285,7 +276,6 @@ def _orphan_victim(receipt):
     injected = receipt.with_suffix(".R")
     running = receipt.with_suffix(".busy")
     os.environ["RCMS_ORPHAN_PROBE_BUSY"] = running.as_posix()
-    os.environ["RCMS_R_BACKEND"] = "worker"
     source = script.read_text(encoding="utf-8").replace(
         'request$job <- decode_wire(request$job)',
         'file.create(Sys.getenv("RCMS_ORPHAN_PROBE_BUSY")); Sys.sleep(60); request$job <- decode_wire(request$job)',

@@ -100,8 +100,6 @@ jobs:
           $runtimeProbe = Get-ChildItem qualified/tree -Recurse -Filter runtime-probe.json | Select-Object -First 1
           if (-not $exe -or -not $sample -or -not $runtimeProbe) { throw "Windows candidate is incomplete." }
           New-Item -ItemType Directory -Force qualified/diagnostics | Out-Null
-          $env:RCMS_REQUIRE_IN_PROCESS_RPY2 = "1"
-          $env:RPY2_CFFI_MODE = "API"
           $env:RCMS_AUTOMATION_SMOKE_LOG = (Resolve-Path qualified/diagnostics).Path + "\packaged-smoke.log"
           $env:RCMS_AUTOMATION_HANG_TRACE = (Resolve-Path qualified/diagnostics).Path + "\packaged-smoke.hang-trace.log"
           Remove-Item Env:\QT_QPA_PLATFORM -ErrorAction SilentlyContinue
@@ -186,14 +184,14 @@ jobs:
           python_exe="$(uv python find)"
           test -n "$root" && test -x "$launcher" && test -n "$sample"
           env -u LD_LIBRARY_PATH -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
-            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            \
             xvfb-run -a env PATH="$root/R/bin" "$launcher" \
               --automation-package-runtime-probe "$runtime_probe" \
               > qualified/diagnostics/runtime-probe.stdout.log \
               2> qualified/diagnostics/runtime-probe.stderr.log
           test -s "$runtime_probe"
           env -u LD_LIBRARY_PATH -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
-            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
             xvfb-run -a env PATH="$root/R/bin" PYTHONPATH="$PWD/src" "$python_exe" scripts/assemble_packaged_smoke_evidence.py \
@@ -433,7 +431,7 @@ jobs:
           sample="$PWD/$sample"
           runtime_probe="$PWD/$runtime_probe"
           env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
-            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            \
             RCMS_R_HOME="$app/Contents/Frameworks/R.framework/Resources" \
             RCMS_R_LIBS="$app/Contents/Frameworks/R.framework/Resources/library" \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
@@ -452,7 +450,7 @@ jobs:
               2> qualified/diagnostics/packaged-smoke.stderr.log
           python3 -c 'import json,sys; evidence=json.load(open(sys.argv[1])); assert evidence.get("passed") is True' qualified/diagnostics/packaged-smoke.json
           rm -f qualified/diagnostics/startup-project-completion.json qualified/diagnostics/startup-project.pid
-          env -u QT_QPA_PLATFORM RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+          env -u QT_QPA_PLATFORM \
             RCMS_R_HOME="$app/Contents/Frameworks/R.framework/Resources" \
             RCMS_R_LIBS="$app/Contents/Frameworks/R.framework/Resources/library" \
             uv run python scripts/run_bounded_process.py --timeout-seconds 900 \

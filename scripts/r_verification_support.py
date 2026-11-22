@@ -34,8 +34,6 @@ class RVerificationSupportError(Exception):
     """An error from shared R runtime discovery or identity checks."""
 
 
-def locked_rpy2_versions() -> dict[str, str]:
-    return locked_python_versions("rpy2", "rpy2-rinterface", "rpy2-robjects")
 
 
 def candidate_rscript_names(*, platform_name: str = os.name) -> list[str]:

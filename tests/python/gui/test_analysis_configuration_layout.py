@@ -266,17 +266,17 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
 
     covariate = {'id': 'quality', 'name': 'quality', 'data_type': 4}
     model = _AnalysisModel("diagnostic", (covariate,))
-    backend = analysis_adapter.r_bridge
+    backend = analysis_adapter.r_operations
     monkeypatch.setattr(
         backend,
-        "dataset_to_simple_diagnostic_r_object",
+        "_diagnostic_data_arguments",
         lambda *_args, **_kwargs: None,
         raising=False,
     )
     monkeypatch.setattr(
         backend,
-        "get_available_methods",
-        lambda **_kwargs: {"Reitsma bivariate model": "diagnostic.reitsma"},
+        "available_model_methods",
+        lambda *_args, **_kwargs: {"diagnostic.reitsma": "Reitsma bivariate model"},
         raising=False,
     )
     monkeypatch.setattr(
@@ -431,17 +431,17 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     continuous = {'id': 'threshold', 'name': 'threshold', 'data_type': 0}
     factor = {'id': 'reader', 'name': 'reader', 'data_type': 1}
     model = _AnalysisModel("diagnostic", (continuous, factor))
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     monkeypatch.setattr(
         backend,
-        "dataset_to_simple_diagnostic_r_object",
+        "_diagnostic_data_arguments",
         lambda *_args, **_kwargs: None,
         raising=False,
     )
     monkeypatch.setattr(
         backend,
-        "get_available_methods",
-        lambda **_kwargs: {"Reitsma bivariate model": "diagnostic.reitsma"},
+        "available_model_methods",
+        lambda *_args, **_kwargs: {"diagnostic.reitsma": "Reitsma bivariate model"},
         raising=False,
     )
     monkeypatch.setattr(
@@ -1095,10 +1095,10 @@ class Model:
     def included_studies_have_raw_data(self):
         return True
 
-backend = analysis_adapter.r_bridge
+backend = analysis_adapter.r_operations
 data_calls = []
-backend.dataset_to_simple_binary_r_object = lambda *args, **kwargs: data_calls.append("binary")
-backend.get_available_methods = lambda **kwargs: {"Random": "binary.random"}
+backend._binary_data_arguments = lambda *args, **kwargs: data_calls.append("binary")
+backend.available_model_methods = lambda *_args, **kwargs: {"binary.random": "Random"}
 backend.get_params = lambda method: (
     {"conf.level": "float"}, {"conf.level": 95.0}, ["conf.level"], {}
 )

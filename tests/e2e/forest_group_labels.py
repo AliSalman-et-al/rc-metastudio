@@ -1,5 +1,7 @@
 """Forest arm/group labels, styles and persistence workflows."""
 
+from tests.e2e import r_oracle
+
 import json
 import os
 from pathlib import Path
@@ -13,7 +15,7 @@ from tests.e2e.plot_observations import load_serialized_object
 def run_groups(app, window, work, record):
     from analysis_matrix import run as matrix
     from advanced_workflows import modal, click
-    from rc_metastudio import __version__, r_bridge
+    from rc_metastudio import __version__, r_operations
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from tests.e2e.analysis_result_checks import check_report
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
@@ -44,7 +46,7 @@ def run_groups(app, window, work, record):
     window.workspace.mark_saved()
     assert window.open(str(legacy / 'project-0.4.2.rcms'), raise_on_error=True)
     load_serialized_object(str(legacy / 'default-0.4.2.params'))
-    old_style = str(r_bridge.execute_r_string('as.character(params$fp_style)')[0])
+    old_style = str(r_oracle.evaluate('as.character(params$fp_style)')[0])
     assert old_style == 'default'
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     from rc_metastudio.results.window import ResultsWindow
@@ -67,7 +69,7 @@ def run_groups(app, window, work, record):
     app.processEvents()
     record('reviewer-legacy-default-reopened',old_view,internal_style=old_style,plots=dict(old_view.results.display_images))
     close(app,old_view)
-    assert str(r_bridge.execute_r_string('as.character(packageVersion("RCMetaR"))')[0]) == __version__
+    assert str(r_oracle.evaluate('as.character(packageVersion("RCMetaR"))')[0]) == __version__
     def about(dialog):
         assert f'Version {__version__}' in dialog.content_scroll_area.toPlainText()
         record('reviewer-about-version', dialog, version=__version__)

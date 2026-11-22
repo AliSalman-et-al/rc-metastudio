@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
 import json
 import os
 import platform
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from time import perf_counter
+from typing import TypeVar
+from zipfile import ZipFile
 
 from rc_metastudio import app_error_handler
 from rc_metastudio.launch import dispose_qobjects
+
+
+_T = TypeVar("_T")
 
 
 def _mark_workspace_saved(window) -> None:
@@ -187,6 +195,94 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
         _close_automation_window(app, window)
 
 
+def start_package_worker_smoke(output_path: str, project_path: str) -> int:
+    """Qualify the first real jobs and worker restart in the packaged application."""
+    from rc_metastudio import r_operations
+    from rc_metastudio.results.report import ManuscriptReport, write_docx
+
+    output = Path(output_path).resolve()
+    plot = output.with_suffix(".svg")
+    document = output.with_suffix(".docx")
+    _reject_output_aliases((output, plot, document), (project_path,))
+    _configure_package_locale()
+    start = perf_counter()
+    phases = {}
+    app, window = _start_package_application(lambda phase: phases.update({phase: perf_counter() - start}))
+    seconds = {"startup": perf_counter() - start}
+    try:
+        _measure(seconds, "calculator", lambda: r_operations.effect_for_study(4, 20, 6, 22))
+        opened = _measure(seconds, "open_project", lambda: window.open(project_path, raise_on_error=True))
+        if not opened:
+            raise RuntimeError("Packaged worker smoke could not open the sample project.")
+        result = _measure(seconds, "fit", lambda: _run_analysis(window, "binary.random"))
+        report = ManuscriptReport.from_result(result)
+        figure = report.figures[0]
+        if not result.texts.get("Summary") or not figure.plot_data:
+            raise RuntimeError("The packaged fit did not produce a summary and a plot bundle.")
+        render = lambda: _render_smoke_plot(figure.plot_data, plot)
+        _measure(seconds, "plot", render)
+        _measure(seconds, "docx", lambda: write_docx(report, document))
+        with ZipFile(document) as archive:
+            if archive.testzip() is not None or "word/document.xml" not in archive.namelist():
+                raise RuntimeError("Packaged worker smoke produced an invalid DOCX.")
+        recovery = _restart_smoke_worker(render, plot, Path(figure.display_image or figure.value))
+        _write_json(output_path, {
+            "backend": "worker",
+            "frozen": bool(getattr(sys, "frozen", False)), "platform_plugin": app.platformName(),
+            "project": str(Path(project_path).resolve()), "seconds": seconds, "startup_phases": phases,
+            "plot_bytes": plot.stat().st_size, "docx_bytes": document.stat().st_size,
+            "recovery": recovery,
+        })
+        return 0
+    finally:
+        _close_automation_window(app, window)
+
+
+def _measure(seconds: dict[str, float], label: str, operation: Callable[[], _T]) -> _T:
+    start = perf_counter()
+    result = operation()
+    seconds[label] = perf_counter() - start
+    return result
+
+
+def _render_smoke_plot(prefix: str, plot: Path) -> None:
+    from PyQt6.QtSvg import QSvgRenderer
+    from rc_metastudio.results.plot_service import PlotService
+
+    PlotService().export(regenerator="forest", params_path=prefix, output_path=str(plot))
+    if not QSvgRenderer(str(plot)).isValid():
+        raise RuntimeError("Packaged worker smoke produced an invalid SVG.")
+
+
+def _restart_smoke_worker(render: Callable[[], None], plot: Path, committed: Path) -> dict:
+    from rc_metastudio import r_worker
+
+    worker = r_worker.current_worker()
+    runtime = worker.runtime_info()
+    interpreter, script = r_worker._runtime_paths()
+    home = Path(runtime["home"])
+    rscript = home / "bin" / ("Rscript.exe" if sys.platform == "win32" else "Rscript")
+    if getattr(sys, "frozen", False) and (
+        not rscript.is_file() or not script.parent.parent.samefile(home / "library")
+    ):
+        raise RuntimeError("The packaged worker did not use its private Rscript and RCMetaR installation.")
+    pid = worker.pid
+    previous = committed.read_bytes()
+    plot_contents = plot.read_bytes()
+    start = perf_counter()
+    worker._kill()
+    worker._wait(lambda: worker.pid != pid, delay_ms=5_000)
+    worker.ensure_ready()
+    if not worker.pid or worker.pid == pid:
+        raise RuntimeError("The packaged R worker did not restart.")
+    restart_seconds = perf_counter() - start
+    render()
+    if previous != committed.read_bytes() or plot_contents != plot.read_bytes():
+        raise RuntimeError("The packaged worker did not preserve and reuse the fitted result after restart.")
+    return {"old_pid": pid, "new_pid": worker.pid, "seconds": restart_seconds,
+            "interpreter": str(interpreter), "script": str(script), "runtime": runtime}
+
+
 def _configure_package_locale() -> None:
     from PyQt6 import QtCore
 
@@ -224,12 +320,11 @@ def start_package_runtime_probe(output_path: str) -> int:
     from PyQt6 import QtCore, sip
 
     from rc_metastudio.project import archive as project_format
-    from rc_metastudio import r_runtime
+    from rc_metastudio import r_runtime, r_worker
 
     for member in ("manifest.json", "project.json", "state.json"):
         project_format._schema(1, member)
     configured = r_runtime.configure_bundled_r_environment()
-    from rc_metastudio import r_bridge
 
     app = app_error_handler.get_or_create_application(sys.argv)
     from rc_metastudio.launch import configure_application
@@ -239,8 +334,8 @@ def start_package_runtime_probe(output_path: str) -> int:
     if primary is None:
         raise SystemExit("Packaged runtime probe found no primary screen.")
 
-    r_bridge.initialize_r()
-    runtime = r_bridge.packaged_runtime_observation()
+    worker = r_worker.current_worker()
+    runtime = worker.runtime_info()
     shared_path = Path(configured.get("R_HOME", "")) / "bin" / "x64" / "R.dll"
     if sys.platform == "darwin":
         shared_path = Path(configured.get("R_HOME", "")) / "lib" / "libR.dylib"
@@ -264,13 +359,11 @@ def start_package_runtime_probe(output_path: str) -> int:
                 "baseline_device_pixel_ratio": float(primary.devicePixelRatio()),
                 "baseline_logical_dpi": float(primary.logicalDotsPerInch()),
             },
-            "rpy2": runtime["rpy2"],
             "project_schemas": {"version": 1, "validated_members": ["manifest.json", "project.json", "state.json"]},
-            "r": {"version": runtime["r_version"], "home": runtime["r_home"], "library_paths": runtime["r_library_paths"], "configured_home": configured.get("R_HOME"), "configured_library": configured.get("R_LIBS"), "shared_library_path": str(shared_path.resolve()), "direct_spike": configured.get("direct_spike") is True, "lc_numeric": os.environ.get("LC_NUMERIC")},
+            "r": {"version": runtime["version"].split()[2], "home": runtime["home"], "library_paths": runtime["libraries"], "configured_home": configured.get("R_HOME"), "configured_library": configured.get("R_LIBS"), "shared_library_path": str(shared_path.resolve()), "shared_library_sha256": sha256(shared_path.read_bytes()).hexdigest(), "lc_numeric": os.environ.get("LC_NUMERIC"), "backend": "worker"},
     }
-    if configured.get("kit_sha256") is not None:
-        probe["r"]["kit_sha256"] = configured["kit_sha256"]
     _write_json(output_path, probe)
+    worker.close()
     app.quit()
     return 0
 
@@ -399,4 +492,8 @@ def dispatch(startup_argv: list[str]) -> int:
         if len(startup_argv) != 6:
             raise SystemExit("--automation-package-import-export requires output, project, XLSX and RM5 paths.")
         return start_package_import_export(*startup_argv[2:])
+    if len(startup_argv) > 1 and startup_argv[1] == "--automation-package-worker-smoke":
+        if len(startup_argv) != 4:
+            raise SystemExit("--automation-package-worker-smoke requires an output and project path.")
+        return start_package_worker_smoke(*startup_argv[2:])
     raise SystemExit("Unknown packaged qualification command: %s" % startup_argv[1])

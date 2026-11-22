@@ -475,7 +475,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
     """Drive real editor/export actions with an explicit renderer boundary fixture."""
     from PyQt6 import QtCore, QtWidgets
     from unittest.mock import patch
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
     base = root / "forest"
     params = {"fp_outpath": str(svg), "fp_col1_str": "Study"}
@@ -528,10 +528,10 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
     before = _sha256(svg)
     with (
         patch.object(app_error_handler, "handle_exception", record_action_error),
-        patch.object(r_bridge, "load_plot_parameters", load),
-        patch.object(r_bridge, "prepare_plot_edit", prepare),
-        patch.object(r_bridge, "render_plot_bundle", render),
-        patch.object(r_bridge, "forest_export_dimensions", measure_forest),
+        patch.object(r_operations, "load_plot_parameters", load),
+        patch.object(r_operations, "prepare_plot_edit", prepare),
+        patch.object(r_operations, "render_plot_bundle", render),
+        patch.object(r_operations, "forest_export_dimensions", measure_forest),
     ):
         results.nav_tree.setCurrentItem(next(item for item in results.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == "Forest plot"))
         app.processEvents()
@@ -578,9 +578,9 @@ def _run_scale(scale: float, repo_root: Path, evidence_root: Path) -> None:
     ensure_application_resources()
     from local_r_test_backend import create
     backend_fake = create()
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     for name, implementation in vars(backend_fake).items():
-        setattr(r_bridge, name, implementation)
+        setattr(r_operations, name, implementation)
     from rc_metastudio import app_error_handler
     from rc_metastudio.results import window as results_window
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)

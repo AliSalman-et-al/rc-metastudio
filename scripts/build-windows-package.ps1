@@ -147,9 +147,7 @@ function Invoke-PackagedAppSmokeTest {
         R_LIBS_USER = $env:R_LIBS_USER
         RCMS_R_HOME = $env:RCMS_R_HOME
         RCMS_R_LIBS = $env:RCMS_R_LIBS
-        RCMS_REQUIRE_IN_PROCESS_RPY2 = $env:RCMS_REQUIRE_IN_PROCESS_RPY2
         RCMS_STARTUP_PROJECT_SMOKE = $env:RCMS_STARTUP_PROJECT_SMOKE
-        RPY2_CFFI_MODE = $env:RPY2_CFFI_MODE
         RCMS_PACKAGE_SMOKE_EVIDENCE = $env:RCMS_PACKAGE_SMOKE_EVIDENCE
         RCMS_AUTOMATION_SMOKE_LOG = $env:RCMS_AUTOMATION_SMOKE_LOG
         RCMS_AUTOMATION_HANG_TRACE = $env:RCMS_AUTOMATION_HANG_TRACE
@@ -157,8 +155,6 @@ function Invoke-PackagedAppSmokeTest {
     }
     try {
         Remove-Item Env:R_HOME,Env:R_LIBS,Env:R_LIBS_USER,Env:RCMS_R_HOME,Env:RCMS_R_LIBS -ErrorAction SilentlyContinue
-        $env:RCMS_REQUIRE_IN_PROCESS_RPY2 = "1"
-        $env:RPY2_CFFI_MODE = "API"
         $env:RCMS_PACKAGE_SMOKE_EVIDENCE = $workflowObservationPath
         $env:RCMS_AUTOMATION_SMOKE_LOG = $smokeLogPath
         $env:RCMS_AUTOMATION_HANG_TRACE = $hangTracePath
@@ -310,7 +306,7 @@ function Expand-AndQualifyExactArchive {
         --runtime-probe $extractedProbe --locked-qt-root $LockedQtRoot `
         --python-version $Versions.python --pyqt6-version $Versions.pyqt6 --qt-version $Versions.qt `
         --sip-version $Versions.sip --sip-runtime-version $Versions.sip_runtime `
-        --r-version $Versions.r --rpy2-version $Versions.rpy2 --pyinstaller-version $Versions.pyinstaller
+        --r-version $Versions.r --pyinstaller-version $Versions.pyinstaller
     if ($LASTEXITCODE -ne 0) { throw "Extracted Windows ZIP deployment inspection failed." }
     Write-Step "Running exact-archive packaged smoke through the normal user entry point"
     Invoke-PackagedAppSmokeTest -Root $extractedApp
@@ -351,16 +347,12 @@ function Invoke-PackagedRuntimeProbe {
         R_LIBS_USER = $env:R_LIBS_USER
         RCMS_R_HOME = $env:RCMS_R_HOME
         RCMS_R_LIBS = $env:RCMS_R_LIBS
-        RPY2_CFFI_MODE = $env:RPY2_CFFI_MODE
-        RCMS_REQUIRE_IN_PROCESS_RPY2 = $env:RCMS_REQUIRE_IN_PROCESS_RPY2
         RCMS_AUTOMATION_SMOKE_LOG = $env:RCMS_AUTOMATION_SMOKE_LOG
         QT_SCALE_FACTOR = $env:QT_SCALE_FACTOR
     }
     try {
         Remove-Item Env:R_HOME,Env:R_LIBS,Env:R_LIBS_USER,Env:RCMS_R_HOME,Env:RCMS_R_LIBS -ErrorAction SilentlyContinue
         Remove-Item "Env:\QT_SCALE_FACTOR" -ErrorAction SilentlyContinue
-        $env:RPY2_CFFI_MODE = "API"
-        $env:RCMS_REQUIRE_IN_PROCESS_RPY2 = "1"
         $env:RCMS_AUTOMATION_SMOKE_LOG = $smokeLogPath
         $quotedProbePath = '"{0}"' -f $probePath
         $exitCode = Invoke-BoundedPackageProcess -FilePath $exePath -ArgumentList @(
@@ -592,21 +584,6 @@ if (Test-Path $qualificationEvidencePath) { Remove-Item -LiteralPath $qualificat
 if (Test-Path $archiveInspectionPath) { Remove-Item -LiteralPath $archiveInspectionPath -Force }
 New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
 $resolvedRRuntimeRoot = Resolve-RRuntimeRoot
-Write-Step "Building the target-native rpy2 API bridge against staged R"
-    $previousRHomeForBridge = $env:R_HOME
-    $previousCffiModeForBridge = $env:RPY2_CFFI_MODE
-    try {
-        $env:R_HOME = $resolvedRRuntimeRoot
-        $env:RPY2_CFFI_MODE = "API"
-        & uv pip install --python $PythonExe --reinstall --no-binary rpy2-rinterface `
-            "--config-settings=--global-option=build" `
-            "--config-settings=--global-option=--compiler=mingw32" "rpy2-rinterface==3.6.7"
-        if ($LASTEXITCODE -ne 0) { throw "Target-native rpy2 API bridge build failed." }
-    }
-    finally {
-        if ($null -eq $previousRHomeForBridge) { Remove-Item Env:\R_HOME -ErrorAction SilentlyContinue } else { $env:R_HOME = $previousRHomeForBridge }
-        if ($null -eq $previousCffiModeForBridge) { Remove-Item Env:\RPY2_CFFI_MODE -ErrorAction SilentlyContinue } else { $env:RPY2_CFFI_MODE = $previousCffiModeForBridge }
-    }
 $pyQtRoot = (& $PythonExe -c "from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent)").Trim()
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $pyQtRoot)) { throw "Could not resolve the locked PyQt6 runtime root." }
 Push-Location $repoRoot
@@ -619,7 +596,6 @@ try {
     $env:PATH = "$(Join-Path $resolvedRRuntimeRoot 'bin\x64');$(Join-Path $resolvedRRuntimeRoot 'bin');$previousAnalysisPath"
     # packaging/pyinstaller/rc-metastudio.spec is the sole authoritative
     # PyInstaller collection definition. This wrapper only supplies build roots.
-    $env:RPY2_CFFI_MODE = "API"
     $env:RCMS_PYQT_ROOT = $pyQtRoot
     $qt6PackageBuildRoot = Join-Path $workRoot "qt6-input"
     & $PythonExe (Join-Path $repoRoot "scripts\build_qt6.py") generate --build-root $qt6PackageBuildRoot
@@ -662,11 +638,6 @@ if ($LASTEXITCODE -ne 0) { throw "Could not compute staged R package closure." }
 & $PythonExe (Join-Path $repoRoot "scripts\prune_staged_r.py") (Join-Path $appDir "R") $rClosurePath --windows
 if ($LASTEXITCODE -ne 0) { throw "Staged R pruning failed." }
 
-Write-Step "Verifying the direct target-native R and rpy2 API closure"
-$rpy2ApiBridge = Get-ChildItem -LiteralPath $appDir -Recurse -File -Filter "_rinterface_cffi_api*.pyd" | Select-Object -First 1
-if ($null -eq $rpy2ApiBridge) { throw "The required rpy2 API bridge was not collected." }
-$rpy2AbiBridge = Get-ChildItem -LiteralPath $appDir -Recurse -File -Filter "_rinterface_cffi_abi*" | Select-Object -First 1
-if ($null -ne $rpy2AbiBridge) { throw "The forbidden rpy2 ABI fallback was collected." }
 $rDll = Join-Path $appDir "R\bin\x64\R.dll"
 if (-not (Test-Path $rDll)) { throw "The private Windows R runtime is missing R.dll." }
 $sourceProvenance = $initialSourceProvenance
@@ -675,7 +646,6 @@ $sourceCommit = $sourceProvenance.head_sha
 @'
 @echo off
 set APP_DIR=%~dp0
-set RPY2_CFFI_MODE=API
 start "" "%APP_DIR%RCMetaStudio.exe" "%APP_DIR%sample_projects\Binary - Aminoglycoside dosing, Barza 1996.rcms"
 '@ | Set-Content -Path (Join-Path $appDir "LaunchRCMetaStudio.bat") -Encoding ASCII
 
@@ -690,7 +660,6 @@ $pyQtVersion = (& $PythonExe -c "import importlib.metadata as m; print(m.version
 $qtVersion = (& $PythonExe -c "import importlib.metadata as m; print(m.version('PyQt6-Qt6'))").Trim()
 $sipVersion = (& $PythonExe -c "import importlib.metadata as m; print(m.version('PyQt6-sip'))").Trim()
 $sipRuntimeVersion = (& $PythonExe -c "from PyQt6 import sip; print(sip.SIP_VERSION_STR)").Trim()
-$rpy2Version = (& $PythonExe -c "import importlib.metadata as m; print(m.version('rpy2'))").Trim()
 $rVersion = (& (Join-Path $resolvedRRuntimeRoot "bin\Rscript.exe") -e "cat(as.character(getRversion()))").Trim()
 Write-Step "Inspecting coherent Windows x64 deployment"
 & $PythonExe (Join-Path $repoRoot "scripts\inspect_windows_deployment.py") inspect `
@@ -698,7 +667,7 @@ Write-Step "Inspecting coherent Windows x64 deployment"
     --runtime-probe $runtimeProbePath --locked-qt-root (Join-Path $pyQtRoot "Qt6") `
     --python-version $pythonVersion --pyqt6-version $pyQtVersion --qt-version $qtVersion `
     --sip-version $sipVersion --sip-runtime-version $sipRuntimeVersion `
-    --r-version $rVersion --rpy2-version $rpy2Version `
+    --r-version $rVersion `
     --pyinstaller-version $requiredPyInstallerVersion
 if ($LASTEXITCODE -ne 0) { throw "Windows deployment inspection failed." }
 if (-not $SkipSmoke) {
@@ -718,7 +687,7 @@ if (-not $SkipSmoke) {
     $versionEvidence = @{
         python = $pythonVersion; pyqt6 = $pyQtVersion; qt = $qtVersion
         sip = $sipVersion; sip_runtime = $sipRuntimeVersion; r = $rVersion
-        rpy2 = $rpy2Version; pyinstaller = $requiredPyInstallerVersion
+        pyinstaller = $requiredPyInstallerVersion
     }
     Assert-SourceProvenanceUnchanged -Expected $sourceProvenance -Boundary "creating the distributable ZIP" | Out-Null
     $exactQualification = Expand-AndQualifyExactArchive -Archive $zipPath -ArchiveRootName $archiveRootName `

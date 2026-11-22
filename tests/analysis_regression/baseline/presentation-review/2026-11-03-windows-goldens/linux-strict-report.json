@@ -3864,10 +3864,5 @@
     "path": "tests/analysis_regression/baseline/numeric-contract.json",
     "sha256": "5c9146ab63d5abbe63a184caebdb4791892164ca1200cc72bfa4f6bcec6e5463"
   },
-  "passed": true,
-  "rpy2_identities": {
-    "rpy2": "3.6.7",
-    "rpy2-rinterface": "3.6.6",
-    "rpy2-robjects": "3.6.5"
-  }
+  "passed": true
 }

@@ -397,9 +397,8 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
 
 
 def test_meantime_sample_project_loads_native_factor_covariate():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from tests.analysis_regression.golden.support import headless_analysis
 
     model = headless_analysis.load_dataset_model(_sample_project_path("meantime.rcms"))
@@ -557,7 +556,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     params = {
         "conf.level": "float",
@@ -571,13 +570,13 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     }
 
     monkeypatch.setattr(
-        r_bridge,
-        "get_available_methods",
-        lambda **kwargs: {"Random-effects": "binary.random"},
+        r_operations,
+        "available_model_methods",
+        lambda *_args, **kwargs: {"binary.random": "Random-effects"},
         raising=False,
     )
     monkeypatch.setattr(
-        r_bridge,
+        r_operations,
         "get_params",
         lambda method: (
             dict(params),
@@ -588,8 +587,8 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
         raising=False,
     )
     monkeypatch.setattr(
-        r_bridge,
-        "dataset_to_simple_binary_r_object",
+        r_operations,
+        "_binary_data_arguments",
         lambda model, **kwargs: None,
         raising=False,
     )
@@ -622,7 +621,7 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
 
     app, window = automation.start_automation()
     main_window = sys.modules["rc_metastudio.main_window"]
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     method_map = {
         "binary.random": "binary.random",
@@ -660,9 +659,9 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
     }
 
     monkeypatch.setattr(
-        r_bridge,
-        "get_available_methods",
-        lambda **kwargs: dict(method_map),
+        r_operations,
+        "available_model_methods",
+        lambda *_args, **kwargs: dict(method_map),
         raising=False,
     )
 
@@ -670,10 +669,10 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
         method_params, defaults, var_order = params[method]
         return dict(method_params), dict(defaults), list(var_order), pretty_names
 
-    monkeypatch.setattr(r_bridge, "get_params", get_params, raising=False)
+    monkeypatch.setattr(r_operations, "get_params", get_params, raising=False)
     monkeypatch.setattr(
-        r_bridge,
-        "dataset_to_simple_binary_r_object",
+        r_operations,
+        "_binary_data_arguments",
         lambda model, **kwargs: None,
         raising=False,
     )
@@ -900,9 +899,8 @@ def test_analysis_opens_results_window_maximized_and_fits_svg_plot(tmp_path):
 
 
 def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1019,9 +1017,8 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
 
 def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1093,9 +1090,8 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
 
 
 def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1168,9 +1164,8 @@ def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
 
 
 def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1262,9 +1257,8 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
 def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     tmp_path, monkeypatch, title, plot_kind
 ):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1318,9 +1312,9 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
         assert path == params_path
         return {"fp_col1_str": "Study"}
 
-    monkeypatch.setattr(plot_service.r_bridge, "load_plot_parameters", load_selected_params)
+    monkeypatch.setattr(plot_service.r_operations, "load_plot_parameters", load_selected_params)
     monkeypatch.setattr(
-        plot_service.r_bridge,
+        plot_service.r_operations,
         "prepare_plot_edit",
         lambda *args: _stage_plot_edit(*args, height=800),
     )
@@ -1353,9 +1347,8 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
 
 
 def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
@@ -1406,9 +1399,8 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
 
 
 def test_sroc_plot_editor_round_trips_reitsma_style_contract():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
         {
@@ -1465,9 +1457,8 @@ def test_sroc_plot_editor_round_trips_reitsma_style_contract():
 
 
 def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import plot_editor as plot_editor_dialog
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1497,9 +1488,8 @@ def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
 
 
 def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     applied = []
     dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png", on_commit=applied.append)
@@ -1534,9 +1524,8 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
 
 
 def test_edit_plot_dialog_failed_ok_stays_open_with_error(monkeypatch):
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
 
-    r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     def fail(_parameters):
         raise RuntimeError("render failed")
@@ -1569,9 +1558,8 @@ def test_edit_plot_dialog_failed_ok_stays_open_with_error(monkeypatch):
 
 
 def test_edit_regression_plot_dialog_shows_only_bubble_options():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
         {
@@ -1623,9 +1611,8 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
 def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     tmp_path, monkeypatch
 ):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1652,7 +1639,7 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
         calls.append(params)
         return _stage_plot_edit(prefix, regenerator, params, output, directory, 300 + 100 * len(calls))
 
-    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
+    monkeypatch.setattr(plot_service.r_operations, "prepare_plot_edit", prepare)
 
     window = results_window.ResultsWindow(
         _analysis_result(
@@ -1745,13 +1732,12 @@ def test_meta_regression_enables_plots_only_for_one_continuous_covariate():
 def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     method_label, method_name, monkeypatch
 ):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     class DiagnosticModel(object):
         current_sheet = SimpleNamespace(settings={}, id="diagnostic", name="Outcome", rows=[])
@@ -1768,16 +1754,16 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
             return True
 
     monkeypatch.setattr(
-        r_bridge,
-        "get_available_methods",
-        lambda **kwargs: {method_label: method_name},
+        r_operations,
+        "available_model_methods",
+        lambda *_args, **kwargs: {method_label: method_name},
         raising=False,
     )
     monkeypatch.setattr(
-        r_bridge, "get_params", lambda method: ({}, {}, None, {}), raising=False
+        r_operations, "get_params", lambda method: ({}, {}, None, {}), raising=False
     )
     monkeypatch.setattr(
-        r_bridge,
+        r_operations,
         "get_analysis_plot_capabilities",
         lambda data_type, method, workflow="standard": [
             _plot_capability(plot_kind="forest")
@@ -1785,8 +1771,8 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
         raising=False,
     )
     monkeypatch.setattr(
-        r_bridge,
-        "dataset_to_simple_diagnostic_r_object",
+        r_operations,
+        "_diagnostic_data_arguments",
         lambda model, **kwargs: None,
         raising=False,
     )
@@ -1809,9 +1795,8 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
 def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     tmp_path, monkeypatch
 ):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1860,7 +1845,7 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
             return dict(self._params)
 
     monkeypatch.setattr(
-        plot_service.r_bridge, "load_plot_parameters", lambda _path: {"fp_col1_str": "Study"},
+        plot_service.r_operations, "load_plot_parameters", lambda _path: {"fp_col1_str": "Study"},
     )
 
     def prepare(prefix, regenerator, params, output, directory):
@@ -1869,7 +1854,7 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         height = 300 + 100 * sum(call[0] == "prepare" for call in calls)
         return _stage_plot_edit(prefix, regenerator, params, output, directory, height)
 
-    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
+    monkeypatch.setattr(plot_service.r_operations, "prepare_plot_edit", prepare)
     monkeypatch.setattr(
         results_window,
         "EditPlotDialog",
@@ -1932,9 +1917,8 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
 
 
 def test_results_window_ignores_missing_image_order_entries():
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    r_bridge.initialize_r()
     from rc_metastudio.results import window as results_window
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -2366,7 +2350,7 @@ def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
 
 @pytest.mark.parametrize("included", [0, 1, 2])
 def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypatch, qapp, included):
-    from rc_metastudio import launch, r_bridge, r_runtime
+    from rc_metastudio import launch, r_operations, r_runtime
 
     monkeypatch.setattr(launch.settings, "get_base_path", lambda **kwargs: str(tmp_path / "appdata"))
     monkeypatch.setenv("RCMS_ANALYSIS_SCRATCH_DIR", str(tmp_path / "scratch"))

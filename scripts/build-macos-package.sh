@@ -213,20 +213,15 @@ launchservices_marker_path="$qualification_root/launchservices-completion.json"
 launchservices_pid_path="$qualification_root/launchservices.pid"
 signing_inventory_path="$qualification_root/ad-hoc-signing-inventory.json"
 post_sign_native_inventory_path="$qualification_root/post-sign-native-inventory.json"
-r_runtime_profile_path="$qualification_root/embedded-r-runtime-profile.json"
-quarantine_profile_path="$qualification_root/embedded-r-runtime-quarantine.json"
+r_runtime_profile_path="$qualification_root/r-runtime-profile.json"
+quarantine_profile_path="$qualification_root/r-runtime-quarantine.json"
 r_substrate_probe_path="$qualification_root/r-substrate-probe.json"
 r_direct_build_manifest_path="$qualification_root/direct-r-build-manifest.json"
 ppm_archive_root="$qualification_root/ppm-archives"
 rcmetar_archive_path="$qualification_root/$rcmetar_archive_name"
 runner_environment_path="$qualification_root/runner-environment.json"
 official_r_signature_path="$qualification_root/official-r-signature.json"
-adapter_audit_path="$qualification_root/direct-r-pre-normalization-audit.json"
-adapter_map_path="$qualification_root/direct-r-adapter.json"
-adapter_toc_path="$qualification_root/direct-r-toc.json"
-rpy2_build_path="$qualification_root/rpy2-api-build.json"
 pre_sign_graph_path="$qualification_root/pre-sign-native-graph.json"
-preflight_report_path="$qualification_root/macos-r-pyinstaller-toc-preflight.json"
 archive_inspection_path="$artifact_dir/$artifact_name-archive-inspection.json"
 qualification_evidence_path="$artifact_dir/$artifact_name-evidence.json"
 cran_repo="${RCMS_CRAN_REPO:-$pinned_cran_repo}"
@@ -240,9 +235,9 @@ if [ "$pr_wheels" = true ]; then
   step "Installing locked macOS dependency wheels"
   (
     cd "$repo_root"
-    uv sync --locked --no-build --no-install-project --no-install-package rpy2-rinterface
-    # Staging scripts import the editable application before the API bridge is built.
-    uv sync --locked --no-install-package rpy2-rinterface
+    uv sync --locked --no-build --no-install-project
+    # Install the editable application after verifying that its dependencies have wheels.
+    uv sync --locked
   )
 elif [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
@@ -402,16 +397,16 @@ version = sys.argv[2]
 if not any(path.name.startswith("4.6") for path in (framework / "Versions").glob("*")):
     raise SystemExit("private R.framework layout does not contain the locked 4.6 version")
 PY
-step "Applying the explicit non-X11 embedded R product profile to private staged R"
-"$python_exe" "$repo_root/scripts/profile_macos_embedded_r_runtime.py" quarantine \
+step "Applying the explicit non-X11 R runtime profile to private staged R"
+"$python_exe" "$repo_root/scripts/profile_macos_r_runtime.py" quarantine \
   --resources "$r_runtime_root" --evidence "$quarantine_profile_path" \
   --dependency-manifest "$repo_root/config/r-dependencies.json" \
   --r-version "$r_version" --architecture "$expected_machine" \
   --source-resources "$source_r_runtime_root"
 
-step "Configuring private staged R launchers before native bridge build"
+step "Configuring private staged R launchers for the R worker"
 "$python_exe" "$repo_root/scripts/configure_macos_r_launchers.py" --resources "$r_runtime_root" --architecture "$expected_machine"
-step "Relocating private staged R dependencies before native bridge build"
+step "Relocating private staged R dependencies for the R worker"
 bash "$repo_root/scripts/relocate_macos_r_runtime.sh" --resources "$r_runtime_root" --architecture "$expected_machine" \
   --python "$python_exe" --allowed-root "$repo_root/build/macos-package/$architecture" \
   --normalizer "$repo_root/scripts/normalize_macos_macho.py"
@@ -592,23 +587,13 @@ if ! test_bundled_r_packages "$r_lib"; then
   exit 1
 fi
 
-step "Installing the target-native rpy2 API bridge against completed staged R"
-if [ "$pr_wheels" = true ]; then
-  (cd "$repo_root" && R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API \
-    uv sync --locked --no-binary-package rpy2-rinterface)
-else
-  R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
-    --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
-    "rpy2-rinterface==3.6.7"
-fi
-
 # Resolve the official fontconfig aliases while all runtime resources are intact.
 # The pruning gate checks every remaining symlink, including these runtime links.
 "$python_exe" - "$r_framework" "$repo_root/scripts" <<'PYTHON'
 from pathlib import Path
 import sys
 sys.path.insert(0, sys.argv[2])
-from macos_embedded_r_adapter import normalize_fontconfig_links
+from configure_macos_r_launchers import normalize_fontconfig_links
 normalize_fontconfig_links(Path(sys.argv[1]))
 PYTHON
 
@@ -616,8 +601,8 @@ step "Pruning build-only staged R payload"
 R_HOME="$r_home" "$rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_lib" "$work_root/r-closure.txt"
 "$python_exe" "$repo_root/scripts/prune_staged_r.py" "$r_home" "$work_root/r-closure.txt"
 
-step "Finalizing the embedded R product profile after package installation"
-"$python_exe" "$repo_root/scripts/profile_macos_embedded_r_runtime.py" finalize \
+step "Finalizing the R runtime profile after package installation"
+"$python_exe" "$repo_root/scripts/profile_macos_r_runtime.py" finalize \
   --resources "$r_home" --evidence "$r_runtime_profile_path" \
   --dependency-manifest "$repo_root/config/r-dependencies.json" \
   --r-version "$r_version" --architecture "$expected_machine" \
@@ -629,92 +614,7 @@ bash "$repo_root/scripts/relocate_macos_r_runtime.sh" --resources "$r_home" --ar
   --python "$python_exe" --allowed-root "$repo_root/build/macos-package/$architecture" \
   --normalizer "$repo_root/scripts/normalize_macos_macho.py"
 
-step "Proving and relocating the rpy2 API bridge against staged R"
-rpy2_api_bridge="$($python_exe - <<'PY'
-from pathlib import Path
-import sysconfig
-
-matches = list(Path(sysconfig.get_paths()["platlib"]).glob("_rinterface_cffi_api*.so"))
-if len(matches) != 1:
-    raise SystemExit(f"expected exactly one rpy2 API bridge, found {matches}")
-print(matches[0].resolve(strict=True))
-PY
-)"
-[ -f "$rpy2_api_bridge" ] || { echo "rpy2 API bridge is absent after source build." >&2; exit 1; }
-[ "$(find "$(dirname "$rpy2_api_bridge")" -maxdepth 1 -name '_rinterface_cffi_api*.so' | wc -l | tr -d ' ')" = 1 ] \
-  || { echo "rpy2 API build must contain exactly one API extension." >&2; exit 1; }
-if "$python_exe" -c 'import importlib.util,sys; sys.exit(importlib.util.find_spec("_rinterface_cffi_abi") is not None)'; then
-  :
-else
-  echo "rpy2 ABI bridge is present in the strict API environment." >&2; exit 1
-fi
-relocate_rpy2_api_bridge() {
-  local bridge="$1"
-  local dependency source_relative target relative_target
-  while IFS= read -r dependency; do
-  case "$dependency" in
-    @loader_path/*.dylib)
-      source_relative="lib/${dependency#@loader_path/}"
-      ;;
-    @rpath/lib/libR.dylib)
-      source_relative="lib/libR.dylib"
-      ;;
-    @rpath/*.dylib)
-      source_relative="lib/${dependency#@rpath/}"
-      ;;
-    "$r_runtime_root"/*)
-      source_relative="${dependency#"$r_runtime_root"/}"
-      ;;
-    /Library/Frameworks/R.framework/Versions/*/Resources/*)
-      source_relative="${dependency#*/Resources/}"
-      ;;
-    /Library/Frameworks/R.framework/Resources/*)
-      source_relative="${dependency#/Library/Frameworks/R.framework/Resources/}"
-      ;;
-    /Library/Frameworks/R.framework/R|/Library/Frameworks/R.framework/Versions/*/R)
-      source_relative="lib/libR.dylib"
-      ;;
-    *) continue ;;
-  esac
-  target="$r_home/$source_relative"
-  [ -f "$target" ] || { echo "rpy2 API bridge dependency has no staged R target: $dependency -> $target" >&2; exit 1; }
-  relative_target="$($python_exe - "$(dirname "$bridge")" "$target" <<'PY'
-import os, sys
-print(os.path.relpath(sys.argv[2], sys.argv[1]))
-PY
-)"
-    install_name_tool -change "$dependency" "@loader_path/$relative_target" "$bridge"
-  done < <(otool -L "$bridge" | awk 'NR > 1 { print $1 }')
-  if otool -L "$bridge" | grep -E '@rpath/|/Library/Frameworks/R\.framework/|/opt/R/'; then
-    echo "rpy2 API bridge retains an external R dependency." >&2
-    exit 1
-  fi
-}
-relocate_rpy2_api_bridge "$rpy2_api_bridge"
-R_HOME="$r_home" R_LIBS="$r_lib" R_LIBS_USER="$r_lib" RPY2_CFFI_MODE=API \
-  "$python_exe" - "$rpy2_api_bridge" "$machine" <<'PY'
-import importlib.util
-from pathlib import Path
-import subprocess
-import sys
-
-bridge = Path(sys.argv[1]).resolve(strict=True)
-expected_architecture = sys.argv[2]
-if subprocess.check_output(["lipo", "-archs", str(bridge)], text=True).split() != [expected_architecture]:
-    raise SystemExit(f"rpy2 API bridge is not {expected_architecture}-only")
-loads = subprocess.check_output(["otool", "-L", str(bridge)], text=True).splitlines()[1:]
-r_edges = [line for line in loads if "libR.dylib" in line or "/R " in line]
-if len(r_edges) != 1:
-    raise SystemExit(f"rpy2 API bridge must have exactly one R edge: {r_edges}")
-if importlib.util.find_spec("_rinterface_cffi_abi") is not None:
-    raise SystemExit("rpy2 ABI bridge is present")
-from rpy2 import robjects
-from rpy2.rinterface_lib import openrlib
-if openrlib.cffi_mode.name != "API" or float(robjects.r("1 + 1")[0]) != 2.0:
-    raise SystemExit("strict rpy2 API embedded calculation failed")
-PY
-
-step "Verifying the embedded R Quartz runtime policy"
+step "Verifying the R Quartz runtime policy"
 R_HOME="$r_home" R_LIBS="$r_lib" R_LIBS_USER="$r_lib" "$rscript" -e '
   if (requireNamespace("tcltk", quietly=TRUE)) stop("tcltk must be excluded")
   if ("tcltk" %in% loadedNamespaces()) stop("tcltk namespace must not load")
@@ -807,15 +707,6 @@ relocate_canonical_r_framework_main() {
 step "Canonicalizing the staged R framework before PyInstaller signing"
 canonicalize_r_framework "$r_framework"
 relocate_canonical_r_framework_main "$r_framework"
-"$python_exe" "$repo_root/scripts/macos_embedded_r_adapter.py" finalize-toc --framework "$r_framework" --architecture "$expected_machine" --output "$adapter_map_path" --toc-output "$adapter_toc_path"
-cp "$adapter_map_path" "$adapter_audit_path"
-"$python_exe" - "$rpy2_api_bridge" "$rpy2_build_path" <<'PY'
-import hashlib, importlib.metadata, json, subprocess, sys
-from pathlib import Path
-bridge, output = map(Path, sys.argv[1:])
-output.write_text(json.dumps({"schema_version": 1, "versions": {name: importlib.metadata.version(name) for name in ("rpy2", "rpy2-rinterface", "rpy2-robjects")}, "bridge": str(bridge), "sha256": hashlib.sha256(bridge.read_bytes()).hexdigest(), "dependencies": subprocess.run(["otool", "-L", str(bridge)], check=True, capture_output=True, text=True).stdout.splitlines()}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-PY
-
 step "Building the app from the completed staged R framework"
 (
   cd "$repo_root"
@@ -826,19 +717,11 @@ step "Building the app from the completed staged R framework"
   export RCMS_PROJECT_VERSION="$resolved_project_version"
   export RCMS_TARGET_ARCHITECTURE="$pyinstaller_target_architecture"
   export RCMS_MINIMUM_MACOS_VERSION="$minimum_macos_version"
-  export RCMS_PYINSTALLER_R_TOC="$adapter_toc_path"
-  export RCMS_PYINSTALLER_R_MAP="$adapter_map_path"
-  export RCMS_STAGED_R_FRAMEWORK="$r_framework"
-  export RCMS_RPY2_API_BRIDGE_SHA256="$(shasum -a 256 "$rpy2_api_bridge" | awk '{print $1}')"
   pyinstaller_args=(--noconfirm --distpath "$dist_root" --workpath "$work_root" "packaging/pyinstaller/rc-metastudio-macos.spec")
   [ "$skip_clean" -eq 1 ] || pyinstaller_args=(--clean "${pyinstaller_args[@]}")
-  R_HOME="$r_home" RPY2_CFFI_MODE=API "$python_exe" -m PyInstaller "${pyinstaller_args[@]}"
+  "$python_exe" -m PyInstaller "${pyinstaller_args[@]}"
 )
 [ -x "$app_root/RCMetaStudio" ] || { echo "PyInstaller did not create the app executable." >&2; exit 1; }
-find "$app_bundle" -name '_rinterface_cffi_abi*' -print -quit | grep -q . \
-  && { echo "PyInstaller collected the forbidden ABI bridge." >&2; exit 1; }
-rpy2_api_bridge="$(find "$app_bundle" -type f -name '_rinterface_cffi_api*.so' -print -quit)"
-[ -n "$rpy2_api_bridge" ] || { echo "PyInstaller did not collect the API bridge." >&2; exit 1; }
 resources_root="$app_bundle/Contents/Resources"
 sample_root="$resources_root/sample_projects"
 copy_tree "$repo_root/sample_projects" "$sample_root"
@@ -851,30 +734,6 @@ r_home="$r_framework/Resources"
 r_lib="$r_home/library"
 rscript="$r_home/bin/Rscript"
 r_binary="$r_home/bin/R"
-relocate_rpy2_api_bridge "$rpy2_api_bridge"
-"$python_exe" "$repo_root/scripts/macos_embedded_r_adapter.py" post-app \
-  --app "$app_bundle" --architecture "$expected_machine" \
-  --output "$qualification_root/post-injection-r-gate.json"
-"$python_exe" - "$preflight_report_path" "$(git rev-parse HEAD)" <<'PY'
-import json, sys
-from importlib.metadata import version
-from pathlib import Path
-Path(sys.argv[1]).write_text(json.dumps({
-    "schema_version": 1,
-    "source_commit": sys.argv[2],
-    "pyinstaller_version": version("pyinstaller"),
-    "system": "Darwin",
-    "machine": __import__("platform").machine(),
-    "aliases": {
-        "Versions/Current": "4.6-arm64",
-        "Resources": "Versions/Current/Resources",
-        "R": "Versions/Current/R",
-        "Versions/4.6-arm64/R": "Resources/lib/libR.dylib",
-        "Versions/4.6-arm64/Resources/R": "bin/R",
-    },
-    "passed": True,
-}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-PY
 "$python_exe" - "$runner_environment_path" <<'PY'
 import json, os, platform, subprocess, sys
 from pathlib import Path
@@ -889,7 +748,6 @@ cat > "$resources_root/LaunchRCMetaStudio.command" <<'SH'
 set -euo pipefail
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 R_DIR="$APP_DIR/../Frameworks/R.framework/Resources"
-export RPY2_CFFI_MODE=API
 export RCMS_R_HOME="$R_DIR"
 export RCMS_R_LIBS="$R_DIR/library"
 exec "$APP_DIR/../MacOS/RCMetaStudio" "$APP_DIR/sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms"
@@ -901,7 +759,7 @@ for required_path in \
   "$sample_root/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms" \
   "$sample_root/Binary - Aminoglycoside dosing, Barza 1996.rcms" \
   "$r_home/bin/Rscript" \
-  "$r_home/library/RCMetaR/DESCRIPTION" \
+  "$r_home/library/RCMetaR/worker.R" \
   "$resources_root/LaunchRCMetaStudio.command"
 do
   if [ ! -e "$required_path" ]; then
@@ -915,8 +773,6 @@ run_packaged_process() {
   local stdout_path="${RCMS_PACKAGED_STDOUT_PATH:-$smoke_stdout_path}"
   local stderr_path="${RCMS_PACKAGED_STDERR_PATH:-$smoke_stderr_path}"
   env -u QT_QPA_PLATFORM \
-    RCMS_REQUIRE_IN_PROCESS_RPY2=1 \
-    RPY2_CFFI_MODE=API \
     RCMS_R_HOME="$r_home" \
     RCMS_R_LIBS="$r_lib" \
     "$python_exe" "$repo_root/scripts/run_bounded_process.py" \
@@ -1024,8 +880,6 @@ PY
   mkdir -p "$surface_records_path"
   : > "$hang_trace_path"
   env -u QT_QPA_PLATFORM \
-    RCMS_REQUIRE_IN_PROCESS_RPY2=1 \
-    RPY2_CFFI_MODE=API \
     RCMS_R_HOME="$r_home" \
     RCMS_R_LIBS="$r_lib" \
     "$python_exe" "$repo_root/scripts/assemble_packaged_smoke_evidence.py" \
@@ -1042,8 +896,6 @@ PY
   step "Opening the converted sample through the normal LaunchServices app entry point"
   rm -f "$launchservices_marker_path" "$launchservices_pid_path"
   env -u QT_QPA_PLATFORM \
-    RCMS_REQUIRE_IN_PROCESS_RPY2=1 \
-    RPY2_CFFI_MODE=API \
     RCMS_R_HOME="$r_home" \
     RCMS_R_LIBS="$r_lib" \
     RCMS_STARTUP_PROJECT_SMOKE=1 \
@@ -1071,7 +923,6 @@ pyqt6_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.versi
 qt_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("PyQt6-Qt6"))')"
 sip_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("PyQt6-sip"))')"
 sip_runtime_version="$("$python_exe" -c 'from PyQt6 import sip; print(sip.SIP_VERSION_STR)')"
-rpy2_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("rpy2"))')"
 pyinstaller_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("pyinstaller"))')"
 locked_qt_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
 step "Inspecting the coherent target-native macOS deployment"
@@ -1085,18 +936,16 @@ step "Inspecting the coherent target-native macOS deployment"
   --python-version "$python_version" --pyqt6-version "$pyqt6_version" \
   --qt-version "$qt_version" --sip-version "$sip_version" \
   --sip-runtime-version "$sip_runtime_version" --r-version "$r_version" \
-  --rpy2-version "$rpy2_version" --pyinstaller-version "$pyinstaller_version"
+  --pyinstaller-version "$pyinstaller_version"
 
 step "Recording canonical direct target-native production provenance"
-cp "$repo_root/scripts/macos_embedded_r_adapter.py" "$qualification_root/embedded-r-adapter.py"
 cp "$repo_root/scripts/macos_host_r_isolation.sh" "$qualification_root/macos-host-r-isolation.sh"
-cp "$repo_root/scripts/verify_macos_r_pyinstaller_toc.py" "$qualification_root/verify-macos-r-pyinstaller-toc.py"
 "$python_exe" "$repo_root/scripts/build_macos_direct_provenance.py" \
   --qualification-root "$qualification_root" --ppm-root "$ppm_archive_root" \
   --target "macos-$architecture" --official-r-url "$r_url" \
   --official-r-sha256 "$r_sha256" \
   --ppm-contrib-path "$ppm_contrib_path" \
-  --source-commit "$source_commit" --bridge "$rpy2_api_bridge" \
+  --source-commit "$source_commit" \
   --output "$r_direct_build_manifest_path"
 
 source "$repo_root/scripts/finalize-macos-package.sh"

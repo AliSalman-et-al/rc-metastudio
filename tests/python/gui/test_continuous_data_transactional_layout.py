@@ -149,7 +149,7 @@ def _open_continuous_dialog(
             reject_metric_choice,
         )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
@@ -166,22 +166,22 @@ def _open_continuous_dialog(
         return {"succeeded": False, "comment": "stub"}
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         impute,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_pre_post_continuous_data",
         impute_pre_post,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_effect_for_study",
         lambda *_args, **_kwargs: {"calc_scale": (2.5, 1.5, 3.5)},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_triplet",
         lambda effect, _scale, metric=None: effect["calc_scale"],
     )
@@ -191,7 +191,7 @@ def _open_continuous_dialog(
         return back_calc_result or {"FAIL": True}
 
     monkeypatch.setattr(
-        calculator_service.r_bridge, "back_calculate_continuous_data", back_calc
+        calculator_service.r_operations, "back_calculate_continuous_data", back_calc
     )
     dialog = continuous_data_dialog.ContinuousDataDialog(
         analysis_unit or FakeContinuousAnalysisUnit(),
@@ -228,12 +228,12 @@ def test_incomplete_successful_pre_post_result_clears_only_derived_arm(monkeypat
         values = dict.fromkeys(fields)
         values.update(n=20, mean=4, sd=3)
         complete = {"succeeded": True, "output": values, "pre": dict(values), "post": dict(values)}
-        monkeypatch.setattr(calculator_service.r_bridge, "impute_pre_post_continuous_data", lambda *_args: complete)
+        monkeypatch.setattr(calculator_service.r_operations, "impute_pre_post_continuous_data", lambda *_args: complete)
         dialog.g1_pre_post_table.setCurrentCell(0, 1)
         dialog.g1_pre_post_table.item(0, 1).setText("10")
         assert dialog.analysis_unit.get_raw_data_for_arm("Group 1") == [20, 4, 3]
         incomplete = {**complete, "output": {**values, "mean": None}, "pre": {**values, "mean": None}}
-        monkeypatch.setattr(calculator_service.r_bridge, "impute_pre_post_continuous_data", lambda *_args: incomplete)
+        monkeypatch.setattr(calculator_service.r_operations, "impute_pre_post_continuous_data", lambda *_args: incomplete)
         dialog.g1_pre_post_table.item(0, 1).setText("")
         assert dialog.analysis_unit.get_raw_data_for_arm("Group 1") == [None, None, None]
         assert dialog.effect_text_box.text() == ""
@@ -318,7 +318,7 @@ def test_continuous_back_calculation_enablement_probes_metric_assumptions(
         }
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "back_calculate_continuous_data",
         assumption_dependent_solver,
     )

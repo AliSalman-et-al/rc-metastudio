@@ -89,12 +89,12 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
         )
 
     def _copy_debug_info(self):
-        from rc_metastudio import r_bridge, r_runtime
+        from rc_metastudio import r_operations, r_runtime
         text = self.debug_info
         if r_runtime.is_ready():
-            text += '\nR libraries: ' + '; '.join(r_bridge.get_r_library_paths())
+            text += '\nR libraries: ' + '; '.join(r_operations.get_r_library_paths())
             for package in ('RCMetaR', 'metafor', 'meta', 'mada'):
-                text += f'\n{package} {r_bridge.get_r_package_version(package)}'
+                text += f'\n{package} {r_operations.get_r_package_version(package)}'
         required(QApplication.clipboard(), 'clipboard').setText(text)
 
     def changeEvent(self, event: QEvent | None) -> None:

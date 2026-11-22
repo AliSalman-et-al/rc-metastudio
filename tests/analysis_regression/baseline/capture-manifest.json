@@ -25,15 +25,13 @@
       "package": "RCMetaR",
       "pyqt": "5.15.11",
       "python": "3.11",
-      "r": "R version 4.6.0",
-      "rpy2": "3.6.7"
+      "r": "R version 4.6.0"
     },
     "local_default_capture_mode": "local-debug",
     "required_fields": [
       "python",
       "os",
       "r",
-      "rpy2",
       "pyqt",
       "package_versions",
       "commit_sha",

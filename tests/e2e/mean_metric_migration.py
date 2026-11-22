@@ -1,5 +1,7 @@
 """Open a genuine legacy metric archive through the ordinary desktop path."""
 
+from tests.e2e import r_oracle
+
 import copy
 import hashlib
 import json
@@ -89,17 +91,16 @@ def open_mean_sample(app, window, record, root, work):
 
 def compare_mean_sample_analysis(view, record, retained):
     """Compare displayed pooling with independent public metafor inputs."""
-    from rc_metastudio import r_bridge
-    from rc_metastudio.r_call_serialization import r_transaction
+    from rc_metastudio import r_operations
+
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 
-    with r_transaction():
-        expected = r_bridge.ro.r('''function(path) {
-            rows <- jsonlite::fromJSON(path)$rows
-            fit <- metafor::rma(measure="MN", mi=mean, sdi=sd, ni=n, data=rows, method="DL")
-            c(estimate=as.numeric(fit$b), lower_bound=fit$ci.lb, upper_bound=fit$ci.ub)
-        }''')(str(retained))
-        reference = dict(zip(expected.names, map(float, expected)))
+    expected = r_oracle.apply('''function(path) {
+        rows <- jsonlite::fromJSON(path)$rows
+        fit <- metafor::rma(measure="MN", mi=mean, sdi=sd, ni=n, data=rows, method="DL")
+        c(estimate=as.numeric(fit$b), lower_bound=fit$ci.lb, upper_bound=fit$ci.ub)
+    }''', str(retained))
+    reference = {key: float(value[0]) for key, value in expected.items()}
     summary = parsed_numeric_sections(view.results)["Summary"]
     for field, value in reference.items():
         assert abs(summary[field] - value) <= .00051, (field, summary, reference)

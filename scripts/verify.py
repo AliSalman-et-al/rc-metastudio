@@ -332,7 +332,6 @@ def run_packaging_contracts(env: dict[str, str] | None = None) -> None:
 def run_macos_packaging_contracts() -> None:
     run([
         sys.executable, "-m", "pytest", "-q",
-        "tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py::test_pyinstaller_preserves_miniature_cran_framework_toc",
         "tests/packaging/contract/test_macos_native_pipeline_contract.py",
     ])
 
@@ -344,7 +343,6 @@ def run_linux_source() -> None:
     run([
         sys.executable, "-m", "pytest", "--strict-markers", "--confcutdir=tests/python/fast",
         "tests/python/fast/test_r_runtime.py::test_frozen_linux_r_home_requires_private_shared_library",
-        "tests/python/fast/test_r_runtime.py::test_frozen_linux_runtime_does_not_require_integration_kit",
         "tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_is_pinned_to_official_pyside6_version",
         "tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_resolution_checks_selected_pyside_environment",
         "tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_requires_xcb_and_x86_64",
@@ -421,7 +419,7 @@ def ready_toolchain(args: argparse.Namespace) -> dict[str, object]:
         "distributions": sorted((d.metadata["Name"], d.version) for d in metadata.distributions()),
         "executables": {str(path): file_digest(path) for path in sorted(executables)},
         "r_version": subprocess.check_output([str(rscript), "--version"], stderr=subprocess.STDOUT, text=True).strip() if rscript else None,
-        "environment": {key: value for key, value in env.items() if key.startswith(("RCMS_", "QT_", "R_", "RPY2_", "LC_")) or key in {"PATH", "PYTHONPATH", "LANG"}},
+        "environment": {key: value for key, value in env.items() if key.startswith(("RCMS_", "QT_", "R_", "LC_")) or key in {"PATH", "PYTHONPATH", "LANG"}},
     }
 
 

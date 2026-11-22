@@ -2,7 +2,6 @@ import json
 import datetime
 import hashlib
 from collections.abc import Mapping
-from importlib import metadata
 import os
 import platform
 from pathlib import Path
@@ -16,7 +15,7 @@ import zipfile
 from tests.analysis_regression.golden.support import headless_analysis
 from rc_metastudio.analysis import requests as analysis_adapter
 from rc_metastudio import application_metadata
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations, r_worker
 from rc_metastudio.results.contract import AnalysisResult
 from rc_metastudio.results.plot_defaults import FOREST_ARM_LABELS
 
@@ -41,7 +40,6 @@ MODERN_BASELINE_ENVIRONMENT_EXPECTED = {
     "python": "3.14",
     "pyqt": "6.12.0",
     "r": "R version 4.6.2",
-    "rpy2": "3.6.9",
     "package": RCMetaR_R_PACKAGE,
 }
 
@@ -92,7 +90,6 @@ def comprehensive_golden_baseline_manifest(root_dir=None, timestamp=None):
                 "python",
                 "os",
                 "r",
-                "rpy2",
                 "pyqt",
                 "package_versions",
                 "commit_sha",
@@ -730,7 +727,7 @@ def _current_artifact_path(result, label):
 
 
 def run_curated_golden_set(report_path=None):
-    r_bridge.load_required_packages()
+    r_worker.current_worker().ensure_ready()
     reports = []
     for bundle in curated_golden_bundles():
         result = headless_analysis.run_headless_analysis(bundle["case"])
@@ -787,11 +784,8 @@ def capture_bundle(
     requirements = json.loads((root / "config/r-dependencies.json").read_text(encoding="utf-8"))
     authority_versions = {entry["name"]: entry["installed_version"].replace("-", ".") for entry in requirements["direct_RCMetaR_dependencies"] if entry["name"] in {"meta", "mada", "metafor"}}
     source_version = next(line.split(":", 1)[1].strip() for line in (root / "r/RCMetaR/DESCRIPTION").read_text(encoding="utf-8").splitlines() if line.startswith("Version:"))
-    from scripts.r_verification_support import locked_rpy2_versions
-    locked_python = locked_rpy2_versions()
     authoritative = (
         capture_mode == "authoritative" and baseline_environment["matches_expected"]
-        and all(tool_versions.get(name) == version for name, version in locked_python.items() if name.startswith("rpy2"))
         and package_versions["RCMetaR"] == source_version
         and all(str(package_versions[name]).replace("-", ".") == version for name, version in authority_versions.items())
     )
@@ -849,7 +843,7 @@ def capture_bundle(
 
 
 def capture_curated_binary_bundle(report_path=None):
-    r_bridge.load_required_packages()
+    r_worker.current_worker().ensure_ready()
     capture = capture_bundle(curated_golden_bundles()[0])
     if report_path:
         with open(report_path, "w") as f:
@@ -876,7 +870,7 @@ def capture_comprehensive_golden_baseline(
     _ensure_dir(captures_dir)
     _ensure_dir(artifacts_dir)
 
-    r_bridge.load_required_packages()
+    r_worker.current_worker().ensure_ready()
     rows = []
     for bundle in curated_golden_bundles(root_dir):
         capture = capture_bundle(
@@ -1044,14 +1038,9 @@ def _tool_versions():
         "platform": platform.platform(),
     }
     try:
-        versions["r"] = r_bridge.get_r_version_string()
+        versions["r"] = r_operations.get_r_version_string()
     except Exception:
         versions["r"] = None
-    for distribution in ("rpy2", "rpy2-rinterface", "rpy2-robjects"):
-        try:
-            versions[distribution] = metadata.version(distribution)
-        except metadata.PackageNotFoundError:
-            versions[distribution] = None
     versions["pyqt"] = _pyqt_version()
     return versions
 
@@ -1070,9 +1059,6 @@ def _package_versions(tool_versions):
     return {
         "rc_metastudio": tool_versions.get("rc_metastudio"),
         "r": tool_versions.get("r"),
-        "rpy2": tool_versions.get("rpy2"),
-        "rpy2-rinterface": tool_versions.get("rpy2-rinterface"),
-        "rpy2-robjects": tool_versions.get("rpy2-robjects"),
         "pyqt": tool_versions.get("pyqt"),
         "RCMetaR": _r_package_version(RCMetaR_R_PACKAGE),
         **{name: _r_package_version(name) for name in ("meta", "mada", "metafor")},
@@ -1081,7 +1067,7 @@ def _package_versions(tool_versions):
 
 def _r_package_version(package_name):
     try:
-        return r_bridge.get_r_package_version(package_name)
+        return r_operations.get_r_package_version(package_name)
     except Exception:
         return None
 
@@ -1111,7 +1097,7 @@ def _commit_sha():
 
 def _baseline_environment(baseline_environment, tool_versions):
     requested = dict(baseline_environment or _baseline_environment_from_env(tool_versions))
-    observed = {key: tool_versions.get(key) for key in ("os", "python", "pyqt", "r", "rpy2")}
+    observed = {key: tool_versions.get(key) for key in ("os", "python", "pyqt", "r")}
     observed.update(id=MODERN_BASELINE_ENVIRONMENT_EXPECTED["id"], package=RCMetaR_R_PACKAGE)
     observed["requested"] = requested
     observed["expected"] = dict(MODERN_BASELINE_ENVIRONMENT_EXPECTED)
@@ -1133,9 +1119,6 @@ def _baseline_environment_from_env(tool_versions):
         ),
         "r": os.environ.get(
             "RCMS_MODERN_BASELINE_ENVIRONMENT_R", tool_versions.get("r")
-        ),
-        "rpy2": os.environ.get(
-            "RCMS_MODERN_BASELINE_ENVIRONMENT_RPY2", tool_versions.get("rpy2")
         ),
         "package": os.environ.get("RCMS_MODERN_BASELINE_PACKAGE", RCMetaR_R_PACKAGE),
     }

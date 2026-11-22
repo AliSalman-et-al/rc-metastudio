@@ -91,13 +91,17 @@ rcmetar.open.svg_device <- function(outpath, size) {
 }
 
 rcmetar.warm.plot_devices <- function() {
-    path <- tempfile("rcmetar-warm-", fileext=".pdf")
-    on.exit(unlink(path))
-    rcmetar.render.plot_file(path, list(width=2, height=2), function() {
+    prefix <- tempfile("rcmetar-warm-")
+    svg <- paste0(prefix, ".svg")
+    outputs <- paste0(prefix, c(".pdf", ".png", ".tiff"))
+    on.exit(unlink(c(svg, outputs)))
+    size <- list(width=2, height=2, dpi=72)
+    rcmetar.render.plot_svg(svg, size, function() {
         graphics::par(mar=rep(0, 4))
         graphics::plot.new()
         graphics::text(.5, .5, "RC MetaStudio")
     })
+    for (path in outputs) rcmetar.export.svg_render(svg, path, size)
 }
 
 rcmetar.materialize.svg.properties <- function(nodes, defaults) {

@@ -10,7 +10,6 @@ from PyQt6.QtCore import QEventLoop, QThread, QTimer, Qt
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from rc_metastudio import r_worker
-from rc_metastudio.r_call_serialization import r_execution, r_transaction
 
 
 @contextmanager
@@ -36,10 +35,12 @@ class _ExportWriter(QThread):
 
 
 def compose_export(write: Callable[[], None]) -> None:
-    if not r_worker.enabled() or not isinstance(QApplication.instance(), QApplication):
+    app = QApplication.instance()
+    if not isinstance(app, QApplication):
         write()
         return
-    with r_transaction(), r_execution():
+    app.setProperty("rcmsExportInProgress", True)
+    try:
         thread = _ExportWriter(write)
         loop = QEventLoop()
         thread.finished.connect(loop.quit)
@@ -61,6 +62,8 @@ def compose_export(write: Callable[[], None]) -> None:
             raise r_worker.RJobCancelled("The export was cancelled.")
         if thread.error is not None:
             raise thread.error
+    finally:
+        app.setProperty("rcmsExportInProgress", False)
 
 
 def check_export_cancelled() -> None:

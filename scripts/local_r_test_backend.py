@@ -16,13 +16,9 @@ def create() -> SimpleNamespace:
     """Return a local capability object; it never replaces the app module."""
     backend = SimpleNamespace()
     backend.AnalysisBackendUnavailableError = RuntimeError
-    backend.get_confidence_multiplier_from_r = lambda _level: 1.96
-    backend.set_confidence_level = lambda level: float(level)
     backend.get_r_library_paths = lambda: []
     backend.get_r_version_string = lambda: None
     backend.get_r_package_version = lambda _name: None
-    backend.execute_r_string = lambda _expression: [95.0]
-    backend.execute_r_function = lambda _name, *_args, **_kwargs: [95.0]
     backend.binary_convert_scale = _identity
     backend.continuous_convert_scale = _identity
     backend.diagnostic_convert_scale = _identity
@@ -42,16 +38,9 @@ def create() -> SimpleNamespace:
     backend.impute_pre_post_continuous_data = lambda _data, _corr, _alpha: {"succeeded": False}
     backend.back_calculate_continuous_data = lambda *_args, **_kwargs: {"FAIL": True}
     backend.impute_diagnostic_data = lambda _data: {"TP": None, "TN": None, "FP": None, "FN": None}
-    backend.dataset_to_simple_binary_r_object = _unavailable
-    backend.dataset_to_simple_continuous_r_object = _unavailable
-    backend.dataset_to_simple_diagnostic_r_object = _unavailable
-    backend.get_available_methods = _unavailable
+    backend.available_model_methods = _unavailable
     backend.get_params = _unavailable
     backend.get_analysis_plot_capabilities = lambda *_args, **_kwargs: []
     backend.run_small_study_effects = _unavailable
     backend.run_model_analysis = _unavailable
-    backend.run_versioned_analysis_request = _unavailable
-    backend.run_versioned_analysis_requests = _unavailable
-    backend.ro = SimpleNamespace(r=lambda _expression: [95.0])
-    backend.load_required_packages = lambda _on_phase=None: None
     return backend

@@ -255,34 +255,9 @@ jobs:
           echo "LDFLAGS=-L$libpng_prefix/lib ${LDFLAGS:-}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=$libpng_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
 
-      - name: Rebuild and prove macOS rpy2 API bridge against installed R
-        if: ${{ matrix.platform == 'macos' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          export R_HOME="$(R RHOME)"
-          export RPY2_CFFI_MODE=API
-          echo "R_HOME=$R_HOME" >> "$GITHUB_ENV"
-          echo "RPY2_CFFI_MODE=API" >> "$GITHUB_ENV"
-          uv sync --locked --reinstall-package rpy2-rinterface \
-            --no-binary-package rpy2-rinterface
-          bridge="$(uv run python -c 'from pathlib import Path; import _rinterface_cffi_api as module; print(Path(module.__file__).resolve())')"
-          test "$(uv run python -c 'from importlib import metadata; print(metadata.version("rpy2-rinterface"))')" = "3.6.7"
-          test "$(lipo -archs "$bridge")" = "$(uname -m)"
-          test "$(otool -L "$bridge" | awk 'NR > 1 && ($1 ~ /libR[.]dylib$/ || $1 ~ /\/R$/) { count++ } END { print count + 0 }')" = "1"
-          uv run python - <<'PY'
-          from rpy2 import robjects
-          from rpy2.rinterface_lib import openrlib
-
-          if openrlib.cffi_mode.name != "API":
-              raise SystemExit(f"rpy2 loaded {openrlib.cffi_mode.name}, expected API")
-          result = float(robjects.r("sum(c(1.25, 2.5, 3.75))")[0])
-          if result != 7.5:
-              raise SystemExit(f"embedded R calculation returned {result}, expected 7.5")
-          PY
 
       # Windows runs the shared Python and golden contracts. macOS validates
-      # the installed R bridge; Linux validates native xcb with R evidence skipped.
+      # the installed R worker; Linux validates native xcb with R evidence skipped.
       - name: Run Platform-Neutral Python Verification
         if: ${{ matrix.platform == 'windows' }}
         shell: powershell
@@ -303,7 +278,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y "${xcb_packages[@]}"
           fi
-          RPY2_CFFI_MODE=ABI uv sync --locked
+          uv sync --locked
           uv run --no-sync python -c "from scripts.verify import run_linux_source; run_linux_source()"
 
   windows-r-library:

@@ -1,5 +1,7 @@
 """Prediction-interval settings, rendering and persistence workflows."""
 
+from tests.e2e import r_oracle
+
 import json
 import os
 import re
@@ -12,7 +14,7 @@ from tests.e2e.plot_observations import load_saved_analysis
 
 def run_predictions(app, window, work, record):
     from analysis_matrix import run as matrix
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from tests.e2e.analysis_result_checks import check_report
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
     for measure, workflow in [('PFT', 'standard'), ('PLO', 'standard'), ('PAS', 'standard'),
@@ -31,7 +33,7 @@ def run_predictions(app, window, work, record):
             artifact = next(iter(view._plots.values())).artifact
             load_saved_analysis(artifact.params_path, include_plot_data=True)
             # Independent package fit from the exact entered counts, never the app inverse.
-            reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
+            reference = json.loads(str(r_oracle.evaluate('''jsonlite::toJSON(local({
                 subsets <- if (identical(plot.data$forest_variant, "subgroup")) list(c(1,3,5),c(2,4,6),1:6) else list(1:6)
                 lapply(subsets,function(index) {
                     n <- (20:25)[index]; events <- (4:9)[index]

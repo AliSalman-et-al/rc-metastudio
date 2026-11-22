@@ -41,8 +41,6 @@ def validate_evidence(path: Path, *, expected_qpa: str = "windows") -> dict[str,
         raise ValueError("native analysis evidence is missing lifecycle scenarios")
     for name, scenario in scenarios.items():
         expected = {"configuration": True}
-        if name in {"success", "backend_failure"}:
-            expected["progress"] = True
         if scenario.get("deleted") != expected:
             raise ValueError("native %s surfaces did not complete teardown" % name)
         if scenario.get("top_level_delta") != 0:
@@ -59,7 +57,6 @@ def validate_evidence(path: Path, *, expected_qpa: str = "windows") -> dict[str,
 def _validate_failed_analysis(failure: dict[str, object]) -> None:
     if failure.get("failure_state") != {
         "configuration_visible": True,
-        "progress_deleted": True,
         "error_visible": True,
         "error_message": "native backend failure",
         "error_details": "native backend failure",
@@ -108,42 +105,23 @@ def main() -> int:
     from local_r_test_backend import create
 
     backend_fake = create()
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
 
     for name, implementation in vars(backend_fake).items():
-        setattr(r_bridge, name, implementation)
+        setattr(r_operations, name, implementation)
     _phase("backend-installed")
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
-    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog, progress_dialog
+    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.workspace.table_model import DatasetTableModel
     from rc_metastudio.project.adapter import document_to_runtime_project
     from rc_metastudio.project.archive import load_project
 
-    progress_class = progress_dialog.AnalysisProgressDialog
-    created_progress_dialogs = []
-
-    def create_progress_dialog(*args: object, **kwargs: object) -> object:
-        progress = progress_class(*args, **kwargs)
-        created_progress_dialogs.append(progress)
-        return progress
-
-    setattr(
-        analysis_setup_dialog.progress_dialog,
-        "AnalysisProgressDialog",
-        create_progress_dialog,
-    )
-
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
 
     _install_backend_test_double(
         backend,
-        "dataset_to_simple_binary_r_object",
-        lambda *_args, **_kwargs: None,
-    )
-    _install_backend_test_double(
-        backend,
-        "get_available_methods",
-        lambda **_kwargs: {"Random": "binary.random"},
+        "available_model_methods",
+        lambda *_args, **_kwargs: {"binary.random": "Random"},
     )
     setattr(
         backend,
@@ -270,17 +248,12 @@ def main() -> int:
         raise RuntimeError("successful backend did not receive the exact selected request")
     if len(returned_results) != 1 or len(owner.results) != 1 or owner.results[0].texts.get("Summary") != "ok":
         raise RuntimeError("successful analysis did not deliver the summary to the results owner")
-    if not created_progress_dialogs:
-        raise RuntimeError("real analysis run did not create AnalysisProgressDialog")
-    progress = created_progress_dialogs[-1]
-    _phase("success-progress-found")
     deferred_delete()
     _phase("success-deferred-delete-return")
     scenarios = {
         "success": {
             "deleted": {
                 "configuration": sip.isdeleted(configuration),
-                "progress": sip.isdeleted(progress),
             },
             "top_level_delta": len(app.topLevelWidgets()) - baseline,
         }
@@ -293,10 +266,11 @@ def main() -> int:
         raise RuntimeError("failure confidence-level input is missing")
     failure_confidence.setValue(90.5)
     request_before = failing.analysis_requests()[0].to_mapping()
-    progress_count = len(created_progress_dialogs)
-    backend.run_model_analysis = lambda *_args, **_kwargs: (
-        _ for _ in ()
-    ).throw(RuntimeError("native backend failure"))
+
+    def fail_backend(*_args: object, **_kwargs: object) -> object:
+        raise RuntimeError("native backend failure")
+
+    _install_backend_test_double(backend, "run_model_analysis", fail_backend)
     original_critical = analysis_setup_dialog.QMessageBox.critical
     setattr(
         analysis_setup_dialog.QMessageBox, "critical", lambda *_args, **_kwargs: None
@@ -307,10 +281,6 @@ def main() -> int:
         _phase("failure-run-return")
     finally:
         setattr(analysis_setup_dialog.QMessageBox, "critical", original_critical)
-    if len(created_progress_dialogs) != progress_count + 1:
-        raise RuntimeError("failed analysis did not create AnalysisProgressDialog")
-    failing_progress = created_progress_dialogs[-1]
-    _phase("failure-progress-found")
     deferred_delete()
     _phase("failure-deferred-delete-return")
     failing.analysis_error_toggle.setChecked(True)
@@ -318,7 +288,6 @@ def main() -> int:
     run_button = failing.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)
     failure_state = {
         "configuration_visible": failing.isVisible(),
-        "progress_deleted": sip.isdeleted(failing_progress),
         "error_visible": failing.analysis_error_label.isVisible(),
         "error_message": failing.analysis_error_label.text(),
         "error_details": failing.analysis_error_details.toPlainText(),
@@ -334,7 +303,6 @@ def main() -> int:
         "request_after": request_after,
         "deleted": {
             "configuration": sip.isdeleted(failing),
-            "progress": sip.isdeleted(failing_progress),
         },
         "top_level_delta": len(app.topLevelWidgets()) - baseline,
     }

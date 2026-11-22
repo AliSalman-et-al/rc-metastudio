@@ -23,7 +23,7 @@ def locked_python_versions(*names: str) -> dict[str, str]:
 
 
 def packaged_stack() -> dict[str, str]:
-    packages = locked_python_versions("pyqt6", "pyqt6-qt6", "pyqt6-sip", "rpy2", "pyinstaller")
+    packages = locked_python_versions("pyqt6", "pyqt6-qt6", "pyqt6-sip", "pyinstaller")
     r_dependencies = json.loads((ROOT / "config/r-dependencies.json").read_text(encoding="utf-8"))
     return {
         "python": (ROOT / ".python-version").read_text(encoding="utf-8").strip(),
@@ -33,7 +33,6 @@ def packaged_stack() -> dict[str, str]:
         # This is PyQt6.sip.SIP_VERSION_STR, separate from the wheel version.
         "sip_runtime": "6.17.3",
         "r": r_dependencies["target_runtime"]["r"],
-        "rpy2": packages["rpy2"],
         "pyinstaller": packages["pyinstaller"],
     }
 

@@ -32,7 +32,7 @@ Preconditions: doctor passes; the matching committed sample supplies compatible 
 
 ## Additional modes after calculator changes
 
-The baseline clicks the vertical-header viewport at the first section's center after embedded R is ready and requires the correct modal. The row-header handler lives in `src/rc_metastudio/workspace/table_view.py`. The dialogs and their R service live in `src/rc_metastudio/calculators/`.
+The baseline clicks the vertical-header viewport at the first section's center after the R worker is ready and requires the correct modal. The row-header handler lives in `src/rc_metastudio/workspace/table_view.py`. The dialogs and their R service live in `src/rc_metastudio/calculators/`.
 
 - **Binary:** select OR/RR/RD and a one-arm metric with `effect_combo_box` item data. Verify partial-count imputation, entered estimate/CI, Clear, and zero cells. Back-calculation uses `back_calculate_button`; ambiguous alternatives appear in `BinaryBackCalculationDialog.choice1_btn`/`choice2_btn`. Compare independently known counts and effect/variance; cancel the nested dialog before accepting a candidate.
 - **Continuous:** exercise MD/SMD and one-arm mean/entered-effect data. Check `simple_table` N/Mean/SD/SE consistency; MD equal/unequal SD and SMD Hedges/Cohen choices; `g1_pre_post_table`, `g2_pre_post_table`, and `correlation_pre_post` for pre/post reconstruction. Test inconsistent input rejection, missing-data back-calculation, Clear, and nested Cancel. Correlation changes must change reconstructed variance without overwriting unrelated raw values.

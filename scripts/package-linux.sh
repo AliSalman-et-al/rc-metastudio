@@ -25,6 +25,5 @@ fi
 
 cd "$repo_root"
 uv python install
-RPY2_CFFI_MODE=ABI uv sync --locked
 bash "$repo_root/scripts/build-linux-package.sh" \
   --python-exe "$repo_root/.venv/bin/python"

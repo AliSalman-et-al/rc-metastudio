@@ -4,6 +4,8 @@ Fixtures may add covariates; analysis selection and execution always use widgets
 Frozen contracts prove numerics; other cases prove execution and rendered output.
 """
 
+from tests.e2e import r_oracle
+
 from pathlib import Path
 
 from tests.python.gui.qt_test_support import metric_action, mouse_click, wait
@@ -209,9 +211,9 @@ def run(
                 assert_retained_table(view, *held[0])
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
-            from rc_metastudio import r_bridge
+            from rc_metastudio import r_operations
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
-            headers = r_bridge.r_object_to_python(r_bridge.ro.r("plot.data$ilab$headers"))
+            headers = r_operations.r_object_to_python(r_oracle.evaluate("plot.data$ilab$headers"))
             style = dialog.current_param_vals["fp_style"]
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N", "Weight (%)"] if style == "default" else
                                 ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
@@ -559,9 +561,9 @@ def run(
             from tests.e2e.trimfill_geometry import check_trimfill
             check_trimfill(view, record)
         from tests.e2e.report_retention import assert_report
-        from rc_metastudio import r_bridge
+        from rc_metastudio import r_operations
         for package in ('metafor', 'meta'):
-            assert package + ' (version ' + r_bridge.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
+            assert package + ' (version ' + r_operations.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
         assert window.model.current_sheet.name.casefold() in view.manuscript.title.casefold()
         assert view.manuscript.comparison == "\n".join(view.results.identity.splitlines()[1:-1])
         assert_report(view, system_clipboard=system_clipboard,
@@ -783,9 +785,9 @@ def run(
                            for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
         assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows] + [100.0], (plotted_weights, rows)
         if dialog.current_param_vals["fp_style"] == "default":
-            from rc_metastudio import r_bridge
+            from rc_metastudio import r_operations
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
-            fitted_weights = [float(value) for value in r_bridge.ro.r("plot.data$weights")]
+            fitted_weights = [float(value) for value in r_oracle.evaluate("plot.data$weights")]
             assert len(fitted_weights) == len(rows), (fitted_weights, rows)
             assert all(abs(actual - float(row[-1].removesuffix("%"))) <= 0.051
                        for actual, row in zip(fitted_weights, rows, strict=True)), (fitted_weights, rows)

@@ -1,3 +1,5 @@
+from tests.e2e import r_oracle
+
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Drive application controls with the production R backend."""
@@ -221,39 +223,30 @@ def record_step(action, *widgets, **observations):
 
 
 def doctor(app, window):
-    from importlib import metadata
 
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations, r_worker
     from scripts.r_dependency_policy import load_policy
 
     policy = load_policy(ROOT / "config/r-dependencies.json")
-    r_version = r_bridge.get_r_version_string()
+    r_version = r_operations.get_r_version_string()
     assert r_version.startswith("R version " + policy["r_version"] + " "), r_version
-    assert (
-        metadata.version("rpy2")
-        == json.loads((ROOT / "config/r-dependencies.json").read_text())[
-            "target_runtime"
-        ]["rpy2"]
-    )
-    # packageVersion canonicalizes hyphens to dots; the manifest uses DCF spellings.
-    versions = {
-        name: str(
-            r_bridge.execute_r_function("packageDescription", name).rx2("Version")[0]
-        )
-        for name in policy["pinned_authorities"]
-    }
-    assert versions == policy["pinned_authorities"], versions
+    worker = r_worker.current_worker().runtime_info()
+    from rc_metastudio.rcmetar_identity import runtime_versions
+
+    pins = runtime_versions()
+    versions = {name: worker["packages"][name] for name in pins if name != "R"}
+    assert versions == {name: version for name, version in pins.items() if name != "R"}, versions
     description = (ROOT / "r/RCMetaR/DESCRIPTION").read_text()
     rcmetar_version = next(
         line.split(":", 1)[1].strip()
         for line in description.splitlines()
         if line.startswith("Version:")
     )
-    assert r_bridge.get_r_package_version("RCMetaR") == rcmetar_version
+    assert r_operations.get_r_package_version("RCMetaR") == rcmetar_version
     assert window.isVisible()
     assert Path(settings.get_base_path()).resolve() == APPLICATION_DATA.resolve()
     assert Path.cwd() == INVOCATION_DIR
-    r_working_directory = Path(str(r_bridge.execute_r_function("getwd")[0])).resolve()
+    r_working_directory = Path(worker["cwd"]).resolve()
     assert r_working_directory == INVOCATION_DIR
     font_families = QtGui.QFontDatabase.families()
     font = QtGui.QRawFont.fromFont(app.font())
@@ -272,11 +265,10 @@ def doctor(app, window):
     )
     identity = {
         "r": r_version,
-        "r_libraries": r_bridge.get_r_library_paths(),
+        "r_libraries": r_operations.get_r_library_paths(),
         "r_home": os.environ.get("R_HOME"),
         "authorities": versions,
         "rcmetar": rcmetar_version,
-        "rpy2": metadata.version("rpy2"),
         "qt": QtCore.qVersion(),
         "pyqt": QtCore.PYQT_VERSION_STR,
         "platform_plugin": app.platformName(),
@@ -579,9 +571,9 @@ def sample_analysis(app, window, sample):
                 continue
             values = [float(model.data(model.index(row, col), QtCore.Qt.ItemDataRole.EditRole))
                       for col in model.OUTCOMES[:3]]
-            from rc_metastudio import r_bridge
+            from rc_metastudio import r_operations
             events, total = raw[:2]
-            expected = list(r_bridge.execute_r_string(
+            expected = list(r_oracle.evaluate(
                 f"metafor::transf.iarcsin(asin(sqrt({events}/{total})) + "
                 f"c(0, -1, 1) * qnorm(.975) / (2 * sqrt({total})))"))
             assert values[1] <= values[0] <= values[2], (raw, values)
@@ -840,12 +832,12 @@ def sheets_swap(app, window):
             with observe_fit() as fit:
                 view = analyze(app, window, model.get_current_data_type() + ".random")
             if metric in ("OR", "RD", "MD"):
-                from rc_metastudio import r_bridge
+                from rc_metastudio import r_operations
                 load_saved_analysis(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
-                observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
+                observed_labels = list(r_oracle.evaluate('c(params$fp_favours_left,params$fp_favours_right)'))
                 expected_labels = ["Favors " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
@@ -916,13 +908,13 @@ def sheets_legacy(app, window):
 
 
 def sheets(app, window):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from tests.e2e.sheet_navigation import check as check_navigation
     check_navigation(app, window, ROOT, WORK, record_step)
     # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
     code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
-    expected = [float(x) for x in r_bridge.execute_r_string(code)]
-    actual = r_bridge.study_effect_previews([[4, 100, 9, 120]], "event_rates", "IRR", ("IRR",), 95)[0][0][:3]
+    expected = [float(x) for x in r_oracle.evaluate(code)]
+    actual = r_operations.study_effect_previews([[4, 100, 9, 120]], "event_rates", "IRR", ("IRR",), 95)[0][0][:3]
     assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected)), (actual, expected)
     record_step("irr-preview-authority", window, raw=[4,100,9,120], confidence=95,
                 r_code=code, expected=expected, actual=actual)
@@ -1691,9 +1683,9 @@ def plot_edit(app, window):
     path = Path(view.results.display_images[title])
     before = path.read_bytes()
     artifact = view.plot_artifact(title)
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     load_saved_analysis(artifact.params_path, include_plot_data=True)
-    r_bridge.execute_r_string('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
+    r_oracle.evaluate('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
     callback_errors = []
 
     def edit():
@@ -1756,7 +1748,7 @@ def plot_edit(app, window):
         == "Edited effect axis"
     )
     load_saved_analysis(artifact.params_path, include_plot_data=True)
-    assert bool(r_bridge.execute_r_string('identical(batch3.fit.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric))')[0])
+    assert bool(r_oracle.evaluate('identical(batch3.fit.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric))')[0])
     assert QSvgRenderer(str(path)).isValid()
     record_step(
         "plot-applied-cancelled",
@@ -1805,36 +1797,26 @@ def small_study_effects(app, window):
             record_step("small-study-configured", dialog, ordinary_funnel=True)
             from unittest.mock import patch
             from rc_metastudio import r_worker
-            from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
             execute = dialog.analysis_service.execute
             observed_progress = []
 
             def execute_with_progress(*args, **kwargs):
                 assert not button.isEnabled()
-                if r_worker.enabled():
-                    worker = r_worker.current_worker()
+                worker = r_worker.current_worker()
 
-                    def record_worker(frame):
-                        if not observed_progress:
-                            record_step("small-study-running", dialog, progress=frame, pid=worker.pid)
-                            observed_progress.append(frame)
+                def record_worker(frame):
+                    if not observed_progress:
+                        record_step("small-study-running", dialog, progress=frame, pid=worker.pid)
+                        observed_progress.append(frame)
 
-                    worker.progress.connect(record_worker)
-                    try:
-                        return execute(*args, **kwargs)
-                    finally:
-                        worker.progress.disconnect(record_worker)
-                progress = dialog.findChild(AnalysisProgressDialog)
-                assert progress is not None and progress.isVisible()
-                record_step('small-study-running', progress)
-                observed_progress.append(progress)
-                return execute(*args, **kwargs)
-
+                worker.progress.connect(record_worker)
+                try:
+                    return execute(*args, **kwargs)
+                finally:
+                    worker.progress.disconnect(record_worker)
             with patch.object(dialog.analysis_service, 'execute', side_effect=execute_with_progress):
                 mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
             assert len(observed_progress) == 1
-            if not r_worker.enabled():
-                assert not observed_progress[0].isVisible()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
             callback_errors.append(error)
@@ -2012,13 +1994,12 @@ def calculator(app, window, family):
                 assert dialog.findChild(QtWidgets.QLabel, "calculator_wald") is not None
                 if family == "binary":
                     import math
-                    from rpy2 import robjects
+                    from tests.e2e import r_oracle
                     counts = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)
                     e1, n1, e2, n2 = counts
                     crosscheck = {}
                     for row, metric in enumerate(("OR", "RR", "RD")):
-                        result = robjects.r(f'local({{ x <- metafor::escalc(measure="{metric}", ai={e1}, bi={n1-e1}, ci={e2}, di={n2-e2}); se <- sqrt(x$vi); c(x$yi, se, x$yi/se, 2*pnorm(-abs(x$yi/se))) }})')
-                        assert isinstance(result, robjects.vectors.FloatVector)
+                        result = r_oracle.evaluate(f'local({{ x <- metafor::escalc(measure="{metric}", ai={e1}, bi={n1-e1}, ci={e2}, di={n2-e2}); se <- sqrt(x$vi); c(x$yi, se, x$yi/se, 2*pnorm(-abs(x$yi/se))) }})')
                         est, se, z, p = map(float, cast(Iterable[float], result))
                         transform = math.exp if metric != "RD" else float
                         for col, value in enumerate((transform(est), transform(est-dialog.confidence_multiplier*se), transform(est+dialog.confidence_multiplier*se)), 1):
@@ -2496,8 +2477,6 @@ base_path_patch = patch(
 )
 base_path_patch.start()
 try:
-    if sys.argv[1] in ("r-worker-recovery", "r-worker-fits", "r-worker-exports", "r-worker-plot-parity"):
-        os.environ["RCMS_R_BACKEND"] = "worker"
     _startup_phases["composition:start"] = time.time()
     def observe_startup(phase):
         _startup_phases[phase] = time.time()
@@ -2513,7 +2492,12 @@ try:
             if EVIDENCE is not None:
                 splashes[0].grab().save(str(EVIDENCE / (phase.replace(":", "-") + ".png")))
 
-    app, window = automation.start_automation(phase_callback=observe_startup)
+    from contextlib import nullcontext
+    from tests.fit_observations import instrument_worker
+
+    observed_fit = not sys.argv[1].startswith("r-worker-") and sys.argv[1] != "doctor"
+    with instrument_worker(WORK) if observed_fit else nullcontext():
+        app, window = automation.start_automation(phase_callback=observe_startup)
     from rc_metastudio import r_runtime
     assert r_runtime.is_ready()
     assert window.isVisible() and window.isEnabled()
@@ -2583,11 +2567,10 @@ finally:
     for widget in app.topLevelWidgets():
         widget.close()
     automation.dispose_qobjects(app, app.topLevelWidgets())
-    if os.environ.get("RCMS_R_BACKEND") == "worker":
-        from rc_metastudio.r_worker import RWorker
+    from rc_metastudio.r_worker import RWorker
 
-        if (worker := app.findChild(RWorker, options=QtCore.Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
-            worker.close()
+    if (worker := app.findChild(RWorker, options=QtCore.Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
+        worker.close()
     app.quit()
     base_path_patch.stop()
 print("WORKFLOW PASSED")

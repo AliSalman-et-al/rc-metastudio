@@ -1,4 +1,6 @@
 """Native startup proof. Run in a fresh process; retain screenshots and observations."""
+
+from tests.e2e import r_oracle
 import argparse
 import json
 import os
@@ -7,7 +9,7 @@ import sys
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from rc_metastudio import app_error_handler, launch, r_runtime, rcmetar_identity
+from rc_metastudio import app_error_handler, launch, r_runtime, r_worker
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", type=Path, required=True)
@@ -17,7 +19,7 @@ failure_mode.add_argument("--workflow-failure", action="store_true")
 parser.add_argument("--startup-project", action="store_true")
 args = parser.parse_args()
 failure = args.failure or args.workflow_failure
-workflow_phase = "r-library:analysis packages"
+workflow_phase = "r-library:R worker"
 output = args.output.resolve()
 output.mkdir(parents=True, exist_ok=True)
 QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
@@ -31,29 +33,22 @@ def observe(phase):
     if phase == "splash:visible" or phase.startswith("r-library:"):
         assert not ready, f"R became ready during {phase}"
     if phase == f"{workflow_phase}:complete":
-        from rc_metastudio import r_bridge
-
-        namespaces = set(r_bridge.execute_r_string("loadedNamespaces()"))
-        assert (set(rcmetar_identity.runtime_versions()) - {"R"}) | {"RCMetaR", "grid"} <= namespaces
-        assert tuple(r_bridge.execute_r_string("as.integer(grDevices::dev.cur())")) == (1,)
+        runtime = r_worker.current_worker().runtime_info()
+        assert "RCMetaR" in runtime["packages"] and "metafor" in runtime["packages"]
     if phase == "window:visible":
         assert ready is not failure
         phases = [entry["phase"] for entry in observations if "message" not in entry]
-        if args.failure:
-            assert f"{workflow_phase}:start" not in phases
+        assert phases.index("splash:visible") < phases.index(f"{workflow_phase}:start")
+        if failure:
+            assert f"{workflow_phase}:complete" not in phases
         else:
-            assert phases.index("r-library:RCMetaR:complete") < phases.index(f"{workflow_phase}:start")
-            if args.workflow_failure:
-                assert f"{workflow_phase}:complete" not in phases
-            else:
-                assert phases.index(f"{workflow_phase}:start") < phases.index(f"{workflow_phase}:complete") < phases.index(phase)
+            assert phases.index(f"{workflow_phase}:start") < phases.index(f"{workflow_phase}:complete") < phases.index(phase)
     if phase == "splash:visible" or phase.startswith("r-library:") and phase.endswith(":start"):
         splash = next(w for w in app.topLevelWidgets() if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible())
         assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible() for w in app.topLevelWidgets())
         assert splash.message() == {
             "splash:visible": "Starting R…",
-            "r-library:RCMetaR:start": "Loading RCMetaR…",
-            f"{workflow_phase}:start": "Loading analysis packages…",
+            f"{workflow_phase}:start": "Loading R worker…",
         }[phase]
         assert splash.windowFlags() & QtCore.Qt.WindowType.FramelessWindowHint
         assert splash.testAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -92,7 +87,7 @@ def capture_error(widget):
     assert widget.isVisible()
     assert widget.windowTitle() == "Analysis unavailable"
     assert paint_observer.paint_count > 0, "Startup shell never painted before the error dialog"
-    expected = "The ellipse R package could not load." if args.workflow_failure else "The installed RCMetaR does not match"
+    expected = "RCMSMissingWorkflowPackage requires version" if args.workflow_failure else "The installed RCMetaR does not match"
     assert expected in widget.text(), widget.text()
     errors.append(widget.text())
     observations.append({"shell_paint_events_before_error_capture": paint_observer.paint_count,
@@ -150,22 +145,15 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
             assert paint_observer.paint_count > 0, "Shell must paint before opening the startup error"
             observations.append({"shell_paint_events_before_dialog": paint_observer.paint_count})
             show_error(window, exception, startup=startup)
-        version, _ = rcmetar_identity.expected_source()
+        version, _ = r_worker.expected_source()
         with (
-            patch.object(rcmetar_identity, "expected_source", return_value=(version, "0" * 64)),
+            patch.object(r_worker, "expected_source", return_value=(version, "0" * 64)),
             patch.object(MainWindow, "_show_analysis_backend_error", observed_error),
         ):
             _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     elif args.workflow_failure:
-        from rc_metastudio import r_bridge
-        execute = r_bridge.execute_r_function
-
-        def execute_with_missing_namespace(name, *args, **kwargs):
-            if name == "loadNamespace" and args == ("ellipse",):
-                args = ("RCMSMissingWorkflowPackage",)
-            return execute(name, *args, **kwargs)
-
-        with patch.object(r_bridge, "execute_r_function", execute_with_missing_namespace):
+        pins = dict(r_worker.runtime_versions(), RCMSMissingWorkflowPackage="1.0.0")
+        with patch.object(r_worker, "runtime_versions", return_value=pins):
             _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     else:
         _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)

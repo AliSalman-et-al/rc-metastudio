@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING
-from contextlib import ExitStack
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent, QHideEvent, QShowEvent
@@ -24,7 +23,6 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
         self.setAccessibleDescription(context)
         self._blocking = blocking
         self._wait_cursor_active = False
-        self._tracking = ExitStack()
         self.cancelled = False
         self.cancel_button = QPushButton("Cancel", self) if cancellable else None
         self.operation_label = QLabel(operation, self)
@@ -63,28 +61,10 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
             self._wait_cursor_active = True
 
     def hideEvent(self, event: QHideEvent | None) -> None:
-        self._tracking.close()
         if self._wait_cursor_active:
             QApplication.restoreOverrideCursor()
             self._wait_cursor_active = False
         super().hideEvent(event)
-
-    def start_tracking(self) -> None:
-        if self.cancel_button is not None:
-            from rc_metastudio import r_bridge
-            self._tracking.enter_context(r_bridge.sequential_progress(self.track_fit))
-
-    def track_fit(self, index: int, total: int) -> bool:
-        self.progress_bar.setRange(0, total)
-        self.progress_bar.setValue(max(0, index - 1))
-        if index > total:
-            self.operation_label.setText("Drawing plots…")
-            if self.cancel_button is not None:
-                self.cancel_button.setEnabled(False)
-        else:
-            self.operation_label.setText(f"Fitting {index} of {total}…" if index else "Fitting overall model…")
-        QApplication.processEvents()
-        return not self.cancelled
 
     def reject(self):
         if self.cancel_button is not None:

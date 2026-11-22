@@ -153,7 +153,6 @@ def install_and_load_RCMetaR(root: Path, rscript: Path, env: dict[str, str]) -> 
             if not existing_libs
             else str(library) + os.pathsep + existing_libs
         )
-        install_env.setdefault("RPY2_CFFI_MODE", "API")
 
         result = run(
             [

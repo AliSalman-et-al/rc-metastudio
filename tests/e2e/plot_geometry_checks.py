@@ -1,5 +1,7 @@
 """Rendered plot captions, interval caps, row alignment and axis geometry."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 import re
@@ -125,13 +127,13 @@ def check_annotation_spacing(view, *, style="default"):
 
 
 def check_sequential(view, workflow, record):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     tables = [t for s in view.results.sections for t in s.tables if t.title in {"Cumulative results", "Leave-one-out results"}]
     for index, (title, path) in enumerate(view.results.display_images.items()):
         params = view.params_paths[title]
         load_serialized_object(str(params) + ".plotdata")
-        data = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(list(slab=plot.data$slab, has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, style=plot.data$params$fp_style, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
+        data = json.loads(str(list(r_oracle.evaluate('jsonlite::toJSON(list(slab=plot.data$slab, has_overall=plot.data$has_overall, estimates=plot.data$effect_display$y.disp, measure=plot.data$params$measure, style=plot.data$params$fp_style, range=RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim), auto_unbox=TRUE, digits=16)'))[0]))
         svg = ET.parse(path)
         nodes = [("".join(node.itertext()), float(node.attrib.get("y", 0)))
                  for node in svg.iter("{http://www.w3.org/2000/svg}text")]
@@ -190,7 +192,7 @@ def check_sequential(view, workflow, record):
 def check_excluding_null(app, view, record):
     from advanced_workflows import click, modal
     from PyQt6 import QtWidgets
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
 
     def exclude_null(dialog):
@@ -203,7 +205,7 @@ def check_excluding_null(app, view, record):
     modal(app, EditPlotDialog, exclude_null, view.edit_plot_action.trigger)
     for title, path in view.results.display_images.items():
         load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-        observed = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
+        observed = json.loads(str(list(r_oracle.evaluate('local({ limits <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim; jsonlite::toJSON(list(range=limits, null=RCMetaR:::rcmetar.metafor.refline(plot.data, limits)),auto_unbox=TRUE,na="null") })'))[0]))
         assert observed == {"range": [.5, 2], "null": None}, observed
         lines = [node.attrib for node in ET.parse(path).iter("{http://www.w3.org/2000/svg}line")]
         assert not any(abs(float(line["x1"]) - float(line["x2"])) < .01

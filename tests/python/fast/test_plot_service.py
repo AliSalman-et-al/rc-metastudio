@@ -6,14 +6,14 @@ from pathlib import Path
 import pytest
 
 from rc_metastudio.results import plot_service
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.results.plot_service import PlotService, PlotServiceError
 
 
 def test_incomplete_bundle_cannot_overwrite_plot(tmp_path, monkeypatch):
     output = tmp_path / "forest.png"
     output.write_text("last good")
-    monkeypatch.setattr(r_bridge, "prepare_plot_edit", lambda *_args: None)
+    monkeypatch.setattr(r_operations, "prepare_plot_edit", lambda *_args: None)
 
     with pytest.raises(PlotServiceError, match="incomplete"):
         PlotService().apply_edits(
@@ -27,14 +27,14 @@ def test_incomplete_bundle_cannot_overwrite_plot(tmp_path, monkeypatch):
 
 
 def test_load_params_rejects_invalid_r_result(monkeypatch):
-    monkeypatch.setattr(r_bridge, "load_plot_parameters", lambda _path: True)
+    monkeypatch.setattr(r_operations, "load_plot_parameters", lambda _path: True)
 
     with pytest.raises(PlotServiceError, match="invalid plot parameters"):
         PlotService().load_params("forest")
 
 
 def test_funnel_export_stops_when_bundle_is_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr(r_bridge, "render_plot_bundle", lambda *_args, **_options: False)
+    monkeypatch.setattr(r_operations, "render_plot_bundle", lambda *_args, **_options: False)
     output = tmp_path / "export.png"
 
     with pytest.raises(PlotServiceError, match="funnel.*incomplete"):
@@ -65,7 +65,7 @@ def plot_edit(tmp_path, monkeypatch):
             prepared[str(target)] = str(source)
         return prepared
 
-    monkeypatch.setattr(r_bridge, "prepare_plot_edit", prepare)
+    monkeypatch.setattr(r_operations, "prepare_plot_edit", prepare)
 
     def apply(regenerator="forest"):
         PlotService().apply_edits(
@@ -98,7 +98,7 @@ def test_plot_prepare_failure_does_not_overwrite_originals(plot_edit, monkeypatc
         (Path(directory) / "partial.params").write_text("failed")
         raise RuntimeError("render failed")
 
-    monkeypatch.setattr(r_bridge, "prepare_plot_edit", fail_prepare)
+    monkeypatch.setattr(r_operations, "prepare_plot_edit", fail_prepare)
     with pytest.raises(RuntimeError, match="render failed"):
         apply(regenerator)
 

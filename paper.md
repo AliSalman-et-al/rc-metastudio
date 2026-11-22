@@ -154,8 +154,7 @@ checks compare results with frozen outputs from an earlier release and with
 direct calls to public package functions, and reports list method references
 and the implementing package.
 
-The interface is written in Python with PyQt6 and calls R in the same process
-through rpy2 [@rpy2]. Python and R exchange immutable requests and versioned,
+The interface is written in Python with PyQt6 and starts a supervised R worker process at launch. Python and R exchange immutable requests and versioned,
 structured results whose tables can carry exact numeric values beside their
 display strings, so the numeric CSV export never parses formatted text.
 

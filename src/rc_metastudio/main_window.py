@@ -830,8 +830,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.refresh_analysis_actions()
 
     def show_about_legal(self):
-        from rc_metastudio import r_bridge
-        r_version = r_bridge.get_r_version_string() if r_runtime.is_ready() else None
+        from rc_metastudio import r_operations
+        r_version = r_operations.get_r_version_string() if r_runtime.is_ready() else None
         return about_legal_dialog.AboutLegalDialog(self, r_version=r_version).exec()
 
     def _build_analysis_specs_dialog(

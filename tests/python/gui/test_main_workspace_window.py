@@ -336,11 +336,10 @@ QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
 QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, os.environ["RCMS_TEST_SETTINGS"])
 from rc_metastudio import automation
 from scripts.local_r_test_backend import create
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 
-r_bridge.initialize_r = lambda: None
 for name, implementation in vars(create()).items():
-    setattr(r_bridge, name, implementation)
+    setattr(r_operations, name, implementation)
 
 app, window = automation.start_automation()
 try:

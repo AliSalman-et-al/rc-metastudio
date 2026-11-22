@@ -36,22 +36,22 @@ def _open_binary_dialog(monkeypatch):
         ),
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "binary_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_binary_data",
         lambda _data: {"FAIL": True},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_for_study",
         lambda *_args, **_kwargs: {},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_triplet",
         lambda *_args, **_kwargs: (None, None, None),
     )
@@ -294,7 +294,7 @@ def test_binary_back_calculation_unlocks_from_arm_totals_and_effect(monkeypatch)
         }
 
     monkeypatch.setattr(
-        calculator_service.r_bridge, "impute_binary_data", back_calculate
+        calculator_service.r_operations, "impute_binary_data", back_calculate
     )
     try:
         dialog.clear_form()
@@ -371,7 +371,7 @@ def test_binary_back_calculation_chooser_cancel_is_an_exact_nested_transaction(
         "op2": {"a": 4, "b": 14, "c": 5, "d": 16},
     }
     monkeypatch.setattr(
-        calculator_service.r_bridge, "impute_binary_data", lambda _d: imputed
+        calculator_service.r_operations, "impute_binary_data", lambda _d: imputed
     )
 
     def cancel_choice(chooser):
@@ -424,7 +424,7 @@ def test_binary_back_calculation_chooser_accept_commits_selected_option(monkeypa
         "op2": {"a": 4, "b": 14, "c": 5, "d": 16},
     }
     monkeypatch.setattr(
-        calculator_service.r_bridge, "impute_binary_data", lambda _d: imputed
+        calculator_service.r_operations, "impute_binary_data", lambda _d: imputed
     )
 
     selected_second = []

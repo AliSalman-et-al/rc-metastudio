@@ -3,10 +3,8 @@ import re
 import gzip
 import sys
 from pathlib import Path
-from typing import cast
-from rpy2.robjects.functions import SignatureTranslatedFunction
 from xml.etree import ElementTree as ET
-from rpy2 import robjects as ro
+from tests.e2e import r_oracle
 
 
 def check_trimfill(view, record, *, side=None):
@@ -27,11 +25,11 @@ def check_trimfill(view, record, *, side=None):
         se = list(params['prepared.standard.errors'])
         observed = [i for i, fill in enumerate(filled) if not fill]
         side_arg = ', left=FALSE' if side == 'right' else ''
-        trimfill = cast(SignatureTranslatedFunction, ro.r(
-            'function(y,se) meta::trimfill(meta::metagen(y,se,sm="OR",method.tau="REML")' + side_arg + ')'))
-        fit = trimfill(
-            ro.FloatVector([y[i] for i in observed]), ro.FloatVector([se[i] for i in observed]))
-        k0 = int(fit.rx2('k0')[0])
+        effects = ",".join(str(y[i]) for i in observed)
+        errors = ",".join(str(se[i]) for i in observed)
+        k0 = int(r_oracle.evaluate(
+            f'meta::trimfill(meta::metagen(c({effects}), c({errors}), sm="OR", method.tau="REML"){side_arg})$k0'
+        )[0])
         payload = path.read_bytes()
         root = ET.fromstring(gzip.decompress(payload) if payload.startswith(b'\x1f\x8b') else payload)
         assert Path(image).suffix == '.svg'

@@ -32,20 +32,13 @@ RCMETAR_VERSION = next(
 RCMETAR_ARCHIVE_NAME = f"RCMetaR-{RCMETAR_VERSION}-source.tar.gz"
 
 DIRECT_BUILD_INPUT_MEMBERS = {
-    "adapter_script": "qualification/embedded-r-adapter.py",
-    "pre_normalization_audit": "qualification/direct-r-pre-normalization-audit.json",
-    "normalized_adapter_map": "qualification/direct-r-adapter.json",
     "host_r_isolation_script": "qualification/macos-host-r-isolation.sh",
-    "pyinstaller_toc_preflight": "qualification/verify-macos-r-pyinstaller-toc.py",
-    "pyinstaller_toc_preflight_report": "qualification/macos-r-pyinstaller-toc-preflight.json",
-    "explicit_r_toc": "qualification/direct-r-toc.json",
-    "rpy2_api_build": "qualification/rpy2-api-build.json",
     "pre_sign_native_graph": "qualification/pre-sign-native-graph.json",
     "post_sign_native_inventory": "qualification/post-sign-native-inventory.json",
     "signing_inventory": "qualification/ad-hoc-signing-inventory.json",
     "ppm_archive_inventory": "qualification/ppm-archive-inventory.json",
     "rcmetar_source_archive": f"qualification/{RCMETAR_ARCHIVE_NAME}",
-    "r_runtime_profile": "qualification/embedded-r-runtime-profile.json",
+    "r_runtime_profile": "qualification/r-runtime-profile.json",
     "runtime_probe": "qualification/runtime-probe.json",
     "runtime_stdout": "qualification/runtime-probe.stdout.log",
     "runtime_stderr": "qualification/runtime-probe.stderr.log",

@@ -182,14 +182,6 @@ def test_native_calculator_png_encoding_never_calls_qt_save(tmp_path):
         assert encoded.getpixel((6, 4)) == (211, 31, 69, 255)
 
 
-def test_native_calculator_runtime_contract_fails_closed_for_loaded_rpy2(monkeypatch):
-    smoke = _load_native_calculator_smoke()
-    monkeypatch.setitem(sys.modules, "rpy2.rinterface", object())
-
-    with pytest.raises(RuntimeError, match="rpy2.rinterface"):
-        smoke.install_native_test_backend()
-
-
 @pytest.mark.parametrize("status", [0, 7])
 def test_calculator_probe_reports_success_only_for_verified_process(status):
     result = subprocess.run(
@@ -397,7 +389,7 @@ def test_calculator_history_replays_edits_and_discards_divergent_redo():
 
 def test_continuous_imputation_accepts_r_input_pattern_metadata(monkeypatch):
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {
             "succeeded": False,
@@ -415,7 +407,7 @@ def test_continuous_imputation_accepts_r_input_pattern_metadata(monkeypatch):
 
 def test_continuous_imputation_still_rejects_unknown_result_fields(monkeypatch):
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {"succeeded": False, "unexpected": True},
     )
@@ -437,7 +429,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
         return {"succeeded": False}
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         fake_impute_continuous_data,
     )
@@ -593,17 +585,17 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {"succeeded": False, "comment": "stub"},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "back_calculate_continuous_data",
         lambda *_args, **_kwargs: {"FAIL": True},
     )
@@ -614,12 +606,12 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
         return {"calc_scale": (2.0, 1.0, 3.0)}
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_effect_for_study",
         continuous_effect_for_study,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
@@ -663,27 +655,27 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     from rc_metastudio.analysis import catalog as analysis_catalog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {"succeeded": False, "comment": "stub"},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "back_calculate_continuous_data",
         lambda *_args, **_kwargs: {"FAIL": True},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_effect_for_study",
         lambda *_args, **_kwargs: {"calc_scale": (-0.5, -1.0, 0.0)},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
@@ -720,7 +712,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         }
 
     monkeypatch.setattr(
-        calculator_service.r_bridge, "impute_pre_post_continuous_data", prepost
+        calculator_service.r_operations, "impute_pre_post_continuous_data", prepost
     )
     unit = analysis_dataset.AnalysisUnit(
         analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS),
@@ -767,7 +759,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
         return prepost(data, correlation, alpha)
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_pre_post_continuous_data",
         failing_second_group,
     )
@@ -851,12 +843,12 @@ def test_binary_calculator_table_layout_uses_real_headers_and_visible_total_row(
     from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_binary_data",
         lambda data: {"FAIL": True},
     )
@@ -889,32 +881,32 @@ def test_calculator_effect_ci_fields_fit_valid_domain_samples(qapp, monkeypatch)
     from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_binary_data",
         lambda data: {"FAIL": True},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "continuous_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_continuous_data",
         lambda data, alpha: {"succeeded": False, "comment": "stub"},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "diagnostic_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_diagnostic_data",
         lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
     )
@@ -976,10 +968,10 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
         edit_history as calculator_edit_history,
         effect_readout as calculator_effect_readout,
     )
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     monkeypatch.setattr(
-        r_bridge,
+        r_operations,
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -1012,12 +1004,12 @@ def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypa
     from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "binary_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_binary_data",
         lambda data: {"FAIL": True},
     )
@@ -1045,10 +1037,10 @@ def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
         edit_history as calculator_edit_history,
         effect_readout as calculator_effect_readout,
     )
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     monkeypatch.setattr(
-        r_bridge,
+        r_operations,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -1172,12 +1164,12 @@ def test_diagnostic_calculator_grid_columns_fill_expanded_table_width(
     from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
 
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "diagnostic_convert_scale",
         lambda x, *args, **kwargs: x,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_diagnostic_data",
         lambda data: {"TP": None, "FP": None, "FN": None, "TN": None},
     )
@@ -1267,8 +1259,8 @@ class FakeContinuousAnalysisUnit:
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
     from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
-    monkeypatch.setattr(calculator_service.r_bridge, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
-    monkeypatch.setattr(calculator_service.r_bridge, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
+    monkeypatch.setattr(calculator_service.r_operations, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
+    monkeypatch.setattr(calculator_service.r_operations, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
     unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])
     form = diagnostic_data_dialog.DiagnosticDataDialog(unit, ['Test'], 'Test', confidence_level=95)
     form.back_calculate_button.setEnabled(True)

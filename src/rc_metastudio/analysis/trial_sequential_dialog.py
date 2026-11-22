@@ -5,11 +5,9 @@
 from collections.abc import Callable
 from dataclasses import replace
 from math import isfinite
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from PyQt6 import sip
-from PyQt6.QtCore import QProcess, QSignalBlocker, Qt, QTimer
+from PyQt6.QtCore import QSignalBlocker, Qt, QTimer
 from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
     QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
@@ -17,13 +15,11 @@ from PyQt6.QtWidgets import (
 )
 
 from rc_metastudio import adaptive_window, app_error_handler, qt_layout, r_worker
-from rc_metastudio.analysis import progress_dialog
 from rc_metastudio.analysis.identity import dataset_identity
 from rc_metastudio.results.contract import AnalysisResult
 from rc_metastudio.workspace.table_model import DatasetTableModel
 from rc_metastudio.results.report import ManuscriptReport, trial_sequential_report
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.settings import make_r_tmp
 from rc_metastudio.analysis.trial_sequential import (
     EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService,
 )
@@ -188,10 +184,6 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.conclusion_timer.setSingleShot(True)
         self.conclusion_timer.setInterval(600)
         self.conclusion_timer.timeout.connect(self._start_conclusion)
-        self.conclusion_process = QProcess(self)
-        self.conclusion_process.finished.connect(self._conclusion_finished)
-        self.conclusion_process.errorOccurred.connect(self._conclusion_error)
-        self.conclusion_dir: TemporaryDirectory[str] | None = None
         self.ready_preview: tuple[TsaRequest, float, float] | None = None
         self.active_preview: tuple[TsaRequest, float, float] | None = None
         self._cancel_worker_conclusion: Callable[[], None] | None = None
@@ -353,65 +345,27 @@ class TrialSequentialAnalysisDialog(QDialog):
         if self._cancel_worker_conclusion is not None:
             self._cancel_worker_conclusion()
             self._cancel_worker_conclusion = None
-        if self.conclusion_process.state() != QProcess.ProcessState.NotRunning:
-            self.conclusion_process.kill()
 
     def _start_conclusion(self) -> None:
-        if self.ready_preview is None or self.conclusion_dir is not None or self._cancel_worker_conclusion is not None:
+        if self.ready_preview is None or self._cancel_worker_conclusion is not None:
             return
-        self.active_preview = self.ready_preview
-        request, accrued, ris = self.active_preview
-        try:
-            if r_worker.enabled():
-                active = self.active_preview
+        active = self.active_preview = self.ready_preview
+        request, accrued, ris = active
 
-                def delivered(text: str) -> None:
-                    if not sip.isdeleted(self) and self.active_preview is active:
-                        self._cancel_worker_conclusion = None
-                        self.active_preview = None
-                        self.conclusion.setText(text)
-
-                self._cancel_worker_conclusion = self.service.start_worker_conclusion(
-                    self.model, request, accrued, ris, delivered,
-                )
-                return
-            self.conclusion_dir = TemporaryDirectory(prefix="tsa-conclusion-", dir=make_r_tmp())
-            program, arguments = self.service.conclusion_command(self.model, request, Path(self.conclusion_dir.name))
-            self.conclusion_process.start(program, arguments)
-        except Exception as error:
-            self._release_conclusion_files()
-            self.conclusion.clear()
-            app_error_handler.log_exception(type(error), error, error.__traceback__)
-
-    def _release_conclusion_files(self) -> None:
-        if self.conclusion_dir is not None:
-            self.conclusion_dir.cleanup()
-            self.conclusion_dir = None
-        self.active_preview = None
-
-    def _conclusion_finished(self, code: int, status: QProcess.ExitStatus) -> None:
-        active = self.active_preview
-        text = ""
-        try:
-            if (code != 0 or status != QProcess.ExitStatus.NormalExit
-                    or active is None or self.conclusion_dir is None):
-                return
-            request, accrued, ris = active
-            path = Path(self.conclusion_dir.name) / "evidence.rds"
-            text = self.service.finish_conclusion(self.model, request, path, accrued, ris)
-        except Exception as error:
-            app_error_handler.log_exception(type(error), error, error.__traceback__)
-        finally:
-            self._release_conclusion_files()
-            if active is not None:
+        def delivered(text: str) -> None:
+            if not sip.isdeleted(self) and self.active_preview is active:
+                self._cancel_worker_conclusion = None
+                self.active_preview = None
                 self.conclusion.setText(text)
-            elif self.ready_preview is not None and not self.conclusion_timer.isActive():
-                self._start_conclusion()
 
-    def _conclusion_error(self, error: QProcess.ProcessError) -> None:
-        if error == QProcess.ProcessError.FailedToStart:
-            self._release_conclusion_files()
+        try:
+            self._cancel_worker_conclusion = self.service.start_worker_conclusion(
+                self.model, request, accrued, ris, delivered,
+            )
+        except Exception as error:
+            self.active_preview = None
             self.conclusion.clear()
+            app_error_handler.log_exception(type(error), error, error.__traceback__)
 
     def _preview(self) -> None:
         two_sided = self.test.currentData() == "two-sided"
@@ -515,17 +469,9 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.conclusion_timer.stop()
         self.run_button.setEnabled(False)
         self.ready_preview = None
-        progress = None
-        if not r_worker.enabled():
-            progress = progress_dialog.AnalysisProgressDialog(self, operation="Running trial sequential analysis…")
-            progress.show()
-            progress.repaint()
         try:
             if self._cancel_worker_conclusion is not None:
                 r_worker.current_worker().wait_for_conclusion()
-            if (self.conclusion_process.state() != QProcess.ProcessState.NotRunning
-                    and not self.conclusion_process.waitForFinished(500)):
-                self._stop_conclusion()
             self.conclusion.clear()
             request = self._request()
             run = self.service.run(self.model, request)
@@ -542,6 +488,3 @@ class TrialSequentialAnalysisDialog(QDialog):
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.status.setText(str(error).strip())
             self.run_button.setEnabled(True)
-        finally:
-            if progress is not None:
-                progress_dialog.dispose(progress)

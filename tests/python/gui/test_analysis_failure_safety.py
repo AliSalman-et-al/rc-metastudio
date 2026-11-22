@@ -20,7 +20,6 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from rc_metastudio.results.contract import NO_RESULTS_MESSAGE, parse_analysis_result
 
 prepare_generated_ui_imports()
-from rc_metastudio.analysis import progress_dialog
 
 
 def _set_backend(
@@ -31,7 +30,7 @@ def _set_backend(
     monkeypatch.setattr(backend, name, replacement, raising=False)
 
 
-def test_result_owner_exception_still_deletes_real_specs_and_progress(
+def test_result_owner_exception_deletes_specs(
     qapp, monkeypatch
 ):
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
@@ -47,9 +46,9 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
         def analysis(self, _result, *, source_sheet=None, change_settings=None, manuscript=None):
             raise RuntimeError("owner callback failed")
 
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     monkeypatch.setattr(
-        backend, "get_available_methods", lambda **_kwargs: {"Random": "binary.random"}
+        backend, "available_model_methods", lambda *_args, **_kwargs: {"binary.random": "Random"}
     )
     monkeypatch.setattr(backend, "get_params", lambda _method: ({}, {}, [], {}))
     monkeypatch.setattr(
@@ -60,7 +59,7 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
     )
     monkeypatch.setattr(
         backend,
-        "dataset_to_simple_binary_r_object",
+        "_binary_data_arguments",
         lambda *_args, **_kwargs: None,
     )
     monkeypatch.setattr(
@@ -89,12 +88,9 @@ def test_result_owner_exception_still_deletes_real_specs_and_progress(
 
     with pytest.raises(RuntimeError, match="owner callback failed"):
         form.run_ma()
-    progress = form.findChild(progress_dialog.AnalysisProgressDialog)
-    assert progress is not None
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     qapp.processEvents()
 
-    assert sip.isdeleted(progress)
     assert sip.isdeleted(form)
 
 
@@ -131,13 +127,13 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
     build_report = ManuscriptReport.from_result
 
     app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     delivered = []
     try:
         _create_binary_dataset(window)
         _add_study(window, [[1, 10], [2, 10]])
-        monkeypatch.setattr(backend, 'dataset_to_simple_binary_r_object', lambda *a, **k: None)
-        monkeypatch.setattr(backend, 'get_available_methods', lambda **k: {'Random': 'binary.random'})
+        monkeypatch.setattr(backend, '_binary_data_arguments', lambda *a, **k: None)
+        monkeypatch.setattr(backend, 'available_model_methods', lambda *_args, **k: {'binary.random': 'Random'})
         monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
         monkeypatch.setattr(backend, 'get_analysis_plot_capabilities', lambda *a, **k: [])
         def unexpected_result(*args, **_kwargs):
@@ -206,13 +202,13 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_binary_r_object",
+            "_binary_data_arguments",
             "run_model_analysis",
         )
     }
@@ -225,14 +221,14 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_binary_r_object",
+            "_binary_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {"Binary Random-Effects": "binary.random"},
+            "available_model_methods",
+            lambda *_args, **kwargs: {"binary.random": "Binary Random-Effects"},
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
@@ -285,13 +281,13 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_continuous_r_object",
+            "_continuous_data_arguments",
             "run_model_analysis",
         )
     }
@@ -317,14 +313,14 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_continuous_r_object",
+            "_continuous_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {"Continuous Random-Effects": "continuous.random"},
+            "available_model_methods",
+            lambda *_args, **kwargs: {"continuous.random": "Continuous Random-Effects"},
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
@@ -372,17 +368,17 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         _close_without_prompt(app, window)
 
 
-def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
+def test_diagnostic_configuration_recovers_when_run_setup_raises(monkeypatch):
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     app, window = automation.start_automation()
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
         )
     }
     try:
@@ -391,16 +387,16 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Reitsma bivariate model": "diagnostic.reitsma",
-                "Diagnostic Random-Effects": "diagnostic.random",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.reitsma": "Reitsma bivariate model",
+                "diagnostic.random": "Diagnostic Random-Effects",
             },
         )
         _set_backend(
@@ -418,23 +414,18 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         )
         assert form is not None
 
-        def fail_with_progress_visible(_requests):
-            progress = form.findChild(progress_dialog.AnalysisProgressDialog)
-            assert progress is not None and progress.isVisible()
+        def fail_setup(_requests):
             raise RuntimeError("simulated setup failure")
 
-        monkeypatch.setattr(form, "_execute_requests", fail_with_progress_visible)
+        monkeypatch.setattr(form, "_execute_requests", fail_setup)
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox, "critical", lambda *_args: None
         )
         form.run_ma()
-        progress = form.findChild(progress_dialog.AnalysisProgressDialog)
-        assert progress is not None
         QtCore.QCoreApplication.sendPostedEvents(
             None, QtCore.QEvent.Type.DeferredDelete
         )
         app.processEvents()
-        assert sip.isdeleted(progress)
         assert not sip.isdeleted(form)
         assert "simulated setup failure" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_label.text() == "simulated setup failure"

@@ -63,4 +63,4 @@ def validate_profile_evidence(
         and launcher.get("kind") == "script"
         and valid_hashes
     ):
-        raise ProfileSchemaError("embedded R profile evidence is incomplete")
+        raise ProfileSchemaError("R runtime profile evidence is incomplete")

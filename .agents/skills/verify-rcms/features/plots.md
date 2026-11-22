@@ -33,15 +33,11 @@ curve color with the rendered SVG. Decoded TIFF exports must report at least
 600 DPI. These source drives inspect the selected file filter but do not prove
 the native picker presentation.
 
-`r-worker-plot-parity` compares worker and embedded publication files across the
-golden analyses. `r-worker-exports` compares the 400-study forest and retains a
-10 ms GUI timer measurement for PDF and DOCX export. It interrupts a live DOCX
-export with Cancel and worker
-termination, checks the original destination and committed figure bytes, then
-exports again. It also converts an SVG larger than 16 MiB through the worker
-using a temporary file. Set `RCMS_R_BACKEND=worker` and
-`RCMS_VERIFY_WORKER_PLOT_PARITY=1` to compare exports after the existing plot
-editor drives apply their changes.
+The `r-worker-exports` drive renders the 400-study forest and retains a 10 ms
+GUI timer measurement for PDF and DOCX export. It interrupts a live DOCX export
+with Cancel and worker termination, checks the original destination and
+committed figure bytes, then exports again. It also converts an SVG larger
+than 16 MiB through the worker using a temporary file.
 
 The small-study drive sends a wheel event over the focused correction selector;
 the funnel editor drive does the same over sampling confidence. Both preserve
@@ -339,7 +335,7 @@ are retained. See `docs/testing.md` for current commands and limits; historical 
 
 The shared `ux-improvements` / `results-window` drive waits for the visible
 `EditPlotDialog` before editing direction labels. It deliberately dispatches a
-timer turn before the editor opens: Windows embedded R may dispatch native events
+timer turn before the editor opens: the worker wait loop may dispatch Qt events
 while loading saved parameters, so a one-shot callback can otherwise be consumed
 before there is a modal to operate. Both paths retain label persistence and
 arm-swap assertions; the 600-second bound is unchanged.

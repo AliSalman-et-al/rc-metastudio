@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from rc_metastudio import r_bridge, r_runtime
+from rc_metastudio import r_operations, r_runtime
 from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 from rc_metastudio.study_effect_shapes import (
     effect_triplet,
@@ -41,44 +41,32 @@ def _diagnostic_effects(
 
 def _study_previews(rows, family, metric, metrics, level):
     def scales(effect, measure):
-        values = r_bridge.effect_triplet(effect, "calc_scale", metric=measure)
+        values = r_operations.effect_triplet(effect, "calc_scale", metric=measure)
         return (*values, *values)
 
     output = []
     for row in rows:
         if family == "diagnostic":
-            effects = r_bridge.diagnostic_effects_for_study(*row, metrics=metrics, confidence_level=level)
+            effects = r_operations.diagnostic_effects_for_study(*row, metrics=metrics, confidence_level=level)
             output.append([scales(effects[key], key) for key in metrics])
         else:
-            calculate = r_bridge.effect_for_study if family == "binary" else r_bridge.continuous_effect_for_study
+            calculate = r_operations.effect_for_study if family == "binary" else r_operations.continuous_effect_for_study
             output.append([scales(calculate(*row, metric=metric, confidence_level=level), metric)])
     return output
-
-
-def _confidence(_level: object) -> float:
-    return 1.96
 
 
 def _identity(value: object, *_args: object, **_kwargs: object) -> object:
     return value
 
 
-class _TestObjects:
-    @staticmethod
-    def r(_expression: object) -> list[float]:
-        return [95.0]
-
 @pytest.fixture
 def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Inject a local, explicit test capability at the R boundary."""
     monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
     functions = {
-        "get_confidence_multiplier_from_r": _confidence,
         "get_r_library_paths": lambda: [],
         "get_r_version_string": lambda: None,
         "get_r_package_version": lambda _name: None,
-        "execute_r_string": lambda _expression: [95.0],
-        "execute_r_function": lambda _name, *_args, **_kwargs: [95.0],
         "binary_convert_scale": _scale,
         "continuous_convert_scale": _scale,
         "diagnostic_convert_scale": _scale,
@@ -102,10 +90,7 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
             "FN": None,
         },
         "get_analysis_plot_capabilities": lambda *_args, **_kwargs: [],
-        "dataset_to_simple_binary_r_object": _unavailable,
-        "dataset_to_simple_continuous_r_object": _unavailable,
-        "dataset_to_simple_diagnostic_r_object": _unavailable,
-        "get_available_methods": _unavailable,
+        "available_model_methods": _unavailable,
         "get_params": _unavailable,
         "run_small_study_effects": _unavailable,
         "run_model_analysis": lambda _model, _request, **_kwargs: {
@@ -114,14 +99,6 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
             "images": {},
             "sections": [],
         },
-        "run_versioned_analysis_requests": lambda _requests, _data: {
-            "version": 1,
-            "texts": {},
-            "images": {},
-            "sections": [],
-        },
     }
     for name, function in functions.items():
-        monkeypatch.setattr(r_bridge, name, function, raising=False)
-    monkeypatch.setattr(r_bridge, "ro", _TestObjects, raising=False)
-    monkeypatch.setattr(r_bridge, "load_required_packages", lambda _on_phase=None: None)
+        monkeypatch.setattr(r_operations, name, function, raising=False)

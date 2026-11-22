@@ -31,7 +31,7 @@ function Assert-WindowsNativePrerequisites {
         $env:LDSHARED = "gcc -shared"
         return
     }
-    throw "API-mode rpy2 uses --compiler=mingw32 and requires the x64 Rtools 4.5 GCC/G++ toolchain at '$rtoolsBin'. Install Rtools 4.5, then rerun this command."
+    throw "The R package build requires the x64 Rtools 4.5 GCC/G++ toolchain at '$rtoolsBin'. Install Rtools 4.5, then rerun this command."
 }
 
 function Get-CurrentUserRegistryKey {

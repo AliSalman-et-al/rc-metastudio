@@ -77,6 +77,8 @@ local({
         for (package in c(packages, "grid")) loadNamespace(package)
         warm_graphics()
         RCMetaR:::rcmetar.warm.small.study.effects()
+        list(version=R.version.string, home=R.home(), cwd=getwd(), libraries=as.list(.libPaths()),
+             packages=c(list(RCMetaR=version), expected$pins[packages]))
     }
 
     warm_graphics <- function() {
@@ -188,14 +190,29 @@ local({
         wire_value(result)
     }
 
+    catalog <- function(job) {
+        if (job$type == "available_methods") {
+            data <- RCMetaR:::.rcmetar.worker.data(job$family, job$columns)
+            return(lapply(job$metrics, function(metric) {
+                as.list(rcmetar.available.methods(job$family, data, metric, job$workflow))
+            }))
+        }
+        if (job$type == "plot_capabilities")
+            return(wire_value(rcmetar.analysis.plot.capabilities(job$family, job$method, job$workflow)))
+        params <- rcmetar.method.parameters(job$method)
+        list(wire_value(params$parameters), wire_value(params$defaults),
+             if (!is.null(params$var_order)) as.list(params$var_order),
+             wire_value(params$pretty.names))
+    }
+
     startup <- read_frame()
     stopifnot(identical(startup$protocol, 1L), identical(startup$id, 0L))
-    ready <- tryCatch({ warm(startup$job); TRUE }, error=function(error) {
+    runtime <- tryCatch(warm(startup$job), error=function(error) {
         reply(0L, "error", message=conditionMessage(error))
-        FALSE
+        NULL
     })
-    if (!ready) quit(save="no", status=1L)
-    reply(0L, "ok")
+    if (is.null(runtime)) quit(save="no", status=1L)
+    reply(0L, "ok", result=runtime)
 
     tsa <- new.env(parent=emptyenv())
     repeat {
@@ -225,6 +242,8 @@ local({
                 previews(request$job)
             } else if (identical(request$job$type, "calculator")) {
                 calculate(request$job)
+            } else if (request$job$type %in% c("available_methods", "method_parameters", "plot_capabilities")) {
+                catalog(request$job)
             } else if (request$job$type %in% c("fit", "diagnostic_fit", "small_study",
                                               "tsa_preview", "tsa_conclusion", "tsa_run")) {
                 outcome <- RCMetaR:::.rcmetar.worker.fit(request$job, checkpoint, tsa)

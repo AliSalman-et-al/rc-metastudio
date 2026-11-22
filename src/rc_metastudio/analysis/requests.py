@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 from typing import Literal, Protocol, TypeAlias, cast
 
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.project import model as analysis_dataset
 from rc_metastudio.analysis.catalog import AnalysisFamily, FAMILY_METRICS
 from rc_metastudio.results.contract import AnalysisResult, parse_analysis_result
@@ -100,19 +100,19 @@ class AnalysisService:
         self, *, model: object, for_data_type: str, metrics: Sequence[str],
         workflow: str | None,
     ) -> Mapping[str, str]:
-        return _require_backend(lambda: r_bridge.available_model_methods(
+        return _require_backend(lambda: r_operations.available_model_methods(
             model, for_data_type, metrics, workflow=workflow or "standard"
         ))
 
     def parameters(self, method: str):
-        return _require_backend(lambda: r_bridge.get_params(method))
+        return _require_backend(lambda: r_operations.get_params(method))
 
 
     def plot_capabilities(
         self, data_type: str, method: str, *, workflow: str
     ) -> list[Mapping[str, object]]:
         return _require_backend(
-            lambda: r_bridge.get_analysis_plot_capabilities(
+            lambda: r_operations.get_analysis_plot_capabilities(
                 data_type, method, workflow=workflow
             )
         )
@@ -121,7 +121,7 @@ def _require_backend(operation):
         return operation()
     except KeyError as error:
         raise AnalysisBackendUnavailableError(
-            "The embedded RCMetaR function registry is unavailable."
+            "The RCMetaR method registry is unavailable."
         ) from error
 
 
@@ -213,7 +213,7 @@ def _native_value(value: object) -> AnalysisValue:
 
 
 def _typed_result(value: object) -> AnalysisResult:
-    """Parse raw boundary data once; R bridge results are already typed."""
+    """Parse raw boundary data once; R worker results are already typed."""
     if isinstance(value, AnalysisResult):
         return value
     return parse_analysis_result(value)
@@ -232,12 +232,12 @@ def execute_analysis_requests(
         raise ValueError("One execution cannot mix analysis data families.")
     data_type = requests[0].data_type
     if data_type == "diagnostic":
-        return _typed_result(r_bridge.run_model_diagnostic_analysis(
+        return _typed_result(r_operations.run_model_diagnostic_analysis(
             model, [request.to_mapping() for request in requests]
         ))
     if len(requests) != 1:
         raise ValueError("Standard execution requires exactly one request.")
-    return _typed_result(r_bridge.run_model_analysis(
+    return _typed_result(r_operations.run_model_analysis(
         model, requests[0].to_mapping(), **_conversion_kwargs(selected_covariates)
     ))
 
@@ -276,6 +276,6 @@ def execute_meta_regression_request(
         workflow="meta-regression",
         parameters=tuple(AnalysisParameter(name, value) for name, value in parameters.items()),
     )
-    return _typed_result(r_bridge.run_model_analysis(
+    return _typed_result(r_operations.run_model_analysis(
         model, regression_request.to_mapping(), **conversion_kwargs,
     ))

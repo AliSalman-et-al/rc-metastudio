@@ -30,8 +30,8 @@ TARGETS = (
 BROAD = (
     "*.lock", "pyproject.toml", ".python-version", ".gitattributes",
     ".github/workflows/*", ".github/actions/*",
-    "*/r_bridge.py", "*/rcmetar-core.R", "r/RCMetaR/DESCRIPTION", "r/RCMetaR/NAMESPACE",
-    "src/rc_metastudio/r_worker*.py", "src/rc_metastudio/r_result_wire.py",
+    "*/rcmetar-core.R", "r/RCMetaR/DESCRIPTION", "r/RCMetaR/NAMESPACE",
+    "src/rc_metastudio/r_worker*.py", "src/rc_metastudio/r_result_wire.py", "src/rc_metastudio/r_operations.py",
     "r/RCMetaR/inst/worker.R", "r/RCMetaR/R/worker_fits.R", "tests/e2e/r_worker_*.py",
     "config/*", "scripts/verify*", "scripts/package_input_policy.py", "scripts/desktop_*",
     "scripts/*verification*", "scripts/code_health.py", "scripts/*qt6*",
@@ -53,7 +53,7 @@ FEATURES = (
 PACKAGE_SOURCE = ("*/automation.py", "*/r_runtime.py", "*/__main__.py", "src/rc_metastudio/__init__.py")
 R_SOURCE = (
     "*/analysis/*", "*/results/*", "*/forms/*result*.ui", "*/forms/*plot*.ui",
-    "*/r_runtime.py", "*/r_call_serialization.py", "*/rcmetar_identity.py", "*/r_backend*.py",
+    "*/r_runtime.py", "*/rcmetar_identity.py", "*/r_backend*.py",
 )
 
 

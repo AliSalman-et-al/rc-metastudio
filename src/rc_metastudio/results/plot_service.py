@@ -19,11 +19,10 @@ from PyQt6.QtCore import QMarginsF, QRectF, QSettings
 from PyQt6.QtGui import QPageSize, QPainter, QPdfWriter
 from PyQt6.QtSvg import QSvgRenderer
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
 from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.plot_capabilities import PlotRegenerator
-from rc_metastudio.r_call_serialization import serialized_r_call
 
 
 # Match RCMetaR's bitmap device guard.
@@ -38,10 +37,9 @@ class PlotServiceError(RuntimeError):
 class PlotService:
     """Apply plot edits and render exports without leaking R into the UI."""
 
-    @serialized_r_call
     def load_params(self, params_path: str) -> dict[str, object] | None:
         """Load persisted plot parameters, returning ``None`` when unavailable."""
-        params = r_bridge.load_plot_parameters(params_path)
+        params = r_operations.load_plot_parameters(params_path)
         if params is None:
             return None
         if not isinstance(params, Mapping):
@@ -53,7 +51,6 @@ class PlotService:
             result[key] = value
         return result
 
-    @serialized_r_call
     def apply_edits(
         self,
         *,
@@ -76,7 +73,7 @@ class PlotService:
         backups: dict[Path, Path] = {}
         promoted: list[Path] = []
         try:
-            prepared = r_bridge.prepare_plot_edit(
+            prepared = r_operations.prepare_plot_edit(
                 params_path, regenerator, updated_params, output_path, str(staging)
             )
             if prepared is None:
@@ -99,13 +96,12 @@ class PlotService:
             if not retain_recovery:
                 shutil.rmtree(staging, ignore_errors=True)
 
-    @serialized_r_call
     def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
                      output_path: str, width: float, height: float, dpi: int,
                      include_title: bool = True, geometry: tuple[float, float] | None = None) -> None:
         """Render at publication dimensions without changing analysis state."""
         if geometry is None and regenerator == "forest":
-            geometry = r_bridge.forest_export_dimensions(params_path, width, include_title)
+            geometry = r_operations.forest_export_dimensions(params_path, width, include_title)
         if geometry is not None:
             height, minimum_width = geometry
             if width < minimum_width - 1e-8:
@@ -116,7 +112,7 @@ class PlotService:
             if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
                 _export_paged_forest(params_path, source, output_path, width, geometry[1], include_title)
                 return
-            paths = r_bridge.render_plot_bundle(
+            paths = r_operations.render_plot_bundle(
                 params_path, regenerator, str(source), include_title=include_title,
                 width=width if regenerator == "forest" else None,
             )
@@ -127,9 +123,8 @@ class PlotService:
                     compose_export(lambda: _size_export_svg(source, temporary, width, height))
                 else:
                     compose_export(lambda: _size_export_svg(source, source, width, height))
-                    r_bridge.export_svg_artwork(str(source), str(temporary), width, height, dpi)
+                    r_operations.export_svg_artwork(str(source), str(temporary), width, height, dpi)
 
-    @serialized_r_call
     def export(
         self, *, regenerator: PlotRegenerator, params_path: str, output_path: str,
         include_title: bool = True, outline_text: bool = True,
@@ -138,7 +133,7 @@ class PlotService:
         if regenerator == "none":
             raise PlotServiceError(f"Plot is not regeneratable: {regenerator}")
         with staged_output(output_path) as temporary:
-            if not r_bridge.render_plot_bundle(params_path, regenerator, str(temporary),
+            if not r_operations.render_plot_bundle(params_path, regenerator, str(temporary),
                                                include_title=include_title, outline_text=outline_text):
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
 
@@ -148,7 +143,7 @@ def _export_paged_forest(prefix: str, source: Path, destination: str, width: flo
     page_width = min(width, 180 / 25.4)
     if page_width < minimum_width - 1e-8:
         raise PlotServiceError("This figure is too wide for A4. Turn off A4 pages to export a single PDF page.")
-    paths = r_bridge.render_plot_bundle(
+    paths = r_operations.render_plot_bundle(
         prefix, "forest", str(source), include_title=include_title,
         width=page_width, page_height=250 / 25.4,
     )

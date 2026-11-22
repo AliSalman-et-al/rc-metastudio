@@ -3,7 +3,6 @@
   "schema_version": 2,
   "target_runtime": {
     "r": "4.6.2",
-    "rpy2": "3.6.9",
     "cran_policy": "dated-native-binary-only"
   },
   "binary_package_policy": {

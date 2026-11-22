@@ -224,10 +224,9 @@ def inspect_deployment(
     locked_payload_hashes = {**plugin_hashes, **library_hashes}
 
     _validate_windows_stack(
-        app_root, qt_root, all_files, versions, source_commit,
+        app_root, qt_root, versions, source_commit,
         source_provenance, runtime_probe
     )
-    api_bridge = _runtime_probe_api_bridge(runtime_probe)
     return {
         "schema_version": 1,
         "target": "windows-x64",
@@ -244,11 +243,11 @@ def inspect_deployment(
         "signing_required": False,
         "security_settings_weakened": False,
         "stack": versions,
-        "embedded_r": {
+        "r_worker": {
             "home": _relative(app_root / "R", app_root),
-            "shared_library_sha256": sha256_file(app_root / "R/bin/x64/R.dll"),
-            "api_bridge_sha256": sha256_file(app_root / api_bridge),
-            "cffi_mode": runtime_probe["rpy2"]["cffi_mode"],
+            "interpreter_sha256": sha256_file(app_root / "R/bin/x64/Rterm.exe"),
+            "launcher_sha256": sha256_file(app_root / "R/bin/Rscript.exe"),
+            "script_sha256": sha256_file(app_root / "R/library/RCMetaR/worker.R"),
         },
         "qt_runtime_root": _relative(qt_root, app_root),
         "plugins": plugin_manifest,
@@ -551,18 +550,17 @@ def _locked_windows_qt_libraries(locked_qt_bin: Path) -> dict[str, Path]:
 
 
 def _validate_windows_stack(
-    app_root: Path, qt_root: Path, all_files: list[Path], versions: dict[str, str],
+    app_root: Path, qt_root: Path, versions: dict[str, str],
     source_commit: str, source_provenance: dict | None, runtime_probe: dict,
 ) -> None:
     _validate_windows_versions(versions, source_commit)
-    _validate_windows_rpy2_payload(all_files)
     _validate_runtime_probe(runtime_probe, app_root=app_root, qt_root=qt_root)
     if not _valid_source_provenance(source_provenance, source_commit):
         raise DeploymentInspectionError("source provenance is invalid")
 
 
 def _validate_windows_versions(versions: dict[str, str], source_commit: str) -> None:
-    required = {"python", "pyqt6", "qt", "sip", "sip_runtime", "r", "rpy2", "pyinstaller"}
+    required = {"python", "pyqt6", "qt", "sip", "sip_runtime", "r", "pyinstaller"}
     if set(versions) != required or any(not value for value in versions.values()):
         raise DeploymentInspectionError(
             "version evidence must contain exactly: " + ", ".join(sorted(required))
@@ -576,21 +574,8 @@ def _validate_windows_versions(versions: dict[str, str], source_commit: str) -> 
         raise DeploymentInspectionError("source commit must be a full Git SHA")
 
 
-def _validate_windows_rpy2_payload(all_files: list[Path]) -> None:
-    rpy2_api = [path for path in all_files if "_rinterface_cffi_api" in path.name.lower()]
-    rpy2_abi = [path for path in all_files if "_rinterface_cffi_abi" in path.name.lower()]
-    if len(rpy2_api) != 1 or rpy2_api[0].suffix.lower() != ".pyd" or rpy2_abi:
-        raise DeploymentInspectionError(
-            "deployment must contain exactly one rpy2 API bridge and no ABI fallback"
-        )
 
 
-def _runtime_probe_api_bridge(runtime_probe: dict) -> PurePosixPath:
-    probe_root = _normalized_path(runtime_probe["python"]["executable"]).parent
-    path = _probe_relative_path(runtime_probe["rpy2"]["api_bridge_path"], probe_root)
-    if path is None:
-        raise DeploymentInspectionError("runtime probe omitted the rpy2 API bridge path")
-    return path
 
 
 def _normalized_path(value: str) -> Path:
@@ -620,7 +605,6 @@ def _validate_runtime_probe(
 
     _validate_windows_probe_python(python, probe_path)
     _validate_windows_probe_qt(runtime_probe.get("qt", {}), probe_path)
-    _validate_windows_probe_rpy2(runtime_probe.get("rpy2", {}), probe_path, app_root)
     _validate_windows_probe_schemas(runtime_probe.get("project_schemas"))
     _validate_windows_probe_r(runtime_probe.get("r", {}), probe_path, app_root)
 
@@ -631,7 +615,6 @@ def _validate_windows_probe_header(runtime_probe: dict) -> None:
         "frozen",
         "python",
         "qt",
-        "rpy2",
         "project_schemas",
         "r",
     }
@@ -676,34 +659,6 @@ def _validate_windows_probe_qt(qt: dict, probe_path) -> None:
         )
 
 
-def _validate_windows_probe_rpy2(rpy2: dict, probe_path, app_root: Path) -> None:
-    if not (
-        {
-            key: rpy2.get(key)
-            for key in (
-                "distribution_version",
-                "rinterface_distribution_version",
-                "robjects_distribution_version",
-                "cffi_mode",
-                "loaded_cffi_mode",
-                "api_bridge_loaded",
-            )
-        }
-        == {
-            "distribution_version": EXPECTED_VERSIONS["rpy2"],
-            "cffi_mode": "API",
-            "rinterface_distribution_version": "3.6.7",
-            "robjects_distribution_version": "3.6.6",
-            "loaded_cffi_mode": "API",
-            "api_bridge_loaded": True,
-        }
-        and (api_bridge := probe_path(rpy2.get("api_bridge_path"))) is not None
-        and api_bridge.parts[:1] == ("_internal",)
-        and (app_root / api_bridge).is_file()
-    ):
-        raise DeploymentInspectionError(
-            "frozen rpy2 runtime probe differs from the lock"
-        )
 
 
 def _validate_windows_probe_schemas(project_schemas: object) -> None:
@@ -721,6 +676,7 @@ def _validate_windows_probe_r(r: dict, probe_path, app_root: Path) -> None:
     expected_r_library = PurePosixPath("R/library")
     r_libraries = {probe_path(value) for value in r.get("library_paths", [])}
     valid = all((
+        r.get("backend") == "worker",
         r.get("version") == EXPECTED_VERSIONS["r"],
         probe_path(r.get("home")) == expected_r_home,
         probe_path(r.get("configured_home")) == expected_r_home,
@@ -1197,7 +1153,6 @@ def _main() -> int:
         "sip",
         "sip_runtime",
         "r",
-        "rpy2",
         "pyinstaller",
     ):
         option_name = name.replace("_", "-")
@@ -1243,7 +1198,6 @@ def _main() -> int:
                     "sip",
                     "sip_runtime",
                     "r",
-                    "rpy2",
                     "pyinstaller",
                 )
             }

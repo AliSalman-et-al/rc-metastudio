@@ -74,7 +74,6 @@ def desktop_environment(*, native: bool = False) -> dict[str, str]:
     env = os.environ | {
         "PYTHONIOENCODING": "utf-8",
         "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
-        "RCMS_REQUIRE_IN_PROCESS_RPY2": "1",
         "RCMS_QT6_BUILD_ROOT": str(Path(os.environ.get(
             "RCMS_QT6_BUILD_ROOT", ROOT / "build/qt6-verification"
         )).resolve()),
@@ -148,7 +147,7 @@ configure_bundled_r_environment()
 names = (
     "R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH",
     "R_ENVIRON", "R_ENVIRON_USER", "R_PROFILE", "R_PROFILE_USER",
-    "RPY2_CFFI_MODE", "LANG", "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_NUMERIC", "PATH",
+    "LANG", "LC_ALL", "LC_COLLATE", "LC_CTYPE", "LC_NUMERIC", "PATH",
 )
 print(json.dumps({name: os.environ.get(name) for name in names}))
 """],

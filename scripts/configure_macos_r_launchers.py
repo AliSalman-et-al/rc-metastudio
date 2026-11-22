@@ -6,6 +6,20 @@ import argparse
 import os
 from pathlib import Path
 
+
+def normalize_fontconfig_links(framework: Path) -> None:
+    resources = (framework / "Resources").resolve(strict=True)
+    installed = Path("/Library/Frameworks/R.framework")
+    prefixes = (installed / "Resources", installed / "Versions" / resources.parent.name / "Resources")
+    for link in (resources / "fontconfig/fonts/conf.d").iterdir():
+        if not link.is_symlink() or not (target := link.readlink()).is_absolute():
+            continue
+        relative = next((target.relative_to(prefix) for prefix in prefixes if target.is_relative_to(prefix)), None)
+        if relative is None or not (resources / relative).is_file():
+            raise RuntimeError(f"Fontconfig symlink does not resolve inside the staged R framework: {link}")
+        link.unlink()
+        link.symlink_to(os.path.relpath(resources / relative, link.parent))
+
 OFFICIAL = {
     'R_HOME_DIR="/Library/Frameworks/R.framework/Resources"': 'R_HOME_DIR="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"',
     'R_SHARE_DIR="/Library/Frameworks/R.framework/Resources/share"': 'R_SHARE_DIR="${R_HOME_DIR}/share"',

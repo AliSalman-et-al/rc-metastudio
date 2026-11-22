@@ -1,5 +1,7 @@
 """Analysis report, method reference, heterogeneity and subgroup checks."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 from unittest.mock import patch
@@ -66,11 +68,11 @@ def check_fixed_references(view, record, method="IV"):
 
 
 def check_standard_heterogeneity(view, record):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     tables = [t for s in view.results.sections for t in s.tables if t.title.endswith("Heterogeneity")]
     for table, (title, path) in zip(tables, view.results.display_images.items(), strict=True):
         load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-        expected = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
+        expected = json.loads(str(list(r_oracle.evaluate('''jsonlite::toJSON(local({
           fit <- plot.data$res
           direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
           list(data_type=plot.data$data_type, Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2, tau2=direct$tau2,
@@ -94,7 +96,7 @@ def check_standard_heterogeneity(view, record):
 
 
 def check_subgroup(view, record):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     def compare(cell, expected, tolerance):
         if expected is None:
@@ -123,7 +125,7 @@ def check_subgroup(view, record):
             record('review1-subgroup-footer-order', view, title=title, plots={title:path})
             view.report_action.setChecked(previous)
         load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
+        reference = json.loads(str(list(r_oracle.evaluate('''jsonlite::toJSON(local({
           fits <- plot.data$regeneration_state$subgroup_data$results
           lapply(fits, function(fit) {
             direct <- metafor::rma.uni(yi=fit$yi, vi=fit$vi, method=fit$method, test=fit$test, level=fit$level)
@@ -132,7 +134,7 @@ def check_subgroup(view, record):
                  tau2=direct$tau2, z=direct$zval, lower=pi$pi.lb, upper=pi$pi.ub, measure=plot.data$params$measure)
           })
         }), auto_unbox=TRUE, digits=16, null="null")'''))[0]))
-        weights = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('''jsonlite::toJSON(local({
+        weights = json.loads(str(list(r_oracle.evaluate('''jsonlite::toJSON(local({
           state <- plot.data$regeneration_state$subgroup_data
           original <- tail(state$grouped.data, 1)[[1]]
           measure <- plot.data$params$measure
