@@ -1415,11 +1415,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         self.sheet_name_edit = None
         edit.hide()
-        edit.deleteLater()
-        if not cancel:
-            sheet = self.model.dataset.sheet(sheet_id)
-            if name != sheet.name:
-                self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+        try:
+            if not cancel:
+                sheet = self.model.dataset.sheet(sheet_id)
+                if name != sheet.name:
+                    self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
+        finally:
+            # A preview refresh can pump Qt events before the editor's key event returns.
+            edit.deleteLater()
 
     def _add_sheet(self):
         if not self.model.current_sheet:

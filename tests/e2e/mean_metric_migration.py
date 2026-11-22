@@ -98,7 +98,7 @@ def compare_mean_sample_analysis(view, record, retained):
     expected = r_oracle.apply('''function(path) {
         rows <- jsonlite::fromJSON(path)$rows
         fit <- metafor::rma(measure="MN", mi=mean, sdi=sd, ni=n, data=rows, method="DL")
-        c(estimate=as.numeric(fit$b), lower_bound=fit$ci.lb, upper_bound=fit$ci.ub)
+        list(estimate=as.numeric(fit$b), lower_bound=fit$ci.lb, upper_bound=fit$ci.ub)
     }''', str(retained))
     reference = {key: float(value[0]) for key, value in expected.items()}
     summary = parsed_numeric_sections(view.results)["Summary"]
