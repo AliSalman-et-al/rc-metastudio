@@ -73,6 +73,15 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def normalized_summary_sha256(summary: str) -> str:
+    return _sha256(normalize_packaged_summary_identity(summary))
+
+
+def packaged_analysis_arguments(output: Path, project: Path) -> list[str]:
+    return ["--automation-package-analyze", str(output), str(project),
+            PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR]
+
+
 def capture_atomic_observations(
     executable: Path, *, runtime_probe: Path, surface_directory: Path
 ) -> list[Path]:
@@ -137,8 +146,7 @@ def _capture_workflow_operations(
     base_analysis_path = operation_dir / "analysis-base.json"
     _run_packaged(
         executable,
-        ["--automation-package-analyze", str(base_analysis_path), str(sample),
-         PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
+        packaged_analysis_arguments(base_analysis_path, sample),
         environment=environment,
     )
     observations["analysis_base"] = json.loads(
@@ -160,8 +168,7 @@ def _capture_workflow_operations(
     analysis_path = operation_dir / "analysis-en.json"
     _run_packaged(
         executable,
-        ["--automation-package-analyze", str(analysis_path), str(english_project),
-         PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
+        packaged_analysis_arguments(analysis_path, english_project),
         environment=environment,
     )
     observations["analysis_en"] = json.loads(analysis_path.read_text(encoding="utf-8"))
@@ -180,8 +187,7 @@ def _capture_workflow_operations(
     locale_analysis_path = operation_dir / "analysis-de.json"
     _run_packaged(
         executable,
-        ["--automation-package-analyze", str(locale_analysis_path),
-         str(locale_project), PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
+        packaged_analysis_arguments(locale_analysis_path, locale_project),
         environment=locale_environment,
     )
     observations["analysis_de"] = json.loads(locale_analysis_path.read_text(encoding="utf-8"))
@@ -189,8 +195,7 @@ def _capture_workflow_operations(
     reopened_analysis_path = operation_dir / "analysis-reopened.json"
     _run_packaged(
         executable,
-        ["--automation-package-analyze", str(reopened_analysis_path),
-         str(edited_project), PACKAGED_ANALYSIS_METHOD, PACKAGED_ANALYSIS_ESTIMATOR],
+        packaged_analysis_arguments(reopened_analysis_path, edited_project),
         environment=environment,
     )
     observations["save_reopen"] = json.loads(reopened_analysis_path.read_text(encoding="utf-8"))
@@ -352,7 +357,7 @@ def _identity(observation: dict) -> dict:
     summary = str(observation["summary"]).replace("\r\n", "\n")
     return {
         "raw_summary_sha256": _sha256(summary),
-        "normalized_summary_sha256": _sha256(normalize_packaged_summary_identity(summary)),
+        "normalized_summary_sha256": normalized_summary_sha256(summary),
         "svg_sha256": {str(label): hashlib.sha256(Path(path).read_bytes()).hexdigest() for label, path in observation["svg_paths"].items()},
     }
 
