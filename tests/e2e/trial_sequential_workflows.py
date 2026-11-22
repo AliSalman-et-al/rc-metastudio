@@ -358,7 +358,7 @@ def run(app, window, work, record, case):
         assert "logarithm with λ = 2" in view.manuscript.methods
     if comparison is not None:
         assert comparison in view.manuscript.results, view.manuscript.results
-    assert "Accrued information is" in view.manuscript.results
+    assert "Accrued information reached" in view.manuscript.results
     assert "Supplementary details" not in view.manuscript.html(supplementary=True)
     assert "Marker area is proportional to the information each trial added." in view.manuscript.html()
 

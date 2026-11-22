@@ -525,7 +525,7 @@ def _run(app, window, work, root, record, analyze):
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(0))
     assert not page.isComplete()
-    assert "different CSV column" in page.import_status.text()
+    assert "different file column" in page.import_status.text()
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
     assert page.isComplete()
     template = work / "template.csv"

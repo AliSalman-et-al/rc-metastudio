@@ -370,7 +370,7 @@ def zero_cells(app, window, record):
     assert [model.data(model.index(0, column)) for column in model.OUTCOMES] == [
         "Not estimable", "\u2014", "\u2014"
     ]
-    assert "complete raw data" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
+    assert "study values do not define a finite effect" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
     record("smd-not-estimable", window, raw=raw_rows(window)[0])
     # The same means still define an ordinary mean difference.
     metric_action(window.menuMetric, "MD").trigger()
