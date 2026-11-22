@@ -4,8 +4,9 @@ import sys
 import traceback
 from datetime import datetime, timezone
 
+from PyQt6 import sip
 from PyQt6.QtCore import QEvent, QObject
-from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QWidget
 
 from rc_metastudio import settings
 from rc_metastudio.r_worker import RJobCancelled, foreground_busy
@@ -48,6 +49,8 @@ def log_exception(exc_type, exc_value, exc_traceback):
 
 
 def show_unexpected_error(exc_value, parent=None, *, log_path=None):
+    if not isinstance(parent, QWidget) or sip.isdeleted(parent):
+        parent = None
     details = str(exc_value) or exc_value.__class__.__name__
     message = UNEXPECTED_ERROR_MESSAGE.format(details=details)
     if log_path is not None:
