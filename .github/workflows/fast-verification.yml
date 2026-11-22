@@ -16,7 +16,7 @@ env:
   WINDOWS_RCC_CACHE_KEY: qt-rcc-6.12.0-windows-x64-219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc
 
 concurrency:
-  group: fast-verification-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -67,9 +67,122 @@ jobs:
           print("parts=" + json.dumps(["checks", *DESKTOP_SHARDS]))
           PY
 
+  code-health:
+    name: Deterministic code-health baseline and gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Fetch pre-squash baseline
+        id: baseline-source
+        run: |
+          set -euo pipefail
+          sha="$(python3 -c 'from scripts.verify import STABLE_BASELINE; print(STABLE_BASELINE)')"
+          git fetch origin "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+      - run: uv python install
+      - run: uv sync --frozen --only-group dev --no-install-project
+      - name: Cache fixed code-health baseline
+        id: baseline-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            artifacts/code-health/baseline.json
+            artifacts/code-health/baseline.txt
+          key: code-health-baseline-${{ runner.os }}-${{ runner.arch }}-${{ steps.baseline-source.outputs.sha }}-${{ hashFiles('scripts/code_health.py', 'config/code-health.json', 'pyproject.toml', '.python-version', 'uv.lock') }}
+      - name: Resolve comparison base
+        id: base
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == pull_request ]]; then
+            base="$PR_BASE"
+          else
+            base="$PUSH_BASE"
+          fi
+          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+            base="$(git rev-parse HEAD~1)"
+          fi
+          git cat-file -e "$base^{commit}"
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+      - name: Enforce shared code-health gates
+        env:
+          COMPARISON_BASE: ${{ steps.base.outputs.sha }}
+          BASELINE_CACHE_HIT: ${{ steps.baseline-cache.outputs.cache-hit }}
+        run: >-
+          uv run --no-sync python -c
+          "from scripts.verify import run_code_health; import os;
+          run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'],
+          reuse_baseline=os.environ['BASELINE_CACHE_HIT'] == 'true')"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: code-health-${{ github.run_id }}
+          path: artifacts/code-health
+          if-no-files-found: error
+
+  quick:
+    name: Quick Verification
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install
+
+      - name: Install pinned R for the native binary policy test
+        uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          r-version: 4.6.2
+          use-public-rspm: true
+
+      - name: Cache official Qt rcc package
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: build\qt-rcc
+          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
+
+      - name: Run Windows quick checks
+        run: uv run --locked python scripts/verify.py quick
+
+      - name: Upload strict typing transcript
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: quick-typing-win32
+          path: artifacts/verification/typing
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Prune uv cache
+        if: ${{ always() }}
+        run: uv cache prune --ci
+
   qt6-verification:
     name: Native Qt6 Vertical Slice
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 45
@@ -113,7 +226,7 @@ jobs:
 
   remaining-surface-verification:
     name: Native Qt6 Remaining Surfaces
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 20
@@ -157,7 +270,7 @@ jobs:
 
   source-fast-targets:
     name: Source and Platform Verification (${{ matrix.target }})
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
     timeout-minutes: 90
     strategy:
@@ -316,7 +429,7 @@ jobs:
 
   full-r-stack:
     name: Required Windows Full R Stack Evidence (${{ matrix.part }})
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
     strategy:
       fail-fast: false
@@ -390,58 +503,13 @@ jobs:
 
   windows-package-qualification:
     name: Required Windows x64 Package Qualification
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-windows-package == 'true' }}
     uses: ./.github/workflows/package-windows.yml
 
-  packaging-contract:
-    name: Packaging Contract Tests
-    needs: change-classifier
-    if: ${{ needs.change-classifier.outputs.run-windows-package == 'true' }}
-    runs-on: windows-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        shell: powershell
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-        with:
-          enable-cache: true
-
-      - name: Install Python
-        run: uv python install
-
-      - name: Cache official Qt rcc package
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
-        with:
-          path: build\qt-rcc
-          key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
-
-      - name: Prepare generated Qt6 forms
-        run: |
-          uv sync --locked
-          $buildRoot = Join-Path $PWD "build\qt6-packaging-contract"
-          uv run python scripts\build_qt6.py generate --build-root $buildRoot
-          if ($LASTEXITCODE -ne 0) { throw "Qt6 form or resource generation failed." }
-          "RCMS_QT6_BUILD_ROOT=$((Resolve-Path $buildRoot).Path)" >> $env:GITHUB_ENV
-
-      - name: Run packaging contract tests
-        run: uv run python -c "from scripts.verify import run_packaging_contracts; run_packaging_contracts()"
-
-      - name: Prune uv cache
-        if: ${{ always() }}
-        run: uv cache prune --ci
-
   packaging-contract-macos:
     name: Focused Native macOS Packaging Contracts
-    needs: change-classifier
+    needs: [change-classifier, code-health, quick]
     if: ${{ needs.change-classifier.outputs.run-windows-package == 'true' }}
     runs-on: macos-15
     timeout-minutes: 15
@@ -480,12 +548,13 @@ jobs:
     name: Qt6 Integration Verification Gate
     needs:
       - change-classifier
+      - code-health
+      - quick
       - qt6-verification
       - remaining-surface-verification
       - source-fast-targets
       - full-r-stack
       - windows-package-qualification
-      - packaging-contract
       - packaging-contract-macos
     if: ${{ always() }}
     runs-on: ubuntu-latest
@@ -495,6 +564,8 @@ jobs:
       - name: Check required lane results
         shell: bash
         env:
+          CODE_HEALTH_RESULT: ${{ needs.code-health.result }}
+          QUICK_RESULT: ${{ needs.quick.result }}
           CLASSIFIER_RESULT: ${{ needs.change-classifier.result }}
           RUN_SOURCE: ${{ needs.change-classifier.outputs.run-source }}
           REASON: ${{ needs.change-classifier.outputs.reason }}
@@ -504,10 +575,13 @@ jobs:
           FULL_R_STACK_RESULT: ${{ needs.full-r-stack.result }}
           RUN_WINDOWS_PACKAGE: ${{ needs.change-classifier.outputs.run-windows-package }}
           WINDOWS_PACKAGE_RESULT: ${{ needs.windows-package-qualification.result }}
-          PACKAGING_CONTRACT_RESULT: ${{ needs.packaging-contract.result }}
           PACKAGING_CONTRACT_MACOS_RESULT: ${{ needs.packaging-contract-macos.result }}
         run: |
           set -euo pipefail
+          if [ "$CODE_HEALTH_RESULT" != "success" ] || [ "$QUICK_RESULT" != "success" ]; then
+            echo "Quick stage results: code health=$CODE_HEALTH_RESULT Windows quick=$QUICK_RESULT" >&2
+            exit 1
+          fi
           if [ "$CLASSIFIER_RESULT" != "success" ]; then
             echo "Qt6 verification change classifier result: $CLASSIFIER_RESULT" >&2
             exit 1
@@ -535,10 +609,6 @@ jobs:
           fi
           if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$WINDOWS_PACKAGE_RESULT" != "success" ]; then
             echo "Required Windows x64 package qualification result: $WINDOWS_PACKAGE_RESULT" >&2
-            exit 1
-          fi
-          if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$PACKAGING_CONTRACT_RESULT" != "success" ]; then
-            echo "Windows packaging contract result: $PACKAGING_CONTRACT_RESULT" >&2
             exit 1
           fi
           if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$PACKAGING_CONTRACT_MACOS_RESULT" != "success" ]; then

@@ -47,7 +47,7 @@ Issue reporters are credited via the public issue linked to the fix and release 
 
 ## Building from source and running tests
 
-See [Maintaining RC MetaStudio](docs/maintaining.md) for source setup and verification.
+See [Maintaining RC MetaStudio](docs/maintaining.md) for source setup. GitHub Actions gates pull requests. Maintainers can run the [quick verification checks](docs/maintaining.md#pull-request-verification) locally before opening a PR.
 
 ## Licensing
 
