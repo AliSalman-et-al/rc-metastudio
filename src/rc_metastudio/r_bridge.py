@@ -32,7 +32,7 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import require_r_transaction, serialized_r_call as _serialized_r_call
+from rc_metastudio.r_call_serialization import require_r_transaction, r_execution, serialized_r_call as _serialized_r_call
 from rc_metastudio.analysis.catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.analysis.validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.analysis.study_selection import fit_raw_rows, raw_data_is_complete
@@ -166,7 +166,11 @@ def packaged_runtime_observation() -> dict[str, object]:
 def _r_function(function_name: str) -> _RFunction:
     """Return a callable R function after checking rpy2's dynamic lookup."""
     _require_initialized_r()
-    function = ro.r[function_name]
+    if ":::" in function_name:
+        package, name = function_name.split(":::", 1)
+        function = ro.r["getFromNamespace"](name, package)
+    else:
+        function = ro.r[function_name]
     if not callable(function):
         raise TypeError("R object %r is not callable" % function_name)
     return function
@@ -200,7 +204,7 @@ def _first_dynamic(value: object) -> object:
 def _r_is_null(r_object):
     """Return whether an rpy2 object represents R's NULL value."""
     _require_initialized_r()
-    return r_object is _rinterface.NULL or isinstance(
+    return r_object is None or r_object is _rinterface.NULL or isinstance(
         r_object, type(_rinterface.NULL)
     )
 
@@ -208,32 +212,45 @@ def _r_is_null(r_object):
 @serialized_r_call
 def execute_r_string(r_str):
     require_r_transaction()
-    return _r_eval(r_str)
+    with r_execution():
+        return _r_eval(r_str)
 
 
 @serialized_r_call
 def execute_r_function(function_name, *args, **kwargs):
     require_r_transaction()
-    return _r_function(function_name)(*args, **kwargs)
+    with r_execution():
+        return _r_function(function_name)(*args, **kwargs)
 
 
 def load_required_packages(
     on_phase: Callable[[str, str], None] | None = None,
 ) -> None:
-    """Initialize embedded R and attach the packages used by analyses."""
+    """Verify the installed RCMetaR before exposing the analysis backend."""
+    from rc_metastudio.rcmetar_identity import expected_source
+
+    global _INITIALIZATION_ERROR
     initialize_r()
-    for name in ("metafor", "RCMetaR", "grid"):
-        if on_phase is not None:
-            on_phase(name, "start")
-        try:
-            execute_r_function("library", name)
-        except Exception as exc:
-            raise RuntimeError(
-                f"The {name} R package could not be loaded.\n"
-                "Install or repair this R package, then restart RC MetaStudio."
-            ) from exc
-        if on_phase is not None:
-            on_phase(name, "complete")
+    if on_phase is not None:
+        on_phase("RCMetaR", "start")
+    try:
+        installed = execute_r_string(
+            "local({ path <- find.package('RCMetaR'); "
+            "c(utils::packageDescription('RCMetaR', fields='Version'), "
+            "readLines(file.path(path, 'source.sha256'), n=1L, warn=FALSE)) })"
+        )
+        if tuple(installed) != expected_source():
+            raise ValueError("RCMetaR version or source SHA differs")
+    except Exception as error:
+        failure = r_runtime.AnalysisBackendUnavailableError(
+            "The installed RCMetaR does not match this version of RC MetaStudio. "
+            "Reinstall RCMetaR from the matching source or repair the application."
+        )
+        _INITIALIZATION_ERROR = failure
+        raise failure from error
+    execute_r_function("library", "RCMetaR")
+    if on_phase is not None:
+        on_phase("RCMetaR", "complete")
 
 
 @serialized_r_call
@@ -331,6 +348,9 @@ def r_object_to_python(data):
     if _r_is_null(data):
         return None
 
+    if isinstance(data, ro.vectors.FactorVector):
+        labels = [_r_na_to_none(value) for value in data.iter_labels()]
+        return dict(zip(data.names, labels, strict=True)) if _has_r_names(data) else labels
     # Matrix/array ``names`` in rpy2 is an alias for ``dimnames``.  Looking at
     # names first therefore turns a matrix into a mapping whose keys are
     # StrVector reprs (``[1] \"row 1\"``).  Dimensions are the stronger shape
@@ -361,7 +381,7 @@ def _r_singleton_to_scalar(singleton):
     if len(singleton) != 1:
         raise ValueError("expected an R sequence with one element")
     if isinstance(singleton, ro.vectors.FactorVector):
-        return execute_r_function("as.character", singleton)[0]
+        return _r_na_to_none(next(singleton.iter_labels()))
     return _r_na_to_none(singleton[0])
 
 
@@ -876,46 +896,26 @@ def run_small_study_effects(
 @serialized_r_call
 def preview_trial_sequential_analysis(
     model: object, family: str, metric: str, params: Mapping[str, object],
-) -> Mapping[str, object]:
+) -> tuple[Mapping[str, object], object]:
     data = dataset_for_analysis(model, family, metric=metric)
-    raw = execute_r_function("rcmetar.preview.trial.sequential.analysis", data, _to_r_params(params))
-    return _r_mapping_or_empty(raw)
+    prepared = execute_r_function("RCMetaR:::.tsa.prepare.request", data, _to_r_params(params))
+    return _r_mapping_or_empty(prepared.rx2("preview")), prepared
 
 
 @serialized_r_call
-def trial_sequential_conclusion_command(
-    model: object, family: str, metric: str, params: Mapping[str, object], directory: Path,
-) -> tuple[str, list[str]]:
-    # Embedded R is main-thread-only. Pass a typed, local snapshot to the
-    # selected runtime instead of sharing rpy2 state with a Qt worker.
-    data = dataset_for_analysis(model, family, metric=metric)
-    r_params = _to_r_params({**params, "preview.conclusion": True})
-    inputs = directory / "input.rds"
-    execute_r_function("saveRDS", ro.ListVector({"data": data, "params": r_params}), ro.StrVector([str(inputs)]))
-    bin_dir = Path(os.environ["R_HOME"]) / "bin"
-    script = (
-        "args <- commandArgs(TRUE); request <- readRDS(args[1L]); "
-        "result <- RCMetaR::rcmetar.preview.trial.sequential.analysis(request$data, request$params); "
-        "outcome <- result$outcome; "
-        "if (!is.null(outcome$category)) writeBin(charToRaw(enc2utf8("
-        "paste(outcome$category, outcome$look, outcome$study, sep='\\n'))), args[2L])"
-    )
-    paths = [str(inputs), str(directory / "outcome.txt")]
-    if os.name == "nt":
-        # Launch the actual R process so cancelling it leaves no child behind.
-        return str(bin_dir / "x64" / "Rterm.exe"), ["--vanilla", "--slave", "-e", script, "--args", *paths]
-    return str(bin_dir / "Rscript"), ["--vanilla", "-e", script, *paths]
+def trial_sequential_evidence(prepared: object) -> tuple[Mapping[str, object], object]:
+    evidence = execute_r_function("RCMetaR:::.tsa.evidence", prepared)
+    return _r_mapping_or_empty(evidence.rx2("outcome")), evidence
 
 
 @serialized_r_call
 def run_trial_sequential_analysis(
-    model: object, family: str, metric: str, params: Mapping[str, object], path: str,
+    prepared: object, evidence: object, params: Mapping[str, object], path: str,
 ) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
     from rc_metastudio.results.plot_capabilities import PlotCapability
 
-    data = dataset_for_analysis(model, family, metric=metric)
-    params = {**params, "fp_outpath": path}
-    raw = execute_r_function("rcmetar.run.trial.sequential.analysis", data, _to_r_params(params))
+    raw = execute_r_function("RCMetaR:::.tsa.publish", prepared, evidence,
+                             _to_r_params({**params, "fp_outpath": path}))
 
     def table_section(key: str, title: str, order: int, matrix) -> ResultSection:
         identity = f"trial-sequential.{key}"
@@ -1257,15 +1257,11 @@ _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digi
 
 @serialized_r_call
 def parse_out_results(result):
-    if _r_inherits(result, "try-error"):
-        raise RuntimeError(_r_error_message(result))
-    execution_value = ro.r['attr'](result, 'rcms.execution')
-    execution = {} if _r_is_null(execution_value) else dict(zip(list(execution_value.names), list(execution_value)))
-    request_value = ro.r['attr'](result, 'rcmetar.request')
-    if not _r_is_null(request_value) and not _has_r_names(request_value) and len(request_value):
-        request_value = request_value[0]
-    request = _r_mapping_or_empty(request_value)
-    result = dict(_result_items_for_display(result))
+    payload = execute_r_function("RCMetaR:::.rcmetar.result.payload", result)
+    values, request, execution, studies, contributors = payload
+    result = dict(zip(values.names, values)) if len(values) else {}
+    if not _r_is_null(studies):
+        result["study.names"] = list(studies)
     params = _r_mapping_or_empty(result.get("input_params"))
     digits = params.get("digits")
     if isinstance(digits, (tuple, list)):
@@ -1273,22 +1269,19 @@ def parse_out_results(result):
     token = _RESULT_DISPLAY_DIGITS.set(int(digits) if digits is not None else None)
     try:
         parsed = _parse_display_results(result)
-        return _with_execution_details(parsed, request, execution, result)
+        return _with_execution_details(parsed, request, execution, contributors)
     finally:
         _RESULT_DISPLAY_DIGITS.reset(token)
 
 
-def _with_execution_details(parsed, request, execution, result):
-    workflow = request.get('workflow', '')
-    packages = execution.get('packages')
-    software = ', '.join(f'{name} {list(version)[0]}' for name, version in zip(list(packages.names), list(packages))) if packages is not None and len(packages) else ''
-    inference = execution.get('inference', ())
-    contributors = None
-    if 'res' in result:
-        fit = result['res']
-        if _r_inherits(fit, 'rma') and 'k.yi' in fit.names:
-            contributors = int(fit.rx2('k.yi')[0])
-    return replace(parsed, contributing_studies=contributors, software=software, inference_methods=tuple(str(code) for code in inference),
+def _with_execution_details(parsed, request, execution, contributors):
+    workflow = _r_mapping_or_empty(request).get('workflow', '')
+    fields = {} if _r_is_null(execution) else dict(zip(execution.names, execution))
+    packages = fields.get('packages')
+    software = ', '.join(f'{name} {version[0]}' for name, version in zip(packages.names, packages)) if packages is not None and len(packages) else ''
+    inference = fields.get('inference', ())
+    return replace(parsed, contributing_studies=None if _r_is_null(contributors) else int(contributors[0]),
+                   software=software, inference_methods=tuple(str(code) for code in inference),
                    sections=tuple(replace(section, tables=tuple(replace(table, workflow=str(workflow)) for table in section.tables)) for section in parsed.sections))
 
 
@@ -1517,7 +1510,7 @@ _RESULT_METADATA_KEYS = frozenset(
         "sections",
         "res",
         "res.info",
-        "input_data",
+        "study.names",
         "input_params",
         "analysis.scale",
         "eligibility",
@@ -1537,8 +1530,8 @@ def _add_result_text(texts, name, value, result, study_names):
         return
     if "gui.ignore" in name:
         return
-    if _is_summary_display(value):
-        texts[title] = _format_result_text(_format_summary(value))
+    if (summary := _summary_text(value)) is not None:
+        texts[title] = _format_result_text(summary)
         return
     if _is_table_summary(value):
         texts.update(_format_table_summary(title, value, study_names=study_names))
@@ -1583,7 +1576,7 @@ def _text_section_metadata(sources, producer_sections, reports=None):
 
 def _structured_result_reports(title, value, study_names):
     """Carry producer arrays as cells; never reverse-parse printed statistics."""
-    if _is_summary_display(value):
+    if _summary_text(value) is not None:
         return {title: _structured_summary_display(value, study_names)}
     if len(_r_dims(value)) == 2 and not _is_large_display_shape(_r_dims(value)):
         return {title: {"paragraphs": [], "tables": [_structured_matrix(title, value, study_names)]}}
@@ -1608,7 +1601,7 @@ def _raw_number(value):
 
 
 def _numeric_fields(value, nrow, ncol):
-    attributes = execute_r_function('attr', value, 'rcms.numeric', exact=True)
+    attributes = _r_attribute(value, 'rcms.numeric')
     if _r_is_null(attributes):
         return []
     fields = dict(zip(list(attributes.names), list(attributes)))
@@ -1672,7 +1665,7 @@ def _structured_matrix(title, matrix, study_names, first_row_headers=False):
 
 
 def _table_context(value):
-    metadata = ro.r['attr'](value, 'rcms.table')
+    metadata = _r_attribute(value, 'rcms.table')
     if _r_is_null(metadata):
         raise ValueError('missing result table role')
     context = dict(_r_mapping_or_empty(metadata))
@@ -1761,52 +1754,9 @@ def _unique_result_section_id(kind, source_key, used_ids):
     return f"{semantic_id}:{suffix}"
 
 
-def _result_items_for_display(result):
-    """Return ``(section, value)`` pairs without leaking R's NULL names."""
-    _require_initialized_r()
-    if _r_is_null(result):
-        return []
-    names = _r_result_names(result)
-    if names is not None:
-        return [
-            (name if name else "Result %d" % (index + 1), value)
-            for index, (name, value) in enumerate(zip(names, list(result)))
-        ]
-    if isinstance(result, ro.vectors.ListVector):
-        return [
-            ("Result %d" % (index + 1), value)
-            for index, value in enumerate(list(result))
-        ]
-    return [("Result", result)]
-
-
-def _r_result_names(value):
-    """Read partial names for a top-level R list without axis confusion."""
-    if _r_is_null(value) or _r_dims(value):
-        return None
-    try:
-        names = value.names
-    except Exception:
-        return None
-    if _r_is_null(names):
-        return None
-    try:
-        return [str(name) for name in list(names)]
-    except Exception:
-        return None
-
-
 def _study_names_from_result(result):
-    input_data = result.get("input_data")
-    if input_data is None:
-        return None
-    try:
-        study_names = [str(name) for name in list(input_data.do_slot("study.names"))]
-    except Exception:
-        return None
-    if not study_names or any(name == "" for name in study_names):
-        return None
-    return study_names
+    study_names = result.get("study.names")
+    return study_names if study_names and all(study_names) else None
 
 
 def _r_mapping_or_empty(r_object):
@@ -1840,33 +1790,13 @@ def _r_section_metadata(r_object):
     return sections
 
 
-def _r_inherits(r_object, class_name):
-    try:
-        return bool(execute_r_function("inherits", r_object, class_name)[0])
-    except Exception:
-        return False
-
-
-def _r_error_message(r_object):
-    try:
-        if len(r_object) > 0:
-            return str(r_object[0]).strip()
-    except Exception:
-        pass
-    return str(r_object).strip()
-
-
 def _is_table_summary(r_object):
     return len(_r_dims(r_object)) in (2, 3)
 
 
-def _is_summary_display(r_object):
-    return bool(execute_r_function("inherits", r_object, "summary.display")[0])
-
-
-@serialized_r_call
-def _format_summary(r_object):
-    return _first_dynamic(execute_r_function("format", r_object))
+def _summary_text(r_object):
+    value = _r_attribute(r_object, "rcms.formatted")
+    return None if _r_is_null(value) else value[0]
 
 
 def _format_table_summary(section_name, r_object, title=None, study_names=None):
@@ -2147,26 +2077,32 @@ def _is_r_string_vector(r_object):
     return isinstance(r_object, ro.vectors.StrVector)
 
 
-def _r_dims(r_object):
-    _require_initialized_r()
-    if not isinstance(r_object, ro.vectors.Vector):
-        return []
+def _r_attribute(r_object, name):
     try:
-        dims = execute_r_function("dim", r_object)
-    except Exception:
-        return []
-    if _r_is_null(dims):
-        return []
-    return [int(dim) for dim in list(dims)]
+        value = r_object.do_slot(name)
+    except (AttributeError, LookupError):
+        return None
+    return ro.conversion.get_conversion().rpy2py(value)
+
+
+def _r_dims(r_object):
+    dims = _r_attribute(r_object, "dim")
+    if dims is not None:
+        return [int(dim) for dim in dims]
+    if isinstance(r_object, ro.vectors.DataFrame):
+        return [r_object.nrow, len(r_object)]
+    return []
 
 
 def _r_dimnames(r_object):
-    dimnames = execute_r_function("dimnames", r_object)
+    dimnames = _r_attribute(r_object, "dimnames")
+    if dimnames is None and isinstance(r_object, ro.vectors.DataFrame):
+        return [list(r_object.rownames), list(r_object.colnames)]
     if _r_is_null(dimnames):
         return []
     return [
-        None if _r_is_null(names) else [str(name) for name in list(names)]
-        for names in list(dimnames)
+        None if _r_is_null(names) else [str(name) for name in names]
+        for names in dimnames
     ]
 
 
@@ -2482,8 +2418,8 @@ def _format_weight(value):
 
 
 def _weight_study_names(results, weights_object, count):
-    if "input_data" in results:
-        study_names = list(results["input_data"].do_slot("study.names"))
+    if "study.names" in results:
+        study_names = results["study.names"]
     else:
         weight_names = _r_names_or_none(weights_object)
         if weight_names is not None and len(weight_names) == count:
@@ -2569,19 +2505,21 @@ def continuous_effect_for_study(
 
 
 @serialized_r_call
-def incidence_rate_effect_preview(raw_data, confidence_level):
-    """Use the default package policy for transient raw IRR table previews."""
-    result = execute_r_function(
-        "escalc", measure="IRR", x1i=raw_data[0], t1i=raw_data[1],
-        x2i=raw_data[2], t2i=raw_data[3], add=.5, to="only0", drop00=True,
+def study_effect_previews(
+    rows: Sequence[Sequence[object]], family: str, metric: str | None,
+    metrics: Sequence[str], confidence_level: float,
+) -> list[list[tuple[float | None, ...]]]:
+    raw = execute_r_function(
+        "RCMetaR:::rcmetar.study.effect.previews",
+        ro.ListVector(tuple((str(index), _r_numeric_vector(row)) for index, row in enumerate(rows))),
+        family, metric or "", _r_character_vector(metrics), metric in TWO_ARM_METRICS,
+        confidence_level,
     )
-    column = getattr(result, "rx2")
-    estimate = float(cast(float, _first_dynamic(_call_dynamic(column, "yi"))))
-    variance = float(cast(float, _first_dynamic(_call_dynamic(column, "vi"))))
-    if not math.isfinite(estimate) or not math.isfinite(variance) or variance <= 0:
-        return (None, None, None)
-    width = get_confidence_multiplier_from_r(confidence_level) * math.sqrt(variance)
-    return estimate, estimate-width, estimate+width
+    return [
+        [tuple(None if _r_na_to_none(value) is None else float(value) for value in effect)
+         for effect in row]
+        for row in raw
+    ]
 
 
 @serialized_r_call
@@ -2645,7 +2583,7 @@ def generic_convert_scale(
         metric=str(metric_name),
         **{"data.type": str(data_type), "convert.to": str(convert_to), "n1": n1_arg},
     )
-    transformed_ls = [x_i for x_i in transformed]
+    transformed_ls = [_r_na_to_none(value) for value in transformed]
     if not islist:
         return transformed_ls[0]
     return transformed_ls

@@ -305,21 +305,10 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 self.confidence_multiplier,
             )
 
-            def to_display_scale(x):
-                return self.calculator.binary_convert_scale(
-                    x, self.current_effect, convert_to="display.scale"
-                )
-
-            display_estimate, display_lower, display_upper = [
-                to_display_scale(x) for x in [est, lower, upper]
-            ]
-            for i, r_key in enumerate(["estimate", "lower", "upper"]):
-                try:
-                    d[r_key] = float(
-                        [display_estimate, display_lower, display_upper][i]
-                    )
-                except (TypeError, ValueError):
-                    d[r_key] = None
+            displayed = self.calculator.binary_convert_scale((est, lower, upper), self.current_effect)
+            if not isinstance(displayed, (tuple, list)):
+                raise ValueError("Expected three display values.")
+            d.update(zip(("estimate", "lower", "upper"), displayed, strict=True))
 
             d["conf.level"] = self.confidence_level
 

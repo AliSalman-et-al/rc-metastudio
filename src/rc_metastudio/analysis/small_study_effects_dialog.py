@@ -516,6 +516,9 @@ class SmallStudyEffectsDialog(
         return levels
 
     def run(self):
+        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
+        if run_button is None or not run_button.isEnabled():
+            return
         try:
             request = self._request()
         except ValueError as error:
@@ -523,9 +526,7 @@ class SmallStudyEffectsDialog(
             self.failure_label.setVisible(True)
             self.contour_levels_edit.setFocus()
             return
-        run_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
-        if run_button is not None:
-            run_button.setEnabled(False)
+        run_button.setEnabled(False)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
         from rc_metastudio.analysis.identity import metric_label
@@ -556,8 +557,7 @@ class SmallStudyEffectsDialog(
             app_error_handler.handle_exception(
                 type(error), error, error.__traceback__, parent=self
             )
-            if run_button is not None:
-                run_button.setEnabled(True)
+            run_button.setEnabled(True)
 
     def _change_settings_callback(self, request: SmallStudyEffectsRequest, source_sheet):
         import copy

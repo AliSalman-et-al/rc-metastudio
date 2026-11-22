@@ -51,7 +51,6 @@ exportClasses(AnalysisSpecification, BinaryData, ContinuousData, CovariateValues
 import(boot)
 import(grDevices)
 import(graphics)
-import(meta)
 import(metafor)
 import(stats)
 import(utils)

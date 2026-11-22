@@ -858,10 +858,9 @@ class DatasetTableModel(QAbstractTableModel):
     def is_diagnostic(self):
         return self.get_current_data_type(False) == DIAGNOSTIC
 
-    def update_all_effect_previews(self):
-        context = self._editing_context()
-        for study in self.current_sheet.rows:
-            self.editing_service.update_effect_previews_if_possible(study, context)
+    def update_row_effect_previews(self, row: int) -> None:
+        study = self._study_for_row(row)
+        self.editing_service.update_effect_previews_if_possible(study, self._editing_context())
 
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""
@@ -872,11 +871,9 @@ class DatasetTableModel(QAbstractTableModel):
             or self.current_sheet_id is None
         ):
             return
-        context = self._editing_context()
-        for study in self.current_sheet.rows:
-            self.editing_service.update_effect_previews_if_possible(
-                study, context, update_inclusion=False,
-            )
+        self.editing_service.update_effect_previews(
+            self.current_sheet.rows, self._editing_context(), update_inclusion=False,
+        )
 
     def set_all_studies_included(self, included: bool) -> None:
         if self.current_sheet:

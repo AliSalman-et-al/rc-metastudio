@@ -18,7 +18,7 @@ from typing import Literal, Protocol
 
 from rc_metastudio import name_validation, qt_text
 from rc_metastudio import r_runtime, r_bridge
-from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES, EVENT_RATES, TIME_TO_EVENT, ONE_ARM_METRICS
+from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES, EVENT_RATES, TIME_TO_EVENT, ONE_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
 from rc_metastudio.project.model import Dataset, Sheet, StudyRow
@@ -707,34 +707,51 @@ class WorkspaceEditingService:
         *,
         update_inclusion: bool = True,
     ) -> None:
-        unit = study.analysis_unit
-        raw_data = self._raw_data(study, context)
-        if context.data_type in RATIO_DATA_TYPES:
-            self._update_ratio_outcome(study, unit, raw_data, context, update_inclusion)
-            return
-        complete = self._raw_data_is_complete_for_context(raw_data, context)
-        if update_inclusion and self._should_clear_inclusion(unit, context):
-            study.include = False
-        if complete and not r_runtime.is_ready():
-            if update_inclusion:
-                study.include = not study.manually_excluded
-            return
-        if complete:
-            self._calculate_complete_effect_previews(
-                study, unit, raw_data, context, update_inclusion=update_inclusion
-            )
-        elif not raw_data_is_empty(raw_data):
-            self._clear_incomplete_effect_previews(unit, context)
+        self.update_effect_previews((study,), context, update_inclusion=update_inclusion)
 
-    def _update_ratio_outcome(self, study, unit, raw_data, context, update_inclusion):
-        self._clear_effect_and_display_ci(unit, context.current_effect, context)
-        record = unit.ratio_input(context.arm_names)
-        ready = record.ready(raw_data, metric=context.current_effect)
-        if ready and record.selected_source(raw_data, metric=context.current_effect) == "raw" and r_runtime.is_ready():
-            est, lower, upper = r_bridge.incidence_rate_effect_preview(raw_data, context.confidence_level)
-            self._store_derived_effect_preview(unit, context.current_effect, context, est, lower, upper)
-        if update_inclusion:
-            study.include = not study.manually_excluded and ready
+    def update_effect_previews(
+        self, studies: Sequence[StudyRow], context: WorkspaceEditingContext, *,
+        update_inclusion: bool,
+    ) -> None:
+        pending = []
+        runtime_ready = r_runtime.is_ready()
+        for study in studies:
+            raw_data = self._raw_data(study, context)
+            if self._prepare_effect_preview(study, raw_data, context, update_inclusion) and runtime_ready:
+                pending.append((study, raw_data))
+        if not pending or context.data_type is None:
+            return
+        if self.bridge is not r_bridge:
+            for study, raw in pending:
+                self._calculate_complete_effect_previews(study.analysis_unit, raw, context)
+            return
+
+        metrics = DIAGNOSTIC_METRICS if context.data_type == DIAGNOSTIC else (context.current_effect,)
+        previews = r_bridge.study_effect_previews(
+            [raw for _, raw in pending], TYPE_TO_STR_DICT[context.data_type], context.current_effect,
+            tuple(metric for metric in metrics if metric is not None), context.confidence_level,
+        )
+        for (study, _), row in zip(pending, previews, strict=True):
+            for metric, values in zip(metrics, row, strict=True):
+                self._store_derived_effect_preview(
+                    study.analysis_unit, metric, context, *values[:3], display=values[3:],
+                )
+
+    def _prepare_effect_preview(self, study, raw_data, context, update_inclusion) -> bool:
+        unit = study.analysis_unit
+        if context.data_type in RATIO_DATA_TYPES:
+            self._clear_effect_and_display_ci(unit, context.current_effect, context)
+            record = unit.ratio_input(context.arm_names)
+            ready = record.ready(raw_data, metric=context.current_effect)
+            if update_inclusion:
+                study.include = not study.manually_excluded and ready
+            return ready and record.selected_source(raw_data, metric=context.current_effect) == "raw"
+        complete = self._raw_data_is_complete_for_context(raw_data, context)
+        if update_inclusion and (complete or self._should_clear_inclusion(unit, context)):
+            study.include = complete and not study.manually_excluded
+        if not complete and not raw_data_is_empty(raw_data):
+            self._clear_incomplete_effect_previews(unit, context)
+        return complete
 
 
     @staticmethod
@@ -760,10 +777,8 @@ class WorkspaceEditingService:
         return not self._has_point_estimate(unit, context)
 
     def _calculate_complete_effect_previews(
-        self, study, unit, raw_data, context, *, update_inclusion=True
+        self, unit, raw_data, context,
     ) -> None:
-        if update_inclusion and not study.manually_excluded:
-            study.include = True
         calculated = self.preview_raw_effects(
             context.data_type, context.current_effect, raw_data, context.confidence_level
         )
@@ -798,15 +813,18 @@ class WorkspaceEditingService:
 
     def _store_derived_effect_preview(
         self, unit: AnalysisUnit, metric: str | None, context: WorkspaceEditingContext,
-        estimate: object, lower: object, upper: object, n1: object = None,
+        estimate: object, lower: object, upper: object, n1: object = None, *,
+        display: tuple[float | None, ...] | None = None,
     ) -> None:
         if metric is None:
             return
         unit.set_derived_effect_preview(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
+        converted = (lambda _value: next(values)) if display is not None else self.display_scale_converter(
+            context.data_type, metric, n1
+        )
+        values = iter(display or ())
         unit.calculate_display_effect_and_ci(
-            metric,
-            context.arm_key,
-            self.display_scale_converter(context.data_type, metric, n1),
+            metric, context.arm_key, converted,
             confidence_level=context.confidence_level,
             confidence_multiplier=context.confidence_multiplier,
             source="derived_preview",

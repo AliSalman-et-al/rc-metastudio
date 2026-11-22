@@ -857,6 +857,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._show_analysis_preparation_error(exception)
 
     def _show_analysis_backend_error(self, exception, *, startup=False):
+        if startup and isinstance(exception, r_runtime.AnalysisBackendUnavailableError):
+            QMessageBox.critical(self, "Analysis unavailable", str(exception))
+            return
         if startup:
             message = (
                 "RC MetaStudio could not start its built-in R runtime, so analyses are unavailable. "

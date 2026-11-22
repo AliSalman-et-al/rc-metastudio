@@ -33,7 +33,6 @@
 #' @importFrom ellipse ellipse
 #' @import grDevices
 #' @import graphics
-#' @import meta
 #' @import metafor
 #' @import stats
 #' @import utils

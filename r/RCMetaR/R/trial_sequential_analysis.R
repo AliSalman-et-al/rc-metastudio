@@ -450,9 +450,20 @@
 #' @rdname RCMetaR-trial-sequential-analysis
 #' @export
 rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
+  request <- .tsa.prepare.request(om.data, params)
+  preview <- request$preview
+  s <- request$settings
+  if (isTRUE(s$preview.conclusion) && isTRUE(preview$ready) && is.finite(preview$ris) && preview$ris > 0) {
+    preview$outcome <- tryCatch(.tsa.evidence(request)$outcome,
+      error=function(e) list(error=conditionMessage(e)))
+  }
+  preview
+}
+
+.tsa.prepare.request <- function(om.data, params) {
   s <- .tsa.settings(params)
   prepared <- .tsa.prepare(om.data, s)
-  if (is.null(prepared$preview)) return(prepared)
+  if (is.null(prepared$preview)) return(list(preview=prepared, settings=s))
   preview <- prepared$preview
   validation <- tryCatch(.tsa.lambda(prepared$data, s), error=identity)
   if (inherits(validation, "error")) {
@@ -461,14 +472,9 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     preview$reason <- conditionMessage(validation)
   }
   design <- .tsa.design(prepared, s)
-  outcome <- NULL
-  if (isTRUE(s$preview.conclusion) && preview$ready && is.finite(design$ris) && design$ris > 0) {
-    outcome <- tryCatch({
-      monitored <- .tsa.monitor(.tsa.cumulative(prepared, s), design$ris, s, prepared$ratio)
-      c(monitored$conclusion, list(study=monitored$looks$study[monitored$conclusion$look]))
-    }, error=function(e) list(error=conditionMessage(e)))
-  }
-  c(preview, design, .tsa.fixed.effect(prepared, s, design), list(outcome=outcome))
+  fixed <- .tsa.fixed.effect(prepared, s, design)
+  list(preview=c(preview, design, fixed, list(outcome=NULL)), settings=s, prepared=prepared, design=design)
+
 }
 
 .tsa.tail.alpha <- function(s) if (s$alternative == "two-sided") s$alpha/2 else s$alpha
@@ -695,13 +701,26 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
 #' @rdname RCMetaR-trial-sequential-analysis
 #' @export
 rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
-  s <- .tsa.settings(params)
-  prepared <- .tsa.prepare(om.data, s)
-  if (is.null(prepared$preview)) stop(prepared$reason, call.=FALSE)
-  if (!prepared$preview$ready) stop(prepared$preview$reason, call.=FALSE)
-  design <- .tsa.design(prepared, s)
+  request <- .tsa.prepare.request(om.data, params)
+  .tsa.publish(request, .tsa.evidence(request), params)
+}
+
+.tsa.evidence <- function(request) {
+  if (!isTRUE(request$preview$ready)) stop(request$preview$reason, call.=FALSE)
+  s <- request$settings
+  prepared <- request$prepared
   path <- .tsa.cumulative(prepared, s)
-  monitored <- .tsa.monitor(path, design$ris, s, prepared$ratio)
+  monitored <- .tsa.monitor(path, request$design$ris, s, prepared$ratio)
+  list(path=path, monitored=monitored,
+       outcome=c(monitored$conclusion, list(study=monitored$looks$study[monitored$conclusion$look])))
+}
+
+.tsa.publish <- function(request, evidence, plot.params) {
+  s <- request$settings
+  prepared <- request$prepared
+  design <- request$design
+  path <- evidence$path
+  monitored <- evidence$monitored
   looks <- monitored$looks
   warnings <- path$warnings
   if (monitored$overrun)
@@ -710,13 +729,14 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   result <- list(version=1L, summary=summary, looks=looks, table=.tsa.display.table(looks, s),
     package.versions=c(metafor=utils::packageDescription("metafor", fields="Version"),
       gsDesign=utils::packageDescription("gsDesign", fields="Version")), warnings=unique(warnings))
-  result["fixed_effect_note"] <- list(.tsa.fixed.effect(prepared, s, design)$fixed_effect_note)
+  result["fixed_effect_note"] <- list(request$preview$fixed_effect_note)
   if (is.null(s$manual.ris)) {
     result$sensitivity <- .tsa.sensitivity(prepared, s, path, summary, looks)
     result$sensitivity.table <- .tsa.sensitivity.table(result$sensitivity, s)
   }
-  output <- rcmetar.plot.scalar_path(s$fp_outpath)
+  output <- rcmetar.plot.scalar_path(plot.params$fp_outpath)
   if (!is.null(output)) {
+    s$plot_caption <- plot.params$plot_caption
     s$fp_style <- s$fp_style %||% "default"
     data <- prepared$data
     res <- list(summary=summary, looks=looks, boundary=monitored$boundary)
