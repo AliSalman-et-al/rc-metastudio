@@ -2038,6 +2038,7 @@ def effect_for_study(
     inputs = {"e1": e1, "n1": n1, "e2": e2, "n2": n2}
     params = {"two.arm": bool(two_arm), "metric": str(metric), "conf.level": confidence_level}
     result = _worker_calculate("binary_effect", inputs | params)
+    return normalize_effect_result(result, metric=metric)
 
 
 def binary_convert_scale(x, metric_name, convert_to="display.scale", n1=None):

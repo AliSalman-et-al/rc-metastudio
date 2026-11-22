@@ -210,7 +210,9 @@ def start_package_worker_smoke(output_path: str, project_path: str) -> int:
     app, window = _start_package_application(lambda phase: phases.update({phase: perf_counter() - start}))
     seconds = {"startup": perf_counter() - start}
     try:
-        _measure(seconds, "calculator", lambda: r_operations.effect_for_study(4, 20, 6, 22))
+        effect = _measure(seconds, "calculator", lambda: r_operations.effect_for_study(4, 20, 6, 22))
+        if not effect.get("calc_scale"):
+            raise RuntimeError("The packaged calculator did not return effect estimates.")
         opened = _measure(seconds, "open_project", lambda: window.open(project_path, raise_on_error=True))
         if not opened:
             raise RuntimeError("Packaged worker smoke could not open the sample project.")

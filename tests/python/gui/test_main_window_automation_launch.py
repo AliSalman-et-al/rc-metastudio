@@ -624,8 +624,8 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
     from rc_metastudio import r_operations
 
     method_map = {
-        "binary.random": "binary.random",
-        "binary.fixed.mh": "binary.fixed.mh",
+        "binary.random": "Random-effects",
+        "binary.fixed.mh": "Fixed-effect Mantel–Haenszel",
     }
     params = {
         "binary.random": (
@@ -1756,7 +1756,7 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     monkeypatch.setattr(
         r_operations,
         "available_model_methods",
-        lambda *_args, **kwargs: {method_label: method_name},
+        lambda *_args, **kwargs: {method_name: method_label},
         raising=False,
     )
     monkeypatch.setattr(

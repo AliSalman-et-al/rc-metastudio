@@ -144,7 +144,7 @@ Totals: 382 applied, 55 changed, 50 skipped. The table includes all 33 meaning-c
 | 136 | `src/rc_metastudio/forms/publication_bias_dialog.ui:44` | applied | Line edit values are bare numbers ('90, 95, 99'); align with funnel_plot_editor_dialog.ui ('Null contour levels (%)'). |
 | 137 | `src/rc_metastudio/analysis/trial_sequential.py:25` | applied | Expand 'HKSJ' on first appearance in TSA setup and manuscript Methods. |
 | 138 | `src/rc_metastudio/forms/edit_plot_dialog.ui:150` | applied | Avoid ad-hoc abbreviation 'Conf. Int.'; 'CI' is standard across RC MetaStudio. |
-| 139 | `src/rc_metastudio/r_bridge.py:2375` | changed | Applied P value style across the bridge emitters and normalization. Legacy headers are still recognized. |
+| 139 | Former R integration, line 2375 | changed | Applied P value style across the bridge emitters and normalization. Legacy headers are still recognized. |
 | 140 | `r/RCMetaR/R/analysis_contracts.R:14` | changed | Applied P value style across the R display emitters. Legacy headers are still recognized. |
 | 141 | `r/RCMetaR/R/trial_sequential_analysis.R:480` | applied | Add leading zeros, serial comma, and expand 'LIL'. |
 | 142 | `src/rc_metastudio/results/window.py:1521` | applied | Verified that the shared Export plot action exposes Ctrl+Shift+E and updated the tooltip. |
@@ -260,13 +260,13 @@ Totals: 382 applied, 55 changed, 50 skipped. The table includes all 33 meaning-c
 | 252 | `src/rc_metastudio/name_validation.py:22` | applied | Standardize quotation marks/apostrophes (avoid mixed straight and curly quotes). |
 | 253 | `src/rc_metastudio/name_validation.py:49` | applied | Standardize quotation marks/apostrophes (avoid mixed straight and curly quotes). |
 | 254 | `src/rc_metastudio/name_validation.py:49` | applied | Standardize quotation marks/apostrophes (avoid mixed straight and curly quotes). |
-| 255 | `src/rc_metastudio/r_bridge.py:508` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
-| 256 | `src/rc_metastudio/r_bridge.py:1056` | applied | US spelling (app standard is US English). |
-| 257 | `src/rc_metastudio/r_bridge.py:1057` | applied | US spelling (app standard is US English). |
-| 258 | `src/rc_metastudio/r_bridge.py:1142` | applied | The old multi-line diagnostic input error survived. It now says effect measure. |
-| 259 | `src/rc_metastudio/r_bridge.py:2084` | applied | Multiplication sign '×' instead of ASCII 'x'. |
-| 260 | `src/rc_metastudio/r_bridge.py:2086` | applied | Multiplication sign '×' instead of ASCII 'x'. |
-| 261 | `src/rc_metastudio/r_bridge.py:2103` | applied | CONTEXT.md specifies 'normalized partial SROC AUC'. |
+| 255 | Former R integration, line 508 | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
+| 256 | Former R integration, line 1056 | applied | US spelling (app standard is US English). |
+| 257 | Former R integration, line 1057 | applied | US spelling (app standard is US English). |
+| 258 | Former R integration, line 1142 | applied | The old multi-line diagnostic input error survived. It now says effect measure. |
+| 259 | Former R integration, line 2084 | applied | Multiplication sign '×' instead of ASCII 'x'. |
+| 260 | Former R integration, line 2086 | applied | Multiplication sign '×' instead of ASCII 'x'. |
+| 261 | Former R integration, line 2103 | applied | CONTEXT.md specifies 'normalized partial SROC AUC'. |
 | 262 | `src/rc_metastudio/results/formatting.py:130` | skipped | These are recognized upstream input aliases. Their displayed value is already SE (logit scale). |
 | 263 | `src/rc_metastudio/results/formatting.py:131` | skipped | These are recognized upstream input aliases. Their displayed value is already SE (logit scale). |
 | 264 | `src/rc_metastudio/results/formatting.py:136` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
@@ -517,7 +517,7 @@ Totals: 382 applied, 55 changed, 50 skipped. The table includes all 33 meaning-c
 ### Consumers of revised labels
 
 - `analysis/trial_sequential.py` previously stripped `Favours` from display text. The Python consumers now receive arm names. The R readers in `trial_sequential_analysis.R` and `trial_sequential_plot.R` still accept both spellings for saved requests and plot inputs.
-- `r_bridge.py`, `results/formatting.py`, and `analysis_contracts.R` recognize legacy P-value and z-value labels and emit the current display text. `results_display.R` updates the regression header, indexed assignment, and raw-column lookup together. `results/report.py` reads the current P value header through its existing internal alias and quantity roles. `results/text_identity.py` and the golden replay parser recognize both header spellings.
+- The former R integration, `results/formatting.py`, and `analysis_contracts.R` recognize legacy P-value and z-value labels and emit the current display text. `results_display.R` updates the regression header, indexed assignment, and raw-column lookup together. `results/report.py` reads the current P value header through its existing internal alias and quantity roles. `results/text_identity.py` and the golden replay parser recognize both header spellings.
 - `calculators/continuous_dialog.py` preserves the historical P-value input aliases. `results/report.py` takes the selected moderator names from `analysis/setup_dialog.py` instead of extracting them from the result identity sentence.
 - `results/window.py` recognizes both the older model-results title and the current dash and capitalization. `forest_axis.R` and `forest_style_bmj.R` keep legacy title-case conversion keys with sentence-case display values.
 - The original audit also found contract lookups for `Inference Method`, `Regression Plot`, the `[default]` sentinels, the `Group` arm default, and Reitsma matrix selectors. These retain their original keys. Tests and the packaged-smoke normalizer recognize the revised rendered labels where applicable.

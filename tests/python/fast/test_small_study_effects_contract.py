@@ -14,8 +14,7 @@ from rc_metastudio.analysis.small_study_effects import (
 
 
 @pytest.mark.parametrize("version", [None, True, 1.0, 2, "1"])
-def test_python_r_boundary_requires_exact_small_study_request_version(version, monkeypatch):
-    monkeypatch.setattr(r_operations, "_require_initialized_r", lambda: None)
+def test_python_r_boundary_requires_exact_small_study_request_version(version):
     request = {"data.type": "continuous", "metric": "MD"}
     if version is not None:
         request["version"] = version
