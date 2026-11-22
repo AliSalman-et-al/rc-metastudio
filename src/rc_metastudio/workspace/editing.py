@@ -516,7 +516,7 @@ class WorkspaceEditingService:
             return None
         if all_zero:
             return CellRejection(
-                "Diagnostic 2x2 table must contain at least one participant; "
+                "Diagnostic 2 × 2 table must contain at least one participant; "
                 "enter at least one count greater than zero."
             )
         return None

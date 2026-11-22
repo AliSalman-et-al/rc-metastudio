@@ -172,7 +172,7 @@ binary.fixed.inv.var.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Add the correction to every cell in each study with a zero cell, or to every cell in all studies.")
                           )
 }
 
@@ -245,15 +245,15 @@ binary.fixed.mh.value.info <- function() {
         b        = list(type="vector", description='estimated coefficients of the model.'),
         se       = list(type="vector", description='standard errors of the coefficients.'),
         zval     = list(type="vector", description='test statistics of the coefficients.'),
-        pval     = list(type="vector", description='p-values for the test statistics.'),
+        pval     = list(type="vector", description='P values for the test statistics.'),
         ci.lb    = list(type="vector", description='lower bound of the confidence intervals for the coefficients.'),
         ci.ub    = list(type="vector", description='upper bound of the confidence intervals for the coefficients.'),
         QE       = list(type="vector", description='test statistic for the test of (residual) heterogeneity.'),
-        QEp      = list(type="vector", description='p-value for the test of (residual) heterogeneity.'),
-        MH       = list(type="vector", description='Cochran-Mantel-Haenszel test statistic (measure="OR") or Mantel-Haenszel test statistic (measure="IRR").'),
-        MHp      = list(type="vector", description='corresponding p-value'),
+        QEp      = list(type="vector", description='P value for the test of (residual) heterogeneity.'),
+        MH       = list(type="vector", description='Cochran–Mantel–Haenszel test statistic (measure="OR") or Mantel–Haenszel test statistic (measure="IRR").'),
+        MHp      = list(type="vector", description='corresponding P value'),
         TA       = list(type="vector", description="Tarone's heterogeneity test statistic (only when measure=\"OR\")."),
-        TAp      = list(type="vector", description='corresponding p-value (only when measure="OR").'),
+        TAp      = list(type="vector", description='corresponding P value (only when measure="OR").'),
         k        = list(type="vector", description='number of tables included in the analysis.'),
         yi       = list(type="vector", description='the vector of outcomes'),
         vi       = list(type="vector", description='the corresponding sample variances'),
@@ -282,7 +282,7 @@ binary.fixed.mh.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Correct individual study estimates for studies with a zero cell or for all studies. Pooled MH estimates use the original counts.")
                           )
 }
 
@@ -361,11 +361,11 @@ binary.fixed.peto.value.info <- function() {
             b        = list(type="vector", description='estimated coefficients of the model.'),
             se       = list(type="vector", description='standard errors of the coefficients.'),
             zval     = list(type="vector", description='test statistics of the coefficients.'),
-            pval     = list(type="vector", description='p-values for the test statistics.'),
+            pval     = list(type="vector", description='P values for the test statistics.'),
             ci.lb    = list(type="vector", description='lower bound of the confidence intervals for the coefficients.'),
             ci.ub    = list(type="vector", description='upper bound of the confidence intervals for the coefficients.'),
             QE       = list(type="vector", description='test statistic for the test of heterogeneity.'),
-            QEp      = list(type="vector", description='p-value for the test of heterogeneity.'),
+            QEp      = list(type="vector", description='P value for the test of heterogeneity.'),
             k        = list(type="vector", description='number of tables included in the analysis'),
             yi       = list(type="vector", description='the vector of outcomes'),
             vi       = list(type="vector", description='the corresponding sample variances'),
@@ -394,7 +394,7 @@ binary.fixed.peto.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Correct individual study estimates for studies with a zero cell or for all studies. Pooled Peto estimates use the original counts.")
                          )
 }
 
@@ -483,12 +483,12 @@ binary.random.pretty.names <- function() {
 
     pretty.names <- list("pretty.name"="Binary random-effects",
                          "description" = "Performs random-effects meta-analysis.",
-                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
+                         "rm.method"=list("pretty.name"="Random-effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Add the correction to every cell in each study with a zero cell, or to every cell in all studies.")
                          )
 }
 

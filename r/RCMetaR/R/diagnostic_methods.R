@@ -7,7 +7,7 @@ bivariate.methods <- c("diagnostic.reitsma")
 
 diagnostic.summary.metric.name <- function(metric) {
     if (trimws(as.character(metric)) == "DOR") {
-        return("Diagnostic Odds Ratio")
+        return("Diagnostic odds ratio")
     }
     pretty.metric.name(metric)
 }
@@ -122,7 +122,7 @@ rcmetar.diagnostic.extract <- function(fit, params) {
     if (!is.list(fit)) stop("Diagnostic authority result must be a list.", call.=FALSE)
     metric <- as.character(params$measure %||% "")
     display.prefix <- diagnostic.summary.metric.name(metric)
-    summary.title <- paste(display.prefix, "Summary", sep=" ")
+    summary.title <- paste(display.prefix, "summary", sep=" ")
     plot.title <- paste(pretty.metric.name(metric), "forest plot", sep=" ")
     summary.key <- paste0("diagnostic.", metric, ".summary")
     plot.key <- paste0("diagnostic.", metric, ".forest")
@@ -233,7 +233,7 @@ diagnostic.fixed.inv.var.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Add the correction to every cell in each study with a zero cell, or to every cell in all studies."),
                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
                                         "NLR"="Negative likelihood ratio")
                           )
@@ -332,7 +332,7 @@ diagnostic.fixed.mh.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Correct individual study estimates for studies with a zero cell or for all studies. Pooled MH estimates use the original counts."),
                           "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
                                         "NLR"="Negative likelihood ratio")
                           )
@@ -437,7 +437,7 @@ diagnostic.fixed.peto.pretty.names <- function() {
                        "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                        "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                       "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
+                       "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Correct individual study estimates for studies with a zero cell or for all studies. Pooled Peto estimates use the original counts.")
                          )
 }
 
@@ -526,12 +526,12 @@ diagnostic.random.pretty.names <- function() {
 
     pretty.names <- list("pretty.name"="Diagnostic random-effects",
                          "description" = "Performs random-effects meta-analysis.",
-                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
+                         "rm.method"=list("pretty.name"="Random-effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Add the correction to every cell in each study with a zero cell, or to every cell in all studies."),
                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
                                         "NLR"="Negative likelihood ratio")
                          )

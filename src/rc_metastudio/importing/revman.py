@@ -36,7 +36,7 @@ def _configure_analysis(sheet, outcome, metric, differences):
             parameters={'rm.method': 'DL'} if random else {},
             fixed_effects=not random, covariates=[])
     else:
-        differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
+        differences.append(f'{name}: RevMan {method}, {"random (DerSimonian–Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
     if metric == 'SMD':
         differences.append("SMD: RC MetaStudio uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
 

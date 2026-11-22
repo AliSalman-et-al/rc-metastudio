@@ -151,9 +151,9 @@ def normalize_identifier_label(value: object) -> str:
     }
     for raw, display in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
         text = text.replace(raw, display)
-    text = re.sub(r"\bPr\s*\(>\|[^)]+\)", "p-value", text)
-    text = re.sub(r"\b(?:p[._-]?value|pval)\b", "p-value", text, flags=re.I)
-    text = re.sub(r"\b(?:z[._-]?value|zval)\b", "z-value", text, flags=re.I)
+    text = re.sub(r"\bPr\s*\(>\|[^)]+\)", "P value", text)
+    text = re.sub(r"\b(?:p[._ -]?value|pval)\b", "P value", text, flags=re.I)
+    text = re.sub(r"\b(?:z[._ -]?value|zval)\b", "z value", text, flags=re.I)
     text = re.sub(r"\b(?:I[._-]?squared|I2)\b", "I²", text, flags=re.I)
     text = re.sub(r"\b(?:tau[._-]?squared|tau2)\b", "τ²", text, flags=re.I)
     text = re.sub(r"(?<![A-Za-z])([A-Z]{2,})(?=[A-Z][a-z]|\b)", r"\1 ", text)

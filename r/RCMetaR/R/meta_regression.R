@@ -120,10 +120,10 @@ meta.regression.parameters <- function() {
 
 meta.regression.pretty.names <- function() {
     list(
-        "pretty.name"="Meta-Regression",
+        "pretty.name"="Meta-regression",
         "description"="Models study-level covariates as predictors of effect estimates.",
         "rm.method"=list(
-            "pretty.name"="Random-Effects method",
+            "pretty.name"="Random-effects method",
             "description"="Method for estimating residual between-study heterogeneity",
             "rm.method.names"=rcmetar.random.effects.method.names()),
         "inference.method"=rcmetar.inference.method.metadata(),

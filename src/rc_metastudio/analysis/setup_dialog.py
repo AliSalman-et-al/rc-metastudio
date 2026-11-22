@@ -1108,10 +1108,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
         fits = self._diagnostic_fit_details()
         applied_parameters = self._applied_parameters()
+        moderators = [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else []
         identity, details = analysis_identity.result_identity(
             self.model, self.analysis_type, self._result_metric_label(),
             model_label, applied_parameters, self.confidence_level,
-            [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            moderators,
             fits=fits,
         )
         context = self._result_context(applied_parameters)
@@ -1124,7 +1125,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits, result.inference_methods,
+                                self.analysis_type, moderators, fits, result.inference_methods,
                                 missing_years=any(not study.year for study in self._manuscript_studies()))
         correction = context.partition(". ")[2]
         if correction:

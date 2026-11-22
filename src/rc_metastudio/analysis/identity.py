@@ -15,7 +15,7 @@ def workflow_label(workflow):
     return {
         "cumulative": "Cumulative meta-analysis",
         "leave-one-out": "Leave-one-out meta-analysis",
-        "trial-sequential": "Trial Sequential Analysis",
+        "trial-sequential": "Trial sequential analysis",
         "subgroup": "Subgroup meta-analysis",
         "meta-regression": "Meta-regression",
     }.get(workflow, "Meta-analysis")
@@ -78,7 +78,7 @@ def metric_label(model, metric=None):
     subtype = model.get_current_data_subtype()
     metric = metric or model.current_effect
     if metric == "Mean":
-        return {"mean": "Mean", "reg_coef": "Regression coefficient", "generic_effect": "Entered effect"}.get(subtype, "Mean")
+        return {"mean": "Mean", "reg_coef": "Regression coefficient", "generic_effect": "Entered effect estimate"}.get(subtype, "Mean")
     return analysis_catalog.ALL_METRIC_NAMES.get(metric, metric)
 
 

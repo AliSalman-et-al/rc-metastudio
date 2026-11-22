@@ -598,7 +598,7 @@
     summary <- c(
         paste0("Effect measure: ", .small.study.metric.label(metric), " (", metric, ")"),
         paste0("Studies analyzed: ", length(prepared$y)),
-        paste0("Confidence level: ", .small.study.confidence.label(prepared$confidence.level)),
+        paste0("Confidence level: ", format(prepared$confidence.level, trim=TRUE), "%"),
         paste0("Primary test: ", if (primary.name == "None") "None available" else .small.study.method.label(primary.name))
     )
     if (metric != "DOR" && length(prepared$se)) summary <- c(

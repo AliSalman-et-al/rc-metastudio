@@ -421,7 +421,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             (self.sroc_extrapolate, "Extrapolate SROC curve", "Extend the SROC curve to the full 0–1 range."),
             (self.sroc_show_confidence, "Show SROC confidence region", "Show or hide the confidence region."),
             (self.sroc_show_prediction, "Show SROC prediction region", "Show or hide the joint prediction region."),
-            (self.sroc_show_summary, "Show SROC summary point", "Show or hide the summary point."),
+            (self.sroc_show_summary, "Show summary operating point", "Show or hide the summary operating point."),
             (self.sroc_show_auc, "Show normalized partial SROC AUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
             (self.sroc_show_curve_legend, "Show SROC curve legend", "Show or hide the curve legend."),
             (self.sroc_show_marker_legend, "Show SROC marker-size legend", "Show or hide the marker-size legend."),

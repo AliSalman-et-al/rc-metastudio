@@ -107,8 +107,8 @@ reg.output.helper <- function(theData, rma.results, model.formula, digits) {
 
 permutest.value.info <- function(retpermdist, meta.reg.mode=TRUE) {
 	info = list(
-			pval = list(type="vector", description='p-value(s) based on the permutation test.'),
-			QMp = list(type="vector", description='p-value for the omnibus test of coefficients based on the permutation test.')
+			pval = list(type="vector", description='P value(s) based on the permutation test.'),
+			QMp = list(type="vector", description='P value for the omnibus test of coefficients based on the permutation test.')
 	)
 
 	if (retpermdist) {

@@ -66,6 +66,7 @@ CONTINUOUS_IMPUTATION_FIELD_NAMES = {
     "high": "high",
     "P-Value": "pval",
     "P value": "pval",
+    "p-value": "pval",
     "pval": "pval",
 }
 
@@ -380,7 +381,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             combo.setItemData(index, combo.itemText(index), Qt.ItemDataRole.ToolTipRole)
         view = combo.view()
         if not isinstance(view, QTreeView):
-            raise RuntimeError("Continuous metric combo requires a tree view")
+            raise RuntimeError("The continuous effect measure selector requires a tree view.")
         view.resizeColumnToContents(0)
 
     def _bound_effect_popup_to_screen(self):
@@ -389,7 +390,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             combo = self.effect_combo_box
             view = combo.view()
             if not isinstance(view, QTreeView):
-                raise RuntimeError("Continuous metric combo requires a tree view")
+                raise RuntimeError("The continuous effect measure selector requires a tree view.")
             popup = view.window()
             popup = required(popup, "continuous metric popup")
             available = adaptive_window.available_geometry_for_window(self)
@@ -1560,7 +1561,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
     def _effect_display_label(self, effect):
         if effect == "Mean":
-            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect"}.get(self.analysis_unit.sheet.sub_type, "Mean")
+            return {"reg_coef": "Coefficient", "generic_effect": "Entered effect estimate"}.get(self.analysis_unit.sheet.sub_type, "Mean")
         return "%s (%s)" % (CONTINUOUS_METRIC_NAMES.get(effect, effect), effect)
 
     def _selected_effect(self):

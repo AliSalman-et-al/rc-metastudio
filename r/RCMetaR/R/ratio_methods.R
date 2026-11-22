@@ -219,7 +219,7 @@ ratio.sequential <- function(data, request, suppressed) {
     fits <- .rcmetar.sequential.fits(data, loo, fit, fit(data))
     labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, loo)
     model.title <- paste(pretty.metric.name(data@metric),
-        if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
+        if (loo) "Leave-one-out meta-analysis" else "Cumulative meta-analysis")
     disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=loo)
     result <- list("Sequential summary"=disp,
@@ -249,7 +249,7 @@ ratio.pretty.names <- function(method) {
     values$pretty.name <- if (endsWith(method, ".mh")) "Mantel\u2013Haenszel (raw IRR)" else if (endsWith(method, ".random")) "Random-effects inverse variance" else "Fixed-effect inverse variance"
     values$description <- "Pools log hazard or incidence rate ratios; results are displayed as ratios."
     values$adjust <- list(pretty.name="Continuity correction", description="Added to both event counts; person-time is unchanged. MH pooling uses original counts.")
-    values$to <- list(pretty.name="Apply correction to", to.names=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), description="Choose which studies receive the continuity correction. This choice is applied before any subset analyses.")
+    values$to <- list(pretty.name="Apply correction to", to.names=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), description="Choose which studies receive the continuity correction. This choice is applied before any subset analyses.")
     values$drop00 <- list(pretty.name="Exclude studies with zero events in both arms", description="Exclude studies with zero events in both arms from inverse-variance analyses; retain original counts for Mantel\u2013Haenszel pooling.")
     values
 }

@@ -696,7 +696,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     label <- pretty.metric.name(as.character(params$measure),
                                 if (cumulative) params$metric.label else NULL)
     summary.key <- if (cumulative) "Cumulative summary" else "Summary"
-    result <- list(summary=setNames(list(fit[[summary.key]]), paste(label, "Summary")),
+    result <- list(summary=setNames(list(fit[[summary.key]]), paste(label, "summary")),
                    references=fit$References)
     if (!(workflow == "subgroup" && !is.null(params$create.plot))) {
         if (length(fit$images)) {

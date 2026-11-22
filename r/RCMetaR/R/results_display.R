@@ -131,7 +131,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
 
   random <- !res$method %in% c("FE", "EE", "CE", "MH", "PETO")
   het.columns <- seq_len(4L + as.integer(random))
-  het.col.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")[het.columns]
+  het.col.labels <- c("Q", "df", "P value", "I\u00b2", "\u03c4\u00b2")[het.columns]
   het.col.vals <- c(QE, if (display.value.is.missing(res$QE)) "" else degf,
                     QEp, I2, tau2)[het.columns]
   het.raw <- c(res$QE %||% NA_real_, if (display.value.is.missing(res$QE)) NA_real_ else degf,
@@ -150,7 +150,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
 
   calculation.table <- NULL
   if (scale.str %in% c("log", "logit", "arcsine")) {
-    res.col.labels <- c("Estimate", display.confidence.interval.labels(params), "p-value")
+    res.col.labels <- c("Estimate", display.confidence.interval.labels(params), "P value")
     res.col.vals <- c(y.disp, lb.disp, ub.disp, pVal)
     res.array <- rbind(res.col.labels, res.col.vals)
     estCalc <- rcmetar.format.effect.number(res$b, result.digits)
@@ -173,7 +173,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
       c("estimate", "ci_lower", "ci_upper", "se"), c(res$b, res$ci.lb, res$ci.ub, res$se),
       analysis.scale, c(NA, level, level, NA))
   } else {
-    col.labels <- c("Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
+    col.labels <- c("Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "P value")
     col.vals <- c(y.disp, lb.disp, ub.disp, se, pVal)
     res.array <- rbind(col.labels, col.vals)
     arrays = list(arr1=res.array, arr2=het.array)
@@ -189,7 +189,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   }
   if (!is.null(res$zval)) {
     use.t <- !is.null(res$test) && res$test %in% c("t", "knha", "adhoc")
-    overall <- rbind(c(if (use.t) "t" else "Z", "p-value"),
+    overall <- rbind(c(if (use.t) "t" else "Z", "P value"),
                      c(rcmetar.format.effect.number(res$zval, result.digits), pVal))
     if (use.t) overall <- cbind(overall, c("df", as.character(res$dfs)))
     overall <- rcmetar.numeric.fields(overall, seq_len(ncol(overall)),
@@ -230,7 +230,7 @@ rcmetar.add.subgroup.test <- function(summary, plot.data, params) {
   if (is.null(test)) return(summary)
   use.f <- !is.null(test$test) && test$test %in% c("t", "knha", "adhoc")
   df <- if (use.f) paste(test$df, test$df2, sep=", ") else test$df
-  table <- rbind(c("Test", "Statistic", "df", "p-value"),
+  table <- rbind(c("Test", "Statistic", "df", "P value"),
                  c(if (use.f) "Subgroup differences (F)" else "Subgroup differences (Q)",
                    rcmetar.format.effect.number(test$QM, display.digits(params)), df,
                    format.p.value.display(test$QMp, params$digits)))
@@ -331,17 +331,17 @@ create.regression.display <- function(res, params, display.data) {
     col.labels <- if (bootstrap.type == "boot.meta.reg") {
       c("Covariate", "Estimate", ci.labels)
     } else if (t.inference) {
-      c("Covariate", "Estimate", ci.labels, "Std. error", "t", "df", "p-value")
+      c("Covariate", "Estimate", ci.labels, "Std. error", "t", "df", "P value")
     } else {
-      c("Covariate", "Estimate", ci.labels, "Std. error", "z", "p-value")
+      c("Covariate", "Estimate", ci.labels, "Std. error", "z", "P value")
     }
   } else {
     col.labels <- if (bootstrap.type == "boot.meta.reg") {
       c("Covariate", "Level", "Studies", "Estimate", ci.labels)
     } else if (t.inference) {
-      c("Covariate", "Level", "Studies", "Estimate", ci.labels, "Std. error", "t", "df", "p-value")
+      c("Covariate", "Level", "Studies", "Estimate", ci.labels, "Std. error", "t", "df", "P value")
     } else {
-      c("Covariate", "Level", "Studies", "Estimate", ci.labels, "Std. error", "z", "p-value")
+      c("Covariate", "Level", "Studies", "Estimate", ci.labels, "Std. error", "z", "P value")
     }
   }
 
@@ -411,7 +411,7 @@ create.regression.display <- function(res, params, display.data) {
     reg.array[2:n.rows, "Std. error"] <- se.tmp
     reg.array[2:n.rows, if (t.inference) "t" else "z"] <- statistics.tmp
     if (t.inference) reg.array[2:n.rows, "df"] <- dfs.tmp
-    reg.array[2:n.rows, "p-value"] <- pvals.tmp
+    reg.array[2:n.rows, "P value"] <- pvals.tmp
   }
   class(reg.array) <- "summary.data"
   arrange <- function(x) {
@@ -424,7 +424,7 @@ create.regression.display <- function(res, params, display.data) {
     }
     out
   }
-  raw.columns <- match(c("Estimate", ci.labels, if (bootstrap.type != "boot.meta.reg") c("Std. error", if (t.inference) "t" else "z", if (t.inference) "df", "p-value")), col.labels)
+  raw.columns <- match(c("Estimate", ci.labels, if (bootstrap.type != "boot.meta.reg") c("Std. error", if (t.inference) "t" else "z", if (t.inference) "df", "P value")), col.labels)
   raw.roles <- c("estimate", "ci_lower", "ci_upper", if (bootstrap.type != "boot.meta.reg") c("se", "statistic", if (t.inference) "df", "p"))
   raw.values <- c(arrange(res$b), arrange(res$ci.lb), arrange(res$ci.ub),
     if (bootstrap.type != "boot.meta.reg") c(arrange(res$se), arrange(res$zval), if (t.inference) arrange(dfs), arrange(res$pval)))
@@ -434,7 +434,7 @@ create.regression.display <- function(res, params, display.data) {
 
   metric.name <- rcmetar.display.metric.name(params)
   if (bootstrap.type == "boot.meta.reg") {
-    model.title <- paste("Bootstrapped Meta-Regression based on ", params$num.bootstrap.replicates,
+    model.title <- paste("Bootstrapped meta-regression based on ", params$num.bootstrap.replicates,
                          " replicates.\n\n", params$extra.attempts,
                          " resampling attempts failed.\n\nEffect measure: ", metric.name, sep="")
     reg.disp <- list(model.title=model.title, table.titles="Coefficient estimates",
@@ -563,7 +563,7 @@ create.regression.display <- function(res, params, display.data) {
   test.rows[[length(test.rows) + 1]] <- rcmetar.regression.test.row(
     "Residual heterogeneity (Q\u2091)", res$QE, residual.df, residual.p,
     NULL, params$digits)
-  tests <- rcmetar.regression.summary.array(test.rows, c("Test", "Statistic", "df", "p-value"))
+  tests <- rcmetar.regression.summary.array(test.rows, c("Test", "Statistic", "df", "P value"))
   raw.tests[[length(raw.tests)+1L]] <- c(res$QE, residual.df, NA_real_, residual.p)
   tests <- rcmetar.numeric.fields(tests, c(2L, 3L, 3L, 4L), c("statistic", "df", "df2", "p"), do.call(rbind, raw.tests))
   arrays <- c(arrays, list(rcmetar.table(tests, "model_tests", params, res$test, label.column=0L)))
@@ -691,7 +691,7 @@ create.overall.display <- function(res, study.names, params, model.title, data.t
   transform <- rcmetar.transform.by.name(transform.name, params$measure)
   overall.array <- array(dim=c(length(study.names) + 1, 6))
 
-  overall.array[1,] <- c(if (workflow == "cumulative") "Study added" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value")
+  overall.array[1,] <- c(if (workflow == "cumulative") "Study added" else "Study omitted", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "P value")
   raw <- matrix(NA_real_, nrow=length(study.names), ncol=5)
 
   for (count in 1:length(res)) {
@@ -755,7 +755,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   transform <- rcmetar.transform.by.name(transform.name, params$measure)
   subgroup.array <- array(dim=c(length(study.names) + 1, 8))
   random <- vapply(res, function(fit) inherits(fit, "rma.uni") && !fit$method %in% c("FE", "EE", "CE"), logical(1))
-  het.headers <- c("Subgroups", "Q", "df", "p-value", "I\u00b2", if (any(random)) "\u03c4\u00b2")
+  het.headers <- c("Subgroups", "Q", "df", "P value", "I\u00b2", if (any(random)) "\u03c4\u00b2")
   het.array <- matrix("", nrow=length(study.names) + 1, ncol=length(het.headers))
   prediction.array <- matrix("", nrow=length(study.names) + 1, ncol=3)
   prediction.array[1,] <- c("Subgroups", paste0("Lower bound (", display.confidence.level(params), "% PI)"),
@@ -768,8 +768,8 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   prediction.scales <- character(length(study.names))
 
   overall.test <- res[[length(res)]]$test
-  statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t-value" else "z-value"
-  subgroup.array[1,] <- c("Subgroups", "k", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "p-value", statistic.label)
+  statistic.label <- if (!is.null(overall.test) && overall.test %in% c("t", "knha", "adhoc")) "t value" else "z value"
+  subgroup.array[1,] <- c("Subgroups", "k", "Estimate", display.confidence.interval.labels(params), display.standard.error.label(params), "P value", statistic.label)
   het.array[1,] <- het.headers
   for (count in 1:length(study.names)) {
     row <- rcmetar.subgroup.display.row(res[[count]], study.names[count], params,

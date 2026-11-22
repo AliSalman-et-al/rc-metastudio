@@ -8,16 +8,16 @@ rcmetar.summary.label <- function(value) {
   compact <- trimws(compact)
 
   if (compact == "p value") {
-    return("p-value")
+    return("P value")
   }
   if (compact == "het p value") {
     return("Heterogeneity P value")
   }
   if (compact == "omnibus p value") {
-    return("Omnibus p-value")
+    return("Omnibus P value")
   }
   if (compact == "z value") {
-    return("z-value")
+    return("z value")
   }
   normalized
 }
@@ -242,7 +242,7 @@ rcmetar.random.effects.method.names <- function() {
     HS="Hunter\u2013Schmidt",
     HSk="Hunter\u2013Schmidt with small-sample correction",
     SJ="Sidik\u2013Jonkman",
-    ML="Maximum Likelihood",
+    ML="Maximum likelihood",
     REML="Restricted maximum likelihood",
     EB="Empirical Bayes",
     PM="Paule\u2013Mandel",

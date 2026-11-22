@@ -53,7 +53,7 @@ class StartPage(QtWidgets.QScrollArea):
         buttons = []
         for action, caption, description in (
             (create_action, 'New project…', 'Start with your first outcome and effect measure, then enter study data.'),
-            (import_action, 'Import data…', 'Choose a study data file and review it before adding an outcome.'),
+            (import_action, 'Import data…', 'Import Excel, CSV, or RevMan (.rm5) files and review them before adding an outcome.'),
             (open_action, 'Open project…', 'Continue working with a saved .rcms project.'),
         ):
             card = QtWidgets.QGroupBox(content)

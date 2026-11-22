@@ -1155,10 +1155,8 @@ class BinaryBackCalculationDialog(
         self.choice1_btn.setText(option1_txt)
         self.choice2_btn.setText(option2_txt)
         self.info_label.setText(
-            "The back-calculation has resulted in two "
-            "possible sets of choices for the counts. Please"
-            " choose one from below. These choices do not "
-            "reflect possible corrections for zero counts."
+            "Two count combinations match the entered estimate and confidence interval. Choose one below. "
+            "Neither includes a continuity correction for zero counts."
         )
 
         self._layout_controller.request_content_refit()

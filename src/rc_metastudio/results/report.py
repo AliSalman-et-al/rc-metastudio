@@ -78,7 +78,7 @@ def _inference_prose(parameters, confidence, applied_inference: tuple[str, ...])
 
 
 
-def methods_prose(metric, model, parameters, confidence, workflow, details, fits, applied_inference: tuple[str, ...]=(), *, missing_years=False):
+def methods_prose(metric, model, parameters, confidence, workflow, moderators, fits, applied_inference: tuple[str, ...]=(), *, missing_years=False):
     plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
               "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, (metric[:1].upper() + metric[1:]) + " estimates")
     sentence = f"{plural} were pooled using a {model} model"
@@ -103,7 +103,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
     inference = _inference_prose(parameters, confidence, applied_inference)
     if inference:
         parts.append(inference)
-    parts.extend(_workflow_prose(workflow, parameters, details, missing_years=missing_years))
+    parts.extend(_workflow_prose(workflow, parameters, moderators, missing_years=missing_years))
     if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
         parts.append('Regression coefficients and their confidence intervals are on the log scale.')
     if joint:
@@ -133,6 +133,8 @@ def _p_clause(value):
 def _row(table, index):
     numbers = table.quantities[index] if table.quantities else ((),) * len(table.headers)
     values, quantities = dict(zip(table.headers, table.rows[index])), dict(zip(table.headers, numbers))
+    if 'P value' in values:
+        values['p-value'], quantities['p-value'] = values['P value'], quantities['P value']
     _alias_quantity_fields(table, numbers, values, quantities)
     if table.label_column is not None:
         values[_row_context_label(table)] = table.rows[index][table.label_column]
@@ -1049,14 +1051,19 @@ def paint_figure(painter, source, rect):
         painter.drawImage(rect, source)
 
 
-def _workflow_prose(workflow, parameters, details, *, missing_years=False):
+def _workflow_prose(workflow, parameters, moderators, *, missing_years=False):
     parts = []
     if workflow == 'subgroup':
         parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
     elif workflow == 'meta-regression':
-        moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
         if moderators:
-            parts.append(f"The meta-regression model included {moderators}.")
+            if len(moderators) == 1:
+                names = moderators[0]
+            elif len(moderators) == 2:
+                names = ' and '.join(moderators)
+            else:
+                names = ', '.join(moderators[:-1]) + ', and ' + moderators[-1]
+            parts.append(f"The meta-regression model included {names}.")
     elif workflow == 'cumulative':
         sequence = {'table': 'study table order', 'year': 'publication-year order (earliest first)',
                     'effect': 'ascending order of the individual study effect estimates'}.get(parameters.get('cum_sequence', 'table'), 'study table order')

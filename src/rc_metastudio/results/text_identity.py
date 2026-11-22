@@ -5,7 +5,7 @@ import re
 
 _HETEROGENEITY_HEADER = re.compile(r"(?m)^(\s*)τ²(?=\s+Q(?:\(|\s))")
 _TRAILING_HETEROGENEITY_HEADER = re.compile(
-    r"(?m)^([ \t]*Q[ \t]+df[ \t]+p-value[ \t]+I²[ \t]+)τ²(?=[ \t]*$)"
+    r"(?m)^([ \t]*Q[ \t]+df[ \t]+(?:P[ \t]+value|p-value)[ \t]+I²[ \t]+)τ²(?=[ \t]*$)"
 )
 _CONFIDENCE_BOUND_HEADER = re.compile(
     r"\b(?P<bound>Lower|Upper) bound \([0-9]+(?:\.[0-9]+)?% CI\)"

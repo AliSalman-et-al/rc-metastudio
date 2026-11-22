@@ -213,9 +213,9 @@ rcmetar.bmj.metric.label <- function(bundle) {
     label <- rcmetar.forest.journal.metric.label(bundle)
     switch(
         label,
-        "Risk difference"="Risk difference",
-        "Mean difference"="Mean difference",
-        "Standardized mean difference"="Standardized mean difference",
+        "Risk Difference"="Risk difference",
+        "Mean Difference"="Mean difference",
+        "Standardized Mean Difference"="Standardized mean difference",
         label
     )
 }

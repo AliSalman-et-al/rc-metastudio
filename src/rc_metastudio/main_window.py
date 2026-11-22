@@ -1432,7 +1432,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         result = wizard.get_results()
         if result["path"] != "new_dataset":
-            raise RuntimeError("Add outcome requires a new sheet")
+            raise RuntimeError("Add outcome requires a new outcome.")
         sheet = self._sheet_from_dataset_info(result["outcome_info"])
         def add():
             self.model.dataset.sheets.append(sheet)

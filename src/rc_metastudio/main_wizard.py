@@ -440,7 +440,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             for metric in metric_choices:
                 metric_pretty_name = analysis_catalog.ALL_METRIC_NAMES[metric]
                 if metric == "Mean":
-                    metric_pretty_name = {"generic_effect": "Entered effect", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
+                    metric_pretty_name = {"generic_effect": "Entered effect estimate", "reg_coef": "Regression coefficient"}.get(dataset_info["sub_type"], "Mean")
                 self.metric_cbo_box.addItem(
                     ({"PFT": "Freeman–Tukey double-arcsine transformed proportion", "PR": "Proportion", "OR": "Odds ratio (OR)", "RR": "Risk ratio (RR)", "RD": "Risk difference (RD)", "MD": "Mean difference", "SMD": "Standardized mean difference (SMD)"}.get(metric, metric_pretty_name[:1] + metric_pretty_name[1:].lower())) if metric != "Mean" else metric_pretty_name, userData=str(metric)
                 )
@@ -669,7 +669,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def load_file(self, selected_path):
         if Path(selected_path).suffix.lower() not in (".csv", ".xlsx", ".xls"):
-            QMessageBox.information(self, "Import data", "Choose a study data file (.xlsx or .csv).")
+            QMessageBox.information(self, "Import data", "Choose a CSV or Excel (.xlsx) file.")
             return
         self.file_path = qt_text.to_native_text(selected_path)
         self._mapping_key = None
@@ -1116,7 +1116,7 @@ class MainWizard(QWizard):
             self.accept()
             return True
         if suffix not in (".csv", ".xlsx"):
-            QMessageBox.information(self, "Import data", "Choose a study data file (.xlsx, .csv, or .rm5).")
+            QMessageBox.information(self, "Import data", "Choose a CSV, Excel (.xlsx), or RevMan (.rm5) file.")
             return False
         self.set_wizard_path("csv_import")
         if self.get_dataset_info() is None:

@@ -157,10 +157,10 @@ def make_analysis_request(
     normalized_data_type = _analysis_family(data_type)
     normalized_method = _required_text("analysis method", method)
     normalized_workflow = _analysis_workflow(workflow or "standard")
-    normalized_metric = _required_text("metric", metric)
+    normalized_metric = _required_text("effect measure", metric)
     if normalized_metric not in FAMILY_METRICS[normalized_data_type]:
         raise ValueError(
-            f"metric {normalized_metric!r} is not valid for {normalized_data_type} analysis"
+            f"Effect measure {normalized_metric!r} is not valid for {normalized_data_type} analysis"
         )
     normalized_parameters = tuple(
         AnalysisParameter(_required_text("parameter name", name), _native_value(value))

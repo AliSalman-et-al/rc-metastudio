@@ -7,6 +7,7 @@ import io
 import time
 import cProfile
 import os
+import re
 import shutil
 import sys
 import traceback
@@ -1939,7 +1940,8 @@ def calculator(app, window, family):
                             scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum())
                 dialog.content_scroll.verticalScrollBar().setValue(0)
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
-                assert "SE" in dialog.wald_readout.text() and "two-sided P" in dialog.wald_readout.text()
+                readout = dialog.wald_readout.text()
+                assert "SE" in readout and re.search(r"two-sided P [=<] \d\.\d{3}\b", readout), readout
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 header = required(dialog.metric_readout.horizontalHeader())
                 for col, width in enumerate(widths):

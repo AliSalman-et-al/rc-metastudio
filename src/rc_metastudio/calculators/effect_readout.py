@@ -135,7 +135,7 @@ def _wald_summary(data_type, current_effect, est, se) -> str:
     if data_type != "diagnostic" and se > 0:
         z = est / se
         p = math.erfc(abs(z) / math.sqrt(2))
-        p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
+        p_text = "< 0.001" if p < 0.001 else f"= {p:.3f}"
         summary += f"  ·  z = {z:.4f}  ·  two-sided P {p_text}"
     return summary
 

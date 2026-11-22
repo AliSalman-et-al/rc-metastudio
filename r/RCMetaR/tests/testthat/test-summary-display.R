@@ -231,8 +231,8 @@ test_that("summary display uses readable labels and aligned columns", {
   heterogeneity.header <- first_line_after(rendered, "Heterogeneity")
   heterogeneity.values <- next_non_empty_line(rendered, heterogeneity.header)
 
-  model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "p-value")
-  heterogeneity.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")
+  model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "P value")
+  heterogeneity.labels <- c("Q", "df", "P value", "I\u00b2", "\u03c4\u00b2")
   expect_values_inside_header_columns(model.header, model.values, model.labels)
   expect_values_inside_header_columns(heterogeneity.header, heterogeneity.values, heterogeneity.labels)
 })
@@ -279,7 +279,7 @@ test_that("overall display leaves unavailable p-values blank", {
   display <- overall_display_fixture()
   overall <- display$arrays$arr1
 
-  p.column <- match("p-value", overall[1,])
+  p.column <- match("P value", overall[1,])
   expect_equal(overall[2, p.column], "")
   expect_equal(overall[3, p.column], "0.277")
 })

@@ -184,7 +184,7 @@ def run(app, window, work, record, scenario):
             from advanced_workflows import modal
             from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
             def inspect_calculator(dialog):
-                label = "Entered effect" if selected_family == "generic-effect" else "Coefficient"
+                label = "Entered effect estimate" if selected_family == "generic-effect" else "Coefficient"
                 assert dialog.effect_combo_box.currentText() == label, dialog.effect_combo_box.currentText()
                 assert dialog.input_mode_combo.currentData() == "estimate"
                 assert not dialog.simple_group.isVisible()

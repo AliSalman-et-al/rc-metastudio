@@ -48,7 +48,7 @@ def capture_sensitivity(view, record, case, report):
     assert "Sensitivity analyses repeated the analysis with alternative anticipated intervention effects." in view.manuscript.methods
     if case == "bcg":
         assert table.rows[0][:3] == ("Primary (default)", "0.68", "30.7%")
-        assert "Crosses monitoring boundary below the null" in table.rows[0]
+        assert "Crosses monitoring boundary favoring BCG vaccine" in table.rows[0]
         assert "1,232,589" in table.rows[1]
     columns = [i for i, header in enumerate(table.headers) if header not in ("Scenario", "Conclusion")]
     document = Document(str(Path(report["directory"]) / "report.docx"))
@@ -135,7 +135,7 @@ def check_artwork(path, case, style, contract, *, percent=False):
         units = "percent" if percent else "participants"
         assert ticks[-2] == contract["peto"]["join_tick"][units], ticks
     favours = [node for node in text_nodes if (node.text or "").startswith("Favors")]
-    if case in ("bcg", "peto", "hr"):
+    if case in ("peto", "hr"):
         assert not favours, labels
     else:
         assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
@@ -219,6 +219,7 @@ def run(app, window, work, record, case):
         if case == "bcg":
             default_view.close()
             assert window.open(str(path), raise_on_error=True)
+            window.model.current_sheet.settings["effect_direction"] = "below"
 
     if case == "md":
         def run_calculated(dialog):
@@ -241,7 +242,7 @@ def run(app, window, work, record, case):
         assert window.open(str(path), raise_on_error=True)
 
     comparison = {
-        "bcg": "crossed the monitoring boundary below the null",
+        "bcg": f"crossed the monitoring boundary favoring {window.model.arm_names[0]}",
         "rr-mh": "crossed the futility boundary",
         "md": "crossed neither a monitoring nor a futility boundary",
         "hr": "crossed the monitoring boundary below the null",
@@ -258,8 +259,12 @@ def run(app, window, work, record, case):
         original = dialog.effect.text()
         if case == "bcg":
             assert original == "0.6835" and dialog.control.text() == "4.49"
-            assert dialog.test.itemText(1) == "One-sided (below the null)"
-            assert dialog.test.itemText(2) == "One-sided (above the null)"
+            labels = tuple(dialog.test.itemText(i) for i in (1, 2))
+            assert labels == tuple(f"One-sided (favoring {arm})" for arm in window.model.arm_names), labels
+            dialog.test.showPopup()
+            app.processEvents()
+            record("tsa-dialog-named-arms", dialog, dialog.test.view(), input=str(path), choices=labels)
+            dialog.test.hidePopup()
             record("tsa-dialog-default", dialog, input=str(path), effect=original, control=dialog.control.text())
             for field, value in ((dialog.effect, ".7"), (dialog.control, "5.00")):
                 field.selectAll()
@@ -463,6 +468,11 @@ def run(app, window, work, record, case):
     app.processEvents()
     record("tsa-report", view, results=view.manuscript.results)
     report = capture(view, work / "reports")
+    if case == "bcg":
+        assert comparison is not None
+        for surface in ("copy", "pdf", "docx"):
+            rendered = (Path(report["directory"]) / f"{surface}.txt").read_text(encoding="utf-8")
+            assert comparison in " ".join(rendered.split()), rendered
     # Poppler emits continuations of split HR cells in page order. DOCX,
     # clipboard and CSV still compare every cell in table order.
     assert_exports(view, report, pdf_ordered=case != "hr")

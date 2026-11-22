@@ -20,18 +20,13 @@ _KNOWN_METHOD_LABELS = {
 
 _RAW_METHOD_KEY_RE = re.compile(r"^[a-z]+(?:\.[a-z0-9]+)+$")
 _TOKEN_LABELS = {
-    "binary": "Binary",
-    "continuous": "Continuous",
-    "diagnostic": "Diagnostic",
-    "fixed": "Fixed-Effect",
-    "random": "Random-Effects",
-    "inv": "Inverse",
-    "var": "Variance",
+    "fixed": "fixed-effect",
+    "random": "random-effects",
+    "inv": "inverse",
+    "var": "variance",
     "mh": "Mantel–Haenszel",
     "peto": "Peto",
-    "ml": "Maximum likelihood (ML)",
-    "meta": "Meta",
-    "regression": "Regression",
+    "ml": "maximum likelihood (ML)",
 }
 
 _KNOWN_PARAMETER_VALUE_LABELS = {
@@ -77,7 +72,6 @@ _KNOWN_PARAMETER_LABELS = {
 _PARAMETER_DESCRIPTIONS = {
     'rm.method': 'Between-study variance (heterogeneity) estimator.',
     'estimator': 'REML: restricted maximum likelihood; ML: maximum likelihood.',
-    'to': 'Which studies receive the continuity correction.',
     'adjust': 'Value added to each cell of a 2×2 table that needs correction.',
     'conf.level': 'Confidence level for intervals.',
     'digits': 'Decimal places for estimates and intervals. P values show at least 3.',
@@ -97,7 +91,8 @@ def method_display_label(method_key_or_label):
         return _KNOWN_METHOD_LABELS[text]
     if not _RAW_METHOD_KEY_RE.match(text):
         return text
-    return " ".join(_TOKEN_LABELS.get(token, token.title()) for token in text.split("."))
+    label = " ".join(_TOKEN_LABELS.get(token, token) for token in text.split("."))
+    return label[:1].upper() + label[1:]
 
 
 def method_labels_by_id(methods_by_label: dict[str, str]) -> dict[str, str]:
@@ -147,15 +142,5 @@ def diagnostic_metric_group_display_label(group_key):
 
 
 def _label_from_key(key):
-    key = str(key)
-    if "." in key:
-        return " ".join(_label_from_token(token) for token in key.split("."))
-    if "_" in key:
-        return " ".join(_label_from_token(token) for token in key.split("_"))
-    return _label_from_token(key)
-
-
-def _label_from_token(token):
-    if token.lower() in _TOKEN_LABELS:
-        return _TOKEN_LABELS[token.lower()]
-    return token[:1].upper() + token[1:]
+    label = " ".join(_TOKEN_LABELS.get(token.lower(), token) for token in re.split(r"[._]", str(key)))
+    return label[:1].upper() + label[1:]

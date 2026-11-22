@@ -8,11 +8,12 @@ import subprocess
 from pathlib import Path
 import sys
 import unicodedata
+from unittest.mock import patch
 from uuid import uuid4
 import xml.etree.ElementTree as ET
 
 from docx import Document
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QFileDialog
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
 from rc_metastudio.results.report import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
@@ -257,11 +258,11 @@ def expected_effect_values(values, headers, low, high, metric, vertical, title, 
             continue
         context = next((row[h] for h in headers if h.startswith(('Study added', 'Study omitted'))), title if vertical else metric)
         label = row.get('Term', row.get('Subgroups', row.get('Level', row.get(label_header, context))))
-        statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z-value', 't-value') if h in row or h in overall), '—')
+        statistic = next((row.get(h, overall.get(h)) for h in ('t', 'z', 'Z', 'z value', 't value') if h in row or h in overall), '—')
         se_header, se = next(((key, value) for key, value in {**calculation, **row}.items() if key.startswith('SE')), ('SE', '—'))
         se_scale = se_header.removeprefix('SE').strip() or '—'
 
-        rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, se_scale, statistic, expected_p(row.get('p-value', overall.get('p-value', '')))))
+        rows.append((label[:1].upper() + label[1:], row['Estimate'], row[low] + ' to ' + row[high], se, se_scale, statistic, expected_p(row.get('P value', overall.get('P value', '')))))
     return rows
 
 
@@ -315,7 +316,7 @@ def expected_fit_table(result, section, source):
     elif 'Estimate' in headers and low and high and source.role in ('pooled', 'coefficients'):
         rows.extend(('Studies in ' + row['Subgroups'] + ' (k)', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Subgroups'].casefold() != 'overall' and row['Estimate'])
     elif source.role in ('heterogeneity', 'residual_heterogeneity'):
-        labels = {'Q': "Cochran's Q", 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
+        labels = {'Q': "Cochran's Q", 'df': 'Heterogeneity degrees of freedom', 'P value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
         scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
         if scale not in ('', 'display'):
             labels['τ²'] += ' (squared ' + scale + ' scale)'
@@ -323,16 +324,16 @@ def expected_fit_table(result, section, source):
             context = (' (' + row['Subgroups'] + ')' if 'Subgroups' in row else '')
             if len({t.metric for s in result.sections for t in s.tables if t.metric}) > 1:
                 context += ' (' + section.title.removesuffix(' summary') + ')'
-            rows.extend((labels[h] + context, expected_p(v) if h == 'p-value' else v) for h, v in row.items() if h in labels)
+            rows.extend((labels[h] + context, expected_p(v) if h == 'P value' else v) for h, v in row.items() if h in labels)
     elif source.role == 'subgroup_test' and data:
-        rows.extend((label, expected_p(data[0][key]) if key == 'p-value' else data[0][key]) for key, label in (
-            ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('p-value', 'Between-group P')))
+        rows.extend((label, expected_p(data[0][key]) if key == 'P value' else data[0][key]) for key, label in (
+            ('Test', 'Between-group test'), ('Statistic', 'Between-group statistic'), ('df', 'Between-group degrees of freedom'), ('P value', 'Between-group P')))
     elif source.role == 'model_fit':
         rows.extend(source.rows)
     elif source.role == 'model_tests':
         for row in data:
-            rows.extend((label + ' (' + row['Test'] + ')', expected_p(row[key]) if key == 'p-value' else row[key]) for key, label in (
-                ('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('p-value', 'Test P')))
+            rows.extend((label + ' (' + row['Test'] + ')', expected_p(row[key]) if key == 'P value' else row[key]) for key, label in (
+                ('Statistic', 'Test statistic'), ('df', 'Test degrees of freedom'), ('P value', 'Test P')))
     return rows
 
 
@@ -379,7 +380,37 @@ def assert_retained_table(view, section, source):
     return tables[0]
 
 
-def assert_report(view, *, system_clipboard=True):
+def assert_exact_p_copy(view, record, data):
+    for surface in ('copy', 'docx', 'pdf'):
+        path = Path(data['directory']) / f'{surface}.txt'
+        rendered = ' '.join(path.read_text(encoding='utf-8').split())
+        assert 'Exact P value:' in rendered and not re.search(r'\bp-value\b', rendered, re.I), path
+    view.report_action.setChecked(True)
+    cursor = view.manuscript_text.document().find('Exact P value:')
+    assert not cursor.isNull()
+    view.manuscript_text.setTextCursor(cursor)
+    view.manuscript_text.ensureCursorVisible()
+    record('small-study-exact-p-value', view, text=cursor.selectedText())
+
+
+def assert_heterogeneity_p_copy(view, record):
+    index, = [i for i, table in enumerate(view._report_tables) if table.role == 'heterogeneity']
+    view.tables_action.trigger()
+    view.table_selector.setCurrentIndex(index)
+    QApplication.processEvents()
+    table = view.result_table
+    headers = [' '.join(required(table.horizontalHeaderItem(i), 'table header').text().split())
+               for i in range(table.columnCount())]
+    assert 'P value' in headers, headers
+    destination = Path(sys.argv[2]) / 'heterogeneity.csv'
+    with patch.object(QFileDialog, 'getSaveFileName', return_value=(str(destination), 'CSV table (*.csv)')):
+        view.export_table_action.trigger()
+    exported = destination.read_text(encoding='utf-8-sig')
+    assert 'P value' in exported and not re.search(r'\bp-value\b', exported, re.I), exported
+    record('heterogeneity-p-value', view, headers=headers, exports={'csv': str(destination)})
+
+
+def assert_report(view, *, system_clipboard=True, exact_p_record=None):
     from rc_metastudio.results.formatting import numeric_cell, report_cell, report_numbers
 
     report_text = view.manuscript.plain_text().casefold()
@@ -416,7 +447,7 @@ def assert_report(view, *, system_clipboard=True):
         compact_scale = next(iter(scales)) if len(scales) == 1 and scales <= {'log', 'logit', 'outcome'} else None
         indexes = [i for i in range(7) if (i != 4 or not compact_scale) and any(row[i] not in ('', '—', 'NA') for row in expected_rows)]
         sources = [source for section in view.results.sections for source in section.tables]
-        statistic = 't' if any({'t', 't-value'}.intersection(source.headers) for source in sources) else 'z'
+        statistic = 't' if any({'t', 't value'}.intersection(source.headers) for source in sources) else 'z'
         overall_df = next((source.rows[0][source.headers.index('df')] for source in sources
                            if source.role == 'overall_test' and {'t', 'df'} <= set(source.headers)), '')
         if statistic == 't' and overall_df:
@@ -527,6 +558,8 @@ def assert_report(view, *, system_clipboard=True):
         assert tuple(tuple(view.result_table.item(row, col).text() for col in range(len(table.headers)))
                      for row in range(len(table.rows))) == table.rows
     view.table_selector.setCurrentIndex(selected)
+    if exact_p_record is not None:
+        assert_exact_p_copy(view, exact_p_record, data)
     return pooled, fit
 
 

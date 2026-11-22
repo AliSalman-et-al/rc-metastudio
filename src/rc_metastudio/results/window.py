@@ -1518,7 +1518,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.source_path = artifact.image_path
         item.setPixmap(pixmap)
         item.setToolTip(
-            'To save the image:\nright-click on the image and choose "Export plot…".'
+            'Right-click the plot and choose Export plot…, or press Ctrl+Shift+E.'
         )
 
         self.y_coord += item.boundingRect().size().height() + SECTION_SPACING
@@ -1570,7 +1570,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         item.setSharedRenderer(renderer)
 
         item.setToolTip(
-            'To save the image:\nright-click on the image and choose "Export plot…".'
+            'Right-click the plot and choose Export plot…, or press Ctrl+Shift+E.'
         )
         item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
@@ -1828,7 +1828,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
 
 def _report_heading(title):
-    title = re.sub(r"\s*-\s*Model Results", " — model results", title)
+    title = re.sub(r"\s*[-—]\s*model results\b", " — model results", title, flags=re.I)
     title = re.sub(r"\s+-\s*", " — ", title)
     return title.replace("Model Results", "Model results")
 

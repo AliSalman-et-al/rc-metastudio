@@ -492,7 +492,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             if self._raw_count_table_is_all_zero():
                 raise ValueError(
-                    "Diagnostic 2x2 table must contain at least one participant; "
+                    "Diagnostic 2 × 2 table must contain at least one participant; "
                     "enter at least one count greater than zero."
                 )
 

@@ -2,26 +2,26 @@
 
 Base: 7dec12db. Entries are keyed by row number in Gemini’s replacements.csv. File and line refer to the audit location.
 
-Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-change verdicts.
+Totals: 382 applied, 55 changed, 50 skipped. The table includes all 33 meaning-change verdicts.
 
 | # | Audit location | Outcome | Reason / meaning-change verdict |
 |---:|---|---|---|
-| 1 | `r/RCMetaR/R/binary_methods.R:175` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 2 | `r/RCMetaR/R/binary_methods.R:287` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 3 | `r/RCMetaR/R/binary_methods.R:401` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 4 | `r/RCMetaR/R/binary_methods.R:497` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
+| 1 | `r/RCMetaR/R/binary_methods.R:175` | changed | **Meaning:** Inverse-variance setup offers studies with a zero cell or all studies. The correction applies to every cell of each selected study. |
+| 2 | `r/RCMetaR/R/binary_methods.R:287` | changed | **Meaning:** Mantel–Haenszel setup offers studies with a zero cell or all studies for individual effects. Pooling uses original counts. |
+| 3 | `r/RCMetaR/R/binary_methods.R:401` | changed | **Meaning:** Peto setup offers studies with a zero cell or all studies for individual effects. Pooling uses original counts. |
+| 4 | `r/RCMetaR/R/binary_methods.R:497` | changed | **Meaning:** Random-effects setup offers studies with a zero cell or all studies. The correction applies to every cell of each selected study. |
 | 5 | `r/RCMetaR/R/continuous_methods.R:115` | changed | **Meaning:** Continuous mean and coefficient fits do not use a 2 × 2 table. This legacy metadata does not drive the continuous model fit. Avoided claiming these settings adjust continuous values. |
 | 6 | `r/RCMetaR/R/continuous_methods.R:213` | changed | **Meaning:** Continuous mean and coefficient fits do not use a 2 × 2 table. This legacy metadata does not drive the continuous model fit. Avoided claiming these settings adjust continuous values. |
-| 7 | `r/RCMetaR/R/diagnostic_methods.R:236` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 8 | `r/RCMetaR/R/diagnostic_methods.R:337` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 9 | `r/RCMetaR/R/diagnostic_methods.R:444` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
-| 10 | `r/RCMetaR/R/diagnostic_methods.R:540` | changed | **Meaning:** Verified only0, if0all, all and none in analysis_contracts.R and the method metadata. Used the actual displayed label "No studies". |
+| 7 | `r/RCMetaR/R/diagnostic_methods.R:236` | changed | **Meaning:** Inverse-variance setup offers studies with a zero cell or all studies. The correction applies to every cell of each selected study. |
+| 8 | `r/RCMetaR/R/diagnostic_methods.R:337` | changed | **Meaning:** Mantel–Haenszel setup offers studies with a zero cell or all studies for individual effects. Pooling uses original counts. |
+| 9 | `r/RCMetaR/R/diagnostic_methods.R:444` | changed | **Meaning:** Peto setup offers studies with a zero cell or all studies for individual effects. Pooling uses original counts. |
+| 10 | `r/RCMetaR/R/diagnostic_methods.R:540` | changed | **Meaning:** Random-effects setup offers studies with a zero cell or all studies. The correction applies to every cell of each selected study. |
 | 11 | `src/rc_metastudio/forms/main_window.ui:122` | applied | **Meaning:** False tooltip: menuMetric only lists effect measures (Study calculator lives under Edit), and uses 'metric' instead of CONTEXT.md term 'effect measure'. |
 | 12 | `src/rc_metastudio/forms/main_window.ui:123` | applied | **Meaning:** False status tip: menuMetric only lists effect measures (Study calculator lives under Edit), and uses 'metric' instead of CONTEXT.md term 'effect measure'. |
 | 13 | `src/rc_metastudio/forms/main_window.ui:120` | applied | **Meaning:** Menu title promises 'tools', but the menu only switches the outcome's effect measure; align with CONTEXT.md term 'Effect measure'. |
 | 14 | `r/RCMetaR/R/trial_sequential_analysis.R:275` | changed | **Meaning:** The input resolver emits exactly one of these two keys. Preserved required.inputs for the bridge and changed only the reason. |
 | 15 | `src/rc_metastudio/analysis/identity.py:110` | changed | **Meaning:** Context is empty for the default single arm and nonempty for a custom name or comparison. Only omit the empty line. |
-| 16 | `src/rc_metastudio/results/report.py:1059` | skipped | **Meaning:** Moderators are already a display string from R, and names can contain commas. The proposed helper is undefined. Avoided guessing list boundaries. |
+| 16 | `src/rc_metastudio/results/report.py:1059` | changed | **Meaning:** Passed selected moderator names directly to the report. The list uses “and” and a serial comma for three or more names, and preserves commas inside names. |
 | 17 | `src/rc_metastudio/results/report.py:58` | applied | Tense shift inside a single Methods sentence ('was applied... uses') visible in 091-mh-methods-zero-cell-rule.png; use past tense consistently. |
 | 18 | `src/rc_metastudio/results/report.py:961` | applied | Present tense inside past-tense TSA Results section (adjacent sentence: 'The conventional estimate was...'); align to past tense. |
 | 19 | `r/RCMetaR/R/diagnostic_methods.R:182` | applied | Leading space and missing space after ASCII hyphen produces ' Sensitivity -Model Results'; use clean em dash spacing. |
@@ -54,7 +54,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 46 | `src/rc_metastudio/importing/tabular.py:192` | applied | **Meaning:** Says 'CSV column' even when mapping an Excel (.xlsx) file. |
 | 47 | `src/rc_metastudio/importing/tabular.py:194` | applied | **Meaning:** Says 'CSV column' even when mapping an Excel (.xlsx) file. |
 | 48 | `src/rc_metastudio/importing/tabular.py:212` | applied | **Meaning:** Says 'CSV' even for Excel imports and adds clear action. |
-| 49 | `src/rc_metastudio/importing/tabular.py:237` | changed | **Meaning:** The import wizard uses a mapping panel, not a tab named Map columns. |
+| 49 | `src/rc_metastudio/importing/tabular.py:237` | changed | **Meaning:** The tab is named Map columns. The error describes the column mapping without assuming that the tab is visible at every validation site. |
 | 50 | `src/rc_metastudio/importing/tabular.py:245` | changed | **Meaning:** The old text is split across adjacent f-strings. The positional validation requires the minimum column count and is shared with spreadsheets. Updated both literal fragments. |
 | 51 | `src/rc_metastudio/forms/publication_bias_dialog.ui:26` | applied | Exposes implementation term 'Package default'; label by user-facing behavior. |
 | 52 | `src/rc_metastudio/forms/publication_bias_dialog.ui:26` | changed | Kept the default dynamic and did not claim a fixed threshold across methods. |
@@ -100,7 +100,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 92 | `r/RCMetaR/R/rcmetar-core.R:523` | applied | Removes internal R package/class names ('metafor rma'). |
 | 93 | `r/RCMetaR/R/rcmetar-core.R:544` | applied | Removes internal wording ('metafor render bundle'). |
 | 94 | `r/RCMetaR/R/permutation.R:39` | applied | Removes internal phrasing ('Pinned metafor'). |
-| 95 | `r/RCMetaR/R/small_study_effects.R:601` | skipped | The proposed helper does not exist. The existing helper already supplies the percentage and also labels confidence intervals elsewhere. |
+| 95 | `r/RCMetaR/R/small_study_effects.R:601` | changed | Formatted the confidence-level percentage directly and kept the existing interval label for actual intervals. |
 | 96 | `r/RCMetaR/R/small_study_effects.R:605` | changed | The proposed fragment would leave an unfinished expression and round exact endpoints. Changed range punctuation only. |
 | 97 | `src/rc_metastudio/results/plot_export.py:177` | applied | Add thousands separators for large raster dimensions (e.g., '9,172 × 19,584 pixels' instead of '9172 × 19584 pixels' in 294-hr-sized-export-settings.png). |
 | 98 | `src/rc_metastudio/results/plot_export.py:88` | applied | Align terminology with Edit plot ('Figure caption') so the same text line is not called 'Figure caption' in one dialog and 'title line' in another. |
@@ -112,7 +112,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 104 | `src/rc_metastudio/workspace/table_model.py:533` | changed | The selected column has no editable field, which does not guarantee calculator availability. |
 | 105 | `src/rc_metastudio/workspace/table_model.py:555` | changed | This rejection is for an invalid model index. |
 | 106 | `src/rc_metastudio/workspace/editing.py:556` | applied | Removes second-person blame ('You have already...') and replaces 'outcome' (sheet concept) with 'effect estimate' and 'raw data' with 'arm data'. |
-| 107 | `src/rc_metastudio/calculators/binary_dialog.py:1158` | skipped | Old literal no longer exists at this surface in current HEAD. |
+| 107 | `src/rc_metastudio/calculators/binary_dialog.py:1158` | applied | The old message survived as adjacent Python literals. The replacement describes the two solutions and the zero-count caveat. |
 | 108 | `src/rc_metastudio/forms/binary_back_calculation_dialog.ui:15` | applied | Tighter, calmer phrasing matching binary_dialog.py. |
 | 109 | `src/rc_metastudio/main_window.py:603` | changed | The shared error surface covers study edits and rejected clipboard data. Generic 'Warning' QMessageBox title; name the problem. |
 | 110 | `src/rc_metastudio/main_window.py:991` | applied | Generic 'Warning' QMessageBox title; name the problem. |
@@ -144,11 +144,11 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 136 | `src/rc_metastudio/forms/publication_bias_dialog.ui:44` | applied | Line edit values are bare numbers ('90, 95, 99'); align with funnel_plot_editor_dialog.ui ('Null contour levels (%)'). |
 | 137 | `src/rc_metastudio/analysis/trial_sequential.py:25` | applied | Expand 'HKSJ' on first appearance in TSA setup and manuscript Methods. |
 | 138 | `src/rc_metastudio/forms/edit_plot_dialog.ui:150` | applied | Avoid ad-hoc abbreviation 'Conf. Int.'; 'CI' is standard across RC MetaStudio. |
-| 139 | `src/rc_metastudio/r_bridge.py:2375` | changed | Applied the binding P value style. Preserved recognition of legacy headers. |
-| 140 | `r/RCMetaR/R/analysis_contracts.R:14` | changed | Applied the binding P value style. Preserved recognition of legacy headers. |
+| 139 | `src/rc_metastudio/r_bridge.py:2375` | changed | Applied P value style across the bridge emitters and normalization. Legacy headers are still recognized. |
+| 140 | `r/RCMetaR/R/analysis_contracts.R:14` | changed | Applied P value style across the R display emitters. Legacy headers are still recognized. |
 | 141 | `r/RCMetaR/R/trial_sequential_analysis.R:480` | applied | Add leading zeros, serial comma, and expand 'LIL'. |
-| 142 | `src/rc_metastudio/results/window.py:1521` | skipped | Already fixed. The plot tooltip uses the current context-menu wording. |
-| 143 | `src/rc_metastudio/results/window.py:1573` | skipped | Already fixed. The plot tooltip uses the current context-menu wording. |
+| 142 | `src/rc_metastudio/results/window.py:1521` | applied | Verified that the shared Export plot action exposes Ctrl+Shift+E and updated the tooltip. |
+| 143 | `src/rc_metastudio/results/window.py:1573` | applied | Verified that the shared Export plot action exposes Ctrl+Shift+E and updated the tooltip. |
 | 144 | `src/rc_metastudio/results/window.py:1605` | changed | Plot types expose different editor controls, so listing particular options on the shared button would overpromise. |
 | 145 | `src/rc_metastudio/results/window.py:1608` | changed | Plot types expose different editor controls, so listing particular options on the shared button would overpromise. |
 | 146 | `src/rc_metastudio/results/window.py:1610` | changed | Plot types expose different editor controls, so listing particular options on the shared button would overpromise. |
@@ -239,7 +239,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 231 | `src/rc_metastudio/analysis/trial_sequential_dialog.py:41` | applied | US spelling (app standard is US English). |
 | 232 | `src/rc_metastudio/analysis/trial_sequential_dialog.py:94` | applied | En dash in eponymous author pair. |
 | 233 | `src/rc_metastudio/analysis/trial_sequential_dialog.py:97` | applied | US spelling (app standard is US English). |
-| 234 | `src/rc_metastudio/calculators/diagnostic_dialog.py:495` | skipped | Old literal no longer exists at this surface in current HEAD. |
+| 234 | `src/rc_metastudio/calculators/diagnostic_dialog.py:495` | applied | The old diagnostic table message survived as adjacent Python literals. Used the multiplication sign. |
 | 235 | `src/rc_metastudio/calculators/effect_readout.py:204` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
 | 236 | `src/rc_metastudio/calculators/ratio_dialog.py:85` | applied | CONTEXT.md defines this concept as 'source confidence level'. |
 | 237 | `src/rc_metastudio/calculators/ratio_dialog.py:235` | applied | Hyphenate 'non-negative' consistently. |
@@ -263,7 +263,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 255 | `src/rc_metastudio/r_bridge.py:508` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
 | 256 | `src/rc_metastudio/r_bridge.py:1056` | applied | US spelling (app standard is US English). |
 | 257 | `src/rc_metastudio/r_bridge.py:1057` | applied | US spelling (app standard is US English). |
-| 258 | `src/rc_metastudio/r_bridge.py:1142` | skipped | Old literal no longer exists at this surface in current HEAD. |
+| 258 | `src/rc_metastudio/r_bridge.py:1142` | applied | The old multi-line diagnostic input error survived. It now says effect measure. |
 | 259 | `src/rc_metastudio/r_bridge.py:2084` | applied | Multiplication sign '×' instead of ASCII 'x'. |
 | 260 | `src/rc_metastudio/r_bridge.py:2086` | applied | Multiplication sign '×' instead of ASCII 'x'. |
 | 261 | `src/rc_metastudio/r_bridge.py:2103` | applied | CONTEXT.md specifies 'normalized partial SROC AUC'. |
@@ -300,7 +300,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 292 | `src/rc_metastudio/workspace/columns.py:161` | skipped | This is the legacy study column header used for backwards-compatible import and export. |
 | 293 | `src/rc_metastudio/workspace/columns.py:229` | applied | Hyphenate 'non-negative' consistently. |
 | 294 | `src/rc_metastudio/workspace/editing.py:480` | applied | Hyphenate 'non-negative' consistently. |
-| 295 | `src/rc_metastudio/workspace/editing.py:519` | skipped | Old literal no longer exists at this surface in current HEAD. |
+| 295 | `src/rc_metastudio/workspace/editing.py:519` | applied | The workspace validation uses the same revised diagnostic table wording as the calculator. |
 | 296 | `src/rc_metastudio/workspace/table_model.py:411` | changed | Raw inputs can include diagnostic cells or a single arm, so used study values. |
 | 297 | `src/rc_metastudio/workspace/table_model.py:425` | applied | CONTEXT.md defines this concept as 'source confidence level'. |
 | 298 | `src/rc_metastudio/workspace/table_view.py:218` | applied | Standardize quotation marks/apostrophes (avoid mixed straight and curly quotes). |
@@ -361,7 +361,7 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 353 | `r/RCMetaR/R/continuous_methods.R:147` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
 | 354 | `r/RCMetaR/R/continuous_methods.R:206` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
 | 355 | `r/RCMetaR/R/continuous_methods.R:208` | applied | Use standard compound adjective 'between-study'. |
-| 356 | `r/RCMetaR/R/diagnostic_methods.R:10` | skipped | This label maps the diagnostic measure contract. Applied sentence case at display sites where it is safe. |
+| 356 | `r/RCMetaR/R/diagnostic_methods.R:10` | applied | The label feeds display titles only. Both the measure and its summary title now use sentence case. |
 | 357 | `r/RCMetaR/R/diagnostic_methods.R:177` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
 | 358 | `r/RCMetaR/R/diagnostic_methods.R:230` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
 | 359 | `r/RCMetaR/R/diagnostic_methods.R:239` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
@@ -470,8 +470,8 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 462 | `r/RCMetaR/R/small_study_effects.R:312` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
 | 463 | `r/RCMetaR/R/small_study_effects.R:424` | applied | Use en dash in eponymous pair and CONTEXT.md term 'arm'. |
 | 464 | `r/RCMetaR/R/small_study_effects.R:451` | applied | En dash in eponymous author pair. |
-| 465 | `r/RCMetaR/R/small_study_effects.R:559` | changed | Decision 6 specifies uppercase P and no hyphen. |
-| 466 | `r/RCMetaR/R/small_study_effects.R:900` | changed | Decision 6 specifies uppercase P and no hyphen. |
+| 465 | `r/RCMetaR/R/small_study_effects.R:559` | changed | Used P value unavailable and preserved that wording through runtime normalization. |
+| 466 | `r/RCMetaR/R/small_study_effects.R:900` | changed | Used uppercase P and preserved it through runtime normalization. |
 | 467 | `r/RCMetaR/R/small_study_effects.R:969` | skipped | Common effect is the specific model assumption and the authority package option. Fixed effect is potentially ambiguous here. |
 | 468 | `r/RCMetaR/R/small_study_effects.R:1017` | applied | En dash in eponymous author pair. |
 | 469 | `r/RCMetaR/R/small_study_effects.R:1020` | applied | En dash in eponymous author pair. |
@@ -493,3 +493,31 @@ Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-c
 | 485 | `r/RCMetaR/R/trial_sequential_plot.R:50` | changed | The token supplies the width measurement for the rendered phrase. Updated the source label in the same helper. |
 | 486 | `r/RCMetaR/R/trial_sequential_plot.R:56` | applied | US spelling. Matched the visible prefix and the width sample. |
 | 487 | `r/RCMetaR/R/trial_sequential_plot.R:157` | applied | US spelling (app standard is US English). |
+
+## Review findings at f910143e
+
+| Finding | Disposition |
+|---|---|
+| B1 | Fixed. The TSA request holds arm names and adds the display prefix when serializing the R request. The dialog and report use the arm names directly. The BCG desktop drive checks the real dropdown, crossing sentence, and extracted PDF and Word text. |
+| B2 | Fixed. R text, structured headers, and fallback label formatting keep uppercase P. Bounds use sentence case, including legacy HPD and CI abbreviations. Normalization preserves line breaks and handles the inverse negative likelihood ratio before its shorter alias. |
+| S1 | Fixed for identifiable text. Import labels can list supported formats. The check scans shared import wording, widget text and constructors, error and return literals, R display helpers, and report prose. Desktop and R-stack checks cover runtime output. Generic sentence-case detection and blanket bans on punctuation or package terms were deferred because the same patterns occur in proper names, references, or meaningful technical text. |
+| S2 | Fixed. All four rows with the “old literal no longer exists” explanation still had live matches. The four messages now use the reviewed wording. |
+| S3 | Fixed. Updated workflow, estimator, method, diagnostic measure, summary and likelihood-ratio labels. Legacy aliases and statistical abbreviations remain recognized. |
+| S4 | Fixed. Wald text includes the comparison operator and spacing. Supplementary tables and R reports display P value and Omnibus P value. |
+| S5 | Fixed. The method tooltips describe the two offered choices and where the correction applies. Saved `none` values use “None”. MH and Peto tooltips identify the original counts used for pooling. |
+| S6 | Fixed. The confidence-level line displays the percentage once. |
+| S7 | Fixed. Continuous imputation accepts `p-value`, `P-Value` and `P value`. |
+| N1 | Fixed. Methods prose formats the selected moderator names as a list. |
+| N2 | Fixed. The ledger recognizes the Map columns tab. |
+| N3 | Fixed. Forest label conversion recognizes the earlier title-case inputs. |
+| N4 | Fixed. RevMan uses the en dash, plot truncation uses the ellipsis character, the SROC accessible label matches its checkbox, and entered effects use the domain term. |
+| N5 | Fixed. Both plot tooltips use the context-menu label and keyboard shortcut. |
+| N6 | Fixed. The guide records the en dash for paired author names. |
+
+### Consumers of revised labels
+
+- `analysis/trial_sequential.py` previously stripped `Favours` from display text. The Python consumers now receive arm names. The R readers in `trial_sequential_analysis.R` and `trial_sequential_plot.R` still accept both spellings for saved requests and plot inputs.
+- `r_bridge.py`, `results/formatting.py`, and `analysis_contracts.R` recognize legacy P-value and z-value labels and emit the current display text. `results_display.R` updates the regression header, indexed assignment, and raw-column lookup together. `results/report.py` reads the current P value header through its existing internal alias and quantity roles. `results/text_identity.py` and the golden replay parser recognize both header spellings.
+- `calculators/continuous_dialog.py` preserves the historical P-value input aliases. `results/report.py` takes the selected moderator names from `analysis/setup_dialog.py` instead of extracting them from the result identity sentence.
+- `results/window.py` recognizes both the older model-results title and the current dash and capitalization. `forest_axis.R` and `forest_style_bmj.R` keep legacy title-case conversion keys with sentence-case display values.
+- The original audit also found contract lookups for `Inference Method`, `Regression Plot`, the `[default]` sentinels, the `Group` arm default, and Reitsma matrix selectors. These retain their original keys. Tests and the packaged-smoke normalizer recognize the revised rendered labels where applicable.
