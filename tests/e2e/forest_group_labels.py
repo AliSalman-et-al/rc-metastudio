@@ -15,7 +15,7 @@ from tests.e2e.plot_observations import load_serialized_object
 def run_groups(app, window, work, record):
     from analysis_matrix import run as matrix
     from advanced_workflows import modal, click
-    from rc_metastudio import __version__, r_operations
+    from rc_metastudio import __version__
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from tests.e2e.analysis_result_checks import check_report
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))

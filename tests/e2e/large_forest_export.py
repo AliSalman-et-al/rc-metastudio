@@ -1,6 +1,5 @@
 """Exercise SVG display, geometry failure recovery and export on a 400-study forest."""
 
-from tests.e2e import r_oracle
 
 from pathlib import Path
 from unittest.mock import patch

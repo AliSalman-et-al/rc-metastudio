@@ -571,7 +571,6 @@ def sample_analysis(app, window, sample):
                 continue
             values = [float(model.data(model.index(row, col), QtCore.Qt.ItemDataRole.EditRole))
                       for col in model.OUTCOMES[:3]]
-            from rc_metastudio import r_operations
             events, total = raw[:2]
             expected = list(r_oracle.evaluate(
                 f"metafor::transf.iarcsin(asin(sqrt({events}/{total})) + "
@@ -832,7 +831,6 @@ def sheets_swap(app, window):
             with observe_fit() as fit:
                 view = analyze(app, window, model.get_current_data_type() + ".random")
             if metric in ("OR", "RD", "MD"):
-                from rc_metastudio import r_operations
                 load_saved_analysis(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
@@ -1683,7 +1681,6 @@ def plot_edit(app, window):
     path = Path(view.results.display_images[title])
     before = path.read_bytes()
     artifact = view.plot_artifact(title)
-    from rc_metastudio import r_operations
     load_saved_analysis(artifact.params_path, include_plot_data=True)
     r_oracle.evaluate('batch3.fit.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric)')
     callback_errors = []
@@ -2108,7 +2105,6 @@ def calculator(app, window, family):
 
 
 def grid_entry(app, window):
-    from PyQt6.QtTest import QTest
     from rc_metastudio import main_wizard
     from PyQt6 import QtCore, QtWidgets
     # Use the real wizard, clipboard, delegate and workspace history.

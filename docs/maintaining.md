@@ -125,7 +125,7 @@ uv run python scripts/verify.py smoke
 # Fast Python tests, golden analysis tests, and default R evidence
 uv run python scripts/verify.py fast
 
-# Full RCMetaR check, Python–R bridge, golden compatibility, and desktop E2E
+# Full RCMetaR check, golden compatibility, and desktop E2E
 uv run python scripts/verify.py r-stack
 ```
 
@@ -181,7 +181,7 @@ uv run python -m pytest tests/e2e -n auto -k '<selection>'
 | `tests/python/fast` | Archive corruption, atomic durability, rollback, concurrency, boundary validation |
 | `tests/python/gui` | Layout, keyboard focus, dialog edge cases, and failure recovery outside E2E |
 | `tests/analysis_regression/golden` | Frozen numerical and presentation regression contracts (see [baseline provenance](../tests/analysis_regression/baseline/presentation-review/README.md)) |
-| `tests/r_stack` | Python–R bridge serialization, Unicode/NA handling, and `mada` Reitsma authority |
+| `tests/r_stack` | Public `mada` Reitsma comparisons |
 | `tests/packaging/contract` | Frozen bundle integrity, relocation, tampering, and release-set validation |
 | `r/RCMetaR/tests/testthat` | R package statistical and rendering unit/authority checks |
 

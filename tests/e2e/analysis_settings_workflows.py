@@ -16,7 +16,6 @@ from tests.e2e.plot_observations import load_saved_analysis, load_serialized_obj
 def run(app, window, root, record, analyze):
     from advanced_workflows import modal, click
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio import r_operations
     from rc_metastudio.results import window as results_window
     from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections

@@ -15,7 +15,6 @@ def _unavailable(*_args: object, **_kwargs: object) -> None:
 def create() -> SimpleNamespace:
     """Return a local capability object; it never replaces the app module."""
     backend = SimpleNamespace()
-    backend.AnalysisBackendUnavailableError = RuntimeError
     backend.get_r_library_paths = lambda: []
     backend.get_r_version_string = lambda: None
     backend.get_r_package_version = lambda _name: None

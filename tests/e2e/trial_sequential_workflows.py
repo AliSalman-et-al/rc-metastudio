@@ -2,7 +2,6 @@
 import csv
 import json
 import os
-import sys
 from math import ceil, isclose
 from pathlib import Path
 from statistics import median
@@ -14,7 +13,6 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import r_worker
 from rc_metastudio.analysis import catalog as analysis_catalog
 from rc_metastudio.project import (
     model as analysis_dataset,
@@ -22,7 +20,6 @@ from rc_metastudio.project import (
     archive as project_format,
 )
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
-from rc_metastudio.analysis.trial_sequential import TsaService
 from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 from rc_metastudio.results.plot_editor import EditPlotDialog

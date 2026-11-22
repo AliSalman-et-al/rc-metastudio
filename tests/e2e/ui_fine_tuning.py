@@ -1,10 +1,10 @@
 """Real Qt/R evidence for the whole-app review's palette and report fixes."""
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui
 import re
 import gzip
 from pathlib import Path
 from xml.etree import ElementTree as ET
-from tests.python.gui.qt_test_support import wait, mouse_click
+from tests.python.gui.qt_test_support import wait
 
 
 def contrast(foreground, background):

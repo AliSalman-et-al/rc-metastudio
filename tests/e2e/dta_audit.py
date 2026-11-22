@@ -14,7 +14,6 @@ def check_fixed_workflow(app, window, workflow, record):
     import json
     import math
     from analysis_matrix import set_parameter
-    from rc_metastudio import r_operations
     from rc_metastudio.results.window import ResultsWindow
     from tests.e2e.report_retention import assert_report
 

@@ -7,10 +7,9 @@ floating point tolerance is used because the same fit can differ in the last
 few bits across BLAS/LAPACK builds and operating systems.
 """
 
-import os
 import textwrap
 
-from ._r_driver_support import run_r_driver
+from ._r_driver_support import REPO_ROOT, run_r_driver
 
 
 _DRIVER = textwrap.dedent(
@@ -152,9 +151,8 @@ _DRIVER = textwrap.dedent(
       stop("categorical reference rows are missing from Reitsma release evidence")
     }
     cat("OK\n")
-    ''').replace("__REPO_ROOT__", repr(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))).replace("\\", "/"))
+    ''').replace("__REPO_ROOT__", repr(REPO_ROOT.replace("\\", "/")))
 
 
 def test_reitsma_release_values_match_public_mada_with_portable_tolerances():
-    env = dict(os.environ)
     run_r_driver(_DRIVER)

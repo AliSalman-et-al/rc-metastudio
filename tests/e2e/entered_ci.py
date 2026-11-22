@@ -6,7 +6,6 @@ from PyQt6 import QtWidgets
 
 def check(app, window, kind, launch, text, family, record):
     from advanced_workflows import modal, click
-    from rc_metastudio import r_operations
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     from tests.fit_observations import observe_fit

@@ -320,7 +320,6 @@ def _run(app, window, work, root, record, analyze):
                 assert table.accessibleName() == "Pooled effect"
                 assert not table.horizontalScrollBar().isVisible()
                 last_row = table.visualRect(table.model().index(table.rowCount() - 1, 0))
-                row_bottom = table.viewport().mapTo(view.tables_page, last_row.bottomLeft()).y()
                 assert table.viewport().rect().contains(last_row), (last_row, table.viewport().rect())
                 assert view.table_selector.geometry().bottom() < table.geometry().top()
             record("slice8b-results-" + page + "-" + theme, view)

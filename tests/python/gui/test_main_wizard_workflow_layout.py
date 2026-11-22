@@ -15,7 +15,6 @@ os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verificat
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
 prepare_generated_ui_imports()
-from rc_metastudio import adaptive_window
 from qt_test_support import key_click, mouse_click, required
 
 

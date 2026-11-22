@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 import sys
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
@@ -17,11 +17,6 @@ from rc_metastudio.results.contract import parse_analysis_result
 from qt_test_support import required
 
 prepare_generated_ui_imports()
-
-if TYPE_CHECKING:
-    from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
-else:
-    from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
 
 from rc_metastudio.results import plot_editor as plot_editor_dialog, plot_service
 
@@ -397,7 +392,6 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
 
 
 def test_meantime_sample_project_loads_native_factor_covariate():
-    from rc_metastudio import r_operations
 
     from tests.analysis_regression.golden.support import headless_analysis
 
@@ -899,7 +893,6 @@ def test_analysis_opens_results_window_maximized_and_fits_svg_plot(tmp_path):
 
 
 def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1017,7 +1010,6 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
 
 
 def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1090,7 +1082,6 @@ def test_results_window_refits_svg_after_viewport_geometry_settles(tmp_path):
 
 
 def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1164,7 +1155,6 @@ def test_results_window_refits_raster_fallback_from_original_source(tmp_path):
 
 
 def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1257,7 +1247,6 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
 def test_results_window_applies_forest_edits_to_selected_variant_artifact(
     tmp_path, monkeypatch, title, plot_kind
 ):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1347,7 +1336,6 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
 
 
 def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
-    from rc_metastudio import r_operations
 
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -1399,7 +1387,6 @@ def test_edit_plot_dialog_round_trips_style_and_appearance_params(monkeypatch):
 
 
 def test_sroc_plot_editor_round_trips_reitsma_style_contract():
-    from rc_metastudio import r_operations
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
@@ -1457,7 +1444,6 @@ def test_sroc_plot_editor_round_trips_reitsma_style_contract():
 
 
 def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import plot_editor as plot_editor_dialog
 
@@ -1488,7 +1474,6 @@ def test_sroc_plot_editor_limits_marker_legend_to_sample_size_scaling():
 
 
 def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
-    from rc_metastudio import r_operations
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     applied = []
@@ -1524,7 +1509,7 @@ def test_edit_plot_dialog_apply_stays_open_and_ok_applies_and_closes():
 
 
 def test_edit_plot_dialog_failed_ok_stays_open_with_error(monkeypatch):
-    from rc_metastudio import app_error_handler, r_operations
+    from rc_metastudio import app_error_handler
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     def fail(_parameters):
@@ -1558,7 +1543,6 @@ def test_edit_plot_dialog_failed_ok_stays_open_with_error(monkeypatch):
 
 
 def test_edit_regression_plot_dialog_shows_only_bubble_options():
-    from rc_metastudio import r_operations
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = plot_editor_dialog.EditPlotDialog(
@@ -1611,7 +1595,6 @@ def test_edit_regression_plot_dialog_shows_only_bubble_options():
 def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
     tmp_path, monkeypatch
 ):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1795,7 +1778,6 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
 def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
     tmp_path, monkeypatch
 ):
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -1917,7 +1899,6 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
 
 
 def test_results_window_ignores_missing_image_order_entries():
-    from rc_metastudio import r_operations
 
     from rc_metastudio.results import window as results_window
 
@@ -2315,12 +2296,10 @@ def _assert_sample_projects_open_directory(directory):
 
 def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
     import copy
-    from PyQt6.QtWidgets import QApplication
     from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
     from rc_metastudio.project.adapter import project_to_dataset, dataset_to_project, document_to_runtime_project
     from rc_metastudio.project.archive import save_project, load_project
     from tests.python.fast.test_project_format import _group_project
-    app = QApplication.instance() or QApplication([])
     project = _group_project("binary", None, [[1, 10], [2, 10]])
     sheet = project["sheets"][0]
     sheet["covariates"] = [dict(id="dose", name="Dose", data_type=1)]
@@ -2350,7 +2329,7 @@ def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
 
 @pytest.mark.parametrize("included", [0, 1, 2])
 def test_r_ready_preserves_model_driven_analysis_eligibility(tmp_path, monkeypatch, qapp, included):
-    from rc_metastudio import launch, r_operations, r_runtime
+    from rc_metastudio import launch, r_runtime
 
     monkeypatch.setattr(launch.settings, "get_base_path", lambda **kwargs: str(tmp_path / "appdata"))
     monkeypatch.setenv("RCMS_ANALYSIS_SCRATCH_DIR", str(tmp_path / "scratch"))

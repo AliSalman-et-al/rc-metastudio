@@ -223,7 +223,7 @@
         "r/RCMetaR/DESCRIPTION"
       ],
       "evidence": [
-        "r/RCMetaR/R/plotting.R: forest and diagnostic plot functions call png(...), pdf(...), dev.off(...), and graphics.off(...)"
+        "r/RCMetaR/R/plotting.R: forest and diagnostic plot functions call png(...), pdf(...), and dev.off(...)"
       ],
       "reason": "RCMetaR writes plot image/PDF devices and closes graphics devices through the base grDevices package.",
       "installed_version": "4.6.2"

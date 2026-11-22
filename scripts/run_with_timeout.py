@@ -9,9 +9,9 @@ import subprocess
 import sys
 
 if __name__ == "__main__":
-    from process_groups import start_process, terminate_process_tree
+    from process_groups import owned_process
 else:
-    from scripts.process_groups import start_process, terminate_process_tree
+    from scripts.process_groups import owned_process
 
 
 TIMEOUT_EXIT_CODE = 124
@@ -24,9 +24,9 @@ def _display_command(command: list[str]) -> str:
 
 
 def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
-    process = start_process(command)
     try:
-        return process.wait(timeout=timeout_seconds)
+        with owned_process(command) as process:
+            return process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
         print(
             f"{label} timed out after {timeout_seconds:g} seconds: "
@@ -34,11 +34,7 @@ def run(command: list[str], *, timeout_seconds: float, label: str) -> int:
             file=sys.stderr,
             flush=True,
         )
-        terminate_process_tree(process)
         return TIMEOUT_EXIT_CODE
-    except BaseException:
-        terminate_process_tree(process)
-        raise
 
 
 def main(argv: list[str] | None = None) -> int:

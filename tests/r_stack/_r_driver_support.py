@@ -7,11 +7,6 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
-import sys
-import tempfile
-from pathlib import Path
-from uuid import uuid4
-import json
 
 import pytest
 
@@ -50,51 +45,3 @@ def run_r_driver(driver: str) -> None:
         result.stderr[-2000:],
     )
     assert "OK" in result.stdout
-
-
-def run_python_driver(
-    driver: str, *, env: dict[str, str], source_install: bool = False
-) -> subprocess.CompletedProcess:
-    """Run an embedded-Python driver with the same required-lane policy."""
-
-    evidence = Path(REPO_ROOT) / "artifacts/verification/r-drivers" / uuid4().hex
-    evidence.mkdir(parents=True)
-    (evidence / "driver.py").write_text(driver, encoding="utf-8")
-    with tempfile.TemporaryDirectory(prefix="rcms-driver-") as work:
-        owned_env = dict(env)
-        owned_env["PYTHONPATH"] = os.pathsep.join(filter(None, (REPO_ROOT, env.get("PYTHONPATH"))))
-        owned_env["RCMS_DRIVER_OWNED_CWD"] = work
-        owned_env["RCMS_SUMMARY_OWNED_LIBRARY"] = str(Path(work) / "r-library")
-        library = Path(owned_env["RCMS_SUMMARY_OWNED_LIBRARY"])
-        library.mkdir()
-        if source_install:
-            roots = env.get("R_LIBS", "").split(os.pathsep)
-            for root in roots:
-                if not root or not Path(root).is_dir():
-                    continue
-                for package in Path(root).iterdir():
-                    if package.is_dir() and package.name != "RCMetaR" and not package.name.startswith("00LOCK") and not (library / package.name).exists():
-                        shutil.copytree(package, library / package.name)
-        result = subprocess.run(
-            [sys.executable, str(evidence / "driver.py")],
-            cwd=work, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            encoding="utf-8", errors="replace", env=owned_env,
-        )
-    (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
-    (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
-    (evidence / "command.json").write_text(json.dumps({"command": result.args, "exit_code": result.returncode, "owned_cwd": work, "cleanup": not Path(work).exists()}), encoding="utf-8")
-    if result.returncode == 42:
-        message = (
-            result.stdout.strip() or "Python/R bridge prerequisites are unavailable"
-        )
-        if _REQUIRED:
-            pytest.fail(message)
-        pytest.skip(message)
-
-    assert result.returncode == 0, "driver failed (rc=%s)\nSTDOUT:\n%s\nSTDERR:\n%s" % (
-        result.returncode,
-        result.stdout[-2000:],
-        result.stderr[-2000:],
-    )
-    assert "OK" in result.stdout
-    return result

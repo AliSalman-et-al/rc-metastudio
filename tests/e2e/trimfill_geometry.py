@@ -1,5 +1,4 @@
 """Match vector preview geometry and exported markers to an independent fit."""
-import re
 import gzip
 import sys
 from pathlib import Path

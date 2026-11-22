@@ -27,8 +27,7 @@ from rc_metastudio import adaptive_window
 from rc_metastudio import row_padding
 from rc_metastudio.analysis.catalog import DIAGNOSTIC_METRICS, DIAG_FIELDS_TO_RAW_INDICES
 from rc_metastudio.analysis.validation import (
-    EMPTY_VALS, is_nan, is_float_convertible, is_empty,
-    normal_confidence_multiplier,
+    EMPTY_VALS, is_nan, is_float_convertible, normal_confidence_multiplier,
 )
 from rc_metastudio.calculators import (
     controls as calculator_controls,

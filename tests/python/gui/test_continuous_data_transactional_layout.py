@@ -44,9 +44,6 @@ class FakeContinuousAnalysisUnit:
         self.effects = effects or {}
         self.arms = {name: SimpleNamespace(stable_id=name) for name in self.raw_data}
 
-    def get_effect_names(self):
-        return ["MD", "SMD", "Mean"]
-
     def get_raw_data_for_arm(self, group):
         return self.raw_data[group]
 

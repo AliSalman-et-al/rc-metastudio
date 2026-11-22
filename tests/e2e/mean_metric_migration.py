@@ -91,7 +91,6 @@ def open_mean_sample(app, window, record, root, work):
 
 def compare_mean_sample_analysis(view, record, retained):
     """Compare displayed pooling with independent public metafor inputs."""
-    from rc_metastudio import r_operations
 
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 

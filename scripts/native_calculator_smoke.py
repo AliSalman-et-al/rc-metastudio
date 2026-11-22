@@ -8,7 +8,6 @@ import json
 import math
 import os
 import sys
-from collections.abc import Callable
 from pathlib import Path, PurePosixPath
 from types import SimpleNamespace
 from typing import Protocol
@@ -32,13 +31,6 @@ class AutomationWindow(Protocol):
 
 def _phase(name: str) -> None:
     print("RCMS_NATIVE_CALCULATOR_PHASE " + name, flush=True)
-
-
-def _install_backend_test_double(
-    backend: object, name: str, implementation: Callable[..., object]
-) -> None:
-    """Patch one explicitly selected R bridge operation for this smoke test."""
-    setattr(backend, name, implementation)
 
 
 def _write_evidence(path: Path, evidence: list[dict[str, object]]) -> None:
@@ -230,7 +222,6 @@ def _run_main() -> int:
         continuous_dialog as continuous_data_dialog,
         diagnostic_dialog as diagnostic_data_dialog,
     )
-    from rc_metastudio.workspace import table_model as dataset_table_model
 
     for name, implementation in vars(backend).items():
         setattr(r_operations, name, implementation)
@@ -240,12 +231,12 @@ def _run_main() -> int:
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "impute_binary_data",
         lambda _data: {"FAIL": True},
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "effect_for_study",
         lambda *_args, **_kwargs: {
@@ -262,7 +253,7 @@ def _run_main() -> int:
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {
@@ -270,7 +261,7 @@ def _run_main() -> int:
             "comment": "complete input",
         },
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "continuous_effect_for_study",
         lambda *_args, **_kwargs: {"calc_scale": (1.5, 1.0, 2.0)},
@@ -280,7 +271,7 @@ def _run_main() -> int:
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "back_calculate_continuous_data",
         lambda *_args, **_kwargs: {"FAIL": True},
@@ -290,12 +281,12 @@ def _run_main() -> int:
         "diagnostic_convert_scale",
         lambda value, *args, **kwargs: value,
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "impute_diagnostic_data",
         lambda _data: {"TP": None, "FP": None, "FN": None, "TN": None},
     )
-    _install_backend_test_double(
+    setattr(
         r_operations,
         "diagnostic_effects_for_study",
         lambda *_args, metrics, **_kwargs: {

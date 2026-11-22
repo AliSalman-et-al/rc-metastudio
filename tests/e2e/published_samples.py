@@ -8,7 +8,6 @@ from pathlib import Path
 import re
 
 from PyQt6 import QtCore, QtWidgets
-from rc_metastudio import r_operations
 from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog

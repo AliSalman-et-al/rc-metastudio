@@ -6,7 +6,6 @@ import json
 import math
 import re
 from pathlib import Path
-from unittest.mock import patch
 from xml.etree import ElementTree as ET
 from tests.python.gui.qt_test_support import metric_action, required
 from tests.e2e.analysis_result_checks import (
@@ -118,7 +117,6 @@ def run(app, window, work, record, scenario):
                                   parameters={"digits": digits, "fp_style": style}, prepare=select_metric)
                     check_annotation_spacing(view, style=style)
                     if metric:
-                        from rc_metastudio import r_operations
                         for title, path in view.results.display_images.items():
                             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
                             axis = json.loads(str(list(r_oracle.evaluate('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.forest.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.forest.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
@@ -251,7 +249,6 @@ def run(app, window, work, record, scenario):
         return
 
     if family_name == "precision":
-        from rc_metastudio import r_operations
         def entered(target, values):
             model = target.model
             for row in range(6):
@@ -507,7 +504,6 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
     """Retain actual long figures and panel geometry through normal Qt/R routes."""
     from PyQt6 import QtCore
     from analysis_matrix import DATA_TYPES, run as run_analysis_case
-    from rc_metastudio import r_operations
     root = Path(__file__).resolve().parents[2]
     measurements = []
     for style in (() if only_bubbles else ("default", "revman", "bmj")):

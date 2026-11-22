@@ -200,7 +200,6 @@ def test_workspace_columns_survive_middle_insertion_and_removal_by_identity(qapp
 
 def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qapp):
     from rc_metastudio.workspace import table_model as dataset_table_model
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.workspace.column_identity import WORKSPACE_COLUMN_IDENTITY_ROLE
     from rc_metastudio.workspace.column_widths import WorkspaceColumnWidthController
 

@@ -127,7 +127,6 @@ def check_annotation_spacing(view, *, style="default"):
 
 
 def check_sequential(view, workflow, record):
-    from rc_metastudio import r_operations
 
     tables = [t for s in view.results.sections for t in s.tables if t.title in {"Cumulative results", "Leave-one-out results"}]
     for index, (title, path) in enumerate(view.results.display_images.items()):
@@ -192,7 +191,6 @@ def check_sequential(view, workflow, record):
 def check_excluding_null(app, view, record):
     from advanced_workflows import click, modal
     from PyQt6 import QtWidgets
-    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
 
     def exclude_null(dialog):
