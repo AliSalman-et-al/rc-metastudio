@@ -411,7 +411,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                     assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
                     assert 0 <= float(word.attrib['yMin']) < float(word.attrib['yMax']) <= float(page.attrib['height'])
 
-            assert 'favours' not in view.manuscript.results.lower()
+            assert 'favors' not in view.manuscript.results.lower()
             if sample == 'lymph':
                 assert 'than in' not in view.manuscript.results
                 assert 'between Intervention and Control' not in view.manuscript.results

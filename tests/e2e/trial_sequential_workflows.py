@@ -134,7 +134,7 @@ def check_artwork(path, case, style, contract, *, percent=False):
         assert f"−{limit}" in labels and str(limit) in labels, labels
         units = "percent" if percent else "participants"
         assert ticks[-2] == contract["peto"]["join_tick"][units], ticks
-    favours = [node for node in text_nodes if (node.text or "").startswith("Favours")]
+    favours = [node for node in text_nodes if (node.text or "").startswith("Favors")]
     if case in ("bcg", "peto", "hr"):
         assert not favours, labels
     else:

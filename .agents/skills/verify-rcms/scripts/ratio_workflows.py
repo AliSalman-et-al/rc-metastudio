@@ -175,7 +175,7 @@ def run(app, window, scenario, record):
         menu = app.activePopupWidget()
         assert isinstance(menu, QtWidgets.QMenu)
         delete = next(action for action in menu.actions() if action.text().startswith("Delete study"))
-        assert delete.text() == "Delete study “Study 13”…"
+        assert delete.text() == 'Delete study "Study 13"…'
         deletion_before = window.workspace.document
         assert deletion_before is not None
         (work / "delete-before.json").write_text(json.dumps(dict(project=deletion_before.project, state=deletion_before.state), indent=2))

@@ -143,7 +143,7 @@ def check_direction_ink_gap(source, directions, width, height):
 def check_forest_footer(source, expected_directions=None):
     """Measure rendered direction lines and the axis title, including wrapped direction lines."""
     texts = list(ET.parse(source).iter('{http://www.w3.org/2000/svg}text'))
-    directions = [node for node in texts if ''.join(node.itertext()).startswith('Favours')]
+    directions = [node for node in texts if ''.join(node.itertext()).startswith('Favors')]
     if expected_directions is not None:
         check_direction_text(texts, directions, expected_directions)
     if not directions:
@@ -169,7 +169,7 @@ def check_forest_footer(source, expected_directions=None):
         width = float(node.attrib.get('textLength', '0').removesuffix('px'))
         anchor = node.attrib.get('text-anchor')
         left = x - width if anchor == 'end' else x - width / 2 if anchor == 'middle' else x
-        measurements.append(dict(text=text, box=(left, y - size * .8, left + width, y + size * .2), direction_ink_gap=ink_gap if text.strip().startswith('Favours') else None))
+        measurements.append(dict(text=text, box=(left, y - size * .8, left + width, y + size * .2), direction_ink_gap=ink_gap if text.strip().startswith('Favors') else None))
     for measurement in measurements:
         left, top, right, bottom = measurement['box']
         assert 0 <= left < right <= device_width and 0 <= top < bottom <= device_height, ('forest footer outside device', source, measurement)

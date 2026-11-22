@@ -1067,7 +1067,7 @@ def sheets(app, window):
     index = tabs.currentIndex()
     def delete_menu():
         menu = app.activePopupWidget()
-        action = next(a for a in menu.actions() if a.text() == f'Delete “{tabs.tabText(index)}”…')
+        action = next(a for a in menu.actions() if a.text() == f'Delete "{tabs.tabText(index)}"…')
         QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().done(QtWidgets.QMessageBox.StandardButton.Yes))
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, delete_menu)
@@ -1226,7 +1226,7 @@ def verify_sheet_strip(app, window, screens):
     def move_menu():
         menu = app.activePopupWidget()
         assert {action.text() for action in menu.actions() if not action.isSeparator()} == {
-            "Rename", "Add outcome…", f'Delete “{tabs.tabText(index)}”…', "Move left", "Move right"}
+            "Rename", "Add outcome…", f'Delete "{tabs.tabText(index)}"…', "Move left", "Move right"}
         action = next(action for action in menu.actions() if action.text() == "Move left")
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, move_menu)

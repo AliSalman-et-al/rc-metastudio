@@ -248,7 +248,7 @@ def _run(app, window, work, root, record, analyze):
     from xml.etree import ElementTree
     svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
     nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
-    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
+    directions = [node for node in nodes if "Favors" in "".join(node.itertext())]
     assert len(directions) == 2
     def box(node):
         import re
@@ -330,7 +330,7 @@ def _run(app, window, work, root, record, analyze):
 
 
     for arm in window.model.arm_names:
-        assert "Favours" in svg and arm in svg
+        assert "Favors" in svg and arm in svg
     assert view.result_identity.isVisible()
     assert view._fit_width_active
     for width in (900, 796):
@@ -610,7 +610,7 @@ def _run(app, window, work, root, record, analyze):
         artifact = result._selected_plot()[0]
         return list(ElementTree.parse(artifact.display_path()).getroot().iter('{http://www.w3.org/2000/svg}text'))
     continuous_nodes = forest_nodes(continuous)
-    direction_nodes = [n for n in continuous_nodes if 'Favours' in ''.join(n.itertext())]
+    direction_nodes = [n for n in continuous_nodes if 'Favors' in ''.join(n.itertext())]
     assert len(direction_nodes) == 2
     direction_lines = []
     for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):

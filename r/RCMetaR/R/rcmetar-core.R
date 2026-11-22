@@ -1062,7 +1062,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
     tests <- unique(unlist(lapply(fits, function(fit) fit$test), use.names=FALSE))
     labels <- unname(unlist(rcmetar.inference.method.names()[tests], use.names=FALSE))
-    if (length(labels)) result[["Inference method"]] <- paste(labels, collapse=", ")
+    if (length(labels)) result[["Inference Method"]] <- paste(labels, collapse=", ")
     result
 }
 

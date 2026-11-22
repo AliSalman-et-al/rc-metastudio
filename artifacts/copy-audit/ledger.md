@@ -2,7 +2,7 @@
 
 Base: 7dec12db. Entries are keyed by row number in Gemini’s replacements.csv. File and line refer to the audit location.
 
-Totals: 376 applied, 53 changed, 58 skipped. The table includes all 33 meaning-change verdicts.
+Totals: 375 applied, 53 changed, 59 skipped. The table includes all 33 meaning-change verdicts.
 
 | # | Audit location | Outcome | Reason / meaning-change verdict |
 |---:|---|---|---|
@@ -415,7 +415,7 @@ Totals: 376 applied, 53 changed, 58 skipped. The table includes all 33 meaning-c
 | 407 | `r/RCMetaR/R/ratio_methods.R:253` | applied | CONTEXT.md uses 'arm' rather than 'group'. |
 | 408 | `r/RCMetaR/R/ratio_methods.R:253` | applied | CONTEXT.md uses 'arm' rather than 'group', and expands 'MH' with an en dash. |
 | 409 | `r/RCMetaR/R/rcmetar-core.R:834` | applied | CONTEXT.md prefers 'effect measure' over 'metric'. |
-| 410 | `r/RCMetaR/R/rcmetar-core.R:1065` | applied | Use sentence case (consistent with ~95% of RC MetaStudio UI and headings). |
+| 410 | `r/RCMetaR/R/rcmetar-core.R:1065` | skipped | The result adapter uses this R key to reconcile the fitted inference method with the requested setting. It hides the source key and displays the fitted method under Inference. |
 | 411 | `r/RCMetaR/R/reitsma_methods.R:329` | skipped | These are internal matrix column selectors. Renaming them would require changing the R result schema and its consumers. |
 | 412 | `r/RCMetaR/R/reitsma_methods.R:330` | skipped | These are internal matrix column selectors. Renaming them would require changing the R result schema and its consumers. |
 | 413 | `r/RCMetaR/R/reitsma_methods.R:331` | skipped | These are internal matrix column selectors. Renaming them would require changing the R result schema and its consumers. |

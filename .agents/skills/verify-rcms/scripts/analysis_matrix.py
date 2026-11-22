@@ -469,7 +469,7 @@ def run(
                 assert shown and contained, observations
                 assert readout.startswith(f"SE {se:.4f}"), observations
                 if se == 0:
-                    assert "z " not in readout and "two-sided p" not in readout, readout
+                    assert "z " not in readout and "two-sided P" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()
@@ -843,7 +843,7 @@ def run(
         i_squared = "\n".join(
             text
             for name, text in view.texts.items()
-            if name.startswith("Diagnostic I-squared")
+            if name.startswith("Diagnostic I²")
         )
         assert i_squared and ("Zhou" in i_squared or "I-squared" in i_squared), (
             i_squared

@@ -63,7 +63,7 @@ test_that("singleton inference follows metafor rather than rejecting or blanking
       method <- paste0(family, if(random) ".random" else if(family=="continuous") ".fixed" else ".fixed.inv.var")
       result <- suppressWarnings(rcmetar.run.analysis(d,method=method,params=p))
       expect_match(result$`Analysis warnings`, "test.*z", info=method)
-      expect_identical(result$`Inference method`, "Normal approximation", info=method)
+      expect_identical(result$`Inference Method`, "Normal approximation", info=method)
       expect_false(any(grepl("Knapp|Sidik|DerSimonian",result$References)),info=method)
       actual <- if(family=="diagnostic") result$Summary$MAResults else result$res
       reference <- suppressWarnings(metafor::rma.uni(.2,sei=.1,method=if(random) "REML" else "FE",test="knha"))
