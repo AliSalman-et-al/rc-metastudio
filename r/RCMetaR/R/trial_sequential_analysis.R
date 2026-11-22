@@ -539,6 +539,7 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     input.row=prepared$preview$study.order,
     accrued=prepared$accrued)
   fits <- lapply(seq_len(k), function(j) {
+    .rcmetar.sequential.progress(j, k)
     if (j == k) return(fit)
     withCallingHandlers(
       tryCatch(.tsa.fit(get.subset(data, seq_len(j)), s), error=function(e) {

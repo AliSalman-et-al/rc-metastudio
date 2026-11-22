@@ -8,6 +8,7 @@ from math import isfinite
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from PyQt6 import sip
 from PyQt6.QtCore import QProcess, QSignalBlocker, Qt, QTimer
 from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
@@ -15,7 +16,7 @@ from PyQt6.QtWidgets import (
     QFormLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QToolButton, QVBoxLayout, QWidget,
 )
 
-from rc_metastudio import adaptive_window, app_error_handler, qt_layout
+from rc_metastudio import adaptive_window, app_error_handler, qt_layout, r_worker
 from rc_metastudio.analysis import progress_dialog
 from rc_metastudio.analysis.identity import dataset_identity
 from rc_metastudio.results.contract import AnalysisResult
@@ -193,6 +194,7 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.conclusion_dir: TemporaryDirectory[str] | None = None
         self.ready_preview: tuple[TsaRequest, float, float] | None = None
         self.active_preview: tuple[TsaRequest, float, float] | None = None
+        self._cancel_worker_conclusion: Callable[[], None] | None = None
         self.finished.connect(self._stop_conclusion)
         self.finished.connect(self.preview_timer.stop)
         for combo in (self.order, self.test, self.heterogeneity, self.spending):
@@ -348,15 +350,31 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.conclusion.clear()
         self.ready_preview = None
         self.active_preview = None
+        if self._cancel_worker_conclusion is not None:
+            self._cancel_worker_conclusion()
+            self._cancel_worker_conclusion = None
         if self.conclusion_process.state() != QProcess.ProcessState.NotRunning:
             self.conclusion_process.kill()
 
     def _start_conclusion(self) -> None:
-        if self.ready_preview is None or self.conclusion_dir is not None:
+        if self.ready_preview is None or self.conclusion_dir is not None or self._cancel_worker_conclusion is not None:
             return
         self.active_preview = self.ready_preview
-        request, _, _ = self.active_preview
+        request, accrued, ris = self.active_preview
         try:
+            if r_worker.enabled():
+                active = self.active_preview
+
+                def delivered(text: str) -> None:
+                    if not sip.isdeleted(self) and self.active_preview is active:
+                        self._cancel_worker_conclusion = None
+                        self.active_preview = None
+                        self.conclusion.setText(text)
+
+                self._cancel_worker_conclusion = self.service.start_worker_conclusion(
+                    self.model, request, accrued, ris, delivered,
+                )
+                return
             self.conclusion_dir = TemporaryDirectory(prefix="tsa-conclusion-", dir=make_r_tmp())
             program, arguments = self.service.conclusion_command(self.model, request, Path(self.conclusion_dir.name))
             self.conclusion_process.start(program, arguments)
@@ -497,10 +515,14 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.conclusion_timer.stop()
         self.run_button.setEnabled(False)
         self.ready_preview = None
-        progress = progress_dialog.AnalysisProgressDialog(self, operation="Running trial sequential analysis…")
-        progress.show()
-        progress.repaint()
+        progress = None
+        if not r_worker.enabled():
+            progress = progress_dialog.AnalysisProgressDialog(self, operation="Running trial sequential analysis…")
+            progress.show()
+            progress.repaint()
         try:
+            if self._cancel_worker_conclusion is not None:
+                r_worker.current_worker().wait_for_conclusion()
             if (self.conclusion_process.state() != QProcess.ProcessState.NotRunning
                     and not self.conclusion_process.waitForFinished(500)):
                 self._stop_conclusion()
@@ -514,9 +536,12 @@ class TrialSequentialAnalysisDialog(QDialog):
             self.on_result(result, manuscript)
             self.on_settings_saved(options)
             self.accept()
+        except r_worker.RJobCancelled:
+            self.run_button.setEnabled(True)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.status.setText(str(error).strip())
             self.run_button.setEnabled(True)
         finally:
-            progress_dialog.dispose(progress)
+            if progress is not None:
+                progress_dialog.dispose(progress)

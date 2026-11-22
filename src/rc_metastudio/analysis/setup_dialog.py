@@ -28,7 +28,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
-from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text
+from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text, r_worker
 from rc_metastudio.analysis import (
     catalog as analysis_catalog,
     identity as analysis_identity,
@@ -928,14 +928,15 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 self._show_analysis_error(missing_inputs)
                 return
             repeated = self.analysis_type in {"cumulative", "leave-one-out"}
-            bar = progress_dialog.AnalysisProgressDialog(
-                self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
-            )
-            bar.show()
-            bar.repaint()
-            bar.start_tracking()
+            if not r_worker.enabled():
+                bar = progress_dialog.AnalysisProgressDialog(
+                    self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
+                )
+                bar.show()
+                bar.repaint()
+                bar.start_tracking()
             result = self._execute_requests(requests) if regression is None else regression()
-            if bar.cancelled:
+            if bar is not None and bar.cancelled:
                 return
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
             manuscript = ManuscriptReport.from_result(result)
@@ -943,6 +944,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             on_result = self._on_result
             if on_result is None:
                 raise RuntimeError("analysis configuration has no results owner")
+        except r_worker.RJobCancelled:
+            return
         except Exception as error:
             if bar is not None and bar.cancelled:
                 return

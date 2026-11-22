@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Versioned trial sequential analysis requests and results."""
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -287,6 +287,20 @@ class TsaService:
     def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
         return r_bridge.trial_sequential_conclusion_command(self._prepare_for(model, request), directory)
 
+    def start_worker_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
+                                accrued: float, ris: float, deliver) -> Callable[[], None]:
+        prepared = self._prepare_for(model, request)
+        if not isinstance(prepared, r_bridge.WorkerTsaInputs):
+            raise RuntimeError("Trial sequential worker inputs are unavailable.")
+
+        def completed(outcome, error):
+            text = "" if error is not None else preview_conclusion(
+                str(outcome["category"]), str(outcome["look"]), str(outcome["study"]), accrued, ris,
+            )
+            deliver(text)
+
+        return prepared.conclusion(completed)
+
     def finish_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
                           path: Path, accrued: float, ris: float) -> str:
         if self._prepared is None or self._prepared[:2] != (model, request):
@@ -298,7 +312,7 @@ class TsaService:
     def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
         path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
         prepared = self._prepare_for(model, request)
-        if self._evidence is None:
+        if self._evidence is None and not isinstance(prepared, r_bridge.WorkerTsaInputs):
             self._evidence = r_bridge.trial_sequential_evidence(prepared)
         fields, sections = r_bridge.run_trial_sequential_analysis(
             prepared, self._evidence, {
