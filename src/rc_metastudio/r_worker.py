@@ -464,6 +464,7 @@ class RWorker(QObject):
         label = {
             "previews": "Calculating study previews…",
             "calculator": "Calculating study effects…",
+            "small_study": "Running small-study effects analysis…",
             "tsa_run": "Running trial sequential analysis…",
             "tsa_preview": "Preparing trial sequential analysis…",
             "tsa_conclusion": "Checking trial sequential boundaries…",

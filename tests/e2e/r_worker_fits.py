@@ -11,6 +11,7 @@ from rc_metastudio import r_worker
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
 from rc_metastudio.results.window import ResultsWindow
+from tests.analysis_regression.golden.support.worker_parity import capture_cases
 
 
 def run(app, window, work, root, record, _analyze):
@@ -25,6 +26,8 @@ def run(app, window, work, root, record, _analyze):
     _tsa(app, window, worker, record)
     assert standard.isVisible() and all(path.is_file() for path in committed)
     record("committed-fit-survived-worker-loss", standard)
+    matched = capture_cases(work / "worker-golden-payloads")
+    record("worker-golden-full-payload-parity", window, cases=matched)
 
 
 def _fit(app, window, worker, record):
@@ -39,7 +42,8 @@ def _fit(app, window, worker, record):
             assert "R worker stopped" in dialog.analysis_error_details.toPlainText()
     _attempt(app, worker, run_button, dialog, "fit", "complete", record)
     result = _visible(app, ResultsWindow)
-    assert result.results.contributing_studies == 400
+    assert any(table.role == "study_results" and len(table.rows) == 400
+               for section in result.results.sections for table in section.tables)
     return result
 
 
