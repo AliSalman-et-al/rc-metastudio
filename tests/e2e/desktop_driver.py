@@ -2490,7 +2490,9 @@ try:
             splashes = [w for w in QtWidgets.QApplication.topLevelWidgets()
                         if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible()]
             assert len(splashes) == 1
-            assert splashes[0].message() in {"Starting R…", "Loading RCMetaR…", "Loading analysis packages…"}
+            assert splashes[0].message() in {
+                "Starting R…", "Loading RCMetaR…", "Loading analysis packages…", "Loading R worker…",
+            }
             assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible()
                            for w in QtWidgets.QApplication.topLevelWidgets())
             if EVIDENCE is not None:
@@ -2510,7 +2512,15 @@ try:
         import time
         app.processEvents()
         assert window.isVisible()
-        (EVIDENCE / "startup.json").write_text(json.dumps({"seconds": _startup_phases["window:visible"] - float(os.environ["RCMS_DRIVE_STARTED"]), "visible": True, "platform": app.platformName()}))
+        startup = {
+            "seconds": _startup_phases["window:visible"] - float(os.environ["RCMS_DRIVE_STARTED"]),
+            "visible": True, "platform": app.platformName(),
+        }
+        if "r-library:R worker:complete" in _startup_phases:
+            startup["worker_warmup_seconds"] = (
+                _startup_phases["r-library:R worker:complete"] - _startup_phases["r-library:R worker:start"]
+            )
+        (EVIDENCE / "startup.json").write_text(json.dumps(startup))
     if _startup_profile is not None and EVIDENCE is not None:
         _startup_phases["r:ready"] = time.time()
         _startup_profile.disable()

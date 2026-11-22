@@ -208,9 +208,9 @@ def load_R_libraries(app, splash=None, phase_callback=None):
 
     r_bridge.load_required_packages(observe_package)
     if r_worker.enabled():
-        observe_package("analysis packages", "start")
+        observe_package("R worker", "start")
         r_worker.current_worker().ensure_ready()
-        observe_package("analysis packages", "complete")
+        observe_package("R worker", "complete")
 
 
 def _open_startup_project(app, meta, project_path, startup_argv):

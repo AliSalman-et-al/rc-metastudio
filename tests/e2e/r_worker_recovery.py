@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from contextlib import contextmanager
 from pathlib import Path
 from time import perf_counter
 from unittest.mock import patch
@@ -42,25 +43,17 @@ def run(app, window, work: Path, root: Path, record_step, _analyze):
     model = window.model
     original_rows = model.rowCount()
     process = psutil.Process(first_pid)
-    process.suspend()
-    try:
+    with _suspended(process):
         cancelled = _open_with_error(
             app, window, candidate, record_step, lambda dialog: _cancel_preview(dialog, process, record_step),
         )
-    finally:
-        if process.is_running():
-            process.resume()
     assert "cancel" in cancelled.lower()
     assert worker.pid == first_pid
     assert window.model is model and window.model.rowCount() == original_rows
     record_step("worker-cancelled", window, pid=first_pid, message=cancelled)
 
-    process.suspend()
-    try:
+    with _suspended(process):
         crashed = _open_with_error(app, window, candidate, record_step, lambda _dialog: process.kill())
-    finally:
-        if process.is_running():
-            process.resume()
     assert "R worker stopped" in crashed
     assert window.model is model and window.model.rowCount() == original_rows
     assert hashlib.sha256(saved.read_bytes()).hexdigest() == original_hash
@@ -127,18 +120,28 @@ def _check_deadline(app, window, saved, record_step, r_worker):
     worker = r_worker.current_worker()
     process = psutil.Process(worker.pid)
     model = window.model
-    process.suspend()
-    try:
-        with patch.object(r_worker, "_JOB_MS", 1000):
-            timeout = _open_with_error(app, window, saved, record_step, lambda _dialog: None)
-    finally:
-        if process.is_running():
-            process.resume()
+    with _suspended(process), patch.object(r_worker, "_JOB_MS", 1000):
+        timeout = _open_with_error(app, window, saved, record_step, lambda _dialog: None)
     assert "did not respond in time" in timeout
     assert window.model is model
     assert window.open(str(saved), raise_on_error=True)
     assert worker.pid != process.pid and not process.is_running()
     record_step("worker-timeout-recovered", window, stopped_pid=process.pid, pid=worker.pid, message=timeout)
+
+
+@contextmanager
+def _suspended(process):
+    process.suspend()
+    try:
+        yield
+    finally:
+        try:
+            process.resume()
+        except psutil.NoSuchProcess:
+            pass
+        except psutil.AccessDenied:
+            # Windows may retain the PID briefly after termination begins.
+            process.wait(timeout=5)
 
 
 def _operations(service, bridge):
