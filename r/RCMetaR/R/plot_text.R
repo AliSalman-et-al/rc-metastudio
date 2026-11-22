@@ -28,10 +28,10 @@ rcmetar.truncate.plot.display.text <- function(value, limit=72L) {
     over <- !is.na(value) & nchar(value, type="chars") > limit
     if (any(over, na.rm=TRUE)) {
         suffix.width <- 13L
-        prefix.width <- limit - suffix.width - 3L
+        prefix.width <- limit - suffix.width - 1L
         value[over] <- paste0(
             substr(value[over], 1L, prefix.width),
-            "...",
+            "\u2026",
             substr(value[over], nchar(value[over], type="chars") - suffix.width + 1L,
                    nchar(value[over], type="chars"))
         )

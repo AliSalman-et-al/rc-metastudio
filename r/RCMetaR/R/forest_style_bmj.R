@@ -47,7 +47,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
             list(
                 key="experimental_events_total",
                 group=groups[[1]],
-                header="Events / Total",
+                header="Events / total",
                 values=rcmetar.bmj.combined.count(binary.data@g1O1, experimental.total)
             )
         )
@@ -61,7 +61,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
                 list(
                     key="control_events_total",
                     group=groups[[2]],
-                    header="Events / Total",
+                    header="Events / total",
                     values=rcmetar.bmj.combined.count(binary.data@g2O1, control.total)
                 )
             )
@@ -723,7 +723,7 @@ rcmetar.draw.bmj.headers <- function(bundle, layout, ilab, k, metric, method, sh
             graphics::segments(min(x) - pad, rule.y, max(x) + pad, rule.y, col="#a7a9ac")
         }
         graphics::text(mean(x), rule.y + .8 * line,
-                       if (length(x) == 2L) "No of events / total" else "Events / Total")
+                       if (length(x) == 2L) "No of events / total" else "Events / total")
         weight <- which(keys == "weight")
         if (length(weight)) rcmetar.draw.forest.header(layout$ilab.xpos[weight], arm.y, "Weight\n(%)")
     } else {

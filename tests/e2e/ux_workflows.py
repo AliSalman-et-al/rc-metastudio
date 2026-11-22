@@ -248,7 +248,7 @@ def _run(app, window, work, root, record, analyze):
     from xml.etree import ElementTree
     svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
     nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
-    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
+    directions = [node for node in nodes if "Favors" in "".join(node.itertext())]
     assert len(directions) == 2
     def box(node):
         import re
@@ -311,7 +311,7 @@ def _run(app, window, work, root, record, analyze):
         palette.setColor(QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(background))
         app.setPalette(palette)
         for page in ("forest", "manuscript", "tables"):
-            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Data tables (CSV)"}[page])
+            item = next(item for item in view.nav_tree.findItems("", QtCore.Qt.MatchFlag.MatchContains | QtCore.Qt.MatchFlag.MatchRecursive) if item.text(0) == {"forest": "Forest plot", "manuscript": "Text report", "tables": "Data tables"}[page])
             view.nav_tree.setCurrentItem(item)
             app.processEvents()
             app.processEvents()
@@ -330,7 +330,7 @@ def _run(app, window, work, root, record, analyze):
 
 
     for arm in window.model.arm_names:
-        assert "Favours" in svg and arm in svg
+        assert "Favors" in svg and arm in svg
     assert view.result_identity.isVisible()
     assert view._fit_width_active
     for width in (900, 796):
@@ -458,12 +458,12 @@ def _run(app, window, work, root, record, analyze):
         swapped = analyze(app, window, "binary.random")
         svg = ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot()
         labels = {node.text: float(node.attrib["x"]) for node in svg.iter("{http://www.w3.org/2000/svg}text")
-                  if (node.text or "").startswith("Favours ")}
+                  if (node.text or "").startswith("Favors ")}
         below, above = window.model.current_sheet.effect_direction_arms()
         if not direction:
             assert not labels
         else:
-            assert labels[f"Favours {below}"] < labels[f"Favours {above}"]
+            assert labels[f"Favors {below}"] < labels[f"Favors {above}"]
         record("effect-direction-swapped", swapped, direction=direction, labels=labels)
         close_result(swapped)
         window.action_swap_arms.trigger()
@@ -525,7 +525,7 @@ def _run(app, window, work, root, record, analyze):
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(0))
     assert not page.isComplete()
-    assert "different CSV column" in page.import_status.text()
+    assert "different file column" in page.import_status.text()
     page.mapping_controls[1].setCurrentIndex(page.mapping_controls[1].findData(1))
     assert page.isComplete()
     template = work / "template.csv"
@@ -610,11 +610,11 @@ def _run(app, window, work, root, record, analyze):
         artifact = result._selected_plot()[0]
         return list(ElementTree.parse(artifact.display_path()).getroot().iter('{http://www.w3.org/2000/svg}text'))
     continuous_nodes = forest_nodes(continuous)
-    direction_nodes = [n for n in continuous_nodes if 'Favours' in ''.join(n.itertext())]
+    direction_nodes = [n for n in continuous_nodes if 'Favors' in ''.join(n.itertext())]
     assert len(direction_nodes) == 2
     direction_lines = []
     for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):
-        expected = 'Favours ' + arm
+        expected = 'Favors ' + arm
         observed = ''.join(node.itertext())
         assert observed == expected, (observed, expected)
         direction_lines.append(observed)
@@ -640,7 +640,7 @@ def _run(app, window, work, root, record, analyze):
     close_result(bmj)
     window.workspace.mark_saved()
     subgroup = matrix(app, window, 'analysis-amino-binary-subgroup', record, keep_results=True)
-    tables_item = next(item for item in subgroup.nav_tree.findItems('Data tables (CSV)', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
+    tables_item = next(item for item in subgroup.nav_tree.findItems('Data tables', QtCore.Qt.MatchFlag.MatchExactly | QtCore.Qt.MatchFlag.MatchRecursive))
     subgroup.nav_tree.setCurrentItem(tables_item)
     app.processEvents()
     for index in range(subgroup.table_selector.count()):

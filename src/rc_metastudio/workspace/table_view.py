@@ -75,7 +75,7 @@ class DatasetTableView(QtWidgets.QTableView):
         QWidget.__init__(self, parent)
         self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked | QtWidgets.QAbstractItemView.EditTrigger.EditKeyPressed | QtWidgets.QAbstractItemView.EditTrigger.AnyKeyPressed)
         self.setAccessibleName("Study data")
-        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell, F4 to open the study calculator or Ctrl+Tab to leave the grid.")
+        self.setAccessibleDescription("Study rows and input columns. Effect estimate and confidence interval columns are highlighted. Press Enter to edit a cell, F4 to open the study calculator, or Ctrl+Tab to leave the grid.")
 
         self.study_calculator_action = QAction("Study calculator…", self)
         self.study_calculator_action.setShortcut("F4")
@@ -215,7 +215,7 @@ class DatasetTableView(QtWidgets.QTableView):
             return
 
         study = self.model()._study_for_row(study_index)
-        delete_action = QAction('Delete study “%s”…' % study.label, self)
+        delete_action = QAction('Delete study \"%s\"…' % study.label, self)
 
         def delete_study():
             answer = QMessageBox.question(

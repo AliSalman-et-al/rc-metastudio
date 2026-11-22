@@ -134,7 +134,7 @@ def run(app, window, record):
         menus(window.menuBar())
         if family in {'onearm-mean', 'reg-coef', 'generic-effect', 'twoarm-mean', 'twoarm-smd'}:
             menu = next(action.menu() for action in window.menuMetric.actions()
-                        if action.text() == "One-arm metrics")
+                        if action.text() == "One-arm effect measures")
             menu.popup(window.mapToGlobal(QtCore.QPoint(100, 100)))
             app.processEvents()
             record('display-metric-popup', menu, family=family,

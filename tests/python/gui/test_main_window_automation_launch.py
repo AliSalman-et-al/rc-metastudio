@@ -1954,7 +1954,7 @@ def test_results_window_ignores_missing_image_order_entries():
             for index in range(window.nav_tree.topLevelItemCount())
         ]
 
-        assert nav_titles == ["Text report", "Data tables (CSV)"]
+        assert nav_titles == ["Text report", "Data tables"]
         assert not any(
             isinstance(item, results_window.QGraphicsPixmapItem)
             for item in window.scene.items()
@@ -2189,7 +2189,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
     app, window = automation.start_automation()
 
     try:
-        assert window.action_about_legal.text() == "About RCMS…"
+        assert window.action_about_legal.text() == "About RC MetaStudio…"
 
         from rc_metastudio import about_legal_dialog
 
@@ -2211,7 +2211,7 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         assert "GPL-3.0-or-later" in about_text
         assert "Credits and licenses" in about_text
         dialog = about_dialogs[0]
-        assert dialog.windowTitle() == "About RCMS"
+        assert dialog.windowTitle() == "About RC MetaStudio"
         assert dialog.content_scroll_area.frameShape() == QtWidgets.QFrame.Shape.NoFrame
         assert not QtGui.QImage(":/misc/about-logo.png").isNull()
         assert dialog.content_scroll_area.openExternalLinks()

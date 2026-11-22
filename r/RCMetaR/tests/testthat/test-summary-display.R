@@ -218,21 +218,21 @@ test_that("summary display uses readable labels and aligned columns", {
   expect_false(grepl("; lower bound:", text, fixed = TRUE))
   expect_false(grepl("Std. error: 0.236", text, fixed = TRUE))
 
-  expect_match(text, "\nModel Results\n", fixed = TRUE)
+  expect_match(text, "\nModel results\n", fixed = TRUE)
   expect_match(text, "\nHeterogeneity\n", fixed = TRUE)
-  expect_false(grepl("\n Model Results\n", text, fixed = TRUE))
+  expect_false(grepl("\n Model results\n", text, fixed = TRUE))
   expect_false(grepl("\n Heterogeneity\n", text, fixed = TRUE))
   expect_false(grepl("p-Value", text, fixed = TRUE))
   expect_false(grepl("Het. p-Value", text, fixed = TRUE))
   expect_false(grepl("\n\n\n", text, fixed = TRUE))
 
-  model.header <- first_line_after(rendered, "Model Results")
+  model.header <- first_line_after(rendered, "Model results")
   model.values <- next_non_empty_line(rendered, model.header)
   heterogeneity.header <- first_line_after(rendered, "Heterogeneity")
   heterogeneity.values <- next_non_empty_line(rendered, heterogeneity.header)
 
-  model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "p-value")
-  heterogeneity.labels <- c("Q", "df", "p-value", "I\u00b2", "\u03c4\u00b2")
+  model.labels <- c("Estimate", "Lower bound (95% CI)", "Upper bound (95% CI)", "P value")
+  heterogeneity.labels <- c("Q", "df", "P value", "I\u00b2", "\u03c4\u00b2")
   expect_values_inside_header_columns(model.header, model.values, model.labels)
   expect_values_inside_header_columns(heterogeneity.header, heterogeneity.values, heterogeneity.labels)
 })
@@ -279,7 +279,7 @@ test_that("overall display leaves unavailable p-values blank", {
   display <- overall_display_fixture()
   overall <- display$arrays$arr1
 
-  p.column <- match("p-value", overall[1,])
+  p.column <- match("P value", overall[1,])
   expect_equal(overall[2, p.column], "")
   expect_equal(overall[3, p.column], "0.277")
 })
@@ -425,7 +425,7 @@ test_that("small-sample meta-regression labels t and F inference", {
   display <- regression_display_fixture(inference.method = "knha")
   rendered <- paste(capture.output(print(display)), collapse = "\n")
 
-  expect_match(rendered, "Knapp-Hartung", fixed = TRUE)
+  expect_match(rendered, "Knapp\u2013Hartung", fixed = TRUE)
   expect_match(rendered, "Overall moderators (F)", fixed = TRUE)
   expect_match(rendered, "t", fixed = TRUE)
   expect_match(rendered, "11", fixed = TRUE)

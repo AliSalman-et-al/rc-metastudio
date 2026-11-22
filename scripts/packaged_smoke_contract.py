@@ -1,8 +1,14 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Shared packaged smoke trace and the display scales emitted for native builders."""
+"""Shared packaged smoke identities, trace markers, and display scales."""
 
 SURFACE_SCALES = ("1.25", "1.50", "1.75")
+BARZA_SAMPLE = "Binary - Aminoglycoside dosing, Barza 1996.rcms"
+BCG_SAMPLE = "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms"
+EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
+    BARZA_SAMPLE: "eee9974e5edd6f39dbbff0a177c6da3a737a458d74245b4f78365b386ec689b9",
+    BCG_SAMPLE: "bfec74e1538844afe5b79042292a2bf3f823ed596dee4a6da0aa7689b09f28e9",
+}
 POST_CLOSE = "packaged-workflow:post-close"
 STARTUP_PROJECT_PASSED = "startup-project:normal-entry-point-passed"
 

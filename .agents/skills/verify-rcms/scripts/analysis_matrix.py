@@ -469,7 +469,7 @@ def run(
                 assert shown and contained, observations
                 assert readout.startswith(f"SE {se:.4f}"), observations
                 if se == 0:
-                    assert "z " not in readout and "two-sided p" not in readout, readout
+                    assert "z " not in readout and "two-sided P" not in readout, readout
         workflow = "standard"
         method = family + ".random"
         metrics = ("sens", "spec") if family == "diagnostic" else ()
@@ -542,6 +542,8 @@ def run(
         assert not callback_errors, callback_errors
         view = observe()
         texts = "\n".join(view.texts.values())
+        if sample == "amino" and trim_fill_side is None:
+            assert "Exact P value:" in texts and not re.search(r"\bp-value\b", texts, re.I), texts
         facts = view.result_facts.accessibleDescription()
         assert not re.search(r'\b(?:meta|metafor|mada)\b', facts), facts
         if sample == "lymph":
@@ -561,8 +563,9 @@ def run(
         for package in ('metafor', 'meta'):
             assert package + ' (version ' + r_bridge.get_r_package_version(package) + ')' in view.manuscript.methods, view.manuscript.methods
         assert window.model.current_sheet.name.casefold() in view.manuscript.title.casefold()
-        assert view.manuscript.comparison == view.results.identity.splitlines()[1]
-        assert_report(view, system_clipboard=system_clipboard)
+        assert view.manuscript.comparison == "\n".join(view.results.identity.splitlines()[1:-1])
+        assert_report(view, system_clipboard=system_clipboard,
+                      exact_p_record=record if sample == "amino" and trim_fill_side is None else None)
         references = [section for section in view.manuscript.sections if section.source_key == 'References']
         assert len(references) == 1 and not references[0].tables
         meta_number = next(i for i, line in enumerate(references[0].paragraphs, 1) if '10.1136/ebmental-2019-300117' in line)
@@ -751,6 +754,9 @@ def run(
     )
     click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     view = observe()
+    if scenario == 'analysis-amino-binary-subgroup':
+        from tests.e2e.report_retention import assert_heterogeneity_p_copy
+        assert_heterogeneity_p_copy(view, record)
     if exercise_mean_sample:
         from tests.e2e.mean_metric_migration import compare_mean_sample_analysis
         assert mean_source is not None
@@ -843,7 +849,7 @@ def run(
         i_squared = "\n".join(
             text
             for name, text in view.texts.items()
-            if name.startswith("Diagnostic I-squared")
+            if name.startswith("Diagnostic I²")
         )
         assert i_squared and ("Zhou" in i_squared or "I-squared" in i_squared), (
             i_squared

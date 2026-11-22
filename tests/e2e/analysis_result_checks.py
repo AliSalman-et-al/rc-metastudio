@@ -76,7 +76,7 @@ def check_standard_heterogeneity(view, record):
           list(data_type=plot.data$data_type, Q=direct$QE, df=direct$k-direct$p, p=direct$QEp, I2=direct$I2, tau2=direct$tau2,
                random=!direct$method %in% c("FE", "EE", "CE"))
         }), auto_unbox=TRUE, digits=16)'''))[0]))
-        assert table.headers == ("Q", "df", "p-value", "I²") + (("τ²",) if expected["random"] else ()), table
+        assert table.headers == ("Q", "df", "P value", "I²") + (("τ²",) if expected["random"] else ()), table
         for cell, key in zip(table.rows[0], ("Q", "df", "p", "I2", "tau2")):
             if cell.startswith("<"):
                 assert expected[key] < _display_number(cell[1:]), (cell, expected)
@@ -158,9 +158,9 @@ def check_subgroup(view, record):
         assert abs(weights["total"] - 100) < 1e-8, weights
         record("round4-subgroup-weights", view, title=title, weights=weights, plots={title: path})
         tables = {t.title: t for t in sections[index].tables}
-        model, heterogeneity = tables["Model Results"], tables["Heterogeneity"]
+        model, heterogeneity = tables["Model results"], tables["Heterogeneity"]
         assert "k" in model.headers
-        assert all(h in heterogeneity.headers for h in ("Q", "df", "p-value", "I²"))
+        assert all(h in heterogeneity.headers for h in ("Q", "df", "P value", "I²"))
         for row, het, expected in zip(model.rows, heterogeneity.rows, reference, strict=True):
             compare(row[1], expected["k"], 0)
             compare(row[7], expected["z"], 5.01e-7)

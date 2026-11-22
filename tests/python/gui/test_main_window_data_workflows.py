@@ -500,7 +500,7 @@ def test_invalid_paste_reports_validation_error_when_model_signals_are_blocked(
         table.paste_contents(model.index(0, model.RAW_DATA[0]), [["1"] * model.columnCount()])
 
         assert shown
-        assert shown[-1][1:] == ("Warning", "Clipboard data extends beyond the workspace columns.")
+        assert shown[-1][1:] == ("Could not edit study data", "Clipboard data extends beyond the workspace columns.")
         assert _cell_text(model, 0, model.RAW_DATA[0]) == ""
         assert model.signalsBlocked()
     finally:

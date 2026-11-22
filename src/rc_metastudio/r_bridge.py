@@ -505,7 +505,7 @@ def available_model_methods(
 ) -> dict[str, str]:
     """Discover methods by identity without exposing the R dataset to callers."""
     if not metrics:
-        raise ValueError("Choose at least one metric before querying methods.")
+        raise ValueError("Choose at least one effect measure before selecting analysis methods.")
     data = dataset_for_analysis(model, family, metric=metrics[0])
     choices = [
         get_available_methods(for_data_type=family, data=data, metric=metric, workflow=workflow)
@@ -1053,8 +1053,8 @@ def run_model_analysis(table_model, request, *, covs_to_include=None, studies=No
         metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
     ) and table_model.current_sheet is not None:
         below, above = table_model.current_sheet.effect_direction_arms()
-        params = {**params, "fp_favours_left": f"Favours {below}" if below else "",
-                  "fp_favours_right": f"Favours {above}" if above else ""}
+        params = {**params, "fp_favours_left": f"Favors {below}" if below else "",
+                  "fp_favours_right": f"Favors {above}" if above else ""}
         request = {**request, "params": params}
     return run_versioned_analysis_request(request, data)
 
@@ -1141,7 +1141,7 @@ def run_model_diagnostic_analysis(
         raise ValueError(
             "Diagnostic analysis requires complete TP/FN/FP/TN counts or "
             "complete entered effect estimates and confidence intervals for "
-            f"each selected metric. Missing entered estimates for: {', '.join(missing)}."
+            f"each selected effect measure. Missing entered estimates for: {', '.join(missing)}."
         )
     return run_versioned_analysis_requests(
         requests, metric_data=[diagnostic_data_arguments(model, metric=metric) for metric in metrics]
@@ -1319,7 +1319,7 @@ def _regression_summary(fit, reports, scale):
 
 
 def _regression_residual_table(fields, scale):
-    residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "p-value"), ("tau2", "τ²")) if key in fields]
+    residual = [(key, label) for key, label in (("QE", "Q"), ("QEp", "P value"), ("tau2", "τ²")) if key in fields]
     if not residual:
         return None
     return {"title": "Residual heterogeneity", "role": "residual_heterogeneity", "inference": str(list(fields.get('test', ['z']))[0]), "headers": [label for _, label in residual],
@@ -2024,7 +2024,7 @@ def _format_nested_value(r_object, study_names=None, field_name=None):
     dims = _r_dims(r_object)
     if len(dims) == 2:
         if dims[0] > 20 or dims[0] * dims[1] > 100:
-            return "%d rows x %d columns" % (dims[0], dims[1])
+            return "%d rows × %d columns" % (dims[0], dims[1])
         return _format_r_matrix(r_object, study_names=study_names)
     if len(dims) == 3:
         rendered = _format_r_array_sections(
@@ -2081,9 +2081,9 @@ def _is_large_display_shape(dims):
 
 def _format_shape_summary(dims):
     if len(dims) == 2:
-        return "%d rows x %d columns" % (dims[0], dims[1])
+        return "%d rows × %d columns" % (dims[0], dims[1])
     if len(dims) == 3:
-        return "%d rows x %d columns x %d slices" % tuple(dims)
+        return "%d rows × %d columns × %d slices" % tuple(dims)
     return "Array with dimensions %s" % " x ".join(str(dim) for dim in dims)
 
 
@@ -2100,15 +2100,15 @@ def _format_summary_label(name):
         "converged": "Converged",
         "warnings": "Warnings",
         "package.version": "Package version",
-        "normalized.partial.AUC": "Normalized partial AUC",
+        "normalized.partial.AUC": "Normalized partial SROC AUC",
         "partial.FPR.bounds": "Partial FPR bounds",
         "false.positive.rate": "False-positive rate",
         "covariance.sensitivity.specificity": "Sensitivity-specificity covariance",
         "correlation.sensitivity.specificity": "Sensitivity-specificity correlation",
         "summary.seed": "Summary seed",
         "summary.iterations": "Summary iterations",
-        "p.value": "p-value",
-        "z.value": "z-value",
+        "p.value": "P value",
+        "z.value": "z value",
     }
     raw_name = str(name)
     if raw_name in labels:
@@ -2368,15 +2368,15 @@ def _format_r_table_header(value):
     compact = normalized.lower().replace(".", " ").replace("_", " ").replace("-", " ")
     compact = " ".join(compact.split())
     if compact == "p value":
-        return "p-value"
+        return "P value"
     if normalized.lower() == "pr(>|z|)":
-        return "p-value"
+        return "P value"
     if compact == "het p value":
-        return "Het. p-value"
+        return "Heterogeneity P value"
     if compact == "omnibus p value":
-        return "Omnibus p-value"
+        return "Omnibus P value"
     if compact == "z value":
-        return "z-value"
+        return "z value"
     if compact in ("hpd low", "hpd lower", "ci lb", "lower bound"):
         return "Lower bound"
     if compact in ("hpd high", "hpd upper", "ci ub", "upper bound"):
@@ -2430,26 +2430,24 @@ def _replace_result_labels(text):
         ("Zhou.Dendukuri", "Zhou–Dendukuri"),
         ("Holling.Unadjusted", "Holling (unadjusted)"),
         ("Holling.Adjusted", "Holling (adjusted)"),
-        ("posLR", "Positive Likelihood Ratio"),
-        ("negLR", "Negative Likelihood Ratio"),
-        ("invnegLR", "Inverse Negative Likelihood Ratio"),
+        ("posLR", "Positive likelihood ratio"),
+        ("invnegLR", "Inverse negative likelihood ratio"),
+        ("negLR", "Negative likelihood ratio"),
     ):
         text = text.replace(raw_label, display_label)
     insensitive_replacements = (
-        (r"\bHPD[._\s]+(?:low|lower)\b", "Lower bound"),
-        (r"\bHPD[._\s]+(?:high|upper)\b", "Upper bound"),
-        (r"\bci[._\s]*lb\b", "Lower bound"),
-        (r"\bci[._\s]*ub\b", "Upper bound"),
-        (r"\blower[._]+bound\b", "Lower bound"),
-        (r"\bupper[._]+bound\b", "Upper bound"),
-        (r"\bhet[._\s]+p[._\s-]*value\b", "Het. p-value"),
-        (r"\bp[._\s-]*value\b", "p-value"),
-        (r"\bz[._\s-]*value\b", "z-value"),
+        (r"\bHPD[._ \t]+(?:low|lower)\b", "Lower bound"),
+        (r"\bHPD[._ \t]+(?:high|upper)\b", "Upper bound"),
+        (r"\bci[._ \t]*lb\b", "Lower bound"),
+        (r"\bci[._ \t]*ub\b", "Upper bound"),
+        (r"\b(?:lower[._]+bound|(?-i:Lower Bound))\b", "Lower bound"),
+        (r"\b(?:upper[._]+bound|(?-i:Upper Bound))\b", "Upper bound"),
+        (r"\bhet[._ \t]+p[._ \t-]*value\b", "Heterogeneity P value"),
+        (r"\bp[._ \t-]*value(s?)\b", r"P value\1"),
+        (r"\bz[._ \t-]*value\b", "z value"),
     )
     for pattern, replacement in insensitive_replacements:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-    text = re.sub(r"\bLower Bound\b", "Lower bound", text)
-    text = re.sub(r"\bUpper Bound\b", "Upper bound", text)
     return text
 
 
@@ -2762,9 +2760,9 @@ def _regression_coefficient_table(fields, scale, level, statistic_label):
     coefficients = fields["b"]
     names = _r_dimnames(coefficients)[0]
     rows = [["Intercept" if str(name) == "intrcpt" else str(name), *[_format_r_table_cell(list(fields[key])[i], field_name=header)
-             for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "p-value"))]]
+             for key, header in (("b", "Estimate"), ("ci.lb", "Lower bound"), ("ci.ub", "Upper bound"), ("se", "SE"), ("zval", statistic_label), ("pval", "P value"))]]
             for i, name in enumerate(names)]
-    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "role": "coefficients", "label_column": 0, "inference": str(list(fields.get('test', ['z']))[0]), "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "p-value"], "rows": rows}]
+    tables: list[dict[str, object]] = [{"title": "Regression coefficients", "role": "coefficients", "label_column": 0, "inference": str(list(fields.get('test', ['z']))[0]), "headers": ["Term", "Estimate", f"Lower bound ({level:g}% CI)", f"Upper bound ({level:g}% CI)", "SE", statistic_label, "P value"], "rows": rows}]
     tables[0]['quantities'] = [[(), *[(Quantity(role, _raw_number(list(fields[key])[i]), qscale, qlevel),)
         for key, role, qscale, qlevel in (('b', 'estimate', scale, None), ('ci.lb', 'ci_lower', scale, level),
             ('ci.ub', 'ci_upper', scale, level), ('se', 'se', scale, None), ('zval', 'statistic', '', None), ('pval', 'p', '', None))]]

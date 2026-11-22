@@ -31,7 +31,7 @@ test_that("publication-bias confidence level controls intervals and labels", {
   expect_equal(RCMetaR:::.small.study.meta.level(90), .9)
   expect_error(
     RCMetaR:::.small.study.confidence.level(list(conf.level=numeric())),
-    "finite percentage"
+    "strictly between 0% and 100%"
   )
   expect_identical(RCMetaR:::.small.study.confidence.label(90, short=TRUE), "90% CI")
   expect_identical(RCMetaR:::.small.study.confidence.label(90), "90% confidence interval")
@@ -72,7 +72,7 @@ test_that("publication-bias text sections do not expose missing-value artifacts"
     sep = "\n"
   )
   expect_match(rendered, "Studies: Not available", fixed = TRUE)
-  expect_match(rendered, "Exact p-value: Not available", fixed = TRUE)
+  expect_match(rendered, "Exact P value: Not available", fixed = TRUE)
   expect_false(grepl("(^|[[:space:]])(NA|NaN|Inf|NULL)([[:space:]]|$)", rendered))
   expect_false(grepl("\\[1\\]", rendered))
 })
@@ -105,12 +105,12 @@ test_that("generic entered effects produce one ordered ordinary funnel result", 
   expect_equal(result$eligibility$metric, "MD")
   expect_false(isTRUE(result$eligibility$methods[[1]]$available))
   expect_match(result$eligibility$methods[[1]]$reason, "below 10")
-  expect_identical(names(result$images), "Ordinary Funnel Plot")
+  expect_identical(names(result$images), "Funnel plot")
   expect_true(file.exists(result$images[[1]]))
   expect_gt(file.info(result$images[[1]])$size, 0)
-  expect_identical(names(result$plot_capabilities), "Ordinary Funnel Plot")
-  expect_identical(names(result$plot_params_paths), "Ordinary Funnel Plot")
-  expect_identical(result$plot_source_keys[["Ordinary Funnel Plot"]], "small-study.funnel.1")
+  expect_identical(names(result$plot_capabilities), "Funnel plot")
+  expect_identical(names(result$plot_params_paths), "Funnel plot")
+  expect_identical(result$plot_source_keys[["Funnel plot"]], "small-study.funnel.1")
   expect_identical(result$plot_capabilities[[1]]$plot_kind, "funnel")
   expect_identical(result$plot_capabilities[[1]]$regenerator, "funnel")
   expect_identical(result$sections[[1]]$id, "small-study.warning")
@@ -121,9 +121,9 @@ test_that("generic entered effects produce one ordered ordinary funnel result", 
   expect_false("small-study.warning" %in% names(result))
   image.sections <- Filter(function(section) identical(section$kind, "image"), result$sections)
   expect_identical(image.sections[[1]]$id, "small-study.funnel.1")
-  expect_identical(image.sections[[1]]$title, "Ordinary Funnel Plot")
+  expect_identical(image.sections[[1]]$title, "Funnel plot")
   expect_identical(image.sections[[1]]$source_key, "small-study.funnel.1")
-  expect_identical(image.sections[[1]]$value_key, "Ordinary Funnel Plot")
+  expect_identical(image.sections[[1]]$value_key, "Funnel plot")
   expect_identical(grDevices::dev.cur(), device.before)
   expect_true(any(grepl("Funnel plot axis choice", result$References, fixed=TRUE)))
   expect_true(any(grepl("Viechtbauer", result$References, fixed=TRUE)))
@@ -163,8 +163,8 @@ test_that("one failed funnel does not discard successful plots", {
     tests=character(), `funnel.point.color`=c("black", "not-a-color")
   ))
 
-  expect_identical(names(result$images), "Ordinary Funnel Plot")
-  expect_match(result$Failures, "Contour Funnel Plot")
+  expect_identical(names(result$images), "Funnel plot")
+  expect_match(result$Failures, "Contour-enhanced funnel plot")
   expect_false(grepl("trim-and-fill", result$Failures, fixed=TRUE))
   expect_false(any(grepl("Contour-enhanced funnel plots", result$References, fixed=TRUE)))
 })
@@ -198,9 +198,9 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
   )
 
   expect_true(all(file.info(unlist(result$images))$size > 0))
-  expect_identical(result$plot_capabilities[["Ordinary Funnel Plot"]]$plot_kind, "funnel")
-  expect_identical(result$plot_capabilities[["Contour Funnel Plot"]]$plot_kind, "contour_funnel")
-  params.path <- result$plot_params_paths[["Contour Funnel Plot"]]
+  expect_identical(result$plot_capabilities[["Funnel plot"]]$plot_kind, "funnel")
+  expect_identical(result$plot_capabilities[["Contour-enhanced funnel plot"]]$plot_kind, "contour_funnel")
+  params.path <- result$plot_params_paths[["Contour-enhanced funnel plot"]]
   load(paste0(params.path, ".params"))
   expect_equal(params$`funnel.contour.levels`, "90,95,99")
   expect_true(isTRUE(params$`funnel.pooled.overlay.visible`))
@@ -217,7 +217,7 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
   expect_equal(params$`prepared.effects`, data@y)
   expect_equal(params$`prepared.standard.errors`, data@SE)
 
-  for (title in c("Ordinary Funnel Plot", "Contour Funnel Plot")) {
+  for (title in c("Funnel plot", "Contour-enhanced funnel plot")) {
     path <- result$plot_params_paths[[title]]
     load(paste0(path, ".params"))
     load(paste0(path, ".data"))
@@ -231,7 +231,7 @@ test_that("ordinary and contour funnels persist their prepared geometry", {
     )
     expect_identical(grDevices::dev.cur(), device.before)
   }
-  path <- result$plot_params_paths[["Ordinary Funnel Plot"]]
+  path <- result$plot_params_paths[["Funnel plot"]]
   load(paste0(path, ".params")); load(paste0(path, ".data")); load(paste0(path, ".res"))
   for (extension in c("pdf", "png", "tiff")) {
     exported <- tempfile(fileext=paste0(".", extension))
@@ -303,11 +303,11 @@ test_that("references follow the methods and plots that produced the result", {
   expect_match(result$`Method details`, "Package:")
   expect_match(result$`Method details`, "Predictor:")
   expect_match(result$`Method details`, "Weighting:")
-  expect_match(result$`Method details`, "Exact p-value:")
+  expect_match(result$`Method details`, "Exact P value:")
   expect_match(result$`Method details`, "Call:")
   expect_true(any(grepl("Egger, M.", result$References, fixed=TRUE)))
   expect_true(any(grepl("Sterne, J. A. C., & Egger", result$References, fixed=TRUE)))
-  expect_true(any(grepl("Begg-Mazumdar rank test", result$References, fixed=TRUE)))
+  expect_true(any(grepl("Begg\u2013Mazumdar rank test", result$References, fixed=TRUE)))
   expect_true(any(grepl("Contour-enhanced funnel plots", result$References, fixed=TRUE)))
   expect_false(any(grepl("Harbord test", result$References, fixed=TRUE)))
   expect_false(any(grepl("Cochrane meta package", result$References, fixed=TRUE)))
@@ -324,8 +324,8 @@ test_that("ordinary funnel sampling-region visibility is persisted for regenerat
   hidden <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="continuous", metric="MD", funnels="ordinary", tests=character(),
     `funnel.sampling.region.visible`=FALSE))
-  visible.path <- visible$plot_params_paths[["Ordinary Funnel Plot"]]
-  hidden.path <- hidden$plot_params_paths[["Ordinary Funnel Plot"]]
+  visible.path <- visible$plot_params_paths[["Funnel plot"]]
+  hidden.path <- hidden$plot_params_paths[["Funnel plot"]]
   load(paste0(visible.path, ".params"))
   expect_true(isTRUE(params$`funnel.sampling.region.visible`))
   load(paste0(hidden.path, ".params"))
@@ -336,7 +336,7 @@ test_that("ordinary funnel sampling-region visibility is persisted for regenerat
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
     unname(tools::md5sum(regenerated)),
-    unname(tools::md5sum(hidden$images[["Ordinary Funnel Plot"]]))
+    unname(tools::md5sum(hidden$images[["Funnel plot"]]))
   )
 })
 
@@ -351,7 +351,7 @@ test_that("funnel regeneration uses the persisted funnel index for vector settin
     `funnel.label.policy`=c("none", "all"),
     `funnel.contour.levels`=c("", "80,90"),
     `funnel.sampling.region.visible`=c(TRUE, FALSE)))
-  path <- result$plot_params_paths[["Contour Funnel Plot"]]
+  path <- result$plot_params_paths[["Contour-enhanced funnel plot"]]
   load(paste0(path, ".params"))
   expect_identical(params$`funnel.index`, 2L)
   expect_identical(params$`funnel.contour.levels`[[2L]], "80,90")
@@ -362,7 +362,7 @@ test_that("funnel regeneration uses the persisted funnel index for vector settin
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
     unname(tools::md5sum(regenerated)),
-    unname(tools::md5sum(result$images[["Contour Funnel Plot"]]))
+    unname(tools::md5sum(result$images[["Contour-enhanced funnel plot"]]))
   )
 })
 
@@ -393,7 +393,7 @@ test_that("generic tests use distinct package-native Egger and Begg procedures",
   expect_identical(result$tests.data$`begg-mazumdar`$inference, "z test from Kendall rank correlation")
   expect_match(result$Tests, "Classical Egger test")
   expect_match(result$Tests, "Mixed-effects Egger test")
-  expect_match(result$Tests, "Begg-Mazumdar test")
+  expect_match(result$Tests, "Begg\u2013Mazumdar test")
   expect_match(result$Tests, "Studies:")
   expect_match(result$Tests, "Result:")
   expect_match(result$Tests, "95% CI")
@@ -430,7 +430,7 @@ test_that("generic guardrails expose hard minimum and automatic k guard", {
   expect_match(disabled$Warning, "at least 10 usable studies", fixed=TRUE)
   expect_match(disabled$Warning, "4 usable studies were available", fixed=TRUE)
   expect_length(disabled$eligibility$`standard.error.range`, 2)
-  expect_match(disabled$`Data and eligibility`, "Observed standard-error range: \\[0\\.1, 0\\.13\\]", fixed=FALSE)
+  expect_match(disabled$`Data and eligibility`, "Observed standard-error range: 0\\.1 to 0\\.13", fixed=FALSE)
 
   automatic <- rcmetar.run.small.study.effects(make_data(4), list(
     version=1L, data.type="continuous", metric="MD", funnels="ordinary",
@@ -711,8 +711,8 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_false("Pooled comparison" %in% names(result))
   expect_false("Trim-and-fill" %in% names(result))
   expect_false("Extrapolation" %in% names(result))
-  expect_true("Deeks asymmetry regression plot" %in% names(result$images))
-  path <- result$plot_params_paths[["Deeks asymmetry regression plot"]]
+  expect_true("Deeks effective-sample-size funnel" %in% names(result$images))
+  path <- result$plot_params_paths[["Deeks effective-sample-size funnel"]]
   load(paste0(path, ".params"))
   expect_identical(params$`funnel.xlab`, "1/sqrt(ESS)")
   expect_identical(params$`funnel.ylab`, "Log diagnostic odds ratio")
@@ -724,7 +724,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
   expect_gt(file.info(regenerated)$size, 0)
   expect_identical(
     unname(tools::md5sum(regenerated)),
-    unname(tools::md5sum(result$images[["Deeks asymmetry regression plot"]]))
+    unname(tools::md5sum(result$images[["Deeks effective-sample-size funnel"]]))
   )
   params$`funnel.xlab` <- "Edited ESS axis"
   params$`funnel.ylab` <- "Edited log DOR axis"
@@ -736,7 +736,7 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
 
     `funnel.xlab`="Edited ESS axis", `funnel.ylab`="Edited log DOR axis"
   ))
-  custom.path <- custom$plot_params_paths[["Deeks asymmetry regression plot"]]
+  custom.path <- custom$plot_params_paths[["Deeks effective-sample-size funnel"]]
   load(paste0(custom.path, ".params"))
   expect_identical(params$`funnel.xlab`, "Edited ESS axis")
   expect_identical(params$`funnel.ylab`, "Edited log DOR axis")

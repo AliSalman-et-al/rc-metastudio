@@ -93,11 +93,11 @@ _DRIVER = textwrap.dedent(
         assert "AUC: 0.88" in texts["SROC AUC"], texts["SROC AUC"]
         assert "Lower bound" in texts["Sensitivity coefficients"], texts["Sensitivity coefficients"]
         assert "Upper bound" in texts["Sensitivity coefficients"], texts["Sensitivity coefficients"]
-        assert "p-value" in texts["Sensitivity coefficients"], texts["Sensitivity coefficients"]
+        assert "P value" in texts["Sensitivity coefficients"], texts["Sensitivity coefficients"]
         assert "0.1235" in texts["Sensitivity coefficients"], texts["Sensitivity coefficients"]
-        assert "geometry: 100 rows x 2 columns" in texts["Marginal prediction"], texts["Marginal prediction"]
+        assert "geometry: 100 rows × 2 columns" in texts["Marginal prediction"], texts["Marginal prediction"]
         assert "quality:" in texts["Moderator coding"], texts["Moderator coding"]
-        assert "p-value: < 0.001" in texts["Overall ML likelihood-ratio test"], texts["Overall ML likelihood-ratio test"]
+        assert "P value: < 0.001" in texts["Overall ML likelihood-ratio test"], texts["Overall ML likelihood-ratio test"]
         assert "quality:" in texts["Moderator block tests"], texts["Moderator block tests"]
         assert parsed.image_var_names == {}
         assert parsed.image_params_paths == {}

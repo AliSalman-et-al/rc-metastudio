@@ -180,7 +180,7 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
         paste0("[", paste(limits, collapse=", "), "]")
     paste0(display.confidence.level(bundle$params), "% prediction interval: ", interval,
            if (measure == "PFT" && isTRUE(display$transformed))
-               " (Freeman-Tukey scale; proportion inverse undefined)" else "")
+               " (Freeman\u2013Tukey scale; proportion inverse undefined)" else "")
 }
 
 rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {
@@ -313,7 +313,7 @@ rcmetar.forest.wrap.header <- function(label, width=18) {
 
 rcmetar.forest.p.value.label <- function(p.value, digits=RCMETAR_DEFAULT_DISPLAY_DIGITS) {
     if (display.value.is.missing(p.value)) {
-        return("P = NA")
+        return("P value unavailable")
     }
     value <- format.p.value.display(p.value, digits)
     if (startsWith(value, "<")) return(paste("P", value))

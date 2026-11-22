@@ -36,7 +36,7 @@ def _configure_analysis(sheet, outcome, metric, differences):
             parameters={'rm.method': 'DL'} if random else {},
             fixed_effects=not random, covariates=[])
     else:
-        differences.append(f'{name}: RevMan {method}, {"random (DerSimonian-Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
+        differences.append(f'{name}: RevMan {method}, {"random (DerSimonian–Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
     if metric == 'SMD':
         differences.append("SMD: RC MetaStudio uses exact Hedges' g; RevMan uses an approximation, so results can differ slightly.")
 
@@ -227,9 +227,9 @@ def read_rm5(path: str | Path) -> Rm5Import:
             _import_outcome(dataset, comparison, outcome, len(comparisons) > 1,
                             studies, differences, not_imported)
     _append_diagnostic_tests(root, dataset, studies, not_imported)
-    for tag in ('DATA_TEST', 'IPD'):
+    for tag, label in (('DATA_TEST', 'Diagnostic test data'), ('IPD', 'Individual participant data (IPD)')):
         if list(root.iter(tag)):
-            not_imported.append(f'{tag}: data are not imported.')
+            not_imported.append(f'{label} could not be imported.')
     if root.find('ANALYSES_AND_DATA/TESTS') is not None:
         differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RC MetaStudio defaults.')
     if not dataset.sheets:

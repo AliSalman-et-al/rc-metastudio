@@ -267,7 +267,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
         assert not shown
         assert "simulated R failure" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_label.text() == "simulated R failure"
-        assert "RuntimeError" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_details.toPlainText() == "simulated R failure"
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()
@@ -360,7 +360,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
         assert not shown
         assert "simulated recompute failure" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_label.text() == "simulated recompute failure"
-        assert "RuntimeError" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_details.toPlainText() == "simulated recompute failure"
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()
@@ -438,7 +438,7 @@ def test_diagnostic_progress_dialog_closes_when_run_setup_raises(monkeypatch):
         assert not sip.isdeleted(form)
         assert "simulated setup failure" in form.analysis_error_details.toPlainText()
         assert form.analysis_error_label.text() == "simulated setup failure"
-        assert "RuntimeError" in form.analysis_error_details.toPlainText()
+        assert form.analysis_error_details.toPlainText() == "simulated setup failure"
         assert form.analysis_error_details.isHidden()
         form.analysis_error_toggle.click()
         assert not form.analysis_error_details.isHidden()

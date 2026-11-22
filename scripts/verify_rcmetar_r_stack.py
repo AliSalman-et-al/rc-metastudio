@@ -468,7 +468,8 @@ def verify(args: argparse.Namespace) -> None:
             verify_manifest_versions(root, python, rscript, env)
             verify_reitsma_visual_evidence(root, rscript, env, work_dir)
 
-            run([python, "-m", "pytest", "tests/r_stack"], cwd=root, env=env)
+            run([python, "-m", "pytest", "tests/r_stack",
+                 "tests/python/fast/test_packaged_summary_identity.py"], cwd=root, env=env)
         # Fresh offscreen children can overlap within the measured memory budget.
         # The E2E hook reserves host capacity; native drives remain separate/serial.
         desktop_command = [

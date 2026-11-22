@@ -667,7 +667,7 @@ def test_plot_color_chooser_is_named_described_and_keyboard_focusable(qapp, tmp_
         qapp.processEvents()
         assert dialog.color_btn.accessibleName() == "Choose plot accent color"
         assert "color picker" in dialog.color_btn.accessibleDescription().lower()
-        assert dialog.color_btn.toolTip() == "Choose the plot accent color"
+        assert dialog.color_btn.toolTip() == "Open a color picker for the plot accent color."
         assert dialog.color_btn.hasFocus()
         assert dialog.color_btn.focusPolicy() == QtCore.Qt.FocusPolicy.StrongFocus
     finally:

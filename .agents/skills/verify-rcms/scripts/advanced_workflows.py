@@ -370,7 +370,7 @@ def zero_cells(app, window, record):
     assert [model.data(model.index(0, column)) for column in model.OUTCOMES] == [
         "Not estimable", "\u2014", "\u2014"
     ]
-    assert "complete raw data" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
+    assert "study values do not define a finite effect" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
     record("smd-not-estimable", window, raw=raw_rows(window)[0])
     # The same means still define an ordinary mean difference.
     metric_action(window.menuMetric, "MD").trigger()
@@ -2134,7 +2134,7 @@ def shell(app, window, record):
     def cancel(message):
         assert message.standardButtons() == (QtWidgets.QMessageBox.StandardButton.Save | QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel)
         assert message.defaultButton() == message.button(QtWidgets.QMessageBox.StandardButton.Save)
-        assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Don’t save"
+        assert message.button(QtWidgets.QMessageBox.StandardButton.Discard).text() == "Don't save"
         assert message.escapeButton() == message.button(QtWidgets.QMessageBox.StandardButton.Cancel)
         record("dirty-open-prompt", message, message=message.text())
         key_click(message, QtCore.Qt.Key.Key_Escape)
@@ -2164,8 +2164,8 @@ def shell(app, window, record):
     def about(dialog):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
-        assert dialog.windowTitle() == "About RCMS"
-        assert window.action_about_legal.text() == "About RCMS…"
+        assert dialog.windowTitle() == "About RC MetaStudio"
+        assert window.action_about_legal.text() == "About RC MetaStudio…"
         assert "Credits and licenses" in text
         app.processEvents()
         if dialog.screen().availableGeometry().height() >= 700:

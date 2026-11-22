@@ -61,7 +61,7 @@ continuous.fixed <- function(cont.data, params){
 		results <- list("Summary"=res)
 
   metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-  model.title <- paste("Continuous Fixed-Effect Model\n\nMetric: ", metric.name, sep="")
+  model.title <- paste("Continuous fixed-effect model\n\nEffect measure: ", metric.name, sep="")
   summary.disp <- create.summary.disp(cont.data, params, res, model.title)
   forest.path <- paste(params$fp_outpath, sep="")
   plot.data <- create.plot.data.continuous(cont.data, params, res)
@@ -106,15 +106,13 @@ continuous.fixed.parameters <- function(){
 
 continuous.fixed.pretty.names <- function() {
   pretty.names <- list(
-    "pretty.name"="Continuous Fixed-Effect Inverse Variance",
+    "pretty.name"="Continuous fixed-effect inverse variance",
      "description" = "Performs fixed-effect meta-analysis with inverse variance weighting.",
      "inference.method"=rcmetar.inference.method.metadata(),
      "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-     "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+     "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
      "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-     "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-               is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-               is added to all two-by-two tables if at least one table contains a zero.")
+     "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Continuity correction applies to count data.")
       )
 }
 
@@ -144,7 +142,7 @@ continuous.random <- function(cont.data, params) {
   results <- list("Summary"=res)
 
   metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-  model.title <- paste("Continuous Random-Effects Model\n\nMetric: ", metric.name, sep="")
+  model.title <- paste("Continuous random-effects model\n\nEffect measure: ", metric.name, sep="")
   summary.disp <- create.summary.disp(cont.data, params, res, model.title)
 
   forest.path <- paste(params$fp_outpath, sep="")
@@ -203,16 +201,14 @@ continuous.random.pretty.names <- function() {
 	rm_method_names <- rcmetar.random.effects.method.names()
 
   pretty.names <- list(
-    "pretty.name"="Continuous Random-Effects",
+    "pretty.name"="Continuous random-effects",
     "description" = "Performs random-effects meta-analysis.",
-    "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-studies heterogeneity", "rm.method.names"=rm_method_names),
+    "rm.method"=list("pretty.name"="Random-effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
     "inference.method"=rcmetar.inference.method.metadata(),
     "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-    "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
+    "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
     "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-    "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-             is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-             is added to all two-by-two tables if at least one table contains a zero.")
+    "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Continuity correction applies to count data.")
     )
 }
 

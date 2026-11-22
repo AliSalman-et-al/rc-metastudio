@@ -58,7 +58,7 @@ class AnalysisUnit:
         try:
             self.raw_data_length = analysis_catalog.RAW_FIELDS_PER_ARM[sheet.data_type]
         except KeyError:
-            raise ValueError(f"unrecognized sheet data type: {sheet.data_type!r}") from None
+            raise ValueError(f"Unrecognized outcome data type: {sheet.data_type!r}") from None
 
         raw_data = raw_data or [[""] * self.raw_data_length for _ in arm_names]
 

@@ -4,7 +4,7 @@
  <widget class="QDialog" name="DiagnosticMetricsDialog">
   <property name="windowModality"><enum>Qt::ApplicationModal</enum></property>
   <property name="geometry"><rect><x>0</x><y>0</y><width>0</width><height>0</height></rect></property>
-  <property name="windowTitle"><string>Diagnostic metrics</string></property>
+  <property name="windowTitle"><string>Diagnostic effect measures</string></property>
   <property name="windowIcon"><iconset><normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset></property>
   <layout class="QVBoxLayout" name="dialog_layout">
    <item>
@@ -15,10 +15,10 @@
       <property name="geometry"><rect><x>0</x><y>0</y><width>440</width><height>240</height></rect></property>
       <layout class="QVBoxLayout" name="content_layout">
        <property name="leftMargin"><number>0</number></property><property name="topMargin"><number>0</number></property><property name="rightMargin"><number>0</number></property><property name="bottomMargin"><number>0</number></property>
-       <item><widget class="QLabel" name="availability_label"><property name="text"><string>Available metrics are based on complete raw counts or complete entered effect estimates and confidence intervals.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+       <item><widget class="QLabel" name="availability_label"><property name="text"><string>Available effect measures are based on complete raw counts or complete entered effect estimates and confidence intervals.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
        <item>
         <widget class="QGroupBox" name="metrics_grp_box">
-         <property name="title"><string>Select metrics</string></property>
+         <property name="title"><string>Select effect measures</string></property>
          <layout class="QVBoxLayout" name="metrics_layout">
           <item><widget class="QCheckBox" name="chk_box_sens"><property name="text"><string>Sensitivity</string></property><property name="checked"><bool>true</bool></property></widget></item>
           <item><widget class="QCheckBox" name="chk_box_spec"><property name="text"><string>Specificity</string></property><property name="checked"><bool>true</bool></property></widget></item>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>RCMetaStudio</string>
+   <string>RC MetaStudio</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../images/icons.qrc">
@@ -117,10 +117,10 @@
     </property>
     <widget class="QMenu" name="menuMetric">
      <property name="title">
-      <string>Effect-size tools</string>
+      <string>Effect measure</string>
      </property>
-      <property name="toolTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
-      <property name="statusTip"><string>Choose a metric or open effect-size calculator tools.</string></property>
+      <property name="toolTip"><string>Choose the effect measure for this outcome.</string></property>
+      <property name="statusTip"><string>Choose the effect measure for this outcome.</string></property>
     </widget>
     <addaction name="menuMetric" />
     <addaction name="separator" />
@@ -271,7 +271,7 @@
      <normaloff>:/icons/analyses/trial-sequential-analysis.svg</normaloff>:/icons/analyses/trial-sequential-analysis.svg</iconset>
    </property>
    <property name="text">
-    <string>Trial Sequential Analysis…</string>
+    <string>Trial sequential analysis…</string>
    </property>
   </action>
   <action name="action_new_dataset">
@@ -294,7 +294,7 @@
   </action>
   <action name="action_publication_bias">
    <property name="text">
-    <string>Publication Bias</string>
+    <string>Small-study effects…</string>
    </property>
    <property name="toolTip">
     <string>Small-study effects</string>

@@ -682,7 +682,7 @@ _SUMMARY_PRINT_DRIVER = textwrap.dedent(
     assert "Binary Random-Effects Model" in rendered, rendered
     assert "Model Results" in rendered, rendered
     assert " Model Results" not in rendered, rendered
-    assert "p-value" in rendered, rendered
+    assert "P value" in rendered, rendered
     assert "p-Value" not in rendered, rendered
     assert "\\n\\n\\n" not in rendered, rendered
     assert "Estimate" in rendered and "0.770" in rendered, rendered

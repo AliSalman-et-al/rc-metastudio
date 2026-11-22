@@ -47,13 +47,13 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
 .tsa.draw.favours <- function(favours, limit, offset, col, compact) {
     panel <- graphics::par("pin")
     available <- panel[2]/2 - if (compact) .08 else .26
-    available <- max(available, graphics::strwidth("Favours", units="inches", cex=.75))
+    available <- max(available, graphics::strwidth("Favors", units="inches", cex=.75))
     x <- -graphics::xinch(offset)
     for (i in seq_along(favours)) {
-        arm <- sub("^Favours([[:space:]]+|$)", "", trimws(favours[i]), ignore.case=TRUE)
+        arm <- sub("^Favou?rs([[:space:]]+|$)", "", trimws(favours[i]), ignore.case=TRUE)
         if (is.na(arm) || !nzchar(arm)) next
         words <- strsplit(arm, "[[:space:]]+")[[1]]
-        prefixes <- Reduce(paste, words, init="Favours", accumulate=TRUE)
+        prefixes <- Reduce(paste, words, init="Favors", accumulate=TRUE)
         cex <- .9
         width <- function(s) graphics::strwidth(s, units="inches", cex=cex)
         repeat {
@@ -154,7 +154,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     lil <- any(is.finite(looks$lil.z))
     shown <- c(TRUE, show.monitor, show.wedge, conventional <= limit, lil)
     labels <- c("Cumulative Z-curve", "Monitoring boundary", "Futility region",
-                "Conventional boundary", "Penalised Z-curve")[shown]
+                "Conventional boundary", "Penalized Z-curve")[shown]
 
     list(conventional=conventional, directions=directions, monitor=monitor, held=held,
          wedge=wedge, in.wedge=in.wedge, show.wedge=show.wedge, lil=lil, shown=shown, labels=labels)

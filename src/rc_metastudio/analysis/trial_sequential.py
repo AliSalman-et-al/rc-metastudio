@@ -19,10 +19,10 @@ from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyl
 if TYPE_CHECKING:
     from rc_metastudio.workspace.table_model import DatasetTableModel
 
-TSA_TITLE = "Trial Sequential Analysis"
+TSA_TITLE = "Trial sequential analysis"
 TSA_SETTINGS = "trial_sequential_analysis"
 SUPPORTED = {"binary": {"RR", "OR", "RD"}, "continuous": {"MD"}, "time_to_event": {"HR"}}
-HKSJ_NOTE = "HKSJ is not applied: monitoring boundaries assume a normal statistic."
+HKSJ_NOTE = "Hartung–Knapp–Sidik–Jonkman (HKSJ) adjustment is not applied: monitoring boundaries assume a normal (z) statistic."
 EFFECT_SOURCES = {
     "wetterslev-2017-nearest-95-ci": "95% CI limit closest to the null (Wetterslev 2017)",
     "imberger-2016-10-percent-rrr": "10% relative risk reduction (Imberger 2016)",
@@ -39,10 +39,6 @@ def _setting_text(values: Mapping[str, object], key: str, default: str) -> str:
 def number(values: Mapping[str, object], key: str) -> float | None:
     value = values.get(key)
     return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
-
-
-def _without_favours(label: str) -> str:
-    return label[8:].lstrip() if label.lower().startswith("favours ") else label
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,7 +86,7 @@ class TsaRequest:
     tau_method: str
     inference: str
     confidence: float
-    favours: tuple[str, str]
+    direction_arms: tuple[str, str]
     options: TsaOptions
     adjustment: float = .5
     correction: str = "only0"
@@ -98,14 +94,10 @@ class TsaRequest:
     version: int = 1
     arm1_above: bool = False
 
-    def favoured_labels(self) -> tuple[str, str]:
-        left, right = self.favours
-        return (_without_favours(left), _without_favours(right))
-
     def monitoring_sides(self) -> tuple[str, str]:
-        left, right = self.favoured_labels()
-        sides = (f"favouring {left}" if left else "below the null",
-                 f"favouring {right}" if right else "above the null")
+        left, right = self.direction_arms
+        sides = (f"favoring {left}" if left else "below the null",
+                 f"favoring {right}" if right else "above the null")
         return sides[::-1] if self.benefit_direction == "upper" else sides
 
     @property
@@ -114,18 +106,16 @@ class TsaRequest:
 
     @classmethod
     def from_sheet(cls, model: "DatasetTableModel", options: TsaOptions) -> "TsaRequest":
-        sheet = required(model.current_sheet, "active sheet")
+        sheet = required(model.current_sheet, "active outcome")
         saved = sheet.settings.get("analysis", {})
         fit = sheet.last_meta_analysis or PooledAnalysis.from_method(
             str(saved.get("method", "")), saved.get("parameters", {})
         )
         metric = str(model.current_effect)
-        below, above = sheet.effect_direction_arms()
-        favours = (f"Favours {below}" if below else "", f"Favours {above}" if above else "")
         return cls(
             sheet.family, metric, fit.model_for(sheet.family, metric), fit.tau_method,
             fit.inference, float(model.get_confidence_level()),
-            (str(favours[0]), str(favours[1])), options,
+            sheet.effect_direction_arms(), options,
             fit.adjustment, fit.correction, fit.drop_double_zero,
             arm1_above=sheet.settings.get("effect_direction") == "above",
         )
@@ -149,7 +139,8 @@ class TsaRequest:
             "version": self.version, "metric": self.metric, "model": self.model,
             "rm.method": self.tau_method, "inference.method": self.inference, "conf.level": self.confidence,
             "adjust": self.adjustment, "correction.policy": self.correction, "drop00": self.drop_double_zero,
-            "alternative": alternative, "benefit.direction": self.benefit_direction, "favours": self.favours,
+            "alternative": alternative, "benefit.direction": self.benefit_direction,
+            "favours": tuple(f"Favors {arm}" if arm else "" for arm in self.direction_arms),
         })
         return {key: value for key, value in values.items() if value is not None}
 

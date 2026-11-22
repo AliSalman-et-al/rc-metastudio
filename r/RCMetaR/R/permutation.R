@@ -36,21 +36,21 @@ permuted.meta.reg <- function (
 	                              intercept=intercept, knha=knha)
 	# Pinned metafor drops its design matrix dimension for this model shape.
 	if (!reg.res$int.incl && reg.res$p == 1L)
-		stop("Pinned metafor cannot permute one-coefficient no-intercept models.", call.=FALSE)
+		stop("Permutation tests are not available for single-coefficient models without an intercept.", call.=FALSE)
 
 	perm.res <- permutest(reg.res, exact=exact, iter=iter, digits=digits)
 	if (!retpermdist) perm.res[c("zval.perm", "QM.perm", "beta.perm")] <- NULL
 	summary <- paste(capture.output(perm.res), collapse="\n")
 
 	results <- list(
-		"Permuted Meta-Regression Summary"=summary,
+		"Permuted meta-regression summary"=summary,
 		"res"=perm.res,
 		"res.info"=permutest.value.info(retpermdist)
 		)
 
 	if (include.meta.reg.summary) {
         report <- standard.meta.regression.summary(reg.res, data, mods.formula, digits)
-        results <- c(list("Standard Meta Regression Summary"=report), results)
+        results <- c(list("Standard meta-regression summary"=report), results)
 	}
 
 	results
@@ -107,8 +107,8 @@ reg.output.helper <- function(theData, rma.results, model.formula, digits) {
 
 permutest.value.info <- function(retpermdist, meta.reg.mode=TRUE) {
 	info = list(
-			pval = list(type="vector", description='p-value(s) based on the permutation test.'),
-			QMp = list(type="vector", description='p-value for the omnibus test of coefficients based on the permutation test.')
+			pval = list(type="vector", description='P value(s) based on the permutation test.'),
+			QMp = list(type="vector", description='P value for the omnibus test of coefficients based on the permutation test.')
 	)
 
 	if (retpermdist) {

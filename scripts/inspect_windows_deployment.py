@@ -42,11 +42,6 @@ REQUIRED_QT_LIBRARIES = {
     "qt6widgets.dll",
 }
 EXPECTED_VERSIONS = packaged_stack()
-EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
-    "Binary - Aminoglycoside dosing, Barza 1996.rcms": "87ef67051c447aed371facf763cfae4bbf058b16f58a04131d7e8bebffffe949",
-    "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms": "a58ee7bbe22b1e1571cb9e2bccad8560ecfd9873f86ae5154e1b535df9f8c8cc",
-}
-EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["Binary - Aminoglycoside dosing, Barza 1996.rcms"]
 FORBIDDEN_GENERATED_SOURCE_SUFFIXES = {".py", ".pyc", ".pyo", ".ui", ".qrc"}
 FORBIDDEN_BINDINGS = ("pyqt5", "pyside2", "pyside6", "qtpy")
 REQUIRED_PROJECT_SCHEMAS = {
@@ -901,7 +896,7 @@ def _validate_windows_smoke(smoke: dict, log_text: str) -> None:
         raise DeploymentInspectionError(
             f"packaged smoke evidence is incomplete: locale SVG byte hashes differ: {variants}"
         )
-    expected_summary = EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
+    expected_summary = smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
         workflows.get("converted_sample")
     )
     if not (
@@ -930,7 +925,7 @@ def _windows_workflow_valid(
         smoke.get("passed") is True,
         required <= set(workflows),
         all(workflows[name] is True for name in true_flags),
-        workflows.get("converted_sample") == "Binary - Aminoglycoside dosing, Barza 1996.rcms",
+        workflows.get("converted_sample") == smoke_contract.BARZA_SAMPLE,
         expected_summary is not None,
         workflows.get("expected_normalized_summary_sha256") == expected_summary,
         workflows.get("normalized_summary_sha256") == expected_summary,

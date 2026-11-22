@@ -256,7 +256,7 @@ class WorkspaceEditingService:
         row_order: Sequence[int] | None = None,
     ) -> CellRejection | None:
         if context.sheet_id is None or row < 0:
-            return CellRejection("Cannot edit that cell.")
+            return CellRejection("Select an outcome and a study row before editing.")
         sheet = dataset.sheet(context.sheet_id)
         if field in ("name", "year"):
             rejection, _ = self.edit_study_identities(sheet, {row: {field: value}}, row_order=row_order)
@@ -296,7 +296,7 @@ class WorkspaceEditingService:
                 if section < FIRST_RAW_COLUMN:
                     continue
                 if field is None:
-                    raise ValueError(f"Study row {row + 1}, column {section}: Cannot edit that cell.")
+                    raise ValueError(f"Study row {row + 1}, column {section} is calculated automatically and cannot be edited directly.")
                 rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
                 if rejection is not None:
                     message = f"Study row {row + 1}, column {section}: {rejection.message}"
@@ -477,7 +477,7 @@ class WorkspaceEditingService:
         if kind is RawInputKind.STANDARD_DEVIATION and number <= 0:
             return CellRejection("Standard deviation must be greater than zero.")
         if kind is RawInputKind.RATE_EVENTS and (number < 0 or not number.is_integer()):
-            return CellRejection("Events must be nonnegative integers.", kind="number")
+            return CellRejection("Events must be non-negative integers.", kind="number")
         if kind is RawInputKind.PERSON_TIME and number <= 0:
             return CellRejection("Person-time must be positive.")
         return None
@@ -516,7 +516,7 @@ class WorkspaceEditingService:
             return None
         if all_zero:
             return CellRejection(
-                "Diagnostic 2x2 table must contain at least one participant; "
+                "Diagnostic 2 × 2 table must contain at least one participant; "
                 "enter at least one count greater than zero."
             )
         return None
@@ -553,7 +553,7 @@ class WorkspaceEditingService:
         previous = previous_display[outcome_index]
         delta = abs(number - previous) if previous is not None else float("-inf")
         if delta > 10e-6:
-            return CellRejection("You have already entered raw data for this study. If you want to enter the outcome directly, delete the raw data first.")
+            return CellRejection("This study already has arm data. Clear the arm data before entering an effect estimate directly.")
         return None
 
     @staticmethod

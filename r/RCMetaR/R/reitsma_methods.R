@@ -37,7 +37,7 @@ rcmetar.reitsma.operation.messages <- function(capture, label) {
 
 rcmetar.reitsma.require.value <- function(capture, label) {
     if (!is.null(capture$value)) return(capture$value)
-    detail <- capture$error %||% "mada returned no result"
+    detail <- capture$error %||% "the Reitsma bivariate model did not return a result"
     stop(sprintf("%s failed: %s", label, detail), call.=FALSE)
 }
 
@@ -56,7 +56,7 @@ rcmetar.reitsma.correction.control <- function(policy) {
 }
 
 rcmetar.reitsma.validate.counts <- function(diagnostic.data) {
-    if (!is(diagnostic.data, "DiagnosticData")) stop("DiagnosticData object expected.", call.=FALSE)
+    if (!is(diagnostic.data, "DiagnosticData")) stop("Diagnostic accuracy study counts are required for the Reitsma model.", call.=FALSE)
     fields <- c("TP", "FN", "FP", "TN")
     vals <- lapply(fields, function(x) slot(diagnostic.data, x))
     names(vals) <- fields
@@ -101,7 +101,7 @@ rcmetar.reitsma.marginal.prediction <- function(fit, level) {
     covariance <- stats::vcov(fit)
     predictive.variance <- diag(fit$Psi + covariance)
     if (any(!is.finite(predictive.variance)) || any(predictive.variance < 0)) {
-        stop("mada returned an undefined latent prediction variance.", call.=FALSE)
+        stop("The Reitsma model could not compute a finite prediction variance for this dataset.", call.=FALSE)
     }
     z <- qnorm(1 - (1 - level) / 2)
     interval <- function(index, alpha) {
@@ -120,13 +120,13 @@ rcmetar.reitsma.marginal.prediction <- function(fit, level) {
 rcmetar.reitsma.summary.point <- function(fit, level) {
     coef <- fit$coefficients
     if (is.null(dim(coef)) || !all(c("tsens", "tfpr") %in% colnames(coef)))
-        stop("mada Reitsma fit did not return intercept coefficients.", call.=FALSE)
+        stop("The Reitsma model did not return summary sensitivity and false-positive rate estimates.", call.=FALSE)
     vc <- stats::vcov(fit)
     z <- qnorm(1 - (1 - level) / 2)
     to.proportion <- function(index, alpha) {
         latent.estimate <- coef["(Intercept)", index]
         vc.index <- if (index %in% rownames(vc)) index else grep(index, rownames(vc), fixed=TRUE)[1]
-        if (is.na(vc.index)) stop("mada Reitsma fit did not return intercept covariance.", call.=FALSE)
+        if (is.na(vc.index)) stop("The Reitsma model did not return the covariance matrix needed for confidence intervals.", call.=FALSE)
         standard.error <- sqrt(vc[vc.index, vc.index])
         lower <- mada::talpha(alpha)$linkinv(latent.estimate - z * standard.error)
         estimate <- mada::talpha(alpha)$linkinv(latent.estimate)
@@ -158,7 +158,7 @@ rcmetar.reitsma.summary.points <- function(fit, level, seed, iterations=1000000L
 rcmetar.reitsma.validate.fit <- function(fit, context="Reitsma") {
     if (!isTRUE(fit$converged)) stop(sprintf("%s fit did not converge; no alternate estimator or correction was attempted.", context), call.=FALSE)
     required <- c("coefficients", "vcov", "Psi", "logLik")
-    if (any(!required %in% names(fit))) stop(sprintf("%s fit is missing required mada output fields.", context), call.=FALSE)
+    if (any(!required %in% names(fit))) stop(sprintf("%s fit did not return complete model estimates.", context), call.=FALSE)
     finite.matrix <- function(x) is.matrix(x) && length(x) > 0L && all(is.finite(x))
     if (!finite.matrix(fit$coefficients) || !finite.matrix(fit$vcov) || !finite.matrix(fit$Psi) || !is.finite(as.numeric(fit$logLik)))
         stop(sprintf("%s fit returned non-finite fixed effects, covariance, heterogeneity, or log likelihood.", context), call.=FALSE)
@@ -390,7 +390,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
             } else marker.scaled
         },
         marker.area=as.character(params$fp_marker_area %||% "uniform"),
-        xlabel=rcmetar.plot.axis.label(params, "fp") %||% "False Positive Rate",
+        xlabel=rcmetar.plot.axis.label(params, "fp") %||% "False positive rate",
         ylabel=as.character(params$fp_ylabel %||% "Sensitivity"),
         plot.lb=as.character(params$fp_plot_lb %||% "[default]"),
         plot.ub=as.character(params$fp_plot_ub %||% "[default]"),
@@ -597,7 +597,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
     draw <- function() {
         graphics::par(mai=margins, xaxs="i", yaxs="i")
         plot(plot.data$fpr, plot.data$sensitivity, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n",
-             xlab=as.character(style$xlabel %||% "False Positive Rate"),
+             xlab=as.character(style$xlabel %||% "False positive rate"),
              ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",
              col=accent.color,
              cex=marker.cex)
@@ -633,7 +633,7 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
         value <- params[[fields[[field]]]]
         if (!is.null(value) && length(value)) style[[field]] <- value
     }
-    style$xlabel <- rcmetar.plot.axis.label(params, "fp") %||% "False Positive Rate"
+    style$xlabel <- rcmetar.plot.axis.label(params, "fp") %||% "False positive rate"
     plot.data$style <- style
     plot.data$display.path <- rcmetar.plot.scalar_path(params$fp_display_path %||% plot.data$display.path)
     plot.data$legend <- NULL
@@ -641,7 +641,7 @@ rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
 }
 
 rcmetar.reitsma.coefficient.bundle <- function(coefficients, scale, params=list()) {
-    if (is.null(coefficients) || !nrow(coefficients)) stop(sprintf("No %s moderator coefficients were returned by mada.", scale), call.=FALSE)
+    if (is.null(coefficients) || !nrow(coefficients)) stop(sprintf("No %s moderator coefficients were estimated for this model.", scale), call.=FALSE)
     list(kind="forest", render_engine="reitsma.coefficient", fp_style="default",
          scale=scale, labels=rownames(coefficients), estimate=coefficients[, "Odds Ratio"],
          ci.lb=coefficients[, "Odds Ratio lower"], ci.ub=coefficients[, "Odds Ratio upper"],
@@ -779,8 +779,8 @@ rcmetar.reitsma.extract.standard.components <- function(prepared, fitted) {
     # Keep every independently available result instead of replacing it with
     # an estimator fallback or failing the entire report.
     sm <- summary.capture$value
-    summary.warnings <- rcmetar.reitsma.warning.messages(summary.capture, "mada summary: ")
-    if (!is.null(summary.capture$error)) section.warnings <- c(section.warnings, paste("mada summary unavailable:", summary.capture$error))
+    summary.warnings <- rcmetar.reitsma.warning.messages(summary.capture, "Model summary warning: ")
+    if (!is.null(summary.capture$error)) section.warnings <- c(section.warnings, paste("Model summary unavailable:", summary.capture$error))
     point.capture <- rcmetar.reitsma.capture.warnings(rcmetar.reitsma.summary.point(fit, level))
     point <- point.capture$value
     section.warnings <- c(section.warnings,
@@ -933,7 +933,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
         "Sampling-based summary ratios"=rcmetar.reitsma.display.ratios(extracted$ratios, level, digits),
         "Marginal prediction"=prediction.display,
         "Between-study heterogeneity"=extracted$heterogeneity,
-        "Diagnostic I-squared"=list(
+        "Diagnostic I\u00b2"=list(
             `I-squared summary`=rcmetar.reitsma.display.i2.summary(extracted$i2),
             `I-squared estimates`=rcmetar.reitsma.display.i2(extracted$i2),
             Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; Zhou\u2013Dendukuri and Holling are distinct estimators."
@@ -949,7 +949,7 @@ rcmetar.reitsma.report.standard <- function(prepared, fitted, extracted, rendere
     if (!is.null(extracted$auc)) {
         desired.order <- c("Clinical interpretation", "Summary operating point",
             "Sampling-based summary ratios", "SROC AUC", "Marginal prediction",
-            "Between-study heterogeneity", "Diagnostic I-squared", "Model information")
+            "Between-study heterogeneity", "Diagnostic I\u00b2", "Model information")
         summary <- summary[intersect(desired.order, names(summary))]
     }
     plot.names <- if (length(rendered$images)) setNames("sroc", names(rendered$images)) else character()
@@ -1006,7 +1006,7 @@ diagnostic.reitsma.pretty.names <- function() list(
     conf.level=list(pretty.name="Confidence level", description="Confidence level for compatible intervals and regions."),
     adjust=list(pretty.name="Continuity correction", description="Constant added according to the correction policy."),
     correction.policy=list(pretty.name="Apply correction to", description="Studies with any zero cell, All studies if any zero exists, or None."),
-    digits=list(pretty.name="Display digits", description="Decimal places used for presentation."))
+    digits=list(pretty.name="Decimal places", description="Decimal places used for presentation."))
 
 diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     is(diagnostic.data, "DiagnosticData") && length(diagnostic.data@TP) > 0L &&
@@ -1149,7 +1149,7 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     bundle <- rcmetar.reitsma.coefficient.bundle(spec$data, scale, plot.params)
     plot.params$reitsma.coefficient.geometry <- bundle
     rcmetar.draw.reitsma.coefficient(bundle, path)
-    list(title=paste(scale, "Moderator Coefficients"), path=path,
+    list(title=paste(scale, "moderator coefficients"), path=path,
          params.path=save.data(reg.data, fit, plot.params, bundle))
 }
 
@@ -1275,7 +1275,7 @@ diagnostic.reitsma.meta.regression <- function(reg.data, params, stop.at.rma=FAL
                       "Overall ML likelihood-ratio test"=likelihood$overall,
                       "Moderator block tests"=block.tests,
                       "Sensitivity coefficients"=sens.coefficients, "Specificity coefficients"=spec.coefficients,
-                      "Residual diagnostic I-squared"=list(
+                      "Residual diagnostic I\u00b2"=list(
                           `I-squared estimates`=rcmetar.reitsma.display.i2(sm$i2),
                           Interpretation="I\u00b2 is shown as percent unexplained heterogeneity; residual values describe heterogeneity after moderator adjustment."
                       ), "Moderator coding"=public.coding,

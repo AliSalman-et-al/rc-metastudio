@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Results / Analysis</string>
+   <string>Analysis results</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -30,11 +30,11 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <widget class="QTreeWidget" name="nav_tree">
-           <property name="accessibleName"><string>Results navigation</string></property>
+           <property name="accessibleName"><string>Result sections</string></property>
            <property name="accessibleDescription"><string>Navigate between analysis result sections and plots.</string></property>
            <column>
             <property name="text">
-             <string notr="true">1</string>
+             <string notr="true">Result sections</string>
             </property>
            </column>
           </widget>
@@ -62,7 +62,7 @@
             <layout class="QVBoxLayout" name="figure_layout">
              <property name="margin"><number>0</number></property>
              <item><widget class="QGraphicsView" name="graphics_view">
-           <property name="accessibleName"><string>Results content</string></property>
+           <property name="accessibleName"><string>Analysis figures</string></property>
             <property name="accessibleDescription"><string>View analysis summaries, references, and generated plots.</string></property>
              </widget></item>
             </layout>

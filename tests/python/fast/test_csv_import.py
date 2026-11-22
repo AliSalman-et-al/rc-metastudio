@@ -101,7 +101,7 @@ def test_parse_csv_rejects_headerless_rows_below_required_width(
     path = tmp_path / "narrow.csv"
     path.write_text("A,2024\n", encoding="utf-8")
 
-    with pytest.raises(CsvImportError, match="row 1 needs Study and Year columns"):
+    with pytest.raises(CsvImportError, match="Row 1 needs Study and Year columns"):
         parse_csv(
             path,
             expected_headers=["Study", "Year", "Outcome"],
@@ -197,7 +197,7 @@ def test_xlsx_rejects_excessive_worksheet_extent_before_materializing(tmp_path):
 def test_storage_boundary_csv_rejects_fields_beyond_header(tmp_path, mapping):
     path = tmp_path / "width.csv"
     path.write_text("Study,Year,Dose\nA,2024,10,extra\n", encoding="utf-8")
-    with pytest.raises(CsvImportError, match="row 2.*3.*columns"):
+    with pytest.raises(CsvImportError, match="Row 2.*3.*columns"):
         parse_csv(path, expected_headers=["Study", "Year"], has_headers=True,
                   from_excel=False, column_mapping=mapping)
 

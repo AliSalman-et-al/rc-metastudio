@@ -600,7 +600,7 @@ class EligibilityReport:
         if not isinstance(value["data.type"], str) or not isinstance(
             value["metric"], str
         ):
-            raise ValueError("eligibility data.type and metric must be text")
+            raise ValueError("Eligibility data type and effect measure must be text.")
         count = value["usable.studies"]
         if (
             not isinstance(count, (int, float))

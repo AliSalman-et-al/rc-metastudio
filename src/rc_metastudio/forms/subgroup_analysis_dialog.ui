@@ -8,7 +8,7 @@
     <normaloff>:/misc/meta.png</normaloff>:/misc/meta.png</iconset>
   </property>
   <property name="windowTitle">
-   <string>Select Covariate</string>
+   <string>Select covariate</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item><layout class="QFormLayout" name="formLayout">

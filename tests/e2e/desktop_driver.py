@@ -7,6 +7,7 @@ import io
 import time
 import cProfile
 import os
+import re
 import shutil
 import sys
 import traceback
@@ -845,7 +846,7 @@ def sheets_swap(app, window):
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
-                expected_labels = ["Favours " + name for name in model.arm_names]
+                expected_labels = ["Favors " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
                 if iteration == 1:
@@ -1067,7 +1068,7 @@ def sheets(app, window):
     index = tabs.currentIndex()
     def delete_menu():
         menu = app.activePopupWidget()
-        action = next(a for a in menu.actions() if a.text() == f'Delete “{tabs.tabText(index)}”…')
+        action = next(a for a in menu.actions() if a.text() == f'Delete "{tabs.tabText(index)}"…')
         QtCore.QTimer.singleShot(0, lambda: app.activeModalWidget().done(QtWidgets.QMessageBox.StandardButton.Yes))
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, delete_menu)
@@ -1226,7 +1227,7 @@ def verify_sheet_strip(app, window, screens):
     def move_menu():
         menu = app.activePopupWidget()
         assert {action.text() for action in menu.actions() if not action.isSeparator()} == {
-            "Rename", "Add outcome…", f'Delete “{tabs.tabText(index)}”…', "Move left", "Move right"}
+            "Rename", "Add outcome…", f'Delete "{tabs.tabText(index)}"…', "Move left", "Move right"}
         action = next(action for action in menu.actions() if action.text() == "Move left")
         mouse_click(menu, QtCore.Qt.MouseButton.LeftButton, menu.actionGeometry(action).center())
     QtCore.QTimer.singleShot(0, move_menu)
@@ -1300,7 +1301,7 @@ def editing(app, window):
     ) as error:
         assert not window.open(str(broken))
     assert error.called
-    assert error.call_args.args[2] == "This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.\n\nDetails: project is not a valid ZIP container"
+    assert error.call_args.args[2] == "This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.\n\nDetails: the file is not a valid .rcms project archive"
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"
@@ -1496,7 +1497,7 @@ def xlsx_import(app, window):
             target.writestr(item, content)
     select(cached_path)
     assert page.isComplete(), page.import_status.text()
-    assert "1 formula cells use their saved values" in page.import_status.text()
+    assert "Formula cells using saved values: 1" in page.import_status.text()
     assert required(page.csv_data(), "import preview").rows[0][2] == "2"
     select(path)
 
@@ -1939,7 +1940,8 @@ def calculator(app, window, family):
                             scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum())
                 dialog.content_scroll.verticalScrollBar().setValue(0)
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
-                assert "SE" in dialog.wald_readout.text() and "two-sided p" in dialog.wald_readout.text()
+                readout = dialog.wald_readout.text()
+                assert "SE" in readout and re.search(r"two-sided P [=<] \d\.\d{3}\b", readout), readout
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 header = required(dialog.metric_readout.horizontalHeader())
                 for col, width in enumerate(widths):

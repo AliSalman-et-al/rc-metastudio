@@ -171,7 +171,7 @@
             </property>
             <property name="accessibleName"><string>Choose plot accent color</string></property>
             <property name="accessibleDescription"><string>Open a color picker for the plot accent color.</string></property>
-            <property name="toolTip"><string>Choose the plot accent color</string></property>
+            <property name="toolTip"><string>Open a color picker for the plot accent color.</string></property>
            </widget></item></layout></item>
 <item row="1" column="0">
            <widget class="QLabel" name="point_size_label">
@@ -213,7 +213,7 @@
             <item row="0" column="0">
              <widget class="QLabel" name="label_2">
               <property name="toolTip">
-               <string>Text for column title that appears on forest plot</string>
+               <string>Custom heading for the study column on the forest plot. Leave blank for the default.</string>
               </property>
               <property name="text">
                <string>Study / row heading</string>
@@ -240,7 +240,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="label_4">
               <property name="toolTip">
-               <string>Text for column title that appears on forest plot</string>
+               <string>Custom heading for the effect estimate column on the forest plot. Leave blank for the default.</string>
               </property>
               <property name="text">
                <string>Estimate heading</string>
@@ -267,7 +267,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_5">
               <property name="toolTip">
-               <string>Text for column title that appears on forest plot</string>
+               <string>Custom heading for the first arm column on the forest plot. Leave blank for the arm name.</string>
               </property>
               <property name="text">
                <string>First arm heading</string>
@@ -294,7 +294,7 @@
             <item row="3" column="0">
              <widget class="QLabel" name="label_6">
               <property name="toolTip">
-               <string>Text for column title that appears on forest plot</string>
+               <string>Custom heading for the second arm column on the forest plot. Leave blank for the arm name.</string>
               </property>
               <property name="text">
                <string>Second arm heading</string>

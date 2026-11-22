@@ -92,11 +92,11 @@ test_that("meta-regression bubble plot redraws reject legacy non-metafor payload
 
   expect_error(
     create.plot.data.reg(fixture$data, fixture$params, list(intercept = 0, slope = 1)),
-    "metafor rma result"
+    "fitted meta-regression model"
   )
   expect_error(
     rcmetar.draw.regression.plot(legacy.plot.data, tempfile(fileext = ".png")),
-    "metafor-backed plot bundle"
+    "fitted meta-regression plot"
   )
 })
 

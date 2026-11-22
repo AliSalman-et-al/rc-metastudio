@@ -6,7 +6,7 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
 .rcmetar.sequential.progress <- function(index, total) {
     progress <- getOption("rcmetar.sequential.progress")
     if (!is.null(progress) && !isTRUE(progress(as.integer(index), as.integer(total)))) {
-        stop("Sequential analysis cancelled.", call.=FALSE)
+        stop("Sequential analysis canceled.", call.=FALSE)
     }
 }
 
@@ -54,17 +54,17 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
 
 .rcmetar.repeated.model.title <- function(method, metric.label) {
     title <- switch(method,
-        binary.fixed.inv.var="Binary Fixed-Effect Model - Inverse Variance",
-        binary.fixed.mh="Binary Fixed-Effect Model - Mantel-Haenszel",
-        binary.fixed.peto="Binary Fixed-Effect Model - Peto",
-        binary.random="Binary Random-Effects Model",
-        continuous.fixed="Continuous Fixed-Effect Model - Inverse Variance",
-        continuous.random="Continuous Random-Effects Model",
-        diagnostic.fixed.inv.var="Diagnostic Fixed-Effect Inverse Variance",
-        diagnostic.fixed.mh="Diagnostic Fixed-Effect Mantel-Haenszel",
-        diagnostic.fixed.peto="Diagnostic Fixed-Effect Peto",
-        diagnostic.random="Diagnostic Random-Effects")
-    paste0(title, "\n\nMetric: ", metric.label)
+        binary.fixed.inv.var="Binary fixed-effect model \u2014 inverse variance",
+        binary.fixed.mh="Binary fixed-effect model \u2014 Mantel\u2013Haenszel",
+        binary.fixed.peto="Binary fixed-effect model \u2014 Peto",
+        binary.random="Binary random-effects model",
+        continuous.fixed="Continuous fixed-effect model \u2014 inverse variance",
+        continuous.random="Continuous random-effects model",
+        diagnostic.fixed.inv.var="Diagnostic fixed-effect inverse variance",
+        diagnostic.fixed.mh="Diagnostic fixed-effect Mantel\u2013Haenszel",
+        diagnostic.fixed.peto="Diagnostic fixed-effect Peto",
+        diagnostic.random="Diagnostic random-effects")
+    paste0(title, "\n\nEffect measure: ", metric.label)
 }
 
 .rcmetar.publish.repeated.forest <- function(data, fit, params, plot.data) {
@@ -106,7 +106,7 @@ cum.ma.binary <- function(fname, binary.data, params){
 	references <- c(res$References, cum_meta_analysis_ref)
 
     results <- list("images"=images,
-			        "Cumulative Summary"=cum.disp,
+			        "Cumulative summary"=cum.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -216,7 +216,7 @@ bootstrap <- function(fname, omdata, params) {
 		result.wrong.shape <- FALSE
 		while (first.try || !data.ok(subset_data) || error.during.meta.regression || result.wrong.shape) {
 			if (extra.attempts >= max.extra.attempts)
-				stop("Number of extra attempts exceeded 5x the number of replicates")
+				stop("Number of extra attempts exceeded 5\u00d7 the number of replicates")
 
 
 			if (!first.try || result.wrong.shape) {
@@ -284,7 +284,7 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 	conf.interval <- boot.ci(boot.out = boot.results, type = "norm", conf=validate.conf.level(params$conf.level)/100)
 	mean_boot <- mean(boot.results$t)
 
-	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% Confidence Interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
+	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% confidence interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
 	mean.msg <- paste("The observed value of the effect size was ", round(boot.results$t0, digits=params$digits), ", while the mean over the replicates was ", round(mean_boot,digits=params$digits), ".", sep="")
 	summary.msg <- paste(conf.interval.msg, "\n", mean.msg, sep="")
 	rcmetar.draw.bootstrap.histogram(bootstrap.plot.path, boot.results,
@@ -357,7 +357,7 @@ rcmetar.draw.bootstrap.histogram <- function(path, boot.results, title, xlabs, c
     plot.custom.boot(boot.results, title, ci.lb, ci.ub, xlabs)
 }
 
-plot.custom.boot <- function(boot.out, title="Bootstrap Histogram", ci.lb, ci.ub, xlabs=c("Effect Size")) {
+plot.custom.boot <- function(boot.out, title="Bootstrap histogram", ci.lb, ci.ub, xlabs=c("Effect estimate")) {
 
 	const <- function(w, eps=1e-8) {
 		all(abs(w-mean(w, na.rm=TRUE)) < eps)
@@ -407,7 +407,7 @@ loo.ma.binary <- function(fname, binary.data, params){
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- res$References
     results <- list("images"=images,
-			        "Leave-one-out Summary"=loo.disp,
+			        "Leave-one-out summary"=loo.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -455,7 +455,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
 
 	references <- c(res$References, cum_meta_analysis_ref)
     results <- list("images"=images,
-			        "Cumulative Summary"=cum.disp,
+			        "Cumulative summary"=cum.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -466,7 +466,7 @@ cum.ma.continuous <- function(fname, cont.data, params){
         reason <- cum.results[[i]]$reason
         if (is.null(reason)) "" else paste(study.names[i], reason)
     }, character(1))
-    if (any(nzchar(reasons))) results[["Non-estimable rows"]] <- paste(reasons[nzchar(reasons)], collapse="\n")
+    if (any(nzchar(reasons))) results[["Rows with effects that could not be estimated"]] <- paste(reasons[nzchar(reasons)], collapse="\n")
     results
 }
 
@@ -499,7 +499,7 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	references <- c(res$References, cum_meta_analysis_ref)
 
 	results <- list("images"=images,
-			        "Cumulative Summary"=cum.disp,
+			        "Cumulative summary"=cum.disp,
 			        "plot_names"=plot.names,
 					"plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references))
@@ -531,7 +531,7 @@ loo.ma.continuous <- function(fname, cont.data, params){
     plot.names <- c("loo forest plot"="loo_forest_plot")
 	references <- res$References
     results <- list("images"=images,
-			        "Leave-one-out Summary"=loo.disp,
+			        "Leave-one-out summary"=loo.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -589,7 +589,7 @@ subgroup.ma.binary <- function(fname, binary.data, params){
     plot.names <- c("subgroups forest plot"="subgroups_forest_plot")
 	references <- res$References
     results <- list("images"=images,
-			        "Subgroup Summary"=subgroup.disp,
+			        "Subgroup summary"=subgroup.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -633,7 +633,7 @@ subgroup.ma.continuous <- function(fname, cont.data, params){
 	references <- res$References
 
     results <- list("images"=images,
-			        "Subgroup Summary"=subgroup.disp,
+			        "Subgroup summary"=subgroup.disp,
                     "plot_names"=plot.names,
                     "plot_params_paths"=plot.params.paths,
 					"References"=rcmetar.unique.references(references),
@@ -667,7 +667,7 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
 
     study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "leave-one-out", TRUE)
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nMetric: ", metric.name)
+    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nEffect measure: ", metric.name)
     loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic", workflow="leave-one-out")
 
     if (!identical(params$create.plot, FALSE)) {
@@ -695,8 +695,8 @@ loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     cumulative <- workflow == "cumulative"
     label <- pretty.metric.name(as.character(params$measure),
                                 if (cumulative) params$metric.label else NULL)
-    summary.key <- if (cumulative) "Cumulative Summary" else "Summary"
-    result <- list(summary=setNames(list(fit[[summary.key]]), paste(label, "Summary")),
+    summary.key <- if (cumulative) "Cumulative summary" else "Summary"
+    result <- list(summary=setNames(list(fit[[summary.key]]), paste(label, "summary")),
                    references=fit$References)
     if (!(workflow == "subgroup" && !is.null(params$create.plot))) {
         if (length(fit$images)) {
@@ -739,7 +739,7 @@ subgroup.ma.diagnostic <- function(fname, diagnostic.data, params, selected.cov)
     subgroup.names <- c(subgroup.names, "Overall")
 
     metric.name <- pretty.metric.name(suppressed_params$measure)
-    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nMetric: ", metric.name)
+    model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nEffect measure: ", metric.name)
     studies <- rcmetar.study.result.values(
         diagnostic.data, params, tail(subgroup.results, 1L)[[1L]], subgroup.data$row.indices)
     subgroup.disp <- create.subgroup.display(subgroup.results, subgroup.names, params, model.title,
