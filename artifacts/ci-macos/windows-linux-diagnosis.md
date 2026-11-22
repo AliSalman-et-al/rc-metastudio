@@ -377,3 +377,20 @@ RCMetaR is pure R. Its source install byte-compiles R and builds its package dat
 | Source and Platform Verification (linux-x64) | editable app wheel | 1.5 | 8 |
 | Source and Platform Verification (linux-x64) | rpy2 native wheel | 1.6 | 1 |
 | Source and Platform Verification (windows-x64) | editable app wheel | 3.2 | 8 |
+
+## Desktop shard balancing
+
+The previous warm workflow's three Windows JUnit artifacts cover 153 passing
+desktop scenarios. Their summed testcase times were 1482.8, 1087.3 and
+941.6 seconds and their test wall times were 497.4, 366.1 and 316.7 seconds.
+The existing partitioner assigned almost identical forecast totals to those
+unequal shards. Refreshing its weights from the JUnit testcase times makes
+the new assignments sum to about 1171 observed testcase seconds each.
+These sums are scheduling weights for parallel workers. CI wall time remains
+a separate measurement.
+
+Get the three inputs from actions run 45026563658, attempt 2, artifact
+names full-r-stack-windows-1-evidence, full-r-stack-windows-2-evidence and
+full-r-stack-windows-3-evidence. The input within each artifact is
+desktop-results.xml. Apply its passing parametrized testcase times to the
+existing desktop partitioner and retain the rest of the duration config.
