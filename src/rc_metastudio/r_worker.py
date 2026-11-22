@@ -15,7 +15,7 @@ from typing import Literal, TypedDict, cast
 import weakref
 
 from PyQt6.QtCore import QCoreApplication, QEventLoop, QObject, QProcess, QProcessEnvironment, QTemporaryDir, QThread, QTimer, Qt, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QProgressDialog
+from PyQt6.QtWidgets import QProgressDialog
 
 from rc_metastudio import r_runtime
 from rc_metastudio.rcmetar_identity import expected_source, runtime_versions
@@ -558,7 +558,8 @@ class RWorker(QObject):
             "method_parameters": "Reading analysis settings…",
             "plot_capabilities": "Checking available plots…",
         }.get(kind, "Fitting model and drawing plots…")
-        dialog = QProgressDialog(label, "Cancel", 0, 0, QApplication.activeWindow())
+        # The active window can be a transient popup that closes during the wait.
+        dialog = QProgressDialog(label, "Cancel", 0, 0)
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         dialog.setMinimumDuration(0)
 
@@ -583,8 +584,8 @@ class RWorker(QObject):
         finally:
             dialog.canceled.disconnect(cancel)
             self.heartbeat_missing.disconnect(show_heartbeat)
-            dialog.deleteLater()
             dialog.hide()
+            dialog.deleteLater()
 
     def close(self) -> None:
         self._closed = True

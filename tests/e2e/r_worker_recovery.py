@@ -11,8 +11,8 @@ from time import monotonic, perf_counter, sleep
 from unittest.mock import patch
 
 import psutil
-from PyQt6.QtCore import QEventLoop, QTimer
-from PyQt6.QtWidgets import QMessageBox, QProgressDialog, QPushButton
+from PyQt6.QtCore import QEventLoop, Qt, QTimer
+from PyQt6.QtWidgets import QDialog, QMessageBox, QProgressDialog, QPushButton
 from rc_metastudio.r_worker import CalculatorJob
 
 
@@ -194,6 +194,7 @@ def _check_protocol(app, window, work, record_step, r_worker):
     progress = []
     missed_heartbeats = []
     cancel_attempts = []
+    closed_windows = []
     worker.progress.connect(progress.append)
     worker.heartbeat_missing.connect(missed_heartbeats.append)
 
@@ -206,9 +207,17 @@ def _check_protocol(app, window, work, record_step, r_worker):
     try:
         worker.ensure_ready()
         pid = worker.pid
+        transient = QDialog(window)
+        transient.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        transient.destroyed.connect(lambda: closed_windows.append(True))
+        transient.show()
+        app.setActiveWindow(transient)
+        assert app.activeWindow() is transient
+        QTimer.singleShot(500, transient.close)
         worker.changed.connect(cancel_on_reply)
         assert worker.call(_scale_job(), timeout_ms=None) == 1.2840254166877414
-        assert progress == ["étude τ²"] and cancel_attempts == [True] and missed_heartbeats == [True, False]
+        assert closed_windows == [True] and cancel_attempts == [True]
+        assert progress == ["étude τ²"] and missed_heartbeats == [True, False]
         nested = {"é": float("inf"), "τ": float("-inf")}
         job = _scale_job()
         job["args"] = {"nested": nested}
@@ -226,7 +235,8 @@ def _check_protocol(app, window, work, record_step, r_worker):
         assert worker.pid == pid
         assert worker.call(_scale_job(), timeout_ms=2000) == 1.2840254166877414
         record_step("worker-fd1-coalesced-replies-and-late-cancel", window, pid=pid,
-                    progress=progress, missed_heartbeats=missed_heartbeats, nested_infinities=True)
+                    progress=progress, missed_heartbeats=missed_heartbeats,
+                    transient_window_closed=True, nested_infinities=True)
     finally:
         worker.close()
 
