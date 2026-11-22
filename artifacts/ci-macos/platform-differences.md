@@ -21,7 +21,7 @@ manifest records SHA-256 pins for the seven authority archives per target.
 | Linux private R and package layout | The pinned Posit DEB supplies relocatable R on the Ubuntu 24.04 glibc baseline. The portable archive bundles required ELF libraries. |
 | macOS PR Qt wheel package | The distributed Qt 6.12 wheels require macOS 14.4. The release-grade Qt build targets macOS 14.0. |
 | Native signing | macOS PR packaging verifies the ad-hoc app signature. Trusted release signs and notarizes the DMG. Windows and Linux retain their existing artifact and qualification contracts. |
-| Staged R bridges | Existing packaged rpy2 API and private-runtime relocation are reserved for the R worker migration. |
+| Staged R bridges | The worker migration handles removal of the embedded Python binding and the matching relocation steps. |
 | Historical candidate revisions | Candidate builds for protected revisions predating the shared action still use the setup steps compatible with those sources. |
 
 The setup action is shared by verification and current candidate builds.

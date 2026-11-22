@@ -255,7 +255,6 @@ jobs:
           echo "LDFLAGS=-L$libpng_prefix/lib ${LDFLAGS:-}" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=$libpng_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
 
-
       # Windows runs the shared Python and golden contracts. macOS validates
       # the installed R worker; Linux validates native xcb with R evidence skipped.
       - name: Run Platform-Neutral Python Verification
@@ -266,7 +265,7 @@ jobs:
       - name: Run Native Platform Smoke and R Evidence
         if: ${{ matrix.platform == 'macos' }}
         shell: bash
-        run: uv run --no-sync python scripts/verify.py smoke --require-r-evidence
+        run: uv run --locked python scripts/verify.py smoke --require-r-evidence
 
       - name: Run Linux Qt xcb and Python verification
         if: ${{ matrix.platform == 'linux' }}

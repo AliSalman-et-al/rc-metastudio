@@ -343,7 +343,7 @@ The same ten consecutive PR runs listed in [diagnosis.md](diagnosis.md) supply A
 
 ## Compile and package setup phases
 
-RCMetaR is pure R. Its source install byte-compiles R and builds its package database. PyInstaller bundles existing binaries. Linux source-contrib transport delivers Posit binaries, with binary tags verified by the installer. The rpy2 native build remains in scope for the worker migration.
+RCMetaR is pure R. Its source install byte-compiles R and builds its package database. PyInstaller bundles existing binaries. Linux source-contrib transport delivers Posit binaries, with binary tags verified by the installer. The embedded binding build was removed during the worker migration.
 
 | Job | Phase | Median seconds | Samples |
 | --- | --- | ---: | ---: |
@@ -353,7 +353,7 @@ RCMetaR is pure R. Its source install byte-compiles R and builds its package dat
 | Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | Linux binary R library install | 107.7 | 2 |
 | Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | RCMetaR R installation | 9.3 | 2 |
 | Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | editable app wheel | 1.7 | 2 |
-| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | rpy2 native wheel | 5.4 | 2 |
+| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | Embedded Python binding wheel | 5.4 | 2 |
 | Required Windows Full R Stack Evidence (1) | RCMetaR R installation | 12.5 | 8 |
 | Required Windows Full R Stack Evidence (1) | RCMetaR source archive | 1.0 | 8 |
 | Required Windows Full R Stack Evidence (1) | editable app wheel | 3.2 | 8 |
@@ -373,9 +373,9 @@ RCMetaR is pure R. Its source install byte-compiles R and builds its package dat
 | Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | RCMetaR R installation | 12.3 | 8 |
 | Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | Windows wheel, R install and proof | 28.9 | 8 |
 | Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | editable app wheel | 3.1 | 8 |
-| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | rpy2 native wheel | 21.5 | 8 |
+| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | Embedded Python binding wheel | 21.5 | 8 |
 | Source and Platform Verification (linux-x64) | editable app wheel | 1.5 | 8 |
-| Source and Platform Verification (linux-x64) | rpy2 native wheel | 1.6 | 1 |
+| Source and Platform Verification (linux-x64) | Embedded Python binding wheel | 1.6 | 1 |
 | Source and Platform Verification (windows-x64) | editable app wheel | 3.2 | 8 |
 
 ## Desktop shard balancing
