@@ -10,10 +10,6 @@ pytestmark = pytest.mark.usefixtures("inject_python_boundary")
 
 sys.path.insert(0, os.path.abspath("src"))
 
-from rc_metastudio import r_bridge
-
-r_bridge.initialize_r()
-
 from rc_metastudio.workspace import table_model as dataset_table_model
 from rc_metastudio.project import model as analysis_dataset
 from rc_metastudio.analysis import catalog as analysis_catalog
