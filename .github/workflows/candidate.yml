@@ -96,6 +96,7 @@ jobs:
         with:
           qt-rcc: 'true'
           linux-package-r-cache: ${{ matrix.target == 'linux-x64' }}
+          macos-package-r-cache: ${{ matrix.target == 'macos-arm64' }}
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
         shell: bash

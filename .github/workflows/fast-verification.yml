@@ -323,7 +323,7 @@ jobs:
       - name: Cache pinned R dependency library
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
-          path: build/pinned-r/library
+          path: build/pinned-r/dependencies/library
           key: pinned-r-v1-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
       - name: Cache RCMetaR source archive and installation
         id: rcmetar-cache
@@ -333,7 +333,7 @@ jobs:
           key: pinned-rcmetar-v1-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
       - name: Install and verify pinned binary dependencies
         run: |
-          $env:R_LIBS_USER = (New-Item -ItemType Directory -Force build/pinned-r/library).FullName
+          $env:R_LIBS_USER = (New-Item -ItemType Directory -Force build/pinned-r/dependencies/library).FullName
           $env:R_LIBS = $env:R_LIBS_USER
           $env:RCMS_POLICY_PYTHON = (uv python find --managed-python).Trim()
           Rscript scripts/install-r-deps.R
@@ -341,12 +341,12 @@ jobs:
       - name: Build and install RCMetaR
         if: steps.rcmetar-cache.outputs.cache-hit != 'true'
         run: |
-          $env:R_LIBS_USER = (Resolve-Path build/pinned-r/library).Path
+          $env:R_LIBS_USER = (Resolve-Path build/pinned-r/dependencies/library).Path
           $env:R_LIBS = $env:R_LIBS_USER
           $source = (Resolve-Path r/RCMetaR).Path
           $installer = (Resolve-Path scripts/install-rcmetar-source.R).Path
-          $library = (New-Item -ItemType Directory -Force build/pinned-r/source/library).FullName
-          Set-Location (Split-Path -Parent $library)
+          $library = (New-Item -ItemType Directory -Force build/pinned-r/source).FullName
+          Set-Location $library
           R.exe CMD build --no-build-vignettes $source
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $archive = Get-ChildItem -File -Filter 'RCMetaR_*.tar.gz'

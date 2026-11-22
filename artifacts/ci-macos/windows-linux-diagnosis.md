@@ -340,3 +340,40 @@ The same ten consecutive PR runs listed in [diagnosis.md](diagnosis.md) supply A
 | Cache step | Hits | Misses |
 | --- | ---: | ---: |
 | uv | 2 | 0 |
+
+## Compile and package setup phases
+
+RCMetaR is pure R. Its source install byte-compiles R and builds its package database. PyInstaller bundles existing binaries. Linux source-contrib transport delivers Posit binaries, with binary tags verified by the installer. The rpy2 native build remains in scope for the worker migration.
+
+| Job | Phase | Median seconds | Samples |
+| --- | --- | ---: | ---: |
+| Native Qt6 Remaining Surfaces | editable app wheel | 3.2 | 8 |
+| Native Qt6 Vertical Slice | editable app wheel | 3.2 | 8 |
+| Quick Verification | editable app wheel | 3.3 | 7 |
+| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | Linux binary R library install | 107.7 | 2 |
+| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | RCMetaR R installation | 9.3 | 2 |
+| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | editable app wheel | 1.7 | 2 |
+| Required Linux x64 Package Qualification / RCMetaStudio Linux x86_64 | rpy2 native wheel | 5.4 | 2 |
+| Required Windows Full R Stack Evidence (1) | RCMetaR R installation | 12.5 | 8 |
+| Required Windows Full R Stack Evidence (1) | RCMetaR source archive | 1.0 | 8 |
+| Required Windows Full R Stack Evidence (1) | editable app wheel | 3.2 | 8 |
+| Required Windows Full R Stack Evidence (1) | third-party R closure install | 25.6 | 8 |
+| Required Windows Full R Stack Evidence (2) | RCMetaR R installation | 11.9 | 8 |
+| Required Windows Full R Stack Evidence (2) | RCMetaR source archive | 0.9 | 8 |
+| Required Windows Full R Stack Evidence (2) | editable app wheel | 3.3 | 8 |
+| Required Windows Full R Stack Evidence (2) | third-party R closure install | 23.8 | 8 |
+| Required Windows Full R Stack Evidence (3) | RCMetaR R installation | 13.0 | 8 |
+| Required Windows Full R Stack Evidence (3) | RCMetaR source archive | 1.0 | 8 |
+| Required Windows Full R Stack Evidence (3) | editable app wheel | 3.2 | 8 |
+| Required Windows Full R Stack Evidence (3) | third-party R closure install | 24.3 | 8 |
+| Required Windows Full R Stack Evidence (checks) | RCMetaR R installation | 12.5 | 8 |
+| Required Windows Full R Stack Evidence (checks) | RCMetaR source archive | 1.0 | 8 |
+| Required Windows Full R Stack Evidence (checks) | editable app wheel | 3.2 | 8 |
+| Required Windows Full R Stack Evidence (checks) | third-party R closure install | 24.7 | 8 |
+| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | RCMetaR R installation | 12.3 | 8 |
+| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | Windows wheel, R install and proof | 28.9 | 8 |
+| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | editable app wheel | 3.1 | 8 |
+| Required Windows x64 Package Qualification / RCMetaStudio Windows x64 | rpy2 native wheel | 21.5 | 8 |
+| Source and Platform Verification (linux-x64) | editable app wheel | 1.5 | 8 |
+| Source and Platform Verification (linux-x64) | rpy2 native wheel | 1.6 | 1 |
+| Source and Platform Verification (windows-x64) | editable app wheel | 3.2 | 8 |

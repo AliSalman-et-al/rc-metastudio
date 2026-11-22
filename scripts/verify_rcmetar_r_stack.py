@@ -389,6 +389,67 @@ def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) 
          f"in {time.monotonic() - started:.2f}s")
 
 
+def prepare_stack_library(
+    args: argparse.Namespace, root: Path, rscript: Path, base_env: dict[str, str],
+    python: str, cran_repo: str, work_dir: Path,
+) -> dict[str, str]:
+    bootstrap_library = work_dir / "bootstrap-library"
+    bootstrap_library.mkdir(parents=True)
+    env = isolated_r_env(base_env, bootstrap_library)
+    r_home = r_support.resolve_r_home(rscript, root, env)
+    env = isolated_r_env(base_env, bootstrap_library, r_home)
+    r_exe = r_support.resolve_r_exe(rscript, root, env)
+    cache_root = (
+        args.r_library_cache_root.resolve() if args.r_library_cache_root else None
+    )
+    prepared = args.prepared_r_library.resolve() if args.prepared_r_library else None
+    if prepared is None:
+        r_library = ensure_dependency_library(
+            root, rscript, env, python, cran_repo, cache_root, work_dir
+        )
+    else:
+        r_library = prepared / "dependencies/library"
+        copy_library(prepared / "source/RCMetaR", r_library / "RCMetaR")
+    env = isolated_r_env(base_env, r_library, r_home)
+    env["RCMS_CRAN_REPO"] = cran_repo
+
+    step(f"Using isolated R verification library at {r_library}")
+
+    if prepared is None:
+        run(
+            [r_exe, "CMD", "build", "--no-build-vignettes", root / RCMetaR_PACKAGE],
+            cwd=work_dir,
+            env=env,
+        )
+        tarball = built_RCMetaR_tarball(work_dir)
+    else:
+        tarball = built_RCMetaR_tarball(prepared / "source")
+        verify_manifest_versions(root, python, rscript, env)
+        verify_dependency_closure(root, rscript, env)
+    if args.desktop_shard is None:
+        run(
+            [
+                r_exe,
+                "CMD",
+                "check",
+                "--no-manual",
+                "--no-build-vignettes",
+                f"--library={r_library}",
+                tarball,
+            ],
+            cwd=work_dir,
+            env=env,
+        )
+    if prepared is None:
+        run(
+            [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
+            cwd=root,
+            env=env,
+        )
+
+    return env
+
+
 def verify(args: argparse.Namespace) -> None:
     root = args.root.resolve()
     if __package__:
@@ -419,59 +480,7 @@ def verify(args: argparse.Namespace) -> None:
         prefix="RCMetaR-r-stack-", dir=work_dir_parent
     ) as temp_name:
         work_dir = Path(temp_name)
-        bootstrap_library = work_dir / "bootstrap-library"
-        bootstrap_library.mkdir(parents=True)
-        env = isolated_r_env(base_env, bootstrap_library)
-        r_home = r_support.resolve_r_home(rscript, root, env)
-        env = isolated_r_env(base_env, bootstrap_library, r_home)
-        r_exe = r_support.resolve_r_exe(rscript, root, env)
-        cache_root = (
-            args.r_library_cache_root.resolve() if args.r_library_cache_root else None
-        )
-        prepared = args.prepared_r_library.resolve() if args.prepared_r_library else None
-        if prepared is None:
-            r_library = ensure_dependency_library(
-                root, rscript, env, python, cran_repo, cache_root, work_dir
-            )
-        else:
-            r_library = prepared / "library"
-            copy_library(prepared / "source/library/RCMetaR", r_library / "RCMetaR")
-        env = isolated_r_env(base_env, r_library, r_home)
-        env["RCMS_CRAN_REPO"] = cran_repo
-
-        step(f"Using isolated R verification library at {r_library}")
-
-        if prepared is None:
-            run(
-                [r_exe, "CMD", "build", "--no-build-vignettes", root / RCMetaR_PACKAGE],
-                cwd=work_dir,
-                env=env,
-            )
-            tarball = built_RCMetaR_tarball(work_dir)
-        else:
-            tarball = built_RCMetaR_tarball(prepared / "source")
-            verify_manifest_versions(root, python, rscript, env)
-            verify_dependency_closure(root, rscript, env)
-        if args.desktop_shard is None:
-            run(
-                [
-                    r_exe,
-                    "CMD",
-                    "check",
-                    "--no-manual",
-                    "--no-build-vignettes",
-                    f"--library={r_library}",
-                    tarball,
-                ],
-                cwd=work_dir,
-                env=env,
-            )
-        if prepared is None:
-            run(
-                [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
-                cwd=root,
-                env=env,
-            )
+        env = prepare_stack_library(args, root, rscript, base_env, python, cran_repo, work_dir)
 
         env["RCMS_R_STACK_REQUIRED"] = "1"
         if args.desktop_shard is None:

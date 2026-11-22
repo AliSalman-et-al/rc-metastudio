@@ -40,6 +40,7 @@ jobs:
       - uses: ./.github/actions/setup-rcms
         with:
           qt-rcc: 'true'
+          macos-package-r-cache: ${{ !inputs.prepare_dependencies_only }}
           uv-cache-suffix: macos-package-${{ inputs.pr_wheels && 'pr-wheels' || 'release' }}-${{ hashFiles('config/macos-package-targets.json', 'config/r-dependencies.json', 'scripts/configure_macos_r_launchers.py', '.python-version') }}
 
       - name: Resolve package metadata
@@ -80,13 +81,6 @@ jobs:
         with:
           path: build/macos-pyqt-cache
           key: macos-pyqt-wheel-${{ steps.macos-qt-build.outputs.wheel }}
-
-      - name: Cache installed RCMetaR and its source archive
-        if: inputs.pr_wheels
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
-        with:
-          path: build/macos-rcmetar-cache
-          key: macos-rcmetar-v1-${{ matrix.target }}-${{ hashFiles('r/RCMetaR/**', 'config/r-dependencies.json', 'config/macos-package-targets.json') }}
 
       - name: Prepare macOS build dependencies
         if: inputs.prepare_dependencies_only

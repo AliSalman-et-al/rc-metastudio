@@ -555,18 +555,31 @@ install_local_r_packages() {
     "$rscript" "$repo_root/scripts/install-rcmetar-source.R" "$rcmetar_archive_path" "$r_lib"
 }
 
-step "Installing bundled R package dependencies into this private staged runtime"
+cache_root="${RCMS_PACKAGED_R_CACHE:-}"
+if [ -n "$cache_root" ] && [ -s "$cache_root/dependencies/ppm-archives.sha256" ]; then
+  step "Restoring the verified Apple silicon R binary library and its archives"
+  (cd "$cache_root/dependencies/ppm-archives" && shasum -a 256 --check --status ../ppm-archives.sha256)
+  rsync -a "$cache_root/dependencies/library/" "$r_lib/"
+  copy_tree "$cache_root/dependencies/ppm-archives" "$ppm_archive_root"
+fi
+step "Verifying bundled R package dependencies in the private staged runtime"
 run_strict_r_dependency_policy "$r_lib"
+if [ -n "$cache_root" ] && [ ! -s "$cache_root/dependencies/ppm-archives.sha256" ]; then
+  mkdir -p "$cache_root/dependencies"
+  copy_tree "$r_lib" "$cache_root/dependencies/library"
+  copy_tree "$ppm_archive_root" "$cache_root/dependencies/ppm-archives"
+  (cd "$ppm_archive_root" && shasum -a 256 -- *.tgz) > "$cache_root/dependencies/ppm-archives.sha256"
+fi
 
-rcmetar_cache="$repo_root/build/macos-rcmetar-cache"
-if [ "$pr_wheels" = true ] && [ -s "$rcmetar_cache/$rcmetar_archive_name" ] && [ -f "$rcmetar_cache/RCMetaR/DESCRIPTION" ]; then
+rcmetar_cache="${cache_root:+$cache_root/source}"
+if [ -n "$rcmetar_cache" ] && [ -s "$rcmetar_cache/$rcmetar_archive_name" ] && [ -f "$rcmetar_cache/RCMetaR/DESCRIPTION" ]; then
   step "Restoring installed RCMetaR and its matching source archive"
   cp "$rcmetar_cache/$rcmetar_archive_name" "$rcmetar_archive_path"
   copy_tree "$rcmetar_cache/RCMetaR" "$r_lib/RCMetaR"
 else
   step "Installing local RCMetaR package"
   install_local_r_packages
-  if [ "$pr_wheels" = true ]; then
+  if [ -n "$rcmetar_cache" ]; then
     mkdir -p "$rcmetar_cache"
     cp "$rcmetar_archive_path" "$rcmetar_cache/$rcmetar_archive_name"
     copy_tree "$r_lib/RCMetaR" "$rcmetar_cache/RCMetaR"

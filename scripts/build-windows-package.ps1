@@ -481,7 +481,7 @@ function Install-BundledRPackages {
     Write-Step "Installing locked bundled R package dependencies from immutable downloads"
     if ($env:RCMS_PREPARED_R_LIBRARY) {
         $prepared = (Resolve-Path -LiteralPath $env:RCMS_PREPARED_R_LIBRARY).Path
-        $dependencyLibrary = Join-Path $prepared "library"
+        $dependencyLibrary = Join-Path $prepared "dependencies/library"
         Assert-PathExists -Path $dependencyLibrary -Description "Prepared R dependency library"
         robocopy $dependencyLibrary $rLibrary /E /NFL /NDL /NJH /NJS /NP | Out-Host
         if ($LASTEXITCODE -gt 7) { throw "Could not stage the prepared R dependency library." }
@@ -493,7 +493,7 @@ function Install-BundledRPackages {
 
     if ($env:RCMS_PREPARED_R_LIBRARY) {
         Write-Step "Staging RCMetaR from the verified source build"
-        Copy-DirectoryTree -Source (Join-Path $prepared "source/library/RCMetaR") -Destination (Join-Path $rLibrary "RCMetaR")
+        Copy-DirectoryTree -Source (Join-Path $prepared "source/RCMetaR") -Destination (Join-Path $rLibrary "RCMetaR")
     }
     else {
         Write-Step "Installing local RCMetaR package"
