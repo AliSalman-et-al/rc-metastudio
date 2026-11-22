@@ -80,22 +80,34 @@ Without `RCMS_QT6_BUILD_ROOT`, the application looks for generated forms under `
 GitHub Actions gates pull requests. The quick stage runs deterministic code health
 on Ubuntu and generates Qt forms, runs strict win32 typing, collects pytest,
 and runs the fast Python, packaging contract, and JavaScript release tests on
-Windows. The quick stage excludes tests marked `r_packages`, which require an
-installed RCMetaR library. The full R-stack job provides that library for the
-packaged summary check. The classifier-selected native, R-stack, cross-platform,
-and packaged checks wait for the quick stage. The Qt6 Integration Verification
-Gate reports the result.
+Windows. The full R-stack job provides the installed RCMetaR library for tests
+marked `r_packages`. The [path map](../scripts/ci_selection.py) selects heavy
+checks after the quick stage, including calculator and import desktop scenarios
+for narrowly mapped changes. Draft PRs use Windows for heavy checks. Marking a
+PR ready for review starts a fresh run on every selected platform. Master pushes
+use the pushed diff and the nightly run qualifies every lane on its supported
+platforms. Documentation-only changes finish with the quick stage and the
+Qt6 Integration Verification Gate.
 
-To run the Windows quick checks before opening a pull request, use the locked
-Python environment, Node.js, and [pinned R](../config/r-dependencies.json) on
-PATH. Fetch the default branch and commit your changes before checking code
-health against the PR diff.
+Run the optional `ready` command in the locked Python environment before opening
+a PR. It uses the merge base with `origin/master` and includes uncommitted
+changes and nonignored new files in test selection. Code health evaluates the
+committed `HEAD`, so commit the changes to include them in that check. Install
+Node.js, [pinned R](../config/r-dependencies.json), and the selected lane's native
+tools, including Poppler for desktop report scenarios.
 
 ```powershell
-git fetch origin
-uv run --locked python scripts/verify.py quick
-uv run --locked python -c "from scripts.verify import run_code_health; run_code_health(reuse_baseline=True)"
+git fetch origin master
+uv run --locked python scripts/verify.py ready --dry-run
+uv run --locked python scripts/verify.py ready
 ```
+
+The command prints each lane and why it was selected, then runs the quick checks
+and selected checks available for the host. It reuses passed lane receipts in
+`artifacts/verification/ready/` when the inputs and toolchain match. Use
+`ready --full` to run every local lane with fresh lane receipts, or combine it
+with `--dry-run` to inspect the full plan. GitHub Actions supplies the other
+platforms and remains the merge gate.
 
 When CI catches a regression that a quick check could have caught, add a fast
 test to the quick stage. The old Windows pre-push hook has been removed. If you

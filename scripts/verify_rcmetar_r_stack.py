@@ -484,6 +484,8 @@ def verify(args: argparse.Namespace) -> None:
                 "--shard-report", "artifacts/verification/desktop-partition.json",
                 "--junitxml=artifacts/verification/desktop-results.xml",
             ]
+        if args.desktop_scenarios:
+            desktop_command += ["--desktop-scenarios", args.desktop_scenarios]
         if not args.skip_desktop:
             run(desktop_command, cwd=root, env=env)
         if args.desktop_shard is None:
@@ -515,11 +517,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--skip-desktop", action="store_true")
     selection.add_argument("--desktop-shard", type=int, choices=DESKTOP_SHARDS)
+    parser.add_argument("--desktop-scenarios", help="comma-separated selection within a desktop shard")
     parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--r-library-cache-root", type=Path, default=None)
     parser.add_argument("--cran-repo", default=None)
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.desktop_scenarios and args.desktop_shard is None:
+        parser.error("--desktop-scenarios requires --desktop-shard")
+    return args
 
 
 def main(argv: list[str] | None = None) -> int:

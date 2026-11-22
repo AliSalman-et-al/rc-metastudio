@@ -16,6 +16,7 @@ _DESKTOP_ENV = pytest.StashKey[dict[str, str]]()
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption("--desktop-shard", type=int, choices=DESKTOP_SHARDS, default=None)
+    parser.addoption("--desktop-scenarios", default=None)
     parser.addoption("--shard-report", default=None)
     parser.addoption("--fresh", action="store_true", help="Run every desktop case without evidence reuse")
 
@@ -68,21 +69,32 @@ def pytest_report_header(config: pytest.Config) -> str:
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     shard = config.getoption("--desktop-shard")
+    scenarios = config.getoption("--desktop-scenarios")
     if shard is None:
+        if scenarios:
+            raise pytest.UsageError("--desktop-scenarios requires --desktop-shard")
         return
     durations = json.loads(
         (Path(__file__).resolve().parents[2] / "config/desktop-durations.json").read_text()
     )
     nodes = [item.nodeid for item in items]
     bins, loads = partition(nodes, durations)
+    selected = bins[shard - 1]
+    if scenarios:
+        requested = set(scenarios.split(","))
+        by_scenario = {node.rsplit("[", 1)[-1].removesuffix("]"): node for node in selected}
+        if missing := requested - by_scenario.keys():
+            raise pytest.UsageError(f"Desktop scenarios outside shard {shard}: {', '.join(sorted(missing))}")
+        selected = [node for scenario, node in by_scenario.items() if scenario in requested]
     report = config.getoption("--shard-report")
     if report:
         path = Path(report)
         if hasattr(config, "workerinput"):
             path = path.with_name(f"{path.stem}-{config.workerinput['workerid']}{path.suffix}")
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"collected": nodes, "shards": bins, "estimated_seconds": loads}, indent=2))
-    selected = bins[shard - 1]
+        path.write_text(json.dumps({
+            "collected": nodes, "shards": bins, "estimated_seconds": loads, "selected": selected,
+        }, indent=2))
     by_node = {item.nodeid: item for item in items}
     items[:] = [by_node.pop(node) for node in selected]
     deselected = list(by_node.values())

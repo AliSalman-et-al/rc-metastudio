@@ -2,21 +2,23 @@ name: Qt6 Integration Verification
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "23 3 * * *"
   push:
     branches:
       - master
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
-  pull-requests: read
 
 env:
   RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-11-13
   WINDOWS_RCC_CACHE_KEY: qt-rcc-6.12.0-windows-x64-219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'schedule' && 'nightly' || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,47 +27,44 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      run-source: ${{ steps.classify.outputs.run-source }}
-      run-windows-package: ${{ steps.classify.outputs.run-windows-package }}
-      reason: ${{ steps.classify.outputs.reason }}
-      r-stack-parts: ${{ steps.r-stack-parts.outputs.parts }}
+      lanes: ${{ steps.classify.outputs.lanes }}
+      targets: ${{ steps.classify.outputs.targets }}
+      r-stack-parts: ${{ steps.classify.outputs.r-stack-parts }}
 
     steps:
-      - name: Check out classifier policy
+      - name: Check out classifier policy and comparison history
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
 
       - name: Classify changed paths
         id: classify
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPOSITORY: ${{ github.repository }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PUSH_BASE: ${{ github.event.before }}
         run: |
           set -euo pipefail
+          options=()
+          if [[ "$PR_DRAFT" == true ]]; then
+            options+=(--draft)
+          fi
           case "$EVENT_NAME" in
-            workflow_dispatch) reason="manual dispatch" ;;
-            push) reason="push to $GITHUB_REF_NAME" ;;
-            pull_request)
-              changed_files="$(gh api --paginate "repos/$REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[] | .filename, (.previous_filename // empty)')"
-              printf '%s\n' "$changed_files" | python3 scripts/package_input_policy.py | tee -a "$GITHUB_OUTPUT"
+            schedule|workflow_dispatch)
+              python3 -m scripts.ci_selection --full "$EVENT_NAME" >> "$GITHUB_OUTPUT"
               exit 0
               ;;
+            pull_request) base="$PR_BASE" ;;
+            push) base="$PUSH_BASE" ;;
           esac
-
-          printf '%s\n' "run-source=true" "run-windows-package=true" "reason=$reason" >> "$GITHUB_OUTPUT"
-
-      - name: Plan R Stack checks and desktop shards
-        id: r-stack-parts
-        shell: bash
-        run: |
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          from scripts.desktop_partition import DESKTOP_SHARDS
-
-          print("parts=" + json.dumps(["checks", *DESKTOP_SHARDS]))
-          PY
+          if [[ -z "$base" ]] || ! git cat-file -e "$base^{commit}"; then
+            python3 -m scripts.ci_selection "${options[@]}" --full "comparison base unavailable" >> "$GITHUB_OUTPUT"
+          else
+            git diff --no-renames --name-only -z "$base" HEAD -- |
+              python3 -m scripts.ci_selection "${options[@]}" >> "$GITHUB_OUTPUT"
+          fi
 
   code-health:
     name: Deterministic code-health baseline and gates
@@ -183,7 +182,7 @@ jobs:
   qt6-verification:
     name: Native Qt6 Vertical Slice
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'qt6-verification') }}
     runs-on: windows-latest
     timeout-minutes: 45
     defaults:
@@ -227,7 +226,7 @@ jobs:
   remaining-surface-verification:
     name: Native Qt6 Remaining Surfaces
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'remaining-surface-verification') }}
     runs-on: windows-latest
     timeout-minutes: 20
     defaults:
@@ -271,21 +270,12 @@ jobs:
   source-fast-targets:
     name: Source and Platform Verification (${{ matrix.target }})
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'source-fast-targets') }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - target: windows-x64
-            runner: windows-latest
-            platform: windows
-          - target: macos-arm64
-            runner: macos-15
-            platform: macos
-          - target: linux-x64
-            runner: ubuntu-24.04
-            platform: linux
+        include: ${{ fromJSON(needs.change-classifier.outputs.targets) }}
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -409,19 +399,7 @@ jobs:
             sudo apt-get install -y "${xcb_packages[@]}"
           fi
           RPY2_CFFI_MODE=ABI uv sync --locked
-          uv run --no-sync python scripts/build_qt6.py generate
-          xvfb-run -a uv run --no-sync python scripts/build_qt6.py native-smoke
-          PYTHONPATH="$PWD" uv run --no-sync pytest --strict-markers --confcutdir=tests/python/fast \
-            tests/python/fast/test_r_runtime.py::test_frozen_linux_r_home_requires_private_shared_library \
-            tests/python/fast/test_r_runtime.py::test_frozen_linux_runtime_does_not_require_integration_kit \
-            tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_is_pinned_to_official_pyside6_version \
-            tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_resolution_checks_selected_pyside_environment \
-            tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_requires_xcb_and_x86_64 \
-            tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_selects_xcb
-
-          PYTHONPATH="$PWD" uv run --no-sync pytest --strict-markers --confcutdir=tests/packaging/contract \
-            tests/packaging/contract/test_delivery_state_machine.py \
-            tests/packaging/contract/test_linux_distributable_contract.py
+          uv run --no-sync python -c "from scripts.verify import run_linux_source; run_linux_source()"
 
       - name: Prune uv cache
         if: ${{ always() }}
@@ -430,11 +408,11 @@ jobs:
   full-r-stack:
     name: Required Windows Full R Stack Evidence (${{ matrix.part }})
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-source == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'full-r-stack') }}
     strategy:
       fail-fast: false
       matrix:
-        part: ${{ fromJSON(needs.change-classifier.outputs.r-stack-parts) }}
+        include: ${{ fromJSON(needs.change-classifier.outputs.r-stack-parts) }}
     runs-on: windows-latest
     timeout-minutes: 60
     defaults:
@@ -477,7 +455,14 @@ jobs:
           key: ${{ env.WINDOWS_RCC_CACHE_KEY }}
 
       - name: Run Full R Stack Evidence
-        run: uv run --locked python scripts\verify_rcmetar_r_stack.py ${{ matrix.part == 'checks' && '--skip-desktop' || format('--desktop-shard {0}', matrix.part) }}
+        env:
+          PART: ${{ matrix.part }}
+          SCENARIOS: ${{ matrix.scenarios }}
+        run: |
+          $selection = @("--skip-desktop")
+          if ($env:PART -ne "checks") { $selection = @("--desktop-shard", $env:PART) }
+          if ($env:SCENARIOS) { $selection += @("--desktop-scenarios", $env:SCENARIOS) }
+          uv run --locked python scripts/verify_rcmetar_r_stack.py @selection
 
       - name: Upload Full R Stack evidence
         if: ${{ always() }}
@@ -504,13 +489,25 @@ jobs:
   windows-package-qualification:
     name: Required Windows x64 Package Qualification
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-windows-package == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'windows-package-qualification') }}
     uses: ./.github/workflows/package-windows.yml
+
+  macos-package-qualification:
+    name: Required macOS arm64 Package Qualification
+    needs: [change-classifier, code-health, quick]
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'macos-package-qualification') }}
+    uses: ./.github/workflows/package-target.yml
+
+  linux-package-qualification:
+    name: Required Linux x64 Package Qualification
+    needs: [change-classifier, code-health, quick]
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'linux-package-qualification') }}
+    uses: ./.github/workflows/package-linux.yml
 
   packaging-contract-macos:
     name: Focused Native macOS Packaging Contracts
     needs: [change-classifier, code-health, quick]
-    if: ${{ needs.change-classifier.outputs.run-windows-package == 'true' }}
+    if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'packaging-contract-macos') }}
     runs-on: macos-15
     timeout-minutes: 15
     defaults:
@@ -535,10 +532,7 @@ jobs:
         run: uv sync --locked
 
       - name: Run focused native macOS packaging contract nodes
-        run: |
-          uv run pytest -q \
-            tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py::test_pyinstaller_preserves_miniature_cran_framework_toc \
-            tests/packaging/contract/test_macos_native_pipeline_contract.py
+        run: uv run --no-sync python -c "from scripts.verify import run_macos_packaging_contracts; run_macos_packaging_contracts()"
 
       - name: Prune uv cache
         if: ${{ always() }}
@@ -555,6 +549,8 @@ jobs:
       - source-fast-targets
       - full-r-stack
       - windows-package-qualification
+      - macos-package-qualification
+      - linux-package-qualification
       - packaging-contract-macos
     if: ${{ always() }}
     runs-on: ubuntu-latest
@@ -564,55 +560,24 @@ jobs:
       - name: Check required lane results
         shell: bash
         env:
-          CODE_HEALTH_RESULT: ${{ needs.code-health.result }}
-          QUICK_RESULT: ${{ needs.quick.result }}
-          CLASSIFIER_RESULT: ${{ needs.change-classifier.result }}
-          RUN_SOURCE: ${{ needs.change-classifier.outputs.run-source }}
-          REASON: ${{ needs.change-classifier.outputs.reason }}
-          QT6_RESULT: ${{ needs.qt6-verification.result }}
-          REMAINING_SURFACE_RESULT: ${{ needs.remaining-surface-verification.result }}
-          SOURCE_FAST_RESULT: ${{ needs.source-fast-targets.result }}
-          FULL_R_STACK_RESULT: ${{ needs.full-r-stack.result }}
-          RUN_WINDOWS_PACKAGE: ${{ needs.change-classifier.outputs.run-windows-package }}
-          WINDOWS_PACKAGE_RESULT: ${{ needs.windows-package-qualification.result }}
-          PACKAGING_CONTRACT_MACOS_RESULT: ${{ needs.packaging-contract-macos.result }}
+          JOB_RESULTS: ${{ toJSON(needs) }}
+          SELECTED_LANES: ${{ needs.change-classifier.outputs.lanes }}
         run: |
-          set -euo pipefail
-          if [ "$CODE_HEALTH_RESULT" != "success" ] || [ "$QUICK_RESULT" != "success" ]; then
-            echo "Quick stage results: code health=$CODE_HEALTH_RESULT Windows quick=$QUICK_RESULT" >&2
-            exit 1
-          fi
-          if [ "$CLASSIFIER_RESULT" != "success" ]; then
-            echo "Qt6 verification change classifier result: $CLASSIFIER_RESULT" >&2
-            exit 1
-          fi
-          echo "Qt6 integration verification classifier: $REASON"
-          if [ "$RUN_SOURCE" != "true" ]; then
-            echo "No native verification inputs changed; platform lanes intentionally skipped."
-          else
-            if [ "$SOURCE_FAST_RESULT" != "success" ]; then
-              echo "Platform Fast Verification result: $SOURCE_FAST_RESULT" >&2
-              exit 1
-            fi
-            if [ "$QT6_RESULT" != "success" ]; then
-              echo "Native Qt6 Vertical Slice result: $QT6_RESULT" >&2
-              exit 1
-            fi
-            if [ "$REMAINING_SURFACE_RESULT" != "success" ]; then
-              echo "Native Qt6 Remaining Surfaces result: $REMAINING_SURFACE_RESULT" >&2
-              exit 1
-            fi
-            if [ "$FULL_R_STACK_RESULT" != "success" ]; then
-              echo "Required Windows Full R Stack Evidence result: $FULL_R_STACK_RESULT" >&2
-              exit 1
-            fi
-          fi
-          if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$WINDOWS_PACKAGE_RESULT" != "success" ]; then
-            echo "Required Windows x64 package qualification result: $WINDOWS_PACKAGE_RESULT" >&2
-            exit 1
-          fi
-          if [ "$RUN_WINDOWS_PACKAGE" = "true" ] && [ "$PACKAGING_CONTRACT_MACOS_RESULT" != "success" ]; then
-            echo "Focused native macOS packaging contract result: $PACKAGING_CONTRACT_MACOS_RESULT" >&2
-            exit 1
-          fi
-          echo "Required classified Qt6 verification passed."
+          python3 - <<'PY'
+          import json
+          import os
+
+          jobs = json.loads(os.environ["JOB_RESULTS"])
+          required = {"change-classifier", "quick", "code-health"}
+          if jobs["change-classifier"]["result"] == "success":
+              required.update(json.loads(os.environ["SELECTED_LANES"]))
+          failures = []
+          for name in sorted(jobs.keys() | required):
+              expected = "success" if name in required else "skipped"
+              result = jobs.get(name, {}).get("result")
+              print(f"{name}: {result} (expected {expected})")
+              if result != expected:
+                  failures.append(name)
+          if failures:
+              raise SystemExit("Verification gate failed: " + ", ".join(failures))
+          PY
