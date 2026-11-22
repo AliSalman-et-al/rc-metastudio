@@ -443,7 +443,6 @@ if (any(vapply(leaks, function(value) grepl(value, rendered, fixed=TRUE), logica
 
 function Install-LocalRPackagesFromSource {
     param([string]$Root)
-    $rExe = Join-Path $Root "R\bin\R.exe"
     $rscriptExe = Join-Path $Root "R\bin\Rscript.exe"
     $rLibrary = Join-Path $Root "R\library"
     $packageBuildRoot = Join-Path $workRoot "r-package-build"
@@ -452,10 +451,8 @@ function Install-LocalRPackagesFromSource {
     Copy-Item -Path (Join-Path $repoRoot "r\RCMetaR") -Destination (Join-Path $packageBuildRoot "RCMetaR") -Recurse -Force
     Get-ChildItem -Path $packageBuildRoot -Recurse -Include *.o,*.so,*.dll | Remove-Item -Force
 
-    & $rExe CMD INSTALL --library="$rLibrary" (Join-Path $packageBuildRoot "RCMetaR")
-    if ($LASTEXITCODE -ne 0) { throw "R CMD INSTALL RCMetaR failed." }
-
-    Assert-RCMetaRSummaryFormatting -RscriptExe $rscriptExe -Library $rLibrary
+    & $rscriptExe (Join-Path $repoRoot "scripts\install-rcmetar-source.R") (Join-Path $packageBuildRoot "RCMetaR") $rLibrary
+    if ($LASTEXITCODE -ne 0) { throw "RCMetaR source installation failed." }
 }
 
 function Install-BundledRPackages {
@@ -482,12 +479,27 @@ function Install-BundledRPackages {
     $env:RCMS_CRAN_REPO = $pinnedCranRepo
 
     Write-Step "Installing locked bundled R package dependencies from immutable downloads"
+    if ($env:RCMS_PREPARED_R_LIBRARY) {
+        $prepared = (Resolve-Path -LiteralPath $env:RCMS_PREPARED_R_LIBRARY).Path
+        $dependencyLibrary = Join-Path $prepared "dependencies/library"
+        Assert-PathExists -Path $dependencyLibrary -Description "Prepared R dependency library"
+        robocopy $dependencyLibrary $rLibrary /E /NFL /NDL /NJH /NJS /NP | Out-Host
+        if ($LASTEXITCODE -gt 7) { throw "Could not stage the prepared R dependency library." }
+        $global:LASTEXITCODE = 0
+    }
     Invoke-StrictRDependencyPolicy -RscriptExe $rscriptExe -Library $rLibrary
     $env:R_LIBS = $rLibrary
     $env:R_LIBS_USER = $rLibrary
 
-    Write-Step "Installing local RCMetaR package"
-    Install-LocalRPackagesFromSource -Root $Root
+    if ($env:RCMS_PREPARED_R_LIBRARY) {
+        Write-Step "Staging RCMetaR from the verified source build"
+        Copy-DirectoryTree -Source (Join-Path $prepared "source/RCMetaR") -Destination (Join-Path $rLibrary "RCMetaR")
+    }
+    else {
+        Write-Step "Installing local RCMetaR package"
+        Install-LocalRPackagesFromSource -Root $Root
+    }
+    Assert-RCMetaRSummaryFormatting -RscriptExe $rscriptExe -Library $rLibrary
     & $rscriptExe -e "pkgs <- c('mada','meta','RCMetaR','metafor','rsvg','svglite','tiff','xml2','mice','Hmisc'); ok <- vapply(pkgs, require, logical(1), character.only=TRUE); print(ok); if (!all(ok)) quit(status=1); if (as.character(packageVersion('mada')) != '0.5.12') quit(status=1); if (as.character(getElement(packageDescription('meta'), 'Version')) != '8.5-0') quit(status=1)"
     if ($LASTEXITCODE -ne 0) { throw "Bundled R package verification failed." }
 

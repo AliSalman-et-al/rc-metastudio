@@ -49,6 +49,10 @@ load_rcms_r_binary_policy <- function(repo_root, python = Sys.getenv("RCMS_POLIC
       source_fallback = record[["Linux-Binary-Source-Fallback"]]
     ),
     pinned_authorities = record[["Pinned-Authorities"]],
+    archive_sha256 = setNames(lapply(c("windows_x64", "macos_arm64", "linux_x64"), function(target) {
+      entries <- strsplit(split_policy_field(record[[paste0(target, "-Archive-SHA256")]]), "=", fixed = TRUE)
+      setNames(vapply(entries, "[[", character(1), 2L), vapply(entries, "[[", character(1), 1L))
+    }), c("windows-x64", "macos-arm64", "linux-x64")),
     python = python,
     helper = helper
   )
@@ -70,6 +74,15 @@ policy_sha256 <- function(policy, path) {
     stop("Could not calculate retained binary archive SHA256")
   }
   digest
+}
+
+assert_pinned_archive_hashes <- function(expected, paths, observed) {
+  names(observed) <- basename(paths)
+  pinned <- intersect(names(expected), names(observed))
+  mismatches <- pinned[expected[pinned] != observed[pinned]]
+  if (length(mismatches)) {
+    stop("PPM binary SHA256 differs from the manifest: ", paste(mismatches, collapse = ", "))
+  }
 }
 
 rcms_policy_platform <- function(policy, sysname = Sys.info()[["sysname"]], arch = R.version$arch) {
@@ -251,6 +264,13 @@ install_rcms_binary_packages <- function(
   if (length(missing)) {
     message("Installing complete R dependency closure with type=binary only: ", paste(missing, collapse = ", "))
     archive_dir <- Sys.getenv("RCMS_R_PACKAGE_ARCHIVE_DIR", "")
+    target_name <- if (platform$system == "Windows") "windows-x64" else "macos-arm64"
+    pinned <- policy$archive_sha256[[target_name]]
+    pinned_downloads <- names(pinned)[sub("_.*$", "", names(pinned)) %in% missing]
+    if (!nzchar(archive_dir) && length(pinned_downloads)) {
+      archive_dir <- tempfile("rcms-ppm-")
+      on.exit(unlink(archive_dir, recursive = TRUE), add = TRUE)
+    }
     if (nzchar(archive_dir)) {
       dir.create(archive_dir, recursive = TRUE, showWarnings = FALSE)
       downloaded <- download_binary(
@@ -265,6 +285,10 @@ install_rcms_binary_packages <- function(
       if (any(!grepl("^[0-9a-f]{64}$", archive_hashes))) {
         stop("PPM binary archive pre-install SHA256 validation failed")
       }
+      if (!all(pinned_downloads %in% basename(retained_archives))) {
+        stop("Pinned native binary archives are missing from the download")
+      }
+      assert_pinned_archive_hashes(pinned, retained_archives, archive_hashes)
       emit_rcms_binary_evidence(
         "binary-archives-preinstall",
         paste0(basename(retained_archives), "=sha256:", archive_hashes)

@@ -170,6 +170,12 @@ expected_machine="$machine"
 pyinstaller_target_architecture="$machine"
 default_artifact="$artifact"
 minimum_macos_version="$minimum_macos"
+pr_wheels="${RCMS_MACOS_PR_WHEELS:-false}"
+inspection_options=()
+if [ "$pr_wheels" = true ]; then
+  minimum_macos_version=14.4
+  inspection_options+=(--pr-wheels)
+fi
 
 if [ "$host_machine" != "$expected_machine" ]; then
   echo "Requested $architecture build requires $expected_machine host, but this host is $host_machine." >&2
@@ -230,7 +236,15 @@ if [ "$cran_repo" != "$pinned_cran_repo" ]; then
 fi
 export RCMS_CRAN_REPO="$pinned_cran_repo"
 
-if [ "$skip_dependency_install" -eq 0 ]; then
+if [ "$pr_wheels" = true ]; then
+  step "Installing locked macOS dependency wheels"
+  (
+    cd "$repo_root"
+    uv sync --locked --no-build --no-install-project --no-install-package rpy2-rinterface
+    # Staging scripts import the editable application before the API bridge is built.
+    uv sync --locked --no-install-package rpy2-rinterface
+  )
+elif [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
   # Both the wheel and official binary SDK were linked for 14.4. Build Qt
   # itself at the package floor before building bindings against that runtime.
@@ -538,14 +552,39 @@ install_local_r_packages() {
   cp "$built_archive" "$rcmetar_archive_path"
 
   R_HOME="$r_home" R_LIBS="$r_lib" R_LIBS_USER="$r_lib" R_MAKEVARS_USER="$r_makevars" \
-    "$r_binary" CMD INSTALL --library="$r_lib" "$rcmetar_archive_path"
+    "$rscript" "$repo_root/scripts/install-rcmetar-source.R" "$rcmetar_archive_path" "$r_lib"
 }
 
-step "Installing bundled R package dependencies into this private staged runtime"
+cache_root="${RCMS_PACKAGED_R_CACHE:-}"
+if [ -n "$cache_root" ] && [ -s "$cache_root/dependencies/ppm-archives.sha256" ]; then
+  step "Restoring the verified Apple silicon R binary library and its archives"
+  (cd "$cache_root/dependencies/ppm-archives" && shasum -a 256 --check --status ../ppm-archives.sha256)
+  rsync -a "$cache_root/dependencies/library/" "$r_lib/"
+  copy_tree "$cache_root/dependencies/ppm-archives" "$ppm_archive_root"
+fi
+step "Verifying bundled R package dependencies in the private staged runtime"
 run_strict_r_dependency_policy "$r_lib"
+if [ -n "$cache_root" ] && [ ! -s "$cache_root/dependencies/ppm-archives.sha256" ]; then
+  mkdir -p "$cache_root/dependencies"
+  copy_tree "$r_lib" "$cache_root/dependencies/library"
+  copy_tree "$ppm_archive_root" "$cache_root/dependencies/ppm-archives"
+  (cd "$ppm_archive_root" && shasum -a 256 -- *.tgz) > "$cache_root/dependencies/ppm-archives.sha256"
+fi
 
-step "Installing local RCMetaR package"
-install_local_r_packages
+rcmetar_cache="${cache_root:+$cache_root/source}"
+if [ -n "$rcmetar_cache" ] && [ -s "$rcmetar_cache/$rcmetar_archive_name" ] && [ -f "$rcmetar_cache/RCMetaR/DESCRIPTION" ]; then
+  step "Restoring installed RCMetaR and its matching source archive"
+  cp "$rcmetar_cache/$rcmetar_archive_name" "$rcmetar_archive_path"
+  copy_tree "$rcmetar_cache/RCMetaR" "$r_lib/RCMetaR"
+else
+  step "Installing local RCMetaR package"
+  install_local_r_packages
+  if [ -n "$rcmetar_cache" ]; then
+    mkdir -p "$rcmetar_cache"
+    cp "$rcmetar_archive_path" "$rcmetar_cache/$rcmetar_archive_name"
+    copy_tree "$r_lib/RCMetaR" "$rcmetar_cache/RCMetaR"
+  fi
+fi
 R_HOME="$r_home" R_LIBS="$r_lib" R_LIBS_USER="$r_lib" "$rscript" -e "pkgs <- c('mada','meta','RCMetaR','metafor','rsvg','svglite','tiff','xml2','mice','Hmisc'); ok <- vapply(pkgs, require, logical(1), character.only=TRUE); print(ok); if (!all(ok)) quit(status=1); if (as.character(packageVersion('mada')) != '0.5.12') quit(status=1); if (as.character(getElement(packageDescription('meta'), 'Version')) != '8.5-0') quit(status=1)"
 
 if ! test_bundled_r_packages "$r_lib"; then
@@ -553,10 +592,15 @@ if ! test_bundled_r_packages "$r_lib"; then
   exit 1
 fi
 
-step "Building the target-native rpy2 API bridge against completed staged R"
-R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
-  --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
-  "rpy2-rinterface==3.6.7"
+step "Installing the target-native rpy2 API bridge against completed staged R"
+if [ "$pr_wheels" = true ]; then
+  (cd "$repo_root" && R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API \
+    uv sync --locked --no-binary-package rpy2-rinterface)
+else
+  R_HOME="$r_home" PATH="$r_home/bin:$PATH" RPY2_CFFI_MODE=API uv pip install \
+    --python "$python_exe" --reinstall --no-binary rpy2-rinterface \
+    "rpy2-rinterface==3.6.7"
+fi
 
 # Resolve the official fontconfig aliases while all runtime resources are intact.
 # The pruning gate checks every remaining symlink, including these runtime links.
@@ -1032,6 +1076,7 @@ pyinstaller_version="$("$python_exe" -c 'import importlib.metadata as m; print(m
 locked_qt_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
 step "Inspecting the coherent target-native macOS deployment"
 "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" inspect \
+  ${inspection_options[@]+"${inspection_options[@]}"} \
   --target "macos-$architecture" \
   --app-root "$app_bundle" --output "$deployment_manifest_path" \
   --source-commit "$source_commit" --runtime-probe "$runtime_probe_path" \

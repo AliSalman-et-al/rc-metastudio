@@ -134,6 +134,8 @@ missing_packages <- function() {
   setdiff(binary_packages, current)
 }
 missing <- missing_packages()
+pinned <- policy$archive_sha256[["linux-x64"]]
+pinned_downloads <- names(pinned)[sub("_.*$", "", names(pinned)) %in% missing]
 for (attempt in seq_len(3L)) {
   if (!length(missing)) break
   message("Linux binary install attempt ", attempt, ": ", paste(missing, collapse = ", "))
@@ -152,6 +154,15 @@ for (attempt in seq_len(3L)) {
 if (length(missing)) {
   stop("Linux binary dependency closure was not installed: ", paste(missing, collapse = ", "))
 }
+archives <- list.files(archive_dir, full.names = TRUE, pattern = "\\.tar\\.gz$")
+if (!all(pinned_downloads %in% basename(archives))) {
+  stop("Pinned Linux binary archives are missing from the download")
+}
+pinned_archives <- archives[basename(archives) %in% names(pinned)]
+assert_pinned_archive_hashes(
+  pinned, pinned_archives,
+  vapply(pinned_archives, function(path) policy_sha256(policy, path), character(1))
+)
 unloadable <- binary_packages[!vapply(binary_packages, function(package) {
   tryCatch({
     loadNamespace(package, lib.loc = library)

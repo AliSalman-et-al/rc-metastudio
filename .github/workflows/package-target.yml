@@ -2,6 +2,11 @@ name: Package native macOS applications
 
 on:
   workflow_call:
+    inputs:
+      pr_wheels:
+        description: Qualify prebuilt Qt wheels at their macOS 14.4 deployment floor.
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       prepare_dependencies_only:
@@ -25,20 +30,18 @@ jobs:
             runner: macos-15
             artifact: RCMetaStudio-macos-arm64
     runs-on: ${{ matrix.runner }}
+    env:
+      PACKAGE_ARTIFACT: ${{ matrix.artifact }}${{ inputs.pr_wheels && '-pr-wheels' || '' }}
     timeout-minutes: 90
     steps:
       - name: Check out exact source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
-        with:
-          fetch-depth: 0
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - uses: ./.github/actions/setup-rcms
         with:
-          enable-cache: true
-
-      - name: Install locked Python
-        run: uv python install
+          qt-rcc: 'true'
+          macos-package-r-cache: ${{ !inputs.prepare_dependencies_only }}
+          uv-cache-suffix: macos-package-${{ inputs.pr_wheels && 'pr-wheels' || 'release' }}-${{ hashFiles('config/macos-package-targets.json', 'config/r-dependencies.json', 'scripts/configure_macos_r_launchers.py', '.python-version') }}
 
       - name: Resolve package metadata
         id: package-metadata
@@ -56,23 +59,8 @@ jobs:
           test "$artifact" = '${{ matrix.artifact }}'
           test "$(uname -m)" = "$machine"
 
-      - name: Cache official Qt SDK
-        id: macos_qt_sdk_cache
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
-        with:
-          path: build/qt-sdk
-          key: qtbase-sdk-6.12.0-${{ matrix.target }}
-
-      - name: Install official Qt SDK
-        if: ${{ steps.macos_qt_sdk_cache.outputs.cache-hit != 'true' }}
-        shell: bash
-        run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
-
-      - name: Resolve official Qt rcc
-        shell: bash
-        run: uv run --no-project python scripts/macos_rcc.py --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" --github-env "$GITHUB_ENV" --diagnostic "build/qt-sdk/${{ matrix.target }}-rcc.json"
-
       - name: Fingerprint macOS Qt build inputs
+        if: ${{ !inputs.pr_wheels }}
         id: macos-qt-build
         shell: bash
         env:
@@ -80,6 +68,7 @@ jobs:
         run: uv run --no-project python scripts/macos_build_cache.py "$ARCHITECTURE"
 
       - name: Cache the source-built macOS Qt SDK
+        if: ${{ !inputs.pr_wheels }}
         id: macos-qt-build-cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -87,6 +76,7 @@ jobs:
           key: macos-qt-sdk-${{ steps.macos-qt-build.outputs.sdk }}
 
       - name: Cache the source-built PyQt wheel
+        if: ${{ !inputs.pr_wheels }}
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/macos-pyqt-cache
@@ -108,14 +98,16 @@ jobs:
           RCMS_RUNNER_LABEL: ${{ matrix.runner }}
           RCMS_MACOS_QT_CACHE_HIT: ${{ steps.macos-qt-build-cache.outputs.cache-hit == 'true' && 'true' || 'false' }}
           RCMS_MACOS_PYQT_CACHE: "true"
+          RCMS_MACOS_PR_WHEELS: ${{ inputs.pr_wheels }}
         run: |
           set -euo pipefail
           test ! -e /opt/X11
           bash scripts/package-macos.sh --architecture "${{ matrix.architecture }}" \
-            --artifact-name "${{ matrix.artifact }}" \
+            --artifact-name "$PACKAGE_ARTIFACT" \
             --archive-root-name "RCMetaStudio-${{ steps.package-metadata.outputs.version }}-${{ matrix.target }}"
 
       - name: Prune the macOS build wheel cache
+        if: ${{ !inputs.pr_wheels }}
         shell: bash
         run: |
           if [ -d build/macos-pyqt-cache ]; then
@@ -126,8 +118,8 @@ jobs:
         if: ${{ !inputs.prepare_dependencies_only }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: ${{ matrix.artifact }}
-          path: artifacts/${{ matrix.artifact }}.zip
+          name: ${{ env.PACKAGE_ARTIFACT }}
+          path: artifacts/${{ env.PACKAGE_ARTIFACT }}.zip
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
@@ -136,10 +128,10 @@ jobs:
         if: ${{ always() && !inputs.prepare_dependencies_only }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: ${{ matrix.artifact }}-evidence
+          name: ${{ env.PACKAGE_ARTIFACT }}-evidence
           path: |
-            artifacts/${{ matrix.artifact }}-evidence.json
-            artifacts/${{ matrix.artifact }}-archive-inspection.json
+            artifacts/${{ env.PACKAGE_ARTIFACT }}-evidence.json
+            artifacts/${{ env.PACKAGE_ARTIFACT }}-archive-inspection.json
             build/macos-package/${{ matrix.architecture }}/work/qualification/**
             build/macos-package/${{ matrix.architecture }}/work/qualification/packaged-smoke*.log
             build/macos-package/${{ matrix.architecture }}/work/rc-metastudio-macos/warn-rc-metastudio-macos.txt

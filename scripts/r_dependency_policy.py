@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 
 
@@ -33,6 +34,21 @@ EXPECTED_LINUX_BINARY = {
 }
 class PolicyError(ValueError):
     """Raised when the dependency manifest does not encode the release policy."""
+
+
+def pinned_archive_hashes(value: object, versions: dict[str, str]) -> dict[str, dict[str, str]]:
+    suffixes = {"windows-x64": ".zip", "macos-arm64": ".tgz", "linux-x64": ".tar.gz"}
+    if not isinstance(value, dict) or value.keys() != suffixes.keys():
+        raise PolicyError("archive_sha256 must cover each supported binary target")
+    for target, suffix in suffixes.items():
+        hashes = value[target]
+        expected = {f"{name}_{version}{suffix}" for name, version in versions.items()}
+        if not isinstance(hashes, dict) or hashes.keys() != expected:
+            raise PolicyError(f"invalid archive names for {target}")
+        for digest in hashes.values():
+            if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise PolicyError(f"invalid archive SHA256 pins for {target}")
+    return value
 
 
 def load_policy(manifest_path: Path) -> dict:
@@ -174,6 +190,7 @@ def load_policy(manifest_path: Path) -> dict:
         "normal_packages": normal_packages,
         "runtime_packages": runtime_packages,
         "pinned_authorities": pinned_authorities,
+        "archive_sha256": pinned_archive_hashes(policy.get("archive_sha256"), pinned_authorities),
     }
 
 
@@ -199,6 +216,10 @@ def emit_dcf(policy: dict) -> str:
         fields[f"{prefix}-Pkg-Type"] = record["pkg_type"]
         fields[f"{prefix}-Contrib-Path"] = record["contrib_path"]
     linux_binary = policy["linux_binary"]
+    for target, hashes in policy["archive_sha256"].items():
+        fields[f"{target.replace('-', '_')}-Archive-SHA256"] = ",".join(
+            f"{name}={digest}" for name, digest in sorted(hashes.items())
+        )
     fields.update(
         {
             "Linux-Binary-Repository": linux_binary["repository"],

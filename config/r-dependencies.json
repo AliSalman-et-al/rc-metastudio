@@ -12,6 +12,35 @@
     "snapshot": "2026-11-13",
     "normal_install_type": "binary",
     "source_fallback": false,
+    "archive_sha256": {
+      "windows-x64": {
+        "gsDesign_3.11.0.zip": "b326796e2c55ef773977d76a458baf0d03e3d6af938b3963a103492b39ed0866",
+        "mada_0.5.12.zip": "e88ebb2344f8b3d1f55da3f90cb0a1659f7ea7a141af6d9f02788accdac77678",
+        "meta_8.5-0.zip": "3c57640f6509e4885b088e461c19b075be7d93fed57b216625e4f3cb71206530",
+        "metafor_5.2-1.zip": "2cb68f013de17daa57db4e9868cc3d04479dac50a71a94a8faf2a0d063d524de",
+        "rsvg_2.7.0.zip": "1ef09282e1932e792178f6f1fffb2e26e5c8041e075ef50aab9e1f83f88fdbef",
+        "svglite_2.2.2.zip": "977164a5b1cd4b3c8d19bf5683a817e71d3d7dd68d5c4bd78fbe453dba0d1111",
+        "tiff_0.1-12.zip": "4749bda420c9cb796d40590fb9a500674ee48aab958e1753df71489260df79fc"
+      },
+      "macos-arm64": {
+        "gsDesign_3.11.0.tgz": "025b8091a8907abc800edb732005226ddf388a90fd9e2aaab1ccd4de76fc6cbd",
+        "mada_0.5.12.tgz": "d51d1aed6877321688ebca6c800cc5e29e76a47434cf69290816bc7fb0e7281a",
+        "meta_8.5-0.tgz": "e4776d820eba78e381d1709f9fa035222a432dbe382f4d87f5b123b7f29355bd",
+        "metafor_5.2-1.tgz": "8a3419106fc6182c1c3dfdd9d56d762145f5bfde4d482a263881290ed3e46da3",
+        "rsvg_2.7.0.tgz": "2148fc11355abeff0500dc247a61346cfac20c1d620535bb266a46ab902ad511",
+        "svglite_2.2.2.tgz": "25da50212108a5fa04c309612dbe09403f748caf1a8df0ca95633f43971cc0bd",
+        "tiff_0.1-12.tgz": "a572fc87a052e7eb44c00b244adb9ee9f81f97b82fa1acb55202a911b841f475"
+      },
+      "linux-x64": {
+        "gsDesign_3.11.0.tar.gz": "15f18ce68f035b0c077b882ed7fe1bd5fe79cf37db652637af9d194d6b0e08a4",
+        "mada_0.5.12.tar.gz": "bd74ca645adf11136a5c3d7f641458468acebde1238e1c293335af7011f400d2",
+        "meta_8.5-0.tar.gz": "be3838c6eade74d094056e6e81cf8561d3bdc25867d3dc1f6819ca32ade98cfa",
+        "metafor_5.2-1.tar.gz": "3764d138820d6528dc9ffb051bf066fa535279f86c8202eb994ba8fb88b1d0e6",
+        "rsvg_2.7.0.tar.gz": "4eb1486222e79fe2531ddc37427208031e49311255623ac7f0d594f57469d9cd",
+        "svglite_2.2.2.tar.gz": "e196e7067b62760ade1d06145aa3e452c9d1cdcc4f4bb33e647195877acf8589",
+        "tiff_0.1-12.tar.gz": "7669967b0e0cf5fc264322b54d2c5f4837d3b8c949f5d8b49e8e40b0d2cfbdce"
+      }
+    },
     "required_normal_packages": [
       "jsonlite",
       "mada",

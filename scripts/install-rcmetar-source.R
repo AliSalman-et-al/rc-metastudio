@@ -6,6 +6,12 @@ if (length(args) != 2L) {
 source <- normalizePath(args[[1L]], mustWork = TRUE)
 library <- normalizePath(args[[2L]], mustWork = TRUE)
 source_description <- file.path(source, "DESCRIPTION")
+if (!dir.exists(source)) {
+  metadata_dir <- tempfile("rcmetar-source-")
+  dir.create(metadata_dir)
+  utils::untar(source, files = "RCMetaR/DESCRIPTION", exdir = metadata_dir)
+  source_description <- file.path(metadata_dir, "RCMetaR", "DESCRIPTION")
+}
 if (!file.exists(source_description)) {
   stop("RCMetaR source is missing DESCRIPTION: ", source)
 }
