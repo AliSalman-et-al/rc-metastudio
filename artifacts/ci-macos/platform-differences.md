@@ -2,9 +2,9 @@
 
 All supported targets use the 2026-11-13 Posit PPM snapshot and R 4.6.2. Live
 repository indexes returned all 60 required CRAN roots on each target. Live
-archive requests confirmed all seven exact authority pins as binaries and
-returned tags 4.6-win, 4.6-macos-arm64 and 4.6-noble. The manifest records
-the SHA-256 of each pinned authority archive from the corresponding feed.
+archive requests confirmed exact-version binaries for all 13 versioned CRAN
+records. They returned tags 4.6-win, 4.6-macos-arm64 and 4.6-noble. The
+manifest records SHA-256 pins for the seven authority archives per target.
 
 | Branch | Reason |
 | --- | --- |

@@ -324,13 +324,13 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/pinned-r/dependencies/library
-          key: pinned-r-v1-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
+          key: pinned-r-v2-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
       - name: Cache RCMetaR source archive and installation
         id: rcmetar-cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/pinned-r/source
-          key: pinned-rcmetar-v1-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
+          key: pinned-rcmetar-v2-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
       - name: Install and verify pinned binary dependencies
         run: |
           $env:R_LIBS_USER = (New-Item -ItemType Directory -Force build/pinned-r/dependencies/library).FullName
@@ -352,6 +352,12 @@ jobs:
           $archive = Get-ChildItem -File -Filter 'RCMetaR_*.tar.gz'
           Rscript $installer $archive.FullName $library
           exit $LASTEXITCODE
+      - name: Check the prepared RCMetaR layout
+        run: |
+          if (!(Test-Path -LiteralPath build/pinned-r/source/RCMetaR/DESCRIPTION -PathType Leaf) -or
+              !(Get-ChildItem build/pinned-r/source -File -Filter 'RCMetaR_*.tar.gz')) {
+              throw "Prepared RCMetaR library or source archive is missing."
+          }
       - name: Publish the verified library for this run
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
