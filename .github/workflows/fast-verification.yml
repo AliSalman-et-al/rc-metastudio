@@ -308,7 +308,7 @@ jobs:
 
   windows-r-library:
     name: Prepare Windows pinned R library
-    needs: [change-classifier]
+    needs: [change-classifier, code-health]
     if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'full-r-stack') || contains(fromJSON(needs.change-classifier.outputs.lanes), 'windows-package-qualification') }}
     runs-on: windows-2025
     timeout-minutes: 15
@@ -483,7 +483,6 @@ jobs:
       - qt6-verification
       - remaining-surface-verification
       - source-fast-targets
-      - windows-r-library
       - full-r-stack
       - windows-package-qualification
       - macos-package-qualification
@@ -508,8 +507,6 @@ jobs:
           required = {"change-classifier", "quick", "code-health"}
           if jobs["change-classifier"]["result"] == "success":
               required.update(json.loads(os.environ["SELECTED_LANES"]))
-              if required & {"full-r-stack", "windows-package-qualification"}:
-                  required.add("windows-r-library")
           failures = []
           for name in sorted(jobs.keys() | required):
               expected = "success" if name in required else "skipped"
