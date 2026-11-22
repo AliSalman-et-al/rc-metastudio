@@ -53,17 +53,17 @@ jobs:
           fi
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
-              python3 -m scripts.ci_selection --full "$EVENT_NAME" >> "$GITHUB_OUTPUT"
+              python3 -m scripts.package_input_policy --full "$EVENT_NAME" >> "$GITHUB_OUTPUT"
               exit 0
               ;;
             pull_request) base="$PR_BASE" ;;
             push) base="$PUSH_BASE" ;;
           esac
           if [[ -z "$base" ]] || ! git cat-file -e "$base^{commit}"; then
-            python3 -m scripts.ci_selection "${options[@]}" --full "comparison base unavailable" >> "$GITHUB_OUTPUT"
+            python3 -m scripts.package_input_policy "${options[@]}" --full "comparison base unavailable" >> "$GITHUB_OUTPUT"
           else
             git diff --no-renames --name-only -z "$base" HEAD -- |
-              python3 -m scripts.ci_selection "${options[@]}" >> "$GITHUB_OUTPUT"
+              python3 -m scripts.package_input_policy "${options[@]}" >> "$GITHUB_OUTPUT"
           fi
 
   code-health:

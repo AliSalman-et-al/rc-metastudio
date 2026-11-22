@@ -21,12 +21,12 @@ from pathlib import Path
 from uuid import uuid4
 
 if __package__:
-    from scripts import ci_selection, r_verification_support as r_support
+    from scripts import package_input_policy, r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
     from scripts.verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from scripts import ci_selection
+    from scripts import package_input_policy
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
     from verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
@@ -376,19 +376,19 @@ def ready_actions() -> dict[str, Callable[[], None]]:
 
     if sys.platform == "win32":
         return {
-            ci_selection.QT[0]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "Core"]),
-            ci_selection.QT[1]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "RemainingSurfaces"]),
-            ci_selection.SOURCE: lambda: verify("fast", "--skip-r-evidence"),
-            ci_selection.WINDOWS_PACKAGE: lambda: run(["powershell", "-File", "scripts/package-windows.ps1"]),
+            package_input_policy.QT[0]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "Core"]),
+            package_input_policy.QT[1]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "RemainingSurfaces"]),
+            package_input_policy.SOURCE: lambda: verify("fast", "--skip-r-evidence"),
+            package_input_policy.WINDOWS_PACKAGE: lambda: run(["powershell", "-File", "scripts/package-windows.ps1"]),
         }
     if sys.platform == "darwin":
         return {
-            ci_selection.SOURCE: lambda: verify("smoke", "--require-r-evidence"),
+            package_input_policy.SOURCE: lambda: verify("smoke", "--require-r-evidence"),
             "macos-package-qualification": lambda: run(["bash", "scripts/package-macos.sh", "--architecture", "arm64"]),
             "packaging-contract-macos": run_macos_packaging_contracts,
         }
     return {
-        ci_selection.SOURCE: run_linux_source,
+        package_input_policy.SOURCE: run_linux_source,
         "linux-package-qualification": lambda: run(["bash", "scripts/package-linux.sh"]),
     }
 
@@ -427,12 +427,12 @@ def ready_toolchain(args: argparse.Namespace) -> dict[str, object]:
 
 def ready_key(lane: str, selection: str, toolchain: dict[str, object]) -> str:
     identity = hashlib.sha256(json.dumps([lane, selection, toolchain], sort_keys=True).encode())
-    if lane == "code-health" or lane in ci_selection.PACKAGES:
+    if lane == "code-health" or lane in package_input_policy.PACKAGES:
         identity.update(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT))
-    paths = ci_selection.git_paths("ls-files", "-z", "--cached", "--others", "--exclude-standard")
+    paths = package_input_policy.git_paths("ls-files", "-z", "--cached", "--others", "--exclude-standard")
     for name in sorted(set(paths)):
         path = REPO_ROOT / name
-        if ci_selection.lane_reads(name, lane) and path.is_file():
+        if package_input_policy.lane_reads(name, lane) and path.is_file():
             identity.update(json.dumps([name, file_digest(path)]).encode())
     return identity.hexdigest()
 
@@ -458,9 +458,9 @@ def run_ready_lane(lane: str, selection: str, action: Callable[[], None], args: 
 
 def run_ready(args: argparse.Namespace) -> None:
     base = subprocess.check_output(["git", "merge-base", "origin/master", "HEAD"], cwd=REPO_ROOT, text=True).strip()
-    paths = ci_selection.changed_paths(base, working_tree=True)
-    paths += ci_selection.git_paths("ls-files", "-z", "--others", "--exclude-standard")
-    selected = ci_selection.plan(paths, full="--full" if args.full else "")
+    paths = package_input_policy.changed_paths(base, working_tree=True)
+    paths += package_input_policy.git_paths("ls-files", "-z", "--others", "--exclude-standard")
+    selected = package_input_policy.plan(paths, full="--full" if args.full else "")
     local = ready_actions()
     actions = [
         ("quick", "", "always", run_quick),
@@ -469,7 +469,7 @@ def run_ready(args: argparse.Namespace) -> None:
     for job in selected.jobs:
         if job in local:
             actions.append((job, "", ", ".join(selected.reasons[job]), local[job]))
-        elif job != ci_selection.R:
+        elif job != package_input_policy.R:
             write_step(f"CI only on this host: {job} ({', '.join(selected.reasons[job])})")
     for part, scenarios in selected.parts.items():
         lane = "checks" if part == "checks" else f"desktop-{part}"

@@ -31,7 +31,7 @@ BROAD = (
     "*.lock", "pyproject.toml", ".python-version", ".gitattributes",
     ".github/workflows/*", ".github/actions/*",
     "*/r_bridge.py", "*/rcmetar-core.R", "r/RCMetaR/DESCRIPTION", "r/RCMetaR/NAMESPACE",
-    "config/*", "scripts/verify*", "scripts/ci_selection.py", "scripts/desktop_*",
+    "config/*", "scripts/verify*", "scripts/package_input_policy.py", "scripts/desktop_*",
     "scripts/*verification*", "scripts/code_health.py", "scripts/*qt6*",
     "scripts/*r-deps*", "scripts/install-rcmetar-source.R", "scripts/r_*policy.*",
     "scripts/local_r_test_backend.py", "tests/conftest.py",

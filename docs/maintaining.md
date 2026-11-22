@@ -81,7 +81,7 @@ GitHub Actions gates pull requests. The quick stage runs deterministic code heal
 on Ubuntu and generates Qt forms, runs strict win32 typing, collects pytest,
 and runs the fast Python, packaging contract, and JavaScript release tests on
 Windows. The full R-stack job provides the installed RCMetaR library for tests
-marked `r_packages`. The [path map](../scripts/ci_selection.py) selects heavy
+marked `r_packages`. The [path map](../scripts/package_input_policy.py) selects heavy
 checks after the quick stage, including calculator and import desktop scenarios
 for narrowly mapped changes. Draft PRs use Windows for heavy checks. Marking a
 PR ready for review starts a fresh run on every selected platform. Master pushes
