@@ -845,7 +845,7 @@ def sheets_swap(app, window):
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
                 observed_labels = list(r_bridge.execute_r_string('c(params$fp_favours_left,params$fp_favours_right)'))
-                expected_labels = ["Favours " + name for name in model.arm_names]
+                expected_labels = ["Favors " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
                 if iteration == 1:
@@ -1300,7 +1300,7 @@ def editing(app, window):
     ) as error:
         assert not window.open(str(broken))
     assert error.called
-    assert error.call_args.args[2] == "This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.\n\nDetails: project is not a valid ZIP container"
+    assert error.call_args.args[2] == "This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.\n\nDetails: the file is not a valid .rcms project archive"
     assert (
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"

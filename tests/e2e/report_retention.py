@@ -315,7 +315,7 @@ def expected_fit_table(result, section, source):
     elif 'Estimate' in headers and low and high and source.role in ('pooled', 'coefficients'):
         rows.extend(('Studies in ' + row['Subgroups'] + ' (k)', row['k']) for row in data if 'k' in row and 'Subgroups' in row and row['Subgroups'].casefold() != 'overall' and row['Estimate'])
     elif source.role in ('heterogeneity', 'residual_heterogeneity'):
-        labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
+        labels = {'Q': "Cochran's Q", 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
         scale = next((q.scale for line in source.quantities for cell in line for q in cell if q.role == 'tau2'), '')
         if scale not in ('', 'display'):
             labels['τ²'] += ' (squared ' + scale + ' scale)'

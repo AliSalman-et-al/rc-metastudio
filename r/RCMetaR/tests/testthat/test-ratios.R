@@ -79,7 +79,7 @@ test_that("MH pools original counts and retains non-estimable subsets", {
     for (name in c("b", "se", "ci.lb", "ci.ub", "MH", "MHp")) expect_equal(actual[[name]], expected[[name]])
     sequential <- suppressWarnings(rcmetar.run.analysis(data, method="event_rates.mh", params=params, workflow="cumulative"))
     expect_true(is.na(sequential$res$summary.table$estimate[1]))
-    expect_match(sequential[["Non-estimable rows"]], "Study 1.*zero total events")
+    expect_match(sequential[["Rows with effects that could not be estimated"]], "Study 1.*zero total events")
     data@source[4] <- "reported"
     expect_error(rcmetar.run.analysis(data, method="event_rates.mh", params=params), "every included study")
 })

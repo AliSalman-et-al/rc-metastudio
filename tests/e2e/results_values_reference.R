@@ -30,7 +30,7 @@ for (label in c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression', '
   load(file.path(directory, '0.params'), env)
   tables <- jsonlite::read_json(file.path(directory, 'tables.json'), simplifyVector=FALSE)
   table.title <- switch(label, cumulative='Cumulative results',
-    `leave-one-out`='Leave-one-out results', `meta-regression`='Regression coefficients', 'Model Results')
+    `leave-one-out`='Leave-one-out results', `meta-regression`='Regression coefficients', 'Model results')
   table <- Filter(function(t) t$title == table.title, tables)[[1]]
   transform <- if (label %in% c('continuous', 'SMD', 'meta-regression')) identity else exp
   if (label %in% c('binary', 'continuous', 'SMD', 'HR', 'IRR', 'meta-regression')) {
@@ -67,7 +67,7 @@ reference <- refit(data, result$res)
 tables <- jsonlite::read_json(file.path(directory, 'tables.json'), simplifyVector=FALSE)
 coefficients <- Filter(function(t) t$title == 'Regression coefficients', tables)[[1]]
 for (i in seq_along(coefficients$quantities)) check(coefficients$quantities[[i]], reference, identity, i)
-means <- Filter(function(t) t$title == 'Adjusted Means', tables)[[1]]
+means <- Filter(function(t) t$title == 'Adjusted means', tables)[[1]]
 predicted <- predict(reference, newmods=matrix(c(0, 1), ncol=1), level=90)
 for (i in seq_along(means$quantities)) {
   values <- list(b=predicted$pred, ci.lb=predicted$ci.lb, ci.ub=predicted$ci.ub, se=predicted$se)

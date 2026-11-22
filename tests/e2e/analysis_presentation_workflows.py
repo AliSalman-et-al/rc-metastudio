@@ -133,7 +133,7 @@ def run(app, window, work, record, scenario):
                                 list(studies=cbind(display(es$yi,n),display(es$yi-margin,n),display(es$yi+margin,n)),
                                      pooled=vapply(c(fit$b,fit$ci.lb,fit$ci.ub), pooled, numeric(1)))
                             }}), auto_unbox=TRUE, digits=16)'''))[0]))
-                            table = next(table for section in view.results.sections for table in section.tables if table.title == "Model Results")
+                            table = next(table for section in view.results.sections for table in section.tables if table.title == "Model results")
                             assert all(abs(float(cell)-expected) < .000501 for cell, expected in zip(table.rows[0][:3], reference["pooled"], strict=True)), (table, reference)
                             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                             expected_null = {"PLN": "proportion = 1", "PLO": "proportion = 0.5", "PAS": "proportion = 0", "PFT": "Freeman–Tukey transformed proportion = 0"}[metric]
@@ -282,7 +282,7 @@ def run(app, window, work, record, scenario):
         view = run_analysis_case(app, window, "analysis-data-generic-effect", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
         reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
-        model = next(t for s in view.results.sections for t in s.tables if t.title == "Model Results")
+        model = next(t for s in view.results.sections for t in s.tables if t.title == "Model results")
         row = model.rows[0]
         for cell, quantities, expected in zip(row[:4], model.quantities[0][:4], reference.values(), strict=True):
             quantity, = quantities

@@ -15,14 +15,14 @@ test_that("MH subgroup differences follow meta and incomplete estimates remain u
  covariates=list(new("CovariateValues",cov.name="Region",cov.vals=c("A","A","B","B"),cov.type="factor",ref.var="A")))
  p <- s2_params("IRR",cov_name="Region",adjust=.5,to="only0",drop00=TRUE)
  x <- rcmetar.run.analysis(d,method="event_rates.mh",params=p,workflow="subgroup")
- expect_false(any(grepl("difference", x$`Subgroup Summary`$table.titles,ignore.case=TRUE)))
+ expect_false(any(grepl("difference", x$`Subgroup summary`$table.titles,ignore.case=TRUE)))
  d@x1 <- c(1,2,3,4)
  positive <- rcmetar.run.analysis(d,method="event_rates.mh",params=p,workflow="subgroup")
- index <- which(vapply(positive$`Subgroup Summary`$arrays, function(table) identical(attr(table, "rcms.table")$role, "subgroup_test"), logical(1)))
+ index <- which(vapply(positive$`Subgroup summary`$arrays, function(table) identical(attr(table, "rcms.table")$role, "subgroup_test"), logical(1)))
  expect_false(is.na(index))
  reference <- meta::metainc(event.e=d@x1,time.e=d@t1,event.c=d@x2,time.c=d@t2,
    method="MH",sm="IRR",subgroup=d@covariates[[1]]@cov.vals)
- if(!is.na(index)) expect_equal(attr(positive$`Subgroup Summary`$arrays[[index]],"rcms.numeric")$values[1,c(1,3)],
+ if(!is.na(index)) expect_equal(attr(positive$`Subgroup summary`$arrays[[index]],"rcms.numeric")$values[1,c(1,3)],
    c(reference$Q.b.common,reference$pval.Q.b.common),tolerance=1e-8)
  expect_null(rcmetar.metafor.subgroup.difference.test(list(list(b=NA_real_,se=NA_real_),list(b=.2,se=.1))))
  expect_null(rcmetar.metafor.subgroup.difference.test(list(list(b=NA_real_,se=NA_real_),list(b=NA_real_,se=NA_real_))))
@@ -73,9 +73,9 @@ test_that("regression factor counts and adjusted means use fitted complete rows 
  x <- suppressWarnings(rcmetar.run.analysis(d,method="meta.regression",params=p,workflow="meta-regression"))
  a <- metafor::rma.uni(d@y,sei=d@SE,mods=as.numeric(d@covariates[[1]]@cov.vals=="B"),method="FE",test=test,level=90)
  pr <- predict(a,newmods=matrix(c(0,1),ncol=1))
- expect_equal(x$`Adjusted Mean`$MAResults$ci.lb,as.numeric(pr$ci.lb))
- expect_equal(x$`Adjusted Mean`$MAResults$ci.ub,as.numeric(pr$ci.ub))
- expect_equal(as.numeric(x$`Adjusted Mean`$arrays[[1]][2:3,"Studies"]),c(3,2))
+ expect_equal(x$`Adjusted mean`$MAResults$ci.lb,as.numeric(pr$ci.lb))
+ expect_equal(x$`Adjusted mean`$MAResults$ci.ub,as.numeric(pr$ci.ub))
+ expect_equal(as.numeric(x$`Adjusted mean`$arrays[[1]][2:3,"Studies"]),c(3,2))
  }
  d@y[3:6] <- NA_real_
  for (test in c("t","knha","adhoc")) {
@@ -101,7 +101,7 @@ test_that("HR and IRR cumulative non-normal inference keeps all study identities
  x <- rcmetar.run.analysis(d,method=if(metric=="HR") "time_to_event.fixed" else "event_rates.fixed",params=p,workflow="cumulative")
  expect_equal(nrow(x$res$summary.table),6L)
  expect_true(is.finite(x$res$summary.table$estimate[1]))
- expect_null(x$`Non-estimable rows`)
+ expect_null(x$`Rows with effects that could not be estimated`)
  for(i in 1:6) {
  a <- suppressWarnings(metafor::rma.uni(d@estimate[1:i],sei=d@reported.SE[1:i],method="FE",test=test,level=90))
  expect_equal(x$res$summary.table$ci.lb[i],a$ci.lb)
@@ -155,7 +155,7 @@ test_that("binary and diagnostic subgroup selections resolve at the public bound
  for(pair in list(list(b,"binary.fixed.inv.var","OR"),list(d,"diagnostic.fixed.inv.var","Sens"))) {
  for(selection in list("Region",cov[[1]])) {
  x <- rcmetar.run.analysis(pair[[1]],method=pair[[2]],params=s2_params(pair[[3]],adjust=.5,to="only0"),workflow="subgroup",selected.cov=selection)
- summary <- if (pair[[3]]=="Sens") x$Summary else x$`Subgroup Summary`
+ summary <- if (pair[[3]]=="Sens") x$Summary else x$`Subgroup summary`
  expect_equal(length(summary$MAResults),3L)
  }
  }

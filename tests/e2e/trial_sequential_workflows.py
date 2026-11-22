@@ -117,7 +117,7 @@ def check_artwork(path, case, style, contract, *, percent=False):
     text_nodes = list(svg.iter(NAMESPACE + "text"))
     labels = [node.text or "" for node in text_nodes]
     assert set(contract["labels"]) <= set(labels), labels
-    assert ("Penalised Z-curve" in labels) == (case == "bcg")
+    assert ("Penalized Z-curve" in labels) == (case == "bcg")
     xlabel = contract["axis_titles"]["percent" if percent else "hr" if case == "hr" else "participants"]
     axis_index = labels.index(xlabel)
     assert any(label.startswith("Required information") and " · Accrued " in label for label in labels)

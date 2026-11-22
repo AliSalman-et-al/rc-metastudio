@@ -112,8 +112,8 @@ test_that("G1B-008 permutation regression matches the selected public authority"
     set.seed(71); actual <- permuted.meta.reg(d,"DL",mods,intercept=intercept,knha=knha,iter=99,retpermdist=TRUE,digits=4)
     expect_equal(rownames(actual$res$beta), if(intercept) c("intrcpt","x","w") else c("x","w"))
     for(field in c("beta","se","pval","QMp","zval.perm","QM.perm")) expect_equal(actual$res[[field]],expected[[field]],info=field)
-    expect_match(actual[["Standard Meta Regression Summary"]],paste(capture.output(ref),collapse="\n"),fixed=TRUE)
-    if (!intercept) expect_match(actual[["Standard Meta Regression Summary"]],"yi ~ x + w - 1",fixed=TRUE)
+    expect_match(actual[["Standard meta-regression summary"]],paste(capture.output(ref),collapse="\n"),fixed=TRUE)
+    if (!intercept) expect_match(actual[["Standard meta-regression summary"]],"yi ~ x + w - 1",fixed=TRUE)
   }
 })
 test_that("G1B-009 MA exposes the requested permutation distribution", {

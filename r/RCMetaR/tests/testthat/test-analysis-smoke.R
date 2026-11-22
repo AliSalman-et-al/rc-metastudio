@@ -162,8 +162,8 @@ test_that("inference method reaches metafor results and is reported", {
   )
 
   expect_identical(result$res$test, "knha")
-  expect_identical(result[["Inference Method"]], "Knapp-Hartung")
-  expect_true(any(grepl("Knapp-Hartung inference", result$References, fixed = TRUE)))
+  expect_identical(result[["Inference method"]], "Knapp\u2013Hartung")
+  expect_true(any(grepl("Knapp\u2013Hartung inference", result$References, fixed = TRUE)))
 })
 
 test_that("Reitsma feasibility requires count-based diagnostic data", {

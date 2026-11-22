@@ -198,7 +198,7 @@ def run(app, window, work, root, record, analyze):
         record("model-fit-count-" + method, view, counts=counts)
     view.tables_action.trigger()
     app.processEvents()
-    assert view.nav_tree.currentItem().text(0) == "Data tables (CSV)"
+    assert view.nav_tree.currentItem().text(0) == "Data tables"
     view.table_selector.setCurrentText("Pooled effect")
     view.result_table.clearSelection()
     copy_action = view.copy_table_action

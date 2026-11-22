@@ -158,7 +158,7 @@ def check_subgroup(view, record):
         assert abs(weights["total"] - 100) < 1e-8, weights
         record("round4-subgroup-weights", view, title=title, weights=weights, plots={title: path})
         tables = {t.title: t for t in sections[index].tables}
-        model, heterogeneity = tables["Model Results"], tables["Heterogeneity"]
+        model, heterogeneity = tables["Model results"], tables["Heterogeneity"]
         assert "k" in model.headers
         assert all(h in heterogeneity.headers for h in ("Q", "df", "p-value", "I²"))
         for row, het, expected in zip(model.rows, heterogeneity.rows, reference, strict=True):

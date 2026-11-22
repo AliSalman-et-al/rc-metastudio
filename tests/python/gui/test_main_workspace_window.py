@@ -46,7 +46,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
             == QtWidgets.QSizePolicy.Policy.Expanding
         )
         assert [button.text() for button in (getattr(window.start_page, name) for name in ("create_button", "import_button", "open_button"))] == [
-            "New project", "Import data", "Open project"]
+            "New project…", "Import data…", "Open project"]
         labels = [label.text() for label in window.start_page.findChildren(QtWidgets.QLabel)]
         assert "Recent projects" in labels
         assert "From data to results" not in labels
@@ -56,7 +56,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         assert window.sheet_tabs.isMovable()
         assert window.action_auto_fit_columns.text() == "Fit columns"
 
-        assert window.menuMetric.title() == "Effect-size tools"
+        assert window.menuMetric.title() == "Effect measure"
         assert "calculator" in window.menuMetric.toolTip().lower()
 
         window._handle_wizard_results(
