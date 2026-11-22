@@ -1804,14 +1804,28 @@ def small_study_effects(app, window):
                 dialog.ordinary_funnel_check.setChecked(True)
             record_step("small-study-configured", dialog, ordinary_funnel=True)
             from unittest.mock import patch
+            from rc_metastudio import r_worker
             from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
             execute = dialog.analysis_service.execute
             observed_progress = []
 
             def execute_with_progress(*args, **kwargs):
+                assert not button.isEnabled()
+                if r_worker.enabled():
+                    worker = r_worker.current_worker()
+
+                    def record_worker(frame):
+                        if not observed_progress:
+                            record_step("small-study-running", dialog, progress=frame, pid=worker.pid)
+                            observed_progress.append(frame)
+
+                    worker.progress.connect(record_worker)
+                    try:
+                        return execute(*args, **kwargs)
+                    finally:
+                        worker.progress.disconnect(record_worker)
                 progress = dialog.findChild(AnalysisProgressDialog)
                 assert progress is not None and progress.isVisible()
-                assert not button.isEnabled()
                 record_step('small-study-running', progress)
                 observed_progress.append(progress)
                 return execute(*args, **kwargs)
@@ -1819,7 +1833,8 @@ def small_study_effects(app, window):
             with patch.object(dialog.analysis_service, 'execute', side_effect=execute_with_progress):
                 mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
             assert len(observed_progress) == 1
-            assert not observed_progress[0].isVisible()
+            if not r_worker.enabled():
+                assert not observed_progress[0].isVisible()
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
         except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
             callback_errors.append(error)
