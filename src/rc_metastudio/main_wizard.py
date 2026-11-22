@@ -669,7 +669,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def load_file(self, selected_path):
         if Path(selected_path).suffix.lower() not in (".csv", ".xlsx", ".xls"):
-            QMessageBox.information(self, "Import data", "Choose a CSV or Excel (.xlsx) file.")
+            QMessageBox.information(self, "Import data", "Choose a study data file (.xlsx or .csv).")
             return
         self.file_path = qt_text.to_native_text(selected_path)
         self._mapping_key = None
@@ -1116,7 +1116,7 @@ class MainWizard(QWizard):
             self.accept()
             return True
         if suffix not in (".csv", ".xlsx"):
-            QMessageBox.information(self, "Import data", "Choose a CSV, Excel (.xlsx), or RevMan (.rm5) file.")
+            QMessageBox.information(self, "Import data", "Choose a study data file (.xlsx, .csv, or .rm5).")
             return False
         self.set_wizard_path("csv_import")
         if self.get_dataset_info() is None:

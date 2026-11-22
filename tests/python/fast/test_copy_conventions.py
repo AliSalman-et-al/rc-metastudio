@@ -11,6 +11,7 @@ TEXT_SETTERS = {
     "setAccessibleDescription", "setAccessibleName", "setPlaceholderText",
     "setStatusTip", "setText", "setToolTip", "setWhatsThis", "setWindowTitle",
 }
+MESSAGE_KINDS = {"critical", "information", "question", "warning"}
 R_UI_LITERAL = re.compile(
     r"""(?:\b(?:stop|warning)\(\s*|["'](?:description|pretty\.name)["']\s*=\s*)"""
     r"""(["'])((?:\\.|(?!\1)[^\\])*)\1"""
@@ -24,7 +25,9 @@ RULES = {
         re.I,
     ),
     "P value": re.compile(r"\b[pP]-values?\b|\bp\s*[=<≤>≥]\s*\d|\bp values?\b"),
-    "file or spreadsheet in import instructions": re.compile(r"\bCSV\b"),
+    "file or spreadsheet in import instructions": re.compile(
+        r"\b(?:CSV\b.*\bExcel|Excel\b.*\bCSV(?! format\b))", re.I
+    ),
 }
 
 
@@ -37,13 +40,19 @@ def _visible_copy():
         for call in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Attribute):
                 continue
-            if call.func.attr not in TEXT_SETTERS or not call.args:
+            receiver = call.func.value
+            message_box = isinstance(receiver, ast.Name) and receiver.id == "QMessageBox"
+            if message_box and call.func.attr in MESSAGE_KINDS:
+                values = call.args[1:3]
+            elif call.func.attr in TEXT_SETTERS:
+                values = call.args[-1:]
+            else:
                 continue
-            value = call.args[-1]
-            fragments = value.values if isinstance(value, ast.JoinedStr) else (value,)
-            for fragment in fragments:
-                if isinstance(fragment, ast.Constant) and isinstance(fragment.value, str):
-                    yield f"{path.relative_to(PACKAGE)}:{fragment.lineno}", fragment.value
+            for value in values:
+                fragments = value.values if isinstance(value, ast.JoinedStr) else (value,)
+                for fragment in fragments:
+                    if isinstance(fragment, ast.Constant) and isinstance(fragment.value, str):
+                        yield f"{path.relative_to(PACKAGE)}:{fragment.lineno}", fragment.value
     manifest = ROOT / "sample_projects/manifest.json"
     for project in json.loads(manifest.read_text(encoding="utf-8"))["projects"]:
         for key in ("scientific_name", "description"):
@@ -59,8 +68,6 @@ def test_user_facing_copy_conventions():
     failures = []
     for location, value in _visible_copy():
         for rule, pattern in RULES.items():
-            if rule.startswith("file ") and not re.search(r"\bimport\b", value, re.I):
-                continue
             if pattern.search(value):
                 failures.append(f"{location}: {rule}: {value!r}")
     assert not failures, "\n" + "\n".join(failures)
