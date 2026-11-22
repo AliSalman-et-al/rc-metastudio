@@ -90,6 +90,16 @@ rcmetar.open.svg_device <- function(outpath, size) {
     invisible(NULL)
 }
 
+rcmetar.warm.plot_devices <- function() {
+    path <- tempfile("rcmetar-warm-", fileext=".pdf")
+    on.exit(unlink(path))
+    rcmetar.render.plot_file(path, list(width=2, height=2), function() {
+        graphics::par(mar=rep(0, 4))
+        graphics::plot.new()
+        graphics::text(.5, .5, "RC MetaStudio")
+    })
+}
+
 rcmetar.materialize.svg.properties <- function(nodes, defaults) {
     styles <- xml2::xml_attr(nodes, "style")
     for (property in names(defaults)) {

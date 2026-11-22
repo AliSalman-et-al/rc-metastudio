@@ -7,13 +7,17 @@ import sys
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from rc_metastudio import app_error_handler, launch, r_runtime
+from rc_metastudio import app_error_handler, launch, r_runtime, rcmetar_identity
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output", type=Path, required=True)
-parser.add_argument("--failure", action="store_true")
+failure_mode = parser.add_mutually_exclusive_group()
+failure_mode.add_argument("--failure", action="store_true")
+failure_mode.add_argument("--workflow-failure", action="store_true")
 parser.add_argument("--startup-project", action="store_true")
 args = parser.parse_args()
+failure = args.failure or args.workflow_failure
+workflow_phase = "r-library:analysis packages"
 output = args.output.resolve()
 output.mkdir(parents=True, exist_ok=True)
 QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
@@ -26,12 +30,31 @@ def observe(phase):
     observations.append({"phase": phase, "r_ready": ready})
     if phase == "splash:visible" or phase.startswith("r-library:"):
         assert not ready, f"R became ready during {phase}"
+    if phase == f"{workflow_phase}:complete":
+        from rc_metastudio import r_bridge
+
+        namespaces = set(r_bridge.execute_r_string("loadedNamespaces()"))
+        assert (set(rcmetar_identity.runtime_versions()) - {"R"}) | {"RCMetaR", "grid"} <= namespaces
+        assert tuple(r_bridge.execute_r_string("as.integer(grDevices::dev.cur())")) == (1,)
     if phase == "window:visible":
-        assert ready is not args.failure
+        assert ready is not failure
+        phases = [entry["phase"] for entry in observations if "message" not in entry]
+        if args.failure:
+            assert f"{workflow_phase}:start" not in phases
+        else:
+            assert phases.index("r-library:RCMetaR:complete") < phases.index(f"{workflow_phase}:start")
+            if args.workflow_failure:
+                assert f"{workflow_phase}:complete" not in phases
+            else:
+                assert phases.index(f"{workflow_phase}:start") < phases.index(f"{workflow_phase}:complete") < phases.index(phase)
     if phase == "splash:visible" or phase.startswith("r-library:") and phase.endswith(":start"):
         splash = next(w for w in app.topLevelWidgets() if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible())
         assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible() for w in app.topLevelWidgets())
-        assert splash.message() == {"splash:visible": "Starting R…", "r-library:RCMetaR:start": "Loading RCMetaR…"}[phase]
+        assert splash.message() == {
+            "splash:visible": "Starting R…",
+            "r-library:RCMetaR:start": "Loading RCMetaR…",
+            f"{workflow_phase}:start": "Loading analysis packages…",
+        }[phase]
         assert splash.windowFlags() & QtCore.Qt.WindowType.FramelessWindowHint
         assert splash.testAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         assert not splash.windowIcon().isNull()
@@ -69,7 +92,8 @@ def capture_error(widget):
     assert widget.isVisible()
     assert widget.windowTitle() == "Analysis unavailable"
     assert paint_observer.paint_count > 0, "Startup shell never painted before the error dialog"
-    assert "The installed RCMetaR does not match" in widget.text(), widget.text()
+    expected = "The ellipse R package could not load." if args.workflow_failure else "The installed RCMetaR does not match"
+    assert expected in widget.text(), widget.text()
     errors.append(widget.text())
     observations.append({"shell_paint_events_before_error_capture": paint_observer.paint_count,
                          "startup_error": widget.text()})
@@ -120,7 +144,6 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         raise SystemExit(0)
     if args.failure:
         # The runtime and package are real. Supply a different expected source.
-        from rc_metastudio import rcmetar_identity
         from rc_metastudio.main_window import MainWindow
         show_error = MainWindow._show_analysis_backend_error
         def observed_error(window, exception, *, startup=False):
@@ -133,6 +156,17 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
             patch.object(MainWindow, "_show_analysis_backend_error", observed_error),
         ):
             _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
+    elif args.workflow_failure:
+        from rc_metastudio import r_bridge
+        execute = r_bridge.execute_r_function
+
+        def execute_with_missing_namespace(name, *args, **kwargs):
+            if name == "loadNamespace" and args == ("ellipse",):
+                args = ("RCMSMissingWorkflowPackage",)
+            return execute(name, *args, **kwargs)
+
+        with patch.object(r_bridge, "execute_r_function", execute_with_missing_namespace):
+            _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     else:
         _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     try:
@@ -141,12 +175,12 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         assert window.isEnabled() and window.isVisible()
         assert not any(isinstance(w, QtWidgets.QSplashScreen) and w.isVisible() for w in app.topLevelWidgets())
         assert window.statusBar().currentMessage() == ""
-        assert r_runtime.is_ready() is not args.failure
-        assert bool(errors) is args.failure
+        assert r_runtime.is_ready() is not failure
+        assert bool(errors) is failure
         assert window.open(str(Path(__file__).resolve().parents[2] / "tests/fixtures/desktop-projects/amino.rcms"))
         assert window.model.rowCount() > 0
-        assert window.action_go.isEnabled() is not args.failure
-        if args.failure:
+        assert window.action_go.isEnabled() is not failure
+        if failure:
             name = window.model.index(0, window.model.NAME)
             assert window.model.setData(name, "Edited without R")
             destination = output / "edited-without-r.rcms"

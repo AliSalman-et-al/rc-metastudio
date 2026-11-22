@@ -218,7 +218,7 @@ def execute_r_function(function_name, *args, **kwargs):
 def load_required_packages(
     on_phase: Callable[[str, str], None] | None = None,
 ) -> None:
-    """Verify the installed RCMetaR before exposing the analysis backend."""
+    """Verify and load the analysis runtime before exposing the backend."""
     from rc_metastudio.rcmetar_identity import STAMP_COMMAND, expected_source, runtime_versions
 
     global _INITIALIZATION_ERROR
@@ -230,7 +230,8 @@ def load_required_packages(
         expected = expected_source()
         action = "The installed RCMetaR does not match this version of RC MetaStudio."
         pins = runtime_versions()
-        packages = ", ".join(f'"{name}"' for name in pins if name != "R")
+        dependencies = [name for name in pins if name != "R"]
+        packages = ", ".join(f'"{name}"' for name in dependencies)
         location, version, sha, *versions = execute_r_string(
             "local({ path <- find.package('RCMetaR'); lib <- dirname(path); "
             "stamp <- file.path(path, 'source.sha256'); "
@@ -242,12 +243,21 @@ def load_required_packages(
         )
         if (version, sha) != expected:
             raise ValueError(f"RCMetaR expected version and source {expected!r}, installed {(version, sha)!r}")
-        ordered = ["R", *(name for name in pins if name != "R")]
-        for name, actual in zip(ordered, versions, strict=True):
+        for name, actual in zip(["R", *dependencies], versions, strict=True):
             if actual != pins[name]:
                 raise ValueError(f"{name} requires version {pins[name]}, found {actual}")
         action = "RCMetaR could not load."
         execute_r_function("library", "RCMetaR", **{"lib.loc": location})
+        if on_phase is not None:
+            on_phase("RCMetaR", "complete")
+            on_phase("analysis packages", "start")
+        for name in (*dependencies, "grid"):
+            action = f"The {name} R package could not load."
+            execute_r_function("loadNamespace", name)
+        action = "The R graphics devices could not start."
+        execute_r_string("RCMetaR:::rcmetar.warm.plot_devices()")
+        action = "The R small-study effects methods could not start."
+        execute_r_string("RCMetaR:::rcmetar.warm.small.study.effects()")
     except Exception as error:
         recovery = ("Repair the packaged application." if getattr(sys, "frozen", False)
                     else f"For a source checkout, run {STAMP_COMMAND} from the repository root "
@@ -256,7 +266,7 @@ def load_required_packages(
         _INITIALIZATION_ERROR = failure
         raise failure from error
     if on_phase is not None:
-        on_phase("RCMetaR", "complete")
+        on_phase("analysis packages", "complete")
 
 
 @serialized_r_call

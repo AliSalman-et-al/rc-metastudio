@@ -2488,7 +2488,7 @@ try:
             splashes = [w for w in QtWidgets.QApplication.topLevelWidgets()
                         if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible()]
             assert len(splashes) == 1
-            assert splashes[0].message() in {"Starting R…", "Loading metafor…", "Loading RCMetaR…", "Loading grid…"}
+            assert splashes[0].message() in {"Starting R…", "Loading RCMetaR…", "Loading analysis packages…"}
             assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible()
                            for w in QtWidgets.QApplication.topLevelWidgets())
             if EVIDENCE is not None:

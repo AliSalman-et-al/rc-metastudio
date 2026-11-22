@@ -282,7 +282,6 @@ construct.boot.res.and.value.info.for.results <- function(results, boot.res, boo
 
 
 boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
-    .rcmetar.require.package("boot")
 	conf.interval <- boot::boot.ci(boot.out = boot.results, type = "norm", conf=validate.conf.level(params$conf.level)/100)
 	mean_boot <- mean(boot.results$t)
 
@@ -300,7 +299,6 @@ boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
 }
 
 calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
-    .rcmetar.require.package("boot")
 	dim.t <- dim(boot.results$t)
 	num.rows <- dim.t[1]
 	num.coeffs <- dim.t[2]
