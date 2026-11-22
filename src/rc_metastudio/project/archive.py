@@ -244,7 +244,7 @@ def _inspect_archive(
         archive = zipfile.ZipFile(path, "r")
         infos = archive.infolist()
     except (OSError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
-        raise ProjectFormatError("project is not a valid ZIP container") from exc
+        raise ProjectFormatError("the file is not a valid .rcms project archive") from exc
 
     try:
         return archive, _validate_archive_members(infos, limits)

@@ -156,7 +156,7 @@ local({
         }
         if (metric == "SMD") {
           tests <- list("Classical Egger" = egger$p.value,
-                        "Pustejovsky-Rodgers" = meta::metabias(native, method.bias = "Pustejovsky")$p.value)
+                        "Pustejovsky\u2013Rodgers" = meta::metabias(native, method.bias = "Pustejovsky")$p.value)
         }
         list(trim = inverse(c(trim$TE.random, trim$lower.random, trim$upper.random)),
              side = if (trim$left) "left" else "right", imputed = trim$k0, tests = tests)

@@ -31,14 +31,14 @@ TOOLTIPS = {
     "Type I error (α)": "Overall chance of a false-positive conclusion, controlled across all looks at the accumulating data.",
     "Power": "Chance of detecting the anticipated effect once the required information size is reached.",
     "Anticipated intervention effect": "The smallest effect the analysis should be able to detect. The default is the confidence limit of the pooled estimate closest to no effect.",
-    "Control event proportion": "Expected risk of the outcome in the control group. The default is the unweighted mean of the trials' control arms.",
+    "Control event proportion": "Expected risk of the outcome in the control arm. The default is the unweighted mean of the studies' control arms.",
     "Participant variance": "Variance of the outcome among participants, used to convert the mean difference into a required number of participants.",
-    "Heterogeneity adjustment": "Inflates the required information size for between-trial variation. D² (diversity) is recommended; I² usually underestimates it.",
-    "Add studies in": "The order in which trials enter the cumulative analysis. Publication year reproduces how evidence accumulated.",
+    "Heterogeneity adjustment": "Inflates the required information size for between-study variation. D² (diversity) is recommended; I² usually underestimates it.",
+    "Add studies in": "The order in which studies enter the cumulative analysis. Publication year reproduces how evidence accumulated.",
     "Test": "Two-sided tests look for benefit or harm. One-sided tests monitor a single direction.",
-    "Boundaries": "O'Brien-Fleming boundaries are strict early and relax as information accrues. Pocock boundaries are equally strict at every look.",
+    "Boundaries": "O'Brien–Fleming boundaries are strict early and relax as information accrues. Pocock boundaries are equally strict at every look.",
     "Futility boundaries": "Shows the region where the anticipated effect becomes unlikely. Non-binding: crossing it does not stop the analysis.",
-    "Penalised Z-curve": "An alternative to monitoring boundaries that penalises the Z-score for repeated testing (law of the iterated logarithm). Binary measures only.",
+    "Penalized Z-curve": "An alternative to monitoring boundaries that penalizes the Z-score for repeated testing (law of the iterated logarithm). Binary measures only.",
 }
 CHECKING_BOUNDARIES = "Checking boundary crossings…"
 
@@ -91,10 +91,10 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.order = self._choice("Add studies in", [("Publication year", "year"), ("Table order", "table")], saved.order)
         for widget in (self.order, self.test):
             self._row(fields, widget.accessibleName(), widget)
-        self.spending = self._choice("Boundaries", [("O'Brien-Fleming", "obf"), ("Pocock", "pocock")], saved.spending)
+        self.spending = self._choice("Boundaries", [("O'Brien–Fleming", "obf"), ("Pocock", "pocock")], saved.spending)
         self._row(fields, "Boundaries", self.spending)
         self.futility = self._check("Futility boundaries", saved.futility)
-        self.lil = self._check("Penalised Z-curve", saved.lil and self.binary)
+        self.lil = self._check("Penalized Z-curve", saved.lil and self.binary)
         self.lil.setEnabled(self.binary)
         for check in (self.futility, self.lil):
             check.setToolTip(TOOLTIPS[check.text()])

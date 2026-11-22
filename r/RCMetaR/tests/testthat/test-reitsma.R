@@ -8,7 +8,7 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   result <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=FALSE, conf.level=90, digits=2))
   testthat::expect_named(result$Summary, c(
     "Clinical interpretation", "Summary operating point", "Sampling-based summary ratios", "SROC AUC",
-    "Marginal prediction", "Between-study heterogeneity", "Diagnostic I-squared",
+    "Marginal prediction", "Between-study heterogeneity", "Diagnostic I\u00b2",
     "Model information"
   ))
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "summary sensitivity")
@@ -23,16 +23,16 @@ testthat::test_that("Reitsma validates and represents diagnostic counts", {
   testthat::expect_true(is.character(model.info$warnings))
   testthat::expect_false("References" %in% names(result$Summary))
   testthat::expect_null(result$Summary[["Marginal prediction"]]$geometry)
-  testthat::expect_true(is.data.frame(result$Summary[["Diagnostic I-squared"]][["I-squared estimates"]]))
-  testthat::expect_false(any(grepl("^V[0-9]+$", names(result$Summary[["Diagnostic I-squared"]][["I-squared estimates"]]))))
-  testthat::expect_true(all(grepl("%$", result$Summary[["Diagnostic I-squared"]][["I-squared estimates"]][["I-squared (%)"]])))
+  testthat::expect_true(is.data.frame(result$Summary[["Diagnostic I\u00b2"]][["I-squared estimates"]]))
+  testthat::expect_false(any(grepl("^V[0-9]+$", names(result$Summary[["Diagnostic I\u00b2"]][["I-squared estimates"]]))))
+  testthat::expect_true(all(grepl("%$", result$Summary[["Diagnostic I\u00b2"]][["I-squared estimates"]][["I-squared (%)"]])))
   testthat::expect_true(all(grepl("\\.[0-9]{2}%$", result$Summary[["Summary operating point"]][["Summary sensitivity"]])))
   testthat::expect_identical(result$Summary[["SROC AUC"]][["full.FPR.bounds"]], c(.01, .99))
   testthat::expect_true(all(result$Summary[["SROC AUC"]][["partial.FPR.bounds"]] >= c(.01, 0)))
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "equivalent parameterizations")
   testthat::expect_true(all(c("Zhou\u2013Dendukuri", "Holling unadjusted range", "Holling adjusted range") %in%
-    names(result$Summary[["Diagnostic I-squared"]][["I-squared summary"]])))
-  testthat::expect_length(result$Summary[["Diagnostic I-squared"]][["I-squared estimates"]][["Measure"]], 7)
+    names(result$Summary[["Diagnostic I\u00b2"]][["I-squared summary"]])))
+  testthat::expect_length(result$Summary[["Diagnostic I\u00b2"]][["I-squared estimates"]][["Measure"]], 7)
   ratios <- result$Summary[["Sampling-based summary ratios"]]
   testthat::expect_identical(
     rownames(ratios),
@@ -207,7 +207,7 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "jointly models sensitivity and false-positive rate")
   testthat::expect_match(result$Summary[["Clinical interpretation"]], "Reference rows equal 1")
   testthat::expect_true(all(c("Sensitivity coefficients", "Specificity coefficients", "Moderator coding", "Moderator block tests") %in% names(result$Summary)))
-  residual.i2 <- result$Summary[["Residual diagnostic I-squared"]][["I-squared estimates"]]
+  residual.i2 <- result$Summary[["Residual diagnostic I\u00b2"]][["I-squared estimates"]]
   testthat::expect_true(is.data.frame(residual.i2))
   testthat::expect_identical(colnames(residual.i2), c("Measure", "I-squared (%)"))
   testthat::expect_true(all(grepl("%$", residual.i2[["I-squared (%)"]])))
@@ -233,7 +233,7 @@ testthat::test_that("Reitsma meta-regression reports coding, odds ratios, and se
   )
   testthat::expect_identical(
     vapply(plots$sections, function(section) section$title, character(1)),
-    c("Sensitivity Moderator Coefficients", "Specificity Moderator Coefficients")
+    c("Sensitivity moderator coefficients", "Specificity moderator coefficients")
   )
   advertised <- rcmetar.analysis.plot.capabilities(
     "diagnostic", "diagnostic.reitsma", "meta-regression"

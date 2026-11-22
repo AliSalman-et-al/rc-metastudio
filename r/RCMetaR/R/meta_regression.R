@@ -93,7 +93,7 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 								 list(Adjusted_Means_Section=list(type="vector", description=""),
 									  Adjusted_Means=list(type="blob", description="")))
 			results <- list("Summary"=reg.disp,
-                            "Adjusted Mean"=adj.reg.disp,
+                            "Adjusted mean"=adj.reg.disp,
 							"res"=res.output,
 							"res.info"=res.output.info)
 		} else {
@@ -120,15 +120,15 @@ meta.regression.parameters <- function() {
 
 meta.regression.pretty.names <- function() {
     list(
-        "pretty.name"="Meta-Regression",
+        "pretty.name"="Meta-regression",
         "description"="Models study-level covariates as predictors of effect estimates.",
         "rm.method"=list(
-            "pretty.name"="Random-Effects method",
-            "description"="Method for estimating residual between-studies heterogeneity",
+            "pretty.name"="Random-effects method",
+            "description"="Method for estimating residual between-study heterogeneity",
             "rm.method.names"=rcmetar.random.effects.method.names()),
         "inference.method"=rcmetar.inference.method.metadata(),
         "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
-        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3")
+        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places.")
     )
 }
 

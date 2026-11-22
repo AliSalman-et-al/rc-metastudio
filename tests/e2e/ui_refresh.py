@@ -96,7 +96,7 @@ def run(app, window, work, root, record, analyze):
     drive(app, window, work, record)
     assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     view = analyze(app, window, 'binary.random')
-    assert [view.nav_tree.topLevelItem(i).text(0) for i in range(view.nav_tree.topLevelItemCount())] == ['Forest plot', 'Text report', 'Data tables (CSV)']
+    assert [view.nav_tree.topLevelItem(i).text(0) for i in range(view.nav_tree.topLevelItemCount())] == ['Forest plot', 'Text report', 'Data tables']
     view.report_action.trigger()
     assert view.nav_tree.currentItem().text(0) == 'Text report'
     assert view.manuscript.methods in view.manuscript_text.toPlainText()

@@ -1185,12 +1185,13 @@ def _parse_summary(text):
             if len(model_numbers) >= 5:
                 values["standard_error"] = _to_float(model_numbers[-2])
     if heterogeneity and re.match(r"\s*(?:tau\^2|τ²|t²|Q)(?:\s|\()", heterogeneity.group(1)):
-        headers = re.findall(r"tau\^2|τ²|t²|Q\(df=\d+\)|Q|df|Het\. p-[Vv]alue|p-[Vv]alue|I\^2|I²",
+        headers = re.findall(r"tau\^2|τ²|t²|Q\(df=\d+\)|Q|df|Het\. p-[Vv]alue|p-[Vv]alue|Heterogeneity P value|P value|I\^2|I²",
                              heterogeneity.group(1))
         row = re.findall(number, heterogeneity.group(2))
         fields = {"tau^2": "tau_squared", "τ²": "tau_squared", "t²": "tau_squared",
                   "Q": "q", "df": "heterogeneity_df", "I^2": "i_squared", "I²": "i_squared",
-                  "Het. p-value": "heterogeneity_p_value", "p-value": "heterogeneity_p_value"}
+                  "Het. p-value": "heterogeneity_p_value", "p-value": "heterogeneity_p_value",
+                  "Heterogeneity P value": "heterogeneity_p_value", "P value": "heterogeneity_p_value"}
         if len(headers) == len(row):
             for header, value in zip(headers, row, strict=True):
                 degrees = re.fullmatch(r"Q\(df=(\d+)\)", header)
@@ -1315,7 +1316,7 @@ def _parse_result_table(text):
                 if raw is not None:
                     values["%s.%s" % (prefix, metric)] = _to_float(raw)
     if is_regression:
-        omnibus = re.search(r"Omnibus p-value\s*\n\s*(?:<\s*)?(-?\d+(?:\.\d+)?)", text)
+        omnibus = re.search(r"Omnibus (?:p-value|P value)\s*\n\s*(?:<\s*)?(-?\d+(?:\.\d+)?)", text)
         if not omnibus:
             omnibus = re.search(
                 r"^\s*Overall moderators \((?:Qₘ|F)\).*?"
@@ -1391,6 +1392,7 @@ def _extract_model_values(row):
         "Upper bound": "upper_bound",
         "p-Value": "p_value",
         "p-value": "p_value",
+        "P value": "p_value",
         "p-Val": "p_value",
     }
     for label, key in mapping.items():

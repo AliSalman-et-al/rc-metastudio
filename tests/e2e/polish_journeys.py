@@ -198,7 +198,7 @@ def run(app, window, work, root, record, analyze):
         record("model-fit-count-" + method, view, counts=counts)
     view.tables_action.trigger()
     app.processEvents()
-    assert view.nav_tree.currentItem().text(0) == "Data tables (CSV)"
+    assert view.nav_tree.currentItem().text(0) == "Data tables"
     view.table_selector.setCurrentText("Pooled effect")
     view.result_table.clearSelection()
     copy_action = view.copy_table_action
@@ -379,7 +379,7 @@ def run(app, window, work, root, record, analyze):
     assert model.current_sheet.rows[new_row].label == "Jaeger et al."
     record("study-identity-grid-distinct-year", window)
     def conflict_message(dialog):
-        assert "Study ‘Jaeger et al.’ (2001) already exists in row 5." in dialog.text(), dialog.text()
+        assert "Study 'Jaeger et al.' (2001) already exists in row 5." in dialog.text(), dialog.text()
         record("study-identity-year-conflict", dialog)
         dialog.accept()
 
@@ -405,7 +405,7 @@ def run(app, window, work, root, record, analyze):
     assert window.model.current_sheet.rows[new_row + 1].year == 2009
 
     def paste_conflict(dialog):
-        assert dialog.text() == "Study ‘Jaeger et al.’ (2005) already exists in row 6."
+        assert dialog.text() == "Study 'Jaeger et al.' (2005) already exists in row 6."
         record("study-identity-paste-conflict", dialog)
         dialog.accept()
 

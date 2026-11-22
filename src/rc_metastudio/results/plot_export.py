@@ -85,7 +85,7 @@ class PlotExportDialog(QDialog):
         self.use_readable_width = QPushButton(self)
         self.use_readable_width.clicked.connect(self._set_readable_width)
         layout.addRow(self.use_readable_width)
-        self.include_title = QCheckBox("Include title line", self)
+        self.include_title = QCheckBox("Include figure caption", self)
         self.include_title.toggled.connect(self._width_changed)
         if resizable:
             layout.addRow(self.include_title)
@@ -174,7 +174,7 @@ class PlotExportDialog(QDialog):
                                      and not blocked and height > 267 / 25.4)
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster and not blocked)
-        self.pixel_label.setText(f'{math.ceil(width * dpi)} × {math.ceil(height * dpi)} pixels')
+        self.pixel_label.setText(f'{math.ceil(width * dpi):,} × {math.ceil(height * dpi):,} pixels')
         self._refresh_legibility(width, pending=pending, raster=raster)
 
     def _refresh_save_controls(self, dpi: int, *, blocked: bool, raster: bool) -> None:

@@ -122,7 +122,7 @@ def normalize_csv_input(
         if headers:
             _validate_headers(headers, expected_headers)
         elif rows:
-            raise CsvImportError("CSV file is missing the required header row.")
+            raise CsvImportError("The selected file is missing the required header row.")
     else:
         _validate_minimum_width(rows, positional_width or len(expected_headers))
     headers, normalized_rows = _pad_csv_rows(headers, rows, expected_headers, has_headers)
@@ -179,7 +179,7 @@ def _validate_header_width(headers: list[str], rows: list[list[str]]) -> None:
     for row_number, row in enumerate(rows, start=2):
         if len(row) > len(headers):
             raise CsvImportError(
-                f"CSV row {row_number}: expected {len(headers)} columns, found {len(row)}."
+                f"Row {row_number}: expected at most {len(headers)} columns, found {len(row)}. Check the columns in this row."
             )
 
 
@@ -189,9 +189,9 @@ def _map_columns(
 ) -> tuple[list[str], list[list[str]]]:
     mapped = [index for index in column_mapping if index >= 0]
     if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
-        raise CsvImportError("Map each required field to a different CSV column.")
+        raise CsvImportError("Map each required field to a different file column.")
     if any(index < -1 or index >= len(headers) for index in column_mapping):
-        raise CsvImportError("Select a CSV column for every required field.")
+        raise CsvImportError("Select a file column for every required field.")
     unmapped = [index for index in range(len(headers)) if index not in column_mapping]
     indices = [*column_mapping, *unmapped]
     mapped_rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
@@ -209,7 +209,7 @@ def _add_optional_columns(
     for name in optional_headers:
         matches = [i for i, header in enumerate(headers) if header == name]
         if len(matches) > 1:
-            raise CsvImportError(f"CSV contains duplicate input column: {name}.")
+            raise CsvImportError(f"Duplicate input column header: {name}. Rename or remove the duplicate column, then try again.")
         optional_indices[name] = matches[0] if matches else None
     covariate_indices = [i for i in range(base_width, width) if i not in optional_indices.values()]
     expanded_rows = []
@@ -234,7 +234,7 @@ def _validate_headers(
     for index, expected in enumerate(expected_headers):
         found = headers[index] if index < len(headers) else "(missing)"
         if found != expected:
-            raise CsvImportError(f'Column {index + 1}: expected "{expected}", found "{found}". Use the template or map this field to a CSV column.')
+            raise CsvImportError(f'Column {index + 1}: expected "{expected}", found "{found}". Use the template or map this field to a file column.')
 
 
 def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:
@@ -242,8 +242,8 @@ def _validate_minimum_width(rows: list[list[str]], minimum_width: int) -> None:
     for row_number, row in enumerate(rows, start=1):
         if len(row) < minimum_width:
             raise CsvImportError(
-                f"CSV row {row_number} needs Study and Year columns before the data columns "
-                f"({minimum_width} columns in total). Use the CSV template."
+                f"Row {row_number} needs Study and Year columns before the data columns "
+                f"({minimum_width} columns in total). Add the missing columns or start from the blank template."
             )
 
 
@@ -442,7 +442,7 @@ def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numer
             result.append(values)
         if notices is not None:
             if formulas:
-                notices.append(f"{formulas} formula cells use their saved values.")
+                notices.append(f"Formula cells using saved values: {formulas}.")
             if dates:
                 notices.append("Dates use their year: " + ", ".join(dates) + ".")
         return (result[0], result[1:], names, selected) if has_headers else ([], result, names, selected)

@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import packaged_smoke_contract as smoke_contract
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -1047,6 +1048,7 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
     import zipfile
 
     inspector = _load_windows_deployment_inspector()
+    summary_sha256 = smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE[smoke_contract.BARZA_SAMPLE]
     windows_accessibility = {
         "focus_widget": "tableView",
         "accessible_name": "Packaged accessibility control",
@@ -1111,13 +1113,13 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
                 "passed": True,
                 "workflows": {
                     "automation_entry_point": True,
-                    "converted_sample": "Binary - Aminoglycoside dosing, Barza 1996.rcms",
+                    "converted_sample": smoke_contract.BARZA_SAMPLE,
                     "representative_edit": True,
                     "real_r_analysis": True,
                     "result_text": True,
-                    "expected_normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                    "expected_normalized_summary_sha256": summary_sha256,
                     "raw_summary_sha256": "b" * 64,
-                    "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                    "normalized_summary_sha256": summary_sha256,
                     "svg_sha256": {"Forest Plot": "a" * 64},
                     "locale_variants": [
                         {
@@ -1125,7 +1127,7 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
                             "input": "7.0",
                             "canonical_value": 7.0,
                             "raw_summary_sha256": "b" * 64,
-                            "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                            "normalized_summary_sha256": summary_sha256,
                             "svg_sha256": {"Forest Plot": "a" * 64},
                         },
                         {
@@ -1133,7 +1135,7 @@ def test_windows_qualification_evidence_authenticates_complete_packaged_smoke(tm
                             "input": "7,0",
                             "canonical_value": 7.0,
                             "raw_summary_sha256": "b" * 64,
-                            "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                            "normalized_summary_sha256": summary_sha256,
                             "svg_sha256": {"Forest Plot": "a" * 64},
                         },
                     ],

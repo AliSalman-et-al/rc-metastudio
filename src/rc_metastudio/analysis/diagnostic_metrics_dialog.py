@@ -68,8 +68,8 @@ class DiagnosticMetricsDialog(
         if not selected_metrics:
             QMessageBox.warning(
                 self,
-                "No diagnostic metric selected",
-                "Select at least one available diagnostic metric before running analysis.",
+                "No diagnostic effect measure selected",
+                "Select at least one available diagnostic effect measure before running the analysis.",
             )
             return
 
@@ -101,7 +101,7 @@ class DiagnosticMetricsDialog(
             else:
                 reason = (
                     "Requires complete TP/FN/FP/TN counts or complete entered "
-                    "effect estimates and confidence intervals for this metric."
+                    "effect estimates and confidence intervals for this effect measure."
                 )
                 missing = [ALL_METRIC_NAMES[effect] for effect in DIAGNOSTIC_METRIC_GROUPS[metric]
                            if not self.model.included_studies_have_point_estimates(effect=effect)]
@@ -110,7 +110,7 @@ class DiagnosticMetricsDialog(
                 unavailable.append("{}: {}".format(checkbox.text(), reason))
         if unavailable:
             self.availability_label.setText(
-                "Some metrics are unavailable:\n" + "\n".join(unavailable)
+                "Some effect measures are unavailable:\n" + "\n".join(unavailable)
             )
         else:
             self.availability_label.hide()

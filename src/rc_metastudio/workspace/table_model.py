@@ -408,7 +408,7 @@ class DatasetTableModel(QAbstractTableModel):
         comparison = self.get_current_arm_key()
         values = unit.get_display_effect_and_ci_for_source(source, effect, comparison)
         if self._complete_effect_preview(unit, source, effect, comparison) and (values[0] is None or not math.isfinite(float(values[0]))):
-            return "Not estimable: the complete raw data do not define a finite effect for the selected metric and preview settings. Review the data or choose another applicable metric."
+            return "Not estimable: the study values do not define a finite effect for the selected effect measure and preview settings. Review the study values or choose another applicable effect measure."
 
     def _ratio_effect_tooltip(self, index):
         unit = self.get_current_analysis_unit_for_study(index.row())
@@ -422,7 +422,7 @@ class DatasetTableModel(QAbstractTableModel):
             if len(raw) == 4 and raw[0] == 0 and raw[2] == 0:
                 return "Not estimable in this preview: zero events in both arms give a rate ratio of 0/0. Inverse-variance analyses apply the selected continuity correction; Mantel–Haenszel pooling uses the original counts. Click the study row number to edit."
             return f"Raw events/person-time ({record.unit}). Preview: {self.confidence_level:g}% CI, add 0.5 to zero-event studies, omit double-zero effects. Analysis settings are selected separately. Click the study row number to edit."
-        return f"Reported {self.current_effect}; input scale: {record.scale}; original CI: {record.confidence:g}%. Click the study row number to edit input details."
+        return f"Reported {self.current_effect}; input scale: {record.scale}; source confidence level: {record.confidence:g}%. Click the study row number to edit input details."
 
     def _role_data(self, index, role, study):
         if role == Qt.ItemDataRole.AccessibleTextRole:
@@ -530,7 +530,7 @@ class DatasetTableModel(QAbstractTableModel):
         canonical_row = index.row() if new_study else self.current_sheet.rows.index(study)
         field = self._editable_field(column)
         if field is None:
-            return workspace_editing.CellRejection("Cannot edit that cell.")
+            return workspace_editing.CellRejection("This cell is read-only.")
         row_order = self._canonical_display_order() if field in ("name", "year") else None
         rejection = self.editing_service.apply_edit(
             self.dataset, canonical_row, field, self._editing_context(), value, row_order=row_order,
@@ -552,7 +552,7 @@ class DatasetTableModel(QAbstractTableModel):
         ):
             return workspace_editing.CellRejection("Check state applies only to study inclusion.")
         if not self._valid_edit_index(index):
-            return workspace_editing.CellRejection("Cannot edit that cell.")
+            return workspace_editing.CellRejection("Select a valid study cell before editing.")
         return None
 
     def paste_cells(self, first_row, columns, values) -> int:

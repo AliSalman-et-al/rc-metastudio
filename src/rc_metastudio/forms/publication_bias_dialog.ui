@@ -2,7 +2,7 @@
 <ui version="4.0">
  <class>PublicationBiasDialog</class>
  <widget class="QDialog" name="PublicationBiasDialog">
-  <property name="windowTitle"><string>Publication bias — RC MetaStudio</string></property>
+  <property name="windowTitle"><string>Small-study effects — RC MetaStudio</string></property>
   <property name="modal"><bool>true</bool></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item><widget class="QLabel" name="context_label"><property name="text"><string>Current analysis</string></property></widget></item>
@@ -23,8 +23,8 @@
              <property name="rowWrapPolicy"><enum>QFormLayout::WrapLongRows</enum></property>
              <item row="0" column="0"><widget class="QLabel" name="minimum_studies_label"><property name="text"><string>Minimum studies for asymmetry tests</string></property><property name="buddy"><cstring>minimum_studies_spin</cstring></property></widget></item>
              <item row="0" column="1"><layout class="QHBoxLayout" name="minimum_studies_layout">
-              <item><widget class="QCheckBox" name="use_package_minimum_check"><property name="text"><string>Package default</string></property><property name="checked"><bool>true</bool></property><property name="toolTip"><string>Use meta’s default minimum study count. Mixed-effects Egger uses metafor and does not use this setting.</string></property></widget></item>
-              <item><widget class="QSpinBox" name="minimum_studies_spin"><property name="enabled"><bool>false</bool></property><property name="minimum"><number>3</number></property><property name="maximum"><number>2147483647</number></property><property name="toolTip"><string>Choose the minimum study count for meta’s asymmetry tests. The package requires at least 3 usable studies.</string></property><property name="accessibleName"><string>Minimum studies for asymmetry tests</string></property></widget></item>
+              <item><widget class="QCheckBox" name="use_package_minimum_check"><property name="text"><string>Use default minimum</string></property><property name="checked"><bool>true</bool></property><property name="toolTip"><string>Use the default minimum number of studies for asymmetry tests. Mixed-effects Egger regression uses a separate minimum.</string></property></widget></item>
+              <item><widget class="QSpinBox" name="minimum_studies_spin"><property name="enabled"><bool>false</bool></property><property name="minimum"><number>3</number></property><property name="maximum"><number>2147483647</number></property><property name="toolTip"><string>Choose the minimum number of usable studies required before running asymmetry tests (at least 3).</string></property><property name="accessibleName"><string>Minimum studies for asymmetry tests</string></property></widget></item>
              </layout></item>
             </layout>
            </item>
@@ -35,13 +35,13 @@
              <layout class="QVBoxLayout" name="plot_selection_layout">
               <item><widget class="QCheckBox" name="ordinary_funnel_check"><property name="text"><string>Funnel plot</string></property><property name="checked"><bool>true</bool></property></widget></item>
               <item><widget class="QCheckBox" name="contour_funnel_check"><property name="text"><string>Contour-enhanced funnel plot</string></property></widget></item>
-              <item><widget class="QCheckBox" name="deeks_funnel_check"><property name="text"><string>Deeks funnel plot</string></property></widget></item>
+              <item><widget class="QCheckBox" name="deeks_funnel_check"><property name="text"><string>Deeks effective-sample-size funnel</string></property></widget></item>
               <item>
                <layout class="QFormLayout" name="plot_method_options_layout">
-                <item row="0" column="0"><widget class="QLabel" name="sampling_confidence_label"><property name="text"><string>Confidence level</string></property></widget></item>
+                <item row="0" column="0"><widget class="QLabel" name="sampling_confidence_label"><property name="text"><string>Confidence level (%)</string></property></widget></item>
                 <item row="0" column="1"><widget class="QComboBox" name="sampling_confidence_combo"><item><property name="text"><string>90</string></property></item><item><property name="text"><string>95</string></property></item><item><property name="text"><string>99</string></property></item></widget></item>
                 <item row="1" column="0" colspan="2"><widget class="QCheckBox" name="include_tau2_check"><property name="text"><string>Include τ² in pseudo-confidence region</string></property></widget></item>
-                <item row="2" column="0"><widget class="QLabel" name="contour_levels_label"><property name="text"><string>Contour levels</string></property></widget></item>
+                <item row="2" column="0"><widget class="QLabel" name="contour_levels_label"><property name="text"><string>Contour levels (%)</string></property></widget></item>
                 <item row="2" column="1"><widget class="QLineEdit" name="contour_levels_edit"><property name="text"><string>90, 95, 99</string></property></widget></item>
                </layout>
               </item>

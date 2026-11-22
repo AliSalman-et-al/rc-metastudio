@@ -76,6 +76,7 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
 ):
     from scripts import assemble_packaged_smoke_evidence as assembler
     from scripts import inspect_macos_deployment, inspect_windows_deployment
+    from scripts import packaged_smoke_contract as smoke_contract
 
     digest = "a" * 64
     workflow_path = tmp_path / "workflow.json"
@@ -105,7 +106,7 @@ def test_developer_assembly_emits_evidence_accepted_by_both_inspectors(
     assert (output.with_suffix(".plots") / "2-locale-forest.svg").read_bytes() == locale_svg.read_bytes()
     expected = hashlib.sha256(b"Binary Random-Effects Model Estimate 1").hexdigest()
     assert evidence["workflows"]["normalized_summary_sha256"] == expected
-    monkeypatch.setitem(inspect_macos_deployment.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms", expected)
+    monkeypatch.setitem(smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE, smoke_contract.BCG_SAMPLE, expected)
     inspect_macos_deployment.validate_packaged_workflow_evidence(evidence)
     log = tmp_path / "smoke.log"
     log.write_text("packaged-workflow:post-close\n", encoding="utf-8")

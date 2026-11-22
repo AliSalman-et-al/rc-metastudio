@@ -9,8 +9,8 @@
   if (!is.list(params) || !is.numeric(params$version) || length(params$version) != 1 ||
       is.na(params$version) || params$version != 1) stop("TSA request version 1 is required.")
   if (!is.character(params$metric) || length(params$metric) != 1L || is.na(params$metric))
-    stop("TSA requires a metric.")
-  if (is.null(params$model)) stop("TSA requires the sheet model.")
+    stop("Trial sequential analysis requires an effect measure.")
+  if (is.null(params$model)) stop("Trial sequential analysis requires the outcome's pooling model.")
   settings <- utils::modifyList(.tsa.defaults, params)
   .tsa.validate.choices(settings)
   .tsa.validate.numeric(settings)
@@ -110,7 +110,7 @@
   if (!binary && !md && !hr)
     return(.tsa.ineligible("unsupported-measure", "TSA supports two-arm RR, OR, RD, Peto OR, MD and reported HR."))
   if ((s$model %in% c("fixed-mh", "peto") && !binary) || (s$model == "peto" && s$metric != "OR"))
-    return(.tsa.ineligible("unsupported-model", "The sheet model does not support this TSA measure."))
+    return(.tsa.ineligible("unsupported-model", "The selected pooling model for this outcome does not support this trial sequential analysis measure."))
   list(binary=binary, md=md, hr=hr)
 }
 
@@ -162,7 +162,7 @@
     invokeRestart("muffleWarning")
   })
   too.few <- function() .tsa.ineligible("too-few-estimable-studies",
-    "TSA requires at least two estimable study effects for the sheet model.")
+    "Trial sequential analysis requires at least two estimable study effects under this outcome's model.")
   if (sum(keep) < 2L) return(too.few())
   fit <- tryCatch(fit_at(if (all(keep)) data else get.subset(data, which(keep))), error=identity)
   if (inherits(fit, "error")) return(.tsa.ineligible("model-fit-failed", conditionMessage(fit)))
@@ -272,7 +272,7 @@
   required <- inputs$required
   preview <- list(version=1L, eligible=TRUE, ready=!length(required),
     reason.code=if (length(required)) "input-required" else "",
-    reason=if (length(required)) paste("Enter", required) else "",
+    reason=if (length(required)) paste("Enter a valid", switch(required, control.proportion="control event proportion", anticipated.effect="anticipated intervention effect")) else "",
     required.inputs=required, metric=s$metric, model=s$model, axis=axis,
     defaults=defaults, study.order=indices[keep], excluded.studies=fitted$excluded,
     setting.sources=setNames(ifelse(names(.tsa.defaults) %in% c("rm.method", "adjust", "conf.level"),
@@ -309,7 +309,7 @@
     if (bound$error != 0L)
       bound <- gsDesign::gsBound(timing[active], trueneg=lower.spend, falsepos=upper.spend, r=80L)
     if (bound$error != 0L || any(!is.finite(bound$b)))
-      stop("gsDesign could not compute the TSA spending boundaries (error ", bound$error, ").")
+      stop("Could not compute the trial sequential monitoring boundaries (numerical error ", bound$error, ").")
     upper[active] <- bound$b
   }
   list(upper=upper, spent=spent)
@@ -411,7 +411,7 @@
   scale <- c("", "", "percent", rep("", 5), rep("display", 5))
   level <- c(rep(NA_real_, 9), rep(s$conf.level, 2), rep(100*(1-s$alpha), 2))
   if (s$lil) {
-    headers <- c(headers, "Penalised Z")
+    headers <- c(headers, "Penalized Z")
     columns <- c(columns, 10)
     display <- cbind(display, number(looks$lil.z))
     values <- cbind(values, looks$lil.z)
@@ -423,7 +423,7 @@
 }
 
 .tsa.table <- function(headers, display, columns, roles, values, scale, level, s,
-                       optional=c("Futility boundary", "TSA-adjusted CI", "Penalised Z")) {
+                       optional=c("Futility boundary", "TSA-adjusted CI", "Penalized Z")) {
   visible <- !(headers %in% optional) | colSums(display != "") > 0
   keep <- visible[columns]
   table <- rcmetar.table(rbind(headers, display)[, visible, drop=FALSE], "trial_sequential", list(measure=s$metric),
@@ -477,7 +477,7 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   if (!s$lil) return(NA_real_)
   if (!is(data, "BinaryData")) stop("LIL requires a binary measure.")
   hu <- match(round(.tsa.tail.alpha(s), 15), c(.01, .025, .05))
-  if (is.na(hu)) stop("Hu LIL coefficients are available at one-sided alpha .01, .025 or .05.")
+  if (is.na(hu)) stop("Law of the iterated logarithm (LIL) coefficients are available for one-sided alpha 0.01, 0.025, or 0.05.")
   if (s$metric == "RD") c(3, 1.5, 1.5)[hu] else c(3.5, 2, 2)[hu]
 }
 
@@ -522,10 +522,10 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   warnings <- prepared$warnings
   lambda <- .tsa.lambda(data, s)
   if (rcmetar.inference.method(s) != "z")
-    warnings <- c(warnings, "TSA uses Wald z. The sheet's t or Hartung-Knapp inference was not applied.")
+    warnings <- c(warnings, "Trial sequential analysis uses Wald z inference. This outcome's t or Hartung\u2013Knapp inference was not applied.")
   random <- s$model == "random"
   if (random)
-    warnings <- c(warnings, "Lan-DeMets monitoring with re-estimated random-effects weights is approximate.")
+    warnings <- c(warnings, "Lan\u2013DeMets monitoring with re-estimated random-effects weights is approximate.")
   k <- length(prepared$accrued)
   looks <- data.frame(study=data@study.names,
     year=if (length(data@years) == k) data@years else NA_integer_,
@@ -546,7 +546,7 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   estimate <- field("b")
   se <- field("se")
   if (anyNA(estimate))
-    warnings <- c(warnings, "Some interim looks have no estimable effect under the sheet model.")
+    warnings <- c(warnings, "Some interim looks have no estimable effect under this outcome's model.")
   looks$z <- field("zval")
   looks$statistical.information <- 1/se^2
   transform <- if (prepared$ratio) exp else identity
@@ -665,8 +665,8 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   effect <- vapply(rows, `[[`, numeric(1), "effect")
   label <- vapply(rows, `[[`, character(1), "label")
   ris <- vapply(rows, function(row) row$summary$ris %||% NA_real_, numeric(1))
-  arms <- trimws(sub("^Favours ", "", s$favours %||% c("", ""), ignore.case=TRUE))
-  sides <- ifelse(!is.na(arms) & nzchar(arms), paste("favouring", arms), c("below the null", "above the null"))
+  arms <- trimws(sub("^Favou?rs ", "", s$favours %||% c("", ""), ignore.case=TRUE))
+  sides <- ifelse(!is.na(arms) & nzchar(arms), paste("favoring", arms), c("below the null", "above the null"))
   if (s$benefit.direction == "upper") sides <- rev(sides)
   conclusions <- vapply(rows, function(row) {
     if (is.null(row$summary)) return("Not estimable")

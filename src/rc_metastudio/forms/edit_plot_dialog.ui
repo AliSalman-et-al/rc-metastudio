@@ -64,7 +64,7 @@
       <item row="0" column="1" colspan="2"><layout class="QHBoxLayout" name="accent_color_layout"><item><widget class="QLineEdit" name="accent_color"><property name="accessibleName"><string>Plot accent color</string></property>
        </widget></item><item><widget class="QPushButton" name="color_btn">
         <property name="toolTip">
-         <string>Choose the plot accent color</string>
+         <string>Open a color picker for the plot accent color.</string>
         </property>
         <property name="accessibleName">
          <string>Choose plot accent color</string>
@@ -147,7 +147,7 @@
         <item row="1" column="1">
          <widget class="QLineEdit" name="col2_str_edit">
           <property name="text">
-           <string>Estimate (Conf. Int.)</string>
+           <string>Estimate (CI)</string>
           </property>
          </widget>
         </item>

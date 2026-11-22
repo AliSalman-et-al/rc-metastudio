@@ -171,7 +171,7 @@ def run(app, window, work, root, record, analyze, *, example):
                     assert abs(value[role] - ref) <= .000051, (field, actual, expected)
         elif factor:
             table = next(table for section in view.results.sections for table in section.tables
-                         if table.title == "Model Results" and len(table.rows) == len(expected))
+                         if table.title == "Model results" and len(table.rows) == len(expected))
             actual = {
                 row[0].removeprefix("Subgroup ").casefold(): {q.role: q.value for cell in cells for q in cell}
                 for row, cells in zip(table.rows, table.quantities, strict=True)

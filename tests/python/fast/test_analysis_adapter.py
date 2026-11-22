@@ -47,7 +47,7 @@ def test_analysis_request_rejects_unknown_workflow() -> None:
 def test_analysis_request_rejects_empty_metric() -> None:
     values = _request_kwargs()
     values["metric"] = ""
-    with pytest.raises(ValueError, match="metric must be a non-empty string"):
+    with pytest.raises(ValueError, match="effect measure must be a non-empty string"):
         make_analysis_request(**values)
 
 

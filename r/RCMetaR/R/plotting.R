@@ -206,7 +206,7 @@ create.plot.data.continuous <- function(cont.data, params, res, selected.cov = N
 
 create.plot.data.reg <- function(reg.data, params, fitted.line, selected.cov=NULL, res=NULL) {
      if (!inherits(res, "rma")) {
-         stop("Meta-regression bubble plots require a metafor rma result.", call.=FALSE)
+         stop("Meta-regression bubble plots require a fitted meta-regression model.", call.=FALSE)
      }
      cov.index <- 1
      if (!is.null(selected.cov)) {
@@ -357,7 +357,7 @@ pretty.metric.name <- function(metric, label=NULL) {
     PLN = "Natural logarithm transformed proportion",
     PLO = "Logit proportion",
     PAS = "Arcsine transformed proportion",
-    PFT  = "Freeman-Tukey transformed proportion",
+    PFT  = "Freeman\u2013Tukey transformed proportion",
     PETO = "Peto",
     YUQ = "Yule's Q",
     YUY = "Yule's Y",
@@ -370,7 +370,7 @@ pretty.metric.name <- function(metric, label=NULL) {
     NLR = "Negative likelihood ratio",
     DOR = "Diagnostic odds ratio",
     Mean = "Mean",
-    GEN = "Generic effect")
+    GEN = "Entered effect estimate")
 
   metric.key <- gsub("[[:space:].]+", "", trimws(metric))
   metric.name <- metric.names[[metric.key]]
@@ -384,7 +384,7 @@ pretty.metric.name <- function(metric, label=NULL) {
 
 meta.regression.plot <- function(plot.data, outpath, ...) {
     if (!rcmetar.is.metafor.bubble.bundle(plot.data)) {
-        stop("Meta-regression bubble plots require a metafor-backed plot bundle.", call.=FALSE)
+        stop("Meta-regression bubble plots require a fitted meta-regression plot.", call.=FALSE)
     }
     rcmetar.draw.metafor.bubble(plot.data, outpath)
 }

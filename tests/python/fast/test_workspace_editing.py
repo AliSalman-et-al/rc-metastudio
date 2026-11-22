@@ -70,7 +70,7 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
 
     assert normalized is None
     assert dataset.sheets[0].rows[0].label == "Renamed"
-    assert duplicate is not None and duplicate.message == "Study ‘Beta’ with no year already exists in row 2."
+    assert duplicate is not None and duplicate.message == "Study 'Beta' with no year already exists in row 2."
     assert blank is not None and blank.message == "Study names cannot be empty."
 
 

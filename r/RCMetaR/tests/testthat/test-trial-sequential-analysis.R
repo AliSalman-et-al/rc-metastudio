@@ -172,11 +172,11 @@ test_that("trial sequential artwork regenerates from its saved bundle", {
   path <- file.path(directory, "original.svg")
   data <- tsa.binary(c(10, 11, 12), c(15, 16, 17), rep(100, 3))
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", manual.ris=500,
-    favours=c("Favours Intervention", "Favours Control"), fp_outpath=path))
+    favours=c("Favors Intervention", "Favors Control"), fp_outpath=path))
   expect_true(file.exists(path))
   expect_match(paste(readLines(path), collapse=" "),
     "Required information size 500 participants (entered)", fixed=TRUE)
-  expect_match(paste(readLines(path), collapse=" "), "Favours Intervention")
+  expect_match(paste(readLines(path), collapse=" "), "Favors Intervention")
   params <- rcmetar.plot.bundle.params(result$plot.prefix)
   expect_identical(params$fp_style, "default")
   output <- file.path(directory, "regenerated.svg")
@@ -280,7 +280,7 @@ test_that("the LIL floors the log-log penalty and uses within-study precision", 
   expect_equal(result$looks$lil.z[2], result$looks$z[2]/sqrt(2*log(log(info))))
 
   expect_error(rcmetar.run.trial.sequential.analysis(data,
-    tsa.request("RR", alpha=.08, lil=TRUE)), "Hu")
+    tsa.request("RR", alpha=.08, lil=TRUE)), "available for one-sided alpha")
 })
 
 test_that("one-sided Pocock honours direction and defaults use a conventional 95% CI", {

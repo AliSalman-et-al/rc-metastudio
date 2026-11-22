@@ -82,7 +82,7 @@ def _valid_bundle(root: Path) -> None:
         record = {
             "captures": captures,
             "device_pixel_ratio": scale,
-            "navigation": ["Forest plot", "Text report", "Data tables (CSV)"],
+            "navigation": ["Forest plot", "Text report", "Data tables"],
             "plot_artifact": artifact.name,
             "plot_artifact_sha256": _sha256(artifact),
             "plot_artifact_size": artifact.stat().st_size,

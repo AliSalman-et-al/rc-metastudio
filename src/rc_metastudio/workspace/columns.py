@@ -226,7 +226,7 @@ _CONTINUOUS_RAW = (
     RawField(RawInputKind.STANDARD_DEVIATION, "SD", "Standard deviation for {arm}"),
 )
 _RATE_RAW = (
-    RawField(RawInputKind.RATE_EVENTS, "events", "Nonnegative integer events (recurrent events allowed)"),
+    RawField(RawInputKind.RATE_EVENTS, "events", "Non-negative integer events (recurrent events allowed)"),
     RawField(RawInputKind.PERSON_TIME, "person-time", "Positive person-time, in the declared shared unit; not sample size"),
 )
 _DIAGNOSTIC_RAW = tuple(

@@ -426,7 +426,8 @@ def test_continuous_imputation_still_rejects_unknown_result_fields(monkeypatch):
         )
 
 
-def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch):
+@pytest.mark.parametrize("p_header", ["P value", "p-value", "P-Value"])
+def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch, p_header):
     from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     captured = []
@@ -446,7 +447,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     )
     form.simple_table = QTableWidget(2, 8)
     form.simple_table.setHorizontalHeaderLabels(
-        ["N", "Mean", "SD", "SE", "Variance", "Lower", "Upper", "P-Value"]
+        ["N", "Mean", "SD", "SE", "Variance", "Lower", "Upper", p_header]
     )
     form.arm_names = ["Group 1", "Group 2"]
     form.confidence_level = 95.0
@@ -460,8 +461,9 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
     form.simple_table.setItem(0, 4, QTableWidgetItem("2.5"))
     form.simple_table.setItem(0, 5, QTableWidgetItem("90"))
     form.simple_table.setItem(0, 6, QTableWidgetItem("98"))
+    form.simple_table.setItem(0, 7, QTableWidgetItem("0.014"))
 
-    for column in (0, 1, 4, 5, 6):
+    for column in (0, 1, 4, 5, 6, 7):
         _table_item(form.simple_table, 0, column).setData(QtCore.Qt.ItemDataRole.UserRole, True)
     form.impute_data()
 
@@ -471,6 +473,7 @@ def test_continuous_imputation_uses_r_keys_not_visible_headers(qapp, monkeypatch
         "var": 2.5,
         "low": 90.0,
         "high": 98.0,
+        "pval": 0.014,
     }
 
 

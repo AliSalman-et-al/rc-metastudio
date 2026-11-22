@@ -288,7 +288,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
         print(f"Manuscript analysis: {method}", file=sys.stderr, flush=True)
         view = analyze(app, window, method)
-        expected = "A continuity correction of 0.5 was applied to estimable individual study effects only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate uses the original counts. The 2 studies with no events in either arm had no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
+        expected = "A continuity correction of 0.5 was applied to estimable individual study effects only; the pooled " + ("Mantel–Haenszel" if method.endswith("mh") else "Peto") + " estimate used the original counts. The 2 studies with no events in either arm had no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
         assert expected in view.manuscript.methods, view.manuscript.methods
         (work / (method + '-prose.txt')).write_text(view.manuscript.methods, encoding='utf-8')
         for suffix in ('pdf', 'docx'):
@@ -411,7 +411,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                     assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
                     assert 0 <= float(word.attrib['yMin']) < float(word.attrib['yMax']) <= float(page.attrib['height'])
 
-            assert 'favours' not in view.manuscript.results.lower()
+            assert 'favors' not in view.manuscript.results.lower()
             if sample == 'lymph':
                 assert 'than in' not in view.manuscript.results
                 assert 'between Intervention and Control' not in view.manuscript.results
@@ -439,7 +439,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert view.manuscript.plain_text().count(prediction_note) == 1
                 assert 'The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = −1.111; P = 0.267).' in view.manuscript.results
                 assert view.manuscript.results == 'In total, 19 studies were included (1,097 participants in Intervention, 1,080 in Control). The pooled odds ratio was 0.770 (95% CI 0.485 to 1.222; z = −1.111; P = 0.267). Heterogeneity: Q = 33.360 (df = 18; P = 0.015); I² = 46.0%; τ² = 0.378. The 95% prediction interval was 0.212 to 2.799.', view.manuscript.results
-                assert view.manuscript.methods == f"Statistical analyses were performed using RC MetaStudio (version {__version__}; Research Consultancy) [1] with the R package metafor (version 5.2.1) [2]. Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance [3]. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with at least one zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran’s Q and I²."
+                assert view.manuscript.methods == f"Statistical analyses were performed using RC MetaStudio (version {__version__}; Research Consultancy) [1] with the R package metafor (version 5.2.1) [2]. Odds ratios were pooled using a random-effects model with the DerSimonian–Laird estimator of between-study variance [3]. Confidence intervals (95%) used the normal approximation. A continuity correction of 0.5 was applied to studies with at least one zero cell. The 2 studies with no events in either arm were retained with this correction. Heterogeneity was assessed with Cochran's Q and I²."
                 assert '−0.262' in normalized
             if sample == 'continuous':
                 assert '500 participants in Intervention, 495 in Control' in view.manuscript.results

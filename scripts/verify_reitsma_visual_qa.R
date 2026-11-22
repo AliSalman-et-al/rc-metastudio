@@ -212,9 +212,9 @@ qa_render <- function(output.root=root) {
   descriptor.result <- RCMetaR:::diagnostic.reitsma(data, list(create.plot=TRUE, conf.level=95, digits=3,
       fp_outpath=file.path(root, "descriptor-sroc.svg")))
   descriptor.contract$descriptors$sroc <- qa_descriptor(descriptor.result$plot_capabilities[["SROC"]], "sroc")
-  qa_svg_semantics(file.path(root, "descriptor-sroc.svg"), c("False Positive Rate", "Sensitivity"))
+  qa_svg_semantics(file.path(root, "descriptor-sroc.svg"), c("False positive rate", "Sensitivity"))
   add_export_set("sroc__default", "sroc", "diagnostic", "standard", "default", "sroc-default",
-      c("False Positive Rate", "Sensitivity", "Normalized partial SROC AUC"), character(), function(path) rcmetar.draw.sroc.plot(standard.plot, path))
+      c("False positive rate", "Sensitivity", "Normalized partial SROC AUC"), character(), function(path) rcmetar.draw.sroc.plot(standard.plot, path))
   edited.plot <- standard.plot
   edited.plot$style$curve.color <- "#c0392b"; edited.plot$style$confidence.color <- "#1f7a8c"; edited.plot$style$prediction.color <- "#6a4c93"
   edited.plot$style$xlabel <- "False-positive rate (edited)"; edited.plot$style$ylabel <- "Sensitivity (edited)"

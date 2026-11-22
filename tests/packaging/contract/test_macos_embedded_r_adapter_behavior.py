@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts import packaged_smoke_contract as smoke_contract
+
 from ._module_loader import load_module_from_path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -564,6 +566,7 @@ def test_direct_manifest_binds_archived_inputs_and_runner(tmp_path):
 
 def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path):
     inspector = load_inspector()
+    summary_sha256 = smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE[smoke_contract.BCG_SAMPLE]
     validated_scales = []
     inspector.validate_macos_surface_records = lambda records: validated_scales.extend(
         records
@@ -585,9 +588,9 @@ def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path)
                     "result_text": True,
                     "save_reopen": True,
                     "analysis_after_reopen": True,
-                    "converted_sample": "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
-                    "expected_normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
-                    "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                    "converted_sample": smoke_contract.BCG_SAMPLE,
+                    "expected_normalized_summary_sha256": summary_sha256,
+                    "normalized_summary_sha256": summary_sha256,
                     "raw_summary_sha256": "a" * 64,
                     "svg_sha256": {"forest": "b" * 64},
                     "locale_variants": [
@@ -597,7 +600,7 @@ def test_smoke_finalizer_requires_atomic_completion_surface_and_launch(tmp_path)
                             "input": input_value,
                             "canonical_value": 1.2,
                             "svg_sha256": {"forest": "b" * 64},
-                            "normalized_summary_sha256": inspector.EXPECTED_SUMMARY_SHA256,
+                            "normalized_summary_sha256": summary_sha256,
                             "raw_summary_sha256": "a" * 64,
                         }
                         for locale, decimal_point, input_value in (("en_US", ".", "1.2"), ("de_DE", ",", "1,2"))

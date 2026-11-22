@@ -86,7 +86,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.figure_caption = QLineEdit(self)
         self.figure_caption.setText(str(self._scalar(self._params.get("plot_caption", "")) or "").replace("\n", " · "))
         self.figure_caption.setAccessibleName("Figure caption")
-        self.figure_caption.setToolTip("Sheet and arm comparison for standalone figures. Edit or clear to remove.")
+        self.figure_caption.setToolTip("Outcome and arm comparison shown under standalone figures. Edit or clear to remove.")
         self.figure_caption.setMaxLength(1000)
         caption_label = QLabel("Figure caption", self)
         caption_label.setBuddy(self.figure_caption)
@@ -167,7 +167,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _setup_axis_scale(self):
         self.axis_scale = QComboBox(self)
         self.axis_scale.setAccessibleName("Effect axis scale")
-        self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals and weights stay the same.")
+        self.axis_scale.setToolTip("Change axis spacing only. Fitted effects, confidence intervals, and weights stay the same.")
         measure = str(self._scalar(self._params.get("measure", "")))
         proportion = not self._is_reitsma_coefficient and measure in {"PR", "PLN", "PLO", "PAS", "PFT", "Sens", "Spec"}
         ratio = self._is_reitsma_coefficient or measure in {"OR", "RR", "HR", "IRR", "DOR", "PLR", "NLR"}
@@ -229,7 +229,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             control.setAccessibleName(name)
             control.setAccessibleDescription(description)
             control.setToolTip(description)
-        self.color_btn.setToolTip("Choose the plot accent color")
+        self.color_btn.setToolTip("Open a color picker for the plot accent color.")
 
     def _show_commit_error(self, message: str) -> None:
         self._commit_error.setText(message)
@@ -390,8 +390,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_text_cex.setSingleStep(.1)
         self.sroc_show_confidence = QCheckBox("Show confidence region", self._sroc_group)
         self.sroc_show_prediction = QCheckBox("Show joint prediction region", self._sroc_group)
-        self.sroc_show_summary = QCheckBox("Show summary point", self._sroc_group)
-        self.sroc_show_auc = QCheckBox("Show normalized partial AUC annotation", self._sroc_group)
+        self.sroc_show_summary = QCheckBox("Show summary operating point", self._sroc_group)
+        self.sroc_show_auc = QCheckBox("Show normalized partial SROC AUC annotation", self._sroc_group)
         self.sroc_show_curve_legend = QCheckBox(
             "Show curve legend", self._sroc_group
         )
@@ -421,8 +421,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             (self.sroc_extrapolate, "Extrapolate SROC curve", "Extend the SROC curve to the full 0–1 range."),
             (self.sroc_show_confidence, "Show SROC confidence region", "Show or hide the confidence region."),
             (self.sroc_show_prediction, "Show SROC prediction region", "Show or hide the joint prediction region."),
-            (self.sroc_show_summary, "Show SROC summary point", "Show or hide the summary point."),
-            (self.sroc_show_auc, "Show normalized partial AUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
+            (self.sroc_show_summary, "Show summary operating point", "Show or hide the summary operating point."),
+            (self.sroc_show_auc, "Show normalized partial SROC AUC annotation", "Show or hide the normalized partial area-under-the-curve annotation."),
             (self.sroc_show_curve_legend, "Show SROC curve legend", "Show or hide the curve legend."),
             (self.sroc_show_marker_legend, "Show SROC marker-size legend", "Show or hide the marker-size legend."),
         ):

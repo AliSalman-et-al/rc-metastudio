@@ -24,8 +24,8 @@ def run(app, window, work, record):
                     for column, (text, value) in enumerate(zip(displayed[1:], numeric, strict=True), 1):
                         if value is None:
                             continue
-                        precision = max(3, digits) if table.headers[column] == 'p-value' else digits
-                        if table.headers[column] == 'p-value' and value < 10**(-precision):
+                        precision = max(3, digits) if table.headers[column] == 'P value' else digits
+                        if table.headers[column] == 'P value' and value < 10**(-precision):
                             assert text.startswith('< '), (name, text, value)
                         else:
                             expected = f'{value:z,.{precision}f}'

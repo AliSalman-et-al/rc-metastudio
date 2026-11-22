@@ -55,7 +55,7 @@ _PACKAGE_REFERENCES = {
 def binary_correction_prose(method, adjust, label, double_zero):
     if method in ("binary.fixed.mh", "binary.fixed.peto"):
         estimator = "Mantel–Haenszel" if method.endswith("mh") else "Peto"
-        text = f"A continuity correction of {adjust} was applied to estimable individual study effects only; the pooled {estimator} estimate uses the original counts."
+        text = f"A continuity correction of {adjust} was applied to estimable individual study effects only; the pooled {estimator} estimate used the original counts."
         if double_zero:
             text += f" The {double_zero} " + ("study with no events in either arm had" if double_zero == 1 else "studies with no events in either arm had") + " no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
         return text
@@ -78,7 +78,7 @@ def _inference_prose(parameters, confidence, applied_inference: tuple[str, ...])
 
 
 
-def methods_prose(metric, model, parameters, confidence, workflow, details, fits, applied_inference: tuple[str, ...]=(), *, missing_years=False):
+def methods_prose(metric, model, parameters, confidence, workflow, moderators, fits, applied_inference: tuple[str, ...]=(), *, missing_years=False):
     plural = {"odds ratio": "Odds ratios", "risk ratio": "Risk ratios", "hazard ratio": "Hazard ratios",
               "mean difference": "Mean differences", "standardized mean difference": "Standardized mean differences"}.get(metric, (metric[:1].upper() + metric[1:]) + " estimates")
     sentence = f"{plural} were pooled using a {model} model"
@@ -103,7 +103,7 @@ def methods_prose(metric, model, parameters, confidence, workflow, details, fits
     inference = _inference_prose(parameters, confidence, applied_inference)
     if inference:
         parts.append(inference)
-    parts.extend(_workflow_prose(workflow, parameters, details, missing_years=missing_years))
+    parts.extend(_workflow_prose(workflow, parameters, moderators, missing_years=missing_years))
     if workflow == 'meta-regression' and metric in ('odds ratio', 'risk ratio', 'hazard ratio', 'incidence rate ratio'):
         parts.append('Regression coefficients and their confidence intervals are on the log scale.')
     if joint:
@@ -133,6 +133,8 @@ def _p_clause(value):
 def _row(table, index):
     numbers = table.quantities[index] if table.quantities else ((),) * len(table.headers)
     values, quantities = dict(zip(table.headers, table.rows[index])), dict(zip(table.headers, numbers))
+    if 'P value' in values:
+        values['p-value'], quantities['p-value'] = values['P value'], quantities['P value']
     _alias_quantity_fields(table, numbers, values, quantities)
     if table.label_column is not None:
         values[_row_context_label(table)] = table.rows[index][table.label_column]
@@ -561,7 +563,7 @@ def _sequential_sections(result, text_sections):
             if table.role not in ('cumulative', 'leave_one_out'):
                 continue
             title = table.title + (' — ' + section.title.removesuffix(' summary') if _multiple_metrics(result) else '')
-            note = 'Note: k is the number of studies in the fitted model; it can be smaller than the number entered when the package excludes non-estimable study effects.'
+            note = 'Note: k is the number of studies in the fitted model. It can be smaller than the number entered if some study effects could not be estimated.'
             sequential.append(replace(section, title=table.title, paragraphs=(note,),
                                       tables=(_sequential_report_table(table, title),)))
     return sequential
@@ -652,7 +654,7 @@ def _regression_section(result, section, coefficients, level, statistic):
                       headers=('Subgroup', *table.headers[1:]))
               for table in section.tables]
     return replace(section, title=title, paragraphs=(),
-                   tables=(_available_columns(replace(coefficient_table, role='coefficients')), *fitted))
+                   tables=(_available_columns(replace(coefficient_table, headers=('Term', *coefficient_table.headers[1:]), role='coefficients')), *fitted))
 
 
 def _coefficient_scale(rows, metric):
@@ -688,7 +690,7 @@ def _available_columns(table):
 def _subgroup_test_prose(result):
     subgroup_test = next((table for section in result.sections for table in section.tables if table.role == 'subgroup_test' and table.rows), None)
     if subgroup_test:
-        wording = 'Subgroup differences were tested with an F test.' if subgroup_test.inference in ('t', 'knha', 'adhoc') else 'Subgroup differences were tested with Cochran’s Q across subgroup estimates (inverse-variance weighted).'
+        wording = 'Subgroup differences were tested with an F test.' if subgroup_test.inference in ('t', 'knha', 'adhoc') else "Subgroup differences were tested with Cochran's Q across subgroup estimates (inverse-variance weighted)."
         return ' ' + wording
     return ""
 
@@ -720,7 +722,7 @@ def _report_methods(result, pooled_methods):
     methods = " ".join(filter(None, (result.manuscript_methods, *dict.fromkeys(pooled_methods))))
     methods += _subgroup_test_prose(result)
     if any(q.role == 'q' for s in result.sections for t in s.tables for row in t.quantities for cell in row for q in cell):
-        methods += " Heterogeneity" + (" for the separate univariate fits" if 'Reitsma' in methods else '') + " was assessed with Cochran’s Q and I²."
+        methods += " Heterogeneity" + (" for the separate univariate fits" if 'Reitsma' in methods else '') + " was assessed with Cochran's Q and I²."
     references = _references(result)
     method_numbers = [str(number) for number, (_, kind) in enumerate(references, 1) if kind == 'method']
     if method_numbers:
@@ -776,7 +778,7 @@ class ManuscriptReport:
         sections, supplementary = _report_sections(result, summary, pooled_methods)
         if result.manuscript_favours:
             below, above = result.manuscript_favours
-            summary.append(f"Values below the null favour {below}, and values above the null favour {above}.")
+            summary.append(f"Values below the null favor {below}, and values above the null favor {above}.")
         methods = _report_methods(result, pooled_methods)
         return cls(
             title=result.manuscript_title or 'Meta-analysis',
@@ -917,11 +919,11 @@ def _tsa_heterogeneity_prose(run: "TsaRun", request: "TsaRequest", units: str) -
 def _tsa_monitoring_methods(run: "TsaRun", request: "TsaRequest") -> list[str]:
     options = request.options
     method: list[str] = []
-    spending = "O’Brien-Fleming" if options.spending == "obf" else "Pocock"
-    method.append(f"Monitoring boundaries used Lan-DeMets {spending} spending.")
+    spending = "O'Brien–Fleming" if options.spending == "obf" else "Pocock"
+    method.append(f"Monitoring boundaries used Lan–DeMets {spending} spending.")
     method.append("Futility boundaries were non-binding." if options.futility else "Futility boundaries were omitted.")
     if run.lil_lambda is not None:
-        method.append(f"The penalised Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g}.")
+        method.append(f"The penalized Z-curve used the law of the iterated logarithm with λ = {run.lil_lambda:g}.")
     if run.excluded_studies:
         method.append("The fitted model excluded " + ", ".join(run.excluded_studies) + ".")
     if options.manual_ris is None:
@@ -958,7 +960,7 @@ def _tsa_interval_prose(run: "TsaRun", confidence: float) -> list[str]:
     final = run.final
     results: list[str] = []
     if run.crossing != final:
-        results.append(f"Accrued information is {final.fraction:.0%} of the required information size.")
+        results.append(f"Accrued information reached {final.fraction:.0%} of the required information size.")
     results.append(f"The conventional estimate was {final.estimate:.2f} ({confidence:g}% CI {final.lower:.2f} to {final.upper:.2f}).")
     if final.fraction >= 1:
         results.append("A TSA-adjusted CI is not reported because the required information size was reached.")
@@ -969,8 +971,8 @@ def _tsa_interval_prose(run: "TsaRun", confidence: float) -> list[str]:
     elif final.adjusted_upper is not None:
         results.append(f"The one-sided TSA-adjusted upper limit was {final.adjusted_upper:.2f}.")
     if run.lil_lambda is not None:
-        results.append(f"The final penalised Z-score was {final.penalised_z:.2f}." if final.penalised_z is not None
-                       else "The final penalised Z-score was unavailable at the accrued statistical information.")
+        results.append(f"The final penalized Z-score was {final.penalised_z:.2f}." if final.penalised_z is not None
+                       else "The final penalized Z-score was unavailable at the accrued statistical information.")
     return results
 
 
@@ -1049,14 +1051,19 @@ def paint_figure(painter, source, rect):
         painter.drawImage(rect, source)
 
 
-def _workflow_prose(workflow, parameters, details, *, missing_years=False):
+def _workflow_prose(workflow, parameters, moderators, *, missing_years=False):
     parts = []
     if workflow == 'subgroup':
         parts.append(f"Subgroup analyses were performed by {parameters.get('cov_name', 'the selected covariate')}.")
     elif workflow == 'meta-regression':
-        moderators = next((line.removeprefix('Moderators: ') for line in details.splitlines() if line.startswith('Moderators: ')), '')
         if moderators:
-            parts.append(f"The meta-regression model included {moderators}.")
+            if len(moderators) == 1:
+                names = moderators[0]
+            elif len(moderators) == 2:
+                names = ' and '.join(moderators)
+            else:
+                names = ', '.join(moderators[:-1]) + ', and ' + moderators[-1]
+            parts.append(f"The meta-regression model included {names}.")
     elif workflow == 'cumulative':
         sequence = {'table': 'study table order', 'year': 'publication-year order (earliest first)',
                     'effect': 'ascending order of the individual study effect estimates'}.get(parameters.get('cum_sequence', 'table'), 'study table order')
@@ -1065,7 +1072,7 @@ def _workflow_prose(workflow, parameters, details, *, missing_years=False):
             sentence += '; studies without a year were added last, in table order'
         parts.append(sentence + '.')
     elif workflow == 'leave-one-out':
-        parts.append('Leave-one-out analyses refitted the model after omitting each study in turn. Each fit’s pooled estimate and confidence interval are reported, with I² where the package reports it.')
+        parts.append("Leave-one-out analyses refitted the model after omitting each study in turn. Each fit's pooled estimate and confidence interval are reported, together with I² when available.")
     return parts
 
 
@@ -1330,7 +1337,7 @@ def _pooled_standard_error(combined, combined_qs, metric):
     if se_header is None:
         return ('—', ()), '—'
     scale = next(q.scale for q in combined_qs[se_header] if q.role == 'se')
-    labels = {'display': 'standardized' if metric == 'SMD' else 'outcome', 'freeman-tukey': 'Freeman-Tukey'}
+    labels = {'display': 'standardized' if metric == 'SMD' else 'outcome', 'freeman-tukey': 'Freeman–Tukey'}
     return (combined[se_header], combined_qs[se_header]), labels.get(scale, scale) or '—'
 
 
@@ -1353,7 +1360,7 @@ def _prediction_notes(text_sections):
 
 
 def _heterogeneity_fit_rows(values, quantities, fit):
-    labels = {'Q': 'Cochran’s Q', 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
+    labels = {'Q': "Cochran's Q", 'df': 'Heterogeneity degrees of freedom', 'p-value': 'Heterogeneity P', 'I²': 'I²', 'τ²': 'Between-study variance, τ²'}
     for h, label in labels.items():
         if h not in values:
             continue

@@ -48,11 +48,6 @@ else:
     )
 
 EXPECTED_VERSIONS = packaged_stack()
-EXPECTED_SUMMARY_SHA256_BY_SAMPLE = {
-    "Binary - Aminoglycoside dosing, Barza 1996.rcms": "87ef67051c447aed371facf763cfae4bbf058b16f58a04131d7e8bebffffe949",
-    "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms": "a58ee7bbe22b1e1571cb9e2bccad8560ecfd9873f86ae5154e1b535df9f8c8cc",
-}
-EXPECTED_SUMMARY_SHA256 = EXPECTED_SUMMARY_SHA256_BY_SAMPLE["Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms"]
 MAX_FILES = 25_000
 MAX_BYTES = 3_000_000_000
 MAX_ARCHIVE_MEMBERS = 30_000
@@ -1736,7 +1731,7 @@ def validate_packaged_workflow_evidence(evidence: dict) -> None:
     locale_variants = workflows.get("locale_variants", [])
     sample_projects = workflows.get("sample_projects", {})
     sample_records = sample_projects.get("projects", [])
-    expected_summary = EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
+    expected_summary = smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
         workflows.get("converted_sample")
     )
     valid = (
@@ -1766,7 +1761,7 @@ def _workflow_header_valid(
             evidence.get("passed") is True,
             not evidence.get("failures"),
             all(workflows.get(key) is True for key in required),
-            workflows.get("converted_sample") == "Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
+            workflows.get("converted_sample") == smoke_contract.BCG_SAMPLE,
             expected_summary is not None,
             workflows.get("expected_normalized_summary_sha256") == expected_summary,
             workflows.get("normalized_summary_sha256") == expected_summary,

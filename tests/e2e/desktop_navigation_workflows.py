@@ -330,7 +330,7 @@ def run(app, window, work, root, record, analyze):
     with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(output), '')):
         view.export_report_action.trigger()
     assert output.read_bytes().startswith(b"%PDF")
-    tables_entry = next(item for item in view.nav_tree.findItems('Data tables (CSV)', QtCore.Qt.MatchFlag.MatchExactly))
+    tables_entry = next(item for item in view.nav_tree.findItems('Data tables', QtCore.Qt.MatchFlag.MatchExactly))
     view.tables_action.trigger()
     assert view.nav_tree.currentItem() is tables_entry
     assert view.result_table.isVisible()

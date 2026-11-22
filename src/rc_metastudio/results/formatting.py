@@ -133,12 +133,12 @@ def normalize_identifier_label(value: object) -> str:
         "statistic": "Statistic",
         "tsens": "Sensitivity (logit scale)",
         "tfpr": "False-positive rate (logit scale)",
-        "posLR": "Positive Likelihood Ratio",
-        "negLR": "Negative Likelihood Ratio",
-        "invnegLR": "Inverse Negative Likelihood Ratio",
-        "pos.lr": "Positive Likelihood Ratio",
-        "neg.lr": "Negative Likelihood Ratio",
-        "inv.neg.lr": "Inverse Negative Likelihood Ratio",
+        "posLR": "Positive likelihood ratio",
+        "negLR": "Negative likelihood ratio",
+        "invnegLR": "Inverse negative likelihood ratio",
+        "pos.lr": "Positive likelihood ratio",
+        "neg.lr": "Negative likelihood ratio",
+        "inv.neg.lr": "Inverse negative likelihood ratio",
         "Zhou.Dendukuri": "Zhou–Dendukuri",
         "Holling.Unadjusted": "Holling (unadjusted)",
         "Holling.Adjusted": "Holling (adjusted)",
@@ -151,17 +151,17 @@ def normalize_identifier_label(value: object) -> str:
     }
     for raw, display in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
         text = text.replace(raw, display)
-    text = re.sub(r"\bPr\s*\(>\|[^)]+\)", "p-value", text)
-    text = re.sub(r"\b(?:p[._-]?value|pval)\b", "p-value", text, flags=re.I)
-    text = re.sub(r"\b(?:z[._-]?value|zval)\b", "z-value", text, flags=re.I)
+    text = re.sub(r"\bPr\s*\(>\|[^)]+\)", "P value", text)
+    text = re.sub(r"\b(?:p[._ -]?value|pval)\b", "P value", text, flags=re.I)
+    text = re.sub(r"\b(?:z[._ -]?value|zval)\b", "z value", text, flags=re.I)
     text = re.sub(r"\b(?:I[._-]?squared|I2)\b", "I²", text, flags=re.I)
     text = re.sub(r"\b(?:tau[._-]?squared|tau2)\b", "τ²", text, flags=re.I)
     text = re.sub(r"(?<![A-Za-z])([A-Z]{2,})(?=[A-Z][a-z]|\b)", r"\1 ", text)
     text = re.sub(r"\s+", " ", text.replace("_", " ").replace(".", " ")).strip()
     labels = {
-        "nlr": "Negative Likelihood Ratio",
-        "plr": "Positive Likelihood Ratio",
-        "dor": "Diagnostic Odds Ratio",
+        "nlr": "Negative likelihood ratio",
+        "plr": "Positive likelihood ratio",
+        "dor": "Diagnostic odds ratio",
         "sens": "Sensitivity",
         "spec": "Specificity",
     }

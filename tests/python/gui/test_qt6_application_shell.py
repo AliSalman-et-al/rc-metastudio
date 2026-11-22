@@ -771,7 +771,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
             assert destination.is_file()
             assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
-            assert "saved successfully" in warnings[-1][1]
+            assert "The project was saved," in warnings[-1][1]
 
             with monkeypatch.context() as context:
                 if fault == "add":
@@ -794,7 +794,7 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
             assert window.workspace.path == destination
             assert window.workspace.is_dirty is False
             assert window.model.dataset.notes == f"durable-{fault}"
-            assert "opened successfully" in warnings[-1][1]
+            assert "The project was opened," in warnings[-1][1]
     finally:
         _close_shell(app, window)
 

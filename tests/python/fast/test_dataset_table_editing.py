@@ -420,7 +420,7 @@ def test_diagnostic_raw_count_edit_rejects_complete_all_zero_table():
     assert model.setData(model.index(0, model.RAW_DATA[3]), "0") is False
 
     assert errors[-1] == (
-        "Diagnostic 2x2 table must contain at least one participant; "
+        "Diagnostic 2 × 2 table must contain at least one participant; "
         "enter at least one count greater than zero."
     )
     assert model.get_current_analysis_unit_for_study(0).get_raw_data_for_arm(

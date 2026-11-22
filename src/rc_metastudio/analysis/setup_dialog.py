@@ -446,7 +446,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     ):
         self.model = model
         if confidence_level is None:
-            raise ValueError("CONFIDENCE LEVEL MUST BE SPECIFIED")
+            raise ValueError("Specify a confidence level before running the analysis.")
         self.confidence_level = validate_confidence_level(confidence_level)
         self.data_type = self.model.get_current_data_type()
         self.current_widgets = []
@@ -965,7 +965,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if "Processing terminated since k = 0" in message:
             message = "No study could contribute to this analysis. Check the study values and selected method."
         self._show_analysis_error(message or "The analysis could not be completed.",
-                                  f"{type(error).__name__}: {error}")
+                                  f"{error}")
 
     def _show_analysis_error(self, message: str, details: str = "") -> None:
         self.analysis_error_label.setText(message)
@@ -1108,10 +1108,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             model_label = "Fixed-effect meta-regression" if self.fixed_effects_radio.isChecked() else "Random-effects meta-regression"
         fits = self._diagnostic_fit_details()
         applied_parameters = self._applied_parameters()
+        moderators = [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else []
         identity, details = analysis_identity.result_identity(
             self.model, self.analysis_type, self._result_metric_label(),
             model_label, applied_parameters, self.confidence_level,
-            [cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
+            moderators,
             fits=fits,
         )
         context = self._result_context(applied_parameters)
@@ -1124,7 +1125,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         title = f"{outcome[:1].upper() + outcome[1:]}: {model} meta-analysis ({metric})"
         methods = methods_prose(metric, model, applied_parameters,
                                 applied_parameters.get("conf.level", self.confidence_level),
-                                self.analysis_type, details, fits, result.inference_methods,
+                                self.analysis_type, moderators, fits, result.inference_methods,
                                 missing_years=any(not study.year for study in self._manuscript_studies()))
         correction = context.partition(". ")[2]
         if correction:
@@ -2157,7 +2158,7 @@ def _diagnostic_analysis_requests(
         )
 
     if not requests:
-        raise ValueError("No diagnostic metrics were configured for analysis.")
+        raise ValueError("No diagnostic effect measures were selected for analysis.")
 
     return tuple(requests)
 

@@ -492,7 +492,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
             if self._raw_count_table_is_all_zero():
                 raise ValueError(
-                    "Diagnostic 2x2 table must contain at least one participant; "
+                    "Diagnostic 2 × 2 table must contain at least one participant; "
                     "enter at least one count greater than zero."
                 )
 
@@ -500,7 +500,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self._mark_table_consistent()
         except Exception as e:
             msg = e.args[0]
-            QMessageBox.warning(self, "Warning", msg)  # popup warning
+            QMessageBox.warning(self, "Invalid test counts", msg)  # popup warning
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table, old_prevalence
             )  # brings things back to the way they were
@@ -513,7 +513,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self.set_current_effect()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Could not compute diagnostic measure", msg)
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table, old_prevalence
             )
@@ -727,7 +727,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                         "diagnostic", self.confidence_multiplier, self._effect_source(), self.calculator,
                     )
             except calculator_controls.CalculatorInputError as error:
-                QMessageBox.warning(self, "Warning", str(error))
+                QMessageBox.warning(self, "Invalid effect estimate", str(error))
                 self.restore_analysis_unit_and_table(old_analysis_unit, old_table, old_prevalence)
                 self._validation_failed = True
                 editor.setText(new_text)

@@ -82,7 +82,7 @@ class RatioDataDialog(QDialog):
 
     def _add_reported_fields(self, record):
         labels = {"scale": "Input format", "estimate": self.effect_metric, "lower": "Lower bound",
-                  "upper": "Upper bound", "confidence": "Original CI level (%)", "se": "Standard error (log scale)",
+                  "upper": "Upper bound", "confidence": "Source confidence level (%)", "se": "Standard error (log scale)",
                   "unit": "Person-time unit"}
         for name, label in labels.items():
             if self.effect_metric == "HR" and name == "unit":
@@ -232,7 +232,7 @@ class RatioDataDialog(QDialog):
             if not math.isfinite(value):
                 raise ValueError("Raw inputs must be finite.")
             if i % 2 == 0 and (value < 0 or value % 1 != 0):
-                raise ValueError("Events must be nonnegative integers.")
+                raise ValueError("Events must be non-negative integers.")
             if i % 2 == 1 and value <= 0:
                 raise ValueError("Person-time must be positive.")
         return raw

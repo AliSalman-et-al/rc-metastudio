@@ -60,7 +60,7 @@ def run_predictions(app, window, work, record):
                     assert observed == [item['display'] for item in reference], (observed, reference)
                     assert 'sample size is unspecified' not in text
                 if style == 'bmj' and workflow in ('standard', 'subgroup'):
-                    assert 'Events / Total' in figure, figure
+                    assert 'Events / total' in figure, figure
                 if workflow == 'subgroup' and style != 'default':
                     svg = ET.parse(artifact.display_path())
                     study_rows = [float(node.attrib['y']) for node in svg.iter('{http://www.w3.org/2000/svg}text')

@@ -43,7 +43,7 @@ class AboutLegalDialog(QDialog, _ui_about_legal.Ui_AboutLegalDialog):
     def __init__(self, parent=None, *, r_version: str | None = None):
         super(AboutLegalDialog, self).__init__(parent)
         self.setupUi(self)
-        self.setWindowTitle('About RCMS')
+        self.setWindowTitle('About RC MetaStudio')
         self.debug_info = f'RC MetaStudio {application_metadata.VERSION}\nPython {platform.python_version()} · Qt {QT_VERSION_STR} · PyQt {PYQT_VERSION_STR}\n{r_version or 'R runtime not loaded'}\n{platform.platform()}'
         short_r = r_version.removeprefix('R version ').split()[0] if r_version else None
         self.runtime_text = (f'R {short_r}' if short_r else 'R not loaded') + f' · Qt {QT_VERSION_STR} · Python {platform.python_version()}'

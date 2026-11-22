@@ -45,16 +45,16 @@ class StartPage(QtWidgets.QScrollArea):
         title = QtWidgets.QLabel('RC MetaStudio', content)
         qt_layout.configure_heading(title, 1.8)
         layout.addWidget(title)
-        intro = QtWidgets.QLabel('Bring your study data together. Analyze, inspect and export your results.', content)
+        intro = QtWidgets.QLabel('Bring your study data together. Analyze, inspect, and export your results.', content)
         qt_layout.configure_context_label(intro)
         layout.addWidget(intro)
         actions = QtWidgets.QHBoxLayout()
         actions.setSpacing(16)
         buttons = []
         for action, caption, description in (
-            (create_action, 'New project', 'Start with your first outcome and effect measure, then enter study data.'),
-            (import_action, 'Import data', 'Import Excel, CSV, or RevMan (.rm5) files and review the data before importing.'),
-            (open_action, 'Open project', 'Continue working with a saved .rcms project.'),
+            (create_action, 'New project…', 'Start with your first outcome and effect measure, then enter study data.'),
+            (import_action, 'Import data…', 'Import Excel, CSV, or RevMan (.rm5) files and review them before adding an outcome.'),
+            (open_action, 'Open project…', 'Continue working with a saved .rcms project.'),
         ):
             card = QtWidgets.QGroupBox(content)
             card.setFlat(True)
