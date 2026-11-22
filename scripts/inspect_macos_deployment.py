@@ -1767,7 +1767,7 @@ def validate_direct_build_archive_inputs(
 ) -> None:
     _validate_archive_input_members(bundle, prefix, names, manifest)
     runner = _read_and_validate_archive_provenance(
-        bundle, prefix, names, manifest, target
+        bundle, prefix, names, manifest
     )
     validate_direct_build_runner(runner, target=target)
 
@@ -1797,7 +1797,6 @@ def _read_and_validate_archive_provenance(
     prefix: str,
     names: list[str],
     manifest: dict,
-    target: str,
 ) -> dict:
     runner = json.loads(
         bundle.read(prefix + DIRECT_BUILD_INPUT_MEMBERS["runner_environment"])
@@ -1809,12 +1808,6 @@ def _read_and_validate_archive_provenance(
     ppm_inventory = json.loads(
         bundle.read(prefix + DIRECT_BUILD_INPUT_MEMBERS["ppm_archive_inventory"])
     )
-    preflight = json.loads(
-        bundle.read(
-            prefix + DIRECT_BUILD_INPUT_MEMBERS["pyinstaller_toc_preflight_report"]
-        )
-    )
-    _validate_preflight(preflight, manifest, target)
     _validate_ppm_inventory(ppm_inventory, manifest)
     _validate_ppm_archives(bundle, names, prefix, manifest)
     return runner
