@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox
 from rc_metastudio import settings
 
 
-UNEXPECTED_ERROR_TITLE = "Unexpected error"
+UNEXPECTED_ERROR_TITLE = "Something went wrong"
 UNEXPECTED_ERROR_MESSAGE = (
     "This action could not be completed. RC MetaStudio is still running."
     "\n\nDetails: {details}"

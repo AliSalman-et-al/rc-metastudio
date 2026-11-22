@@ -65,7 +65,7 @@ CONTINUOUS_IMPUTATION_FIELD_NAMES = {
     "Upper": "high",
     "high": "high",
     "P-Value": "pval",
-    "p-value": "pval",
+    "P value": "pval",
     "pval": "pval",
 }
 
@@ -604,7 +604,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                         "continuous", self.confidence_multiplier, self._effect_source(), self.calculator,
                     )
             except calculator_controls.CalculatorInputError as error:
-                QMessageBox.warning(self, "Warning", str(error))
+                QMessageBox.warning(self, "Invalid effect estimate", str(error))
                 self.restore_analysis_unit_and_tables(old_analysis_unit, old_tables_data, old_correlation)
                 self._validation_failed = True
                 editor.setText(new_text)
@@ -755,11 +755,11 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if field_name == "sd" and value <= 0:
             return "SD must be greater than zero."
         if field_name in ["se", "var", "pval"] and value < 0:
-            label = {"se": "Standard error", "var": "Variance", "pval": "p-value"}[field_name]
+            label = {"se": "Standard error", "var": "Variance", "pval": "P value"}[field_name]
             return f"{label} cannot be negative."
 
         if field_name == "pval" and not (0 <= value <= 1):
-            return "p-value must be between 0 and 1."
+            return "P value must be between 0 and 1."
         return None
 
     def _get_correlation_str(self):
@@ -820,7 +820,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.impute_data()
         except Exception as e:
             msg = e.args[0]
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Invalid summary values", msg)
             self.restore_analysis_unit_and_tables(
                 old_analysis_unit, old_tables_data, old_correlation
             )
@@ -831,7 +831,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             self.update_effect_from_raw_data()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Could not compute effect estimate", msg)
             self.restore_analysis_unit_and_tables(
                 old_analysis_unit, old_tables_data, old_correlation
             )
@@ -1093,7 +1093,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                 and old_correlation is not None
             ):
                 msg = "Could not compute study effects from the edited raw data: %s" % e
-                QMessageBox.warning(self, "Warning", msg)
+                QMessageBox.warning(self, "Could not compute effect estimate", msg)
                 self.restore_analysis_unit_and_tables(
                     old_analysis_unit, old_tables_data, old_correlation
                 )

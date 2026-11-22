@@ -40,10 +40,10 @@ else:
 _TEST_LABELS = {
     "classical-egger": "Classical Egger",
     "mixed-effects-egger": "Mixed-effects Egger",
-    "begg-mazumdar": "Begg-Mazumdar",
+    "begg-mazumdar": "Begg–Mazumdar",
     "harbord": "Harbord",
     "peters": "Peters",
-    "pustejovsky-rodgers": "Pustejovsky-Rodgers",
+    "pustejovsky-rodgers": "Pustejovsky–Rodgers",
     "rucker-as-re": "Rücker AS+RE",
     "deeks": "Deeks",
 }
@@ -162,8 +162,8 @@ class SmallStudyEffectsDialog(
                 "Add significance contours to show where studies fall relative to conventional significance thresholds.",
             ),
             self.deeks_funnel_check: (
-                "Deeks funnel plot",
-                "Use the Deeks diagnostic funnel plot for diagnostic accuracy data.",
+                "Deeks effective-sample-size funnel",
+                "Use the Deeks effective-sample-size funnel for diagnostic accuracy data.",
             ),
             self.sampling_confidence_combo: (
                 "Sampling confidence level",

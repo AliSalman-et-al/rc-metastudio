@@ -31,14 +31,14 @@
            <property name="alternatingRowColors"><bool>true</bool></property>
            <property name="rowCount"><number>2</number></property><property name="columnCount"><number>8</number></property>
            <row><property name="text"><string>Arm 1</string></property></row><row><property name="text"><string>Arm 2</string></property></row>
-           <column><property name="text"><string>N</string></property></column><column><property name="text"><string>Mean</string></property></column><column><property name="text"><string>SD</string></property></column><column><property name="text"><string>SE</string></property></column><column><property name="text"><string>Variance</string></property></column><column><property name="text"><string>p-value</string></property></column><column><property name="text"><string>Lower</string></property></column><column><property name="text"><string>Upper</string></property></column>
+           <column><property name="text"><string>N</string></property></column><column><property name="text"><string>Mean</string></property></column><column><property name="text"><string>SD</string></property></column><column><property name="text"><string>SE</string></property></column><column><property name="text"><string>Variance</string></property></column><column><property name="text"><string>P value</string></property></column><column><property name="text"><string>Lower</string></property></column><column><property name="text"><string>Upper</string></property></column>
           </widget></item>
          </layout>
         </widget>
        </item>
        <item>
         <widget class="QGroupBox" name="pre_post_group_box">
-         <property name="title"><string>Pre / Post</string></property>
+         <property name="title"><string>Pre / post</string></property>
          <layout class="QVBoxLayout" name="pre_post_layout">
           <item><widget class="QLabel" name="group_one_label"><property name="text"><string>Arm 1</string></property><property name="font"><font><weight>75</weight><italic>false</italic><bold>true</bold></font></property></widget></item>
           <item><widget class="QTableWidget" name="g1_pre_post_table">

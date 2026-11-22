@@ -75,10 +75,10 @@ rcmetar.forest.direction.labels <- function(bundle) {
 
 rcmetar.forest.journal.metric.label <- function(bundle) {
     label <- rcmetar.display.metric.name(bundle$params)
-    if (identical(label, "Odds Ratio")) {
+    if (identical(label, "Odds ratio")) {
         return("Odds ratio")
     }
-    if (identical(label, "Risk Ratio")) {
+    if (identical(label, "Risk ratio")) {
         return("Risk ratio")
     }
     label

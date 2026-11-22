@@ -505,7 +505,7 @@ def available_model_methods(
 ) -> dict[str, str]:
     """Discover methods by identity without exposing the R dataset to callers."""
     if not metrics:
-        raise ValueError("Choose at least one metric before querying methods.")
+        raise ValueError("Choose at least one effect measure before selecting analysis methods.")
     data = dataset_for_analysis(model, family, metric=metrics[0])
     choices = [
         get_available_methods(for_data_type=family, data=data, metric=metric, workflow=workflow)
@@ -1053,8 +1053,8 @@ def run_model_analysis(table_model, request, *, covs_to_include=None, studies=No
         metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
     ) and table_model.current_sheet is not None:
         below, above = table_model.current_sheet.effect_direction_arms()
-        params = {**params, "fp_favours_left": f"Favours {below}" if below else "",
-                  "fp_favours_right": f"Favours {above}" if above else ""}
+        params = {**params, "fp_favours_left": f"Favors {below}" if below else "",
+                  "fp_favours_right": f"Favors {above}" if above else ""}
         request = {**request, "params": params}
     return run_versioned_analysis_request(request, data)
 
@@ -2081,9 +2081,9 @@ def _is_large_display_shape(dims):
 
 def _format_shape_summary(dims):
     if len(dims) == 2:
-        return "%d rows x %d columns" % (dims[0], dims[1])
+        return "%d rows × %d columns" % (dims[0], dims[1])
     if len(dims) == 3:
-        return "%d rows x %d columns x %d slices" % tuple(dims)
+        return "%d rows × %d columns × %d slices" % tuple(dims)
     return "Array with dimensions %s" % " x ".join(str(dim) for dim in dims)
 
 
@@ -2100,7 +2100,7 @@ def _format_summary_label(name):
         "converged": "Converged",
         "warnings": "Warnings",
         "package.version": "Package version",
-        "normalized.partial.AUC": "Normalized partial AUC",
+        "normalized.partial.AUC": "Normalized partial SROC AUC",
         "partial.FPR.bounds": "Partial FPR bounds",
         "false.positive.rate": "False-positive rate",
         "covariance.sensitivity.specificity": "Sensitivity-specificity covariance",
@@ -2372,7 +2372,7 @@ def _format_r_table_header(value):
     if normalized.lower() == "pr(>|z|)":
         return "p-value"
     if compact == "het p value":
-        return "Het. p-value"
+        return "Heterogeneity P value"
     if compact == "omnibus p value":
         return "Omnibus p-value"
     if compact == "z value":
@@ -2442,7 +2442,7 @@ def _replace_result_labels(text):
         (r"\bci[._\s]*ub\b", "Upper bound"),
         (r"\blower[._]+bound\b", "Lower bound"),
         (r"\bupper[._]+bound\b", "Upper bound"),
-        (r"\bhet[._\s]+p[._\s-]*value\b", "Het. p-value"),
+        (r"\bhet[._\s]+p[._\s-]*value\b", "Heterogeneity P value"),
         (r"\bp[._\s-]*value\b", "p-value"),
         (r"\bz[._\s-]*value\b", "z-value"),
     )

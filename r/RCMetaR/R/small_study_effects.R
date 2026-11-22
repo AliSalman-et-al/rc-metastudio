@@ -20,7 +20,7 @@
 .small.study.k.min <- function(params) {
     value <- params$k.min %||% eval(formals(utils::getS3method("metabias", "meta", envir=asNamespace("meta")))[["k.min"]])
     if (!is.numeric(value) || length(value) != 1L || !is.finite(value) || value < 0 || value != floor(value))
-        stop("k.min must be a non-negative integer.")
+        stop("Minimum studies for asymmetry tests must be zero or a positive whole number.")
     value
 }
 
@@ -158,7 +158,7 @@
     conditions <- list(isTRUE(prepared$raw), count >= 3L, count >= common$k.min, predictor)
     available <- all(vapply(conditions, isTRUE, logical(1)))
     reason <- .small.study.first.reason(conditions, list(
-        "Unavailable: independent two-group sample sizes, means, and SDs are required.",
+        "Unavailable: independent two-arm sample sizes, means, and SDs are required.",
         "Unavailable: fewer than 3 usable included studies.",
         common$k.warning,
         "Unavailable: Pustejovsky predictor variance is zero or non-finite."))
@@ -170,7 +170,7 @@
     usable <- length(prepared$se[keep])
     methods <- list(
         .small.study.method("pustejovsky-rodgers", available, reason,
-                            "independent two-group data", common$warnings,
+                            "independent two-arm data", common$warnings,
                             if (available) "sensitivity" else "none", usable),
         .small.study.method("classical-egger", egger, egger.reason,
                             c("entered effect estimates", "standard errors", "effect-SE artifact caveat"),
@@ -257,10 +257,10 @@
 .small.study.confidence.level <- function(params=list()) {
     raw <- params$conf.level %||% 95
     if (!length(raw))
-        stop("conf.level must be a finite percentage strictly between 0 and 100.")
+        stop("Confidence level must be a number strictly between 0% and 100%.")
     level <- suppressWarnings(as.numeric(raw[[1L]]))
     if (!length(level) || !is.finite(level) || level <= 0 || level >= 100)
-        stop("conf.level must be a finite percentage strictly between 0 and 100.")
+        stop("Confidence level must be a number strictly between 0% and 100%.")
     level
 }
 
@@ -307,9 +307,9 @@
     )
     keys <- unname(method.keys[intersect(as.character(methods), names(method.keys))])
     displayed.plots <- as.character(displayed.plots)
-    if (any(grepl("Ordinary Funnel Plot|Trim-and-fill", displayed.plots)))
+    if (any(grepl("Funnel plot|Trim-and-fill", displayed.plots)))
         keys <- c(keys, "publication.bias.funnel")
-    if ("Contour Funnel Plot" %in% displayed.plots)
+    if ("Contour-enhanced funnel plot" %in% displayed.plots)
         keys <- c(keys, "publication.bias.contour")
     if (.small.study.deeks.title %in% displayed.plots)
         keys <- c(keys, "publication.bias.deeks")
@@ -421,7 +421,7 @@
         call=paste0("meta::metacont(n.e, mean.e, sd.e, n.c, mean.c, sd.c, sm='SMD', common=TRUE, random=TRUE, method.tau='REML', level=", .small.study.meta.level(confidence.level), "); meta::metabias(x=prepared.SMD.model, method.bias='Pustejovsky', k.min=", k.min, ", level=", .small.study.meta.level(confidence.level), ")"),
         predictor="sqrt(1/n.e + 1/n.c)", weighting="inverse variance from native Pustejovsky standard errors",
         inference="t-based Pustejovsky regression test",
-        model="Pustejovsky-Rodgers independent two-group regression",
+        model="Pustejovsky\u2013Rodgers independent two-arm regression",
         usable.studies=length(prepared$y), df=estimate$df,
         p.value=as.numeric(fit$p.value %||% NA_real_), statistic=as.numeric(fit$statistic %||% NA_real_),
         coefficient=estimate$coefficient, standard.error=estimate$standard.error,
@@ -448,7 +448,7 @@
         predictor=if (method == "begg-mazumdar") "rank correlation of standardized effects and variance" else "SE",
         weighting=if (method == "begg-mazumdar") "not applicable (Kendall rank-based test)" else "inverse variance",
         inference=if (method == "begg-mazumdar") "z test from Kendall rank correlation" else "t-based meta::metabias test",
-        model=if (method == "begg-mazumdar") "Begg-Mazumdar rank correlation" else "multiplicative Egger regression",
+        model=if (method == "begg-mazumdar") "Begg\u2013Mazumdar rank correlation" else "multiplicative Egger regression",
         usable.studies=length(prepared$y), df=estimate$df,
         p.value=as.numeric(fit$p.value %||% NA_real_), statistic=as.numeric(fit$statistic %||% NA_real_),
         coefficient=estimate$coefficient, standard.error=estimate$standard.error,
@@ -556,7 +556,7 @@
     coefficient <- as.numeric(test$coefficient %||% NA_real_)
     interval <- as.numeric(test$confidence.interval %||% c(NA_real_, NA_real_))
     if (length(interval) < 2L) interval <- c(interval, NA_real_)[1:2]
-    result <- if (!is.finite(p.value)) "P-value not available" else
+    result <- if (!is.finite(p.value)) "P value unavailable" else
         paste0("P ", if (p.value < .001) "" else "= ", .small.study.p.value(p.value))
     text <- paste(c(
         paste0("Primary asymmetry test: ", .small.study.method.label(name)),
@@ -602,9 +602,9 @@
         paste0("Primary test: ", if (primary.name == "None") "None available" else .small.study.method.label(primary.name))
     )
     if (metric != "DOR" && length(prepared$se)) summary <- c(
-        summary, paste0("Observed standard-error range: [",
-                        .small.study.exact.number(min(prepared$se)), ", ",
-                        .small.study.exact.number(max(prepared$se)), "]")
+        summary, paste0("Observed standard-error range: ",
+                        .small.study.exact.number(min(prepared$se)), " to ",
+                        .small.study.exact.number(max(prepared$se)))
     )
     if (metric == "OR") summary <- c(
         summary,
@@ -897,7 +897,7 @@
     paste(vapply(tests, function(x) {
         interval <- x$confidence.interval %||% c(NA_real_, NA_real_)
         p.value <- as.numeric(x$p.value %||% NA_real_)
-        conclusion <- if (!is.finite(p.value)) "The test did not return a P-value." else
+        conclusion <- if (!is.finite(p.value)) "The test did not return a P value." else
             paste0("P ", if (p.value < .001) "" else "= ", .small.study.p.value(p.value), ".")
         role <- as.character(x$role %||% "")
         heading <- paste0(
@@ -1014,10 +1014,10 @@
     labels <- c(
         `classical-egger`="Classical Egger test",
         `mixed-effects-egger`="Mixed-effects Egger test",
-        `begg-mazumdar`="Begg-Mazumdar test",
+        `begg-mazumdar`="Begg\u2013Mazumdar test",
         harbord="Harbord test",
         peters="Peters test",
-        `pustejovsky-rodgers`="Pustejovsky-Rodgers test",
+        `pustejovsky-rodgers`="Pustejovsky\u2013Rodgers test",
         `rucker-as-re`="R\u00fccker AS+RE test",
         deeks="Deeks test"
     )
@@ -1033,10 +1033,10 @@
         MD="Mean difference", SMD="Standardized mean difference",
         DOR="Diagnostic odds ratio", PR="Proportion", PLN="Log proportion",
         PLO="Logit proportion", PAS="Arcsine proportion",
-        PFT="Freeman-Tukey proportion"
+        PFT="Freeman\u2013Tukey proportion"
     )
     raw <- as.character(metric)
-    if (!length(raw) || is.na(raw[[1L]]) || !nzchar(raw[[1L]])) return("Unknown metric")
+    if (!length(raw) || is.na(raw[[1L]]) || !nzchar(raw[[1L]])) return("Unknown effect measure")
     label <- unname(labels[raw[[1L]]])
     if (!length(label) || is.na(label[[1L]])) raw[[1L]] else label[[1L]]
 }
@@ -1097,12 +1097,12 @@
     sub("^SE", "Standard error", display.standard.error.label(params))
 }
 
-.small.study.deeks.title <- "Deeks asymmetry regression plot"
+.small.study.deeks.title <- "Deeks effective-sample-size funnel"
 
 .small.study.base.plot <- function(kind, index, plot.data, pooled, params, metric,
                                    common.center, prepared, diagnostic.model) {
-    title <- if (kind == "ordinary") "Ordinary Funnel Plot" else if (kind == "deeks")
-        .small.study.deeks.title else "Contour Funnel Plot"
+    title <- if (kind == "ordinary") "Funnel plot" else if (kind == "deeks")
+        .small.study.deeks.title else "Contour-enhanced funnel plot"
     metric.label <- .small.study.metric.label(metric)
     xlab <- .small.study.plot.setting(
         params, "funnel.xlab", index, if (kind == "deeks") "1/sqrt(ESS)" else metric.label)

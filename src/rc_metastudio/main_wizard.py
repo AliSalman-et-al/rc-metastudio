@@ -153,7 +153,7 @@ _DATASET_KINDS = (
                 _CONTINUOUS_ONE_ARM_METRICS, "onearm_mean_Button", "one-arm-mean.svg"),
     DatasetKind("Regression coefficient", "continuous", "reg_coef", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
                 _CONTINUOUS_ONE_ARM_METRICS, "onearm_single_reg_coef_Button", "single-regression-coefficient.svg"),
-    DatasetKind("Entered effect", "continuous", "generic_effect", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
+    DatasetKind("Entered effect estimate", "continuous", "generic_effect", "one", analysis_catalog.DEFAULT_CONTINUOUS_ONE_ARM,
                 _CONTINUOUS_ONE_ARM_METRICS, "onearm_generic_effect_size_Button", "generic-effect-size.svg"),
     _TWO_ARM_PROPORTIONS,
     DatasetKind("Two-arm means", "continuous", "means", "two", "MD",
@@ -524,20 +524,20 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self.mapping_table = QTableWidget(self)
         self.mapping_table.setColumnCount(2)
         self.mapping_table.setHorizontalHeaderLabels(["Required field", "File column"])
-        self.mapping_table.setAccessibleName("CSV column mapping")
+        self.mapping_table.setAccessibleName("Import column mapping")
         self.mapping_table.hide()
         self.import_tabs = QTabWidget(self)
         self.import_tabs.addTab(self.preview_grp_box, "Preview")
         self.import_tabs.addTab(self.mapping_table, "Map columns")
         self.verticalLayout_2.addWidget(self.import_tabs)
-        self.template_btn = QPushButton("Save a blank template", self)
+        self.template_btn = QPushButton("Save a blank template…", self)
         self.template_btn.setFlat(True)
         self.template_btn.setObjectName("templateLink")
         self.style_link_button(self.template_btn)
         self.template_btn.clicked.connect(app_error_handler.safe_slot(self._save_template, parent=self))
         self.verticalLayout_2.insertWidget(1, self.template_btn)
         self.import_status = QLabel(self)
-        self.import_status.setAccessibleName("CSV validation and preview status")
+        self.import_status.setAccessibleName("Import validation and preview status")
         self.import_status.setWordWrap(True)
         self.import_status.setTextFormat(Qt.TextFormat.PlainText)
         self.verticalLayout_2.insertWidget(2, self.import_status)
@@ -733,7 +733,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             notices: list[str] = []
             result = self._normalize_preview(headers, rows, mapping, columns, notices)
             if not result.rows:
-                self.import_status.setText("No study rows found. Add rows beneath the CSV header, then select the file again.")
+                self.import_status.setText("No study rows found. Add rows beneath the header row, then select the file again.")
                 return False
             self._show_ready_preview(result, columns, notices)
         except csv_import.CsvImportError as error:
@@ -877,7 +877,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             self.mapping_table.setItem(row, 0, item)
             control = QComboBox(self.mapping_table)
-            control.setAccessibleName(f"CSV column for {field}")
+            control.setAccessibleName(f"File column for {field}")
             control.addItem("Select column…", None)
             for index, header in enumerate(headers):
                 control.addItem(f"{index + 1}: {header}", index)
@@ -1074,7 +1074,7 @@ class MainWizard(QWizard):
 
         if path is None:
             self.setStartId(Page_Welcome)
-            self.setWindowTitle("RCMetaStudio")
+            self.setWindowTitle("RC MetaStudio")
         elif path == "csv_import":
             self.setStartId(Page_DataType)
             self.setWindowTitle("Import data")

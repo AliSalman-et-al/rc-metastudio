@@ -520,7 +520,7 @@ rcmetar.regenerate.plot.data <- function(om.data, res, params) {
 rcmetar.regenerate.regression.plot.data <- function(om.data, res, params) {
     params <- .rcmetar.as.params.list(params)
     if (!inherits(res, "rma")) {
-        stop("Meta-regression bubble plots require a metafor rma result.", call.=FALSE)
+        stop("Meta-regression bubble plots require a fitted meta-regression model.", call.=FALSE)
     }
     coefficients <- as.numeric(res$b)
     fitted.line <- list(
@@ -541,7 +541,7 @@ rcmetar.draw.forest.plot <- function(plot.data, outpath) {
     if (rcmetar.is.metafor.forest.bundle(plot.data)) {
         return(rcmetar.draw.metafor.forest(plot.data, outpath))
     }
-    stop("Forest plot data must be a metafor render bundle.", call.=FALSE)
+    stop("Forest plot data are unavailable for this analysis.", call.=FALSE)
 }
 
 #' Render a Reitsma SROC plot
@@ -725,7 +725,7 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
 
 .rcmetar.diagnostic.inputs <- function(shared, request.data, batch, allow.partial) {
     if (is.null(request.data)) {
-        if (!is(shared, "DiagnosticData")) stop("DiagnosticData object expected.", call.=FALSE)
+        if (!is(shared, "DiagnosticData")) stop("Diagnostic accuracy study data are required for this analysis.", call.=FALSE)
         return(rep(list(shared), length(batch$requests)))
     }
     if (!is.null(shared) || batch$legacy || !is.list(request.data) ||
@@ -831,7 +831,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     request$params <- .rcmetar.as.params.list(request$params)
     metric <- .rcmetar.canonical.metric(as.character(request$metric %||% request$params$measure %||% ""))
     if (length(metric) != 1L || is.na(metric) || !nzchar(metric)) {
-        stop("Analysis request must include one metric.", call.=FALSE)
+        stop("Select one effect measure before running the analysis.", call.=FALSE)
     }
     request$metric <- metric
     request$method <- .rcmetar.validate.method.name(request$method)
@@ -940,7 +940,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     if ("BinaryData" %in% class(om.data)) return("binary")
     if ("ContinuousData" %in% class(om.data)) return("continuous")
     if ("DiagnosticData" %in% class(om.data)) return("diagnostic")
-    stop("RCMetaR data object expected: BinaryData, ContinuousData, or DiagnosticData.", call.=FALSE)
+    stop("Study data must be binary, continuous, or diagnostic accuracy data.", call.=FALSE)
 }
 
 .rcmetar.normalize.workflow <- function(workflow) {
@@ -982,7 +982,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
     cov.name <- as.character(cov.name)
     if (length(cov.name) != 1 || is.na(cov.name) || !nzchar(cov.name)) {
-        stop("Subgroup analysis requires 'cov_name' or a selected CovariateValues object.", call.=FALSE)
+        stop("Select a categorical covariate before running subgroup analysis.", call.=FALSE)
     }
 
     covariate <- get.cov(om.data, cov.name)
@@ -1062,7 +1062,7 @@ rcmetar.validate.analysis.request <- function(om.data, request=NULL, method=NULL
     }
     tests <- unique(unlist(lapply(fits, function(fit) fit$test), use.names=FALSE))
     labels <- unname(unlist(rcmetar.inference.method.names()[tests], use.names=FALSE))
-    if (length(labels)) result[["Inference Method"]] <- paste(labels, collapse=", ")
+    if (length(labels)) result[["Inference method"]] <- paste(labels, collapse=", ")
     result
 }
 

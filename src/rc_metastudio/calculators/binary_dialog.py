@@ -711,7 +711,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     "binary", self.confidence_multiplier, self._effect_source(), self.calculator,
                 )
             except calculator_controls.CalculatorInputError as error:
-                QMessageBox.warning(self, "Warning", str(error))
+                QMessageBox.warning(self, "Invalid effect estimate", str(error))
                 self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
                 self._validation_failed = True
                 editor.setText(new_text)
@@ -876,7 +876,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         except Exception as e:
             msg = e.args[0]
             self._mark_table_invalid(msg)
-            QMessageBox.warning(self, "Warning", msg)  # popup warning
+            QMessageBox.warning(self, "Invalid study counts", msg)  # popup warning
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table
             )  # brings things back to the way they were
@@ -888,7 +888,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             self.update_effect_from_raw_data()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
-            QMessageBox.warning(self, "Warning", msg)
+            QMessageBox.warning(self, "Could not compute effect estimate", msg)
             self.restore_analysis_unit_and_table(old_analysis_unit, old_table)
             return
 

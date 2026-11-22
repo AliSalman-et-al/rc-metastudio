@@ -126,10 +126,10 @@ rcmetar.prediction.display <- function(bounds, params, transform, sample.sizes=N
     if (length(sample.sizes) && all(is.finite(sample.sizes) & sample.sizes > 0)) {
       inverse <- metafor::transf.ipft.hm(bounds, targs=list(ni=sample.sizes))
       if (all(is.finite(inverse))) {
-        return(list(bounds=inverse, note="Freeman-Tukey prediction bounds use the same harmonic-mean sample size as the pooled proportion. The overall-effect test uses a transformed zero, not proportion zero.", transformed=FALSE))
+        return(list(bounds=inverse, note="Freeman\u2013Tukey prediction bounds use the same harmonic-mean sample size as the pooled proportion. The overall-effect test uses a transformed zero, not proportion zero.", transformed=FALSE))
       }
     }
-    note <- "Freeman-Tukey scale: proportion back-transformation is undefined without valid sample sizes or finite inverse bounds."
+    note <- "Freeman\u2013Tukey scale: proportion back-transformation is undefined without valid sample sizes or finite inverse bounds."
   } else if (identical(as.character(params$measure), "PAS")) {
     bounds <- metafor::transf.iarcsin(bounds)
   } else {

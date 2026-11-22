@@ -174,12 +174,12 @@ diagnostic.fixed.inv.var <- function(diagnostic.data, params){
 		res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
-    model.title <- paste("Diagnostic Fixed-Effect Model - Inverse Variance (k = ", res$k, ")", sep="")
+    model.title <- paste("Diagnostic fixed-effect model \u2014 inverse variance (k = ", res$k, ")", sep="")
     summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
     pretty.names <- diagnostic.fixed.inv.var.pretty.names()
     pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
     for (count in 1:length(summary.disp$table.titles)) {
-      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+      summary.disp$table.titles[count] <- paste0(pretty.metric, " \u2014 ", summary.disp$table.titles[count])
     }
     if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
         results.path <- rcmetar.scratch.path(paste0("diag_fixed_inv_var_", params$measure, "_results.csv"))
@@ -227,17 +227,15 @@ diagnostic.fixed.inv.var.parameters <- function(){
 }
 
 diagnostic.fixed.inv.var.pretty.names <- function() {
-    pretty.names <- list("pretty.name"="Diagnostic Fixed-Effect Inverse Variance",
+    pretty.names <- list("pretty.name"="Diagnostic fixed-effect inverse variance",
                          "description" = "Performs fixed-effect meta-analysis with inverse variance weighting.",
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero."),
-                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
-                                        "NLR"="Negative Likelihood Ratio")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
+                                        "NLR"="Negative likelihood ratio")
                           )
 }
 
@@ -274,12 +272,12 @@ diagnostic.fixed.mh <- function(diagnostic.data, params){
 		res$study.weights <- (1 / res$vi) / sum(1 / res$vi)
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
-    model.title <- "Diagnostic Fixed-Effect Model - Mantel-Haenszel"
+    model.title <- "Diagnostic fixed-effect model \u2014 Mantel\u2013Haenszel"
     summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
     pretty.names <- diagnostic.fixed.mh.pretty.names()
     pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
     for (count in 1:length(summary.disp$table.titles)) {
-      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+      summary.disp$table.titles[count] <- paste0(pretty.metric, " \u2014 ", summary.disp$table.titles[count])
     }
     if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
         results.path <- rcmetar.scratch.path(paste0("diag_fixed_mh_", params$measure, "_results.csv"))
@@ -329,16 +327,14 @@ diagnostic.fixed.mh.parameters <- function(){
 }
 
 diagnostic.fixed.mh.pretty.names <- function() {
-    pretty.names <- list("pretty.name"="Diagnostic Fixed-Effect Mantel-Haenszel",
-                         "description" = "Performs fixed-effect meta-analysis using the Mantel-Haenszel method.",
+    pretty.names <- list("pretty.name"="Diagnostic fixed-effect Mantel\u2013Haenszel",
+                         "description" = "Performs fixed-effect meta-analysis using the Mantel\u2013Haenszel method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero."),
-                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
-                                        "NLR"="Negative Likelihood Ratio")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                          "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
+                                        "NLR"="Negative likelihood ratio")
                           )
 }
 
@@ -376,12 +372,12 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
     diagnostic.data@y <- res$yi.f
     diagnostic.data@SE <- sqrt(res$vi.f)
 
-    model.title <- "Diagnostic Fixed-Effect Model - Peto"
+    model.title <- "Diagnostic fixed-effect model \u2014 Peto"
     summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
     pretty.names <- diagnostic.fixed.peto.pretty.names()
     pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
     for (count in 1:length(summary.disp$table.titles)) {
-      summary.disp$table.titles[count] <- paste(" ", pretty.metric, " -", summary.disp$table.titles[count], sep="")
+      summary.disp$table.titles[count] <- paste0(pretty.metric, " \u2014 ", summary.disp$table.titles[count])
     }
     results <- list("Summary"=summary.disp)
 
@@ -396,7 +392,7 @@ diagnostic.fixed.peto <- function(diagnostic.data, params){
       }
       if (is.null(params$create.plot) || params$create.plot == TRUE) {
         metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- "Diagnostic Fixed-Effect Model - Peto\n\nMetric: Diagnostic Odds Ratio"
+        model.title <- "Diagnostic fixed-effect model \u2014 Peto\n\nEffect measure: Diagnostic odds ratio"
         summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
         plot.data <- create.plot.data.diagnostic(diagnostic.data, params, res)
@@ -436,14 +432,12 @@ diagnostic.fixed.peto.parameters <- function(){
 }
 
 diagnostic.fixed.peto.pretty.names <- function() {
-  pretty.names <- list("pretty.name"="Diagnostic Fixed-Effect Peto",
+  pretty.names <- list("pretty.name"="Diagnostic fixed-effect Peto",
                        "description" = "Performs fixed-effect meta-analysis using the Peto method.",
                        "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                        "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                        "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                       "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero.")
+                       "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                          )
 }
 
@@ -474,12 +468,12 @@ diagnostic.random <- function(diagnostic.data, params){
 		res$study.names <- diagnostic.data@study.names
 		res$study.years <- diagnostic.data@years
 
-    model.title <- paste("Diagnostic Random-Effects Model (k = ", res$k, ")", sep="")
+    model.title <- paste("Diagnostic random-effects model (k = ", res$k, ")", sep="")
     summary.disp <- create.summary.disp(diagnostic.data, params, res, model.title)
     pretty.names <- diagnostic.random.pretty.names()
     pretty.metric <- diagnostic.summary.metric.name(as.character(params$measure))
     for (count in 1:length(summary.disp$table.titles)) {
-        summary.disp$table.titles[count] <- paste(pretty.metric, " -", summary.disp$table.titles[count], sep="")
+        summary.disp$table.titles[count] <- paste0(pretty.metric, " \u2014 ", summary.disp$table.titles[count])
     }
     if ((is.null(params$write.to.file)) || params$write.to.file == TRUE) {
         results.path <- rcmetar.scratch.path(paste0("diag_random_", params$measure, "_results.csv"))
@@ -530,18 +524,16 @@ diagnostic.random.parameters <- function(){
 diagnostic.random.pretty.names <- function() {
 	rm_method_names <- rcmetar.random.effects.method.names()
 
-    pretty.names <- list("pretty.name"="Diagnostic Random-Effects",
+    pretty.names <- list("pretty.name"="Diagnostic random-effects",
                          "description" = "Performs random-effects meta-analysis.",
-                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-studies heterogeneity", "rm.method.names"=rm_method_names),
+                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero."),
-                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic Odds Ratio", "PLR"="Positive Likelihood Ratio",
-                                        "NLR"="Negative Likelihood Ratio")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged."),
+                         "measure"=list("Sens"="Sensitivity", "Spec"="Specificity", "DOR"="Diagnostic odds ratio", "PLR"="Positive likelihood ratio",
+                                        "NLR"="Negative likelihood ratio")
                          )
 }
 

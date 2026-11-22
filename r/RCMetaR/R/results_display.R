@@ -60,7 +60,7 @@ rcmetar.analysis.scale <- function(params) {
 
 display.standard.error.label <- function(params) {
   scale <- get.scale(params)
-  if (identical(as.character(params$measure), "PFT")) scale <- "Freeman-Tukey"
+  if (identical(as.character(params$measure), "PFT")) scale <- "Freeman\u2013Tukey"
   if (identical(scale, "standard")) scale <- if (identical(as.character(params$measure), "SMD")) "standardized" else "outcome"
   paste0("SE (", scale, " scale)")
 }
@@ -111,7 +111,7 @@ create.summary.disp <- function(om.data, params, res, model.title) {
   QEp <- format.p.value.display(res$QEp, params$digits)
   pVal <- format.p.value.display(res$pval, params$digits)
 
-  res.title <- "Model Results"
+  res.title <- "Model results"
   transform <- rcmetar.transform.by.name(transform.name, params$measure)
   y.disp <- transform$display.scale(res$b, ni=n)
   lb.disp <- transform$display.scale(res$ci.lb, ni=n)
@@ -436,14 +436,14 @@ create.regression.display <- function(res, params, display.data) {
   if (bootstrap.type == "boot.meta.reg") {
     model.title <- paste("Bootstrapped Meta-Regression based on ", params$num.bootstrap.replicates,
                          " replicates.\n\n", params$extra.attempts,
-                         " resampling attempts failed.\n\nMetric: ", metric.name, sep="")
+                         " resampling attempts failed.\n\nEffect measure: ", metric.name, sep="")
     reg.disp <- list(model.title=model.title, table.titles="Coefficient estimates",
                      arrays=list(rcmetar.table(reg.array, "supporting", params, label.column=0L)), MAResults=res)
     class(reg.disp) <- "summary.display"
     return(reg.disp)
   }
 
-  model.title <- paste("Meta-Regression\n\nMetric: ", metric.name, sep="")
+  model.title <- paste("Meta-regression\n\nEffect measure: ", metric.name, sep="")
   method.names <- rcmetar.random.effects.method.names()
   estimator <- if (identical(as.character(res$method), "FE")) {
     "Fixed effect"
@@ -459,7 +459,7 @@ create.regression.display <- function(res, params, display.data) {
     c("Model coefficients", as.character(res$p)),
     c("Residual degrees of freedom", as.character(residual.df)),
     c("Heterogeneity estimator", estimator),
-    c("Inference Method", inference.label)
+    c("Inference method", inference.label)
   ))
   overview <- rcmetar.numeric.fields(overview, 2L, "df", c(NA, NA, residual.df, NA, NA))
 
@@ -660,10 +660,10 @@ adjusted_means_display <- function(res, params, display.data) {
     c(NA, display.confidence.level(params), display.confidence.level(params), NA))
 
   metric.name <- rcmetar.display.metric.name(params)
-  model.title <- paste("Adjusted Means\n\nMetric: ", metric.name, sep="")
+  model.title <- paste("Adjusted means\n\nEffect measure: ", metric.name, sep="")
   adj.disp <- list(
     "model.title" = model.title,
-    "table.titles" = c("Adjusted Means"),
+    "table.titles" = c("Adjusted means"),
     "arrays" = list(arr1=rcmetar.table(adj.array, "pooled", params, label.column=0L)),
     "MAResults" = list(b=estimates, se=se, ci.lb=ci.lb, ci.ub=ci.ub)
   )
@@ -792,7 +792,7 @@ create.subgroup.display <- function(res, study.names, params, model.title, data.
   subgroup.array[-1, 4:5] <- rcmetar.format.interval.bound(raw.subgroup[,3:4], effect.digits, params)
   prediction.array[-1, 2:3] <- rcmetar.format.interval.bound(raw.prediction, effect.digits, params)
 
-  table.titles <- c("Model Results", "Heterogeneity")
+  table.titles <- c("Model results", "Heterogeneity")
   level <- display.confidence.level(params)
   analysis.scale <- rcmetar.analysis.scale(params)
   subgroup.array <- rcmetar.numeric.fields(subgroup.array, 2:8,

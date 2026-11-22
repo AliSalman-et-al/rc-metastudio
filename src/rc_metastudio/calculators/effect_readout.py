@@ -136,7 +136,7 @@ def _wald_summary(data_type, current_effect, est, se) -> str:
         z = est / se
         p = math.erfc(abs(z) / math.sqrt(2))
         p_text = "<0.001" if p < 0.001 else f"{p:.3f}"
-        summary += f"  ·  z {z:.4f}  ·  two-sided p {p_text}"
+        summary += f"  ·  z = {z:.4f}  ·  two-sided P {p_text}"
     return summary
 
 
@@ -201,7 +201,7 @@ def make_binary_metric_table(layout: QVBoxLayout, parent: QWidget) -> QTableWidg
     table.setShowGrid(False)
     table.setAlternatingRowColors(True)
     table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    table.setHorizontalHeaderLabels(["Metric", "Estimate", "Lower CI", "Upper CI"])
+    table.setHorizontalHeaderLabels(["Effect measure", "Estimate", "Lower CI", "Upper CI"])
     vertical_header = table.verticalHeader()
     assert vertical_header is not None
     vertical_header.hide()

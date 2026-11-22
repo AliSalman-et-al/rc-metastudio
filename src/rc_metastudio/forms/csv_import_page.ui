@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>WizardPage</string>
+   <string>Import data</string>
   </property>
   <property name="title">
    <string>Import data</string>

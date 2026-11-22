@@ -446,7 +446,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     ):
         self.model = model
         if confidence_level is None:
-            raise ValueError("CONFIDENCE LEVEL MUST BE SPECIFIED")
+            raise ValueError("Specify a confidence level before running the analysis.")
         self.confidence_level = validate_confidence_level(confidence_level)
         self.data_type = self.model.get_current_data_type()
         self.current_widgets = []
@@ -965,7 +965,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if "Processing terminated since k = 0" in message:
             message = "No study could contribute to this analysis. Check the study values and selected method."
         self._show_analysis_error(message or "The analysis could not be completed.",
-                                  f"{type(error).__name__}: {error}")
+                                  f"{error}")
 
     def _show_analysis_error(self, message: str, details: str = "") -> None:
         self.analysis_error_label.setText(message)
@@ -2157,7 +2157,7 @@ def _diagnostic_analysis_requests(
         )
 
     if not requests:
-        raise ValueError("No diagnostic metrics were configured for analysis.")
+        raise ValueError("No diagnostic effect measures were selected for analysis.")
 
     return tuple(requests)
 

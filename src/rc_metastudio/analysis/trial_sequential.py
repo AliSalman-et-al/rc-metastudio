@@ -19,10 +19,10 @@ from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyl
 if TYPE_CHECKING:
     from rc_metastudio.workspace.table_model import DatasetTableModel
 
-TSA_TITLE = "Trial Sequential Analysis"
+TSA_TITLE = "Trial sequential analysis"
 TSA_SETTINGS = "trial_sequential_analysis"
 SUPPORTED = {"binary": {"RR", "OR", "RD"}, "continuous": {"MD"}, "time_to_event": {"HR"}}
-HKSJ_NOTE = "HKSJ is not applied: monitoring boundaries assume a normal statistic."
+HKSJ_NOTE = "Hartung–Knapp–Sidik–Jonkman (HKSJ) adjustment is not applied: monitoring boundaries assume a normal (z) statistic."
 EFFECT_SOURCES = {
     "wetterslev-2017-nearest-95-ci": "95% CI limit closest to the null (Wetterslev 2017)",
     "imberger-2016-10-percent-rrr": "10% relative risk reduction (Imberger 2016)",
@@ -104,8 +104,8 @@ class TsaRequest:
 
     def monitoring_sides(self) -> tuple[str, str]:
         left, right = self.favoured_labels()
-        sides = (f"favouring {left}" if left else "below the null",
-                 f"favouring {right}" if right else "above the null")
+        sides = (f"favoring {left}" if left else "below the null",
+                 f"favoring {right}" if right else "above the null")
         return sides[::-1] if self.benefit_direction == "upper" else sides
 
     @property
@@ -114,14 +114,14 @@ class TsaRequest:
 
     @classmethod
     def from_sheet(cls, model: "DatasetTableModel", options: TsaOptions) -> "TsaRequest":
-        sheet = required(model.current_sheet, "active sheet")
+        sheet = required(model.current_sheet, "active outcome")
         saved = sheet.settings.get("analysis", {})
         fit = sheet.last_meta_analysis or PooledAnalysis.from_method(
             str(saved.get("method", "")), saved.get("parameters", {})
         )
         metric = str(model.current_effect)
         below, above = sheet.effect_direction_arms()
-        favours = (f"Favours {below}" if below else "", f"Favours {above}" if above else "")
+        favours = (f"Favors {below}" if below else "", f"Favors {above}" if above else "")
         return cls(
             sheet.family, metric, fit.model_for(sheet.family, metric), fit.tau_method,
             fit.inference, float(model.get_confidence_level()),

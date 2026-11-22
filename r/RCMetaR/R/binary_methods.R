@@ -14,7 +14,7 @@ binary.one.arm.metrics <- c("PR", "PLN", "PLO", "PAS", "PFT")
             any(binary.data@g1O1 < 0) || any(binary.data@g1O2 < 0) ||
             any(!is.finite(binary.data@g1O1 + binary.data@g1O2)) ||
             any(binary.data@g1O1 + binary.data@g1O2 <= 0)) {
-        stop(paste("PFT requires complete finite nonnegative event and non-event counts",
+        stop(paste("PFT requires complete finite non-negative event and non-event counts",
                    "with a positive finite sample size for every study;",
                    "entered effects alone cannot be inverted to proportions."), call.=FALSE)
     }
@@ -112,7 +112,7 @@ binary.fixed.inv.var <- function(binary.data, params){
                             level=params$conf.level, digits=params$digits, method="FE", test=inference.method)
     pure.res <- res
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste("Binary Fixed-Effect Model - Inverse Variance\n\nMetric: ", metric.name, sep="")
+    model.title <- paste("Binary fixed-effect model \u2014 inverse variance\n\nEffect measure: ", metric.name, sep="")
     summary.disp <- create.summary.disp(binary.data, params, res, model.title)
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- create.plot.data.binary(binary.data, params, res)
@@ -166,15 +166,13 @@ binary.fixed.inv.var.parameters <- function(){
 }
 
 binary.fixed.inv.var.pretty.names <- function() {
-    pretty.names <- list("pretty.name"="Binary Fixed-Effect Inverse Variance",
+    pretty.names <- list("pretty.name"="Binary fixed-effect inverse variance",
                          "description" = "Performs fixed-effect meta-analysis with inverse variance weighting.",
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                           )
 }
 
@@ -203,7 +201,7 @@ binary.fixed.mh <- function(binary.data, params){
         binary.data <- compute.bin.point.estimates(binary.data, params)
     }
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste("Binary Fixed-Effect Model - Mantel-Haenszel\n\nMetric: ", metric.name, sep="")
+    model.title <- paste("Binary fixed-effect model \u2014 Mantel\u2013Haenszel\n\nEffect measure: ", metric.name, sep="")
     summary.disp <- create.summary.disp(binary.data, params, res, model.title)
     forest.path <- paste(params$fp_outpath, sep="")
     plot.data <- create.plot.data.binary(binary.data, params, res)
@@ -279,14 +277,12 @@ binary.fixed.mh.parameters <- function(){
 }
 
 binary.fixed.mh.pretty.names <- function() {
-    pretty.names <- list("pretty.name"="Binary Fixed-Effect Mantel-Haenszel",
-                         "description" = "Performs fixed-effect meta-analysis using the Mantel-Haenszel method.",
+    pretty.names <- list("pretty.name"="Binary fixed-effect Mantel\u2013Haenszel",
+                         "description" = "Performs fixed-effect meta-analysis using the Mantel\u2013Haenszel method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                           )
 }
 
@@ -326,7 +322,7 @@ binary.fixed.peto <- function(binary.data, params) {
         }
 
         metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-        model.title <- "Binary Fixed-Effect Model - Peto\n\nMetric: Odds ratio"
+        model.title <- "Binary fixed-effect model \u2014 Peto\n\nEffect measure: Odds ratio"
         summary.disp <- create.summary.disp(binary.data, params, res, model.title)
         forest.path <- paste(params$fp_outpath, sep="")
         plot.data <- create.plot.data.binary(binary.data, params, res)
@@ -393,14 +389,12 @@ binary.fixed.peto.parameters <- function(){
 }
 
 binary.fixed.peto.pretty.names <- function() {
-    pretty.names <- list("pretty.name"="Binary Fixed-Effect Peto",
+    pretty.names <- list("pretty.name"="Binary fixed-effect Peto",
                          "description" = "Performs fixed-effect meta-analysis using the Peto method.",
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                          )
 }
 
@@ -433,7 +427,7 @@ binary.random <- function(binary.data, params) {
         binary.data <- compute.bin.point.estimates(binary.data, params)
     }
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
-    model.title <- paste("Binary Random-Effects Model\n\nMetric: ", metric.name, sep="")
+    model.title <- paste("Binary random-effects model\n\nEffect measure: ", metric.name, sep="")
 
     summary.disp <- create.summary.disp(binary.data, params, res, model.title)
 
@@ -487,16 +481,14 @@ binary.random.parameters <- function(){
 binary.random.pretty.names <- function() {
     rm_method_names <- rcmetar.random.effects.method.names()
 
-    pretty.names <- list("pretty.name"="Binary Random-Effects",
+    pretty.names <- list("pretty.name"="Binary random-effects",
                          "description" = "Performs random-effects meta-analysis.",
-                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-studies heterogeneity", "rm.method.names"=rm_method_names),
+                         "rm.method"=list("pretty.name"="Random-Effects method", "description"="Method for estimating between-study heterogeneity", "rm.method.names"=rm_method_names),
                          "inference.method"=rcmetar.inference.method.metadata(),
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals; p-values use at least 3"),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="When Add correction factor is set to \"only 0\", the correction factor
-                                   is added to all cells of each two-by-two table that contains at least one zero. When set to \"all\", the correction factor
-                                   is added to all two-by-two tables if at least one table contains a zero.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), "description"="Choose which studies receive the correction. \"Studies with any zero cell\" adjusts every cell in studies containing a zero. \"All studies if any zero exists\" adjusts every cell in every study when at least one study contains a zero. \"All studies\" always adjusts every cell in every study. \"No studies\" leaves all cells unchanged.")
                          )
 }
 

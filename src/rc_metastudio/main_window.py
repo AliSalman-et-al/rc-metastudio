@@ -124,15 +124,14 @@ def _format_open_project_error(file_path, exception):
     if isinstance(exception, project_format.ProjectFormatError):
         reason = str(exception)
         if isinstance(exception, project_format.UnsupportedProjectVersionError):
-            message = 'This project’s file format is not supported. Update RC MetaStudio, then try again.'
+            message = "This project's file format is not supported. Update RC MetaStudio, then try again."
         elif isinstance(exception, project_format.ProjectAccessError):
             message = 'RC MetaStudio could not read this file. Check that it exists and that you can open it.'
         else:
             message = 'This file is damaged or is not a valid RC MetaStudio project. Open another .rcms file or restore a backup.'
         return message + '\n\nDetails: ' + reason
-    return "Could not open %s.\n\nDetails: %s: %s" % (
+    return "Could not open %s.\n\nDetails: %s" % (
         file_path,
-        exception.__class__.__name__,
         exception,
     )
 
@@ -156,7 +155,7 @@ def _pooled_analysis_availability(
 class ImportProgressDialog(progress_dialog.AnalysisProgressDialog):
     def __init__(self, parent=None, row_count: int = 1):
         super().__init__(parent, operation="Importing study data…", blocking=False)
-        self.setWindowTitle("Import CSV")
+        self.setWindowTitle("Import data")
         self.progress_bar.setRange(0, row_count)
         self.progress_bar.show()
 
@@ -341,8 +340,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.setObjectName("sheet_confidence")
         self.confidence_button.setText("95% CI…")
         self.confidence_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.confidence_button.setAccessibleName("Sheet confidence level, 95%")
-        self.confidence_button.setToolTip("Interval level for table effects and new analyses on this sheet. An individual analysis can override it.")
+        self.confidence_button.setAccessibleName("Outcome confidence level, 95%")
+        self.confidence_button.setToolTip("Default confidence level for table effects and new analyses on this outcome. Individual analyses can override it.")
         self.confidence_button.clicked.connect(self.action_change_confidence_level.trigger)
         self.statusbar.addPermanentWidget(self.confidence_button)
         self.confidence_button.hide()
@@ -375,7 +374,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         cite_action = QAction(QtGui.QIcon(':/icons/actions/cite.svg'), 'Cite…', self)
         cite_action.triggered.connect(lambda: CitationDialog(self).exec())
         self.menuHelp.addAction(cite_action)
-        self.action_about_legal.setText('About RCMS…')
+        self.action_about_legal.setText('About RC MetaStudio…')
         self.add_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/add.svg'))
         self.rename_outcome_action.setIcon(QtGui.QIcon(':/icons/actions/edit-dataset.svg'))
         theme_menu = self.menuView.addMenu('Theme')
@@ -484,9 +483,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 QMessageBox.warning(
                     self,
                     "Recent projects not updated",
-                    "The project was %s successfully, but RC MetaStudio could not "
-                    "update Open recent.\n\nDetails: %s: %s"
-                    % (operation, exc.__class__.__name__, exc),
+                    "The project was %s, but RC MetaStudio could not update the Open recent list."
+                    "\n\nDetails: %s" % (operation, exc),
                 )
             except Exception:
                 pass
@@ -600,7 +598,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._model_signal_connections = []
 
     def data_error(self, msg):
-        QMessageBox.warning(self, "Warning", msg)
+        QMessageBox.warning(self, "Invalid study value", msg)
 
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()
@@ -715,7 +713,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _update_confidence_level_label(self):
         confidence_level = self.model.get_confidence_level()
         self.confidence_button.setText(f"{confidence_level:g}% CI…")
-        self.confidence_button.setAccessibleName(f"Sheet confidence level, {confidence_level:g}%")
+        self.confidence_button.setAccessibleName(f"Outcome confidence level, {confidence_level:g}%")
 
     def _launch_analysis(
         self, analysis_type: analysis_adapter.AnalysisWorkflow | None = None,
@@ -868,14 +866,14 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             message = (
                 "R is not available, so the analysis settings cannot be opened."
             )
-        message += "\n\nDetails: %s: %s" % (exception.__class__.__name__, exception)
+        message += "\n\nDetails: %s" % exception
         QMessageBox.critical(self, "Analysis unavailable", message)
 
     def _show_analysis_preparation_error(self, exception):
         message = (
             "RC MetaStudio could not prepare the analysis settings "
             "for this analysis.\n\n"
-            "Details: %s: %s" % (exception.__class__.__name__, exception)
+            "Details: %s" % exception
         )
         QMessageBox.critical(self, "Could not prepare analysis", message)
 
@@ -909,7 +907,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         group.setExclusive(True)
         selected = metric_to_check or (paired[0] if paired else None)
         for scope, metrics in (("Two-arm", paired), ("One-arm", single)):
-            submenu = required(self.menuMetric.addMenu(f"{scope} metrics"), "metric submenu")
+            submenu = required(self.menuMetric.addMenu(f"{scope} effect measures"), "metric submenu")
             submenu.setToolTip(f"Choose a {scope.lower()} effect measure.")
             for metric in metrics:
                 label = analysis_identity.metric_label(self.model, metric)
@@ -966,7 +964,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 self,
                 "Could not display analysis results",
                 "The analysis completed, but RC MetaStudio could not display "
-                "the results.\n\nDetails: %s: %s" % (e.__class__.__name__, e),
+                "the results.\n\nDetails: %s" % e,
             )
             return None
         form.show()
@@ -988,7 +986,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     "group", arm_name_dialog.group_name_le.text(), existing_arm_names
                 )
             except ValueError as exc:
-                QMessageBox.warning(self, "Warning", str(exc))
+                QMessageBox.warning(self, "Invalid arm name", str(exc))
                 return
 
             self._commit_model_operation(lambda: self.model.rename_arm(original_arm_name, new_arm_name))
@@ -1002,7 +1000,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     self.model, form.covariate_name_le.text()
                 )
             except ValueError as exc:
-                QMessageBox.warning(self, "Warning", str(exc))
+                QMessageBox.warning(self, "Invalid covariate name", str(exc))
                 return
 
             new_covariate_type = str(form.datatype_cbo_box.currentData())
@@ -1141,7 +1139,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                     existing_covariates,
                 )
             except ValueError as exc:
-                QMessageBox.warning(self, "Warning", str(exc))
+                QMessageBox.warning(self, "Invalid covariate name", str(exc))
                 return
 
             self._commit_model_operation(lambda: self.model.rename_covariate(orig_cov_name, new_cov))
@@ -1210,8 +1208,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return
         first = sheet.arms[0].name
         current = sheet.settings.get("effect_direction", "")
-        for value, label in (("", "Not shown"), ("below", f"Values below the null favour {first}"),
-                             ("above", f"Values above the null favour {first}")):
+        for value, label in (("", "Not shown"), ("below", f"Values below the null favor {first}"),
+                             ("above", f"Values above the null favor {first}")):
             action = required(self.effect_direction_menu.addAction(label), "direction choice")
             action.setCheckable(True)
             action.setChecked(current == value)
@@ -1275,7 +1273,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.sheet_scroll_right = QtWidgets.QToolButton(self)
         for button, arrow, delta in ((self.sheet_scroll_left, Qt.ArrowType.LeftArrow, -160), (self.sheet_scroll_right, Qt.ArrowType.RightArrow, 160)):
             button.setArrowType(arrow)
-            button.setAccessibleName("Scroll sheets left" if delta < 0 else "Scroll sheets right")
+            button.setAccessibleName("Scroll outcomes left" if delta < 0 else "Scroll outcomes right")
             button.clicked.connect(lambda checked=False, delta=delta: self.sheet_tab_scrollbar.setValue(self.sheet_tab_scrollbar.value() + delta))
             button.hide()
             strip.addWidget(button)
@@ -1474,7 +1472,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             action = menu.addAction(label, lambda checked=False, destination=destination: self.sheet_tabs.moveTab(index, destination))
             required(action, "sheet move action").setEnabled(0 <= destination < self.sheet_tabs.count())
         menu.addSeparator()
-        delete = required(menu.addAction(f'Delete “{self.sheet_tabs.tabText(index)}”…', lambda: self._delete_sheet(index)), "delete outcome action")
+        delete = required(menu.addAction(f'Delete \"{self.sheet_tabs.tabText(index)}\"…', lambda: self._delete_sheet(index)), "delete outcome action")
         delete.setEnabled(self.sheet_tabs.count() > 1)
         menu.exec(self.sheet_tabs.mapToGlobal(position))
 
@@ -1482,7 +1480,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = self.model.dataset.sheet(self.sheet_tabs.tabData(index))
         if len(self.model.dataset.sheets) == 1:
             return
-        if sheet.rows and QMessageBox.question(self, "Delete outcome", f'Delete “{sheet.name}” and its studies?') != QMessageBox.StandardButton.Yes:
+        if sheet.rows and QMessageBox.question(self, "Delete outcome", f'Delete \"{sheet.name}\" and its studies?') != QMessageBox.StandardButton.Yes:
             return
         def delete():
             remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
@@ -1507,7 +1505,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         prompt.setWindowTitle("Unsaved changes")
         path = self.workspace.path
         project = path.name if path is not None else "Untitled project"
-        prompt.setText(f"Save changes to “{project}”?")
+        prompt.setText(f"Save changes to \"{project}\"?")
         prompt.setStandardButtons(
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
@@ -1515,7 +1513,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         )
         discard = prompt.button(QMessageBox.StandardButton.Discard)
         assert discard is not None
-        discard.setText("Don’t save")
+        discard.setText("Don't save")
         prompt.setDefaultButton(QMessageBox.StandardButton.Save)
         prompt.setEscapeButton(QMessageBox.StandardButton.Cancel)
         return prompt.exec()
@@ -1564,8 +1562,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             QMessageBox.critical(
                 self,
                 "Could not save project",
-                "RC MetaStudio could not save %s.\n\nDetails: %s: %s"
-                % (destination, e.__class__.__name__, e),
+                "RC MetaStudio could not save %s.\n\nDetails: %s"
+                % (destination, e),
             )
             return False
 

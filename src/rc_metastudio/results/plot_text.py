@@ -23,7 +23,7 @@ def configure_plot_text_inputs(surface):
         if widget is None:
             continue
         widget.setProperty("plotTextWasEdited", False)
-        widget.setToolTip("Automatic headings preserve the complete arm name; long headings wrap in the figure.")
+        widget.setToolTip("Enter a custom label. Automatic arm headings wrap to show the full name.")
         if widget.text() == "[default]":
             set_plot_text_value(widget, "[default]")
         widget.textEdited.connect(
@@ -39,7 +39,8 @@ def set_plot_text_value(widget, value, *, literal=False):
     if automatic and text == "[default]":
         text = ""
         widget.setPlaceholderText("Automatic")
-        widget.setToolTip(widget.toolTip() + " Automatic: determined by the plotted data.")
+        if not widget.toolTip():
+            widget.setToolTip("Leave blank for the automatic label determined from the plotted data.")
     widget.setProperty("plotTextWasEdited", not automatic)
     widget.setText(text)
 

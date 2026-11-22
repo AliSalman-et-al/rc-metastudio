@@ -107,7 +107,7 @@ def dataset_identity(model, metric=None, *, include_type=True):
     default_name = "Index test" if model.get_current_data_type() == "diagnostic" else "Group"
     if comparison or groups != default_name:
         context.append(f"{group_label}: {groups}")
-    return " · ".join(labels) + "\n" + " · ".join(context)
+    return " · ".join(labels) + ("\n" + " · ".join(context) if context else "")
 
 
 def plot_caption(model, caption=None):

@@ -227,9 +227,9 @@ def read_rm5(path: str | Path) -> Rm5Import:
             _import_outcome(dataset, comparison, outcome, len(comparisons) > 1,
                             studies, differences, not_imported)
     _append_diagnostic_tests(root, dataset, studies, not_imported)
-    for tag in ('DATA_TEST', 'IPD'):
+    for tag, label in (('DATA_TEST', 'Diagnostic test data'), ('IPD', 'Individual participant data (IPD)')):
         if list(root.iter(tag)):
-            not_imported.append(f'{tag}: data are not imported.')
+            not_imported.append(f'{label} could not be imported.')
     if root.find('ANALYSES_AND_DATA/TESTS') is not None:
         differences.append('Diagnostic tests: counts only; RevMan analyses and covariates are not imported. Analysis setup uses RC MetaStudio defaults.')
     if not dataset.sheets:

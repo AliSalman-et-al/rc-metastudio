@@ -48,7 +48,7 @@ ratio.prepare <- function(data, params) {
     for (i in which(!raw)) data <- ratio.prepare.reported(data, i)
     excluded <- !is.finite(data@y) | !is.finite(data@SE) | data@SE <= 0
     if (any(excluded)) data@notes <- c(data@notes, paste("Excluded from effect-based analyses:",
-        paste(data@study.names[excluded], collapse=", "), "(non-finite effect or nonpositive SE; includes dropped double-zero studies)."))
+        paste(data@study.names[excluded], collapse=", "), "(non-finite effect or non-positive SE; includes dropped double-zero studies)."))
     data@prepared <- TRUE
     data
 }
@@ -102,11 +102,11 @@ ratio.mh.feasible <- function(data) {
 
 ratio.fit <- function(data, params, method) {
     if (endsWith(method, ".mh")) {
-        if (!ratio.mh.feasible(data)) stop("Mantel-Haenszel requires complete selected raw inputs for every included study.")
+        if (!ratio.mh.feasible(data)) stop("Mantel\u2013Haenszel requires complete selected raw inputs for every included study.")
         if (sum(data@x1) == 0 || sum(data@x2) == 0) return(list(b=NA_real_, se=NA_real_,
             ci.lb=NA_real_, ci.ub=NA_real_, pval=NA_real_, zval=NA_real_, k=NA_real_,
             method="MH", tau2=0, QE=NA_real_, QEp=NA_real_, I2=NA_real_,
-            reason="Non-estimable: zero total events in an arm."))
+            reason="Not estimable: zero total events in an arm."))
         return(metafor::rma.mh(measure="IRR", x1i=data@x1, x2i=data@x2,
             t1i=data@t1, t2i=data@t2, slab=data@study.names,
             add=c(params$adjust %||% 0.5, 0), to=c(params$to %||% "only0", "none"),
@@ -129,7 +129,7 @@ ratio.analysis <- function(data, params, method) {
         res.info=rma.uni.value.info(), input_data=data, input_params=params,
         References=rcmetar.fit.references(res))
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
-    if (!is.null(res$reason)) result[["Non-estimable result"]] <- res$reason
+    if (!is.null(res$reason)) result[["Not estimable"]] <- res$reason
     if (inherits(res, "rma")) result$Weights <- weights(res)
     if (!isTRUE(params$supress.output) && !identical(params$create.plot, FALSE) && is.finite(res$b[1])) {
         plot <- rcmetar.build.continuous.metafor.bundle(data, params, res)
@@ -164,7 +164,7 @@ ratio.workflow <- function(data, request) {
     plot.name <- state$plot.name
     plot <- state$plot
     reasons <- unlist(lapply(seq_along(fits), function(i) if (!is.null(fits[[i]]$reason)) paste(labels[i], fits[[i]]$reason)))
-    if (length(reasons)) result[["Non-estimable rows"]] <- paste(reasons, collapse="\n")
+    if (length(reasons)) result[["Rows with effects that could not be estimated"]] <- paste(reasons, collapse="\n")
     if (length(data@notes)) result[["Input warnings and exclusions"]] <- paste(data@notes, collapse="\n")
     result$res.info <- list(summary.table=list(type="data.frame", description="Log effect summaries"))
     if (!isTRUE(params$supress.output)) {
@@ -195,10 +195,10 @@ ratio.subgroup <- function(data, request, suppressed) {
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.subgroup.metafor.bundle(data, params,
         list(subgroup.list=groups, grouped.data=c(subsets, list(data)), results=fits,
              row.indices=indices))
-    result <- list("Subgroup Summary"=disp, res=construct.subgroup.res.output(fits))
+    result <- list("Subgroup summary"=disp, res=construct.subgroup.res.output(fits))
     test <- rcmetar.metafor.subgroup.difference.test(fits[seq_along(groups)])
     disp <- rcmetar.add.subgroup.test(disp, list(subgroups=list(difference_test=test)), params)
-    result[["Subgroup Summary"]] <- disp
+    result[["Subgroup summary"]] <- disp
     title <- "Subgroup forest plot"
     plot.name <- "subgroup_forest_plot"
     list(result=result, fits=fits, labels=labels, title=title, plot.name=plot.name, plot=plot)
@@ -222,7 +222,7 @@ ratio.sequential <- function(data, request, suppressed) {
         if (loo) "Leave-one-out Meta-analysis" else "Cumulative Meta-analysis")
     disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
     if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=loo)
-    result <- list("Sequential Summary"=disp,
+    result <- list("Sequential summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out forest plot" else "Cumulative forest plot"
     plot.name <- if (loo) "leave_one_out_forest_plot" else "cumulative_forest_plot"
@@ -246,10 +246,10 @@ ratio.parameters <- function(method) {
 
 ratio.pretty.names <- function(method) {
     values <- if (endsWith(method, ".random")) continuous.random.pretty.names() else continuous.fixed.pretty.names()
-    values$pretty.name <- if (endsWith(method, ".mh")) "Mantel-Haenszel (raw IRR)" else if (endsWith(method, ".random")) "Random-effects inverse variance" else "Fixed-effect inverse variance"
+    values$pretty.name <- if (endsWith(method, ".mh")) "Mantel\u2013Haenszel (raw IRR)" else if (endsWith(method, ".random")) "Random-effects inverse variance" else "Fixed-effect inverse variance"
     values$description <- "Pools log hazard or incidence rate ratios; results are displayed as ratios."
     values$adjust <- list(pretty.name="Continuity correction", description="Added to both event counts; person-time is unchanged. MH pooling uses original counts.")
-    values$to <- list(pretty.name="Apply correction to", to.names=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), description="metafor correction target, resolved once before subset analyses.")
-    values$drop00 <- list(pretty.name="Exclude studies with zero events in both groups", description="Exclude studies with zero events in both groups from inverse-variance analyses; retain original counts for MH pooling.")
+    values$to <- list(pretty.name="Apply correction to", to.names=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="No studies"), description="Choose which studies receive the continuity correction. This choice is applied before any subset analyses.")
+    values$drop00 <- list(pretty.name="Exclude studies with zero events in both arms", description="Exclude studies with zero events in both arms from inverse-variance analyses; retain original counts for Mantel\u2013Haenszel pooling.")
     values
 }

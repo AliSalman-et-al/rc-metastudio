@@ -64,7 +64,7 @@ class CovariateTypeDialog(QDialog, _ui_covariate_type_dialog.Ui_CovariateTypeDia
         )
 
     def data_error(self, msg):
-        QMessageBox.warning(self, "Warning", msg)
+        QMessageBox.warning(self, "Invalid covariate value", msg)
 
 
 class CovariateTypeModel(QAbstractTableModel):
@@ -229,7 +229,7 @@ class CovariateTypeModel(QAbstractTableModel):
                 study.covariate_values[self.new_covariate["id"]] = new_value
                 self.refresh_covariate_values()
                 return True
-        return self.reject_edit("Cannot edit that cell.")
+        return self.reject_edit("Only the converted value column can be edited.")
 
     def flags(self, index):
         if not index.isValid():

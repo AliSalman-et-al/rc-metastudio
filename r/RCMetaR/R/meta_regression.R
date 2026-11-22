@@ -93,7 +93,7 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 								 list(Adjusted_Means_Section=list(type="vector", description=""),
 									  Adjusted_Means=list(type="blob", description="")))
 			results <- list("Summary"=reg.disp,
-                            "Adjusted Mean"=adj.reg.disp,
+                            "Adjusted mean"=adj.reg.disp,
 							"res"=res.output,
 							"res.info"=res.output.info)
 		} else {
@@ -124,7 +124,7 @@ meta.regression.pretty.names <- function() {
         "description"="Models study-level covariates as predictors of effect estimates.",
         "rm.method"=list(
             "pretty.name"="Random-Effects method",
-            "description"="Method for estimating residual between-studies heterogeneity",
+            "description"="Method for estimating residual between-study heterogeneity",
             "rm.method.names"=rcmetar.random.effects.method.names()),
         "inference.method"=rcmetar.inference.method.metadata(),
         "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),

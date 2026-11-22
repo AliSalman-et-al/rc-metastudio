@@ -305,11 +305,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._plots: dict[str, _PlotEntry] = {}
         self._last_plot_item: QTreeWidgetItem | None = None
         self.setupUi(self)
-        self.nav_tree.setAccessibleName("Results navigation")
+        self.nav_tree.setAccessibleName("Result sections")
         self.nav_tree.setAccessibleDescription(
             "Navigate between analysis result sections and plots."
         )
-        self.graphics_view.setAccessibleName("Results content")
+        self.graphics_view.setAccessibleName("Analysis figures")
         self.graphics_view.setAccessibleDescription(
             "View analysis summaries, references, and generated plots."
         )
@@ -340,9 +340,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.nav_tree.setHeaderHidden(True)
         self.nav_tree.setAccessibleName("Result sections")
-        self.nav_tree.setAccessibleDescription("Choose a figure, the text report, numerical tables or model configuration.")
+        self.nav_tree.setAccessibleDescription("Choose a figure, the text report, data tables, or model configuration.")
         self.graphics_view.setAccessibleName("Analysis figures")
-        self.graphics_view.setAccessibleDescription("Scrollable figures. Use the results toolbar to edit, zoom or export the selected figure.")
+        self.graphics_view.setAccessibleDescription("Scrollable figures. Use the results toolbar to edit, zoom, or export the selected figure.")
         self.nav_tree.setItemsExpandable(True)
         # layout-audit: allow=content-overflow-control; reason=required content may consume available layout width
         self.nav_tree.setMinimumWidth(0)
@@ -423,8 +423,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._report_nav = QTreeWidgetItem(self.nav_tree, ["Text report"])
         self._report_nav.setToolTip(0, "Read the formatted analysis report")
         self._report_nav.setData(0, _REPORT_ANCHOR_ROLE, "")
-        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Data tables (CSV)"])
-        self._tables_nav.setToolTip(0, "Copy or export numerical tables")
+        self._tables_nav = QTreeWidgetItem(self.nav_tree, ["Data tables"])
+        self._tables_nav.setToolTip(0, "Inspect, copy, or export result tables.")
         self._tables_nav.setDisabled(not self._report_tables)
         self._setup_results_actions()
         sections = []
@@ -433,7 +433,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if self.manuscript.results:
             sections.append(('Results', 'results'))
         if self._report_tables:
-            sections.append(('Numerical tables', 'report-tables'))
+            sections.append(('Report tables', 'report-tables'))
         if any(section.source_key == 'References' for section in self.manuscript.sections):
             sections.append(('References', 'references'))
         if self.results.details:
@@ -443,7 +443,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             child.setData(0, _REPORT_ANCHOR_ROLE, anchor)
         if self.results.analysis_method == "trial-sequential":
             self._sensitivity_nav = QTreeWidgetItem(["Sensitivity"])
-            self._sensitivity_nav.setToolTip(0, self._sensitivity_nav.text(0))
+            self._sensitivity_nav.setToolTip(0, "View trial sequential sensitivity analyses across alternative anticipated effects.")
             self._report_nav.insertChild(3, self._sensitivity_nav)
             self._sensitivity_nav.setData(0, _REPORT_ANCHOR_ROLE, "section-" + _SENSITIVITY_SECTION)
             self._update_sensitivity_navigation()
@@ -879,7 +879,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.report_action.setShortcuts([QKeySequence("Ctrl+T"), QKeySequence("Ctrl+M")])
         self.report_action.toggled.connect(self._show_report)
         self.report_action.triggered.connect(self._activate_report)
-        self.tables_action = QAction("Data tables (CSV)", self)
+        self.tables_action = QAction("Data tables", self)
         self.tables_action.setShortcut("Ctrl+Shift+T")
         self.tables_action.setEnabled(bool(self._report_tables))
         self.tables_action.triggered.connect(self._show_tables)
@@ -896,7 +896,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.export_report_action = QAction("Export report…", self)
         self.export_report_action.setIcon(QIcon(':/icons/actions/export.svg'))
         self.export_report_action.setShortcut("Ctrl+Shift+S")
-        self.export_report_action.setToolTip('Export the text report, tables and figures to PDF or Word (DOCX)')
+        self.export_report_action.setToolTip('Export the text report, tables, and figures to PDF or Word (DOCX).')
         self.export_report_action.triggered.connect(app_error_handler.safe_slot(self._export_report, parent=self))
         toolbar.addAction(self.export_report_action)
         self.export_plot_action = QAction("Export plot…", self)
@@ -1129,7 +1129,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def add_image_section(self, section: ResultSection):
         artifact = PlotArtifact.from_section(section)
-        qt_item = self.add_title(section.title)
+        qt_item = self.add_title("Meta-regression bubble plot" if section.source_key == "Regression Plot" else section.title)
         qt_item.setData(0, _PLOT_ID_ROLE, section.semantic_id)
         entry = _PlotEntry(artifact, qt_item)
         self._plots[section.semantic_id] = entry
@@ -1602,12 +1602,12 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 if plot_capabilities.option_groups(artifact.plot_kind):
                     action = QAction("Edit plot…", self)
                     action.setStatusTip(
-                        "Edit this plot’s appearance."
+                        "Edit this figure's appearance."
                     )
                     action.setToolTip(
-                        "Edit this plot’s appearance."
+                        "Edit this figure's appearance."
                     )
-                    action.setWhatsThis("Edit this plot’s appearance.")
+                    action.setWhatsThis("Edit this figure's appearance.")
                     action.triggered.connect(
                         app_error_handler.safe_slot(
                             lambda _checked=False: self.edit_plot(artifact, plot_item),
@@ -1772,7 +1772,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
-            raise Exception("Invalid format, needs to be one of: %s!" % valid_formats)
+            raise Exception("Unsupported export format. Choose one of: %s." % valid_formats)
 
         export_format = PLOT_EXPORT_FORMATS_BY_EXTENSION[format]
         allow_svgz = artifact.capability.regenerator != "funnel"

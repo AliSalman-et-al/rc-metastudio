@@ -3,7 +3,7 @@ from rc_metastudio import qt_text
 
 ENTITY_LABELS = {
     "study": "Study",
-    "group": "Group",
+    "group": "Arm",
     "outcome": "Outcome",
     "covariate": "Covariate",
 }
@@ -19,7 +19,7 @@ def required_message(entity):
 
 def duplicate_message(entity, name):
     article = "An" if entity[0].lower() in "aeiou" else "A"
-    return "%s %s named “%s” already exists. Choose another name." % (
+    return "%s %s named \"%s\" already exists. Choose another name." % (
         article,
         entity,
         name,
@@ -46,5 +46,5 @@ def study_identity(name: object, year: int | None) -> tuple[str, int]:
 
 def study_conflict(identity: tuple[str, int], row_number: int) -> str:
     name, year = identity
-    display = f"‘{name}’ ({year})" if year else f"‘{name}’ with no year"
+    display = f"'{name}' ({year})" if year else f"'{name}' with no year"
     return f"Study {display} already exists in row {row_number}."
