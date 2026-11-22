@@ -4,7 +4,7 @@
 
 import importlib
 from functools import wraps
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import importlib.metadata
 import locale
 import math
@@ -15,10 +15,12 @@ from collections.abc import Mapping, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import ModuleType
 from typing import Callable, Literal, ParamSpec, Protocol, TypeVar, cast, overload, runtime_checkable
 
 from rc_metastudio import r_runtime, r_worker
+from rc_metastudio.r_result_wire import ResultVector
 from rc_metastudio.analysis.method_labels import (
     method_display_label,
     method_labels_by_id,
@@ -195,8 +197,10 @@ def _first_dynamic(value: object) -> object:
 
 def _r_is_null(r_object):
     """Return whether an rpy2 object represents R's NULL value."""
+    if r_object is None or isinstance(r_object, ResultVector):
+        return r_object is None
     _require_initialized_r()
-    return r_object is None or r_object is _rinterface.NULL or isinstance(
+    return r_object is _rinterface.NULL or isinstance(
         r_object, type(_rinterface.NULL)
     )
 
@@ -454,6 +458,8 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
+    if isinstance(value, ResultVector):
+        return not _r_dims(value) and value.names is not None
     _require_initialized_r()
     if not isinstance(value, ro.vectors.Vector):
         return False
@@ -605,8 +611,73 @@ def dataset_for_analysis(table_model, family: object, *, metric="Sens", **select
     raise ValueError(f"unsupported analysis data family: {family!r}")
 
 
+
+def _analysis_columns(table_model, family: str, metric: str, **selection):
+    if family == "binary":
+        return _binary_data_arguments(table_model, **selection)
+    if family == "continuous":
+        return _continuous_data_arguments(table_model, **selection)
+    if family == "diagnostic":
+        return _diagnostic_data_arguments(table_model, metric=metric, **selection)
+    if family in ("time_to_event", "event_rates"):
+        return _ratio_data_arguments(table_model, **selection)
+    raise ValueError(f"unsupported analysis data family: {family!r}")
+
+
 @serialized_r_call
-def dataset_to_simple_ratio_r_object(
+def dataset_to_simple_ratio_r_object(table_model, covs_to_include=None, studies=None):
+    return execute_r_function("rcmetar.create.ratio.data", **_embedded_columns(
+        _ratio_data_arguments(table_model, covs_to_include, studies)
+    ))
+
+
+@serialized_r_call
+def dataset_to_simple_continuous_r_object(table_model, covs_to_include=None, studies=None):
+    return execute_r_function("rcmetar.create.continuous.data", **_embedded_columns(
+        _continuous_data_arguments(table_model, covs_to_include, studies)
+    ))
+
+
+@serialized_r_call
+def dataset_to_simple_binary_r_object(table_model, covs_to_include=None, studies=None):
+    return execute_r_function("rcmetar.create.binary.data", **_embedded_columns(
+        _binary_data_arguments(table_model, covs_to_include, studies)
+    ))
+
+
+@serialized_r_call
+def diagnostic_data_arguments(table_model, metric="Sens", covs_to_include=None, studies=None):
+    return _embedded_columns(_diagnostic_data_arguments(table_model, metric, covs_to_include, studies))
+
+
+def _embedded_columns(columns):
+    converted = {}
+    for name, values in columns.items():
+        if name == "covariates":
+            converted[name] = execute_r_function("list", *(_embedded_covariate(cov) for cov in values))
+        elif name in ("study.names", "scale", "unit", "source"):
+            converted[name] = _r_character_vector(values)
+        elif name == "years":
+            converted[name] = _r_year_vector(values)
+        elif name == "metric":
+            converted[name] = values
+        else:
+            converted[name] = _r_numeric_vector(values)
+    return converted
+
+
+def _embedded_covariate(cov):
+    args = dict(cov)
+    to_vector = _r_numeric_vector if args["cov.type"] == "continuous" else _r_character_vector
+    args["cov.vals"] = to_vector(args["cov.vals"])
+    return execute_r_function("rcmetar.create.covariate.values", **args)
+
+
+def _character_values(values):
+    return [None if value in EMPTY_VALS else str(value) for value in values]
+
+
+def _ratio_data_arguments(
     table_model, covs_to_include=None, studies=None
 ):
     if studies is None:
@@ -626,19 +697,17 @@ def dataset_to_simple_ratio_r_object(
         covs_to_include, y=[None] * len(studies), standard_errors=[None] * len(studies),
     )
     for name in ("estimate", "lower", "upper", "se", "confidence"):
-        kwargs[name] = _r_numeric_vector([getattr(record, name) for record in records])
+        kwargs[name] = _numeric_values([getattr(record, name) for record in records])
     for name in ("scale", "unit"):
-        kwargs[name] = _r_character_vector([getattr(record, name) for record in records])
-    kwargs["source"] = _r_character_vector(sources)
+        kwargs[name] = _character_values([getattr(record, name) for record in records])
+    kwargs["source"] = _character_values(sources)
     kwargs["metric"] = table_model.current_effect
     for i, name in enumerate(("x1", "t1", "x2", "t2")):
-        kwargs[name] = _r_numeric_vector([raw[i] for raw in raws])
-    obj = execute_r_function("rcmetar.create.ratio.data", **kwargs)
-    return obj
+        kwargs[name] = _numeric_values([raw[i] for raw in raws])
+    return kwargs
 
 
-@serialized_r_call
-def dataset_to_simple_continuous_r_object(
+def _continuous_data_arguments(
     table_model, covs_to_include=None, studies=None
 ):
     if studies is None:
@@ -665,21 +734,19 @@ def dataset_to_simple_continuous_r_object(
     if raw_data is not None:
         data_kwargs.update(
             {
-                "N1": _r_numeric_vector(_get_col(raw_data, 0)),
-                "mean1": _r_numeric_vector(_get_col(raw_data, 1)),
-                "sd1": _r_numeric_vector(_get_col(raw_data, 2)),
-                "N2": _r_numeric_vector(_get_col(raw_data, 3)),
-                "mean2": _r_numeric_vector(_get_col(raw_data, 4)),
-                "sd2": _r_numeric_vector(_get_col(raw_data, 5)),
+                "N1": _numeric_values(_get_col(raw_data, 0)),
+                "mean1": _numeric_values(_get_col(raw_data, 1)),
+                "sd1": _numeric_values(_get_col(raw_data, 2)),
+                "N2": _numeric_values(_get_col(raw_data, 3)),
+                "mean2": _numeric_values(_get_col(raw_data, 4)),
+                "sd2": _numeric_values(_get_col(raw_data, 5)),
             }
         )
 
-    r_obj = execute_r_function("rcmetar.create.continuous.data", **data_kwargs)
-    return r_obj
+    return data_kwargs
 
 
-@serialized_r_call
-def dataset_to_simple_binary_r_object(
+def _binary_data_arguments(
     table_model,
     covs_to_include=None,
     studies=None,
@@ -725,15 +792,14 @@ def dataset_to_simple_binary_r_object(
 
         data_kwargs.update(
             {
-                "g1O1": _r_numeric_vector(g1_events),
-                "g1O2": _r_numeric_vector(group1_nonevents),
-                "g2O1": _r_numeric_vector(group2_events),
-                "g2O2": _r_numeric_vector(group2_nonevents),
+                "g1O1": _numeric_values(g1_events),
+                "g1O2": _numeric_values(group1_nonevents),
+                "g2O1": _numeric_values(group2_events),
+                "g2O2": _numeric_values(group2_nonevents),
             }
         )
 
-    r_obj = execute_r_function("rcmetar.create.binary.data", **data_kwargs)
-    return r_obj
+    return data_kwargs
 
 
 def _raw_rows_for_selected_studies(table_model, studies, study_ids):
@@ -743,8 +809,7 @@ def _raw_rows_for_selected_studies(table_model, studies, study_ids):
     )
 
 
-@serialized_r_call
-def diagnostic_data_arguments(
+def _diagnostic_data_arguments(
     table_model,
     metric="Sens",
     covs_to_include=None,
@@ -779,10 +844,10 @@ def diagnostic_data_arguments(
     if has_raw_data:
         data_kwargs.update(
             {
-                "TP": _r_numeric_vector(_get_col(raw_data, 0)),
-                "FN": _r_numeric_vector(_get_col(raw_data, 1)),
-                "FP": _r_numeric_vector(_get_col(raw_data, 2)),
-                "TN": _r_numeric_vector(_get_col(raw_data, 3)),
+                "TP": _numeric_values(_get_col(raw_data, 0)),
+                "FN": _numeric_values(_get_col(raw_data, 1)),
+                "FP": _numeric_values(_get_col(raw_data, 2)),
+                "TN": _numeric_values(_get_col(raw_data, 3)),
             }
         )
 
@@ -811,11 +876,11 @@ def _analysis_data_kwargs(
     studies, study_ids, dataset, covs_to_include, y, standard_errors
 ):
     return {
-        "y": _r_numeric_vector(y),
-        "SE": _r_numeric_vector(standard_errors),
-        "study.names": _r_character_vector([study.label for study in studies]),
-        "years": _r_year_vector([study.year for study in studies]),
-        "covariates": _r_covariate_list(dataset, study_ids, covs_to_include),
+        "y": _numeric_values(y),
+        "SE": _numeric_values(standard_errors),
+        "study.names": _character_values([study.label for study in studies]),
+        "years": [None if study.year in EMPTY_VALS else int(study.year) for study in studies],
+        "covariates": _covariate_arguments(dataset, study_ids, covs_to_include),
     }
 
 
@@ -848,29 +913,18 @@ def _numeric_values(values) -> list[float | None]:
     return [None if value in EMPTY_VALS else float(value) for value in values]
 
 
-def _r_covariate_list(dataset, study_ids, covariates=None):
+def _covariate_arguments(dataset, study_ids, covariates):
     if covariates is None:
         covariates = dataset.covariates
-    covariates = [_r_covariate_values(cov, study_ids, dataset) for cov in covariates]
-    return execute_r_function("list", *covariates)
-
-
-def _r_covariate_values(cov, study_ids, dataset):
-    values = _cov_values_for_studies(cov, study_ids, dataset)
-    covariate_type = TYPE_TO_STR_DICT[cov["data_type"]]
-    if cov["data_type"] == CONTINUOUS:
-        covariate_values = _r_numeric_vector(values)
-    else:
-        covariate_values = _r_character_vector(values)
-    return execute_r_function(
-        "rcmetar.create.covariate.values",
-        **{
-            "cov.name": str(cov["name"]),
-            "cov.vals": covariate_values,
-            "cov.type": covariate_type,
-            "ref.var": _cov_ref_value(values),
-        },
-    )
+    result = []
+    for cov in covariates:
+        values = _cov_values_for_studies(cov, study_ids, dataset)
+        convert = _numeric_values if cov["data_type"] == CONTINUOUS else _character_values
+        result.append({
+            "cov.name": str(cov["name"]), "cov.vals": convert(values),
+            "cov.type": TYPE_TO_STR_DICT[cov["data_type"]], "ref.var": _cov_ref_value(values),
+        })
+    return result
 
 
 def _cov_values_for_studies(cov, study_ids, dataset):
@@ -925,12 +979,20 @@ def run_small_study_effects(
     version = request.get("version")
     if type(version) is not int or version != 1:
         raise ValueError("unsupported small-study effects request version")
-    data = dataset_for_analysis(table_model, request.get("data.type"), metric=request.get("metric", "DOR"))
     r_request = dict(request)
     r_request["preview"] = bool(preview)
     if not preview:
         from rc_metastudio.analysis.identity import plot_caption
         r_request["plot_caption"] = plot_caption(table_model)
+    family = request.get("data.type")
+    metric = request.get("metric", "DOR")
+    if r_worker.enabled():
+        columns = _analysis_columns(table_model, family, metric)
+        if preview:
+            payload = _worker_analysis(_worker_job("small_study", family, columns, r_request))
+            return _r_mapping_or_empty(payload)
+        return _worker_fit(_worker_job("small_study", family, columns, r_request))
+    data = dataset_for_analysis(table_model, family, metric=metric)
     result = execute_r_function(
         "rcmetar.run.small.study.effects",
         data,
@@ -945,9 +1007,28 @@ def run_small_study_effects(
 def preview_trial_sequential_analysis(
     model: object, family: str, metric: str, params: Mapping[str, object],
 ) -> tuple[Mapping[str, object], object]:
+    if r_worker.enabled():
+        inputs = WorkerTsaInputs(family, _analysis_columns(model, family, metric), params)
+        result = _worker_analysis(inputs.job("tsa_preview"))
+        return _r_mapping_or_empty(result), inputs
     data = dataset_for_analysis(model, family, metric=metric)
     prepared = execute_r_function("RCMetaR:::.tsa.prepare.request", data, _to_r_params(params))
     return _r_mapping_or_empty(prepared.rx2("preview")), prepared
+
+
+@dataclass(frozen=True)
+class WorkerTsaInputs:
+    family: str
+    columns: Mapping[str, object]
+    request: Mapping[str, object]
+
+    def job(self, kind: Literal["tsa_preview", "tsa_conclusion", "tsa_run"]) -> r_worker.AnalysisJob:
+        return _worker_job(kind, self.family, self.columns, self.request)
+
+    def conclusion(self, deliver: Callable[[Mapping[str, object], Exception | None], None]) -> Callable[[], None]:
+        return r_worker.current_worker().start_background(
+            self.job("tsa_conclusion"), lambda value, error: deliver(_r_mapping_or_empty(value), error),
+        )
 
 
 @serialized_r_call
@@ -981,10 +1062,23 @@ def trial_sequential_evidence(prepared: object) -> object:
 def run_trial_sequential_analysis(
     prepared: object, evidence: object, params: Mapping[str, object], path: str,
 ) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
-    from rc_metastudio.results.plot_capabilities import PlotCapability
-
+    if isinstance(prepared, WorkerTsaInputs):
+        with _worker_result_directory() as stage:
+            job = prepared.job("tsa_run")
+            job["stage"] = stage.as_posix()
+            output = (stage / Path(path).name).as_posix()
+            job["plot"] = {**params, "fp_outpath": output}
+            raw = _worker_analysis(job)
+            fields, sections = _parse_tsa_result(raw, output)
+            _validate_worker_plots(sections, stage)
+            return fields, sections
     raw = execute_r_function("RCMetaR:::.tsa.publish", prepared, evidence,
                              _to_r_params({**params, "fp_outpath": path}))
+    return _parse_tsa_result(raw, path)
+
+
+def _parse_tsa_result(raw, path: str) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
+    from rc_metastudio.results.plot_capabilities import PlotCapability
 
     def table_section(key: str, title: str, order: int, matrix) -> ResultSection:
         identity = f"trial-sequential.{key}"
@@ -1117,7 +1211,6 @@ def run_versioned_analysis_request(
 def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
     """Convert this frozen model and execute it within one R transaction."""
     family, _, metric, workflow, params = _validated_versioned_request(request)
-    data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
     if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
         metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
     ) and table_model.current_sheet is not None:
@@ -1125,6 +1218,10 @@ def run_model_analysis(table_model, request, *, covs_to_include=None, studies=No
         params = {**params, "fp_favours_left": f"Favors {below}" if below else "",
                   "fp_favours_right": f"Favors {above}" if above else ""}
         request = {**request, "params": params}
+    if r_worker.enabled():
+        columns = _analysis_columns(table_model, family, metric, covs_to_include=covs_to_include, studies=studies)
+        return _worker_fit(_worker_job("fit", family, columns, request))
+    data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
     return run_versioned_analysis_request(request, data)
 
 
@@ -1147,6 +1244,73 @@ def _required_request_text(request: Mapping[str, object], name: str) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError("analysis request %s must be non-empty text" % name)
     return value
+
+
+def _worker_job(
+    kind: Literal["fit", "diagnostic_fit", "small_study", "tsa_preview", "tsa_conclusion", "tsa_run"],
+    family: str, columns: Mapping[str, object] | Sequence[Mapping[str, object]],
+    request: Mapping[str, object] | Sequence[Mapping[str, object]],
+) -> r_worker.AnalysisJob:
+    return {"type": kind, "family": family, "columns": columns, "request": request, "stage": "", "plot": {}}
+
+
+def _worker_analysis(job: r_worker.AnalysisJob) -> object:
+    with r_execution():
+        return r_worker.current_worker().call(job, timeout_ms=None)
+
+
+@contextmanager
+def _worker_result_directory():
+    from rc_metastudio.settings import make_r_tmp
+
+    directory = TemporaryDirectory(prefix="worker-result-", dir=make_r_tmp(), delete=False, ignore_cleanup_errors=True)
+    try:
+        yield Path(directory.name).resolve()
+    except BaseException:
+        directory.cleanup()
+        raise
+
+
+def _validate_worker_plots(sections: Sequence[ResultSection], stage: Path) -> None:
+    for section in sections:
+        if section.kind != "image":
+            continue
+        for value in (section.value, section.display_image, section.plot_data):
+            if value and not Path(value).resolve().is_relative_to(stage):
+                raise ValueError("R worker returned a plot outside its result directory")
+        if section.value and not Path(section.value).is_file():
+            raise ValueError("R worker returned a missing plot")
+
+
+def _stage_worker_request(request: Mapping[str, object], stage: Path) -> dict[str, object]:
+    params = request.get("params")
+    if not isinstance(params, Mapping):
+        return dict(request)
+    return {**request, "params": {
+        key: (stage / Path(value).name).as_posix()
+        if isinstance(value, str) and value and key.endswith(("_outpath", "_display_path")) else value
+        for key, value in params.items()
+    }}
+
+
+def _worker_fit(job: r_worker.AnalysisJob) -> AnalysisResult:
+    with _worker_result_directory() as stage:
+        job["stage"] = stage.as_posix()
+        request = job["request"]
+        job["request"] = (
+            _stage_worker_request(request, stage) if isinstance(request, Mapping)
+            else [_stage_worker_request(item, stage) for item in request]
+        )
+        result = _parse_result_payload(_worker_analysis(job))
+        _validate_worker_plots(result.sections, stage)
+        return result
+
+
+def _worker_diagnostic_fit(requests, columns) -> AnalysisResult:
+    try:
+        return _worker_fit(_worker_job("diagnostic_fit", "diagnostic", columns, _validated_versioned_requests(requests)))
+    except ValueError as error:
+        raise DiagnosticExecutionError(str(error)) from error
 
 
 def _request_params(request: Mapping[str, object]) -> Mapping[str, object]:
@@ -1193,6 +1357,8 @@ def run_model_diagnostic_analysis(
     if not isinstance(model, DiagnosticExecutionModel):
         raise TypeError("Diagnostic execution requires the diagnostic model queries.")
     if model.included_studies_have_raw_data():
+        if r_worker.enabled():
+            return _worker_diagnostic_fit(requests, _diagnostic_data_arguments(model))
         return run_versioned_analysis_requests(
             requests, dataset_to_simple_diagnostic_r_object(model)
         )
@@ -1212,6 +1378,8 @@ def run_model_diagnostic_analysis(
             "complete entered effect estimates and confidence intervals for "
             f"each selected effect measure. Missing entered estimates for: {', '.join(missing)}."
         )
+    if r_worker.enabled():
+        return _worker_diagnostic_fit(requests, [_diagnostic_data_arguments(model, metric=metric) for metric in metrics])
     return run_versioned_analysis_requests(
         requests, metric_data=[diagnostic_data_arguments(model, metric=metric) for metric in metrics]
     )
@@ -1327,6 +1495,10 @@ _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digi
 @serialized_r_call
 def parse_out_results(result):
     payload = execute_r_function("RCMetaR:::.rcmetar.result.payload", result)
+    return _parse_result_payload(payload)
+
+
+def _parse_result_payload(payload):
     values, request, execution, studies, contributors = payload
     result = dict(zip(values.names, values)) if len(values) else {}
     if not _r_is_null(studies):
@@ -2138,11 +2310,15 @@ def _display_section_name(name):
 
 
 def _is_r_string_vector(r_object):
+    if isinstance(r_object, ResultVector):
+        return r_object.kind == "character"
     _require_initialized_r()
     return isinstance(r_object, ro.vectors.StrVector)
 
 
 def _r_attribute(r_object, name):
+    if isinstance(r_object, ResultVector):
+        return r_object.attributes.get(name)
     if not isinstance(r_object, ro.vectors.Vector):
         return None
     try:

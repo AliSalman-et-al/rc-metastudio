@@ -28,7 +28,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
-from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text
+from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text, r_worker
 from rc_metastudio.analysis import (
     catalog as analysis_catalog,
     identity as analysis_identity,
@@ -915,7 +915,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_error_label.hide()
         self.analysis_error_panel.hide()
         self.analysis_error_toggle.setChecked(False)
-        bar = None
         try:
             from rc_metastudio.results.report import ManuscriptReport
 
@@ -927,15 +926,8 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if missing_inputs:
                 self._show_analysis_error(missing_inputs)
                 return
-            repeated = self.analysis_type in {"cumulative", "leave-one-out"}
-            bar = progress_dialog.AnalysisProgressDialog(
-                self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
-            )
-            bar.show()
-            bar.repaint()
-            bar.start_tracking()
-            result = self._execute_requests(requests) if regression is None else regression()
-            if bar.cancelled:
+            result = self._execute_with_progress(requests, regression)
+            if result is None:
                 return
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
             manuscript = ManuscriptReport.from_result(result)
@@ -943,20 +935,39 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             on_result = self._on_result
             if on_result is None:
                 raise RuntimeError("analysis configuration has no results owner")
+        except r_worker.RJobCancelled:
+            return
         except Exception as error:
-            if bar is not None and bar.cancelled:
-                return
             self._show_execution_error(error)
             return
         finally:
-            if bar is not None:
-                progress_dialog.dispose(bar)
             run_button.setEnabled(True)
         if source_sheet is not None and pooled_fit is not None:
             source_sheet.last_meta_analysis = pooled_fit
         self.done(QDialog.DialogCode.Accepted.value)
         shown = on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
         self._close_replaced_result(shown)
+
+    def _execute_with_progress(self, requests, regression: Callable[[], AnalysisResult] | None):
+        execute = regression if regression is not None else lambda: self._execute_requests(requests)
+        if r_worker.enabled():
+            return execute()
+        repeated = self.analysis_type in {"cumulative", "leave-one-out"}
+        bar = progress_dialog.AnalysisProgressDialog(
+            self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
+        )
+        try:
+            bar.show()
+            bar.repaint()
+            bar.start_tracking()
+            result = execute()
+            return None if bar.cancelled else result
+        except Exception:
+            if not bar.cancelled:
+                raise
+            return None
+        finally:
+            progress_dialog.dispose(bar)
 
     def _close_replaced_result(self, shown) -> None:
         if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):

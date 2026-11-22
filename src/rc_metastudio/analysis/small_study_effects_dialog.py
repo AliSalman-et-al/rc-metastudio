@@ -10,7 +10,7 @@ from PyQt6 import sip
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy, QWidget
 
-from rc_metastudio import adaptive_window, app_error_handler
+from rc_metastudio import adaptive_window, app_error_handler, r_worker
 from rc_metastudio.analysis import progress_dialog
 from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.analysis.catalog import ONE_ARM_METRICS
@@ -531,18 +531,21 @@ class SmallStudyEffectsDialog(
         self.failure_label.setVisible(False)
         from rc_metastudio.analysis.identity import metric_label
         metric = "Diagnostic odds ratio" if request.data_type == "diagnostic" else metric_label(self.model)
-        progress = progress_dialog.AnalysisProgressDialog(
-            self, operation="Running small-study effects analysis…",
-            context=f"{self.model.current_outcome_name} · {metric}"
-        )
-        progress.show()
-        progress.repaint()
+        progress = None
+        if not r_worker.enabled():
+            progress = progress_dialog.AnalysisProgressDialog(
+                self, operation="Running small-study effects analysis…",
+                context=f"{self.model.current_outcome_name} · {metric}"
+            )
+            progress.show()
+            progress.repaint()
         try:
             try:
                 result = self.analysis_service.execute(self.model, request)
                 result = self._with_report_identity(result, request)
             finally:
-                progress_dialog.dispose(progress)
+                if progress is not None:
+                    progress_dialog.dispose(progress)
             if self._on_result is None:
                 raise TypeError("small-study effects dialog has no results owner")
             source_sheet = self._source_sheet or self.model.current_sheet
@@ -551,6 +554,8 @@ class SmallStudyEffectsDialog(
             if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
                 self._replaces.close()
             self.accept()
+        except r_worker.RJobCancelled:
+            run_button.setEnabled(True)
         except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)

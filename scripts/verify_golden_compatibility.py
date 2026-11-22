@@ -1177,11 +1177,25 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _capture_main(root: Path, output_root: Path) -> int:
+    from rc_metastudio import r_worker
+
+    app = None
+    if r_worker.enabled():
+        from PyQt6.QtWidgets import QApplication
+
+        app = QApplication([])
     try:
         report = verify(root, output_root)
     except Exception as exc:
         print("Golden compatibility verification failed: %s" % exc, file=sys.stderr)
         return 1
+    finally:
+        if app is not None:
+            from PyQt6.QtCore import Qt
+
+            if (worker := app.findChild(r_worker.RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
+                worker.close()
+            app.quit()
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0 if report["passed"] else 1
 

@@ -172,6 +172,7 @@ local({
     if (!ready) quit(save="no", status=1L)
     reply(0L, "ok")
 
+    tsa <- new.env(parent=emptyenv())
     repeat {
         request <- read_frame()
         if (is.null(request)) break
@@ -181,15 +182,34 @@ local({
             reply(request$id, "cancelled")
             next
         }
+        checkpoint <- local({
+            last <- -Inf
+            function(index, total) {
+                if (file.exists(marker)) stop("R job cancelled", call.=FALSE)
+                now <- proc.time()[["elapsed"]]
+                if (now - last >= .1) {
+                    reply(request$id, "progress", list(index=index, total=total))
+                    last <<- now
+                }
+                TRUE
+            }
+        })
         tryCatch({
             request$job <- decode_wire(request$job)
             value <- if (identical(request$job$type, "previews")) {
                 previews(request$job)
             } else if (identical(request$job$type, "calculator")) {
                 calculate(request$job)
+            } else if (request$job$type %in% c("fit", "diagnostic_fit", "small_study",
+                                              "tsa_preview", "tsa_conclusion", "tsa_run")) {
+                outcome <- RCMetaR:::.rcmetar.worker.fit(request$job, checkpoint, tsa)
+                RCMetaR:::.rcmetar.worker.result.vector(outcome, wire_value)
             } else stop("Unknown R worker job")
             if (file.exists(marker)) reply(request$id, "cancelled")
             else reply(request$id, "ok", result=value)
-        }, error=function(error) reply(request$id, "error", message=conditionMessage(error)))
+        }, error=function(error) {
+            if (file.exists(marker)) reply(request$id, "cancelled")
+            else reply(request$id, "error", message=conditionMessage(error))
+        })
     }
 })

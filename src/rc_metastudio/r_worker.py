@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from rc_metastudio import r_runtime
 from rc_metastudio.rcmetar_identity import expected_source, runtime_versions
+from rc_metastudio.r_result_wire import result_vector
 from rc_metastudio.r_worker_lifetime import WindowsWorkerJob, kill_worker_group, worker_command
 
 
@@ -55,7 +56,16 @@ class PreviewJob(TypedDict):
     confidence: float
 
 
-WorkerJob = CalculatorJob | PreviewJob
+class AnalysisJob(TypedDict):
+    type: Literal["fit", "diagnostic_fit", "small_study", "tsa_preview", "tsa_conclusion", "tsa_run"]
+    family: str
+    columns: Mapping[str, object] | Sequence[Mapping[str, object]]
+    request: Mapping[str, object] | Sequence[Mapping[str, object]]
+    stage: str
+    plot: Mapping[str, object]
+
+
+WorkerJob = CalculatorJob | PreviewJob | AnalysisJob
 
 
 class _Reply(TypedDict):
@@ -70,9 +80,13 @@ class RWorkerError(r_runtime.AnalysisBackendUnavailableError):
     """The job did not complete and its changes must not be published."""
 
 
+class RJobCancelled(RWorkerError):
+    """A cancelled worker job published no result."""
+
 @dataclass
 class _Pending:
     id: int
+    marker: Path
     reply: _Reply | None = None
     error: str | None = None
     cancelled: bool = False
@@ -105,7 +119,7 @@ def _decode_number(value: dict[str, object]) -> object:
             return -math.inf
     if "$num" in value:
         raise ValueError("invalid wire number")
-    return value
+    return result_vector(value)
 
 
 def _frame(job_id: int, job: object) -> bytes:
@@ -174,6 +188,7 @@ class RWorker(QObject):
         self._startup_error: str | None = None
         self._startup_stderr = ""
         self._pending: _Pending | None = None
+        self._background: _Pending | None = None
         self._job_id = 0
         self._buffer = bytearray()
         self._control: QTemporaryDir | None = None
@@ -371,37 +386,89 @@ class RWorker(QObject):
             self.changed.disconnect(loop.quit)
 
     def call(self, job: WorkerJob, *, timeout_ms: int | None) -> object:
+        if self._background is not None:
+            passive = self._background
+            self._cancel_pending(passive)
+            self._wait(passive.finished)
+        pending = self._submit(job, timeout_ms)
+        try:
+            self._wait(pending.finished, delay_ms=200)
+            if not pending.finished():
+                self._wait_with_cancel(job["type"], pending)
+            return _job_result(pending)
+        finally:
+            self._release(pending)
+
+    def start_background(
+        self, job: AnalysisJob, deliver: Callable[[object, Exception | None], None],
+    ) -> Callable[[], None]:
+        pending = self._submit(job, None)
+        self._background = pending
+
+        def completed() -> None:
+            if not pending.finished():
+                return
+            self.changed.disconnect(completed)
+            self._background = None
+            self._release(pending)
+            QTimer.singleShot(0, lambda: _deliver_result(pending, deliver))
+
+        self.changed.connect(completed)
+        completed()
+        return lambda: self._cancel_pending(pending)
+
+    def wait_for_conclusion(self) -> None:
+        if (pending := self._background) is not None:
+            self._wait_with_cancel("tsa_run", pending)
+            _job_result(pending)
+
+    def _submit(self, job: WorkerJob, timeout_ms: int | None) -> _Pending:
         # The bridge also guards reentry while both backends coexist.
         if self._pending is not None:
             raise RWorkerError("Another R job is running.")
         self.ensure_ready()
         self._job_id += 1
         payload = _frame(self._job_id, job)
-        pending = _Pending(self._job_id)
-        self._pending = pending
         assert self._control is not None
-        marker = Path(self._control.path()) / f"{pending.id}.cancel"
-        try:
-            if timeout_ms is None:
-                self._watch_heartbeat = True
-                self._heartbeat.start(_HEARTBEAT_MS)
-            else:
-                self._deadline.start(timeout_ms)
-            if self._process.write(payload) != len(payload):
-                self._interrupt("Could not send the R job. The R worker will restart. Try again.")
-            self._wait(pending.finished, delay_ms=200)
-            if not pending.finished():
-                self._wait_with_cancel(job, pending, marker)
-            return _job_result(pending)
-        finally:
-            self._deadline.stop()
-            self._heartbeat.stop()
-            self._watch_heartbeat = False
-            self._pending = None
-            marker.unlink(missing_ok=True)
+        pending = _Pending(self._job_id, Path(self._control.path()) / f"{self._job_id}.cancel")
+        self._pending = pending
+        if timeout_ms is None:
+            self._watch_heartbeat = True
+            self._heartbeat.start(_HEARTBEAT_MS)
+        else:
+            self._deadline.start(timeout_ms)
+        if self._process.write(payload) != len(payload):
+            self._interrupt("Could not send the R job. The R worker will restart. Try again.")
+        return pending
 
-    def _wait_with_cancel(self, job: WorkerJob, pending: _Pending, marker: Path) -> None:
-        label = "Calculating study previews…" if job["type"] == "previews" else "Calculating study effects…"
+    def _release(self, pending: _Pending) -> None:
+        self._deadline.stop()
+        self._heartbeat.stop()
+        self._watch_heartbeat = False
+        self._pending = None
+        pending.marker.unlink(missing_ok=True)
+
+    def _cancel_pending(self, pending: _Pending) -> None:
+        if pending.finished() or pending.cancelled:
+            return
+        pending.cancelled = True
+        try:
+            pending.marker.touch()
+        except OSError:
+            self._interrupt("The R job was cancelled and the R worker will restart.")
+        else:
+            self._deadline.start(_CANCEL_MS)
+        self.changed.emit()
+
+    def _wait_with_cancel(self, kind: str, pending: _Pending) -> None:
+        label = {
+            "previews": "Calculating study previews…",
+            "calculator": "Calculating study effects…",
+            "small_study": "Running small-study effects analysis…",
+            "tsa_run": "Running trial sequential analysis…",
+            "tsa_preview": "Preparing trial sequential analysis…",
+            "tsa_conclusion": "Checking trial sequential boundaries…",
+        }.get(kind, "Fitting model and drawing plots…")
         dialog = QProgressDialog(label, "Cancel", 0, 0, QApplication.activeWindow())
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         dialog.setMinimumDuration(0)
@@ -409,17 +476,10 @@ class RWorker(QObject):
         def cancel() -> None:
             if pending.finished() or pending.cancelled:
                 return
-            pending.cancelled = True
             dialog.setLabelText("Cancelling…")
             dialog.setCancelButton(None)
             dialog.show()
-            try:
-                marker.touch()
-            except OSError:
-                self._interrupt("The R job was cancelled and the R worker will restart.")
-            else:
-                self._deadline.start(_CANCEL_MS)
-            self.changed.emit()
+            self._cancel_pending(pending)
 
         def show_heartbeat(missed: bool) -> None:
             if not pending.cancelled:
@@ -469,13 +529,22 @@ def _parse_reply(reply: object) -> _Reply:
 def _job_result(pending: _Pending) -> object:
     reply = pending.reply
     if pending.cancelled or (reply is not None and reply["status"] == "cancelled"):
-        raise RWorkerError("The R job was cancelled.")
+        raise RJobCancelled("The R job was cancelled.")
     if pending.error is not None:
         raise RWorkerError(pending.error)
     assert reply is not None
     if reply["status"] != "ok":
         raise ValueError(f"R could not complete the calculation. {reply['message']}")
     return reply["result"]
+
+
+def _deliver_result(pending: _Pending, deliver: Callable[[object, Exception | None], None]) -> None:
+    try:
+        result = _job_result(pending)
+    except Exception as error:
+        deliver(None, error)
+    else:
+        deliver(result, None)
 
 
 def current_worker() -> RWorker:

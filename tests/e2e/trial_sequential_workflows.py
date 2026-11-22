@@ -14,6 +14,7 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+from rc_metastudio import r_worker
 from rc_metastudio.analysis import catalog as analysis_catalog
 from rc_metastudio.project import (
     model as analysis_dataset,
@@ -546,14 +547,20 @@ def run(app, window, work, record, case):
             wait(300)
             assert dialog.run_button.isEnabled(), dialog.status.text()
             if change is None:
-                deadline = perf_counter() + 3
-                while dialog.conclusion_process.state() != QtCore.QProcess.ProcessState.Running and perf_counter() < deadline:
-                    wait(20)
-                assert dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running
+                if r_worker.enabled():
+                    dialog.conclusion_timer.stop()
+                    dialog._start_conclusion()
+                    assert dialog._cancel_worker_conclusion is not None
+                else:
+                    deadline = perf_counter() + 3
+                    while dialog.conclusion_process.state() != QtCore.QProcess.ProcessState.Running and perf_counter() < deadline:
+                        wait(20)
+                    assert dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running
                 assert dialog.run_button.isEnabled() and dialog.conclusion.text() == "Checking boundary crossings…"
             record("tsa-change-settings-dialog", dialog, power=dialog.power.text(),
                    effect=dialog.effect.text(), status=dialog.status.text(),
-                   background_running=dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running)
+                   background_running=dialog._cancel_worker_conclusion is not None
+                   or dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running)
             dialog.run_button.click()
             assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
@@ -588,7 +595,8 @@ def run(app, window, work, record, case):
             elapsed = perf_counter() - started
         assert elapsed < 30, elapsed
         assert not window.workspace.is_dirty and view._report_tables[0].rows == entered_rows
-        record("tsa-child-timeout-fallback", view, elapsed=elapsed, results_preserved=True)
+        action = "tsa-worker-conclusion-reused" if r_worker.enabled() else "tsa-child-timeout-fallback"
+        record(action, view, elapsed=elapsed, results_preserved=True)
         view.report_action.setChecked(True)
         record("tsa-change-settings-result", view, same_window=visible is view, project_dirty=window.workspace.is_dirty,
                before=original_methods, after=view.manuscript.methods)
