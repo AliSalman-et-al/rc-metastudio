@@ -2,6 +2,11 @@ name: Package Windows x64
 
 on:
   workflow_call:
+    inputs:
+      prepared-r-library:
+        description: Use the verified library produced for this workflow run.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -13,12 +18,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: ./.github/actions/setup-rcms
         with:
-          fetch-depth: 0
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-        with:
-          enable-cache: true
-      - run: uv python install
+          qt-rcc: 'true'
       - name: Resolve authoritative package version
         id: package-metadata
         shell: powershell
@@ -28,8 +30,16 @@ jobs:
         with:
           path: artifacts/download-cache/windows-x64
           key: official-r-4.6.2-windows-x64-B0B0053BAA1963B6D8A28C9642D50107EF9CE2F41C8B9A90E952846C8918B38A
+      - name: Retrieve the verified R library
+        if: inputs.prepared-r-library
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: windows-pinned-r-library
+          path: build/pinned-r
       - name: Build and qualify the public Windows package command
         shell: powershell
+        env:
+          RCMS_PREPARED_R_LIBRARY: ${{ inputs.prepared-r-library && 'build/pinned-r' || '' }}
         run: .\scripts\package-windows.ps1
       - name: Upload package and qualification evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

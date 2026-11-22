@@ -140,6 +140,20 @@ def load_policy(manifest_path: Path) -> dict:
         and record.get("source") == "cran"
         and isinstance(record.get("installed_version"), str)
     }
+    archive_sha256 = policy.get("archive_sha256", {})
+    archive_suffixes = {"windows-x64": ".zip", "macos-arm64": ".tgz", "linux-x64": ".tar.gz"}
+    if not isinstance(archive_sha256, dict) or set(archive_sha256) != set(archive_suffixes):
+        raise PolicyError("archive_sha256 must cover each supported binary target")
+    for target, suffix in archive_suffixes.items():
+        hashes = archive_sha256[target]
+        expected_archives = {f"{name}_{version}{suffix}" for name, version in pinned_authorities.items()}
+        if not isinstance(hashes, dict) or set(hashes) != expected_archives or any(
+            not isinstance(digest, str)
+            or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+            for digest in hashes.values()
+        ):
+            raise PolicyError(f"invalid archive SHA256 pins for {target}")
 
     direct_meta = [
         record
@@ -174,6 +188,7 @@ def load_policy(manifest_path: Path) -> dict:
         "normal_packages": normal_packages,
         "runtime_packages": runtime_packages,
         "pinned_authorities": pinned_authorities,
+        "archive_sha256": archive_sha256,
     }
 
 
@@ -199,6 +214,10 @@ def emit_dcf(policy: dict) -> str:
         fields[f"{prefix}-Pkg-Type"] = record["pkg_type"]
         fields[f"{prefix}-Contrib-Path"] = record["contrib_path"]
     linux_binary = policy["linux_binary"]
+    for target, hashes in policy["archive_sha256"].items():
+        fields[f"{target.replace('-', '_')}-Archive-SHA256"] = ",".join(
+            f"{name}={digest}" for name, digest in sorted(hashes.items())
+        )
     fields.update(
         {
             "Linux-Binary-Repository": linux_binary["repository"],

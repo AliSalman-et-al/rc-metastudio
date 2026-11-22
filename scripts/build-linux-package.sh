@@ -122,26 +122,50 @@ RPY2_CFFI_MODE=API \
 "$python_exe" -c 'import rpy2.robjects; from rpy2.rinterface_lib import openrlib; print(openrlib.R_HOME)' | grep -F "$r_home" >/dev/null \
   || die "rpy2 API bridge did not initialize the private R runtime."
 
-step "Installing the dated Ubuntu 24.04 R binary closure"
-R_HOME="$r_home" \
+cache_root="${RCMS_PACKAGED_R_CACHE:-}"
+if [ -n "$cache_root" ] && [ -s "$cache_root/dependencies/install-r-deps.log" ]; then
+  step "Restoring the verified Ubuntu 24.04 R binary library and its archives"
+  (cd "$cache_root/dependencies/ppm-archives" && sha256sum --check --status ../ppm-archives.sha256)
+  cp -a "$cache_root/dependencies/library/." "$r_library"
+  cp -a "$cache_root/dependencies/ppm-archives" "$ppm_archives"
+  cp "$cache_root/dependencies/install-r-deps.log" "$qualification_root/install-r-deps.log"
+else
+  step "Installing the dated Ubuntu 24.04 R binary closure"
+  R_HOME="$r_home" \
 R_LIBS="$r_library" \
 R_LIBS_USER="$r_library" \
 RCMS_R_LIBS="$r_library" \
 RCMS_CRAN_REPO="$cran_repo" \
 RCMS_POLICY_PYTHON="$python_exe" \
+RCMS_R_PACKAGE_ARCHIVE_DIR="$ppm_archives" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
 PATH="$r_home/bin:$PATH" \
-"$r_home/bin/Rscript" "$repo_root/scripts/install-r-deps-linux.R" \
-  "$repo_root" "$r_library" "$ppm_archives" 2>&1 | tee "$qualification_root/install-r-deps.log"
+  "$r_home/bin/Rscript" "$repo_root/scripts/install-r-deps.R" 2>&1 | tee "$qualification_root/install-r-deps.log"
+  if [ -n "$cache_root" ]; then
+    mkdir -p "$cache_root/dependencies"
+    (cd "$ppm_archives" && sha256sum -- *.tar.gz) > "$cache_root/dependencies/ppm-archives.sha256"
+    cp -a "$r_library" "$ppm_archives" "$qualification_root/install-r-deps.log" "$cache_root/dependencies/"
+  fi
+fi
 
-step "Installing and checking the local RCMetaR authority package"
-R_HOME="$r_home" \
+if [ -n "$cache_root" ] && [ -f "$cache_root/source/RCMetaR/DESCRIPTION" ]; then
+  step "Restoring installed RCMetaR"
+  cp -a "$cache_root/source/RCMetaR" "$r_library/"
+  cp "$cache_root/source/install-rcmetar.log" "$qualification_root/install-rcmetar.log"
+else
+  step "Installing and checking the local RCMetaR authority package"
+  R_HOME="$r_home" \
 R_LIBS="$r_library" \
 R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
 PATH="$r_home/bin:$PATH" \
-"$r_home/bin/R" CMD INSTALL --library="$r_library" "$repo_root/r/RCMetaR" \
-  2>&1 | tee "$qualification_root/install-rcmetar.log"
+  "$r_home/bin/Rscript" "$repo_root/scripts/install-rcmetar-source.R" "$repo_root/r/RCMetaR" "$r_library" \
+    2>&1 | tee "$qualification_root/install-rcmetar.log"
+  if [ -n "$cache_root" ]; then
+    mkdir -p "$cache_root/source"
+    cp -a "$r_library/RCMetaR" "$qualification_root/install-rcmetar.log" "$cache_root/source/"
+  fi
+fi
 test -f "$r_library/RCMetaR/worker.R"
 R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \

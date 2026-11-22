@@ -1,0 +1,83 @@
+name: Set up RC MetaStudio tools
+description: Set up locked Python, optional hosted R, and prebuilt Qt resource tools.
+inputs:
+  hosted-r:
+    description: Install the pinned R runtime for source verification.
+    default: 'false'
+  qt-rcc:
+    description: Restore the official resource compiler for the runner platform.
+    default: 'false'
+  uv-cache-suffix:
+    description: Separate native builds with different ABI or package inputs.
+    default: ''
+  linux-package-r-cache:
+    description: Cache the pinned Ubuntu binary library for a package build.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      with:
+        enable-cache: true
+        cache-dependency-glob: uv.lock
+        cache-suffix: ${{ inputs.uv-cache-suffix }}
+        prune-cache: false
+
+    - name: Install locked Python
+      shell: bash
+      run: uv python install
+
+    - name: Install pinned hosted R
+      if: inputs.hosted-r == 'true'
+      uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+      with:
+        r-version: 4.6.2
+        use-public-rspm: true
+
+    - name: Cache official Windows Qt rcc
+      if: inputs.qt-rcc == 'true' && runner.os == 'Windows'
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/qt-rcc
+        key: qt-rcc-6.12.0-windows-x64-219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc
+
+    - name: Cache official macOS Qt SDK
+      if: inputs.qt-rcc == 'true' && runner.os == 'macOS'
+      id: macos-qt-sdk
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/qt-sdk
+        key: qtbase-sdk-6.12.0-macos-arm64
+
+    - name: Install official macOS Qt SDK
+      if: inputs.qt-rcc == 'true' && runner.os == 'macOS' && steps.macos-qt-sdk.outputs.cache-hit != 'true'
+      shell: bash
+      run: uv tool run --no-build --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
+
+    - name: Resolve official macOS Qt rcc
+      if: inputs.qt-rcc == 'true' && runner.os == 'macOS'
+      shell: bash
+      run: |
+        uv run --no-project python scripts/macos_rcc.py \
+          --sdk-root "$PWD/build/qt-sdk/6.12.0/macos" \
+          --github-env "$GITHUB_ENV" --diagnostic build/qt-sdk/macos-arm64-rcc.json
+
+    - name: Cache pinned R dependency library and binary archives
+      if: inputs.linux-package-r-cache == 'true'
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/pinned-r/dependencies
+        key: pinned-r-v1-linux-x64-noble-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps*.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
+
+    - name: Cache installed RCMetaR for Linux
+      if: inputs.linux-package-r-cache == 'true'
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/pinned-r/source
+        key: pinned-rcmetar-v1-linux-x64-noble-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
+
+    - name: Export the packaged R cache location
+      if: inputs.linux-package-r-cache == 'true'
+      shell: bash
+      run: echo 'RCMS_PACKAGED_R_CACHE=build/pinned-r' >> "$GITHUB_ENV"

@@ -428,20 +428,30 @@ def verify(args: argparse.Namespace) -> None:
         cache_root = (
             args.r_library_cache_root.resolve() if args.r_library_cache_root else None
         )
-        r_library = ensure_dependency_library(
-            root, rscript, env, python, cran_repo, cache_root, work_dir
-        )
+        prepared = args.prepared_r_library.resolve() if args.prepared_r_library else None
+        if prepared is None:
+            r_library = ensure_dependency_library(
+                root, rscript, env, python, cran_repo, cache_root, work_dir
+            )
+        else:
+            r_library = prepared / "library"
+            copy_library(prepared / "source/library/RCMetaR", r_library / "RCMetaR")
         env = isolated_r_env(base_env, r_library, r_home)
         env["RCMS_CRAN_REPO"] = cran_repo
 
         step(f"Using isolated R verification library at {r_library}")
 
-        run(
-            [r_exe, "CMD", "build", "--no-build-vignettes", root / RCMetaR_PACKAGE],
-            cwd=work_dir,
-            env=env,
-        )
-        tarball = built_RCMetaR_tarball(work_dir)
+        if prepared is None:
+            run(
+                [r_exe, "CMD", "build", "--no-build-vignettes", root / RCMetaR_PACKAGE],
+                cwd=work_dir,
+                env=env,
+            )
+            tarball = built_RCMetaR_tarball(work_dir)
+        else:
+            tarball = built_RCMetaR_tarball(prepared / "source")
+            verify_manifest_versions(root, python, rscript, env)
+            verify_dependency_closure(root, rscript, env)
         if args.desktop_shard is None:
             run(
                 [
@@ -456,11 +466,12 @@ def verify(args: argparse.Namespace) -> None:
                 cwd=work_dir,
                 env=env,
             )
-        run(
-            [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
-            cwd=root,
-            env=env,
-        )
+        if prepared is None:
+            run(
+                [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
+                cwd=root,
+                env=env,
+            )
 
         env["RCMS_R_STACK_REQUIRED"] = "1"
         if args.desktop_shard is None:
@@ -521,6 +532,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--fresh", action="store_true", help="Do not reuse passed desktop evidence")
     parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--r-library-cache-root", type=Path, default=None)
+    parser.add_argument("--prepared-r-library", type=Path)
     parser.add_argument("--cran-repo", default=None)
     args = parser.parse_args(argv)
     if args.desktop_scenarios and args.desktop_shard is None:

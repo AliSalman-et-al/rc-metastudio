@@ -552,7 +552,7 @@ install_local_r_packages() {
   cp "$built_archive" "$rcmetar_archive_path"
 
   R_HOME="$r_home" R_LIBS="$r_lib" R_LIBS_USER="$r_lib" R_MAKEVARS_USER="$r_makevars" \
-    "$r_binary" CMD INSTALL --library="$r_lib" "$rcmetar_archive_path"
+    "$rscript" "$repo_root/scripts/install-rcmetar-source.R" "$rcmetar_archive_path" "$r_lib"
 }
 
 step "Installing bundled R package dependencies into this private staged runtime"

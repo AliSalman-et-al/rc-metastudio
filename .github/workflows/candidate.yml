@@ -86,9 +86,16 @@ jobs:
           name: release-set-initial
           path: candidate
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        if: hashFiles('.github/actions/setup-rcms/action.yml') == ''
         with:
           enable-cache: true
       - run: uv python install
+        if: hashFiles('.github/actions/setup-rcms/action.yml') == ''
+      - uses: ./.github/actions/setup-rcms
+        if: hashFiles('.github/actions/setup-rcms/action.yml') != ''
+        with:
+          qt-rcc: 'true'
+          linux-package-r-cache: ${{ matrix.target == 'linux-x64' }}
       - name: Install Linux package build and qualification libraries
         if: matrix.target == 'linux-x64'
         shell: bash
@@ -100,18 +107,18 @@ jobs:
             sudo apt-get install -y "${packages[@]}"
           fi
       - name: Cache official Qt SDK for macOS
-        if: startsWith(matrix.target, 'macos-')
+        if: startsWith(matrix.target, 'macos-') && hashFiles('.github/actions/setup-rcms/action.yml') == ''
         id: macos_qt_sdk_cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/qt-sdk
           key: qtbase-sdk-6.12.0-${{ matrix.target }}
       - name: Install official Qt SDK for macOS
-        if: startsWith(matrix.target, 'macos-') && steps.macos_qt_sdk_cache.outputs.cache-hit != 'true'
+        if: startsWith(matrix.target, 'macos-') && hashFiles('.github/actions/setup-rcms/action.yml') == '' && steps.macos_qt_sdk_cache.outputs.cache-hit != 'true'
         shell: bash
         run: uv tool run --from aqtinstall==3.3.0 aqt install-qt mac desktop 6.12.0 clang_64 --archives qtbase --outputdir "$PWD/build/qt-sdk"
       - name: Resolve official Qt rcc for macOS
-        if: startsWith(matrix.target, 'macos-')
+        if: startsWith(matrix.target, 'macos-') && hashFiles('.github/actions/setup-rcms/action.yml') == ''
         shell: bash
         run: |
           # Candidate builds can select a protected-master revision before this tool moved.
