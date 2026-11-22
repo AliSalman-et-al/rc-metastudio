@@ -13,6 +13,7 @@
     "normal_install_type": "binary",
     "source_fallback": false,
     "required_normal_packages": [
+      "jsonlite",
       "mada",
       "metafor",
       "gsDesign",
@@ -127,6 +128,15 @@
     "build": "No compiled RCMetaR code or LinkingTo dependency is present in the current package metadata; roxygen2 is listed because the parent modernization slice requires generated documentation and NAMESPACE output."
   },
   "direct_RCMetaR_dependencies": [
+    {
+      "name": "jsonlite",
+      "source": "cran",
+      "scope": ["runtime"],
+      "declared_in": ["r/RCMetaR/DESCRIPTION"],
+      "evidence": ["r/RCMetaR/inst/worker.R: worker protocol serialization"],
+      "reason": "Encodes and decodes RCMetaR worker requests and responses.",
+      "installed_version": "2.0.0"
+    },
     {
       "name": "ellipse",
       "source": "cran",

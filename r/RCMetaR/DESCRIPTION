@@ -23,6 +23,7 @@ Imports:
     grDevices,
     graphics,
     gsDesign,
+    jsonlite,
     mada,
     meta,
     methods,

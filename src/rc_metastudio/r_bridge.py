@@ -18,7 +18,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Callable, Literal, ParamSpec, Protocol, TypeVar, cast, overload, runtime_checkable
 
-from rc_metastudio import r_runtime
+from rc_metastudio import r_runtime, r_worker
 from rc_metastudio.analysis.method_labels import (
     method_display_label,
     method_labels_by_id,
@@ -290,6 +290,13 @@ def get_r_package_version(package_name):
     return str(execute_r_function("as.character", version)[0])
 
 
+def _worker_calculate(
+    kind: r_worker.CalculatorKind, args: Mapping[str, object], *, vector: bool = False,
+):
+    with r_execution():
+        return r_worker.current_worker().call({"type": "calculator", "kind": kind, "args": args, "vector": vector})
+
+
 @serialized_r_call
 def impute_diagnostic_data(diagnostic_data):
     diagnostic_data = normalize_confidence_level_params(diagnostic_data)
@@ -298,6 +305,9 @@ def impute_diagnostic_data(diagnostic_data):
     for param, val in list(diagnostic_data.items()):
         if val is None:
             diagnostic_data.pop(param)
+
+    if r_worker.enabled():
+        return _worker_calculate("diagnostic_impute", {"data": diagnostic_data})
 
     dataf = execute_r_function("data.frame", **diagnostic_data)
     two_by_two = execute_r_function("rcmetar.impute.diagnostic", dataf)
@@ -311,6 +321,9 @@ def impute_diagnostic_data(diagnostic_data):
 def impute_binary_data(binary_data):
     binary_data = normalize_confidence_level_params(binary_data)
     remove_entries_with_value(None, binary_data)
+
+    if r_worker.enabled():
+        return _worker_calculate("binary_impute", {"data": binary_data})
 
     dataf = execute_r_function("data.frame", **binary_data)
     two_by_two = execute_r_function("rcmetar.impute.binary", dataf)
@@ -328,6 +341,12 @@ def back_calculate_continuous_data(
     remove_entries_with_value(None, group1_data)
     remove_entries_with_value(None, group2_data)
     remove_entries_with_value(None, effect_data)
+
+    if r_worker.enabled():
+        return _worker_calculate("back_calculate", {
+            "group1": group1_data, "group2": group2_data, "effect": effect_data,
+            "confidence": confidence_level,
+        })
 
     dataf_grp1 = execute_r_function("data.frame", **group1_data)
     dataf_grp2 = execute_r_function("data.frame", **group2_data)
@@ -451,6 +470,9 @@ def impute_continuous_data(continuous_data, alpha):
     if not continuous_data:
         return {"succeeded": False}
 
+    if r_worker.enabled():
+        return _worker_calculate("continuous_impute", {"data": continuous_data, "alpha": alpha})
+
     dataf = execute_r_function("data.frame", **continuous_data)
     c_data = execute_r_function("rcmetar.impute.continuous.study", dataf, alpha=alpha)
 
@@ -461,6 +483,11 @@ def impute_continuous_data(continuous_data, alpha):
 def impute_pre_post_continuous_data(continuous_data, correlation, alpha):
     if len(list(continuous_data.items())) == 0:
         return {"succeeded": False}
+
+    if r_worker.enabled():
+        return _worker_calculate("pre_post", {
+            "data": continuous_data, "correlation": correlation, "alpha": alpha,
+        })
 
     dataf = execute_r_function("data.frame", **continuous_data)
     c_data = execute_r_function(
@@ -809,9 +836,13 @@ def _r_year_vector(values):
 def _r_numeric_vector(values):
     _require_initialized_r()
     converted = [
-        ro.NA_Real if value in EMPTY_VALS else float(value) for value in values
+        ro.NA_Real if value is None else value for value in _numeric_values(values)
     ]
     return ro.FloatVector(converted)
+
+
+def _numeric_values(values) -> list[float | None]:
+    return [None if value in EMPTY_VALS else float(value) for value in values]
 
 
 def _r_covariate_list(dataset, study_ids, covariates=None):
@@ -2488,19 +2519,16 @@ def diagnostic_effects_for_study(
     tp, fn, fp, tn, metrics=("Spec", "Sens"), confidence_level=95.0
 ):
     confidence_level = validate_confidence_level(confidence_level)
-    r_res = execute_r_function(
-        "rcmetar.diagnostic.study.effects",
-        tp,
-        fn,
-        fp,
-        tn,
-        metrics=_r_character_vector(metrics),
-        **{"conf.level": confidence_level},
-    )
-    return normalize_diagnostic_effects(
-        r_object_to_python(r_res),
-        require_triplets=True,
-    )
+    if r_worker.enabled():
+        result = _worker_calculate("diagnostic_effect", {
+            "tp": tp, "fn": fn, "fp": fp, "tn": tn, "metrics": metrics, "conf.level": confidence_level,
+        })
+    else:
+        result = r_object_to_python(execute_r_function(
+            "rcmetar.diagnostic.study.effects", tp, fn, fp, tn,
+            metrics=_r_character_vector(metrics), **{"conf.level": confidence_level},
+        ))
+    return normalize_diagnostic_effects(result, require_triplets=True)
 
 
 @serialized_r_call
@@ -2518,23 +2546,17 @@ def continuous_effect_for_study(
     confidence_level=95.0,
 ):
     confidence_level = validate_confidence_level(confidence_level)
-    r_res = execute_r_function(
-        "rcmetar.continuous.study.effect",
-        n1=_r_null_if_none(n1),
-        m1=_r_null_if_none(m1),
-        sd1=_r_null_if_none(sd1),
-        se1=_r_null_if_none(se1),
-        n2=_r_null_if_none(n2),
-        m2=_r_null_if_none(m2),
-        sd2=_r_null_if_none(sd2),
-        se2=_r_null_if_none(se2),
-        metric=str(metric),
-        **{"two.arm": bool(two_arm), "conf.level": confidence_level},
-    )
-    return normalize_effect_result(
-        r_object_to_python(r_res),
-        metric=metric,
-    )
+    inputs = {"n1": n1, "m1": m1, "sd1": sd1, "se1": se1,
+              "n2": n2, "m2": m2, "sd2": sd2, "se2": se2}
+    params = {"two.arm": bool(two_arm), "metric": str(metric), "conf.level": confidence_level}
+    if r_worker.enabled():
+        result = _worker_calculate("continuous_effect", inputs | params)
+    else:
+        result = r_object_to_python(execute_r_function(
+            "rcmetar.continuous.study.effect",
+            **{key: _r_null_if_none(value) for key, value in inputs.items()}, **params,
+        ))
+    return normalize_effect_result(result, metric=metric)
 
 
 @serialized_r_call
@@ -2542,6 +2564,13 @@ def study_effect_previews(
     rows: Sequence[Sequence[object]], family: str, metric: str | None,
     metrics: Sequence[str], confidence_level: float,
 ) -> list[list[tuple[float | None, ...]]]:
+    if r_worker.enabled():
+        with r_execution():
+            return r_worker.study_previews({
+                "type": "previews", "rows": [_numeric_values(row) for row in rows],
+                "family": family, "metric": metric or "",
+                "metrics": metrics, "two_arm": metric in TWO_ARM_METRICS, "confidence": confidence_level,
+            })
     raw = execute_r_function(
         "RCMetaR:::rcmetar.study.effect.previews",
         ro.ListVector(tuple((str(index), _r_numeric_vector(row)) for index, row in enumerate(rows))),
@@ -2561,22 +2590,16 @@ def effect_for_study(
 ):
     """Compute an estimate and confidence interval for binary study data."""
     confidence_level = validate_confidence_level(confidence_level)
-    r_res = execute_r_function(
-        "rcmetar.binary.study.effect",
-        e1=_r_null_if_none(e1),
-        n1=_r_null_if_none(n1),
-        e2=_r_null_if_none(e2),
-        n2=_r_null_if_none(n2),
-        **{
-            "two.arm": bool(two_arm),
-            "metric": str(metric),
-            "conf.level": confidence_level,
-        },
-    )
-    return normalize_effect_result(
-        r_object_to_python(r_res),
-        metric=metric,
-    )
+    inputs = {"e1": e1, "n1": n1, "e2": e2, "n2": n2}
+    params = {"two.arm": bool(two_arm), "metric": str(metric), "conf.level": confidence_level}
+    if r_worker.enabled():
+        result = _worker_calculate("binary_effect", inputs | params)
+    else:
+        result = r_object_to_python(execute_r_function(
+            "rcmetar.binary.study.effect",
+            **{key: _r_null_if_none(value) for key, value in inputs.items()}, **params,
+        ))
+    return normalize_effect_result(result, metric=metric)
 
 
 def binary_convert_scale(x, metric_name, convert_to="display.scale", n1=None):
@@ -2601,6 +2624,13 @@ def generic_convert_scale(
     islist = isinstance(x, list) or isinstance(
         x, tuple
     )
+    if r_worker.enabled():
+        return _worker_calculate("scale", {
+            "x": _numeric_values(x) if islist else x,
+            "metric": str(metric_name), "data.type": str(data_type),
+            "convert.to": str(convert_to), "n1": n1,
+        }, vector=islist)
+
     if islist:
         x_arg = _r_numeric_vector(x)
         n1_arg = (
