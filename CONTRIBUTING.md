@@ -1,71 +1,58 @@
 # Contributing to RC MetaStudio
 
-The best way to contribute is a [detailed issue](https://github.com/AliSalman-et-al/rc-metastudio/issues/new): tell us what you ran into or what you would like to do, and we will take it from there.
+Use the issue tracker to report a bug, ask for help or propose a feature or statistical method.
 
-- **Found a bug or have an idea?** [Open an issue](https://github.com/AliSalman-et-al/rc-metastudio/issues/new), and see [Write an issue we can build from](#write-an-issue-we-can-build-from) for what helps.
-- **Question or setup help?** Ask in [GitHub Issues](https://github.com/AliSalman-et-al/rc-metastudio/issues).
-- **Need a statistical method or help understanding a result?** Include the effect measure, method settings and a small public or synthetic example. A methodological reference or direct R comparison helps, but is not required to ask.
+## How to contribute or get help
 
-## Why issues come first
+All feedback and support go through [GitHub Issues](https://github.com/AliSalman-et-al/rc-metastudio/issues):
 
-Reviewing an outside pull request takes us longer than building the same change from a clear issue. We have to read code written without our context, check its statistical and data-handling implications, and usually rework it to fit the codebase. A good issue costs you less time, and we build, test and review the change in our normal process.
+- **Report a bug:** [Open an issue](https://github.com/AliSalman-et-al/rc-metastudio/issues/new) describing what happened and how to reproduce it.
+- **Request a feature or statistical method:** [Open an issue](https://github.com/AliSalman-et-al/rc-metastudio/issues/new) describing the review task you are trying to complete. For a statistical method, include the effect measure, model settings, and a small public or synthetic example; a methodological reference or direct R comparison is helpful but not required.
+- **Ask a usage or installation question:** Open a question on [GitHub Issues](https://github.com/AliSalman-et-al/rc-metastudio/issues). Include your operating system, RC MetaStudio version, and whether you installed a packaged release or ran from source.
 
-## Write an issue we can build from
+## Why changes are built from issues (pull request policy)
 
-Open an issue and include the information below. The issues we can act on fastest:
+We do not accept unsolicited external pull requests; maintainers build, verify, and review changes directly from issues.
 
-- **Start with the problem, not the solution.** Say what you were doing, what happened, and why it matters to you.
-- **For a bug,** tell us what you did, what you expected and what you saw instead. Add the fewest steps that show it, ideally in a new project; how often it happens; whether it worked in an earlier version; your version, platform and install method; and the full error text or logs, pasted as text. **Help > About RCMS… > Copy debug info** provides runtime information.
-- **For a feature,** describe the situation you are in and what you are trying to get done, how you handle it today, and what you would see if it worked.
-- **One problem per issue.** Separate problems are easier to track and fix.
-- **Anything else that helps is welcome,** such as code you suspect or your own ideas. None of it is required.
 
-Issues are public. Share public or synthetic data and remove identifying information from projects and debug output.
+## How to write an issue we can act on
 
-We read every issue, and a clear one gives us something concrete to investigate. When a fix ships, the issue and linked changes provide the record.
+1. **Describe the problem before proposing a fix.** Explain what you were doing, what happened, and what you expected.
+2. **Keep one problem per issue.** Separate issues are easier to reproduce, verify, and link to a release.
+3. **For bugs, include reproduction details:**
+   - Minimal steps to trigger the problem (ideally starting from a bundled sample project or a new project).
+   - How often it occurs and whether it worked in an earlier version.
+   - Runtime and platform details copied from **Help > About RCMS… > Copy debug info**.
+   - Full error text pasted as text rather than screenshots alone.
+4. **For features or statistical methods, include clinical/review context:**
+   - What question or dataset shape you are analyzing and how you work around it today.
+   - Expected inputs, outputs, and any reference package or paper if you have one.
+5. **Protect participant and unpublished data.** GitHub Issues are public. Attach only public or synthetic datasets, and remove any identifying details from project files or pasted logs.
 
-## How credit works
+## Community expectations
 
-Issue authors are credited on the issue itself, which stays linked to the problem they found. Filing an issue does not require a Contributor License Agreement. Earlier code contributions keep their existing attribution.
+RC MetaStudio is a scientific software project used by clinical researchers and methodologists. In all issue discussions and project spaces:
 
-## Development setup
+- Stay focused on the software, statistical methods, and reproducible evidence.
+- Communicate respectfully and constructively, including when disagreeing on statistical defaults or design trade-offs.
+- Do not post harassment, personal attacks, or confidential patient/participant data.
 
-From a fresh clone:
+Maintainers may moderate or close comments that violate these expectations.
 
-```shell
-uv sync --locked
-uv run python scripts/build_qt6.py generate --build-root build/qt6-verification
-```
+The project contact is listed in [NOTICE.md](NOTICE.md).
 
-Follow [Maintaining RC MetaStudio](docs/maintaining.md) to configure the real R runtime and library before running the application or its analysis workflows. Packaged releases include their runtimes; a source checkout needs the development setup.
+## Attribution and credit
 
-### Toolchain
+Issue reporters are credited via the public issue linked to the fix and release notes. Opening an issue does not require a Contributor License Agreement. Earlier code contributors retain their existing attribution in Git history and source notices.
 
-The repository uses Python 3.14 and uv. `pyproject.toml` and `uv.lock` define the Python environment. The [R dependency manifest](config/r-dependencies.json) defines the R runtime and package versions. Generated Qt modules belong in the build directory; edit the `.ui` form sources instead.
+## Building from source and running tests
 
-Use the locked environment and manifest-pinned R packages. Statistical calculations belong to those packages; changes must preserve their numerical results and expose their warnings. The [verification guide](.agents/skills/verify-rcms/SKILL.md) explains the required lanes and evidence.
+See [Maintaining RC MetaStudio](docs/maintaining.md) for source setup and verification.
 
-## Common commands
+## Licensing
 
-```shell
-uv run python scripts/verify.py smoke
-uv run python scripts/verify.py fast
-uv run python scripts/verify.py r-stack
-uv run python scripts/verify.py pre-push
-```
+Any material incorporated into RC MetaStudio is distributed under the project's [GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`), preserving all existing third-party attribution (see [NOTICE.md](NOTICE.md)).
 
-Run relevant checks while developing. Strict Windows typing precedes GUI qualification. Run `pre-push` after committing so its code-health check measures the committed revision. R-boundary and statistical changes also require the full real-R and desktop lane; see [Testing and verification](docs/testing.md).
+---
 
-## Code comments
-
-Prefer clear names, types and straightforward code. Keep comments for non-obvious reasons, constraints and upstream behavior. Remove stale explanations when behavior changes. [AGENTS.md](AGENTS.md) contains the shared engineering rules.
-
-## Pull requests
-
-We build every change ourselves, from issues. If you have spotted something, the most helpful thing you can do is [open an issue](https://github.com/AliSalman-et-al/rc-metastudio/issues/new) describing it.
-
-## License
-
-Contributions incorporated into RC MetaStudio must use its [GNU General Public License v3.0 or later](LICENSE), `GPL-3.0-or-later`. Preserve existing third-party attribution.
-
-Adapted from [OpenKnowledge's contribution guidelines](https://github.com/inkeep/open-knowledge/blob/main/CONTRIBUTING.md), also licensed under GPL-3.0-or-later.
+*Issue-first contribution structure adapted from [OpenKnowledge's contribution guidelines](https://github.com/inkeep/open-knowledge/blob/main/CONTRIBUTING.md) (`GPL-3.0-or-later`).*

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec uv run --no-sync --offline python scripts/verify.py check-pre-push

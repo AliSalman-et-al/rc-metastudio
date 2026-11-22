@@ -74,7 +74,7 @@ Preconditions: doctor passes; committed samples and the frozen numerical contrac
   with `QT_SCALE_FACTOR` set to `1` and `1.5`. Retain the generated manifests and captures.
 - Target other binary estimators, one-sided or Pocock boundary geometry, custom
   axis limits, unusual favours labels and narrow windows separately when affected.
-  The native scenario commands in the [TSA guide](../../../../docs/trial-sequential-analysis.md)
+  The [native scenario commands](#verify-a-trial-sequential-analysis-change)
   support separate 100% and 150% captures. Confirm the observed device scale.
   R tests cover RIS rounding, spending, closure and LIL reference calculations.
 
@@ -271,7 +271,7 @@ observes that Cancel leaves the project unchanged.
 
 The `sample-*` scenarios open the published roster through the sample menu
 and compare model results with direct metafor, meta or mada fits. Run
-`ratios-samples` for the two ratio projects. The [sample coverage table](../../../../sample_projects/COVERAGE-PLAN.md)
+`ratios-samples` for the two ratio projects. The [sample catalog](../../../../sample_projects/README.md)
 identifies the data, measures and methods for each project.
 Archive failure tests retain collision rejection and destination preservation;
 the R package tests cover old saved forests in Default/RevMan/BMJ.
@@ -304,3 +304,67 @@ leave-one-out plot workflows exercise all styles and four decoded exports.
 Native fractional-DPI, missing/non-estimable fits, combined diagnostic metric
 sequences and editor-to-rerun preservation require the targeted evidence listed
 in `docs/cumulative-and-leave-one-out-design.md`; nearby passes do not establish them.
+
+## Verify a trial sequential analysis change
+
+Configure the real Qt/R runtime and start with strict typing as described in
+[verify-rcms](../SKILL.md). Put Poppler’s
+`pdftotext` on PATH for the decoded report checks. From the repository root:
+
+```powershell
+uv run python scripts/build_qt6.py generate --build-root build/qt6-verification
+$env:RCMS_QT6_BUILD_ROOT = (Resolve-Path build/qt6-verification).Path
+uv run python -c "from pathlib import Path; from scripts.verify import run_typing; run_typing(Path('build/qt6-verification').resolve())"
+$env:R_LIBS = $env:RCMS_R_LIBS
+$tsaRscript = Join-Path $env:RCMS_R_HOME 'bin/Rscript.exe'
+& $tsaRscript --vanilla -e 'pkgload::load_all("r/RCMetaR"); testthat::test_file("r/RCMetaR/tests/testthat/test-trial-sequential-analysis.R", stop_on_failure=TRUE)'
+uv run python scripts/verify.py r-stack --rscript $tsaRscript
+& $tsaRscript --vanilla -e 'install.packages("r/RCMetaR", repos=NULL, type="source", lib=Sys.getenv("RCMS_R_LIBS"))'
+uv run python scripts/verify_rcms.py plot-workflow-trial-sequential --native
+uv run python scripts/verify_rcms.py tsa-rr-mh --native
+uv run python scripts/verify_rcms.py tsa-md --native
+uv run python scripts/verify_rcms.py tsa-hr --native
+uv run python scripts/verify_rcms.py tsa-peto --native
+uv run python scripts/verify_rcms.py tsa-stress --native
+uv run python scripts/verify_rcms.py tsa-smd --native
+```
+
+Install the current RCMetaR source into the selected test library before the native
+drives. Retain the inputs, exact commands, numerical results, screenshots at
+100% and 150%, regenerated plots and decoded exports.
+
+## Verify sequential ordering
+
+
+Start with the repository-wide strict typing gate and configured real Qt/R
+runtime in the [verification skill](../SKILL.md).
+`r/RCMetaR/tests/testthat/test-sequential-order.R` compares prefix/omission fits
+with public metafor calls and checks saved regeneration. Run the complete
+R-stack lane for changes shared by statistical families:
+
+```powershell
+uv run python scripts/verify.py r-stack
+uv run python scripts/verify_rcms.py review-workflows --native
+uv run python scripts/verify_rcms.py plot-workflow-cumulative
+uv run python scripts/verify_rcms.py plot-workflow-leave-one-out
+```
+
+Retain inputs, exact commands, runtime identity, observed authority values,
+screenshots, saved plots and decoded exports. Target these distinctions when
+they are affected:
+
+- Table/year/effect cumulative prefixes versus direct public-package fits;
+  every labelled omission versus its corresponding fit.
+- True ties, equal rounded I² with different underlying values, unavailable
+  estimates, actual full-fit references and older omission-only bundles.
+- Default/RevMan/BMJ geometry with long labels and narrow widths; native 100%
+  and 150% displays; all applicable screen, clipboard, PDF, DOCX, CSV and saved
+  regeneration content.
+- Singleton prefixes, two-study leave-one-out, MH/Peto double-zero cases,
+  ratio-scale transforms and combined univariate diagnostic metrics.
+- Changed-sequence rerun, appearance preservation, Cancel and actual package
+  failure with the existing result intact.
+
+A nearby passing drive does not prove an unexercised combination. Historical
+local success counts and ignored review bundles do not qualify another revision,
+platform or release package.

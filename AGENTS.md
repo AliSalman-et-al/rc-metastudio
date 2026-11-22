@@ -52,3 +52,5 @@ This repository uses a single-context domain-doc layout. See `docs/agents/domain
 Every qualification starts with the [repository-wide strict typing gate](.agents/skills/verify-rcms/references/lanes.md#native-and-typing-commands), before GUI tests. Retain its command, target platform and transcript.
 
 For user-visible behavior and verification evidence, use [.agents/skills/verify-rcms/SKILL.md](.agents/skills/verify-rcms/SKILL.md). Its feature map distinguishes exercised paths from coverage that still needs a targeted drive.
+
+Before pushing or opening a PR: [pre-push gate](docs/maintaining.md#pre-push-gate).

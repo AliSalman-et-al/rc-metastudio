@@ -32,6 +32,5 @@ uv run python scripts/verify_golden_compatibility.py --root . --output-root arti
 ```
 
 Retain the command, runtime/source identity, input digests, comparison report and
-decoded output. See the [reference policy](../../../../docs/ci/README.md),
-[testing guide](../../../../docs/testing.md) and
+decoded output. See the [current test policy](../../../../docs/maintaining.md#test-suite-organization-and-policy) and
 [release process](../../../../docs/release.md) for qualification requirements.

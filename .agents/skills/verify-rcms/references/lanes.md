@@ -1,32 +1,8 @@
 # Verification lanes
 
-Choose checks that can detect the changed failure. Preserve transcripts and distinguish source behavior, numerical evidence, native fixture checks, and exact-package qualification.
-
-| Change | Required useful evidence |
-| --- | --- |
-| Ordinary workflow/edit/save/import/calculator/plot | Mapped real Qt/R scenario with action and side-effect evidence; affected retained edge/failure tests |
-| R estimator, eligibility, effect reconstruction, boundary, or dependency | `verify_all.py --full`: current-source R-stack, independent public-package authority matrix and complete desktop matrix; inspect all reports and complete affected targeted coverage rows |
-| Shared Python storage or workspace boundary | Relevant files in `tests/python/fast`; mapped persistence/rollback drive; `uv run python scripts/verify.py fast` when the scope is broad |
-| Qt form, sizing, focus, accessibility, resources | Generate forms; strict Ty; affected GUI tests; matching native lane on the changed target; real E2E when business behavior also changes |
-| Packager, relocation, installer, trust, release artifact | Affected `tests/packaging/contract` plus actual target package qualification; source E2E is supplemental |
-| Test-suite structure/configuration | `uv run python -m pytest --strict-markers tests --collect-only -q` after generating forms; run affected selections |
-
 ## Native and typing commands
 
-The source smoke/fast, R-stack, desktop helper, E2E pytest controller, Qt smoke and both PowerShell sections enforce strict Ty before GUI work. E2E workers use their controller’s gate, rather than repeating it for every study or scenario. Each `run_typing` invocation retains its exact command, win32 target, exit code and stdout/stderr under `artifacts/verification/typing/`. A missing or failing gate stops qualification; no skip flag is supported.
-
-Every qualification runs the repository-wide strict Ty invocation in `scripts/verify-qt6.ps1` before GUI tests. On POSIX, preserve its generated-module search paths and full source selection, using the configured `RCMS_QT6_BUILD_ROOT`.
-
-For Windows-target qualification on another host, add `--python-platform win32` so platform-specific APIs such as `winreg` resolve against Windows. Keep that target on subsequent qualification runs. Retain the exact command and transcript. Record typing and GUI results separately: a failed typing gate means the following GUI phase has not run.
-
-On Windows the repository owns the complete Qt lane:
-
-```powershell
-.\scripts\verify-qt6.ps1 -Section Core
-.\scripts\verify-qt6.ps1 -Section RemainingSurfaces
-```
-
-Core performs strict Ty with generated-module search paths, the core GUI selection, native shell/calculator/analysis/Results probes, and R-load teardown. RemainingSurfaces owns the other five GUI layout modules and corresponding native probes. These commands intentionally unset the offscreen platform for native smoke. Inspect each probe's backend: fixture-based Results/layout evidence does not establish real R analysis.
+Follow [native and typing commands](../../../../docs/maintaining.md#native-and-typing-commands) and [verification lanes](../../../../docs/maintaining.md#verification-lanes-and-test-suites) for prerequisites and gate selection.
 
 Focused source behavior with native rendering can use:
 
@@ -49,8 +25,6 @@ Calculator and Results evidence defaults to `build/qt6-verification/native-calcu
 
 ## Numerical and release scope
 
-The R-stack pytest selection uses the shared desktop scenario list, excluding the separate `doctor` and `ui-crawl` commands. The skill's complete runner adds doctor after pytest, stops at the first failure and retains its logs; later commands are unexercised, not passed. After fixing a harness failure, doctor a fresh session and re-drive that path before shipping. For product failures, retain evidence and report the regression. During skill-only maintenance do not expand scope to product changes; when the user authorizes fixes, reproduce, fix and re-drive the failed behavior and its relevant boundaries.
-
 Frozen comparison covers 11 cases (three basic plus eight binary/continuous extended). The authority script supplies 103 independent public-package comparisons plus effect reconstruction assertions, including single/double-zero correction policies. Current-source R-stack supplies joint Reitsma public-`mada` comparisons and 21-case visual QA. These complement one another; none alone proves all UI modes. Small-study numerical gaps and mandatory targeted recipes are in its feature map.
 
 After a golden-comparator-only correction, preserve the original failed report and re-run that gate without repeating already-passed unchanged package/bridge tests. For a configured warm Windows runtime:
@@ -65,9 +39,60 @@ uv run python scripts/verify_golden_compatibility.py --root . --output-root buil
 
 The golden CLI needs that R environment explicitly; the desktop helper configures its bootstrap itself. Verify the saved `compatibility-report.json`, all 416 numerical fields and plot contracts, and identify the selected library/source provenance. Text comparison canonicalizes a line-leading heterogeneity `t²`/`τ²` header before Q. Scoped exceptions also bind exact before/after text or the documented scale and Greek-label corrections; they preserve scientific tokens and numbers. Changed numbers, unrelated narrative and other text still fail. Frozen contracts and tolerances remain unchanged. A focused recovery pass does not retroactively make the original failed full-run command successful; report its failed stage and the corrected gate's evidence.
 
-Read `docs/maintaining.md` for runner options and `docs/release.md` for package qualification. R dependency identity comes from `config/r-dependencies.json`, not remembered latest versions. ADR-0001 delegates statistical decisions to the authority packages. Golden tolerance changes require justification independent of current output.
+See the [release guide](../../../../docs/release.md) for package qualification. R dependency identity comes from `config/r-dependencies.json`, not remembered latest versions. ADR-0001 delegates statistical decisions to the authority packages. Golden tolerance changes require justification independent of current output.
 
 Release targets are Windows x64, Apple silicon macOS, and Ubuntu 24.04 x86_64 (ADR-0009). A local Windows proof cannot qualify the other targets. Exact artifact hashes, relocatability, runtime provenance, platform trust and release-set evidence come from package qualification. This skill does not authorize publishing, promotion, signing, workflow dispatch, or messaging others.
+
+### Native layout evidence identity and retries
+
+Adaptive-layout evidence includes a current-source digest, a run ID and an
+`invocation.json` receipt. The validator requires matching receipt/manifest
+identity plus table, splitter, geometry round-trip and actual resize observations.
+It accepts Windows x64 and Apple Silicon macOS architecture names only for their
+respective targets. Older bundles without these records must be recollected.
+Starting another attempt archives prior captures beside the output directory;
+startup failure cannot leave an earlier manifest presented as the new result.
+
+Remaining-surfaces evidence requires both scales to share platform, run and
+source identity. Each scale uses a fresh fragment directory; retries retain
+fragments and archive previous scale captures under `.previous-attempts`.
+The covariate Cancel probe edits the real conversion model through the owning
+MainWindow and checks covariate definitions and every row's values after rejection.
+Native Results smoke drives Edit and Export through their QActions, observes a
+committed caption and image, and hashes the exported SVG. Its renderer is a
+controlled fixture, so this lane does not qualify statistical fitting.
+
+The UX scenario snapshots/restores clipboard MIME bytes in `finally` and seeds
+owned content before exercising Copy. It never records the prior clipboard.
+The clipboard GUI cases also restore MIME data; sentinel failure tests run only
+with the offscreen clipboard. The fractional-scale workspace child sets its own
+INI settings path before startup and reports that path for containment checking.
+Offscreen screen descriptors and rendered captures cannot establish native
+multi-monitor placement or native DPI behavior.
+
+### Import progress completion evidence
+
+The remaining-surfaces collector records close and Escape rejection while CSV
+import owns the modal dialog, followed by owner completion through `hide_once`.
+It requires all three observations; closing import progress is not cancellation.
+
+### QA audit contracts
+
+The standalone forest matrix writes its manifest before returning failure when any
+render fails. Footer CLI checks remain active under Python optimization, including
+the shared geometry observer. Optional visual tests must not change the caller's
+output-root environment.
+
+Formatting captures retain malformed array members with source/index diagnostics.
+The Qt ownership audit counts direct initializer registration (or the explicitly
+called `_configure_window` step), not calls in dead branches or uncalled methods.
+This is a narrow static contract, not proof of runtime native ownership.
+
+Native calculator bundle validation requires exactly the three successful Windows
+transactions, their model outcomes and intact captures. The analysis smoke checks
+the exact selected backend request and typed owner delivery; its explicit backend
+fixture does not establish live R numerical correctness.
+
 
 ## Reporting
 

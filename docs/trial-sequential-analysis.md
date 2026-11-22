@@ -124,31 +124,3 @@ RD and MD. RC MetaStudio also supports Peto OR and reported HR, and leaves SMD a
 incidence rate ratios unavailable. Participant-based analyses use accrued
 participants. HR uses the sum of inverse squared log-HR standard errors and
 keeps the required statistical information continuous.
-
-## Verify a change
-
-Configure the real Qt/R runtime and start with strict typing as described in
-[verify-rcms](../.agents/skills/verify-rcms/SKILL.md). Put Poppler’s
-`pdftotext` on PATH for the decoded report checks. From the repository root:
-
-```powershell
-uv run python scripts/build_qt6.py generate --build-root build/qt6-verification
-$env:RCMS_QT6_BUILD_ROOT = (Resolve-Path build/qt6-verification).Path
-uv run python -c "from pathlib import Path; from scripts.verify import run_typing; run_typing(Path('build/qt6-verification').resolve())"
-$env:R_LIBS = $env:RCMS_R_LIBS
-$tsaRscript = Join-Path $env:RCMS_R_HOME 'bin/Rscript.exe'
-& $tsaRscript --vanilla -e 'pkgload::load_all("r/RCMetaR"); testthat::test_file("r/RCMetaR/tests/testthat/test-trial-sequential-analysis.R", stop_on_failure=TRUE)'
-uv run python scripts/verify.py r-stack --rscript $tsaRscript
-& $tsaRscript --vanilla -e 'install.packages("r/RCMetaR", repos=NULL, type="source", lib=Sys.getenv("RCMS_R_LIBS"))'
-uv run python scripts/verify_rcms.py plot-workflow-trial-sequential --native
-uv run python scripts/verify_rcms.py tsa-rr-mh --native
-uv run python scripts/verify_rcms.py tsa-md --native
-uv run python scripts/verify_rcms.py tsa-hr --native
-uv run python scripts/verify_rcms.py tsa-peto --native
-uv run python scripts/verify_rcms.py tsa-stress --native
-uv run python scripts/verify_rcms.py tsa-smd --native
-```
-
-Install the current RCMetaR source into the selected test library before the native
-drives. Retain the inputs, exact commands, numerical results, screenshots at
-100% and 150%, regenerated plots and decoded exports.

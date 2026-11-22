@@ -1,27 +1,21 @@
 # Your first meta-analysis
 
-This tutorial opens the public BCG example, runs a random-effects risk-ratio
-analysis, and exports a figure and written report. Use a current RC MetaStudio
-release from the [download page](https://github.com/AliSalman-et-al/rc-metastudio/releases/latest).
+This walkthrough opens the bundled BCG vaccine trial dataset, fits a random-effects risk-ratio model, edits and exports the forest plot and written report, and optionally checks the exact numbers against a direct R script.
 
-## Open the study data
+Use RC MetaStudio 0.7.0 or later. See [source setup](../maintaining.md#set-up-the-development-environment) to run the current checkout.
 
-1. Download [Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms](<../../sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms>). If GitHub displays the
-   file instead of downloading it, use its **Download raw file** control.
-2. In RC MetaStudio, choose **Open project** and open that file.
-3. Select the **Tuberculosis** sheet. It contains 13 included studies, with
-   **BCG vaccine** as the first arm and **Unvaccinated control** as the second arm. The
-   binary data columns contain events and total participants for each arm.
-4. Choose **Analysis > Effect-size tools > Two-arm metrics > Risk ratio (RR)**.
-   Selecting the effect measure changes the derived values, not the counts.
+## 1. Open the bundled BCG sample
 
-The [sample-project guide](../../sample_projects/README.md) records the source
-and arm direction. These counts match `metadat::dat.bcg`, drawn from Colditz
-et al. (1994), [doi:10.1001/jama.1994.03510330076038](https://doi.org/10.1001/jama.1994.03510330076038).
+1. Launch RC MetaStudio.
+2. Choose **File > Open sample project > Binary - BCG vaccine and tuberculosis, Colditz 1994** (if your Recent projects list is empty, you can also click **Open a sample project** on the Welcome page).
+3. Confirm the **Tuberculosis** sheet is active. It holds **13 included trials** comparing **BCG vaccine** (first arm) with **Unvaccinated control** (second arm), recording tuberculosis events and total participants in each arm, plus latitude and allocation covariates.
+4. Set the effect measure to Risk ratio via **Analysis > Effect-size tools > Two-arm metrics > Risk ratio (RR)**. Changing the effect measure updates the displayed study estimates without modifying the underlying event counts.
 
-## Configure and run
+These counts match `metadat::dat.bcg` from Colditz et al. (1994), [doi:10.1001/jama.1994.03510330076038](https://doi.org/10.1001/jama.1994.03510330076038). See [Sample projects and sources](../../sample_projects/README.md) for all nine bundled examples and provenance.
 
-Choose **Analysis > Meta-analysis…**. On the Method tab, select:
+## 2. Configure and run the analysis
+
+Choose **Analysis > Meta-analysis…** (`Ctrl+R`). On the **Method** tab, verify or select:
 
 | Setting | Value |
 | --- | --- |
@@ -29,57 +23,42 @@ Choose **Analysis > Meta-analysis…**. On the Method tab, select:
 | Effect measure | Risk ratio |
 | τ² estimator | Restricted maximum likelihood (REML) |
 | Confidence level | 95% |
-| Inference method, under Advanced | Normal approximation |
+| Inference method (under **Advanced**) | Normal approximation |
 
-Keep the default continuity correction of 0.5 for studies with a zero cell.
-All 13 studies in this example have positive counts in every cell, so that
-correction does not change their effects. Choose **Run analysis**.
+Leave the default continuity correction (`0.5` for studies with a zero cell). All 13 BCG trials have positive counts in every cell, so no continuity correction is applied. Click **Run analysis**.
 
-The forest plot shows the study estimates and pooled result. In **Text report**,
-the pooled risk ratio should be approximately **0.49 (95% CI 0.34 to 0.70)**,
-using all 13 studies. The full-precision reference appears below. The ratio
-compares the event risk in the first arm with the risk in the second arm.
+## 3. Read the forest plot and report
 
-The report also records the model, uncertainty, heterogeneity and references.
-Read these alongside the estimate. A plotted interval alone does not establish
-whether the included studies answer a common research question.
+Select the **Forest plot** in Results. Switch to **Text report** in the left navigation tree to read the Methods, Results, numerical tables, references, and model configuration.
 
-## Edit and export
+- **Expected pooled estimate:** **RR 0.49 (95% CI 0.34 to 0.70)** across all 13 trials, comparing tuberculosis risk in the **BCG vaccine** arm with **Unvaccinated control** (values below 1 favor vaccination).
+- Read the heterogeneity statistics (`I²`, `τ²`, `Q`) alongside the pooled interval. Explore the relationship with `Absolute latitude` under **Analysis > Meta-regression…**.
 
-Select the forest plot in the Results sidebar, then choose **Edit plot**.
-Try a different plot style or figure caption, and choose **Apply** to inspect
-the result. These appearance settings redraw the figure without changing the
-selected statistical model. Choose **Cancel** to discard unapplied edits.
+## 4. Edit and export
 
-Use **Export plot** to save PDF or SVG for vector output, or PNG or TIFF for
-raster output. Use **Export report** to save the written report as PDF or Word.
-Check that the caption identifies the outcome and arm direction in a figure
-that will be shared separately.
+1. Select the forest plot in the left sidebar and click **Edit plot…** (`Ctrl+E`).
+2. Change the plot style (for example **Default**, **BMJ**, or **RevMan**) or figure caption, then click **Apply** to redraw the figure through R without refitting the model. Click **Cancel** to discard unapplied edits.
+3. Click **Export plot…** (`Ctrl+Shift+E`) to save **PDF** or **SVG** (vector) or **PNG** or **TIFF** (raster).
+4. Click **Export report…** (`Ctrl+Shift+S`) to save the full written report as **PDF** or **Word (`.docx`)**.
+5. Open **Data tables (CSV)** in the sidebar to copy table cells or export exact unrounded numbers via **Export values CSV…**.
 
-Save a separate project copy if you change study data or project settings.
-An `.rcms` project stores data and settings, not the open Results windows.
-Keep exported reports and plots as the record of the run, and record the
-application version from **Help > About RCMS…**.
+Remember that an `.rcms` project stores study data and settings, not open Results windows. If you edit the sample and save, RC MetaStudio opens **Save as…** to preserve the bundled original. Keep exported plots and reports as the record of a run, along with the application version from **Help > About RCMS…**.
 
-## Reproduce the reference in R
+## 5. Optional: verify the exact numbers in R
 
-This optional step is for readers who want to inspect the calculation. It is
-not needed to use RC MetaStudio. From a repository checkout, with the packages
-in the [dependency manifest](../../config/r-dependencies.json) installed, run:
+Readers and reviewers who want to check RC MetaStudio's output directly against `metafor` can run the companion script [`bcg-reference.R`](bcg-reference.R) from a repository checkout.
+
+**Prerequisites:** R (`4.6.2`) with `metafor` (from [`config/r-dependencies.json`](../../config/r-dependencies.json)) plus the CRAN packages `metadat` and `jsonlite` (used only by this script to read the `.rcms` JSON and compare against `metadat::dat.bcg`).
 
 ```shell
 Rscript --vanilla docs/tutorials/bcg-reference.R artifacts/bcg-reference
 ```
 
-The [reference script](bcg-reference.R) reads the bundled project, checks every
-included count against `metadat::dat.bcg`, and calls `metafor::escalc` followed
-by `metafor::rma.uni` with RR, REML, normal inference and a 95% confidence level.
-It writes the input counts, full-precision reference result, command and R
-session information. Choose a new output directory for each run; existing
-evidence is preserved.
+The script extracts the 13 included rows from `sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms`, verifies every count against `metadat::dat.bcg`, fits `metafor::escalc(measure = "RR", ...)` and `metafor::rma.uni(..., method = "REML", test = "z", level = 95)`, and writes `counts.csv`, `reference.csv`, `session.txt`, and `command-and-input.txt` to a new output directory.
 
-The expected full-precision risk ratio is about `0.4894209368`, with lower and
-upper confidence bounds `0.3440742934` and `0.6961660838`. Use the script's
-recorded package versions when investigating a difference. This reproducible
-example demonstrates a calculation; it is not evidence of research adoption
-or a comparative usability evaluation.
+Expected full-precision output:
+
+- **Risk ratio:** `0.4894209368`
+- **95% CI:** `0.3440742934` to `0.6961660838`
+
+Check `session.txt` if comparing against a different R or `metafor` version.

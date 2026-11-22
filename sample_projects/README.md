@@ -1,6 +1,6 @@
 # Sample projects
 
-Open a bundled example from **File > Open sample project** or from the Welcome page. You can edit and analyze the sample. Save opens Save As so you can keep your own copy.
+Open a bundled example from **File > Open sample project** or use **Open a sample project** on the Welcome page when its recent-project list is empty. You can edit and analyze the sample. Save opens Save As so you can keep your own copy.
 
 | Project | Analysis suggestion |
 | --- | --- |
@@ -14,11 +14,9 @@ Open a bundled example from **File > Open sample project** or from the Welcome p
 | [Single-arm proportion - Depression after myocardial infarction, Feng 2019](<Single-arm proportion - Depression after myocardial infarction, Feng 2019.rcms>) | Use this for pooling a prevalence from cases and totals and comparing proportion transformations. |
 | [Time-to-event (HR) - Head and neck cancer, Pignon 2000](<Time-to-event (HR) - Head and neck cancer, Pignon 2000.rcms>) | Use this for pooling hazard ratios, chemotherapy-timing subgroups and trial sequential analysis. |
 
-See the [coverage table](COVERAGE-PLAN.md) for the analyses by project and [retained source records](sources/README.md) for the row checks and exclusions.
+See the [retained source records](sources/README.md) for row checks and exclusions.
 
 The Abe handgrip project uses five general-volunteer cohorts with 235 participants. Dynamometers, measurement protocols and cohorts differ, so the pooled mean is an instructional example only.
-
-The existing desktop calculator fixture exercises pre/post inputs with a paired correlation.
 
 ## Sources
 
@@ -49,3 +47,5 @@ To verify the retained R-package data, run the two source exporters with the pin
 & "$env:RCMS_R_HOME/bin/Rscript.exe" --vanilla scripts/export_metadat_clinical_samples.R sample_projects/sources/metadat-clinical.json
 & "$env:RCMS_R_HOME/bin/Rscript.exe" --vanilla scripts/export_metafor_ratio_samples.R sample_projects/sources/metadat-ratios.json
 ```
+
+On POSIX, use `"$RCMS_R_HOME/bin/Rscript"` in place of the PowerShell executable invocation.
