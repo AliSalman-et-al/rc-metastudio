@@ -66,12 +66,16 @@ def run(app, window, work: Path, root: Path, record_step, _analyze):
     assert hashlib.sha256(saved.read_bytes()).hexdigest() == original_hash
     record_step("worker-crash", window, crashed_pid=first_pid, message=crashed)
 
+    start = perf_counter()
     assert window.open(str(saved), raise_on_error=True)
     assert worker.pid > 0 and worker.pid != first_pid
     assert window.model.rowCount() == original_rows
     assert window.open(str(candidate), raise_on_error=True)
-    assert window.model.rowCount() == 400
-    record_step("worker-respawned", window, pid=worker.pid, committed_sha256=original_hash)
+    assert len(window.model.get_studies(only_if_included=False)) == 400
+    record_step("worker-respawned", window, pid=worker.pid, committed_sha256=original_hash,
+                reopen_seconds=perf_counter() - start)
+
+    _check_deadline(app, window, saved, record_step, r_worker)
 
 
 def _measure(operations):
@@ -117,6 +121,24 @@ def _cancel_preview(dialog, process, record_step):
     assert button is not None
     button.click()
     process.resume()
+
+
+def _check_deadline(app, window, saved, record_step, r_worker):
+    worker = r_worker.current_worker()
+    process = psutil.Process(worker.pid)
+    model = window.model
+    process.suspend()
+    try:
+        with patch.object(r_worker, "_JOB_MS", 1000):
+            timeout = _open_with_error(app, window, saved, record_step, lambda _dialog: None)
+    finally:
+        if process.is_running():
+            process.resume()
+    assert "did not respond in time" in timeout
+    assert window.model is model
+    assert window.open(str(saved), raise_on_error=True)
+    assert worker.pid != process.pid and not process.is_running()
+    record_step("worker-timeout-recovered", window, stopped_pid=process.pid, pid=worker.pid, message=timeout)
 
 
 def _operations(service, bridge):
