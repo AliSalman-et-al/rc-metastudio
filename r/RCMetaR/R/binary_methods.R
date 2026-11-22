@@ -250,7 +250,7 @@ binary.fixed.mh.value.info <- function() {
         ci.ub    = list(type="vector", description='upper bound of the confidence intervals for the coefficients.'),
         QE       = list(type="vector", description='test statistic for the test of (residual) heterogeneity.'),
         QEp      = list(type="vector", description='P value for the test of (residual) heterogeneity.'),
-        MH       = list(type="vector", description='Cochran–Mantel–Haenszel test statistic (measure="OR") or Mantel–Haenszel test statistic (measure="IRR").'),
+        MH       = list(type="vector", description='Cochran\u2013Mantel\u2013Haenszel test statistic (measure="OR") or Mantel\u2013Haenszel test statistic (measure="IRR").'),
         MHp      = list(type="vector", description='corresponding P value'),
         TA       = list(type="vector", description="Tarone's heterogeneity test statistic (only when measure=\"OR\")."),
         TAp      = list(type="vector", description='corresponding P value (only when measure="OR").'),

@@ -1219,7 +1219,7 @@ test_that("subgroup display headings truncate without changing grouping state", 
   bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
   expect_lte(nchar(bundle$subgroups$names[[1]]), 72)
-  expect_match(bundle$subgroups$names[[1]], "\\.\\.\\.")
+  expect_match(bundle$subgroups$names[[1]], "\u2026", fixed=TRUE)
   expect_identical(
     as.character(bundle$regeneration_state$subgroup_data$subgroup.list[[1]]),
     long.group
