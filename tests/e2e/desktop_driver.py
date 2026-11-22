@@ -2571,7 +2571,7 @@ finally:
     if os.environ.get("RCMS_R_BACKEND") == "worker":
         from rc_metastudio.r_worker import RWorker
 
-        if (worker := app.findChild(RWorker)) is not None:
+        if (worker := app.findChild(RWorker, options=QtCore.Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
             worker.close()
     app.quit()
     base_path_patch.stop()
