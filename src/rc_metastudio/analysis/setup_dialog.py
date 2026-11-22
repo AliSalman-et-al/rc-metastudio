@@ -818,7 +818,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type == "diagnostic":
             method = REITSMA_METHOD
             parameters["fp_outpath"] = f"{self._fit_output_stem}.svg"
-            parameters["fp_display_path"] = parameters["fp_outpath"]
             parameters["joint.metrics"] = "Sens,Spec"
         return analysis_adapter.make_analysis_request(
             data_type=self.data_type,

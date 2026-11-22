@@ -29,8 +29,6 @@
 #' implementation functions stay loadable inside the package namespace but are
 #' intentionally not exported as caller-facing interface.
 #'
-#' @import boot
-#' @importFrom ellipse ellipse
 #' @import grDevices
 #' @import graphics
 #' @import metafor
