@@ -2165,7 +2165,7 @@ def shell(app, window, record):
         text = dialog.content_scroll_area.toPlainText()
         assert "RC MetaStudio" in text
         assert dialog.windowTitle() == "About RC MetaStudio"
-        assert window.action_about_legal.text() == "About RCMS…"
+        assert window.action_about_legal.text() == "About RC MetaStudio…"
         assert "Credits and licenses" in text
         app.processEvents()
         if dialog.screen().availableGeometry().height() >= 700:
