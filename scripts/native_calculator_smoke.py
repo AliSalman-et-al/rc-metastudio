@@ -235,11 +235,6 @@ def _run_main() -> int:
     for name, implementation in vars(backend).items():
         setattr(r_operations, name, implementation)
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
-    _install_backend_test_double(
-        r_operations,
-        "get_confidence_multiplier_from_r",
-        lambda _level: 1.96,
-    )
     setattr(
         r_operations,
         "binary_convert_scale",

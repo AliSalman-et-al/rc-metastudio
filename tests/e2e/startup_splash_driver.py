@@ -1,6 +1,5 @@
 """Native startup proof. Run in a fresh process; retain screenshots and observations."""
 
-from tests.e2e import r_oracle
 import argparse
 import json
 import os

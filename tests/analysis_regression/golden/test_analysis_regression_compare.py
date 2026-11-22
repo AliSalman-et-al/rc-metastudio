@@ -1024,13 +1024,13 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
     monkeypatch.setattr(headless_analysis, "load_dataset_model", load_model)
     monkeypatch.setattr(
         analysis_adapter.r_operations,
-        "dataset_to_simple_diagnostic_r_object",
+        "_diagnostic_data_arguments",
         backend.convert,
         raising=False,
     )
     monkeypatch.setattr(
         analysis_adapter.r_operations,
-        "run_versioned_analysis_requests",
+        "_worker_diagnostic_fit",
         backend.run,
         raising=False,
     )
