@@ -505,7 +505,6 @@ class RWorker(QObject):
             _job_result(pending)
 
     def _submit(self, job: WorkerJob, timeout_ms: int | None) -> _Pending:
-        # The bridge also guards reentry while both backends coexist.
         if self._pending is not None:
             raise RWorkerError("Another R job is running.")
         self.ensure_ready()

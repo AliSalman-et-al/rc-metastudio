@@ -44,10 +44,11 @@ def compose_export(write: Callable[[], None]) -> None:
         thread = _ExportWriter(write)
         loop = QEventLoop()
         thread.finished.connect(loop.quit)
-        dialog = QProgressDialog("Writing export…", "Cancel", 0, 0, QApplication.activeWindow())
+        # The active window may be an export dialog already queued for deletion.
+        dialog = QProgressDialog("Writing export…", "Cancel", 0, 0)
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         dialog.canceled.connect(thread.requestInterruption)
-        show = QTimer(dialog)
+        show = QTimer()
         show.setSingleShot(True)
         show.timeout.connect(dialog.show)
         show.start(200)
