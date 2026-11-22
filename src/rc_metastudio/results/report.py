@@ -1492,7 +1492,6 @@ def _style_docx_cell(cell, value, width, numeric, heading, font_size):
 
 def _print_pdf_pages(document, writer, painter, width, height, scale):
     from PyQt6.QtCore import QSizeF
-    from PyQt6.QtGui import QAbstractTextDocumentLayout
 
     document.setPageSize(QSizeF(width, height))
     # Qt allows a table with unbreakable cells to exceed the page width.
@@ -1508,9 +1507,9 @@ def _print_pdf_pages(document, writer, painter, width, height, scale):
     # Moving a table and its caption can push a later paragraph across a page.
     _keep_pdf_blocks_together(document, height)
     # Start painting from a fresh layout after setting paragraph and table breaks.
-    document = document.clone()
-    document.setPageSize(QSizeF(width, height))
-    for number in range(document.pageCount()):
+    printable = document.clone()
+    printable.setPageSize(QSizeF(width, height))
+    for number in range(printable.pageCount()):
         check_export_cancelled()
         if number:
             writer.newPage()
@@ -1518,9 +1517,7 @@ def _print_pdf_pages(document, writer, painter, width, height, scale):
         painter.scale(scale, scale)
         painter.setClipRect(QRectF(0, 0, width, height))
         painter.translate(0, -number * height)
-        context = QAbstractTextDocumentLayout.PaintContext()
-        context.clip = QRectF(0, number * height, width, height)
-        required(document.documentLayout(), "report document layout").draw(painter, context)
+        printable.drawContents(painter, QRectF(0, number * height, width, height))
         painter.restore()
 
 
