@@ -20,7 +20,6 @@ def evaluate(expression: str):
             evaluated <- withVisible(eval(parse("expression.R", encoding="UTF-8"), envir=.GlobalEnv))
             value <- if (evaluated$visible) evaluated$value else NULL
             if (inherits(value, "json")) value <- as.character(value)
-            if (is.atomic(value) && !is.null(names(value))) value <- as.list(value)
             jsonlite::write_json(value, "result.json", digits=I(17), null="null", auto_unbox=FALSE)
         })
         save(list=ls(.GlobalEnv, all.names=TRUE), file="session.RData", envir=.GlobalEnv)

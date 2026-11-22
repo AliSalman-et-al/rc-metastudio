@@ -46,7 +46,8 @@ def get_r_version_string():
 
 
 def get_r_package_version(package_name):
-    return r_worker.current_worker().runtime_info()["packages"][package_name]
+    version = r_worker.current_worker().runtime_info()["packages"][package_name]
+    return version if package_name == "meta" else version.replace("-", ".")
 
 
 def _worker_calculate(
