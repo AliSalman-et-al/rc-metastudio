@@ -2,12 +2,13 @@
 
 from pathlib import Path
 from time import perf_counter
+from unittest.mock import patch
 
 import psutil
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QDialogButtonBox, QProgressDialog, QPushButton
 
-from rc_metastudio import r_worker
+from rc_metastudio import r_bridge, r_worker
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
 from rc_metastudio.results.window import ResultsWindow
@@ -84,6 +85,7 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
     ticks = []
     progress = []
     actions = []
+    worker_spans = []
     ticker = QTimer()
     ticker.setTimerType(Qt.TimerType.PreciseTimer)
     ticker.timeout.connect(lambda: ticks.append(perf_counter()))
@@ -110,17 +112,27 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
     deadline.timeout.connect(interrupt)
     if mode != "complete":
         deadline.start(10)
+    execute = r_bridge._worker_analysis
+
+    def measure(job):
+        sent = perf_counter()
+        try:
+            return execute(job)
+        finally:
+            worker_spans.append((sent, perf_counter()))
+
     ticker.start(10)
     start = perf_counter()
     try:
-        run_button.click()
+        with patch.object(r_bridge, "_worker_analysis", side_effect=measure):
+            run_button.click()
     finally:
         end = perf_counter()
         ticker.stop()
         deadline.stop()
         worker.progress.disconnect(progress.append)
-    spans = [start, *ticks, end]
-    stall = max(right - left for left, right in zip(spans, spans[1:]))
+    stall = _max_gap(ticks, start, end)
+    sent, received = worker_spans[-1]
     if mode == "complete":
         assert len(_results(app) - before) == 1
         assert len(ticks) > 5
@@ -133,7 +145,13 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
             assert worker.pid != pid
     record(f"{family}-{mode}-observed", dialog, elapsed_seconds=end - start,
            max_timer_gap_seconds=stall, ticks=len(ticks), heartbeat_count=len(progress),
+           worker_seconds=received - sent, worker_timer_gap_seconds=_max_gap(ticks, sent, received),
            pid_before=pid, pid_after=worker.pid)
+
+
+def _max_gap(ticks, start, end):
+    spans = [start, *(tick for tick in ticks if start < tick < end), end]
+    return max(right - left for left, right in zip(spans, spans[1:]))
 
 
 def _results(app):
