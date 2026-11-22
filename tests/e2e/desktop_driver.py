@@ -2481,7 +2481,7 @@ base_path_patch = patch(
 )
 base_path_patch.start()
 try:
-    if sys.argv[1] == "r-worker-recovery":
+    if sys.argv[1] in ("r-worker-recovery", "r-worker-fits"):
         os.environ["RCMS_R_BACKEND"] = "worker"
     _startup_phases["composition:start"] = time.time()
     def observe_startup(phase):
