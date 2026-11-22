@@ -176,6 +176,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --require-atomic-completion
   rm -f "$extracted_pid"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" inspect \
+    ${inspection_options[@]+"${inspection_options[@]}"} \
     --target "macos-$architecture" --app-root "$extracted_app" \
     --output "$extracted_manifest" --source-commit "$source_commit" \
     --runtime-probe "$extracted_probe" --signing-inventory "$signing_inventory_path" \

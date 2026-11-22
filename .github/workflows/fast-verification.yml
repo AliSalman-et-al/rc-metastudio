@@ -497,6 +497,8 @@ jobs:
     needs: [change-classifier, code-health, quick]
     if: ${{ contains(fromJSON(needs.change-classifier.outputs.lanes), 'macos-package-qualification') }}
     uses: ./.github/workflows/package-target.yml
+    with:
+      pr_wheels: ${{ github.event_name == 'pull_request' }}
 
   linux-package-qualification:
     name: Required Linux x64 Package Qualification

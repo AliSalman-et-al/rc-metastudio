@@ -1563,13 +1563,14 @@ def inspect_deployment(
     source_commit: str,
     runtime_probe: dict,
     locked_qt_root: Path,
+    pr_wheels: bool = False,
     signing_inventory_path: Path,
     target: str = "macos-arm64",
 ) -> dict:
     app_root = app_root.resolve()
     contract = TARGET_CONTRACTS[target]
     architecture = contract["architecture"]
-    minimum_macos = contract["minimum_macos"]
+    minimum_macos = "14.4" if pr_wheels else contract["minimum_macos"]
     info, executable = _validate_deployment_contract(
         app_root, versions, source_commit, minimum_macos
     )
@@ -2999,6 +3000,7 @@ def _build_parser() -> argparse.ArgumentParser:
     inspect.add_argument("--runtime-probe", type=Path, required=True)
     inspect.add_argument("--signing-inventory", type=Path, required=True)
     inspect.add_argument("--locked-qt-root", type=Path, required=True)
+    inspect.add_argument("--pr-wheels", action="store_true", help="Inspect a PR-only Qt wheel build at macOS 14.4.")
     inspect.add_argument(
         "--target", choices=sorted(TARGET_CONTRACTS), default="macos-arm64"
     )
@@ -3088,6 +3090,7 @@ def _dispatch_inspect(args: argparse.Namespace) -> None:
         source_commit=args.source_commit,
         runtime_probe=json.loads(args.runtime_probe.read_text(encoding="utf-8")),
         locked_qt_root=args.locked_qt_root,
+        pr_wheels=args.pr_wheels,
         signing_inventory_path=args.signing_inventory,
         target=args.target,
     )
