@@ -210,7 +210,8 @@ ADVANCED_SCENARIOS = {
 
 SCENARIOS = {
     "r-worker-fits": Scenario(external("r_worker_fits", standard_args), timeout_seconds=360),
-    "r-worker-exports": Scenario(external("r_worker_exports", standard_args), timeout_seconds=600, qualifies=False),
+    "r-worker-exports": Scenario(external("r_worker_exports", standard_args), timeout_seconds=600),
+    "r-worker-plot-parity": Scenario(external("r_worker_plot_parity", standard_args), timeout_seconds=600, qualifies=False),
     "r-worker-recovery": Scenario(external("r_worker_recovery", standard_args), timeout_seconds=240),
     **{
         "audit-round3-" + family: Scenario(external("analysis_presentation_workflows", presentation_args), 600)

@@ -171,7 +171,7 @@ def _frame(job_id: int, job: object) -> bytes:
         ensure_ascii=False, separators=(",", ":"), allow_nan=False,
     ).encode("utf-8")
     if len(data) > _FRAME_LIMIT:
-        raise ValueError("The R worker request is too large.")
+        raise ValueError("The R worker request exceeds the 16 MiB frame limit.")
     return _MAGIC + f"{len(data):08x}".encode("ascii") + data
 
 

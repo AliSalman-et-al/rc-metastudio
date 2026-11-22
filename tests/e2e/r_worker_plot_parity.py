@@ -2,6 +2,7 @@
 
 import gzip
 import json
+from math import ceil
 import os
 from pathlib import Path
 from unittest.mock import patch
@@ -12,10 +13,17 @@ from PIL import Image, ImageChops
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtPdf import QPdfDocument
 
+from rc_metastudio import r_bridge
 from rc_metastudio.results.export_files import staged_output
 from rc_metastudio.results.plot_service import PlotService, svg_view_box_size
 from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
 from tests.analysis_regression.golden.support import golden_analysis, headless_analysis
+
+
+def run(_app, window, work, _root, record, _analyze):
+    r_bridge.load_required_packages()
+    cases = compare_golden(work / "golden-publication-files")
+    record("golden-publication-parity", window, cases=cases)
 
 
 def compare_golden(output):
@@ -125,17 +133,14 @@ def _compare_docx(embedded, worker):
 
 def oversized_svg(source, destination):
     """Convert an SVG larger than the protocol limit using its path only."""
-    from rc_metastudio import r_bridge
-
     large = destination.with_suffix(".svg")
-    large.write_bytes(b"<!--" + b" " * (16 * 1024**2) + b"-->\n" + source.read_bytes().split(b"?>", 1)[-1])
+    comments = (b"<!--" + b" " * 1024**2 + b"-->\n") * 16
+    large.write_bytes(comments + source.read_bytes().split(b"?>", 1)[-1])
     assert large.stat().st_size > 16 * 1024**2
     width, height = svg_view_box_size(large)
     with staged_output(destination) as temporary:
         r_bridge.export_svg_artwork(str(large), str(temporary), width / 72, height / 72, 72)
     with Image.open(destination) as image:
-        from math import ceil
-
         assert image.size == (ceil(width), ceil(height))
         image.verify()
     return large.stat().st_size

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from PyQt6.QtCore import QEventLoop, QThread, Qt
+from PyQt6.QtCore import QEventLoop, QThread, QTimer, Qt
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
 from rc_metastudio import r_worker
@@ -45,12 +45,15 @@ def compose_export(write: Callable[[], None]) -> None:
         thread.finished.connect(loop.quit)
         dialog = QProgressDialog("Writing export…", "Cancel", 0, 0, QApplication.activeWindow())
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
-        dialog.setMinimumDuration(200)
         dialog.canceled.connect(thread.requestInterruption)
-        dialog.setValue(0)
+        show = QTimer(dialog)
+        show.setSingleShot(True)
+        show.timeout.connect(dialog.show)
+        show.start(200)
         thread.start()
         loop.exec()
         thread.wait()
+        show.stop()
         cancelled = dialog.wasCanceled()
         dialog.hide()
         dialog.deleteLater()

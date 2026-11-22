@@ -1448,14 +1448,14 @@ def _execute_versioned_requests(
     return parse_out_results(result)
 
 
-@serialized_r_call
+@_serialized_r_call
 def load_plot_parameters(prefix: str) -> object:
     if r_worker.enabled():
         return _worker_plot({"type": "plot_parameters", "prefix": prefix})
     return r_object_to_python(execute_r_function("rcmetar.plot.bundle.params", prefix))
 
 
-@serialized_r_call
+@_serialized_r_call
 def prepare_plot_edit(
     prefix: str,
     regenerator: str,
@@ -1474,7 +1474,7 @@ def prepare_plot_edit(
     ))
 
 
-@serialized_r_call
+@_serialized_r_call
 def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> tuple[float, float] | None:
     if r_worker.enabled():
         match _worker_plot({
@@ -1493,7 +1493,7 @@ def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> 
     return float(height), float(minimum_width)
 
 
-@serialized_r_call
+@_serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
                        *, include_title: bool = True, outline_text: bool = True,
                        width: float | None = None, dpi: int | None = None,
@@ -3025,7 +3025,7 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
     return rows, quantities
 
 
-@serialized_r_call
+@_serialized_r_call
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
     if r_worker.enabled():

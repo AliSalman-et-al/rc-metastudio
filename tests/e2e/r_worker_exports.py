@@ -8,13 +8,15 @@ from time import perf_counter
 from unittest.mock import patch
 from zipfile import ZipFile
 
+from advanced_workflows import modal
 import psutil
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QPushButton
 
 from rc_metastudio import r_bridge, r_worker
+from rc_metastudio.results.plot_export import PlotExportDialog
 from tests.e2e.r_worker_fits import _max_gap
-from tests.e2e.r_worker_plot_parity import compare_file, compare_golden, compare_outputs, export_result, oversized_svg
+from tests.e2e.r_worker_plot_parity import compare_file, compare_outputs, export_result, oversized_svg
 
 
 def run(app, window, work, root, record, analyze):
@@ -33,6 +35,11 @@ def run(app, window, work, root, record, analyze):
             with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
                 metrics[extension][backend] = _report(view, destination)
         compare_file(work / f"embedded.{extension}", work / f"worker.{extension}")
+    metrics["forest_pdf"] = {}
+    for backend in ("embedded", "worker"):
+        with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
+            metrics["forest_pdf"][backend] = _plot_pdf(app, view, work / f"{backend}-forest.pdf")
+    compare_file(work / "embedded-forest.pdf", work / "worker-forest.pdf")
     previous = (work / "embedded.docx").read_bytes()
     output.write_bytes(previous)
     committed = {Path(path): Path(path).read_bytes() for path in view.results.display_images.values()}
@@ -76,6 +83,8 @@ def run(app, window, work, root, record, analyze):
     _report(view, recovered)
     with ZipFile(recovered) as document:
         assert document.testzip() is None and "word/document.xml" in document.namelist()
+    (work / "export-timings.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    record("docx-export-recovered", view, input=str(fixture), timing=metrics, destination=str(recovered))
     files = {}
     for backend in ("embedded", "worker"):
         with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
@@ -84,13 +93,26 @@ def run(app, window, work, root, record, analyze):
     svg = next(path for path in files["worker"].values() if path.suffix == ".svg")
     large_size = oversized_svg(svg, work / "oversized-artwork.png")
     record("worker-publishes-large-artwork-by-path", view, svg_bytes=large_size, parity=parity)
-    (work / "export-timings.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-    record("docx-export-recovered", view, input=str(fixture), timing=metrics, destination=str(recovered))
-    cases = compare_golden(work / "golden-publication-files")
-    record("golden-publication-parity", view, cases=cases)
 
 
 def _report(view, destination):
+    selected = "Word document (*.docx)" if destination.suffix == ".docx" else "PDF (*.pdf)"
+    with patch.object(QFileDialog, "getSaveFileName", return_value=(str(destination), selected)):
+        return _measure(view.export_report_action.trigger)
+
+
+def _plot_pdf(app, view, destination):
+    def accept(dialog):
+        dialog.format_control.setCurrentIndex(dialog.format_control.findData("pdf"))
+        assert dialog.forest_dimensions is not None and dialog.save_button.isEnabled()
+        dialog.paginate_pdf.setChecked(True)
+        dialog.save_button.click()
+
+    with patch.object(QFileDialog, "getSaveFileName", return_value=(str(destination), "PDF (*.pdf)")):
+        return _measure(lambda: modal(app, PlotExportDialog, accept, view.export_plot_action.trigger))
+
+
+def _measure(action):
     ticks = []
     ticker = QTimer()
     ticker.setTimerType(Qt.TimerType.PreciseTimer)
@@ -98,9 +120,7 @@ def _report(view, destination):
     ticker.start(10)
     start = perf_counter()
     try:
-        selected = "Word document (*.docx)" if destination.suffix == ".docx" else "PDF (*.pdf)"
-        with patch.object(QFileDialog, "getSaveFileName", return_value=(str(destination), selected)):
-            view.export_report_action.trigger()
+        action()
     finally:
         end = perf_counter()
         ticker.stop()
