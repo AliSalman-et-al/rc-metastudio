@@ -328,7 +328,7 @@ def run_quick() -> None:
     run_typing(build_root)
     preflight(env)
     run_pytest(
-        ["tests/python/fast"], env=env,
+        ["-m", "not r_packages", "tests/python/fast"], env=env,
         workers=int(os.environ.get("RCMS_FAST_WORKERS", "4")),
     )
     run_packaging_contracts(env)

@@ -80,9 +80,11 @@ Without `RCMS_QT6_BUILD_ROOT`, the application looks for generated forms under `
 GitHub Actions gates pull requests. The quick stage runs deterministic code health
 on Ubuntu and generates Qt forms, runs strict win32 typing, collects pytest,
 and runs the fast Python, packaging contract, and JavaScript release tests on
-Windows. The classifier-selected native, R-stack, cross-platform, and packaged
-checks wait for the quick stage. The Qt6 Integration Verification Gate reports
-the result.
+Windows. The quick stage excludes tests marked `r_packages`, which require an
+installed RCMetaR library. The full R-stack job provides that library for the
+packaged summary check. The classifier-selected native, R-stack, cross-platform,
+and packaged checks wait for the quick stage. The Qt6 Integration Verification
+Gate reports the result.
 
 To run the Windows quick checks before opening a pull request, use the locked
 Python environment, Node.js, and [pinned R](../config/r-dependencies.json) on

@@ -68,6 +68,12 @@ def _isolate_qsettings_for_qt_tests(request, tmp_path):
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
 
 
+def pytest_itemcollected(item: pytest.Item) -> None:
+    # Apply the marker regardless of the merge order of PRs #616 and #617.
+    if item.path == _ROOT / "tests/python/fast/test_packaged_summary_identity.py":
+        item.add_marker(pytest.mark.r_packages)
+
+
 def pytest_collection_modifyitems(config, items):
     config._needs_qapplication = any(
         "/python/gui/" in f"/{item.path.resolve().relative_to(_ROOT).as_posix()}"

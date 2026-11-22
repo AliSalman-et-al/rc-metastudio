@@ -53,6 +53,7 @@ rc_metastudio = [
 addopts = "--strict-markers"
 markers = [
     "qsettings: tests that require isolated per-test QSettings storage.",
+    "r_packages: tests that require an installed RCMetaR library and its dependencies.",
 ]
 
 [dependency-groups]
