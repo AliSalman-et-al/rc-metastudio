@@ -1,5 +1,7 @@
 """Forest colour settings and decoded colour export workflows."""
 
+from tests.e2e import r_oracle
+
 from rc_metastudio.qt_object_guard import required
 import os
 from pathlib import Path
@@ -51,7 +53,7 @@ def check_colours(path, colour='#2F5597', require_caps=True):
 def run_colours(app, window, work, record):
     from analysis_matrix import run as matrix
     from advanced_workflows import export_formats, modal, click
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
@@ -81,7 +83,7 @@ def run_colours(app, window, work, record):
                 continue
             observed = check_colours(artifact.display_path())
             load_saved_analysis(artifact.params_path,include_plot_data=True)
-            r_bridge.execute_r_string('reviewer.numeric.before <- lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric)')
+            r_oracle.evaluate('reviewer.numeric.before <- lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric)')
             def editor(dialog):
                 assert dialog.style_cbo.currentText() == 'Default'
                 assert dialog.style_cbo.findText('Default (metafor)') < 0
@@ -127,7 +129,7 @@ def run_colours(app, window, work, record):
                 image.close()
 
             load_saved_analysis(artifact.params_path,include_plot_data=True)
-            assert bool(r_bridge.execute_r_string('identical(reviewer.numeric.before,lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric),num.eq=FALSE)')[0])
+            assert bool(r_oracle.evaluate('identical(reviewer.numeric.before,lapply(plot.data$res[vapply(plot.data$res,is.numeric,logical(1))],as.numeric),num.eq=FALSE)')[0])
             record('reviewer-colour-exports',view,scenario=scenario,title=artifact.title,observed=observed,colour_samples=colour_samples,exports=files,
                    plots={artifact.title:artifact.display_path()})
         close(app,view)

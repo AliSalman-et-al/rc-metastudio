@@ -1729,8 +1729,8 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                 "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
             }:
                 from functools import partial
-                from rc_metastudio import r_bridge
-                forest_geometry = partial(r_bridge.forest_export_dimensions, artifact.params_path)
+                from rc_metastudio import r_operations
+                forest_geometry = partial(r_operations.forest_export_dimensions, artifact.params_path)
             elif artifact.params_path:
                 from tempfile import TemporaryDirectory
                 from rc_metastudio.results.plot_service import svg_text_points_per_inch

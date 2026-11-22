@@ -71,10 +71,7 @@ def test_frozen_linux_r_home_requires_private_shared_library(tmp_path, monkeypat
 
     assert r_runtime._configure_r_home(str(root), frozen=True) == str(r_home)
     assert environment["R_HOME"] == str(r_home)
-    assert environment["LD_LIBRARY_PATH"].split(r_runtime.os.pathsep) == [
-        str(root / "_internal"),
-        str(library),
-    ]
+    assert environment["LD_LIBRARY_PATH"] == "/host/lib"
     path_entries = environment["PATH"].split(r_runtime.os.pathsep)
     assert str(r_home / "bin") in path_entries
     assert "/host/bin" not in path_entries
@@ -84,23 +81,6 @@ def test_frozen_linux_r_home_requires_private_shared_library(tmp_path, monkeypat
     (library / "libR.so").unlink()
     with pytest.raises(RuntimeError, match="private libR.so"):
         r_runtime._configure_r_home(str(root), frozen=True)
-
-
-def test_frozen_linux_runtime_does_not_require_integration_kit(monkeypatch, tmp_path):
-    monkeypatch.setattr(r_runtime.sys, "platform", "linux")
-    monkeypatch.setattr(r_runtime, "_RUNTIME_IDENTITY", None)
-    monkeypatch.setattr(r_runtime, "_BOOTSTRAP_THREAD_ID", None)
-    monkeypatch.setattr(r_runtime, "_frozen_kit_identity", lambda _root: pytest.fail())
-    monkeypatch.setattr(
-        r_runtime,
-        "_configure_private_runtime_directories",
-        lambda _root: None,
-    )
-
-    assert r_runtime._configure_frozen_runtime(str(tmp_path), direct_spike=False) == (
-        None,
-        None,
-    )
 
 
 @pytest.mark.parametrize("variable,selector,child", [

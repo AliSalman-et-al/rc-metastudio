@@ -26,7 +26,6 @@ from rc_metastudio.macos_r_profile_schema import (
     ProfileSchemaError,
     validate_profile_evidence,
 )
-from rc_metastudio.r_runtime import macos_r_framework_version
 
 if __name__ == "__main__":
     import packaged_smoke_contract as smoke_contract
@@ -122,96 +121,6 @@ def _strings_or_empty(value: object) -> list[str]:
     return result
 
 
-def _r_kit_manifest_files(
-    manifest: dict[str, object],
-) -> dict[object, dict[str, object]] | None:
-    manifest_records = manifest.get("files")
-    if not isinstance(manifest_records, list):
-        return None
-    return {
-        record.get("path"): record
-        for value in manifest_records
-        for record in [_mapping_or_empty(value)]
-        if record.get("kind") == "file"
-    }
-
-
-def _valid_r_kit_member(
-    name: str,
-    manifest_files: dict[object, dict[str, object]],
-    source_group: dict[str, object],
-    pre_sign_group: dict[str, object],
-    final_group: dict[str, object],
-    transformations: dict[str, object],
-) -> bool:
-    source = _mapping_or_empty(source_group.get(name))
-    pre_sign = _mapping_or_empty(pre_sign_group.get(name))
-    final = _mapping_or_empty(final_group.get(name))
-    transformation = _mapping_or_empty(transformations.get(name))
-    if not _valid_r_kit_source(manifest_files, source):
-        return False
-    if not _valid_r_kit_pre_sign(name, source, pre_sign, transformation):
-        return False
-    return bool(
-        final.get("path") == pre_sign.get("path")
-        and pre_sign.get("signing_identity")
-        and final.get("signing_identity")
-    )
-
-
-def _valid_r_kit_source(
-    manifest_files: dict[object, dict[str, object]], source: dict[str, object]
-) -> bool:
-    return manifest_files.get(source.get("path"), {}).get("sha256") == source.get(
-        "sha256"
-    )
-
-
-def _valid_r_kit_pre_sign(
-    name: str,
-    source: dict[str, object],
-    pre_sign: dict[str, object],
-    transformation: dict[str, object],
-) -> bool:
-    if pre_sign.get("sha256") == source.get("sha256"):
-        return True
-    if name != "api_bridge":
-        return False
-    transformed_source = _mapping_or_empty(transformation.get("source"))
-    transformed_output = _mapping_or_empty(transformation.get("output"))
-    return bool(
-        transformation.get("kind") == "mach-o-load-command-relocation"
-        and transformed_source.get("sha256") == source.get("sha256")
-        and transformed_output.get("sha256") == pre_sign.get("sha256")
-        and transformation.get("changes")
-    )
-
-
-def _valid_r_kit_derivation(
-    manifest: dict[str, object], derivation: dict[str, object], target: str
-) -> bool:
-    manifest_files = _r_kit_manifest_files(manifest)
-    if manifest_files is None:
-        return False
-    if derivation.get("schema_version") != 1 or derivation.get("target") != target:
-        return False
-    source_group = _mapping_or_empty(derivation.get("source"))
-    pre_sign_group = _mapping_or_empty(derivation.get("pre_sign"))
-    final_group = _mapping_or_empty(derivation.get("final"))
-    transformations = _mapping_or_empty(derivation.get("transformations"))
-    for name in ("api_bridge", "r_shared_library"):
-        if not _valid_r_kit_member(
-            name,
-            manifest_files,
-            source_group,
-            pre_sign_group,
-            final_group,
-            transformations,
-        ):
-            return False
-    return True
-
-
 def validate_r_delivery_identity(
     app_root: Path,
     runtime_probe: dict[str, object],
@@ -220,46 +129,16 @@ def validate_r_delivery_identity(
     architecture: str,
     source_commit: str,
 ) -> dict[str, object]:
-    """Validate one, and only one, packaged R delivery identity."""
-    marker_path = app_root / DIRECT_R_MARKER_RELATIVE
-    marker_present = marker_path.is_file()
-    probe_r = _mapping_or_empty(runtime_probe.get("r"))
-    probe_rpy2 = _mapping_or_empty(runtime_probe.get("rpy2"))
-    probe_direct = probe_r.get("direct_spike") is True
-    kit_root = app_root / "Contents" / "Resources" / "r-integration-kit"
-    kit_manifest_path = kit_root / "manifest.json"
-    derivation_path = kit_root / "derivation.json"
-
-    if marker_present != probe_direct:
-        raise MacOSDeploymentInspectionError(
-            "direct R spike marker and frozen runtime probe disagree"
-        )
-    if probe_direct:
-        return _validate_direct_r_delivery(
-            marker_path, kit_root, runtime_probe, target, source_commit
-        )
-    kit_manifest, derivation = _load_r_kit_records(kit_manifest_path, derivation_path)
-    if not _valid_r_kit_identity(
-        kit_manifest, derivation, target, architecture, probe_r, probe_rpy2
-    ):
-        raise MacOSDeploymentInspectionError(
-            "macOS R integration-kit identity is invalid"
-        )
-    _validate_kit_probe_paths(app_root, derivation, probe_r, probe_rpy2)
-    return _r_kit_identity_result(kit_manifest_path, derivation_path, kit_manifest)
+    """Record the direct build that ships the private R worker."""
+    return _validate_direct_r_delivery(app_root / DIRECT_R_MARKER_RELATIVE, runtime_probe, target, source_commit)
 
 
 def _validate_direct_r_delivery(
     marker_path: Path,
-    kit_root: Path,
     runtime_probe: dict[str, object],
     target: str,
     source_commit: str,
 ) -> dict[str, object]:
-    if kit_root.exists():
-        raise MacOSDeploymentInspectionError(
-            "deployment mixes direct R spike and integration-kit identities"
-        )
     marker_sha256 = sha256_file(marker_path)
     if marker_sha256 != DIRECT_R_MARKER_SHA256:
         raise MacOSDeploymentInspectionError(
@@ -276,96 +155,6 @@ def _validate_direct_r_delivery(
             },
             "official_r": DIRECT_R_OFFICIAL_INPUTS[target],
             "ppm_snapshot": DIRECT_R_PPM_SNAPSHOT,
-        }
-    }
-
-
-def _load_r_kit_records(
-    manifest_path: Path, derivation_path: Path
-) -> tuple[dict[str, object], dict[str, object]]:
-    try:
-        return (
-            _mapping_or_empty(json.loads(manifest_path.read_text(encoding="utf-8"))),
-            _mapping_or_empty(json.loads(derivation_path.read_text(encoding="utf-8"))),
-        )
-    except (OSError, json.JSONDecodeError) as exc:
-        raise MacOSDeploymentInspectionError(
-            "macOS deployment lacks its R integration-kit manifest"
-        ) from exc
-
-
-def _valid_r_kit_identity(
-    manifest: dict[str, object],
-    derivation: dict[str, object],
-    target: str,
-    architecture: str,
-    probe_r: dict[str, object],
-    probe_rpy2: dict[str, object],
-) -> bool:
-    if not _valid_r_kit_manifest_header(manifest, target, architecture):
-        return False
-    if probe_r.get("kit_sha256") != manifest.get("kit_sha256"):
-        return False
-    if derivation.get("kit_sha256") != manifest.get("kit_sha256"):
-        return False
-    if not _valid_r_kit_derivation(manifest, derivation, target):
-        return False
-    return _valid_r_kit_probe_digests(derivation, probe_r, probe_rpy2)
-
-
-def _valid_r_kit_manifest_header(
-    manifest: dict[str, object], target: str, architecture: str
-) -> bool:
-    if manifest.get("kind") != "rc-metastudio-r-integration-kit":
-        return False
-    if manifest.get("target") != target or manifest.get("architecture") != architecture:
-        return False
-    return bool(
-        manifest.get("cffi_mode") == "API"
-        and len(str(manifest.get("kit_sha256", ""))) == 64
-    )
-
-
-def _valid_r_kit_probe_digests(
-    derivation: dict[str, object],
-    probe_r: dict[str, object],
-    probe_rpy2: dict[str, object],
-) -> bool:
-    final = _mapping_or_empty(derivation.get("final"))
-    api_bridge = _mapping_or_empty(final.get("api_bridge"))
-    shared_library = _mapping_or_empty(final.get("r_shared_library"))
-    return bool(
-        Path(str(probe_rpy2.get("api_bridge_path", ""))).name
-        == Path(str(api_bridge.get("path", ""))).name
-        and Path(str(probe_r.get("shared_library_path", ""))).name
-        == Path(str(shared_library.get("path", ""))).name
-    )
-
-
-def _validate_kit_probe_paths(app_root: Path, derivation: dict, probe_r: dict, probe_rpy2: dict) -> None:
-    frameworks = app_root / "Contents/Frameworks"
-    for name, observed in (("api_bridge", probe_rpy2.get("api_bridge_path")),
-                           ("r_shared_library", probe_r.get("shared_library_path"))):
-        record = derivation.get("final", {}).get(name, {})
-        relative = record.get("path")
-        if not isinstance(relative, str) or not isinstance(observed, str):
-            raise MacOSDeploymentInspectionError("R kit probe paths are incomplete")
-        expected = (frameworks / relative).resolve()
-        if (not expected.is_relative_to(app_root.resolve())
-                or not expected.is_file() or Path(observed).resolve() != expected
-                or sha256_file(expected) != record.get("sha256")):
-            raise MacOSDeploymentInspectionError("R kit probe paths differ from packaged derivation")
-
-
-def _r_kit_identity_result(
-    manifest_path: Path, derivation_path: Path, manifest: dict[str, object]
-) -> dict[str, object]:
-    return {
-        "r_integration_kit": {
-            "path": "Contents/Resources/r-integration-kit/manifest.json",
-            "sha256": sha256_file(manifest_path),
-            "kit_sha256": manifest["kit_sha256"],
-            "derivation_sha256": sha256_file(derivation_path),
         }
     }
 
@@ -881,25 +670,6 @@ def _qt_probe_paths_ok(
     )
 
 
-def _validate_rpy2_probe(probe: dict, frameworks: Path) -> None:
-    rpy2 = probe.get("rpy2", {})
-    expected = {
-        "distribution_version": EXPECTED_VERSIONS["rpy2"],
-        "cffi_mode": "API",
-        "rinterface_distribution_version": "3.6.7",
-        "robjects_distribution_version": "3.6.6",
-        "loaded_cffi_mode": "API",
-        "api_bridge_loaded": True,
-    }
-    observed = {key: rpy2.get(key) for key in expected}
-    valid = observed == expected
-    valid = valid and _normalize_runtime_path(
-        rpy2.get("api_bridge_path")
-    ).is_relative_to(frameworks)
-    if not valid:
-        raise MacOSDeploymentInspectionError("frozen rpy2 probe differs from the lock")
-
-
 def _validate_project_schema_probe(probe: dict) -> None:
     expected = {
         "version": 1,
@@ -914,15 +684,9 @@ def _validate_r_probe(probe: dict, app_root: Path, frameworks: Path) -> None:
     expected_r_library = expected_r_home / "library"
     r = probe.get("r", {})
     r_libraries = {_normalize_runtime_path(item) for item in r.get("library_paths", [])}
-    direct_spike = r.get("direct_spike") is True
-    valid_identity = (
-        r.get("kit_sha256") is None
-        if direct_spike
-        else _valid_sha256(r.get("kit_sha256"))
-    )
     valid = _r_probe_versions_ok(r) and _r_probe_paths_ok(
         r, expected_r_home, expected_r_library, r_libraries, frameworks
-    ) and valid_identity
+    )
     if not valid:
         raise MacOSDeploymentInspectionError(
             "frozen R probe does not use the bundled runtime"
@@ -931,7 +695,8 @@ def _validate_r_probe(probe: dict, app_root: Path, frameworks: Path) -> None:
 
 def _r_probe_versions_ok(r: dict) -> bool:
     return (
-        r.get("version") == EXPECTED_VERSIONS["r"]
+        r.get("backend") == "worker"
+        and r.get("version") == EXPECTED_VERSIONS["r"]
         and r.get("lc_numeric") == "C"
     )
 
@@ -960,7 +725,6 @@ def _validate_runtime_probe(
     frameworks = app_root / "Contents/Frameworks"
     _validate_python_probe(probe, executable, frameworks, architecture)
     _validate_qt_probe(probe, frameworks)
-    _validate_rpy2_probe(probe, frameworks)
     _validate_project_schema_probe(probe)
     _validate_r_probe(probe, app_root, frameworks)
 
@@ -1047,11 +811,9 @@ def _validate_nested_bundle_paths(
 
 
 def validate_r_framework_inventory(
-    records: object, *, delivery_kind: str, architecture: str
+    records: object, *, architecture: str
 ) -> None:
     """Require the canonical, concrete R framework payload and alias topology."""
-    if delivery_kind not in {"integration-kit", "direct-spike"}:
-        raise MacOSDeploymentInspectionError("R framework delivery kind is invalid")
     if not isinstance(records, list) or not all(
         isinstance(item, dict) for item in records
     ):
@@ -1062,46 +824,35 @@ def validate_r_framework_inventory(
         record.get("path"): record for record in cast(list[dict[str, object]], records)
     }
     framework = "Contents/Frameworks/R.framework"
-    framework_version = _r_framework_version(by_path, delivery_kind, framework)
+    framework_version = _r_framework_version(by_path, framework)
     version_root = f"{framework}/Versions/{framework_version}"
     resources = f"{version_root}/Resources"
-    native_paths = [f"{version_root}/R"]
-    if delivery_kind == "direct-spike":
-        native_paths.extend(
-            [f"{resources}/bin/Rscript.real", f"{resources}/bin/exec/R"]
-        )
+    native_paths = [f"{version_root}/R", f"{resources}/bin/Rscript.real", f"{resources}/bin/exec/R"]
     _validate_r_framework_members(
-        by_path, resources, native_paths, architecture, delivery_kind
+        by_path, resources, native_paths, architecture
     )
     expected_links = _r_framework_links(
-        framework, resources, version_root, framework_version, delivery_kind
+        framework, resources, version_root, framework_version
     )
     _validate_r_framework_links(by_path, expected_links)
 
 
 def _r_framework_version(
-    by_path: dict[object, dict[str, object]], delivery_kind: str, framework: str
+    by_path: dict[object, dict[str, object]], framework: str
 ) -> str:
-    if delivery_kind == "direct-spike":
-        framework_version = by_path.get(f"{framework}/Versions/Current", {}).get(
-            "link_target"
-        )
-        if (
-            not isinstance(framework_version, str)
-            or framework_version in {"", ".", ".."}
-            or "/" in framework_version
-            or "\\" in framework_version
-        ):
-            raise MacOSDeploymentInspectionError(
-                "official R framework Versions/Current target is invalid"
-            )
-        return framework_version
-    try:
-        return macos_r_framework_version(EXPECTED_VERSIONS["r"])
-    except ValueError as exc:
+    framework_version = by_path.get(f"{framework}/Versions/Current", {}).get(
+        "link_target"
+    )
+    if (
+        not isinstance(framework_version, str)
+        or framework_version in {"", ".", ".."}
+        or "/" in framework_version
+        or "\\" in framework_version
+    ):
         raise MacOSDeploymentInspectionError(
-            "locked R version cannot name its framework"
-        ) from exc
+            "official R framework Versions/Current target is invalid"
+        )
+    return framework_version
 
 
 def _validate_r_framework_members(
@@ -1109,13 +860,11 @@ def _validate_r_framework_members(
     resources: str,
     native_paths: list[str],
     architecture: str,
-    delivery_kind: str,
 ) -> None:
-    if delivery_kind == "direct-spike":
-        _validate_r_framework_launcher(by_path, resources)
+    _validate_r_framework_launcher(by_path, resources)
     required_files = {
         f"{resources}/bin/Rscript",
-        f"{resources}/library/RCMetaR/DESCRIPTION",
+        f"{resources}/library/RCMetaR/worker.R",
         f"{resources}/Info.plist",
         *native_paths,
     }
@@ -1169,24 +918,14 @@ def _r_framework_links(
     resources: str,
     version_root: str,
     framework_version: str,
-    delivery_kind: str,
 ) -> dict[str, tuple[str, str]]:
-    links = {
+    return {
         f"{framework}/Versions/Current": (framework_version, version_root),
         f"{framework}/Resources": ("Versions/Current/Resources", resources),
         f"{framework}/R": ("Versions/Current/R", f"{version_root}/R"),
         f"{resources}/lib/libR.dylib": ("../../R", f"{version_root}/R"),
+        f"{resources}/R": ("bin/R", f"{resources}/bin/R"),
     }
-    if delivery_kind == "direct-spike":
-        links.update(
-            {
-                f"{resources}/R": (
-                    "bin/R",
-                    f"{resources}/bin/R",
-                ),
-            }
-        )
-    return links
 
 
 def _validate_r_framework_links(
@@ -1203,49 +942,6 @@ def _validate_r_framework_links(
             raise MacOSDeploymentInspectionError(
                 f"R framework alias is missing or noncanonical: {path}"
             )
-
-
-def validate_rpy2_api_payload(records: object) -> None:
-    """Require the API bridge and reject all ABI-mode fallback payloads."""
-    if not isinstance(records, list) or not all(
-        isinstance(item, dict) for item in records
-    ):
-        raise MacOSDeploymentInspectionError("rpy2 inventory is not a record list")
-    typed_records = cast(list[dict[str, object]], records)
-    if _has_abi_bridge(typed_records):
-        raise MacOSDeploymentInspectionError(
-            "deployment contains the forbidden rpy2 ABI-mode fallback bridge"
-        )
-    api_native = _matching_rpy2_records(typed_records, "_rinterface_cffi_api")
-    if len(api_native) != 1:
-        raise MacOSDeploymentInspectionError(
-            "deployment must contain exactly one rpy2 API-mode bridge"
-        )
-    api_support = _matching_rpy2_records(
-        typed_records, "/rpy2/rinterface_lib/_bufferprotocol"
-    )
-    if len(api_support) != 1:
-        raise MacOSDeploymentInspectionError(
-            "deployment must contain exactly one rpy2 API bridge support extension"
-        )
-
-
-def _has_abi_bridge(records: list[dict[str, object]]) -> bool:
-    return any(
-        "_rinterface_cffi_abi" in str(record.get("path", "")).lower()
-        for record in records
-    )
-
-
-def _matching_rpy2_records(
-    records: list[dict[str, object]], marker: str
-) -> list[dict[str, object]]:
-    return [
-        record
-        for record in records
-        if "architectures" in record
-        and marker in str(record.get("path", "")).lower()
-    ]
 
 
 def _validate_deployment_contract(
@@ -1308,7 +1004,6 @@ def _inventory_file(
     app_root: Path,
     architecture: str,
     minimum_macos: str,
-    r_delivery_kind: str,
 ) -> tuple[dict, bool]:
     record = {
         "path": _relative(path, app_root),
@@ -1320,7 +1015,7 @@ def _inventory_file(
     direct_r_launcher = (
         app_root / "Contents/Frameworks/R.framework/Resources/bin/R"
     )
-    if r_delivery_kind == "direct-spike" and path.resolve() == direct_r_launcher.resolve():
+    if path.resolve() == direct_r_launcher.resolve():
         with path.open("rb") as stream:
             record["shebang"] = (
                 stream.readline(128).decode("ascii", errors="replace").rstrip()
@@ -1343,7 +1038,6 @@ def _collect_deployment_inventory(
     app_root: Path,
     architecture: str,
     minimum_macos: str,
-    r_delivery_kind: str,
 ) -> tuple[list[dict], list[dict], int]:
     records: list[dict] = []
     native_records: list[dict] = []
@@ -1352,7 +1046,7 @@ def _collect_deployment_inventory(
     for current, directories, filenames in os.walk(app_root, followlinks=False):
         directory_records, directory_bytes = _inventory_directory(
             Path(current), directories, filenames, app_root, architecture,
-            minimum_macos, r_delivery_kind, folded,
+            minimum_macos, folded,
         )
         records.extend(directory_records)
         native_records.extend(
@@ -1373,7 +1067,6 @@ def _inventory_directory(
     app_root: Path,
     architecture: str,
     minimum_macos: str,
-    r_delivery_kind: str,
     folded: dict[str, str],
 ) -> tuple[list[dict], int]:
     records: list[dict] = []
@@ -1399,7 +1092,7 @@ def _inventory_directory(
             record = _inventory_symlink(path, app_root)
         else:
             record, _ = _inventory_file(
-                path, app_root, architecture, minimum_macos, r_delivery_kind
+                path, app_root, architecture, minimum_macos
             )
         records.append(record)
         total_bytes += record["size"]
@@ -1428,14 +1121,12 @@ def _is_qt_payload_path(lowered: str, path: str) -> bool:
 def _validate_qt_deployment(
     records: list[dict],
     native_records: list[dict],
-    r_delivery_kind: str,
     architecture: str,
 ) -> tuple[str, dict[str, str], list[str]]:
     lowered_paths = [record["path"].lower() for record in records]
     validate_r_framework_inventory(
-        records, delivery_kind=r_delivery_kind, architecture=architecture
+        records, architecture=architecture
     )
-    validate_rpy2_api_payload(records)
     if any(
         any(
             token in path
@@ -1582,16 +1273,11 @@ def inspect_deployment(
         architecture=architecture,
         source_commit=source_commit,
     )
-    r_delivery_kind = (
-        "direct-spike"
-        if "direct_r_build" in r_delivery_identity
-        else "integration-kit"
-    )
     records, native_records, total_bytes = _collect_deployment_inventory(
-        app_root, architecture, minimum_macos, r_delivery_kind
+        app_root, architecture, minimum_macos
     )
     qt_root, plugin_paths, tls_plugins = _validate_qt_deployment(
-        records, native_records, r_delivery_kind, architecture
+        records, native_records, architecture
     )
     if not native_records or require_macho_architecture(executable, architecture) != [
         architecture
@@ -1888,7 +1574,6 @@ def _valid_direct_upstream(payload: dict, official_r: object, target: str) -> bo
         isinstance(official_r, dict)
         and official_r == DIRECT_R_OFFICIAL_INPUTS[target]
         and payload.get("ppm_snapshot") == DIRECT_R_PPM_SNAPSHOT
-        and _valid_sha256(payload.get("rpy2_api_bridge_source_sha256"))
     )
 
 
@@ -2082,7 +1767,7 @@ def validate_direct_build_archive_inputs(
 ) -> None:
     _validate_archive_input_members(bundle, prefix, names, manifest)
     runner = _read_and_validate_archive_provenance(
-        bundle, prefix, names, manifest, target
+        bundle, prefix, names, manifest
     )
     validate_direct_build_runner(runner, target=target)
 
@@ -2112,7 +1797,6 @@ def _read_and_validate_archive_provenance(
     prefix: str,
     names: list[str],
     manifest: dict,
-    target: str,
 ) -> dict:
     runner = json.loads(
         bundle.read(prefix + DIRECT_BUILD_INPUT_MEMBERS["runner_environment"])
@@ -2124,12 +1808,6 @@ def _read_and_validate_archive_provenance(
     ppm_inventory = json.loads(
         bundle.read(prefix + DIRECT_BUILD_INPUT_MEMBERS["ppm_archive_inventory"])
     )
-    preflight = json.loads(
-        bundle.read(
-            prefix + DIRECT_BUILD_INPUT_MEMBERS["pyinstaller_toc_preflight_report"]
-        )
-    )
-    _validate_preflight(preflight, manifest, target)
     _validate_ppm_inventory(ppm_inventory, manifest)
     _validate_ppm_archives(bundle, names, prefix, manifest)
     return runner
@@ -2438,15 +2116,12 @@ def _signing_record_matches(signing_record: dict, signing: dict, path: Path) -> 
 def _validate_archive_delivery(deployment: dict, records: list[dict], target: str) -> None:
     if deployment.get("target") not in TARGET_CONTRACTS:
         return
-    has_kit = isinstance(deployment.get("r_integration_kit"), dict)
-    has_direct = isinstance(deployment.get("direct_r_build"), dict)
-    if has_kit == has_direct:
+    if not isinstance(deployment.get("direct_r_build"), dict):
         raise MacOSDeploymentInspectionError(
-            "deployment manifest must name exactly one R delivery identity"
+            "deployment manifest is missing the R build identity"
         )
     validate_r_framework_inventory(
         records,
-        delivery_kind="direct-spike" if has_direct else "integration-kit",
         architecture=TARGET_CONTRACTS[target]["architecture"],
     )
 
@@ -2788,7 +2463,7 @@ def _validate_profile(path: Path, architecture: str) -> None:
         )
     except ProfileSchemaError as exc:
         raise MacOSDeploymentInspectionError(
-            "embedded R profile evidence is incomplete"
+            "R runtime profile evidence is incomplete"
         ) from exc
 
 
@@ -2809,7 +2484,7 @@ def _qualification_hashes(
         "qualification/deployment-manifest.json": sha256_file(deployment_manifest),
         "qualification/ad-hoc-signing-inventory.json": sha256_file(signing_inventory),
         "qualification/runtime-probe.json": sha256_file(runtime_probe),
-        "qualification/embedded-r-runtime-profile.json": sha256_file(r_runtime_profile),
+        "qualification/r-runtime-profile.json": sha256_file(r_runtime_profile),
         "qualification/direct-r-build-manifest.json": sha256_file(direct_build_manifest),
         "qualification/packaged-smoke.json": sha256_file(smoke_evidence),
         "qualification/packaged-smoke.log": sha256_file(smoke_log),
@@ -2917,7 +2592,7 @@ def write_qualification_evidence(
             "path": runtime_probe.name,
             "sha256": sha256_file(runtime_probe),
         },
-        "embedded_r_runtime_profile": {
+        "r_runtime_profile": {
             "path": r_runtime_profile.name,
             "sha256": sha256_file(r_runtime_profile),
         },
@@ -3035,7 +2710,6 @@ def _build_parser() -> argparse.ArgumentParser:
         archive.add_argument(f"--{name.replace('_', '-')}", type=Path, required=True)
     archive.add_argument("--launchservices-marker", type=Path)
     archive_identity = archive.add_mutually_exclusive_group(required=True)
-    archive_identity.add_argument("--r-integration-kit-manifest", type=Path)
     archive_identity.add_argument("--direct-build-manifest", type=Path)
     archive.add_argument("--output", type=Path, required=True)
     native_graph = commands.add_parser("native-graph")
@@ -3123,7 +2797,7 @@ def _archive_embedded_files(args: argparse.Namespace) -> dict[str, Path]:
         "qualification/runtime-probe.json": args.runtime_probe,
         "qualification/runtime-probe.stdout.log": args.runtime_stdout,
         "qualification/runtime-probe.stderr.log": args.runtime_stderr,
-        "qualification/embedded-r-runtime-profile.json": args.r_runtime_profile,
+        "qualification/r-runtime-profile.json": args.r_runtime_profile,
         "qualification/packaged-smoke.json": args.smoke_evidence,
         "qualification/packaged-smoke.log": args.smoke_log,
         "qualification/packaged-smoke.stdout.log": args.smoke_stdout,
@@ -3136,10 +2810,6 @@ def _archive_embedded_files(args: argparse.Namespace) -> dict[str, Path]:
     direct_manifest = args.direct_build_manifest
     if direct_manifest is not None:
         embedded["qualification/direct-r-build-manifest.json"] = direct_manifest
-    else:
-        embedded["qualification/r-integration-kit-manifest.json"] = (
-            args.r_integration_kit_manifest
-        )
     return embedded
 
 

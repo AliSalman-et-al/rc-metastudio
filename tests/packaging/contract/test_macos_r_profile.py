@@ -1,4 +1,4 @@
-"""Focused contract tests for the explicit macOS embedded-R product profile."""
+"""Focused contract tests for the explicit macOS R runtime profile."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ import pytest
 
 
 def load_profile():
-    path = Path("scripts/profile_macos_embedded_r_runtime.py")
-    spec = importlib.util.spec_from_file_location("embedded_r_profile", path)
+    path = Path("scripts/profile_macos_r_runtime.py")
+    spec = importlib.util.spec_from_file_location("r_runtime_profile", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -1,41 +1,66 @@
-"""Capture one real analysis fit for an independent R oracle."""
+"""Save raw fits in an instrumented desktop drive for independent R checks."""
 
-from collections.abc import Generator
 from contextlib import contextmanager
+import json
+import os
 from pathlib import Path
+from shutil import copyfile
 from unittest.mock import patch
+from uuid import uuid4
 
-from rc_metastudio import r_bridge
-from rc_metastudio.r_call_serialization import r_transaction
-
-
-class FitObservation:
-    def __init__(self, results: list[object]) -> None:
-        self._results = results
-
-    def evaluate(self, expression: str):
-        """Evaluate an oracle with the observed fit bound locally as `result`."""
-        result, = self._results
-        with r_transaction():
-            bindings = r_bridge.ro.ListVector({"result": result})
-            parsed = r_bridge.execute_r_function("parse", text=expression)
-            return r_bridge.execute_r_function("eval", parsed, bindings, r_bridge.ro.globalenv)
-
-    def save(self, path: Path) -> None:
-        result, = self._results
-        r_bridge.execute_r_function("saveRDS", result, file=str(path))
+from rc_metastudio import r_worker
+from tests.e2e import r_oracle
 
 
 @contextmanager
-def observe_fit() -> Generator[FitObservation]:
-    parse = r_bridge.parse_out_results
-    results: list[object] = []
+def instrument_worker(work: Path):
+    directory = work / "fit-observations"
+    directory.mkdir()
+    os.environ["RCMS_TEST_FIT_DIRECTORY"] = str(directory)
+    program, source = r_worker._runtime_paths()
+    script = directory / "worker.R"
+    hook = '''
+        invisible(trace(".rcmetar.result.payload", where=asNamespace("RCMetaR"), print=FALSE,
+            tracer=quote({
+                path <- Sys.getenv("RCMS_TEST_FIT_DIRECTORY")
+                if (file.exists(file.path(path, "record"))) {
+                    saveRDS(result, tempfile("fit-", tmpdir=path, fileext=".rds"))
+                }
+            })))
+'''
+    text = source.read_text(encoding="utf-8")
+    anchor = 'library("RCMetaR", lib.loc=dirname(path))'
+    assert anchor in text
+    script.write_text(text.replace(anchor, anchor + hook, 1), encoding="utf-8")
+    with patch.object(r_worker, "_runtime_paths", return_value=(program, script)):
+        yield
 
-    def observe(raw_result):
-        parsed = parse(raw_result)
-        results.append(raw_result)
-        return parsed
 
-    with patch.object(r_bridge, "parse_out_results", side_effect=observe):
-        yield FitObservation(results)
-    assert len(results) == 1, f"Expected one successful R fit, observed {len(results)}"
+class FitObservation:
+    def __init__(self, directory: Path) -> None:
+        self.directory = directory
+        self.before = set(directory.glob("fit-*.rds"))
+
+    def path(self) -> Path:
+        fit, = set(self.directory.glob("fit-*.rds")) - self.before
+        return fit
+
+    def evaluate(self, expression: str):
+        path = json.dumps(self.path().as_posix(), ensure_ascii=False)
+        return r_oracle.evaluate(f"local({{result <- readRDS({path}); {expression}}})")
+
+    def save(self, path: Path) -> None:
+        copyfile(self.path(), path)
+
+
+@contextmanager
+def observe_fit():
+    directory = Path(os.environ["RCMS_TEST_FIT_DIRECTORY"])
+    marker = directory / "record"
+    observation = FitObservation(directory)
+    marker.touch(exist_ok=False)
+    try:
+        yield observation
+        observation.path()
+    finally:
+        marker.unlink()

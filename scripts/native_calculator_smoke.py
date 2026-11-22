@@ -115,10 +115,6 @@ def install_native_test_backend() -> SimpleNamespace:
     from local_r_test_backend import create
 
     backend = create()
-    if "rpy2.rinterface" in sys.modules:
-        raise RuntimeError(
-            "rpy2.rinterface loaded before native calculator GUI imports"
-        )
     _phase("backend-installed")
     return backend
 
@@ -220,12 +216,15 @@ def validate_evidence_bundle(evidence_root: Path) -> list[dict[str, object]]:
 
 
 def _run_main() -> int:
+    from rc_metastudio import launch
+
+    setattr(launch, "load_R_libraries", lambda *_args, **_kwargs: None)
     prepare_generated_ui_imports()
     ensure_application_resources()
     repo_root = Path(__file__).resolve().parents[1]
     backend = install_native_test_backend()
 
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
     from rc_metastudio.calculators import (
         binary_dialog as binary_data_dialog,
         continuous_dialog as continuous_data_dialog,
@@ -234,42 +233,37 @@ def _run_main() -> int:
     from rc_metastudio.workspace import table_model as dataset_table_model
 
     for name, implementation in vars(backend).items():
-        setattr(r_bridge, name, implementation)
+        setattr(r_operations, name, implementation)
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
-    _install_backend_test_double(
-        r_bridge,
-        "get_confidence_multiplier_from_r",
-        lambda _level: 1.96,
-    )
     setattr(
-        r_bridge,
+        r_operations,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "impute_binary_data",
         lambda _data: {"FAIL": True},
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "effect_for_study",
         lambda *_args, **_kwargs: {
             "calc_scale": (1.2, 0.8, 1.8), "display_scale": (1.2, 0.8, 1.8),
         },
     )
     setattr(
-        r_bridge,
+        r_operations,
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
     setattr(
-        r_bridge,
+        r_operations,
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "impute_continuous_data",
         lambda _data, _alpha: {
             "succeeded": False,
@@ -277,55 +271,55 @@ def _run_main() -> int:
         },
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "continuous_effect_for_study",
         lambda *_args, **_kwargs: {"calc_scale": (1.5, 1.0, 2.0)},
     )
     setattr(
-        r_bridge,
+        r_operations,
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "back_calculate_continuous_data",
         lambda *_args, **_kwargs: {"FAIL": True},
     )
     setattr(
-        r_bridge,
+        r_operations,
         "diagnostic_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "impute_diagnostic_data",
         lambda _data: {"TP": None, "FP": None, "FN": None, "TN": None},
     )
     _install_backend_test_double(
-        r_bridge,
+        r_operations,
         "diagnostic_effects_for_study",
         lambda *_args, metrics, **_kwargs: {
             metric: {"calc_scale": (0.8, 0.7, 0.9)} for metric in metrics
         },
     )
     setattr(
-        r_bridge,
+        r_operations,
         "effect_triplet",
         lambda result, scale, metric=None: result[scale],
     )
     setattr(diagnostic_data_dialog.QMessageBox, "warning", lambda *args, **kwargs: None)
     setattr(
-        r_bridge,
+        r_operations,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     setattr(
-        r_bridge,
+        r_operations,
         "continuous_convert_scale",
         lambda value, *args, **kwargs: value,
     )
     setattr(
-        r_bridge,
+        r_operations,
         "diagnostic_convert_scale",
         lambda value, *args, **kwargs: value,
     )

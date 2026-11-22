@@ -66,7 +66,7 @@ gh run view 45026563658 --attempt 2 --log
 
 [Attempt 2](https://github.com/AliSalman-et-al/rc-metastudio/actions/runs/45026563658/attempts/2)
 restored the official Qt SDK, installed RCMetaR and package-specific uv
-caches. The package passed in 8m 04s. The rpy2 stage installed the cached
+caches. The package passed in 8m 04s. The embedded binding stage installed the cached
 wheel in under one second and logged no build. RCMetaR copy and load
 verification took four seconds and logged no source install.
 

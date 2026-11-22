@@ -16,9 +16,6 @@
   },
   "purpose": "Frozen behavior oracle for statistical regression tests.",
   "runtime_identities": {
-    "rpy2": "3.6.7",
-    "rpy2-rinterface": "3.6.6",
-    "rpy2-robjects": "3.6.5"
   },
   "schema_version": 1
 }

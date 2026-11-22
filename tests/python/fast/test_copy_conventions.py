@@ -16,7 +16,7 @@ TEXT_FIRST_ARGUMENT = {
     "addAction", "addItem", "addMenu", "CellRejection", "ValueError", "RuntimeError",
 }
 TEXT_RETURN_FILES = {
-    "report.py", "tabular.py", "r_bridge.py", "trial_sequential.py",
+    "report.py", "tabular.py", "r_operations.py", "trial_sequential.py",
     "identity.py", "method_labels.py", "name_validation.py", "editing.py",
 }
 MESSAGE_KINDS = {"critical", "information", "question", "warning"}

@@ -641,9 +641,9 @@ def execute_small_study_effects(
     model: object, request: SmallStudyEffectsRequest
 ) -> AnalysisResult:
     """Convert and execute one immutable request through the serialized R call."""
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
-    result = r_bridge.run_small_study_effects(model, request.to_mapping())
+    result = r_operations.run_small_study_effects(model, request.to_mapping())
     if not isinstance(result, AnalysisResult):
         raise TypeError("small-study effects execution returned an invalid result")
     return result
@@ -655,9 +655,9 @@ class SmallStudyEffectsService:
     def preview(
         self, model: object, request: SmallStudyEffectsRequest
     ) -> EligibilityReport:
-        from rc_metastudio import r_bridge
+        from rc_metastudio import r_operations
 
-        value = r_bridge.run_small_study_effects(
+        value = r_operations.run_small_study_effects(
             model, request.to_mapping(), preview=True
         )
         return parse_eligibility_report(value)
@@ -707,7 +707,7 @@ __all__ = [
 
 
 def _eligibility_methods(method_values: object) -> tuple[EligibilityMethod, ...]:
-    # rpy2 scalarizes a length-one list of named records to its record
+    # The worker can scalarize a length-one list of named records to its record
     # mapping.  Normalize that wire representation before validating the
     # otherwise stable sequence contract.
     if isinstance(method_values, Mapping):

@@ -547,20 +547,13 @@ def run(app, window, work, record, case):
             wait(300)
             assert dialog.run_button.isEnabled(), dialog.status.text()
             if change is None:
-                if r_worker.enabled():
-                    dialog.conclusion_timer.stop()
-                    dialog._start_conclusion()
-                    assert dialog._cancel_worker_conclusion is not None
-                else:
-                    deadline = perf_counter() + 3
-                    while dialog.conclusion_process.state() != QtCore.QProcess.ProcessState.Running and perf_counter() < deadline:
-                        wait(20)
-                    assert dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running
+                dialog.conclusion_timer.stop()
+                dialog._start_conclusion()
+                assert dialog._cancel_worker_conclusion is not None
                 assert dialog.run_button.isEnabled() and dialog.conclusion.text() == "Checking boundary crossings…"
             record("tsa-change-settings-dialog", dialog, power=dialog.power.text(),
                    effect=dialog.effect.text(), status=dialog.status.text(),
-                   background_running=dialog._cancel_worker_conclusion is not None
-                   or dialog.conclusion_process.state() == QtCore.QProcess.ProcessState.Running)
+                   background_running=dialog._cancel_worker_conclusion is not None)
             dialog.run_button.click()
             assert dialog.result() == dialog.DialogCode.Accepted, dialog.status.text()
 
@@ -587,16 +580,12 @@ def run(app, window, work, record, case):
         # original study snapshot, while a later Save includes the live edit.
         assert window.model.setData(window.model.index(0, window.model.NAME), "Edited in source sheet")
         assert window.save(destination=saved)
-        with patch.object(TsaService, "conclusion_command", return_value=(
-            sys.executable, ["-c", "import time; time.sleep(30)"]
-        )):
-            started = perf_counter()
-            modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, None), view.change_settings_action.trigger)
-            elapsed = perf_counter() - started
+        started = perf_counter()
+        modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, None), view.change_settings_action.trigger)
+        elapsed = perf_counter() - started
         assert elapsed < 30, elapsed
         assert not window.workspace.is_dirty and view._report_tables[0].rows == entered_rows
-        action = "tsa-worker-conclusion-reused" if r_worker.enabled() else "tsa-child-timeout-fallback"
-        record(action, view, elapsed=elapsed, results_preserved=True)
+        record("tsa-worker-conclusion-reused", view, elapsed=elapsed, results_preserved=True)
         view.report_action.setChecked(True)
         record("tsa-change-settings-result", view, same_window=visible is view, project_dirty=window.workspace.is_dirty,
                before=original_methods, after=view.manuscript.methods)

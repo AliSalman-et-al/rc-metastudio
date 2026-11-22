@@ -131,7 +131,7 @@ qualify_signed_app() {
   local stdout_path="$qualification/${phase}-runtime.stdout.log"
   local stderr_path="$qualification/${phase}-runtime.stderr.log"
 
-  env -u QT_QPA_PLATFORM RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+  env -u QT_QPA_PLATFORM \
     RCMS_R_HOME="$r_home" RCMS_R_LIBS="$r_home/library" \
     uv run --project "$repo_root" --no-project python \
       "$repo_root/scripts/run_bounded_process.py" --timeout-seconds 900 \
@@ -144,8 +144,8 @@ import sys
 runtime = json.load(open(sys.argv[1], encoding="utf-8"))
 if not runtime.get("frozen") or runtime.get("qt", {}).get("platform_plugin") != "cocoa":
     raise SystemExit("Signed runtime probe did not use the frozen Cocoa runtime.")
-if not runtime.get("rpy2", {}).get("api_bridge_loaded"):
-    raise SystemExit("Signed runtime probe did not load the bundled rpy2 API bridge.")
+if runtime.get("r", {}).get("backend") != "worker":
+    raise SystemExit("Signed runtime probe did not start the private worker.")
 PY
   codesign --verify --deep --strict --verbose=4 "$app"
 }

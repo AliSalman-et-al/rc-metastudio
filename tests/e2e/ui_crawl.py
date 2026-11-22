@@ -146,8 +146,7 @@ def exports(driver, capture, missing, view):
     converted.mkdir(exist_ok=True)
     conversion_env = os.environ.copy()
     if sys.platform == "linux" and (executable := shutil.which("soffice")):
-        # Writer loads private libraries lazily; the embedded R loader path
-        # does not include LibreOffice's installation directory.
+        # Make Writer’s lazily loaded libraries available to its subprocess.
         program = str(Path(executable).resolve().parent)
         conversion_env["LD_LIBRARY_PATH"] = program + os.pathsep + conversion_env.get("LD_LIBRARY_PATH", "")
     try:

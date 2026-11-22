@@ -8,11 +8,10 @@ import psutil
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QDialogButtonBox, QProgressDialog, QPushButton
 
-from rc_metastudio import r_bridge, r_worker
+from rc_metastudio import r_operations, r_worker
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
 from rc_metastudio.results.window import ResultsWindow
-from tests.analysis_regression.golden.support.worker_parity import capture_cases
 
 
 def run(app, window, work, root, record, _analyze):
@@ -27,8 +26,6 @@ def run(app, window, work, root, record, _analyze):
     _tsa(app, window, worker, record)
     assert standard.isVisible() and all(path.is_file() for path in committed)
     record("committed-fit-survived-worker-loss", standard)
-    matched = capture_cases(work / "worker-golden-payloads")
-    record("worker-golden-full-payload-parity", window, cases=matched)
 
 
 def _fit(app, window, worker, record):
@@ -112,7 +109,7 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
     deadline.timeout.connect(interrupt)
     if mode != "complete":
         deadline.start(10)
-    execute = r_bridge._worker_analysis
+    execute = r_operations._worker_analysis
 
     def measure(job):
         sent = perf_counter()
@@ -124,7 +121,7 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
     ticker.start(10)
     start = perf_counter()
     try:
-        with patch.object(r_bridge, "_worker_analysis", side_effect=measure):
+        with patch.object(r_operations, "_worker_analysis", side_effect=measure):
             run_button.click()
     finally:
         end = perf_counter()

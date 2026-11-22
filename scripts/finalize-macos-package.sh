@@ -40,14 +40,14 @@ required = [
     f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - BCG vaccine and tuberculosis, Colditz 1994.rcms",
     f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms",
     f"{resources}/bin/Rscript",
-    f"{resources}/library/RCMetaR/DESCRIPTION",
+    f"{resources}/library/RCMetaR/worker.R",
     f"{resources}/Info.plist",
     f"{version_root}/R",
     f"{archive_root_name}/qualification/ad-hoc-signing-inventory.json",
     f"{archive_root_name}/RCMetaStudio.app/Contents/Resources/LaunchRCMetaStudio.command",
     f"{archive_root_name}/qualification/deployment-manifest.json",
     f"{archive_root_name}/qualification/runtime-probe.json",
-    f"{archive_root_name}/qualification/embedded-r-runtime-profile.json",
+    f"{archive_root_name}/qualification/r-runtime-profile.json",
     f"{archive_root_name}/qualification/direct-r-build-manifest.json",
 ]
 expected_links = {
@@ -133,7 +133,7 @@ if [ "$skip_smoke" -eq 0 ]; then
   [ -x "$extracted_app/Contents/MacOS/RCMetaStudio" ] || { echo "Exact ZIP extraction lacks the app entry executable." >&2; exit 1; }
   [ -x "$extracted_r_home/bin/Rscript" ] || { echo "Exact ZIP extraction lacks private R." >&2; exit 1; }
   run_extracted() {
-    env -u QT_QPA_PLATFORM RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+    env -u QT_QPA_PLATFORM \
       RCMS_R_HOME="$extracted_r_home" RCMS_R_LIBS="$extracted_r_lib" \
       "$python_exe" "$repo_root/scripts/run_bounded_process.py" --timeout-seconds 900 \
       --stdout "$extracted_stdout" --stderr "$extracted_stderr" -- "$@"
@@ -148,8 +148,6 @@ if [ "$skip_smoke" -eq 0 ]; then
   done <<< "$surface_scales"
   mkdir -p "$extracted_surfaces"
   env -u QT_QPA_PLATFORM \
-    RCMS_REQUIRE_IN_PROCESS_RPY2=1 \
-    RPY2_CFFI_MODE=API \
     RCMS_R_HOME="$extracted_r_home" \
     RCMS_R_LIBS="$extracted_r_lib" \
     "$python_exe" "$repo_root/scripts/assemble_packaged_smoke_evidence.py" \
@@ -163,7 +161,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --log-path "$extracted_smoke_log" \
     --output "$extracted_smoke"
   rm -f "$extracted_marker" "$extracted_pid"
-  env -u QT_QPA_PLATFORM RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+  env -u QT_QPA_PLATFORM \
     RCMS_R_HOME="$extracted_r_home" RCMS_R_LIBS="$extracted_r_lib" RCMS_STARTUP_PROJECT_SMOKE=1 \
     RCMS_AUTOMATION_SMOKE_LOG="$extracted_smoke_log" RCMS_STARTUP_COMPLETION_MARKER="$extracted_marker" \
     RCMS_AUTOMATION_PID_FILE="$extracted_pid" "$python_exe" "$repo_root/scripts/run_bounded_process.py" \
@@ -183,7 +181,7 @@ if [ "$skip_smoke" -eq 0 ]; then
     --locked-qt-root "$locked_qt_root" --python-version "$python_version" \
     --pyqt6-version "$pyqt6_version" --qt-version "$qt_version" \
     --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version" \
-    --r-version "$r_version" --rpy2-version "$rpy2_version" --pyinstaller-version "$pyinstaller_version"
+    --r-version "$r_version" --pyinstaller-version "$pyinstaller_version"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" evidence \
     --target "macos-$architecture" --archive "$tmp_zip_path" \
     --deployment-manifest "$deployment_manifest_path" --signing-inventory "$signing_inventory_path" \

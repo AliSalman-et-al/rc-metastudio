@@ -201,6 +201,8 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
 
         self.current_correlation = self._get_correlation_str()
         self.simple_table.setCurrentCell(0, 0)
+        for table in self.tables:
+            self.current_item_data[table] = self._get_float(table.currentRow(), table.currentColumn(), table)
         self.simple_table.setFocus()
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),

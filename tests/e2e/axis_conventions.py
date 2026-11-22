@@ -1,4 +1,6 @@
 """Real plot editing: axis geometry, unchanged fits, persisted choices and exports."""
+
+from tests.e2e import r_oracle
 import json
 import math
 import os
@@ -93,7 +95,7 @@ def check_endpoints(path, axis_ticks, geometry, natural, ratio):
 def run(app, window, work, record, family):
     from analysis_matrix import run as matrix
     from advanced_workflows import modal, click
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
     baseline = bool(os.environ.get('RCMS_AXIS_BASELINE'))
     cases = [('analysis-data-onearm-proportion', metric) for metric in ('PLO','PAS','PFT','PLN')] if family == 'proportions' else [
@@ -120,11 +122,11 @@ def run(app, window, work, record, family):
                 artifact, item = view._selected_plot()
                 path = Path(artifact.display_path())
                 load_saved_analysis(artifact.params_path, include_plot_data=True)
-                r_bridge.execute_r_string('axis.numeric.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric); axis.weights.before <- as.numeric(weights(plot.data$res))')
-                measure = str(r_bridge.execute_r_string('as.character(params$measure)')[0])
+                r_oracle.evaluate('axis.numeric.before <- lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric); axis.weights.before <- as.numeric(weights(plot.data$res))')
+                measure = str(r_oracle.evaluate('as.character(params$measure)')[0])
                 ratio = measure in ('OR','RR','HR','IRR','DOR','PLR','NLR')
                 adjustable = ratio or measure in ('PLO','PAS','PFT','PLN','Sens','Spec')
-                geometry = json.loads(str(r_bridge.execute_r_string(GEOMETRY_R)[0]))
+                geometry = json.loads(str(r_oracle.evaluate(GEOMETRY_R)[0]))
                 expected_default = 'transformed' if ratio else 'natural'
                 observed = ticks(path) if baseline or not adjustable else check_axis(path, expected_default, ratio)
                 if not baseline and adjustable:
@@ -143,8 +145,8 @@ def run(app, window, work, record, family):
                     modal(app, EditPlotDialog, edit, view.edit_plot_action.trigger)
                     assert dict(view.texts) == texts
                     load_saved_analysis(artifact.params_path, include_plot_data=True)
-                    assert str(r_bridge.execute_r_string('as.character(params$fp_axis_scale)')[0]) == other
-                    exact = r_bridge.execute_r_string('identical(axis.numeric.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric), num.eq=FALSE) && identical(axis.weights.before, as.numeric(weights(plot.data$res)), num.eq=FALSE)')
+                    assert str(r_oracle.evaluate('as.character(params$fp_axis_scale)')[0]) == other
+                    exact = r_oracle.evaluate('identical(axis.numeric.before, lapply(plot.data$res[vapply(plot.data$res, is.numeric, logical(1))], as.numeric), num.eq=FALSE) && identical(axis.weights.before, as.numeric(weights(plot.data$res)), num.eq=FALSE)')
                     assert bool(exact[0]), 'numeric fitted fields or weights changed'
 
                     def reopen(dialog):
@@ -205,7 +207,7 @@ def run_sequential(app, window, work, record):
     """PFT inverses use the actual subset behind each cumulative/omission fit."""
     from analysis_matrix import run as matrix
     from rc_metastudio.project import model as analysis_dataset
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     for workflow in ('cumulative', 'leave-one-out', 'subgroup'):
         def groups(window):
             if workflow == 'subgroup':
@@ -220,7 +222,7 @@ def run_sequential(app, window, work, record):
                       parameters={'fp_style':'default'})
         artifact = next(entry.artifact for entry in view._plots.values() if entry.artifact.capability.regenerator == 'forest')
         load_saved_analysis(artifact.params_path, include_plot_data=True)
-        reference = json.loads(str(r_bridge.execute_r_string('''jsonlite::toJSON(local({
+        reference = json.loads(str(r_oracle.evaluate('''jsonlite::toJSON(local({
             counts <- metafor::escalc(measure="PFT", xi=4:9, ni=20:25)
             subsets <- if (plot.data$forest_variant == "cumulative") lapply(1:6, seq_len) else
                 if (plot.data$forest_variant == "leave-one-out") c(list(1:6),lapply(1:6,function(i) (1:6)[-i])) else

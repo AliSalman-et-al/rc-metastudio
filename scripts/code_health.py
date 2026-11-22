@@ -890,7 +890,7 @@ def python_import_graph(root: Path, paths: list[str], config: HealthConfig, revi
         imports = [node for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))]
         for node in imports:
             imported = import_name(node)
-            if imported in {"PyQt6", "rpy2"}:
+            if imported == "PyQt6":
                 for pattern, names in forbidden_rules.items():
                     if fnmatch.fnmatchcase(relative, pattern) and imported in names:
                         forbidden.append(f"{relative}: {imported}")

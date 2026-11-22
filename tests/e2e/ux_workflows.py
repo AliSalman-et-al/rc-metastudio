@@ -372,17 +372,26 @@ def _run(app, window, work, root, record, analyze):
         view.export_report_action.trigger()
     record("ux-readable-report", view, clipboard=app.clipboard().text(), saved=str(report_path))
     assert view.table_selector.count() >= 2
+    view.activateWindow()
+    view.manuscript_text.setFocus()
+    assert cast(Callable[..., bool], QtTest.QTest.qWaitForWindowActive)(view, 2000)
     key_click(view.manuscript_text, QtCore.Qt.Key.Key_T, QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.ShiftModifier)
     app.processEvents()
     app.processEvents()
     table = view._report_tables[0]
     assert view.result_table.horizontalHeaderItem(0).text() == table.headers[0]
     assert view.result_table.item(0, 0).text() == table.rows[0][0]
+    assert view.result_table.isVisible()
+    view.result_table.setFocus()
+    view.result_table.clearSelection()
+    app.processEvents()
+    assert view.result_table.hasFocus()
     key_click(view.result_table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
     app.processEvents()
     from rc_metastudio.results.formatting import numeric_cell, report_cell
     clipboard_rows = [[report_cell(cell) if numeric_cell(cell) else cell for cell in row] for row in table.rows]
-    assert list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t")) == [list(table.headers), *clipboard_rows]
+    copied_rows = list(csv.reader(app.clipboard().text().splitlines(), delimiter="\t"))
+    assert copied_rows == [list(table.headers), *clipboard_rows], (copied_rows[:4], clipboard_rows[:3])
     csv_path = work / "model-results.csv"
     with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(csv_path), "CSV")):
         view.export_table_action.trigger()

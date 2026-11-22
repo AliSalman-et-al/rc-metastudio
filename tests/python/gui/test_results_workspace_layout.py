@@ -546,7 +546,7 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
     )
     calls = []
     monkeypatch.setattr(
-        plot_service.r_bridge,
+        plot_service.r_operations,
         "render_plot_bundle",
         lambda *args: calls.append(args),
     )

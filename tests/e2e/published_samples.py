@@ -1,18 +1,20 @@
 """Compare bundled project results with direct fits of the retained source rows."""
 
+from tests.e2e import r_oracle
+
 import hashlib
 import json
 from pathlib import Path
 import re
 
 from PyQt6 import QtCore, QtWidgets
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
 from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
-from rc_metastudio.r_call_serialization import r_transaction
+
 from rc_metastudio.results.window import ResultsWindow
 from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
 from tests.python.gui.qt_test_support import metric_action, required, wait
@@ -38,14 +40,12 @@ def run(app, window, work, root, record, analyze, *, example):
     canonical = json.dumps(load_project(path).project, ensure_ascii=False, allow_nan=False,
                            sort_keys=True, separators=(",", ":"))
     assert hashlib.sha256((canonical + "\n").encode()).hexdigest() == entry["semantic_sha256"]
-    with r_transaction():
-        authority = r_bridge.ro.r((root / "tests/e2e/published_sample_authority.R").read_text(encoding="utf-8"))
+    authority = (root / "tests/e2e/published_sample_authority.R").read_text(encoding="utf-8")
 
     def expected_fit(metric, method, estimator, inference="z", sheet=0, correction="only0",
                      workflow="standard", moderators=""):
-        with r_transaction():
-            return json.loads(str(authority(str(source), example, metric, method, estimator,
-                                            inference, sheet, .5, correction, workflow, moderators)[0]))
+        return json.loads(str(r_oracle.apply(authority, str(source), example, metric, method, estimator,
+                                        inference, sheet, .5, correction, workflow, moderators)[0]))
 
     def select_metric(metric):
         if window.model.current_effect != metric:

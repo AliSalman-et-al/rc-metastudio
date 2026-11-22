@@ -33,7 +33,6 @@ from rc_metastudio.analysis import (
     catalog as analysis_catalog,
     identity as analysis_identity,
     requests as analysis_adapter,
-    progress_dialog,
 )
 from rc_metastudio.results import plot_capabilities
 from rc_metastudio.project.model import PooledAnalysis
@@ -949,25 +948,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self._close_replaced_result(shown)
 
     def _execute_with_progress(self, requests, regression: Callable[[], AnalysisResult] | None):
-        execute = regression if regression is not None else lambda: self._execute_requests(requests)
-        if r_worker.enabled():
-            return execute()
-        repeated = self.analysis_type in {"cumulative", "leave-one-out"}
-        bar = progress_dialog.AnalysisProgressDialog(
-            self, context=self.windowTitle(), blocking=not repeated, cancellable=repeated,
-        )
-        try:
-            bar.show()
-            bar.repaint()
-            bar.start_tracking()
-            result = execute()
-            return None if bar.cancelled else result
-        except Exception:
-            if not bar.cancelled:
-                raise
-            return None
-        finally:
-            progress_dialog.dispose(bar)
+        return regression() if regression is not None else self._execute_requests(requests)
 
     def _close_replaced_result(self, shown) -> None:
         if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):

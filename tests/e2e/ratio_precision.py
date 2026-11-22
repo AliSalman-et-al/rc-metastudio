@@ -1,4 +1,6 @@
 """Original-source precision through each HR/IRR study dialog input mode."""
+
+from tests.e2e import r_oracle
 import json
 import math
 from dataclasses import asdict
@@ -12,7 +14,7 @@ from tests.sample_projects import SAMPLE_FILES
 
 def run(app, window, work, record):
     from advanced_workflows import modal, click
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     from tests.fit_observations import observe_fit
@@ -83,7 +85,7 @@ def run(app, window, work, record):
             else:
                 expression = f'metafor::conv.wald(out={expected["estimate"]},ci.lb={expected["lower"]},ci.ub={expected["upper"]},level={expected["confidence"]},transf=log)'
                 # Direct public conversion, independently from RCMS's source-selection adapter.
-                reference = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON('+expression+',digits=16)')[0]))[0]
+                reference = json.loads(str(r_oracle.evaluate('jsonlite::toJSON('+expression+',digits=16)')[0]))[0]
                 expected_effect, expected_se = reference['yi'], math.sqrt(reference['vi'])
             derived = fit.evaluate('c(result$input_data@y[1], result$input_data@SE[1])')
             assert math.isclose(float(derived[0]), expected_effect, abs_tol=1e-12)

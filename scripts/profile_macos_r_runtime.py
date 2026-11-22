@@ -524,7 +524,7 @@ def main() -> int:
                 args.runtime_closure,
             )
     except (OSError, ProfileError) as exc:
-        print(f"Embedded R product profile failed: {exc}", file=sys.stderr)
+        print(f"R runtime profile failed: {exc}", file=sys.stderr)
         return 1
     return 0
 

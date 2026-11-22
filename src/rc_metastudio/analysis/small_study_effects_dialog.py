@@ -11,7 +11,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QSizePolicy, QWidget
 
 from rc_metastudio import adaptive_window, app_error_handler, r_worker
-from rc_metastudio.analysis import progress_dialog
 from rc_metastudio.qt_layout import protect_scroll_settings
 from rc_metastudio.analysis.catalog import ONE_ARM_METRICS
 from rc_metastudio.results.plot_defaults import PLOT_STYLE_LABELS
@@ -529,23 +528,9 @@ class SmallStudyEffectsDialog(
         run_button.setEnabled(False)
         self.failure_label.clear()
         self.failure_label.setVisible(False)
-        from rc_metastudio.analysis.identity import metric_label
-        metric = "Diagnostic odds ratio" if request.data_type == "diagnostic" else metric_label(self.model)
-        progress = None
-        if not r_worker.enabled():
-            progress = progress_dialog.AnalysisProgressDialog(
-                self, operation="Running small-study effects analysis…",
-                context=f"{self.model.current_outcome_name} · {metric}"
-            )
-            progress.show()
-            progress.repaint()
         try:
-            try:
-                result = self.analysis_service.execute(self.model, request)
-                result = self._with_report_identity(result, request)
-            finally:
-                if progress is not None:
-                    progress_dialog.dispose(progress)
+            result = self.analysis_service.execute(self.model, request)
+            result = self._with_report_identity(result, request)
             if self._on_result is None:
                 raise TypeError("small-study effects dialog has no results owner")
             source_sheet = self._source_sheet or self.model.current_sheet

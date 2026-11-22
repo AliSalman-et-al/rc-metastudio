@@ -1,10 +1,12 @@
 """Entered OR/MD source confidence survives output confidence changes."""
+
+from tests.e2e import r_oracle
 from PyQt6 import QtWidgets
 
 
 def check(app, window, kind, launch, text, family, record):
     from advanced_workflows import modal, click
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.confidence_level_dialog import ConfidenceLevelDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     from tests.fit_observations import observe_fit
@@ -41,9 +43,9 @@ def check(app, window, kind, launch, text, family, record):
         view = analyze_existing(app, window, "standard", family + ".random", record,
                                 parameters={"digits": 6, "rm.method": "DL", "inference.method": "z"})
     transform = "log" if family == "binary" else "identity"
-    expected = float(r_bridge.execute_r_string(
+    expected = float(r_oracle.evaluate(
         f"({transform}({bounds[2]})-{transform}({bounds[1]}))/(2*qnorm(.95))")[0])
-    metafor_se = float(r_bridge.execute_r_string(
+    metafor_se = float(r_oracle.evaluate(
         f"sqrt(metafor::conv.wald(out={bounds[0]}, ci.lb={bounds[1]}, ci.ub={bounds[2]}, level=90, transf={transform})$vi)")[0])
     assert abs(metafor_se - expected) < 1e-12
     actual = float(fit.evaluate("result$input_data@SE[1]")[0])

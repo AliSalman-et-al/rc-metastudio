@@ -306,7 +306,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         staged_render.write_bytes(b"first good image")
         return {str(params_path): str(staged_params), output: str(staged_render)}
 
-    monkeypatch.setattr(plot_service.r_bridge, "prepare_plot_edit", prepare)
+    monkeypatch.setattr(plot_service.r_operations, "prepare_plot_edit", prepare)
     errors = []
     monkeypatch.setattr(
         app_error_handler, "handle_exception", lambda _type, error, _traceback, **_kw: errors.append(str(error))

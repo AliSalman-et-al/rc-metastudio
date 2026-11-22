@@ -1,4 +1,4 @@
-"""Canonical schema for macOS embedded-R product-profile evidence."""
+"""Canonical schema for the private macOS R runtime profile."""
 
 from __future__ import annotations
 
@@ -42,25 +42,23 @@ def validate_profile_evidence(
         for entry in payload.get("excluded_surfaces", [])
         if isinstance(entry, dict) and isinstance(entry.get("relative_path"), str)
     )
-    if not (
-        payload.get("schema_version") == 1
-        and payload.get("phase") == "finalize"
-        and payload.get("policy") == PROFILE_POLICY
-        and payload.get("hard_dependency_fields") == list(DEPENDENCY_FIELDS)
-        and "tcltk"
-        not in {
-            str(name).casefold() for name in payload.get("hard_dependency_closure", [])
-        }
-        and payload.get("post_profile_exclusions") == expected_paths
-        and observed_paths == expected_paths
-        and source.get("version") == expected_r_version
-        and source.get("expected_architecture") == expected_architecture
-        and canonical.get("relative_path") == "lib/libR.dylib"
-        and canonical.get("architectures") == [expected_architecture]
-        and executable.get("relative_path") == "bin/exec/R"
-        and executable.get("architectures") == [expected_architecture]
-        and launcher.get("relative_path") == "bin/R"
-        and launcher.get("kind") == "script"
-        and valid_hashes
-    ):
-        raise ProfileSchemaError("embedded R profile evidence is incomplete")
+    closure = {str(name).casefold() for name in payload.get("hard_dependency_closure", [])}
+    if not all((
+        payload.get("schema_version") == 1,
+        payload.get("phase") == "finalize",
+        payload.get("policy") == PROFILE_POLICY,
+        payload.get("hard_dependency_fields") == list(DEPENDENCY_FIELDS),
+        "tcltk" not in closure,
+        payload.get("post_profile_exclusions") == expected_paths,
+        observed_paths == expected_paths,
+        source.get("version") == expected_r_version,
+        source.get("expected_architecture") == expected_architecture,
+        canonical.get("relative_path") == "lib/libR.dylib",
+        canonical.get("architectures") == [expected_architecture],
+        executable.get("relative_path") == "bin/exec/R",
+        executable.get("architectures") == [expected_architecture],
+        launcher.get("relative_path") == "bin/R",
+        launcher.get("kind") == "script",
+        valid_hashes,
+    )):
+        raise ProfileSchemaError("R runtime profile evidence is incomplete")

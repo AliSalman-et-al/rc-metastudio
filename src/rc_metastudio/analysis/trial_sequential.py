@@ -4,11 +4,10 @@
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.project.model import PooledAnalysis, PooledModel
 from rc_metastudio.analysis.identity import plot_caption
 from rc_metastudio.results.contract import AnalysisResult, ResultSection
@@ -266,32 +265,25 @@ class TsaRun:
 
 class TsaService:
     def __init__(self) -> None:
-        self._prepared: tuple[DatasetTableModel, TsaRequest, object] | None = None
-        self._evidence: object | None = None
+        self._prepared: tuple[DatasetTableModel, TsaRequest, r_operations.WorkerTsaInputs] | None = None
 
     def preview(self, model: "DatasetTableModel", request: TsaRequest) -> TsaPreview:
         self._prepared = None
-        self._evidence = None
-        fields, prepared = r_bridge.preview_trial_sequential_analysis(
+        fields, prepared = r_operations.preview_trial_sequential_analysis(
             model, request.family, request.metric, request.to_mapping(),
         )
         self._prepared = model, request, prepared
         return TsaPreview.from_mapping(fields)
 
-    def _prepare_for(self, model: "DatasetTableModel", request: TsaRequest) -> object:
+    def _prepare_for(self, model: "DatasetTableModel", request: TsaRequest) -> r_operations.WorkerTsaInputs:
         if self._prepared is None or self._prepared[:2] != (model, request):
             self.preview(model, request)
         assert self._prepared is not None
         return self._prepared[2]
 
-    def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
-        return r_bridge.trial_sequential_conclusion_command(self._prepare_for(model, request), directory)
-
     def start_worker_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
                                 accrued: float, ris: float, deliver) -> Callable[[], None]:
         prepared = self._prepare_for(model, request)
-        if not isinstance(prepared, r_bridge.WorkerTsaInputs):
-            raise RuntimeError("Trial sequential worker inputs are unavailable.")
 
         def completed(outcome, error):
             text = "" if error is not None else preview_conclusion(
@@ -301,21 +293,11 @@ class TsaService:
 
         return prepared.conclusion(completed)
 
-    def finish_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
-                          path: Path, accrued: float, ris: float) -> str:
-        if self._prepared is None or self._prepared[:2] != (model, request):
-            return ""
-        outcome, evidence = r_bridge.load_trial_sequential_evidence(path)
-        self._evidence = evidence
-        return preview_conclusion(str(outcome["category"]), str(outcome["look"]), str(outcome["study"]), accrued, ris)
-
     def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
         path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
         prepared = self._prepare_for(model, request)
-        if self._evidence is None and not isinstance(prepared, r_bridge.WorkerTsaInputs):
-            self._evidence = r_bridge.trial_sequential_evidence(prepared)
-        fields, sections = r_bridge.run_trial_sequential_analysis(
-            prepared, self._evidence, {
+        fields, sections = r_operations.run_trial_sequential_analysis(
+            prepared, {
                 "plot_caption": plot_caption(model),
                 "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT].region_color,
             }, path,

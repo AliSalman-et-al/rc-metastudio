@@ -153,18 +153,6 @@ def test_extracted_inventory_must_match_original():
         module._validate_extracted_deployment(original, probe, extracted, 'macos-arm64')
 
 
-def test_kit_probe_digest_must_match_manifest(monkeypatch):
-    module = load('inspect_macos_deployment')
-    manifest = {'kind': 'rc-metastudio-r-integration-kit', 'target': 'macos-arm64',
-                'architecture': 'arm64', 'cffi_mode': 'API', 'kit_sha256': 'a'*64}
-    derivation = {'kit_sha256': 'a'*64}
-    # This boundary is separately validated by existing kit contract tests.
-    monkeypatch.setattr(module, '_valid_r_kit_derivation', lambda *args: True)
-    monkeypatch.setattr(module, '_valid_r_kit_probe_digests', lambda *args: True)
-    assert module._valid_r_kit_identity(manifest, derivation, 'macos-arm64', 'arm64', {'kit_sha256': 'a'*64}, {})
-    assert not module._valid_r_kit_identity(manifest, derivation, 'macos-arm64', 'arm64', {'kit_sha256': 'b'*64}, {})
-
-
 def test_sample_records_cover_deployment_inventory():
     module = load('inspect_macos_deployment')
     deployment = {'inventory': {'files': [
@@ -179,25 +167,3 @@ def test_sample_records_cover_deployment_inventory():
         {'path': 'Contents/Resources/sample_projects/omitted.rcms', 'sha256': 'd'*64})
     with pytest.raises(module.MacOSDeploymentInspectionError, match='sample inventory'):
         module._validate_shipped_samples(deployment, smoke)
-
-
-def test_kit_probe_paths_bind_packaged_bytes(tmp_path):
-    import hashlib
-    module = load('inspect_macos_deployment')
-    frameworks = tmp_path / 'Contents/Frameworks'
-    frameworks.mkdir(parents=True)
-    bridge = frameworks / '_rinterface_cffi_api.so'
-    lib = frameworks / 'libR.dylib'
-    bridge.write_bytes(b'bridge')
-    lib.write_bytes(b'libR')
-    derivation = {'final': {name: {'path': path.name, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
-                           for name, path in [('api_bridge', bridge), ('r_shared_library', lib)]}}
-    r = {'shared_library_path': str(lib)}
-    rpy2 = {'api_bridge_path': str(bridge)}
-    module._validate_kit_probe_paths(tmp_path, derivation, r, rpy2)
-    other = tmp_path / 'other'
-    other.mkdir()
-    (other / bridge.name).write_bytes(b'bridge')
-    rpy2['api_bridge_path'] = str(other / bridge.name)
-    with pytest.raises(module.MacOSDeploymentInspectionError, match='paths differ'):
-        module._validate_kit_probe_paths(tmp_path, derivation, r, rpy2)

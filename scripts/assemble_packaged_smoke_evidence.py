@@ -16,6 +16,7 @@ import json
 import shutil
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from rc_metastudio.results.text_identity import normalize_packaged_summary_identity
@@ -121,6 +122,30 @@ def capture_workflow_observations(
     observations = _capture_workflow_operations(executable, sample, operation_dir)
     output.write_text(json.dumps(_workflow_observation_payload(observations),
         indent=2) + "\n", encoding="utf-8")
+
+
+def capture_worker_smoke(executable: Path, sample: Path, directory: Path) -> dict:
+    """Exercise the worker in the packaged application's native window."""
+    directory.mkdir(parents=True, exist_ok=True)
+    environment = dict(os.environ, RCMS_PACKAGE_LOCALE="en_US")
+    environment.pop("RCMS_PACKAGE_SMOKE_EVIDENCE", None)
+    native_plugin = {"win32": "windows", "darwin": "cocoa", "linux": "xcb"}[sys.platform]
+    environment["QT_QPA_PLATFORM"] = native_plugin
+    output = directory / "worker.json"
+    _run_packaged(
+        executable, ["--automation-package-worker-smoke", str(output), str(sample)],
+        environment=environment,
+    )
+    worker = json.loads(output.read_text(encoding="utf-8"))
+    if (worker["backend"] != "worker" or worker["frozen"] is not True
+            or worker["platform_plugin"] != native_plugin):
+        raise ValueError("The packaged smoke did not use the private worker and native Qt.")
+    phases = worker["startup_phases"]
+    if not worker["recovery"] or not (
+        phases["splash:visible"] <= phases["r-library:R worker:complete"] < phases["window:visible"]
+    ):
+        raise ValueError("The packaged worker did not warm at the splash and restart.")
+    return worker
 
 
 def _capture_workflow_operations(
@@ -257,7 +282,7 @@ def capture_sample_observations(
 
 def assemble(
     *, workflow_observation: Path, surface_records: Path, sample_observations: Path,
-    sample: str, output: Path, log_path: Path | None = None,
+    sample: str, output: Path, log_path: Path | None = None, worker_smoke: dict | None = None,
 ) -> dict:
     observation = json.loads(workflow_observation.read_text(encoding="utf-8"))
     surfaces = _load_surfaces(surface_records)
@@ -276,6 +301,8 @@ def assemble(
     workflows = _workflow_payload(observation, sample, samples)
     evidence = {"schema_version": 1, "passed": True, "workflows": workflows,
                 "scales": surfaces}
+    if worker_smoke is not None:
+        evidence["worker_smoke"] = worker_smoke
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _append_log(log_path)
@@ -384,6 +411,7 @@ def main() -> int:
         value = getattr(args, name, None)
         if value is not None:
             setattr(args, name, value.resolve())
+    worker_smoke = None
     if args.executable:
         if not args.runtime_probe or not args.surface_directory:
             parser.error("--executable requires --runtime-probe and --surface-directory")
@@ -400,6 +428,9 @@ def main() -> int:
             capture_sample_observations(args.executable, sample_root=args.sample_root, output=args.sample_observations)
         if not args.sample_path:
             parser.error("--executable requires --sample-path")
+        worker_smoke = capture_worker_smoke(
+            args.executable, args.sample_path, args.workflow_observation.with_suffix(".operations"),
+        )
         capture_workflow_observations(args.executable, sample=args.sample_path, output=args.workflow_observation)
     assemble(
         workflow_observation=args.workflow_observation,
@@ -408,6 +439,7 @@ def main() -> int:
         sample=args.sample,
         output=args.output,
         log_path=args.log_path,
+        worker_smoke=worker_smoke,
     )
     return 0
 

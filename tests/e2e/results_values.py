@@ -1,4 +1,6 @@
 """Exact values through real R, manuscript transformations and Qt CSV actions."""
+
+from tests.e2e import r_oracle
 from dataclasses import asdict
 from contextlib import nullcontext
 import json
@@ -14,12 +16,12 @@ from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, root, record, analyze):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     # Failure obligations at the real R/Python boundary: residue and tiny values,
     # infinities, missingness and bounded P must survive without display parsing.
-    edge = r_bridge.ro.r('''local({
+    edge = r_oracle.evaluate_result_vector('''local({
       x <- rbind(c("Estimate", "Lower", "Upper", "P", "Unavailable"),
                  c("0.000", "0.000", "Inf", "< 0.001", "Not estimable"))
       x <- RCMetaR:::rcmetar.numeric.fields(x, 1:5,
@@ -29,23 +31,23 @@ def run(app, window, work, root, record, analyze):
       RCMetaR:::rcmetar.table(x, "supporting")
     })''')
     from rc_metastudio.results.contract import _report_content
-    _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
+    _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [r_operations._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
     cells = parsed[0].quantities[0]
     assert [q[0].value for q in cells] == [2.2e-17, 1e-19, math.inf, 1e-8, None]
     try:
-        r_bridge.ro.r('RCMetaR:::rcmetar.numeric.fields(matrix("", 2, 2), 1:2, c("value", "value"), 1)')
-    except r_bridge.RRuntimeError:
+        r_oracle.evaluate('RCMetaR:::rcmetar.numeric.fields(matrix("", 2, 2), 1:2, c("value", "value"), 1)')
+    except subprocess.CalledProcessError:
         pass
     else:
         raise AssertionError('R accepted misaligned quantities')
     record('numeric-boundary-states', values=asdict(parsed[0]))
-    pft = r_bridge.ro.r('''local({
+    pft = r_oracle.evaluate_result_vector('''local({
       fit <- metafor::rma.uni(yi=c(.05, .4, 1.2, 1.5), sei=c(.1, .2, .2, .1), method="REML", level=90)
       params <- list(measure="PFT", conf.level=90, digits=3)
       transform <- RCMetaR:::rcmetar.transform.by.name("binary.transform.f", "PFT")
       RCMetaR:::rcmetar.summary.prediction(fit, params, transform, NULL, 3)$interval
     })''')
-    _, parsed_pft, _, _ = _report_content({'paragraphs': [], 'tables': [r_bridge._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
+    _, parsed_pft, _, _ = _report_content({'paragraphs': [], 'tables': [r_operations._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
     pft_quantities = [q for row in parsed_pft[0].quantities for cell in row for q in cell]
     assert {q.role for q in pft_quantities} == {'pi_lower', 'pi_upper'}
     assert all(q.scale == 'freeman-tukey' and q.level == 90.0 for q in pft_quantities)
@@ -109,7 +111,10 @@ def run(app, window, work, root, record, analyze):
         if label == 'adjusted-means':
             assert fit is not None
             fit.save(bundle / 'result.rds')
-            r_bridge.ro.r['saveRDS'](r_bridge.dataset_to_simple_binary_r_object(window.model), file=str(bundle/'input.rds'))
+            columns = r_operations._binary_data_arguments(window.model)
+            encoded = json.dumps(json.dumps(columns, ensure_ascii=False), ensure_ascii=False)
+            destination = json.dumps((bundle / 'input.rds').as_posix(), ensure_ascii=False)
+            r_oracle.evaluate(f'saveRDS(RCMetaR:::.rcmetar.worker.data("binary", jsonlite::fromJSON({encoded}, simplifyVector=FALSE)), {destination})')
         for index, prefix in enumerate(view.params_paths.values()):
             for suffix in ('.data', '.params', '.res', '.plotdata'):
                 path = Path(str(prefix)+suffix)

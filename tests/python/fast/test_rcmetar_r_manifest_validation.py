@@ -106,7 +106,6 @@ def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_pa
     monkeypatch.setattr(stack_verifier, "resolve_rscript", lambda name: r_home / "bin" / name)
     monkeypatch.setattr(r_verification_support, "resolve_r_home", lambda *_args: r_home)
     monkeypatch.setattr(r_verification_support, "resolve_r_exe", lambda *_args: r_home / "bin/R")
-    monkeypatch.setattr(stack_verifier, "verify_rpy2_identities", lambda _python: {})
     monkeypatch.setattr(r_verification_support, "load_binary_dependency_policy", lambda _root: {"repository": "fixed"})
     monkeypatch.setattr(stack_verifier, "ensure_dependency_library", lambda *_args: tmp_path / "library")
     monkeypatch.setattr(stack_verifier, "built_RCMetaR_tarball", lambda _work: tmp_path / "archive.tar.gz")
@@ -167,8 +166,6 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
                     "repository": "https://packagemanager.posit.co/cran/2026-11-13"
                 },
             )
-            if hasattr(module, "verify_rpy2_identities"):
-                patch.setattr(module, "verify_rpy2_identities", lambda *a: None)
             patch.setattr(module, "run", stop_after_first_child)
             args = argparse.Namespace(
                 root=REPO_ROOT,

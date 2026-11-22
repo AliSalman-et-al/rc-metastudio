@@ -1,5 +1,7 @@
 """Exercise SVG display, geometry failure recovery and export on a 400-study forest."""
 
+from tests.e2e import r_oracle
+
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree
@@ -8,10 +10,8 @@ from PyQt6 import QtCore, QtWidgets
 
 from advanced_workflows import modal
 
-from rc_metastudio import r_bridge
-from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
+from rc_metastudio import r_operations, r_worker
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
-from rc_metastudio.r_call_serialization import r_execution_active
 from rc_metastudio.results.plot_export import PlotExportDialog
 from rc_metastudio.results.window import ResultsWindow
 from tests.python.gui.qt_test_support import key_click, required, wait
@@ -30,8 +30,11 @@ def _drive_reentry(app, window, view, record):
 
     def during_fit():
         progress = app.activeModalWidget()
+        if not isinstance(progress, QtWidgets.QProgressDialog):
+            return
+        ticker.stop()
         before = {widget for widget in app.topLevelWidgets() if widget.isVisible()}
-        busy = r_execution_active()
+        busy = r_worker.foreground_busy()
         key_click(window, qt.Key.Key_R, qt.KeyboardModifier.ControlModifier)
         key_click(view, qt.Key.Key_E, qt.KeyboardModifier.ControlModifier)
         for key in (qt.Key.Key_E, qt.Key.Key_S, qt.Key.Key_R):
@@ -41,18 +44,14 @@ def _drive_reentry(app, window, view, record):
             action.triggered.emit(False)
         app.processEvents()
         after = {widget for widget in app.topLevelWidgets() if widget.isVisible()}
-        observed.append((busy, isinstance(progress, AnalysisProgressDialog), before == after))
-        return r_bridge._rinterface.NULL
+        observed.append((busy, isinstance(progress, QtWidgets.QProgressDialog), before == after))
 
     view.change_settings_action.trigger()
     setup = next(widget for widget in app.topLevelWidgets()
                  if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
-    callback = r_bridge._rinterface.rternalize(during_fit)
-    previous = r_bridge.execute_r_function("options", **{"rcms.verify.reentry": callback})
-    r_bridge.execute_r_string(
-        'trace("rcmetar.run.analysis", quote(getOption("rcms.verify.reentry")()), '
-        'where=as.environment("package:RCMetaR"), print=FALSE)'
-    )
+    ticker = QtCore.QTimer()
+    ticker.timeout.connect(during_fit)
+    ticker.start(10)
     try:
         with (
             patch.object(QtWidgets.QMessageBox, "critical", return_value=QtWidgets.QMessageBox.StandardButton.Ok) as error_box,
@@ -62,8 +61,7 @@ def _drive_reentry(app, window, view, record):
             app.processEvents()
         assert not error_box.called and not picker.called
     finally:
-        r_bridge.execute_r_string('untrace("rcmetar.run.analysis", where=as.environment("package:RCMetaR"))')
-        r_bridge.execute_r_function("options", previous)
+        ticker.stop()
     result, = [widget for widget in app.topLevelWidgets()
                if isinstance(widget, ResultsWindow) and widget.isVisible()]
     assert result is not view and observed == [(True, True, True)], observed
@@ -88,7 +86,7 @@ def run(app, window, work, root, record, analyze):
     record("400-study-forest-displayed", view, studies=400, input=str(fixture), display=str(display),
            contributing_studies=view.results.contributing_studies)
 
-    geometry = r_bridge.forest_export_dimensions
+    geometry = r_operations.forest_export_dimensions
     destination = work / "400-study-export.svg"
     errors = []
     measurements = []
@@ -114,12 +112,12 @@ def run(app, window, work, root, record, analyze):
         dialog.save_button.click()
 
     def fail_measurement(*_):
-        r_bridge.execute_r_string("stop('Forest layout unavailable for this figure')")
-    with patch.object(r_bridge, "forest_export_dimensions", fail_measurement):
+        raise ValueError("Forest layout unavailable for this figure")
+    with patch.object(r_operations, "forest_export_dimensions", fail_measurement):
         modal(app, PlotExportDialog, lambda dialog: inspect_export(dialog, expect_failure=True), view.export_plot_action.trigger)
     assert len(errors) == 1 and "Forest layout unavailable" in errors[0]
     with (
-        patch.object(r_bridge, "forest_export_dimensions", measure),
+        patch.object(r_operations, "forest_export_dimensions", measure),
         patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")),
     ):
         modal(app, PlotExportDialog, inspect_export, view.export_plot_action.trigger)

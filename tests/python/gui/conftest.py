@@ -9,13 +9,16 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def inject_gui_boundary(inject_python_boundary, monkeypatch: pytest.MonkeyPatch):
+    from rc_metastudio import launch
+
+    monkeypatch.setattr(launch, "load_R_libraries", lambda *_args, **_kwargs: None)
     from rc_metastudio.analysis import requests as analysis_adapter
     from rc_metastudio.calculators import (
         binary_dialog as binary_data_dialog,
         continuous_dialog as continuous_data_dialog,
         diagnostic_dialog as diagnostic_data_dialog,
     )
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     for dialog_module in (
         analysis_adapter,
@@ -23,7 +26,7 @@ def inject_gui_boundary(inject_python_boundary, monkeypatch: pytest.MonkeyPatch)
         continuous_data_dialog,
         diagnostic_data_dialog,
     ):
-        monkeypatch.setattr(dialog_module, "r_bridge", r_bridge, raising=False)
+        monkeypatch.setattr(dialog_module, "r_operations", r_operations, raising=False)
 
 
 @pytest.fixture(autouse=True)

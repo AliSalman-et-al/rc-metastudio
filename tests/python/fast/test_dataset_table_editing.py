@@ -16,7 +16,7 @@ from rc_metastudio.workspace import table_model as dataset_table_model
 from rc_metastudio.project import model as analysis_dataset
 from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.analysis import catalog as analysis_catalog
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 
 
 def _derived_effect_and_ci(analysis_unit, metric, arm_key):
@@ -520,10 +520,10 @@ def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
 
 
 def test_effect_normalizer_preserves_triplets_and_expands_scalars():
-    effect = r_bridge.normalize_effect_result(
+    effect = r_operations.normalize_effect_result(
         {"calc_scale": 1.25, "display_scale": [1.25, 1.0, 1.5]},
     )
-    effects = r_bridge.normalize_diagnostic_effects(
+    effects = r_operations.normalize_diagnostic_effects(
         {
             "Sens": {"calc_scale": 0.75},
             "Spec": {"calc_scale": [0.95, 0.88, 0.99]},
@@ -543,7 +543,7 @@ def test_effect_normalizer_can_require_diagnostic_triplets():
         ValueError,
         match="Expected calc_scale study effect for Sens to contain 3 values; got scalar",
     ):
-        r_bridge.normalize_diagnostic_effects(
+        r_operations.normalize_diagnostic_effects(
             {"Sens": {"calc_scale": 0.75}},
             require_triplets=True,
         )
@@ -552,7 +552,7 @@ def test_effect_normalizer_can_require_diagnostic_triplets():
         ValueError,
         match="Expected calc_scale study effect for Spec to contain 3 values; got 1",
     ):
-        r_bridge.normalize_diagnostic_effects(
+        r_operations.normalize_diagnostic_effects(
             {"Spec": {"calc_scale": [0.95]}},
             require_triplets=True,
         )

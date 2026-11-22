@@ -1,4 +1,6 @@
 """Audit journeys with real Qt, RCMetaR and the bundled projects."""
+
+from tests.e2e import r_oracle
 import csv
 import hashlib
 import json
@@ -114,7 +116,7 @@ def run(app, window, work, root, record, analyze):
     from advanced_workflows import modal
     from analysis_matrix import set_parameter
     from tests.e2e.plot_observations import load_saved_analysis
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
     def visible(kind):
@@ -140,7 +142,6 @@ def run(app, window, work, root, record, analyze):
     window.menu_file.close()
 
     # Keep the offscreen picker's filesystem model alive across sample windows.
-    # Embedded R can dispatch pending Windows messages during the next preview.
     picker = QtWidgets.QFileDialog(window)
     picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
     picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
@@ -191,12 +192,12 @@ def run(app, window, work, root, record, analyze):
         assert "17 studies contributed" in view.manuscript.results and "df = 16" in view.manuscript.results
         load_saved_analysis(next(iter(view.params_paths.values())))
         actual = view.results.contributing_studies
-        direct = list(r_bridge.ro.r(
+        direct = list(r_oracle.evaluate(
             'local({ fit <- ' + ('metafor::rma.mh' if method.endswith("mh") else 'metafor::rma.peto') +
             '(ai=om.data@g1O1, bi=om.data@g1O2, ci=om.data@g2O1, di=om.data@g2O2); c(fit$k, fit$k.yi) })'
         ))
         assert actual == direct[1] == 17 and direct[0] == 19, direct
-        assert int(r_bridge.ro.r("length(om.data@study.names)")[0]) == 19
+        assert int(r_oracle.evaluate("length(om.data@study.names)")[0]) == 19
         record("forest-keeps-included-studies-" + method, view)
         view.report_action.trigger()
         app.processEvents()

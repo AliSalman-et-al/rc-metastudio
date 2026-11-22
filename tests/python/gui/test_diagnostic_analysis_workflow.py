@@ -104,14 +104,14 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
     app, window = automation.start_automation()
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_diagnostic_r_object",
-            "run_versioned_analysis_requests",
+            "_diagnostic_data_arguments",
+            "_worker_diagnostic_fit",
         )
     }
     shown = []
@@ -123,15 +123,15 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Random-effects": "diagnostic.random",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.random": "Random-effects",
             },
         )
         _set_backend(
@@ -146,7 +146,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
         _set_backend(
             monkeypatch,
             backend,
-            "run_versioned_analysis_requests",
+            "_worker_diagnostic_fit",
             lambda *args, **kwargs: (_ for _ in ()).throw(
                 RuntimeError("simulated diagnostic failure")
             ),
@@ -183,14 +183,14 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
     app, window = automation.start_automation()
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_diagnostic_r_object",
-            "run_versioned_analysis_requests",
+            "_diagnostic_data_arguments",
+            "_worker_diagnostic_fit",
         )
     }
     shown = []
@@ -202,16 +202,16 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Reitsma bivariate model": "diagnostic.reitsma",
-                "Random-effects": "diagnostic.random",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.reitsma": "Reitsma bivariate model",
+                "diagnostic.random": "Random-effects",
             },
         )
         _set_backend(
@@ -240,7 +240,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             }
 
         _set_backend(
-            monkeypatch, backend, "run_versioned_analysis_requests", run_metric
+            monkeypatch, backend, "_worker_diagnostic_fit", run_metric
         )
         monkeypatch.setattr(
             analysis_setup_dialog.QMessageBox,
@@ -286,15 +286,15 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
     app, window = automation.start_automation()
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name, None)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
             "diagnostic_data_arguments",
-            "dataset_to_simple_diagnostic_r_object",
-            "run_versioned_analysis_requests",
+            "_diagnostic_data_arguments",
+            "_worker_diagnostic_fit",
         )
     }
     built_metrics = []
@@ -316,9 +316,9 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Random-effects": "diagnostic.random",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.random": "Random-effects",
             },
         )
         _set_backend(
@@ -335,7 +335,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             built_metrics.append(metric)
             return {"y": [-0.1] if metric == "Sens" else [0.7], "SE": [0.2]}
 
-        def run_metric(requests, *, metric_data):
+        def run_metric(requests, metric_data):
             multi_calls.append([request["params"]["measure"] for request in requests])
             assert [entry["y"] for entry in metric_data] == [[-0.1], [0.7]]
             texts = {f"{metric} Summary": "ok" for metric in multi_calls[-1]}
@@ -347,10 +347,9 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
                 ],
             }
 
-        _set_backend(monkeypatch, backend, "dataset_to_simple_diagnostic_r_object", lambda *_args, **_kwargs: None)
-        _set_backend(monkeypatch, backend, "diagnostic_data_arguments", build_metric)
+        _set_backend(monkeypatch, backend, "_diagnostic_data_arguments", build_metric)
         _set_backend(
-            monkeypatch, backend, "run_versioned_analysis_requests", run_metric
+            monkeypatch, backend, "_worker_diagnostic_fit", run_metric
         )
         monkeypatch.setattr(window, "analysis", lambda result, **_kwargs: results.append(result))
 
@@ -433,13 +432,13 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
     app, window = automation.start_automation()
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    backend = analysis_setup_dialog.analysis_adapter.r_bridge
+    backend = analysis_setup_dialog.analysis_adapter.r_operations
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
         )
     }
     try:
@@ -457,17 +456,17 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Reitsma bivariate model": "diagnostic.reitsma",
-                "Random-effects": "diagnostic.random",
-                "Fixed-effect inverse-variance": "diagnostic.fixed.inv.var",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.reitsma": "Reitsma bivariate model",
+                "diagnostic.random": "Random-effects",
+                "diagnostic.fixed.inv.var": "Fixed-effect inverse-variance",
             },
         )
         _set_backend(
@@ -510,14 +509,14 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     backend = sys.modules.get(
-        "rc_metastudio.r_bridge", analysis_setup_dialog.analysis_adapter.r_bridge
+        "rc_metastudio.r_operations", analysis_setup_dialog.analysis_adapter.r_operations
     )
     saved = {
         name: getattr(backend, name)
         for name in (
-            "get_available_methods",
+            "available_model_methods",
             "get_params",
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
         )
     }
     try:
@@ -526,16 +525,16 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         _set_backend(
             monkeypatch,
             backend,
-            "dataset_to_simple_diagnostic_r_object",
+            "_diagnostic_data_arguments",
             lambda model, **kwargs: None,
         )
         _set_backend(
             monkeypatch,
             backend,
-            "get_available_methods",
-            lambda **kwargs: {
-                "Random-effects": "diagnostic.random",
-                "Fixed-effect inverse-variance": "diagnostic.fixed.inv.var",
+            "available_model_methods",
+            lambda *_args, **kwargs: {
+                "diagnostic.random": "Random-effects",
+                "diagnostic.fixed.inv.var": "Fixed-effect inverse-variance",
             },
         )
         _set_backend(

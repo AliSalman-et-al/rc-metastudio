@@ -64,7 +64,7 @@ class StartupSplash(QSplashScreen):
             (287, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Released under GPL-3.0-or-later."),
             (352, 15, 20, QFont.Weight.Medium, "#1f2a44", self.message()),
             (462, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Statistics by R, metafor, meta, mada, and RCMetaR."),
-            (483, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Built with Python, Qt, and rpy2."),
+            (483, 13.5, 21, QFont.Weight.Normal, "#4f5a76", "Built with Python, Qt, and R."),
         ]
         painter.setClipRect(QtCore.QRectF(56, 0, 344, 600))
         for top, size, height, weight, color, text in lines:
@@ -197,7 +197,7 @@ def _emit_automation_phase(phase_callback, phase):
 
 def load_R_libraries(app, splash=None, phase_callback=None):
     """Load R packages while updating the splash screen."""
-    from rc_metastudio import r_bridge, r_worker
+    from rc_metastudio import r_runtime, r_worker
 
     def observe_package(name: str, phase: str) -> None:
         if phase == "start":
@@ -206,11 +206,11 @@ def load_R_libraries(app, splash=None, phase_callback=None):
             app.processEvents()
         _emit_automation_phase(phase_callback, f"r-library:{name}:{phase}")
 
-    r_bridge.load_required_packages(observe_package)
-    if r_worker.enabled():
-        observe_package("R worker", "start")
-        r_worker.current_worker().ensure_ready()
-        observe_package("R worker", "complete")
+    observe_package("R worker", "start")
+    if not getattr(sys, "frozen", False):
+        r_runtime.configure_bundled_r_environment()
+    r_worker.current_worker().ensure_ready()
+    observe_package("R worker", "complete")
 
 
 def _open_startup_project(app, meta, project_path, startup_argv):
@@ -339,7 +339,7 @@ def _prepare_composition(app, main_window_loader):
 def _load_composition_runtime(
     app, *, interactive, phase_callback, r_loader
 ):
-    if not interactive and r_loader is None and os.environ.get("RCMS_REQUIRE_IN_PROCESS_RPY2") != "1":
+    if not interactive and r_loader is None:
         return None
     r_runtime.mark_unavailable()
     splash = create_startup_splash() if interactive else None

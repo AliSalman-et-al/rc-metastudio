@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
-from importlib import metadata
 import json
 import math
 import os
@@ -23,7 +22,7 @@ from uuid import uuid4
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from scripts.r_verification_support import locked_rpy2_versions, resolve_rscript  # noqa: E402
+from scripts.r_verification_support import resolve_rscript  # noqa: E402
 from tests.analysis_regression.golden.support import golden_analysis  # noqa: E402
 from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
     compare_golden_baseline,
@@ -44,11 +43,6 @@ MAX_NUMERIC_CONTRACT_BYTES = 256 * 1024
 NUMERIC_CONTRACT_RELATIVE_PATH = (
     "tests/analysis_regression/baseline/numeric-contract.json"
 )
-FROZEN_RPY2_IDENTITIES = {
-    "rpy2": "3.6.7",
-    "rpy2-rinterface": "3.6.6",
-    "rpy2-robjects": "3.6.5",
-}
 
 
 JsonValue: TypeAlias = (
@@ -144,7 +138,6 @@ class CompatibilityReport(TypedDict):
     capture_passed: bool
     comparison: ComparisonReport
     numeric_contract: JsonObject
-    rpy2_identities: dict[str, str]
     passed: bool
 
 
@@ -848,27 +841,6 @@ def _reference_with_numeric_contract(
     return expected
 
 
-def _validate_rpy2_identities(root: Path) -> dict[str, str]:
-    outer = _load_manifest(root / OUTER_MANIFEST_RELATIVE_PATH)
-    committed = outer.get("runtime_identities", {})
-    expected = {distribution: committed.get(distribution) for distribution in FROZEN_RPY2_IDENTITIES}
-    if expected != FROZEN_RPY2_IDENTITIES:
-        raise ValueError("committed oracle rpy2 capture identities are missing or unexpected")
-    actual = {}
-    for distribution, required in locked_rpy2_versions().items():
-        try:
-            observed = metadata.version(distribution)
-        except metadata.PackageNotFoundError as exc:
-            raise ValueError(
-                "required distribution is missing: %s" % distribution
-            ) from exc
-        if observed != required:
-            raise ValueError(
-                "%s identity mismatch: expected %s, observed %s"
-                % (distribution, required, observed)
-            )
-        actual[distribution] = observed
-    return actual
 
 
 def _compare_plot_descriptors(
@@ -967,29 +939,6 @@ def _valid_plot_hash(value: JsonValue | None) -> bool:
     )
 
 
-def _validate_current_rpy2_identities(
-    current: GoldenCaptureBase, expected: dict[str, str]
-) -> None:
-    for case in current.get("curated_golden_set", []):
-        case_id = case.get("id", "<unknown>")
-        for field in ("tool_versions", "package_versions"):
-            identities = case.get(field)
-            if not isinstance(identities, dict):
-                raise ValueError("%s is missing %s" % (case_id, field))
-            observed = {}
-            for distribution in expected:
-                value = identities.get(distribution)
-                if not isinstance(value, str):
-                    raise ValueError(
-                        "%s %s rpy2 identities contain a non-string value"
-                        % (case_id, field)
-                    )
-                observed[distribution] = value
-            if observed != expected:
-                raise ValueError(
-                    "%s %s rpy2 identities do not match the locked runtime"
-                    % (case_id, field)
-                )
 
 
 def _validate_case_contract(
@@ -1100,14 +1049,12 @@ def verify(root: Path, output_root: Path) -> CompatibilityReport:
     plot_contract = _load_plot_descriptor_contract(root, archive_path, reference)
     numeric_contract = _load_numeric_contract(root, archive_path, reference)
     comparison_reference = _reference_with_numeric_contract(reference, numeric_contract)
-    rpy2_identities = _validate_rpy2_identities(root)
     output_root = _prepare_output_root(root, output_root)
     os.environ["RCMS_ANALYSIS_SCRATCH_DIR"] = str(output_root / "scratch")
     _verify_installed_source(root, output_root)
     current = _validate_capture(golden_analysis.capture_comprehensive_golden_baseline(
         output_dir=str(output_root), capture_mode="local-debug", root_dir=str(root)
     ))
-    _validate_current_rpy2_identities(current, rpy2_identities)
     _validate_case_contract(reference, current, root)
     comparison = _validate_comparison(compare_golden_baseline(
         comparison_reference,
@@ -1135,7 +1082,6 @@ def verify(root: Path, output_root: Path) -> CompatibilityReport:
             "sha256": _sha256(root / NUMERIC_CONTRACT_RELATIVE_PATH),
             "metric_count": _numeric_metric_count(numeric_contract),
         },
-        "rpy2_identities": rpy2_identities,
         "passed": current.get("passed") is True and comparison["passed"] is True,
     }
     report_path = output_root / "compatibility-report.json"
@@ -1179,23 +1125,20 @@ def main(argv: list[str] | None = None) -> int:
 def _capture_main(root: Path, output_root: Path) -> int:
     from rc_metastudio import r_worker
 
-    app = None
-    if r_worker.enabled():
-        from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
 
-        app = QApplication([])
+    app = QApplication([])
     try:
         report = verify(root, output_root)
     except Exception as exc:
         print("Golden compatibility verification failed: %s" % exc, file=sys.stderr)
         return 1
     finally:
-        if app is not None:
-            from PyQt6.QtCore import Qt
+        from PyQt6.QtCore import Qt
 
-            if (worker := app.findChild(r_worker.RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
-                worker.close()
-            app.quit()
+        if (worker := app.findChild(r_worker.RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)) is not None:
+            worker.close()
+        app.quit()
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0 if report["passed"] else 1
 

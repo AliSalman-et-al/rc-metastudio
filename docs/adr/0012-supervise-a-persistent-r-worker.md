@@ -1,6 +1,6 @@
 # 0012. Supervise a persistent R worker
 
-Status: Accepted. The embedded backend remains the default during migration.
+Status: Accepted. The worker is the only R backend.
 
 The embedded R call stack prevents Qt from reliably handling input and repainting.
 An R condition can return to that stack, but a hung native call cannot be interrupted
@@ -43,8 +43,3 @@ the interpreter, numerical objects and graphics devices. Bind each job to
 its input snapshot and discard cancelled or stale work. Give work that produces
 files a job-owned staging directory. Qt validates and publishes those files
 only after success, so an interrupted job leaves committed results usable.
-
-Enable the worker with `RCMS_R_BACKEND=worker`. Migrate calculators and study
-previews first, then fitting and trial sequential analysis, then plots and
-exports. Qualify packaged Windows, macOS and Linux before changing the default
-and removing the embedded integration.

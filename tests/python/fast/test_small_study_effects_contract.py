@@ -1,6 +1,6 @@
 import pytest
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio.results import formatting as result_formatting
 from rc_metastudio.analysis.small_study_effects import (
     EligibilityReport,
@@ -14,14 +14,13 @@ from rc_metastudio.analysis.small_study_effects import (
 
 
 @pytest.mark.parametrize("version", [None, True, 1.0, 2, "1"])
-def test_python_r_boundary_requires_exact_small_study_request_version(version, monkeypatch):
-    monkeypatch.setattr(r_bridge, "_require_initialized_r", lambda: None)
+def test_python_r_boundary_requires_exact_small_study_request_version(version):
     request = {"data.type": "continuous", "metric": "MD"}
     if version is not None:
         request["version"] = version
 
     with pytest.raises(ValueError, match="unsupported small-study effects request version"):
-        r_bridge.run_small_study_effects(object(), request)
+        r_operations.run_small_study_effects(object(), request)
 
 
 @pytest.mark.parametrize("version", [True, 1.0, 2, "1"])

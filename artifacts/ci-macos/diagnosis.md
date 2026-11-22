@@ -19,13 +19,13 @@ Qt/PyQt profile and the 14.0 inspection floor.
 | RC MetaStudio editable Python wheel metadata | About 2s per package run | Retained, pure Python |
 | CRAN dependency closure | 33s binary install median, n=2, zero source builds | Retain the dated Posit arm64 binary policy and archive hashes |
 | RCMetaR source archive, R install and load verification | 16s median, n=2 | Cache the source archive and installed package by source, target and R policy |
-| rpy2-rinterface native API build and install against staged R | 6s median, n=2 | Reuse the locked-source build from a package-specific uv cache |
+| Embedded Python binding build and install against staged R | 6s median, n=2 | Reuse the locked-source build from a package-specific uv cache |
 | Qt forms and icon resource generation | About 4s in attached log | Retain generation with prebuilt tools |
 
 The package logs reported 164 binary dependencies in the staged R closure and
 no missing pinned binaries. RCMetaR declares no compiled code. R CMD INSTALL
 byte-compiles its R code and builds its package databases. The published locked
-rpy2-rinterface 3.6.7 universal2 wheel contains both ABI and API bindings and
+universal2 wheel for the former Python binding contains both ABI and API bindings and
 its arm64 API binding links to the global R framework and BLAS. The package
 requires one arm64 API bridge built against its private R framework. Retain
 that build on a cache miss and keep its existing runtime, relocation and hash
@@ -79,7 +79,7 @@ was 62m 39s. Both jobs queued for 3–4 seconds after the gate.
 
 Inside the build, once Qt finished, R download/extraction and private runtime
 setup took approximately 40 seconds. Staging adds about 30 seconds to the
-binary dependency install and rpy2 build through closure pruning, relocation
+binary dependency install and embedded binding build through closure pruning, relocation
 and native proof. Form generation and PyInstaller took 33 seconds median.
 Ad-hoc signature and verification took 11 seconds. Packaged Cocoa scale probes
 took about 18 seconds, and the analysis and LaunchServices checks about
@@ -93,7 +93,7 @@ trusted release workflow.
 | uv and Python | 2s each | 2s each |
 | Install pinned R | 60s | — |
 | Default R library cache and native build prerequisites | 7s and 1s | — |
-| rpy2 build, dependency sync and embedded R proof | 15s | — |
+| Embedded binding build, dependency sync and embedded R proof | 15s | — |
 | Restore official Qt SDK and resolve rcc | 4s and <1s | — |
 | Locked dependency sync | Included in bridge step | 5s |
 | Native smoke / packaging contract tests | 40s | 7s |

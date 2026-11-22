@@ -42,7 +42,6 @@ def main() -> int:
     parser.add_argument("--official-r-url", required=True)
     parser.add_argument("--official-r-sha256", required=True)
     parser.add_argument("--ppm-contrib-path", required=True)
-    parser.add_argument("--bridge", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = args.qualification_root
@@ -102,7 +101,6 @@ def main() -> int:
             "archive_sha256": rcmetar["sha256"],
             "archive": rcmetar,
         },
-        "rpy2_api_bridge_source_sha256": record(args.bridge)["sha256"],
         "inputs": inputs,
     }
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")

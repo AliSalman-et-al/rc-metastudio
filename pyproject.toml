@@ -18,7 +18,6 @@ dependencies = [
     "pytest==9.2.0",
     "pytest-xdist==3.8.0",
     "python-docx==1.2.0",
-    "rpy2==3.6.9",
 ]
 
 [project.scripts]
@@ -100,7 +99,6 @@ sort_by_size = true
 [tool.ruff.lint.per-file-ignores]
 "src/rc_metastudio/project/model.py" = ["E402"]
 "src/rc_metastudio/launch.py" = ["E402"]
-"src/rc_metastudio/r_bridge.py" = ["E402"]
 "tests/**/*.py" = ["E402"]
 
 [tool.coverage.run]

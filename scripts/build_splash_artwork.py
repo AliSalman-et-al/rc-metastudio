@@ -181,7 +181,7 @@ html = f"""<!doctype html>
     <p class="p version">Version 0.5.3</p>
     <p class="p legal">&copy; 2026 Ali Salman and RC MetaStudio contributors.<br>Released under GPL-3.0.</p>
     <p class="p status">Loading metafor&hellip;</p>
-    <p class="p names">Statistics by R, metafor, meta, mada, and RCMetaR.<br>Built with Python, Qt, and rpy2.</p>
+    <p class="p names">Statistics by R, metafor, meta, mada, and RCMetaR.<br>Built with Python, Qt, and R.</p>
   </div>
 
   <div class="art">

@@ -108,20 +108,6 @@ step "Checking the relocated private R runtime"
 R_HOME="$r_home" LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$r_home/bin/Rscript" -e 'stopifnot(as.character(getRversion()) == "4.6.2", normalizePath(R.home()) == normalizePath(Sys.getenv("R_HOME")))'
 
-step "Building the locked rpy2 API bridge against private R"
-R_HOME="$r_home" \
-R_LIBS="$r_library" \
-R_LIBS_USER="$r_library" \
-LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-PATH="$r_home/bin:$PATH" \
-RPY2_CFFI_MODE=API \
-uv pip install --python "$python_exe" --no-cache --no-deps --reinstall --no-binary rpy2-rinterface "rpy2-rinterface==3.6.7"
-R_HOME="$r_home" \
-LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-RPY2_CFFI_MODE=API \
-"$python_exe" -c 'import rpy2.robjects; from rpy2.rinterface_lib import openrlib; print(openrlib.R_HOME)' | grep -F "$r_home" >/dev/null \
-  || die "rpy2 API bridge did not initialize the private R runtime."
-
 cache_root="${RCMS_PACKAGED_R_CACHE:-}"
 if [ -n "$cache_root" ] && [ -s "$cache_root/dependencies/install-r-deps.log" ]; then
   step "Restoring the verified Ubuntu 24.04 R binary library and its archives"
@@ -180,7 +166,6 @@ export R_HOME="$r_home"
 export R_LIBS="$r_library"
 export R_LIBS_USER="$r_library"
 export LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-export RPY2_CFFI_MODE=API
 export RCMS_PYQT_ROOT="$($python_exe -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent)')"
 "$python_exe" -m PyInstaller --noconfirm --clean \
   --workpath "$work_root/pyinstaller-work" \
@@ -249,10 +234,10 @@ runtime_libraries=(libblas.so.3 liblapack.so.3 libgfortran.so.5 libgomp.so.1)
     [ -n "$owner" ] || die "Could not identify the Debian package owning $resolved_library."
     notice="/usr/share/doc/$owner/copyright"
     [ -f "$notice" ] || die "Missing copyright notice for Debian package $owner."
-    cp -L "$library_path" "$archive_root/RCMetaStudio/_internal/$soname"
+    cp -L "$library_path" "$archive_root/R/lib/$soname"
     cp "$notice" "$runtime_notice_root/$soname.copyright"
     package_version="$(dpkg-query -W -f='${Version}' "$owner")"
-    library_sha256="$(sha256sum "$archive_root/RCMetaStudio/_internal/$soname" | awk '{print $1}')"
+    library_sha256="$(sha256sum "$archive_root/R/lib/$soname" | awk '{print $1}')"
     printf -- '- `%s` from Debian package `%s` version `%s` (SHA-256 `%s`). License text: `%s.copyright`.\n' \
       "$soname" "$owner" "$package_version" "$library_sha256" "$soname"
   done
@@ -262,9 +247,9 @@ matrix_library="$archive_root/R/library/Matrix/libs/Matrix.so"
 [ -f "$matrix_library" ] || die "Private R library is missing Matrix.so."
 check_bundled_dependency() {
   local binary="$1" soname="$2" resolved_library
-  resolved_library="$(LD_LIBRARY_PATH="$archive_root/RCMetaStudio/_internal:$archive_root/R/lib" ldd "$binary" | awk -v name="$soname" '$1 == name && $2 == "=>" { print $3; exit }')"
+  resolved_library="$(LD_LIBRARY_PATH="$archive_root/R/lib" ldd "$binary" | awk -v name="$soname" '$1 == name && $2 == "=>" { print $3; exit }')"
   case "$resolved_library" in
-    "$archive_root/RCMetaStudio/_internal/"*) ;;
+    "$archive_root/R/lib/"*) ;;
     *) die "Bundled runtime does not resolve $soname from the package (checking $binary): ${resolved_library:-missing}." ;;
   esac
 }
@@ -282,8 +267,6 @@ export R_LIBS_USER="$R_LIBS"
 export R_SHARE_DIR="$R_HOME/share"
 export R_INCLUDE_DIR="$R_HOME/include"
 export R_DOC_DIR="$R_HOME/doc"
-export RPY2_CFFI_MODE=API
-export LD_LIBRARY_PATH="$app_root/RCMetaStudio/_internal:$R_HOME/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export PATH="$R_HOME/bin${PATH:+:$PATH}"
 exec "$app_root/RCMetaStudio/RCMetaStudio" "$@"
 SH
@@ -291,7 +274,7 @@ chmod +x "$archive_root/LaunchRCMetaStudio.sh"
 
 step "Checking private R and Qt runtime before archiving"
 env -u R_HOME -u R_LIBS -u R_LIBS_USER xvfb-run -a \
-  env PATH="$r_home/bin" RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+  env PATH="$r_home/bin" \
   "$archive_root/LaunchRCMetaStudio.sh" \
     --automation-package-runtime-probe "$runtime_probe" \
     > "$runtime_probe_stdout" 2> "$runtime_probe_stderr"

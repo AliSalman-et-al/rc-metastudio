@@ -8,7 +8,7 @@ import math
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import NotRequired, TypeAlias, TypedDict
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 
 Scalar: TypeAlias = float | int | str | None
 Numeric: TypeAlias = float | int
@@ -262,49 +262,49 @@ class CalculatorService:
     """Concrete calculation operations shared by transactional editors."""
 
     def binary_convert_scale(self, x: ScaleValue, metric_name: str, convert_to: str = "display.scale", n1: Numeric | None = None) -> ScaleValue:
-        result = r_bridge.binary_convert_scale(x, metric_name, convert_to=convert_to, n1=n1)
+        result = r_operations.binary_convert_scale(x, metric_name, convert_to=convert_to, n1=n1)
         return _scale_value(result, "binary_convert_scale")
 
     def continuous_convert_scale(self, x: ScaleValue, metric_name: str, convert_to: str = "display.scale") -> ScaleValue:
-        result = r_bridge.continuous_convert_scale(x, metric_name, convert_to=convert_to)
+        result = r_operations.continuous_convert_scale(x, metric_name, convert_to=convert_to)
         return _scale_value(result, "continuous_convert_scale")
 
     def diagnostic_convert_scale(self, x: ScaleValue, metric_name: str, convert_to: str = "display.scale") -> ScaleValue:
-        result = r_bridge.diagnostic_convert_scale(x, metric_name, convert_to=convert_to)
+        result = r_operations.diagnostic_convert_scale(x, metric_name, convert_to=convert_to)
         return _scale_value(result, "diagnostic_convert_scale")
 
     def effect_for_study(self, e1: Numeric, n1: Numeric, e2: Numeric | None = None, n2: Numeric | None = None, *, two_arm: bool = True, metric: str = "OR", confidence_level: float = 95) -> EffectData:
-        result = r_bridge.effect_for_study(e1, n1, e2, n2, two_arm=two_arm, metric=metric, confidence_level=confidence_level)
+        result = r_operations.effect_for_study(e1, n1, e2, n2, two_arm=two_arm, metric=metric, confidence_level=confidence_level)
         return _effect_data(result, "effect_for_study")
 
     def continuous_effect_for_study(self, n1: Numeric, m1: Numeric, sd1: Numeric, se1: Numeric | None = None, n2: Numeric | None = None, m2: Numeric | None = None, sd2: Numeric | None = None, se2: Numeric | None = None, *, metric: str = "MD", two_arm: bool = True, confidence_level: float = 95.0) -> EffectData:
-        result = r_bridge.continuous_effect_for_study(n1, m1, sd1, se1, n2, m2, sd2, se2, metric=metric, two_arm=two_arm, confidence_level=confidence_level)
+        result = r_operations.continuous_effect_for_study(n1, m1, sd1, se1, n2, m2, sd2, se2, metric=metric, two_arm=two_arm, confidence_level=confidence_level)
         return _effect_data(result, "continuous_effect_for_study")
 
     def diagnostic_effects_for_study(self, tp: Numeric, fn: Numeric, fp: Numeric, tn: Numeric, *, metrics: Sequence[str] = ("Spec", "Sens"), confidence_level: float = 95.0) -> DiagnosticData:
-        result = r_bridge.diagnostic_effects_for_study(tp, fn, fp, tn, metrics=metrics, confidence_level=confidence_level)
+        result = r_operations.diagnostic_effects_for_study(tp, fn, fp, tn, metrics=metrics, confidence_level=confidence_level)
         return _diagnostic_data(result, "diagnostic_effects_for_study")
 
     def effect_triplet(self, effect_entry: EffectData, scale_name: str = "calc_scale", metric: str | None = None) -> tuple[Numeric | None, Numeric | None, Numeric | None]:
-        result = r_bridge.effect_triplet(effect_entry, scale_name, metric=metric)
+        result = r_operations.effect_triplet(effect_entry, scale_name, metric=metric)
         return _triplet(result, "effect_triplet")
 
     def impute_binary_data(self, binary_data: MutableData) -> BinaryImputationResult:
-        result = r_bridge.impute_binary_data(binary_data)
+        result = r_operations.impute_binary_data(binary_data)
         return _binary_result(result, "impute_binary_data")
 
     def impute_continuous_data(self, continuous_data: MutableData, alpha: float) -> ContinuousImputationResult:
-        result = r_bridge.impute_continuous_data(continuous_data, alpha)
+        result = r_operations.impute_continuous_data(continuous_data, alpha)
         return _continuous_result(result, "impute_continuous_data")
 
     def impute_pre_post_continuous_data(self, continuous_data: MutableData, correlation: Numeric, alpha: float) -> PrePostImputationResult:
-        result = r_bridge.impute_pre_post_continuous_data(continuous_data, correlation, alpha)
+        result = r_operations.impute_pre_post_continuous_data(continuous_data, correlation, alpha)
         return _pre_post_result(result, "impute_pre_post_continuous_data")
 
     def back_calculate_continuous_data(self, group1_data: MutableData, group2_data: MutableData, effect_data: MutableData, confidence_level: float) -> BackCalculationResult:
-        result = r_bridge.back_calculate_continuous_data(group1_data, group2_data, effect_data, confidence_level)
+        result = r_operations.back_calculate_continuous_data(group1_data, group2_data, effect_data, confidence_level)
         return _back_calculation_result(result, "back_calculate_continuous_data")
 
     def impute_diagnostic_data(self, diagnostic_data: MutableData) -> DiagnosticImputationResult:
-        result = r_bridge.impute_diagnostic_data(diagnostic_data)
+        result = r_operations.impute_diagnostic_data(diagnostic_data)
         return _diagnostic_imputation_result(result, "impute_diagnostic_data")

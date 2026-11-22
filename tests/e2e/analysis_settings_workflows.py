@@ -1,5 +1,7 @@
 """Drive result properties and presentation-only ordering with real Qt and R."""
 
+from tests.e2e import r_oracle
+
 import hashlib
 from pathlib import Path
 
@@ -14,7 +16,7 @@ from tests.e2e.plot_observations import load_saved_analysis, load_serialized_obj
 def run(app, window, root, record, analyze):
     from advanced_workflows import modal, click
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results import window as results_window
     from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections
@@ -101,9 +103,9 @@ def run(app, window, root, record, analyze):
     params_path = next(iter(view.params_paths.values()))
     load_saved_analysis(params_path)
     load_serialized_object(str(params_path) + ".plotdata")
-    original_labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
+    original_labels = list(cast(Iterable[str], r_oracle.evaluate("plot.data$slab[plot.data$display_order]")))
     import json
-    inputs = json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(year=plot.data$years, effect=as.numeric(plot.data$res$yi), weight=as.numeric(plot.data$weights)), na="null", digits=16)')[0]))
+    inputs = json.loads(str(r_oracle.evaluate('jsonlite::toJSON(list(year=plot.data$years, effect=as.numeric(plot.data$res$yi), weight=as.numeric(plot.data$weights)), na="null", digits=16)')[0]))
     expected_orders = {'table': list(range(len(original_labels)))}
     for key, values in inputs.items():
         assert len(values) == len(original_labels), (key, values)
@@ -140,10 +142,10 @@ def run(app, window, root, record, analyze):
         assert parsed_numeric_sections(changed.results) == baseline
         load_saved_analysis(next(iter(changed.params_paths.values())))
         load_serialized_object(str(next(iter(changed.params_paths.values()))) + ".plotdata")
-        labels = list(cast(Iterable[str], r_bridge.ro.r("plot.data$slab[plot.data$display_order]")))
-        display_order = [int(index) - 1 for index in r_bridge.ro.r("plot.data$display_order")]
+        labels = list(cast(Iterable[str], r_oracle.evaluate("plot.data$slab[plot.data$display_order]")))
+        display_order = [int(index) - 1 for index in r_oracle.evaluate("plot.data$display_order")]
         assert display_order == expected_orders[order], ('study order', order, display_order, expected_orders[order])
-        last_column = list(cast(Iterable[str], r_bridge.ro.r("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")))
+        last_column = list(cast(Iterable[str], r_oracle.evaluate("plot.data$ilab$columns[[length(plot.data$ilab$columns)]]$key")))
         assert last_column == ["weight"], (style, last_column)
         record("review-ordered-result-" + order, changed, labels=labels, numbers=baseline,
                plots=dict(changed.results.display_images))
@@ -208,7 +210,7 @@ def run(app, window, root, record, analyze):
         assert f"Confidence intervals ({confidence:g}%)" in changed.manuscript.methods
         path = next(iter(changed.params_paths.values()))
         load_saved_analysis(path)
-        df = int(r_bridge.ro.r("res$dfs")[0])
+        df = int(r_oracle.evaluate("res$dfs")[0])
         assert df == len(window.model.get_studies()) - 1
         assert f"{df} degrees of freedom" in changed.manuscript.methods
         assert f"df = {df}" in changed.manuscript.results
@@ -317,7 +319,7 @@ def run(app, window, root, record, analyze):
     path = next(iter(view.params_paths.values()))
     def saved_plot():
         load_serialized_object(str(path) + '.plotdata')
-        return json.loads(str(r_bridge.execute_r_string('jsonlite::toJSON(list(order=plot.data$display_order, i2=vapply(plot.data$res,function(f)f$I2,numeric(1)), effect=plot.data$effect$yi, headers=plot.data$ilab$headers),digits=16)')[0]))
+        return json.loads(str(r_oracle.evaluate('jsonlite::toJSON(list(order=plot.data$display_order, i2=vapply(plot.data$res,function(f)f$I2,numeric(1)), effect=plot.data$effect$yi, headers=plot.data$ilab$headers),digits=16)')[0]))
     before = saved_plot()
     assert before['order'] == [1, *[i + 2 for i in sorted(range(len(before['i2']) - 1), key=lambda i: (before['i2'][i + 1], i))]]
     view.report_action.trigger()

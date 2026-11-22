@@ -1,5 +1,7 @@
 """Real wizard, input, persistence and analysis proof for HR and IRR."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 import csv
@@ -15,7 +17,7 @@ def run(app, window, scenario, record):
         return
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
-    from rc_metastudio import main_wizard, r_bridge
+    from rc_metastudio import main_wizard, r_operations
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
     from rc_metastudio.project import model as analysis_dataset
@@ -403,7 +405,7 @@ def run(app, window, scenario, record):
     for suffix in ("fixed", "random"):
         view = analysis("standard", suffix)
         expression = prefix + f'f <- metafor::rma.uni(e$yi, vi=e$vi, method="{"FE" if suffix == "fixed" else "REML"}"); '
-        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b), se=f$se, lower=f$ci.lb, upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
+        expected = json.loads(str(r_oracle.evaluate("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b), se=f$se, lower=f$ci.lb, upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
         actual = parsed_numeric_sections(view.results)["Summary"]
         for key, name in (("estimate","b"), ("standard_error","se"), ("lower_bound","lower"), ("upper_bound","upper")):
             assert abs(actual["calculation_scale."+key] - expected[name]) <= 1.1e-6, (actual,expected)
@@ -415,7 +417,7 @@ def run(app, window, scenario, record):
         app.processEvents()
     view = analysis("standard", "fixed", confidence=90)
     actual = parsed_numeric_sections(view.results)["Summary"]
-    expected = json.loads(str(r_bridge.execute_r_string("{" + prefix + 'f <- metafor::rma.uni(e$yi,vi=e$vi,method="FE",level=90); jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
+    expected = json.loads(str(r_oracle.evaluate("{" + prefix + 'f <- metafor::rma.uni(e$yi,vi=e$vi,method="FE",level=90); jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),auto_unbox=TRUE,digits=16)}')[0]))
     for key, name in (("estimate","b"), ("standard_error","se"), ("lower_bound","lower"), ("upper_bound","upper")):
         assert abs(actual["calculation_scale."+key]-expected[name]) <= 1.1e-6, (actual, expected)
     assert model.get_current_analysis_unit_for_study(edit_row).ratio_input(model.arm_names).confidence == 90
@@ -426,7 +428,7 @@ def run(app, window, scenario, record):
         if workflow == "meta-regression":
             assert "ratios of " + metric in "\n".join(view.texts.values())
             expression = prefix + 'dose <- (0:11)[keep]; f <- metafor::rma.uni(e$yi,vi=e$vi,mods=~dose,method="REML"); '
-            expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),digits=16)}')[0]))
+            expected = json.loads(str(r_oracle.evaluate("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub),digits=16)}')[0]))
             actual = _parse_result_table(view.texts["Summary"].replace("−", "-"))
             for i, label in enumerate(("intercept", "dose")):
                 for field, key in (("coefficient", "b"), ("standard_error", "se"), ("lower_bound", "lower"), ("upper_bound", "upper")):
@@ -440,7 +442,7 @@ def run(app, window, scenario, record):
             if workflow == "subgroup":
                 indices = f'c(lapply(unique({regions}), function(g) which({regions} == g)),list(seq_len(nrow(e))))'
             expression = prefix + f'fits <- lapply({indices}, function(ix) metafor::rma.uni(e$yi[ix],vi=e$vi[ix],method="REML")); '
-            expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
+            expected = json.loads(str(r_oracle.evaluate("{" + expression + 'jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)}')[0]))
             if workflow == "subgroup":
                 actual = _parse_result_table(view.texts["Subgroup summary"].replace("−", "-"))
                 for label, row in zip(("B", "A", "Overall"), expected, strict=True):
@@ -466,7 +468,7 @@ def run(app, window, scenario, record):
     assert any("contour" in key for key in view.results.images)
     record("ratio-small-study-results", view, texts=dict(view.texts), plots=dict(view.results.display_images or view.results.images))
     expression = prefix + f'm <- meta::metagen(e$yi,sqrt(e$vi),sm="{metric}",method.tau="REML",level=.95); f <- meta::metabias(m,method.bias="Egger",k.min=10,level=.95); '
-    expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(coefficient=as.numeric(f$estimate[1]),se=as.numeric(f$estimate[2]),p=f$p.value),auto_unbox=TRUE,digits=16)}')[0]))
+    expected = json.loads(str(r_oracle.evaluate("{" + expression + 'jsonlite::toJSON(list(coefficient=as.numeric(f$estimate[1]),se=as.numeric(f$estimate[2]),p=f$p.value),auto_unbox=TRUE,digits=16)}')[0]))
     primary_test = view.texts["small-study.tests"].split("\n\n")[0]
     assert primary_test.startswith("Classical Egger test (primary)"), primary_test
     match = re.search(r"Coefficient: ([-\d.]+) \(SE ([-\d.]+)(?:;|\))", primary_test)
@@ -482,7 +484,7 @@ def run(app, window, scenario, record):
             assert model.setData(model.index(i, model.OUTCOMES[6]), "raw")
         view = analysis("standard", "mh")
         expression = f'f <- metafor::rma.mh(measure="IRR",x1i={vector(0)},t1i={vector(1)},x2i={vector(2)},t2i={vector(3)},add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); '
-        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub,contributing=f$k.yi),auto_unbox=TRUE,digits=16)}')[0]))
+        expected = json.loads(str(r_oracle.evaluate("{" + expression + 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub,contributing=f$k.yi),auto_unbox=TRUE,digits=16)}')[0]))
         actual = parsed_numeric_sections(view.results)["Summary"]
         for key, name in (("estimate","b"), ("standard_error","se"), ("lower_bound","lower"), ("upper_bound","upper")):
             assert abs(actual["calculation_scale."+key] - expected[name]) <= 1.1e-6, (actual,expected)
@@ -502,7 +504,7 @@ def run(app, window, scenario, record):
             if workflow == "subgroup":
                 indices = 'list(seq(1,12,2),seq(2,12,2),1:12)'
             expression = f'x1 <- {vector(0)}; t1 <- {vector(1)}; x2 <- {vector(2)}; t2 <- {vector(3)}; fits <- lapply({indices},function(ix) {{ if(sum(x1[ix])==0 || sum(x2[ix])==0)return(NULL); f <- metafor::rma.mh(measure="IRR",x1i=x1[ix],t1i=t1[ix],x2i=x2[ix],t2i=t2[ix],add=c(.5,0),to=c("only0","none"),drop00=c(TRUE,FALSE)); list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se) }}); jsonlite::toJSON(fits,auto_unbox=TRUE,digits=16)'
-            expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
+            expected = json.loads(str(r_oracle.evaluate("{" + expression + "}")[0]))
             if workflow == "subgroup":
                 actual = _parse_result_table(view.texts["Subgroup summary"].replace("−", "-"))
                 for label, row in zip(("B", "A", "Overall"), expected, strict=True):
@@ -524,7 +526,7 @@ def verify_bundled_sample(app, window, hazard, record):
     from PyQt6 import QtCore, QtWidgets
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.project.archive import load_project
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
@@ -593,7 +595,7 @@ def verify_bundled_sample(app, window, hazard, record):
         else:
             expression += f'f <- metafor::rma.uni(measure="IRR",x1i=d$x1i,t1i=d$t1i,x2i=d$x2i,t2i=d$t2i,method="{"FE" if suffix == "fixed" else "REML"}"); '
         expression += 'jsonlite::toJSON(list(b=as.numeric(f$b),se=f$se,lower=f$ci.lb,upper=f$ci.ub,k=f$k),auto_unbox=TRUE,digits=16)'
-        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
+        expected = json.loads(str(r_oracle.evaluate("{" + expression + "}")[0]))
         actual = parsed_numeric_sections(view.results)["Summary"]
         assert expected["k"] == len(rows)
         for key, name in (("estimate", "b"), ("standard_error", "se"), ("lower_bound", "lower"), ("upper_bound", "upper")):
@@ -616,7 +618,7 @@ def verify_bundled_sample(app, window, hazard, record):
         dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).click(); app.processEvents()
         view = visible(results_window.ResultsWindow)
         expression = 'data("dat.pignon2000",package="metadat"); d <- dat.pignon2000; fits <- lapply(c(lapply(1:3,function(g)which(d$grp==g)),list(seq_len(nrow(d)))),function(ix)metafor::rma.uni(yi=d$OmE[ix]/d$V[ix],vi=1/d$V[ix],method="REML")); jsonlite::toJSON(lapply(fits,function(f)list(estimate=exp(as.numeric(f$b)),lower_bound=exp(f$ci.lb),upper_bound=exp(f$ci.ub),standard_error=f$se)),auto_unbox=TRUE,digits=16)'
-        expected = json.loads(str(r_bridge.execute_r_string("{" + expression + "}")[0]))
+        expected = json.loads(str(r_oracle.evaluate("{" + expression + "}")[0]))
         actual = _parse_result_table(view.texts["Subgroup summary"].replace("−", "-"))
         for label, row in zip(("Adjuvant", "Neoadjuvant", "Concomitant", "Overall"), expected, strict=True):
             for key, value in row.items():

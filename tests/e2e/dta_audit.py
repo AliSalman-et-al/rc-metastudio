@@ -1,5 +1,7 @@
 """DTA method availability through real Qt controls and the installed R backend."""
 
+from tests.e2e import r_oracle
+
 from PyQt6.QtCore import QCoreApplication, QDeadlineTimer, QEvent, Qt
 from PyQt6.QtWidgets import QComboBox, QLabel, QDialogButtonBox
 from PyQt6.QtTest import QTest
@@ -12,7 +14,7 @@ def check_fixed_workflow(app, window, workflow, record):
     import json
     import math
     from analysis_matrix import set_parameter
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results.window import ResultsWindow
     from tests.e2e.report_retention import assert_report
 
@@ -66,7 +68,7 @@ def check_fixed_workflow(app, window, workflow, record):
                     c(estimate=exp(fit$b[1]),ci_lower=exp(fit$ci.lb),ci_upper=exp(fit$ci.ub),se=fit$se,p=fit$pval)
                 }})
             }}), digits=16)'''
-            references = json.loads(str(r_bridge.execute_r_string(reference_code)[0]))
+            references = json.loads(str(r_oracle.evaluate(reference_code)[0]))
             assert len(table.rows) == len(references), (table.rows, references)
             for row, reference in zip(table.quantities, references, strict=True):
                 quantities = {quantity.role: quantity.value for cell in row for quantity in cell}

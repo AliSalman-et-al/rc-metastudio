@@ -1281,9 +1281,9 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     QtCore.qInstallMessageHandler(_qt_message_handler)
     from local_r_test_backend import create
     backend_fake = create()
-    from rc_metastudio import r_bridge, qt6_resources
+    from rc_metastudio import r_operations, qt6_resources
     for name, implementation in vars(backend_fake).items():
-        setattr(r_bridge, name, implementation)
+        setattr(r_operations, name, implementation)
     qt6_resources.ensure_application_resources()
     from rc_metastudio import app_error_handler
 

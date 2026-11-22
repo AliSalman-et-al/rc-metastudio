@@ -719,44 +719,8 @@ def test_golden_comparison_uses_public_text_title_for_stable_source_key():
     assert comparisons[0]["passed"] is True
 
 
-def test_current_golden_manifest_requires_exact_rpy2_identities():
-    expected = verify_golden_compatibility.locked_rpy2_versions()
-    case: verify_golden_compatibility.JsonObject = {
-        "id": "case",
-        "tool_versions": {name: version for name, version in expected.items()},
-        "package_versions": {name: version for name, version in expected.items()},
-    }
-    verify_golden_compatibility._validate_current_rpy2_identities(
-        {"curated_golden_set": [case]}, expected
-    )
-
-    verify_golden_compatibility._json_object(case["package_versions"], "package versions")["rpy2-robjects"] = "0.0.0"
-    with pytest.raises(ValueError, match="locked runtime"):
-        verify_golden_compatibility._validate_current_rpy2_identities(
-            {"curated_golden_set": [case]}, expected
-        )
 
 
-def test_real_r_verifiers_reject_null_or_mismatched_rpy2_identity(monkeypatch):
-    monkeypatch.setattr(
-        verify_rcmetar_r_stack,
-        "run_json",
-        lambda *args, **kwargs: {"rpy2": "0.0.0"},
-    )
-    with pytest.raises(
-        verify_rcmetar_r_stack.VerificationError, match="identity mismatch"
-    ):
-        verify_rcmetar_r_stack.verify_rpy2_identities()
-
-    monkeypatch.setattr(
-        verify_golden_compatibility.metadata,
-        "version",
-        lambda _distribution: (_ for _ in ()).throw(
-            verify_golden_compatibility.metadata.PackageNotFoundError
-        ),
-    )
-    with pytest.raises(ValueError, match="required distribution is missing"):
-        verify_golden_compatibility._validate_rpy2_identities(ROOT)
 
 
 def test_analysis_regression_comparison_classifies_missing_output_unsupported_and_capture_error():
@@ -1059,14 +1023,14 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
 
     monkeypatch.setattr(headless_analysis, "load_dataset_model", load_model)
     monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "dataset_to_simple_diagnostic_r_object",
+        analysis_adapter.r_operations,
+        "_diagnostic_data_arguments",
         backend.convert,
         raising=False,
     )
     monkeypatch.setattr(
-        analysis_adapter.r_bridge,
-        "run_versioned_analysis_requests",
+        analysis_adapter.r_operations,
+        "_worker_diagnostic_fit",
         backend.run,
         raising=False,
     )
@@ -1130,9 +1094,9 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
         golden_analysis, "curated_golden_bundles", lambda root_dir=None: bundles
     )
     monkeypatch.setattr(
-        golden_analysis.r_bridge,
-        "load_required_packages",
-        lambda: None,
+        golden_analysis.r_worker,
+        "current_worker",
+        lambda: type("Worker", (), {"ensure_ready": lambda self: None})(),
     )
     monkeypatch.setattr(golden_analysis, "_commit_sha", lambda: "abc123")
     monkeypatch.setattr(golden_analysis, "_r_package_version", lambda package: {"RCMetaR": rcmetar_version, "meta": "8.5-0", "mada": "0.5.12", "metafor": "5.2.1"}[package])
@@ -1144,9 +1108,6 @@ def test_comprehensive_golden_baseline_capture_writes_reproducible_bundle(
             "python": "3.14.10",
             "os": "Windows",
             "r": "R version 4.6.2",
-            "rpy2": "3.6.9",
-            "rpy2-rinterface": "3.6.7",
-            "rpy2-robjects": "3.6.6",
             "pyqt": "6.12.0",
         },
     )

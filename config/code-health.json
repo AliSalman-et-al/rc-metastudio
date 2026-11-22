@@ -1,8 +1,17 @@
 {
   "schema_version": 1,
-  "source_roots": ["src/rc_metastudio", "scripts", "r/RCMetaR/R"],
-  "python_suffixes": [".py"],
-  "r_suffixes": [".R", ".r"],
+  "source_roots": [
+    "src/rc_metastudio",
+    "scripts",
+    "r/RCMetaR/R"
+  ],
+  "python_suffixes": [
+    ".py"
+  ],
+  "r_suffixes": [
+    ".R",
+    ".r"
+  ],
   "exclude_globs": [
     "*/forms/ui_*.py",
     "*/forms/*_rc.py",
@@ -11,13 +20,27 @@
     ".venv/*"
   ],
   "forbidden_imports": {
-    "src/rc_metastudio/project/*.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/*domain*.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/analysis/study_selection.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/workspace/session.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/workspace/editing.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/workspace/column_identity.py": ["PyQt6", "rpy2"],
-    "src/rc_metastudio/workspace/columns.py": ["PyQt6", "rpy2"]
+    "src/rc_metastudio/project/*.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/*domain*.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/analysis/study_selection.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/workspace/session.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/workspace/editing.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/workspace/column_identity.py": [
+      "PyQt6"
+    ],
+    "src/rc_metastudio/workspace/columns.py": [
+      "PyQt6"
+    ]
   },
   "complexity_exceptions": {
     "scripts/code_health.py": {
@@ -114,9 +137,6 @@
     },
     "src/rc_metastudio/adaptive_window.py": {
       "eventFilter": "Qt event filtering preserves the adaptive window lifecycle across native resize and teardown events"
-    },
-    "src/rc_metastudio/r_bridge.py": {
-      "_r_param_value": "the R boundary preserves nested vectors and recursively validates foreign parameter values"
     },
     "r/RCMetaR/R/repeated_analyses.R": {
       "bootstrap": "statistical resampling has independent method, seed, and result-shape branches"

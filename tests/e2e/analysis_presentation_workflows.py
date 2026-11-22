@@ -1,5 +1,7 @@
 """Real analysis setup and presentation workflows across data families."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 import re
@@ -116,15 +118,15 @@ def run(app, window, work, record, scenario):
                                   parameters={"digits": digits, "fp_style": style}, prepare=select_metric)
                     check_annotation_spacing(view, style=style)
                     if metric:
-                        from rc_metastudio import r_bridge
+                        from rc_metastudio import r_operations
                         for title, path in view.results.display_images.items():
                             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-                            axis = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.forest.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.forest.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
+                            axis = json.loads(str(list(r_oracle.evaluate('jsonlite::toJSON(local({plan <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); ticks <- RCMetaR:::rcmetar.metafor.axis.ticks(plot.data, plan$x$alim); limits <- RCMetaR:::rcmetar.forest.axis.labels(plot.data, plan$x$alim); list(metric=plot.data$params$measure, limits=limits, ticks=ticks, labels=RCMetaR:::rcmetar.forest.axis.labels(plot.data, ticks))}), auto_unbox=TRUE, digits=16)'))[0]))
                             raw = [[float(window.model.data(window.model.index(row, column))) for column in window.model.RAW_DATA[:2]] for row in range(6)]
                             assert raw == [[4.0+i, 20.0+i] for i in range(6)], raw
                             counts = ",".join(str(row[0]) for row in raw)
                             totals = ",".join(str(row[1]) for row in raw)
-                            reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r(f'''jsonlite::toJSON(local({{
+                            reference = json.loads(str(list(r_oracle.evaluate(f'''jsonlite::toJSON(local({{
                                 n <- c({totals}); es <- metafor::escalc(measure="{metric}", xi=c({counts}), ni=n)
                                 fit <- metafor::rma.uni(es$yi, es$vi, method="DL", level=95)
                                 display <- function(x, n) switch("{metric}", PLN=exp(x), PLO=stats::plogis(x), PAS=metafor::transf.iarcsin(x), PFT=metafor::transf.ipft(x, ni=n))
@@ -249,7 +251,7 @@ def run(app, window, work, record, scenario):
         return
 
     if family_name == "precision":
-        from rc_metastudio import r_bridge
+        from rc_metastudio import r_operations
         def entered(target, values):
             model = target.model
             for row in range(6):
@@ -281,7 +283,7 @@ def run(app, window, work, record, scenario):
         window.workspace.mark_saved()
         view = run_analysis_case(app, window, "analysis-data-generic-effect", record, keep_results=True,
                       parameters={"digits": 6}, prepare=lambda target: entered(target, (1e-10, 1e-11)))
-        reference = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
+        reference = json.loads(str(list(r_oracle.evaluate('local({f <- metafor::rma.uni(yi=rep(1e-10,6), sei=rep(1e-11,6), method="DL"); jsonlite::toJSON(list(estimate=as.numeric(f$b),lower=f$ci.lb,upper=f$ci.ub,se=f$se),auto_unbox=TRUE,digits=16)})'))[0]))
         model = next(t for s in view.results.sections for t in s.tables if t.title == "Model results")
         row = model.rows[0]
         for cell, quantities, expected in zip(row[:4], model.quantities[0][:4], reference.values(), strict=True):
@@ -318,7 +320,7 @@ def run(app, window, work, record, scenario):
             bounds, ticks = [], set()
             for title, path in view.results.display_images.items():
                 load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-                bounds = r_bridge.r_iterable_to_list(r_bridge.execute_r_string('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
+                bounds = list(r_oracle.evaluate('RCMetaR:::rcmetar.forest.layout.preflight(plot.data)$x$alim'))
                 assert all(math.isfinite(x) for x in bounds) and bounds[1] > bounds[0], bounds
                 nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))
                 numeric = [n for n in nodes if n.attrib.get("text-anchor") == "middle"
@@ -505,7 +507,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
     """Retain actual long figures and panel geometry through normal Qt/R routes."""
     from PyQt6 import QtCore
     from analysis_matrix import DATA_TYPES, run as run_analysis_case
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     root = Path(__file__).resolve().parents[2]
     measurements = []
     for style in (() if only_bubbles else ("default", "revman", "bmj")):
@@ -518,7 +520,7 @@ def run_long_figures_and_bubble_bounds(app, window, work, record, prepare_datase
             check_report(app, view, work, record)
             title, path = next(iter(view.results.display_images.items()))
             load_serialized_object(str(view.params_paths[title]) + ".plotdata")
-            layout = json.loads(str(r_bridge.r_iterable_to_list(r_bridge.ro.r('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$device$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
+            layout = json.loads(str(list(r_oracle.evaluate('jsonlite::toJSON(local({p <- RCMetaR:::rcmetar.forest.layout.preflight(plot.data); list(cex=p$typography$cex,height=p$device$height,rows=length(plot.data$slab))}),auto_unbox=TRUE)'))[0]))
             assert layout["rows"] == 65 and abs(layout["cex"] * 12 - 8) < .001, layout
             assert layout["height"] > 267 / 25.4, layout
             nodes = list(ET.parse(path).iter("{http://www.w3.org/2000/svg}text"))

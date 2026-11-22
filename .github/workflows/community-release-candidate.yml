@@ -124,8 +124,6 @@ jobs:
           if (-not $sample) { throw "Binary - Aminoglycoside dosing, Barza 1996.rcms is missing." }
           if (-not $runtimeProbe) { throw "runtime-probe.json is missing." }
           New-Item -ItemType Directory -Force qualified/diagnostics | Out-Null
-          $env:RCMS_REQUIRE_IN_PROCESS_RPY2 = "1"
-          $env:RPY2_CFFI_MODE = "API"
           $env:RCMS_AUTOMATION_SMOKE_LOG = (Resolve-Path qualified/diagnostics).Path + "\packaged-smoke.log"
           $env:RCMS_AUTOMATION_HANG_TRACE = (Resolve-Path qualified/diagnostics).Path + "\packaged-smoke.hang-trace.log"
           Remove-Item Env:\QT_QPA_PLATFORM -ErrorAction SilentlyContinue
@@ -169,7 +167,7 @@ jobs:
           runtime_probe="$PWD/$runtime_probe"
           mkdir -p qualified/diagnostics
           env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
-            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            \
             RCMS_R_HOME="$app/Contents/Frameworks/R.framework/Resources" \
             RCMS_R_LIBS="$app/Contents/Frameworks/R.framework/Resources/library" \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
@@ -199,7 +197,7 @@ jobs:
           test -n "$root" && test -x "$launcher" && test -n "$sample" && test -n "$runtime_probe"
           mkdir -p qualified/diagnostics
           env -u QT_QPA_PLATFORM -u RCMS_PACKAGE_SMOKE_EVIDENCE \
-            RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+            \
             RCMS_AUTOMATION_SMOKE_LOG="$PWD/qualified/diagnostics/packaged-smoke.log" \
             RCMS_AUTOMATION_HANG_TRACE="$PWD/qualified/diagnostics/packaged-smoke.hang-trace.log" \
             xvfb-run -a env PYTHONPATH="$PWD/src" python3 scripts/assemble_packaged_smoke_evidence.py \

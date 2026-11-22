@@ -109,24 +109,24 @@ def _open_data_dialog(
         lambda _window: QtCore.QRect(available),
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "diagnostic_convert_scale",
         lambda value, *_args, **_kwargs: value,
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "impute_diagnostic_data",
         lambda _data: imputed or {"TP": None, "FP": None, "FN": None, "TN": None},
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "diagnostic_effects_for_study",
         lambda *_args, metrics, **_kwargs: {
             metric: {"calc_scale": (0.8, 0.7, 0.9)} for metric in metrics
         },
     )
     monkeypatch.setattr(
-        calculator_service.r_bridge,
+        calculator_service.r_operations,
         "effect_triplet",
         lambda effect, scale, metric=None: effect[scale],
     )

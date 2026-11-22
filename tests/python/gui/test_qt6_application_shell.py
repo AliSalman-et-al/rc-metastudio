@@ -340,7 +340,7 @@ def test_structured_project_restores_nondefault_active_selection_without_normali
 def test_failed_effect_projection_keeps_workspace_selection_and_history(
     qapp, tmp_path, monkeypatch, inject_python_boundary, change
 ):
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
     from rc_metastudio.project import archive as project_format
 
     source = project_format.load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
@@ -374,7 +374,7 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
             else:
                 window.sheet_tabs.setCurrentIndex(1)
 
-        scale = r_bridge.binary_convert_scale
+        scale = r_operations.binary_convert_scale
 
         def fail_rr(value, metric, **kwargs):
             if metric == "RR" and value is not None:
@@ -382,7 +382,7 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
             return scale(value, metric, **kwargs)
 
         with monkeypatch.context() as failure:
-            failure.setattr(r_bridge, "binary_convert_scale", fail_rr)
+            failure.setattr(r_operations, "binary_convert_scale", fail_rr)
             select_requested()
 
         assert errors == ["RR display conversion failed"]
@@ -413,7 +413,7 @@ def test_failed_effect_projection_keeps_workspace_selection_and_history(
 def test_failed_calculator_projection_keeps_study_and_history(
     qapp, monkeypatch, inject_python_boundary,
 ):
-    from rc_metastudio import app_error_handler, r_bridge
+    from rc_metastudio import app_error_handler, r_operations
     from rc_metastudio.calculators import binary_dialog as binary_data_dialog
 
     replacement = 12.345
@@ -447,7 +447,7 @@ def test_failed_calculator_projection_keeps_study_and_history(
             return unit.get_effect_for_source("entered", metric, arm_key).estimate
 
         initial_estimate = entered_estimate()
-        scale = r_bridge.binary_convert_scale
+        scale = r_operations.binary_convert_scale
 
         def fail_on_replacement(value, metric_name, **kwargs):
             if value == replacement:
@@ -455,7 +455,7 @@ def test_failed_calculator_projection_keeps_study_and_history(
             return scale(value, metric_name, **kwargs)
 
         with monkeypatch.context() as failure:
-            failure.setattr(r_bridge, "binary_convert_scale", fail_on_replacement)
+            failure.setattr(r_operations, "binary_convert_scale", fail_on_replacement)
             window.tableView.vert_header.sectionClicked.emit(0)
 
         assert errors == ["calculator display conversion failed"]

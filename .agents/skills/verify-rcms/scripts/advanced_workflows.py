@@ -1,9 +1,12 @@
 """Exercise nondefault controls against real R results and durable artifacts."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 import os
 import sys
+from statistics import NormalDist
 import traceback
 from pathlib import Path
 from unittest.mock import patch
@@ -83,7 +86,7 @@ def authority(
     metric=None,
 ):
     """Public metafor reconstruction uses observed input, never RCMS preparation."""
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
 
     rows = raw_rows(window)
     vector = lambda i: (
@@ -121,7 +124,7 @@ def authority(
             f"metafor::transf.ipft.hm({value}, targs=list(ni={vector(1)}))"
             for value in (point, lower, upper)
         )
-    result = r_bridge.execute_r_string(
+    result = r_oracle.evaluate(
         "{ e <- "
         + expression
         + "; "
@@ -643,13 +646,11 @@ def plots(app, window, family, record, *, view=None):
         if family == "forest":
             expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
             expected_params.update(fp_study_order="year")
-            from rc_metastudio import r_bridge
+            from rc_metastudio import r_operations
 
-            r_bridge.ro.globalenv["verified_plot_path"] = (
-                str(artifact.params_path) + ".plotdata"
-            )
+            r_oracle.assign("verified_plot_path", str(artifact.params_path) + ".plotdata")
             bounds = list(
-                r_bridge.ro.r(
+                r_oracle.evaluate(
                     "local({ state <- new.env(); load(verified_plot_path, envir=state); "
                     "RCMetaR:::rcmetar.forest.layout.preflight(state$plot.data)$x$alim })"
                 )
@@ -867,14 +868,13 @@ def plots(app, window, family, record, *, view=None):
 
         # The missing bundle contains different data from the live R globals.
         # Presence validation must fail before any component is loaded.
-        from rc_metastudio import r_bridge as r
         from rc_metastudio.results.plot_service import PlotServiceError
         import shutil
         incomplete = Path(sys.argv[2]) / (family + "-incomplete")
         load_saved_analysis(artifact.params_path)
-        names = list(r.execute_r_string("om.data@study.names"))
-        r.execute_r_string('om.data@study.names <- paste0("Other analysis ", seq_along(om.data@study.names))')
-        r.execute_r_function("save", list="om.data", file=str(incomplete) + ".data")
+        names = list(r_oracle.evaluate("om.data@study.names"))
+        r_oracle.evaluate('om.data@study.names <- paste0("Other analysis ", seq_along(om.data@study.names))')
+        r_oracle.evaluate(f"save(om.data, file={json.dumps(str(incomplete) + '.data')})")
         shutil.copyfile(str(artifact.params_path) + ".params", str(incomplete) + ".params")
         load_saved_analysis(artifact.params_path)
         missing_export = Path(sys.argv[2]) / (family + "-must-not-exist.svg")
@@ -885,7 +885,7 @@ def plots(app, window, family, record, *, view=None):
         else:
             raise AssertionError("Incomplete funnel bundle was exported")
         assert not missing_export.exists()
-        assert list(r.execute_r_string("om.data@study.names")) == names
+        assert list(r_oracle.evaluate("om.data@study.names")) == names
         record("funnel-missing-bundle-blocked", view, family=family, prefix=str(incomplete), study_names=names)
         if family == "trimfill" and os.environ.get("RCMS_TSA_DESIGN_EXPORTS") == "1":
             def capture_funnel_styles(dialog):
@@ -998,23 +998,11 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
             format=extension,
             exports={extension: str(destination)},
         )
-    _compare_worker_exports(app, view, directory, family, record, invoke, include_title, files)
     return files
 
 
-def _compare_worker_exports(app, view, directory, family, record, invoke, include_title, files):
-    if os.environ.get("RCMS_VERIFY_WORKER_PLOT_PARITY") != "1" or os.environ.get("RCMS_R_BACKEND") != "worker":
-        return
-    from tests.e2e.r_worker_plot_parity import compare_file
-
-    with patch.dict(os.environ, {"RCMS_R_BACKEND": "embedded"}):
-        embedded = export_formats(app, view, directory / "embedded", family, record, invoke, include_title=include_title)
-    parity = {extension: compare_file(Path(embedded[extension]), Path(path)) for extension, path in files.items()}
-    record("edited-plot-publication-parity", view, family=family, parity=parity)
-
-
 def calculators(app, window, mode, record):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
     from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
     from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
@@ -1162,7 +1150,7 @@ def calculators(app, window, mode, record):
                     cell(dialog.raw_data_table, row, 2, 100)
                 effect = (10 / 90) / (5 / 95)
                 se = math.sqrt(1 / 10 + 1 / 90 + 1 / 5 + 1 / 95)
-                z = r_bridge.get_confidence_multiplier_from_r(95)
+                z = NormalDist().inv_cdf(0.975)
                 values = (
                     effect,
                     math.exp(math.log(effect) - z * se),
@@ -1176,10 +1164,10 @@ def calculators(app, window, mode, record):
                 for row, fields in enumerate(((20, 10, 2), (20, "", 2))):
                     for column, value in enumerate(fields):
                         cell(dialog.simple_table, row, column, value)
-                z = r_bridge.get_confidence_multiplier_from_r(95)
+                z = NormalDist().inv_cdf(0.975)
                 values = (2, 2 - z * math.sqrt(0.4), 2 + z * math.sqrt(0.4))
             else:
-                z = r_bridge.get_confidence_multiplier_from_r(95)
+                z = NormalDist().inv_cdf(0.975)
 
                 def diagnostic_interval(successes, failures):
                     logit = math.log(successes / failures)
@@ -1364,7 +1352,7 @@ def calculators(app, window, mode, record):
                 else float
             )
             point, lower, upper = [transform(value) for value in values]
-            z = r_bridge.get_confidence_multiplier_from_r(95)
+            z = NormalDist().inv_cdf(0.975)
             observed["authority_entered"] = [point, (upper - point) / z]
             if family in {"binary", "continuous"}:
                 expected_se = (upper - point) / z
@@ -1441,7 +1429,7 @@ def calculators(app, window, mode, record):
                 combo.setCurrentIndex(combo.findData("PFT"))
                 app.processEvents()
                 a, n = dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0])
-                expected = r_bridge.execute_r_string(
+                expected = r_oracle.evaluate(
                     f"local({{e <- metafor::escalc(measure='PFT', xi={a}, ni={n}); "
                     f"metafor::transf.ipft(e$yi, ni={n})}})"
                 )[0]
@@ -1512,7 +1500,6 @@ def calculators(app, window, mode, record):
                 cell(dialog.simple_table, 1, 2, "1e12")
                 assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[5] == 1e12
             # Generated group intervals must describe the edited mean and SD.
-            from statistics import NormalDist
             n, mean, sd = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[:3]
             headers = dialog.get_column_header_strs()
             z = NormalDist().inv_cdf(.975)
@@ -1709,7 +1696,7 @@ def calculators(app, window, mode, record):
                 "entered",
                 observed["metric"],
                 comparison,
-                r_bridge.get_confidence_multiplier_from_r(95),
+                NormalDist().inv_cdf(0.975),
             )
         )
         assert values == observed["accepted_entered"], (values, observed)
@@ -1938,7 +1925,7 @@ def table_covariates(app, window, record):
     from analysis_matrix import set_parameter
 
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from rc_metastudio.results import window as results_window
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from tests.analysis_regression.golden.support.golden_analysis import (
@@ -1994,7 +1981,7 @@ def table_covariates(app, window, record):
         )
         if workflow == "meta-regression":
             expression = f'{{ e <- {effects}; f <- metafor::rma.uni(e$yi, vi=e$vi, mods=~{dose}, method="DL"); jsonlite::toJSON(list(coefficient=as.numeric(f$b[2]), standard_error=f$se[2], lower_bound=f$ci.lb[2], upper_bound=f$ci.ub[2], p_value=f$pval[2]), auto_unbox=TRUE, digits=16) }}'
-            expected = json.loads(str(r_bridge.execute_r_string(expression)[0]))
+            expected = json.loads(str(r_oracle.evaluate(expression)[0]))
             coefficients = next(table for section in view.results.sections for table in section.tables
                                 if table.role == "coefficients")
             dose_row = next(index for index, row in enumerate(coefficients.rows) if "Dose" in row)
@@ -2020,7 +2007,7 @@ def table_covariates(app, window, record):
                     + ")"
                 )
                 expression = f'{{ e <- {effects}; f <- metafor::rma.uni(e$yi[{mask}], vi=e$vi[{mask}], method="DL"); as.numeric(exp(f$b)) }}'
-                expected = float(r_bridge.execute_r_string(expression)[0])
+                expected = float(r_oracle.evaluate(expression)[0])
                 assert (
                     abs(
                         actual["Subgroup summary"][

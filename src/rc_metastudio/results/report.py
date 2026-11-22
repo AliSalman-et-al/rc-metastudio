@@ -28,7 +28,7 @@ from docx.opc.packuri import PackURI
 from docx.opc.part import Part
 from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import parse_xml
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 from rc_metastudio import __version__
 from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
 
@@ -1175,7 +1175,7 @@ def _docx_styles(document):
 def _figure_panels(figure: ResultSection, width_mm: float, height_mm: float) -> Generator[tuple[str, ...]]:
     if figure.plot_kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"} and figure.plot_data:
         with TemporaryDirectory(prefix="rcms-figure-") as directory:
-            paths = r_bridge.render_plot_bundle(
+            paths = r_operations.render_plot_bundle(
                 figure.plot_data, "forest", str(Path(directory) / "panel.svg"),
                 width=width_mm / 25.4, page_height=height_mm / 25.4, include_title=False,
             )

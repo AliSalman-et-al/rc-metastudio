@@ -1,12 +1,14 @@
 """Load saved R data so desktop checks can compare values with public R APIs."""
 
+from tests.e2e import r_oracle
+
 from pathlib import Path
 
-from rc_metastudio import r_bridge
+from rc_metastudio import r_operations
 
 
 def load_serialized_object(path: str | Path) -> None:
-    r_bridge.execute_r_function("load", str(path))
+    r_oracle.load(path)
 
 
 def load_saved_analysis(prefix: str, *, include_plot_data: bool = False) -> None:

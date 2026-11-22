@@ -15,15 +15,6 @@ from scripts.code_health import build_evidence, git_as_of, load_config
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_selected_python_rpy2_identity(tmp_path):
-    # A real different interpreter (stdlib-only venv) cannot inherit our metadata.
-    subprocess.run([sys.executable, '-m', 'venv', '--without-pip', str(tmp_path / 'python')], check=True)
-    python = tmp_path / 'python/Scripts/python.exe' if sys.platform == 'win32' else tmp_path / 'python/bin/python'
-    assert stack.verify_rpy2_identities(sys.executable) == r_verification_support.locked_rpy2_versions()
-    with pytest.raises(stack.VerificationError):
-        stack.verify_rpy2_identities(str(python))
-
-
 @pytest.mark.parametrize("unverified_context", [None, '{"source_sha256":"same"}', "invalid-json"])
 def test_typing_before_direct_desktop(monkeypatch, unverified_context):
     calls = []

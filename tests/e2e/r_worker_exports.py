@@ -1,8 +1,7 @@
-"""Compare saved output and interrupt a real 400-study report export."""
+"""Verify saved output and interrupt a real 400-study report export."""
 
 from hashlib import sha256
 import json
-import os
 from pathlib import Path
 from time import perf_counter
 from unittest.mock import patch
@@ -13,10 +12,10 @@ import psutil
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QPushButton
 
-from rc_metastudio import r_bridge, r_worker
+from rc_metastudio import r_worker
 from rc_metastudio.results.plot_export import PlotExportDialog
 from tests.e2e.r_worker_fits import _max_gap
-from tests.e2e.r_worker_plot_parity import compare_file, compare_outputs, export_result, oversized_svg
+from tests.e2e.r_worker_plot_files import compare_file, export_result, oversized_svg
 
 
 def run(app, window, work, root, record, analyze):
@@ -25,22 +24,10 @@ def run(app, window, work, root, record, analyze):
     assert len(window.model.current_sheet.rows) == 400
     view = analyze(app, window, "binary.random")
     worker = r_worker.current_worker()
-    r_bridge.load_required_packages()
     output = work / "previous.docx"
-    metrics = {}
-    for extension in ("docx", "pdf"):
-        metrics[extension] = {}
-        for backend in ("embedded", "worker"):
-            destination = work / f"{backend}.{extension}"
-            with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
-                metrics[extension][backend] = _report(view, destination)
-        compare_file(work / f"embedded.{extension}", work / f"worker.{extension}")
-    metrics["forest_pdf"] = {}
-    for backend in ("embedded", "worker"):
-        with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
-            metrics["forest_pdf"][backend] = _plot_pdf(app, view, work / f"{backend}-forest.pdf")
-    compare_file(work / "embedded-forest.pdf", work / "worker-forest.pdf")
-    previous = (work / "embedded.docx").read_bytes()
+    metrics = {extension: _report(view, work / f"worker.{extension}") for extension in ("docx", "pdf")}
+    metrics["forest_pdf"] = _plot_pdf(app, view, work / "worker-forest.pdf")
+    previous = (work / "worker.docx").read_bytes()
     output.write_bytes(previous)
     committed = {Path(path): Path(path).read_bytes() for path in view.results.display_images.values()}
     for mode in ("cancel", "kill"):
@@ -81,18 +68,15 @@ def run(app, window, work, root, record, analyze):
                checkpoint=interrupted[-1], timing=metrics[mode], sha256=sha256(previous).hexdigest())
     recovered = work / "recovered.docx"
     _report(view, recovered)
+    compare_file(work / "worker.docx", recovered)
     with ZipFile(recovered) as document:
         assert document.testzip() is None and "word/document.xml" in document.namelist()
     (work / "export-timings.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     record("docx-export-recovered", view, input=str(fixture), timing=metrics, destination=str(recovered))
-    files = {}
-    for backend in ("embedded", "worker"):
-        with patch.dict(os.environ, {"RCMS_R_BACKEND": backend}):
-            files[backend] = export_result(view.results, work / "400-study-formats" / backend)
-    parity = compare_outputs(files["embedded"], files["worker"])
-    svg = next(path for path in files["worker"].values() if path.suffix == ".svg")
+    files = export_result(view.results, work / "400-study-formats")
+    svg = next(path for path in files.values() if path.suffix == ".svg")
     large_size = oversized_svg(svg, work / "oversized-artwork.png")
-    record("worker-publishes-large-artwork-by-path", view, svg_bytes=large_size, parity=parity)
+    record("worker-publishes-large-artwork-by-path", view, svg_bytes=large_size, formats=sorted(files))
 
 
 def _report(view, destination):

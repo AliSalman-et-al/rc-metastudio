@@ -125,159 +125,18 @@ def _write_pe(path, machine=0x8664):
     path.write_bytes(payload)
 
 
-def test_frozen_windows_bootstrap_indexes_all_private_native_directories(tmp_path):
-    from rc_metastudio import r_runtime
-
-    r_home = tmp_path / "R"
-    expected = {
-        r_home / "bin" / "x64",
-        r_home / "library" / "xml2" / "libs" / "x64",
-    }
-    for directory in expected:
-        directory.mkdir(parents=True)
-        (directory / "private.dll").write_bytes(b"dll")
-    (r_home / "library" / "docs").mkdir(parents=True)
-    (r_home / "library" / "docs" / "readme.txt").write_text("not native")
-
-    observed = {
-        Path(path) for path in r_runtime._private_windows_dll_directories(r_home)
-    }
-    assert observed == {path.resolve() for path in expected}
-
-
-def test_frozen_windows_runtime_bootstraps_without_a_kit(monkeypatch, tmp_path):
-    from rc_metastudio import r_runtime
-
-    app = tmp_path / "RCMetaStudio"
-    r_home = app / "R"
-    (r_home / "bin").mkdir(parents=True)
-    (r_home / "library" / "RCMetaR").mkdir(parents=True)
-    monkeypatch.setattr(r_runtime.sys, "frozen", True, raising=False)
-    monkeypatch.setattr(r_runtime.sys, "platform", "win32")
-    monkeypatch.setattr(r_runtime, "_RUNTIME_IDENTITY", None)
-    monkeypatch.setattr(r_runtime, "_BOOTSTRAP_THREAD_ID", None)
-    monkeypatch.setattr(
-        r_runtime,
-        "_frozen_kit_identity",
-        lambda _root: pytest.fail("Windows native packages must not read a kit"),
-    )
-    monkeypatch.setattr(
-        r_runtime, "_configure_private_runtime_directories", lambda _root: None
-    )
-    monkeypatch.setattr(r_runtime, "_set_windows_dll_policy", lambda: None)
-    monkeypatch.setattr(r_runtime, "_set_windows_processor_architecture", lambda: None)
-    monkeypatch.setattr(r_runtime, "_prepend_path", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(r_runtime, "_add_dll_directories", lambda *_args: None)
-    monkeypatch.setattr(r_runtime.os, "environ", dict(r_runtime.os.environ))
-
-    configured = r_runtime.configure_bundled_r_environment(str(app))
-
-    assert Path(configured["R_HOME"]).resolve() == r_home.resolve()
-    assert configured["kit_sha256"] is None
-    assert configured["derivation"] is None
-
-
-@pytest.mark.skipif(sys.platform != "win32", reason="requires Windows ctypes APIs")
-def test_windows_dll_policy_fails_closed(monkeypatch):
-    from rc_metastudio import r_runtime
-
-    class Kernel32:
-        @staticmethod
-        def SetDefaultDllDirectories(_policy):
-            return 0
-
-    monkeypatch.setattr(r_runtime.sys, "platform", "win32")
-    monkeypatch.setattr(
-        r_runtime.ctypes, "WinDLL", lambda *_args, **_kwargs: Kernel32()
-    )
-    monkeypatch.setattr(r_runtime.ctypes, "get_last_error", lambda: 5)
-    with pytest.raises(OSError, match="SetDefaultDllDirectories failed"):
-        r_runtime._set_windows_dll_policy()
-
-
 def _windows_deployment_fixture(tmp_path):
     app = tmp_path / "RCMetaStudio"
     qt = app / "_internal" / "PyQt6" / "Qt6"
     _write_pe(app / "RCMetaStudio.exe")
-    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp314-win_amd64.pyd"
-    _write_pe(api_bridge)
     r_dll = app / "R" / "bin" / "x64" / "R.dll"
     _write_pe(r_dll)
     rcmetar = app / "R" / "library" / "RCMetaR" / "DESCRIPTION"
     rcmetar.parent.mkdir(parents=True)
     rcmetar.write_text("Package: RCMetaR\nVersion: 0.1.1\n", encoding="utf-8")
-    kit_root = app / "r-integration-kit"
-    kit_root.mkdir(parents=True)
-    api_sha256 = hashlib.sha256(api_bridge.read_bytes()).hexdigest()
-    r_sha256 = hashlib.sha256(r_dll.read_bytes()).hexdigest()
-    (kit_root / "manifest.json").write_text(
-        json.dumps(
-            {
-                "kind": "rc-metastudio-r-integration-kit",
-                "target": "windows-x64",
-                "architecture": "x86_64",
-                "cffi_mode": "API",
-                "kit_sha256": "a" * 64,
-                "files": [
-                    {
-                        "path": "bridge/_rinterface_cffi_api.cp314-win_amd64.pyd",
-                        "kind": "file",
-                        "sha256": api_sha256,
-                    },
-                    {
-                        "path": "runtime/bin/x64/R.dll",
-                        "kind": "file",
-                        "sha256": r_sha256,
-                    },
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )
-    (kit_root / "derivation.json").write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "target": "windows-x64",
-                "kit_sha256": "a" * 64,
-                "source": {
-                    "api_bridge": {
-                        "path": "bridge/_rinterface_cffi_api.cp314-win_amd64.pyd",
-                        "sha256": api_sha256,
-                    },
-                    "r_shared_library": {
-                        "path": "runtime/bin/x64/R.dll",
-                        "sha256": r_sha256,
-                    },
-                },
-                "pre_sign": {
-                    "api_bridge": {
-                        "path": api_bridge.relative_to(app).as_posix(),
-                        "sha256": api_sha256,
-                        "signing_identity": "unsigned",
-                    },
-                    "r_shared_library": {
-                        "path": r_dll.relative_to(app).as_posix(),
-                        "sha256": r_sha256,
-                        "signing_identity": "unsigned",
-                    },
-                },
-                "final": {
-                    "api_bridge": {
-                        "path": api_bridge.relative_to(app).as_posix(),
-                        "sha256": api_sha256,
-                        "signing_identity": "unsigned",
-                    },
-                    "r_shared_library": {
-                        "path": r_dll.relative_to(app).as_posix(),
-                        "sha256": r_sha256,
-                        "signing_identity": "unsigned",
-                    },
-                },
-            }
-        ),
-        encoding="utf-8",
-    )
+    _write_pe(app / "R/bin/x64/Rterm.exe")
+    _write_pe(app / "R/bin/Rscript.exe")
+    (rcmetar.parent / "worker.R").write_text("# worker")
     for name in (
         "Qt6Core.dll",
         "Qt6Gui.dll",
@@ -307,7 +166,6 @@ def _windows_deployment_fixture(tmp_path):
 
 def _windows_runtime_probe(app):
     qt = app / "_internal" / "PyQt6" / "Qt6"
-    api_bridge = app / "_internal" / "_rinterface_cffi_api.cp314-win_amd64.pyd"
     r_dll = app / "R" / "bin" / "x64" / "R.dll"
     return {
         "schema_version": 1,
@@ -330,16 +188,6 @@ def _windows_runtime_probe(app):
             "baseline_device_pixel_ratio": 1.0,
             "baseline_logical_dpi": 96.0,
         },
-        "rpy2": {
-            "distribution_version": "3.6.9",
-            "cffi_mode": "API",
-            "rinterface_distribution_version": "3.6.7",
-            "robjects_distribution_version": "3.6.6",
-            "loaded_cffi_mode": "API",
-            "api_bridge_loaded": True,
-            "api_bridge_path": str(api_bridge),
-            "api_bridge_sha256": hashlib.sha256(api_bridge.read_bytes()).hexdigest(),
-        },
         "project_schemas": {
             "version": 1,
             "validated_members": ["manifest.json", "project.json", "state.json"],
@@ -352,7 +200,7 @@ def _windows_runtime_probe(app):
             "configured_library": str(app / "R" / "library"),
             "shared_library_path": str(r_dll),
             "shared_library_sha256": hashlib.sha256(r_dll.read_bytes()).hexdigest(),
-            "kit_sha256": "a" * 64,
+            "backend": "worker",
             "lc_numeric": "C",
         },
     }
@@ -363,7 +211,6 @@ def test_windows_runtime_probe_survives_relocation_but_rejects_tampering(tmp_pat
     inspector = _load_windows_deployment_inspector()
     original = _windows_deployment_fixture(tmp_path / "original")
     probe = _windows_runtime_probe(original)
-    probe["r"].pop("kit_sha256")
     relocated = tmp_path / "extracted" / "RCMetaStudio-0.2.0-windows-x64"
     shutil.copytree(original, relocated)
     versions = dict(inspector.EXPECTED_VERSIONS)
@@ -460,12 +307,10 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
         "sip": "13.13.1",
         "sip_runtime": "6.17.3",
         "r": "4.6.2",
-        "rpy2": "3.6.9",
         "pyinstaller": "6.22.3",
     }
 
     direct_runtime_probe = _windows_runtime_probe(app)
-    direct_runtime_probe["r"].pop("kit_sha256")
     provenance = {
         "schema_version": 1,
         "head_sha": "a" * 40,
@@ -489,8 +334,7 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
         "provenance": "build-time-only",
         "definition": "packaging/pyinstaller/rc-metastudio.spec",
     }
-    assert "r_integration_kit" not in manifest
-    assert manifest["embedded_r"]["cffi_mode"] == "API"
+    assert manifest["r_worker"]["script_sha256"]
     assert manifest["stack"] == versions
     assert manifest["plugins"]["platforms"] == ["qwindows.dll"]
     assert set(manifest["qt_plugins"]) == {
@@ -576,8 +420,6 @@ def test_windows_deployment_inspector_accepts_one_coherent_x64_qt6_stack(
             versions["sip_runtime"],
             "--r-version",
             versions["r"],
-            "--rpy2-version",
-            versions["rpy2"],
             "--pyinstaller-version",
             versions["pyinstaller"],
         ],
@@ -722,7 +564,6 @@ def test_windows_deployment_inspector_rejects_legacy_duplicate_and_wrong_archite
         "sip": "13.13.1",
         "sip_runtime": "6.17.3",
         "r": "4.6.2",
-        "rpy2": "3.6.9",
         "pyinstaller": "6.22.3",
     }
 

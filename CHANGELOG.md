@@ -327,7 +327,7 @@ RC MetaStudio starts a fresh maintained-product changelog. Historical release hi
 
 ### Fixed
 
-- Fixed native macOS packaging, embedded R/rpy2 relocation, Qt framework collection, signing-order preflight, archive reinspection, and packaged sample-project smoke qualification.
+- Fixed native macOS packaging, Qt framework collection, signing-order preflight, archive reinspection, and packaged sample-project smoke qualification.
 - Fixed Golden compatibility parsing for modern meta-regression tables and made reviewed compatibility exceptions exact-row scoped.
 
 ## 0.2.0 - 2026-07-19
@@ -335,7 +335,7 @@ RC MetaStudio starts a fresh maintained-product changelog. Historical release hi
 ### Added
 
 - Added the first native Qt 6 / PyQt6 release of RC MetaStudio for Windows x64.
-- Added a self-contained Windows package with Python 3.11, Qt 6.11, R 4.6.1, RCMetaR 0.2.0, and an API-mode rpy2 bridge.
+- Added a self-contained Windows package with Python 3.11, Qt 6.11, R 4.6.1, RCMetaR 0.2.0.
 - Added the versioned ZIP-and-JSON `.rcms` project format with schema validation, atomic saves, and converted sample projects.
 - Added selectable inference methods to supported standard meta-analyses.
 

@@ -1,5 +1,7 @@
 """Compare fixed and multimetric sequential UI workflows with public fits."""
 
+from tests.e2e import r_oracle
+
 import json
 import math
 
@@ -7,7 +9,7 @@ from analysis_matrix import run as matrix
 
 
 def references(window, method, workflow, metric):
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_operations
     from tests.analysis_regression.golden.support.golden_analysis import _result_row_key
 
     studies = window.model.get_studies(only_if_included=True)
@@ -75,7 +77,7 @@ def references(window, method, workflow, metric):
         f"upper_bound={transform}(f$ci.ub), standard_error=f$se) }}); "
         "jsonlite::toJSON(fits, auto_unbox=TRUE, digits=16) })"
     )
-    expected = json.loads(str(r_bridge.ro.r(expression)[0]))
+    expected = json.loads(str(r_oracle.evaluate(expression)[0]))
     return {
         "model." + _result_row_key(label) + "." + field: value
         for label, result in zip(labels, expected, strict=True)

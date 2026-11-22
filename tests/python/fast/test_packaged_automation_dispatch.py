@@ -176,6 +176,7 @@ def test_assembler_keeps_surface_directory_records_in_place(monkeypatch, tmp_pat
         "capture_atomic_observations",
         lambda executable, runtime_probe, surface_directory: [record],
     )
+    monkeypatch.setattr(assembler, "capture_worker_smoke", lambda *_args: {"backend": "worker"})
     monkeypatch.setattr(
         assembler,
         "capture_workflow_observations",

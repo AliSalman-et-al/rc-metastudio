@@ -26,7 +26,7 @@ tar -xzf "$candidate_archive" -C "$extract_root"
 extracted_root="$extract_root/$artifact_name"
 [ -x "$extracted_root/LaunchRCMetaStudio.sh" ] || die "Extracted Linux archive is missing its launcher."
 mv "$r_home" "$work_root/r-home-hidden"
-if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" RCMS_REQUIRE_IN_PROCESS_RPY2=1 RPY2_CFFI_MODE=API \
+if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" \
   "$python_exe" "$repo_root/scripts/assemble_packaged_smoke_evidence.py" \
   --workflow-observation "$qualification_root/workflow-observation.json" \
   --surface-records "$qualification_root/surface-records.json" \

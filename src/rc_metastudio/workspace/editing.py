@@ -17,7 +17,7 @@ import uuid
 from typing import Literal, Protocol
 
 from rc_metastudio import name_validation, qt_text
-from rc_metastudio import r_runtime, r_bridge
+from rc_metastudio import r_runtime, r_operations
 from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES, EVENT_RATES, TIME_TO_EVENT, ONE_ARM_METRICS, TYPE_TO_STR_DICT
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
@@ -173,7 +173,7 @@ class WorkspaceEditingService:
     """
 
     def __init__(self, bridge: ScaleBridge | None = None) -> None:
-        self.bridge = r_bridge if bridge is None else bridge
+        self.bridge = r_operations if bridge is None else bridge
 
     @staticmethod
     def update_inclusion_after_edit(
@@ -721,13 +721,13 @@ class WorkspaceEditingService:
                 pending.append((study, raw_data))
         if not pending or context.data_type is None:
             return
-        if self.bridge is not r_bridge:
+        if self.bridge is not r_operations:
             for study, raw in pending:
                 self._calculate_complete_effect_previews(study.analysis_unit, raw, context)
             return
 
         metrics = DIAGNOSTIC_METRICS if context.data_type == DIAGNOSTIC else (context.current_effect,)
-        previews = r_bridge.study_effect_previews(
+        previews = r_operations.study_effect_previews(
             [raw for _, raw in pending], TYPE_TO_STR_DICT[context.data_type], context.current_effect,
             tuple(metric for metric in metrics if metric is not None), context.confidence_level,
         )

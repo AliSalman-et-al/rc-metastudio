@@ -1,25 +1,18 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""R bridge for RCMetaR calls through rpy2."""
+"""Application operations backed by the supervised RCMetaR process."""
 
-import importlib
-from functools import wraps
 from dataclasses import dataclass, replace
-import importlib.metadata
-import locale
 import math
-import os
 import re
-import sys
 from collections.abc import Mapping, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from types import ModuleType
-from typing import Callable, Literal, ParamSpec, Protocol, TypeVar, cast, overload, runtime_checkable
+from typing import Callable, Literal, Protocol, cast, overload, runtime_checkable
 
-from rc_metastudio import r_runtime, r_worker
+from rc_metastudio import r_worker
 from rc_metastudio.r_result_wire import ResultVector
 from rc_metastudio.analysis.method_labels import (
     method_display_label,
@@ -34,313 +27,56 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.r_call_serialization import require_r_transaction, r_execution, serialized_r_call as _serialized_r_call
 from rc_metastudio.analysis.catalog import CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
-from rc_metastudio.analysis.validation import EMPTY_VALS, INVALID_CONFIDENCE_LEVEL_MESSAGE, normalize_confidence_level_params, validate_confidence_level
+from rc_metastudio.analysis.validation import EMPTY_VALS, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.analysis.study_selection import fit_raw_rows, raw_data_is_complete
 from rc_metastudio.results.formatting import PERCENTAGE_DISPLAY_DIGITS, tabulate
 
-_P = ParamSpec("_P")
-_T = TypeVar("_T")
-# These modules are bound by initialize_r after the shell is visible.
-ro: ModuleType
-_rinterface: ModuleType
-RRuntimeError: type[Exception]
-_INITIALIZATION_ERROR: Exception | None = None
+def _r_is_null(value):
+    return value is None
 
 
-def _require_initialized_r() -> None:
-    from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
-    if _INITIALIZATION_ERROR is not None:
-        raise AnalysisBackendUnavailableError("R failed to start") from _INITIALIZATION_ERROR
-    if "ro" not in globals() or "_rinterface" not in globals():
-        raise AnalysisBackendUnavailableError("R is still starting")
-
-
-def serialized_r_call(function: Callable[_P, _T]) -> Callable[_P, _T]:
-    @wraps(function)
-    def initialized(*args: _P.args, **kwargs: _P.kwargs) -> _T:
-        _require_initialized_r()
-        return function(*args, **kwargs)
-    return _serialized_r_call(initialized)
-
-
-@_serialized_r_call
-def initialize_r() -> None:
-    """Initialize embedded R explicitly, after the application shell is visible."""
-    global _INITIALIZATION_ERROR
-    if "ro" in globals():
-        return
-    try:
-        _initialize_rpy2()
-    except Exception as error:
-        _INITIALIZATION_ERROR = error
-        cause = error
-        while cause.__cause__ is not None:
-            cause = cause.__cause__
-        raise r_runtime.AnalysisBackendUnavailableError(
-            f"Embedded R failed to initialize: {cause.__class__.__name__}: {cause}"
-        ) from error
-    _INITIALIZATION_ERROR = None
-
-
-def _initialize_rpy2() -> None:
-    global ro, _rinterface, RRuntimeError
-    r_runtime.configure_bundled_r_environment()
-    from rpy2 import rinterface, robjects
-    from rpy2.rinterface_lib.embedded import RRuntimeError as EmbeddedRuntimeError
-
-    try:
-        from rpy2.rinterface_lib import conversion
-
-        original_decoder = conversion._rchar_to_str
-
-        def _rchar_to_str_as_utf8(rchar, encoding: str) -> str:
-            try:
-                return str(conversion._utf8_rchar_to_str(rchar))
-            except UnicodeDecodeError:
-                return str(original_decoder(rchar, encoding))
-
-        # This private rpy2 hook is intentionally replaced at the integration
-        # boundary; its runtime signature is not expressible in rpy2's stubs.
-        setattr(conversion, "_rchar_to_str", _rchar_to_str_as_utf8)
-    except (ImportError, AttributeError):
-        pass
-
-    # R console callbacks on Windows are emitted in the native ANSI code page.
-    # rpy2 otherwise initializes this private decoder from Python's UTF-8 default,
-    # which turns ordinary non-ASCII diagnostics into callback UnicodeDecodeError
-    # messages. Keep non-Windows behavior unchanged.
-    if sys.platform == "win32":
-        try:
-            from rpy2.rinterface_lib import callbacks as _rpy2_callbacks
-
-            setattr(
-                _rpy2_callbacks,
-                "_CCHAR_ENCODING",
-                locale.getpreferredencoding(False),
-            )
-        except (ImportError, AttributeError):
-            pass
-    _rinterface, RRuntimeError, ro = rinterface, EmbeddedRuntimeError, robjects
-
-
-_RFunction = Callable[..., object]
-
-
-@serialized_r_call
-def packaged_runtime_observation() -> dict[str, object]:
-    """Return raw facts about the initialized rpy2/R runtime.
-
-    Runtime qualification needs these facts from the exact frozen process, but
-    rpy2's native modules belong behind this bridge rather than in the shipped
-    automation dispatcher.
-    """
-    from rpy2.rinterface_lib import openrlib
-
-    api_bridge = importlib.import_module("_rinterface_cffi_api")
-    r_home = str(_first_dynamic(_r_eval("normalizePath(R.home(), winslash='/', mustWork=TRUE)")))
-    r_version = str(_first_dynamic(_r_eval("as.character(getRversion())")))
-    r_library_paths = [
-        str(item)
-        for item in cast(
-            Sequence[object],
-            _r_eval("normalizePath(.libPaths(), winslash='/', mustWork=TRUE)"),
-        )
-    ]
-    api_bridge_path = Path(str(api_bridge.__file__)).resolve()
-    return {
-        "r_home": r_home,
-        "r_version": r_version,
-        "r_library_paths": r_library_paths,
-        "rpy2": {
-            "distribution_version": importlib.metadata.version("rpy2"),
-            "rinterface_distribution_version": importlib.metadata.version("rpy2-rinterface"),
-            "robjects_distribution_version": importlib.metadata.version("rpy2-robjects"),
-            "cffi_mode": os.environ.get("RPY2_CFFI_MODE"),
-            "loaded_cffi_mode": openrlib.cffi_mode.name,
-            "api_bridge_loaded": openrlib.cffi_mode.name == "API",
-            "api_bridge_path": str(api_bridge_path),
-        },
-    }
-
-
-def _r_function(function_name: str) -> _RFunction:
-    """Return a callable R function after checking rpy2's dynamic lookup."""
-    _require_initialized_r()
-    if ":::" in function_name:
-        package, name = function_name.split(":::", 1)
-        function = ro.r["getFromNamespace"](name, package)
-    else:
-        function = ro.r[function_name]
-    if not callable(function):
-        raise TypeError("R object %r is not callable" % function_name)
-    return function
-
-
-def _r_eval(expression: str) -> object:
-    """Evaluate an R expression after checking rpy2's dynamic evaluator."""
-    _require_initialized_r()
-    evaluator = ro.r
-    if not callable(evaluator):
-        raise TypeError("rpy2's R evaluator is not callable")
-    return evaluator(expression)
-
-
-def _first_dynamic(value: object) -> object:
-    """Read the first element of an R vector after checking its shape."""
-    getitem = getattr(value, "__getitem__", None)
-    if not callable(getitem):
-        raise TypeError("R value is not indexable")
-    return getitem(0)
-
-
-def _r_is_null(r_object):
-    """Return whether an rpy2 object represents R's NULL value."""
-    if r_object is None or isinstance(r_object, ResultVector):
-        return r_object is None
-    _require_initialized_r()
-    return r_object is _rinterface.NULL or isinstance(
-        r_object, type(_rinterface.NULL)
-    )
-
-
-@serialized_r_call
-def execute_r_string(r_str):
-    require_r_transaction()
-    with r_execution():
-        return _r_eval(r_str)
-
-
-@serialized_r_call
-def execute_r_function(function_name, *args, **kwargs):
-    require_r_transaction()
-    with r_execution():
-        return _r_function(function_name)(*args, **kwargs)
-
-
-def load_required_packages(
-    on_phase: Callable[[str, str], None] | None = None,
-) -> None:
-    """Verify and load the analysis runtime before exposing the backend."""
-    from rc_metastudio.rcmetar_identity import STAMP_COMMAND, expected_source, runtime_versions
-
-    global _INITIALIZATION_ERROR
-    initialize_r()
-    if on_phase is not None:
-        on_phase("RCMetaR", "start")
-    action = "The analysis backend requires an editable RC MetaStudio source checkout or the packaged application."
-    try:
-        expected = expected_source()
-        action = "The installed RCMetaR does not match this version of RC MetaStudio."
-        pins = runtime_versions()
-        dependencies = [name for name in pins if name != "R"]
-        packages = ", ".join(f'"{name}"' for name in dependencies)
-        location, version, sha, *versions = execute_r_string(
-            "local({ path <- find.package('RCMetaR'); lib <- dirname(path); "
-            "stamp <- file.path(path, 'source.sha256'); "
-            "c(lib, utils::packageDescription('RCMetaR', lib.loc=lib, fields='Version'), "
-            "if (file.exists(stamp)) readLines(stamp, warn=FALSE)[1L] else NA_character_, "
-            "as.character(getRversion()), "
-            f"vapply(c({packages}), function(p) as.character(utils::packageDescription(p, fields='Version')), "
-            "character(1))) })"
-        )
-        if (version, sha) != expected:
-            raise ValueError(f"RCMetaR expected version and source {expected!r}, installed {(version, sha)!r}")
-        for name, actual in zip(["R", *dependencies], versions, strict=True):
-            if actual != pins[name]:
-                raise ValueError(f"{name} requires version {pins[name]}, found {actual}")
-        action = "RCMetaR could not load."
-        execute_r_function("library", "RCMetaR", **{"lib.loc": location})
-        if on_phase is not None:
-            on_phase("RCMetaR", "complete")
-            on_phase("analysis packages", "start")
-        for name in (*dependencies, "grid"):
-            action = f"The {name} R package could not load."
-            execute_r_function("loadNamespace", name)
-        action = "The R graphics devices could not start."
-        execute_r_string("RCMetaR:::rcmetar.warm.plot_devices()")
-        action = "The R small-study effects methods could not start."
-        execute_r_string("RCMetaR:::rcmetar.warm.small.study.effects()")
-    except Exception as error:
-        recovery = ("Repair the packaged application." if getattr(sys, "frozen", False)
-                    else f"For a source checkout, run {STAMP_COMMAND} from the repository root "
-                    "and reinstall RCMetaR into the configured R library.")
-        failure = r_runtime.AnalysisBackendUnavailableError(f"{action}\n\n{recovery}")
-        _INITIALIZATION_ERROR = failure
-        raise failure from error
-    if on_phase is not None:
-        on_phase("analysis packages", "complete")
-
-
-@serialized_r_call
 def get_r_library_paths():
     """Return the library paths visible to R."""
-    return list(execute_r_string(".libPaths()"))
+    return r_worker.current_worker().runtime_info()["libraries"]
 
 
-@serialized_r_call
 def get_r_version_string():
-    return str(execute_r_string("R.version.string")[0])
+    return r_worker.current_worker().runtime_info()["version"]
 
 
-@serialized_r_call
 def get_r_package_version(package_name):
-    if package_name == "meta":
-        return str(
-            execute_r_string("as.character(packageDescription('meta')$Version)")[0]
-        )
-    version = execute_r_function("packageVersion", package_name)
-    return str(execute_r_function("as.character", version)[0])
+    version = r_worker.current_worker().runtime_info()["packages"][package_name]
+    return version if package_name == "meta" else version.replace("-", ".")
 
 
 def _worker_calculate(
     kind: r_worker.CalculatorKind, args: Mapping[str, object], *, vector: bool = False,
 ):
-    with r_execution():
-        return r_worker.current_worker().call(
-            {"type": "calculator", "kind": kind, "args": args, "vector": vector},
-            timeout_ms=r_worker.CALCULATOR_DEADLINE_MS,
-        )
+    return r_worker.current_worker().call(
+        {"type": "calculator", "kind": kind, "args": args, "vector": vector},
+        timeout_ms=r_worker.CALCULATOR_DEADLINE_MS,
+    )
 
 
-@serialized_r_call
 def impute_diagnostic_data(diagnostic_data):
     diagnostic_data = normalize_confidence_level_params(diagnostic_data)
 
-    # rpy2 cannot convert None values in this parameter mapping.
+    # Omit unanswered fields from the row passed to RCMetaR.
     for param, val in list(diagnostic_data.items()):
         if val is None:
             diagnostic_data.pop(param)
 
-    if r_worker.enabled():
-        return _worker_calculate("diagnostic_impute", {"data": diagnostic_data})
-
-    dataf = execute_r_function("data.frame", **diagnostic_data)
-    two_by_two = execute_r_function("rcmetar.impute.diagnostic", dataf)
-
-    imputed_2x2 = named_r_list_to_dict(two_by_two)
-
-    return imputed_2x2
+    return _worker_calculate("diagnostic_impute", {"data": diagnostic_data})
 
 
-@serialized_r_call
 def impute_binary_data(binary_data):
     binary_data = normalize_confidence_level_params(binary_data)
     remove_entries_with_value(None, binary_data)
 
-    if r_worker.enabled():
-        return _worker_calculate("binary_impute", {"data": binary_data})
-
-    dataf = execute_r_function("data.frame", **binary_data)
-    two_by_two = execute_r_function("rcmetar.impute.binary", dataf)
-
-    res_as_dict = r_object_to_python(two_by_two)
-
-    return res_as_dict
+    return _worker_calculate("binary_impute", {"data": binary_data})
 
 
-@serialized_r_call
 def back_calculate_continuous_data(
     group1_data, group2_data, effect_data, confidence_level
 ):
@@ -349,27 +85,10 @@ def back_calculate_continuous_data(
     remove_entries_with_value(None, group2_data)
     remove_entries_with_value(None, effect_data)
 
-    if r_worker.enabled():
-        return _worker_calculate("back_calculate", {
-            "group1": group1_data, "group2": group2_data, "effect": effect_data,
-            "confidence": confidence_level,
-        })
-
-    dataf_grp1 = execute_r_function("data.frame", **group1_data)
-    dataf_grp2 = execute_r_function("data.frame", **group2_data)
-    dataf_effect = execute_r_function("data.frame", **effect_data)
-
-    r_res = execute_r_function(
-        "rcmetar.back.calculate.continuous",
-        dataf_grp1,
-        dataf_grp2,
-        dataf_effect,
-        confidence_level,
-    )
-
-    res_as_dict = r_object_to_python(r_res)
-
-    return res_as_dict
+    return _worker_calculate("back_calculate", {
+        "group1": group1_data, "group2": group2_data, "effect": effect_data,
+        "confidence": confidence_level,
+    })
 
 
 def remove_entries_with_value(value_to_remove, values):
@@ -390,13 +109,8 @@ def r_object_to_python(data):
     if _r_is_null(data):
         return None
 
-    if isinstance(data, ro.vectors.FactorVector):
-        labels = [_r_na_to_none(value) for value in data.iter_labels()]
-        return dict(zip(data.names, labels, strict=True)) if _has_r_names(data) else labels
-    # Matrix/array ``names`` in rpy2 is an alias for ``dimnames``.  Looking at
-    # names first therefore turns a matrix into a mapping whose keys are
-    # StrVector reprs (``[1] \"row 1\"``).  Dimensions are the stronger shape
-    # signal and must be handled before ordinary named vectors/lists.
+    if isinstance(data, Mapping):
+        return data
     if _r_dims(data):
         return [_r_na_to_none(value) for value in list(data)]
     if _has_r_names(data):
@@ -419,29 +133,12 @@ def r_iterable_to_list(r_iterable):
 
 
 def _r_singleton_to_scalar(singleton):
-    _require_initialized_r()
     if len(singleton) != 1:
         raise ValueError("expected an R sequence with one element")
-    if isinstance(singleton, ro.vectors.FactorVector):
-        return _r_na_to_none(next(singleton.iter_labels()))
     return _r_na_to_none(singleton[0])
 
 
 def _r_na_to_none(value):
-    # Normalize typed R missing values without treating literal "NA" text as
-    # missing. Infinities remain values for the typed calculator boundary.
-    _require_initialized_r()
-    if isinstance(
-        value,
-        (
-            type(_rinterface.NA_Character),
-            type(_rinterface.NA_Integer),
-            type(_rinterface.NA_Logical),
-            type(_rinterface.NA_Real),
-            type(_rinterface.NA_Complex),
-        ),
-    ):
-        return None
     if isinstance(value, float) and math.isnan(value):
         return None
     return value
@@ -458,129 +155,45 @@ def _is_r_iterable(value, exclude_strings=True):
 
 
 def _has_r_names(value):
-    if isinstance(value, ResultVector):
-        return not _r_dims(value) and value.names is not None
-    _require_initialized_r()
-    if not isinstance(value, ro.vectors.Vector):
-        return False
-    # rpy2 exposes matrix/array dimnames through ``names`` as well.  Those
-    # are labels for axes, not key/value names for a mapping.
-    if _r_dims(value):
-        return False
-    try:
-        names = value.names
-    except Exception:
-        return False
-    return not _r_is_null(names)
+    return isinstance(value, ResultVector) and not _r_dims(value) and value.names is not None
 
 
-@serialized_r_call
 def impute_continuous_data(continuous_data, alpha):
     if not continuous_data:
         return {"succeeded": False}
 
-    if r_worker.enabled():
-        return _worker_calculate("continuous_impute", {"data": continuous_data, "alpha": alpha})
-
-    dataf = execute_r_function("data.frame", **continuous_data)
-    c_data = execute_r_function("rcmetar.impute.continuous.study", dataf, alpha=alpha)
-
-    return r_object_to_python(c_data)
+    return _worker_calculate("continuous_impute", {"data": continuous_data, "alpha": alpha})
 
 
-@serialized_r_call
 def impute_pre_post_continuous_data(continuous_data, correlation, alpha):
     if len(list(continuous_data.items())) == 0:
         return {"succeeded": False}
 
-    if r_worker.enabled():
-        return _worker_calculate("pre_post", {
-            "data": continuous_data, "correlation": correlation, "alpha": alpha,
-        })
-
-    dataf = execute_r_function("data.frame", **continuous_data)
-    c_data = execute_r_function(
-        "rcmetar.impute.continuous.prepost",
-        dataf,
-        correlation=correlation,
-        alpha=alpha,
-    )
-    pythonized_data = r_object_to_python(c_data)
-
-    return pythonized_data
+    return _worker_calculate("pre_post", {
+        "data": continuous_data, "correlation": correlation, "alpha": alpha,
+    })
 
 
-@serialized_r_call
-def get_confidence_multiplier_from_r(confidence_level):
-    confidence_level = validate_confidence_level(confidence_level)
-    confidence_multiplier = execute_r_function(
-        "rcmetar.get.mult.from.conf.level", confidence_level
-    )
-    multiplier = float(confidence_multiplier[0])
-    if not math.isfinite(multiplier):
-        raise ValueError(INVALID_CONFIDENCE_LEVEL_MESSAGE)
-    return multiplier
-
-
-def _r_null_if_none(value):
-    _require_initialized_r()
-    return _rinterface.NULL if value is None else value
-
-
-@serialized_r_call
 def get_params(method_name):
-    param_list = execute_r_function("rcmetar.method.parameters", str(method_name))
-    param_d = {}
-    for name, r_obj in zip(param_list.names, param_list):
-        param_d[name] = r_obj
-
-    order_vars = None
-    if "var_order" in param_d:
-        order_vars = list(param_d["var_order"])
-
-    pretty_names_and_descriptions = _r_mapping_or_empty(param_d.get("pretty.names"))
-
-    return (
-        r_object_to_python(param_d["parameters"]),
-        r_object_to_python(param_d["defaults"]),
-        order_vars,
-        pretty_names_and_descriptions,
-    )
+    result = _worker_catalog({"type": "method_parameters", "method": str(method_name)})
+    if not isinstance(result, list) or len(result) != 4:
+        raise ValueError("The R worker returned invalid method settings.")
+    return tuple(result)
 
 
-@serialized_r_call
-def get_available_methods(
-    for_data_type=None, data=None, metric=None, workflow="standard"
-):
-    """Returns a list of methods available in RCMetaR for the particular data_type
-    (if one is given).
-    """
-    methods = execute_r_function(
-        "rcmetar.available.methods",
-        **{
-            "data.type": _r_null_if_none(
-                None if for_data_type is None else str(for_data_type)
-            ),
-            "om.data": _r_null_if_none(data),
-            "metric": _r_null_if_none(None if metric is None else str(metric)),
-            "workflow": str(workflow),
-        },
-    )
-    return r_object_to_python(methods)
-
-
-@_serialized_r_call
 def available_model_methods(
     model: object, family: str, metrics: Sequence[str], *, workflow: str,
 ) -> dict[str, str]:
     """Discover methods by identity without exposing the R dataset to callers."""
     if not metrics:
         raise ValueError("Choose at least one effect measure before selecting analysis methods.")
-    data = dataset_for_analysis(model, family, metric=metrics[0])
-    choices = [
-        get_available_methods(for_data_type=family, data=data, metric=metric, workflow=workflow)
-        for metric in metrics
-    ]
+    result = _worker_catalog({
+        "type": "available_methods", "family": family, "workflow": workflow,
+        "columns": _analysis_columns(model, family, metrics[0]), "metrics": metrics,
+    })
+    if not isinstance(result, list) or len(result) != len(metrics):
+        raise ValueError("The R worker returned an invalid list of available methods.")
+    choices = [_r_mapping_or_empty(choice) for choice in result]
     compatible = set.intersection(*(set(choice.values()) for choice in choices))
     return {
         method: label
@@ -588,28 +201,15 @@ def available_model_methods(
         if method in compatible
     }
 
-@serialized_r_call
 def get_analysis_plot_capabilities(data_type, method_name, workflow="standard"):
-    capabilities = execute_r_function(
-        "rcmetar.analysis.plot.capabilities",
-        str(data_type),
-        str(method_name),
-        workflow=str(_normalize_rcmetar_workflow(workflow)),
-    )
-    return r_object_to_python(capabilities)
+    return _worker_catalog({
+        "type": "plot_capabilities", "family": str(data_type), "method": str(method_name),
+        "workflow": _normalize_rcmetar_workflow(workflow),
+    })
 
 
-def dataset_for_analysis(table_model, family: object, *, metric="Sens", **selection):
-    if family == "binary":
-        return dataset_to_simple_binary_r_object(table_model, **selection)
-    if family == "continuous":
-        return dataset_to_simple_continuous_r_object(table_model, **selection)
-    if family == "diagnostic":
-        return dataset_to_simple_diagnostic_r_object(table_model, metric=metric, **selection)
-    if family in ("time_to_event", "event_rates"):
-        return dataset_to_simple_ratio_r_object(table_model, **selection)
-    raise ValueError(f"unsupported analysis data family: {family!r}")
-
+def _worker_catalog(job: r_worker.CatalogJob) -> object:
+    return r_worker.current_worker().call(job, timeout_ms=r_worker.CATALOG_DEADLINE_MS)
 
 
 def _analysis_columns(table_model, family: str, metric: str, **selection):
@@ -622,55 +222,6 @@ def _analysis_columns(table_model, family: str, metric: str, **selection):
     if family in ("time_to_event", "event_rates"):
         return _ratio_data_arguments(table_model, **selection)
     raise ValueError(f"unsupported analysis data family: {family!r}")
-
-
-@serialized_r_call
-def dataset_to_simple_ratio_r_object(table_model, covs_to_include=None, studies=None):
-    return execute_r_function("rcmetar.create.ratio.data", **_embedded_columns(
-        _ratio_data_arguments(table_model, covs_to_include, studies)
-    ))
-
-
-@serialized_r_call
-def dataset_to_simple_continuous_r_object(table_model, covs_to_include=None, studies=None):
-    return execute_r_function("rcmetar.create.continuous.data", **_embedded_columns(
-        _continuous_data_arguments(table_model, covs_to_include, studies)
-    ))
-
-
-@serialized_r_call
-def dataset_to_simple_binary_r_object(table_model, covs_to_include=None, studies=None):
-    return execute_r_function("rcmetar.create.binary.data", **_embedded_columns(
-        _binary_data_arguments(table_model, covs_to_include, studies)
-    ))
-
-
-@serialized_r_call
-def diagnostic_data_arguments(table_model, metric="Sens", covs_to_include=None, studies=None):
-    return _embedded_columns(_diagnostic_data_arguments(table_model, metric, covs_to_include, studies))
-
-
-def _embedded_columns(columns):
-    converted = {}
-    for name, values in columns.items():
-        if name == "covariates":
-            converted[name] = execute_r_function("list", *(_embedded_covariate(cov) for cov in values))
-        elif name in ("study.names", "scale", "unit", "source"):
-            converted[name] = _r_character_vector(values)
-        elif name == "years":
-            converted[name] = _r_year_vector(values)
-        elif name == "metric":
-            converted[name] = values
-        else:
-            converted[name] = _r_numeric_vector(values)
-    return converted
-
-
-def _embedded_covariate(cov):
-    args = dict(cov)
-    to_vector = _r_numeric_vector if args["cov.type"] == "continuous" else _r_character_vector
-    args["cov.vals"] = to_vector(args["cov.vals"])
-    return execute_r_function("rcmetar.create.covariate.values", **args)
 
 
 def _character_values(values):
@@ -861,17 +412,6 @@ def _diagnostic_data_arguments(
     return data_kwargs
 
 
-@serialized_r_call
-def dataset_to_simple_diagnostic_r_object(
-    table_model, metric="Sens", covs_to_include=None, studies=None,
-):
-    arguments = diagnostic_data_arguments(table_model, metric, covs_to_include, studies)
-    try:
-        return execute_r_function("rcmetar.create.diagnostic.data", **arguments)
-    except RRuntimeError as error:
-        raise DiagnosticExecutionError(str(error)) from error
-
-
 def _analysis_data_kwargs(
     studies, study_ids, dataset, covs_to_include, y, standard_errors
 ):
@@ -882,31 +422,6 @@ def _analysis_data_kwargs(
         "years": [None if study.year in EMPTY_VALS else int(study.year) for study in studies],
         "covariates": _covariate_arguments(dataset, study_ids, covs_to_include),
     }
-
-
-def _r_character_vector(values):
-    _require_initialized_r()
-    converted = [
-        ro.NA_Character if value in EMPTY_VALS else str(value)
-        for value in values
-    ]
-    return ro.StrVector(converted)
-
-
-def _r_year_vector(values):
-    _require_initialized_r()
-    converted = [
-        ro.NA_Integer if value in EMPTY_VALS else int(value) for value in values
-    ]
-    return ro.IntVector(converted)
-
-
-def _r_numeric_vector(values):
-    _require_initialized_r()
-    converted = [
-        ro.NA_Real if value is None else value for value in _numeric_values(values)
-    ]
-    return ro.FloatVector(converted)
 
 
 def _numeric_values(values) -> list[float | None]:
@@ -939,10 +454,6 @@ def _cov_ref_value(values):
     return ""
 
 
-
-
-
-
 @overload
 def run_small_study_effects(
     table_model,
@@ -961,7 +472,6 @@ def run_small_study_effects(
 ) -> Mapping[str, object]: ...
 
 
-@serialized_r_call
 def run_small_study_effects(
     table_model,
     request,
@@ -986,34 +496,19 @@ def run_small_study_effects(
         r_request["plot_caption"] = plot_caption(table_model)
     family = request.get("data.type")
     metric = request.get("metric", "DOR")
-    if r_worker.enabled():
-        columns = _analysis_columns(table_model, family, metric)
-        if preview:
-            payload = _worker_analysis(_worker_job("small_study", family, columns, r_request))
-            return _r_mapping_or_empty(payload)
-        return _worker_fit(_worker_job("small_study", family, columns, r_request))
-    data = dataset_for_analysis(table_model, family, metric=metric)
-    result = execute_r_function(
-        "rcmetar.run.small.study.effects",
-        data,
-        _to_r_params(r_request),
-    )
+    columns = _analysis_columns(table_model, family, metric)
     if preview:
-        return r_object_to_python(result.rx2("eligibility"))
-    return parse_out_results(result)
+        payload = _worker_analysis(_worker_job("small_study", family, columns, r_request))
+        return _r_mapping_or_empty(payload)
+    return _worker_fit(_worker_job("small_study", family, columns, r_request))
 
 
-@serialized_r_call
 def preview_trial_sequential_analysis(
     model: object, family: str, metric: str, params: Mapping[str, object],
-) -> tuple[Mapping[str, object], object]:
-    if r_worker.enabled():
-        inputs = WorkerTsaInputs(family, _analysis_columns(model, family, metric), params)
-        result = _worker_analysis(inputs.job("tsa_preview"))
-        return _r_mapping_or_empty(result), inputs
-    data = dataset_for_analysis(model, family, metric=metric)
-    prepared = execute_r_function("RCMetaR:::.tsa.prepare.request", data, _to_r_params(params))
-    return _r_mapping_or_empty(prepared.rx2("preview")), prepared
+) -> tuple[Mapping[str, object], "WorkerTsaInputs"]:
+    inputs = WorkerTsaInputs(family, _analysis_columns(model, family, metric), params)
+    result = _worker_analysis(inputs.job("tsa_preview"))
+    return _r_mapping_or_empty(result), inputs
 
 
 @dataclass(frozen=True)
@@ -1031,50 +526,18 @@ class WorkerTsaInputs:
         )
 
 
-@serialized_r_call
-def trial_sequential_conclusion_command(prepared: object, directory: Path) -> tuple[str, list[str]]:
-    inputs = directory / "prepared.rds"
-    execute_r_function("saveRDS", prepared, str(inputs))
-    script = (
-        "args <- commandArgs(TRUE); "
-        "evidence <- RCMetaR:::.tsa.evidence(readRDS(args[1L])); "
-        "saveRDS(evidence, args[2L])"
-    )
-    bin_dir = Path(os.environ["R_HOME"]) / "bin"
-    paths = [str(inputs), str(directory / "evidence.rds")]
-    if os.name == "nt":
-        return str(bin_dir / "x64" / "Rterm.exe"), ["--vanilla", "--slave", "-e", script, "--args", *paths]
-    return str(bin_dir / "Rscript"), ["--vanilla", "-e", script, *paths]
-
-
-@serialized_r_call
-def load_trial_sequential_evidence(path: Path) -> tuple[Mapping[str, object], object]:
-    evidence = execute_r_function("readRDS", str(path))
-    return _r_mapping_or_empty(evidence.rx2("outcome")), evidence
-
-
-@serialized_r_call
-def trial_sequential_evidence(prepared: object) -> object:
-    return execute_r_function("RCMetaR:::.tsa.evidence", prepared)
-
-
-@serialized_r_call
 def run_trial_sequential_analysis(
-    prepared: object, evidence: object, params: Mapping[str, object], path: str,
+    prepared: WorkerTsaInputs, params: Mapping[str, object], path: str,
 ) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
-    if isinstance(prepared, WorkerTsaInputs):
-        with _worker_result_directory() as stage:
-            job = prepared.job("tsa_run")
-            job["stage"] = stage.as_posix()
-            output = (stage / Path(path).name).as_posix()
-            job["plot"] = {**params, "fp_outpath": output}
-            raw = _worker_analysis(job)
-            fields, sections = _parse_tsa_result(raw, output)
-            _validate_worker_plots(sections, stage)
-            return fields, sections
-    raw = execute_r_function("RCMetaR:::.tsa.publish", prepared, evidence,
-                             _to_r_params({**params, "fp_outpath": path}))
-    return _parse_tsa_result(raw, path)
+    with _worker_result_directory() as stage:
+        job = prepared.job("tsa_run")
+        job["stage"] = stage.as_posix()
+        output = (stage / Path(path).name).as_posix()
+        job["plot"] = {**params, "fp_outpath": output}
+        raw = _worker_analysis(job)
+        fields, sections = _parse_tsa_result(raw, output)
+        _validate_worker_plots(sections, stage)
+        return fields, sections
 
 
 def _parse_tsa_result(raw, path: str) -> tuple[dict[str, object], tuple[ResultSection, ...]]:
@@ -1106,50 +569,6 @@ def _parse_tsa_result(raw, path: str) -> tuple[dict[str, object], tuple[ResultSe
     return fields, (*sections, plot)
 
 
-def _r_param_value(param):
-    _require_initialized_r()
-    if isinstance(param, ro.ListVector):
-        return param
-    if param is None:
-        return _rinterface.NULL
-    if isinstance(param, bool):
-        return ro.BoolVector([param])
-    if isinstance(param, int) and not isinstance(param, bool):
-        return ro.IntVector([param])
-    if isinstance(param, float):
-        return ro.FloatVector([ro.NA_Real if math.isnan(param) else param])
-    if isinstance(param, str):
-        return ro.StrVector([param])
-    if isinstance(param, dict):
-        return ro.ListVector(
-            {str(key): _r_param_value(value) for key, value in param.items()}
-        )
-    if isinstance(param, (list, tuple)):
-        if not param:
-            return ro.StrVector([])
-        if all(isinstance(value, bool) for value in param):
-            return ro.BoolVector(list(param))
-        if all(
-            isinstance(value, int) and not isinstance(value, bool) for value in param
-        ):
-            return ro.IntVector(list(param))
-        if all(
-            isinstance(value, (int, float)) and not isinstance(value, bool)
-            for value in param
-        ):
-            return _r_numeric_vector(param)
-        return _r_character_vector(param)
-    return ro.StrVector([str(param)])
-
-
-def _to_r_params(params):
-    """Given a Python dictionary of method arguments, return a named R list."""
-    _require_initialized_r()
-    return ro.ListVector(
-        {str(param): _r_param_value(params[param]) for param in list(params.keys())}
-    )
-
-
 def _normalize_rcmetar_workflow(workflow):
     if workflow is None:
         return "standard"
@@ -1170,46 +589,8 @@ def _normalize_rcmetar_workflow(workflow):
 _sequential_progress: ContextVar[Callable[[int, int], bool] | None] = ContextVar("sequential_progress", default=None)
 
 
-@contextmanager
-def sequential_progress(progress: Callable[[int, int], bool]):
-    token = _sequential_progress.set(progress)
-    try:
-        yield
-    finally:
-        _sequential_progress.reset(token)
-
-
-@contextmanager
-def _r_sequential_progress(workflow: object):
-    progress = _sequential_progress.get()
-    if progress is None or workflow not in ("cumulative", "leave-one-out"):
-        yield
-        return
-    callback = _rinterface.rternalize(
-        lambda index, total: _rinterface.BoolSexpVector([progress(int(index[0]), int(total[0]))])
-    )
-    previous = execute_r_function("options", **{"rcmetar.sequential.progress": callback})
-    try:
-        yield
-    finally:
-        execute_r_function("options", previous)
-
-
-@serialized_r_call
-def run_versioned_analysis_request(
-    request: Mapping[str, object],
-    data,
-):
-    """Execute one complete immutable request through the public RCMetaR API."""
-    data_type, method, metric, workflow, params = _validated_versioned_request(request)
-    return _execute_versioned_request(
-        data_type, method, metric, workflow, params, data
-    )
-
-
-@serialized_r_call
 def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
-    """Convert this frozen model and execute it within one R transaction."""
+    """Convert this frozen model and execute it on the R worker."""
     family, _, metric, workflow, params = _validated_versioned_request(request)
     if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
         metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
@@ -1218,11 +599,8 @@ def run_model_analysis(table_model, request, *, covs_to_include=None, studies=No
         params = {**params, "fp_favours_left": f"Favors {below}" if below else "",
                   "fp_favours_right": f"Favors {above}" if above else ""}
         request = {**request, "params": params}
-    if r_worker.enabled():
-        columns = _analysis_columns(table_model, family, metric, covs_to_include=covs_to_include, studies=studies)
-        return _worker_fit(_worker_job("fit", family, columns, request))
-    data = dataset_for_analysis(table_model, family, metric=metric, covs_to_include=covs_to_include, studies=studies)
-    return run_versioned_analysis_request(request, data)
+    columns = _analysis_columns(table_model, family, metric, covs_to_include=covs_to_include, studies=studies)
+    return _worker_fit(_worker_job("fit", family, columns, request))
 
 
 def _validated_versioned_request(
@@ -1255,8 +633,7 @@ def _worker_job(
 
 
 def _worker_analysis(job: r_worker.AnalysisJob) -> object:
-    with r_execution():
-        return r_worker.current_worker().call(job, timeout_ms=None)
+    return r_worker.current_worker().call(job, timeout_ms=None)
 
 
 @contextmanager
@@ -1320,28 +697,6 @@ def _request_params(request: Mapping[str, object]) -> Mapping[str, object]:
     return {str(key): value for key, value in params.items()}
 
 
-def _execute_versioned_request(
-    data_type: str,
-    method: str,
-    metric: str,
-    workflow: object,
-    params: Mapping[str, object],
-    data,
-) -> object:
-    _require_initialized_r()
-    normalized = {
-        "version": 1,
-        "data_type": data_type,
-        "method": method,
-        "metric": metric,
-        "params": _to_r_params(params),
-        "workflow": _normalize_rcmetar_workflow(workflow),
-    }
-    with _r_sequential_progress(normalized["workflow"]):
-        result = execute_r_function("rcmetar.run.analysis", data, _to_r_params(normalized))
-    return parse_out_results(result)
-
-
 @runtime_checkable
 class DiagnosticExecutionModel(Protocol):
     def included_studies_have_raw_data(self) -> bool: ...
@@ -1349,7 +704,6 @@ class DiagnosticExecutionModel(Protocol):
     def included_studies_have_point_estimates(self, effect: str) -> bool: ...
 
 
-@_serialized_r_call
 def run_model_diagnostic_analysis(
     model: object, requests: list[Mapping[str, object]],
 ) -> object:
@@ -1357,11 +711,7 @@ def run_model_diagnostic_analysis(
     if not isinstance(model, DiagnosticExecutionModel):
         raise TypeError("Diagnostic execution requires the diagnostic model queries.")
     if model.included_studies_have_raw_data():
-        if r_worker.enabled():
-            return _worker_diagnostic_fit(requests, _diagnostic_data_arguments(model))
-        return run_versioned_analysis_requests(
-            requests, dataset_to_simple_diagnostic_r_object(model)
-        )
+        return _worker_diagnostic_fit(requests, _diagnostic_data_arguments(model))
     if any(request.get("method") == "diagnostic.reitsma" for request in requests):
         raise ValueError(
             "Reitsma bivariate model requires complete TP/FN/FP/TN counts; "
@@ -1378,23 +728,7 @@ def run_model_diagnostic_analysis(
             "complete entered effect estimates and confidence intervals for "
             f"each selected effect measure. Missing entered estimates for: {', '.join(missing)}."
         )
-    if r_worker.enabled():
-        return _worker_diagnostic_fit(requests, [_diagnostic_data_arguments(model, metric=metric) for metric in metrics])
-    return run_versioned_analysis_requests(
-        requests, metric_data=[diagnostic_data_arguments(model, metric=metric) for metric in metrics]
-    )
-
-
-@serialized_r_call
-def run_versioned_analysis_requests(
-    requests: list[Mapping[str, object]],
-    data: object = None,
-    *,
-    metric_data: Sequence[Mapping[str, object]] | None = None,
-):
-    """Execute a validated diagnostic request set through one R operation."""
-    validated_requests = _validated_versioned_requests(requests)
-    return _execute_versioned_requests(validated_requests, data, metric_data)
+    return _worker_diagnostic_fit(requests, [_diagnostic_data_arguments(model, metric=metric) for metric in metrics])
 
 
 def _validated_versioned_requests(
@@ -1424,38 +758,10 @@ def _validated_versioned_requests(
     return validated
 
 
-def _execute_versioned_requests(
-    requests: list[dict[str, object]],
-    data: object,
-    metric_data: Sequence[Mapping[str, object]] | None,
-) -> object:
-    _require_initialized_r()
-    request_list = execute_r_function(
-        "list", *[_to_r_params(request) for request in requests]
-    )
-    arguments = {"request.list": request_list, "request.version": 1, "allow.partial": True}
-    if metric_data is not None:
-        arguments["request.data"] = execute_r_function(
-            "list", *(ro.ListVector(args) for args in metric_data)
-        )
-    else:
-        arguments["diagnostic.data"] = data
-    try:
-        with _r_sequential_progress(requests[0]["workflow"]):
-            result = execute_r_function("rcmetar.run.diagnostic.analyses", **arguments)
-    except RRuntimeError as error:
-        raise DiagnosticExecutionError(str(error)) from error
-    return parse_out_results(result)
-
-
-@_serialized_r_call
 def load_plot_parameters(prefix: str) -> object:
-    if r_worker.enabled():
-        return _worker_plot({"type": "plot_parameters", "prefix": prefix})
-    return r_object_to_python(execute_r_function("rcmetar.plot.bundle.params", prefix))
+    return _worker_plot({"type": "plot_parameters", "prefix": prefix})
 
 
-@_serialized_r_call
 def prepare_plot_edit(
     prefix: str,
     regenerator: str,
@@ -1463,76 +769,49 @@ def prepare_plot_edit(
     output: str,
     staging_directory: str,
 ) -> object:
-    if r_worker.enabled():
-        return _worker_plot({
-            "type": "plot_edit", "prefix": prefix, "regenerator": regenerator, "changed": changed,
-            "output": output, "stage": staging_directory,
-        })
-    return r_object_to_python(execute_r_function(
-        "rcmetar.prepare.plot.bundle.edit",
-        prefix, regenerator, _to_r_params(changed), output, staging_directory,
-    ))
+    return _worker_plot({
+        "type": "plot_edit", "prefix": prefix, "regenerator": regenerator, "changed": changed,
+        "output": output, "stage": staging_directory,
+    })
 
 
-@_serialized_r_call
 def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> tuple[float, float] | None:
-    if r_worker.enabled():
-        match _worker_plot({
-            "type": "plot_geometry", "prefix": prefix, "width": width, "include_title": include_title,
-        }):
-            case None:
-                return None
-            case [int() | float() as height, int() | float() as minimum_width]:
-                return float(height), float(minimum_width)
-            case _:
-                raise ValueError("R returned invalid forest geometry.")
-    result = execute_r_function("rcmetar.forest.export.dimensions", prefix, width, include_title)
-    if _r_is_null(result):
-        return None
-    height, minimum_width = result
-    return float(height), float(minimum_width)
+    match _worker_plot({
+        "type": "plot_geometry", "prefix": prefix, "width": width, "include_title": include_title,
+    }):
+        case None:
+            return None
+        case [int() | float() as height, int() | float() as minimum_width]:
+            return float(height), float(minimum_width)
+        case _:
+            raise ValueError("R returned invalid forest geometry.")
 
 
-@_serialized_r_call
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
                        *, include_title: bool = True, outline_text: bool = True,
                        width: float | None = None, dpi: int | None = None,
                        page_height: float | None = None) -> tuple[str, ...]:
-    if r_worker.enabled():
-        result = _worker_plot({
-            "type": "plot_render", "prefix": prefix, "regenerator": regenerator, "output": output,
-            "include_title": include_title, "outline_text": outline_text,
-            "width": width, "dpi": dpi, "page_height": page_height,
-        })
-        if result is None:
-            return ()
-        if not isinstance(result, list) or not all(isinstance(path, str) for path in result):
-            raise ValueError("R returned invalid plot paths.")
-        paths = tuple(result)
-        directory = Path(output).resolve().parent
-        if any(Path(path).resolve().parent != directory or not Path(path).is_file() for path in paths):
-            raise ValueError("R returned missing plot artwork or artwork outside the export directory.")
-        return paths
-    dimensions = {key: value for key, value in (
-        ("width", width), ("dpi", dpi), ("page_height", page_height),
-    ) if value is not None}
-    result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
-                                include_title=include_title, outline_text=outline_text, **dimensions)
-    return () if _r_is_null(result) else tuple(str(path) for path in result)
+    result = _worker_plot({
+        "type": "plot_render", "prefix": prefix, "regenerator": regenerator, "output": output,
+        "include_title": include_title, "outline_text": outline_text,
+        "width": width, "dpi": dpi, "page_height": page_height,
+    })
+    if result is None:
+        return ()
+    if not isinstance(result, list) or not all(isinstance(path, str) for path in result):
+        raise ValueError("R returned invalid plot paths.")
+    paths = tuple(result)
+    directory = Path(output).resolve().parent
+    if any(Path(path).resolve().parent != directory or not Path(path).is_file() for path in paths):
+        raise ValueError("R returned missing plot artwork or artwork outside the export directory.")
+    return paths
 
 
 def _worker_plot(job: r_worker.PlotJob) -> object:
-    with r_execution():
-        return r_worker.current_worker().call(job, timeout_ms=None)
+    return r_worker.current_worker().call(job, timeout_ms=None)
 
 
 _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
-
-
-@serialized_r_call
-def parse_out_results(result):
-    payload = execute_r_function("RCMetaR:::.rcmetar.result.payload", result)
-    return _parse_result_payload(payload)
 
 
 def _parse_result_payload(payload):
@@ -2346,44 +1625,24 @@ def _display_section_name(name):
     return method_display_label(str(name))
 
 
-def _is_r_string_vector(r_object):
-    if isinstance(r_object, ResultVector):
-        return r_object.kind == "character"
-    _require_initialized_r()
-    return isinstance(r_object, ro.vectors.StrVector)
+def _is_r_string_vector(value):
+    return isinstance(value, ResultVector) and value.kind == "character"
 
 
-def _r_attribute(r_object, name):
-    if isinstance(r_object, ResultVector):
-        return r_object.attributes.get(name)
-    if not isinstance(r_object, ro.vectors.Vector):
-        return None
-    try:
-        value = r_object.do_slot(name)
-    except (AttributeError, LookupError):
-        return None
-    return ro.conversion.get_conversion().rpy2py(value)
+def _r_attribute(value, name):
+    return value.attributes.get(name) if isinstance(value, ResultVector) else None
 
 
-def _r_dims(r_object):
-    dims = _r_attribute(r_object, "dim")
-    if dims is not None:
-        return [int(dim) for dim in dims]
-    if isinstance(r_object, ro.vectors.DataFrame):
-        return [r_object.nrow, len(r_object)]
-    return []
+def _r_dims(value):
+    dimensions = _r_attribute(value, "dim")
+    return [int(dimension) for dimension in dimensions] if dimensions is not None else []
 
 
-def _r_dimnames(r_object):
-    dimnames = _r_attribute(r_object, "dimnames")
-    if dimnames is None and isinstance(r_object, ro.vectors.DataFrame):
-        return [list(r_object.rownames), list(r_object.colnames)]
-    if _r_is_null(dimnames):
+def _r_dimnames(value):
+    dimensions = _r_attribute(value, "dimnames")
+    if dimensions is None:
         return []
-    return [
-        None if _r_is_null(names) else [str(name) for name in names]
-        for names in dimnames
-    ]
+    return [None if names is None else [str(name) for name in names] for names in dimensions]
 
 
 def _r_names_or_none(r_object):
@@ -2439,7 +1698,7 @@ def _format_r_array_sections(parent_name, array_name, r_array, study_names=None)
 
 
 def _format_matrix_values(values, nrow, ncol, row_names, col_names, study_names=None):
-    # rpy2 exposes an R data.frame as a list of column vectors, while a plain
+    # The worker encodes an R data frame as a list of column vectors, while a plain
     # matrix is exposed as one column-major flat vector.  Both objects have
     # the same ``dim`` contract, so normalize the values before indexing.
     values = _matrix_cell_values(values, nrow, ncol)
@@ -2730,24 +1989,16 @@ def _get_col(m, i):
     return col_vals
 
 
-@serialized_r_call
 def diagnostic_effects_for_study(
     tp, fn, fp, tn, metrics=("Spec", "Sens"), confidence_level=95.0
 ):
     confidence_level = validate_confidence_level(confidence_level)
-    if r_worker.enabled():
-        result = _worker_calculate("diagnostic_effect", {
-            "tp": tp, "fn": fn, "fp": fp, "tn": tn, "metrics": metrics, "conf.level": confidence_level,
-        })
-    else:
-        result = r_object_to_python(execute_r_function(
-            "rcmetar.diagnostic.study.effects", tp, fn, fp, tn,
-            metrics=_r_character_vector(metrics), **{"conf.level": confidence_level},
-        ))
+    result = _worker_calculate("diagnostic_effect", {
+        "tp": tp, "fn": fn, "fp": fp, "tn": tn, "metrics": metrics, "conf.level": confidence_level,
+    })
     return normalize_diagnostic_effects(result, require_triplets=True)
 
 
-@serialized_r_call
 def continuous_effect_for_study(
     n1,
     m1,
@@ -2765,42 +2016,21 @@ def continuous_effect_for_study(
     inputs = {"n1": n1, "m1": m1, "sd1": sd1, "se1": se1,
               "n2": n2, "m2": m2, "sd2": sd2, "se2": se2}
     params = {"two.arm": bool(two_arm), "metric": str(metric), "conf.level": confidence_level}
-    if r_worker.enabled():
-        result = _worker_calculate("continuous_effect", inputs | params)
-    else:
-        result = r_object_to_python(execute_r_function(
-            "rcmetar.continuous.study.effect",
-            **{key: _r_null_if_none(value) for key, value in inputs.items()}, **params,
-        ))
+    result = _worker_calculate("continuous_effect", inputs | params)
     return normalize_effect_result(result, metric=metric)
 
 
-@serialized_r_call
 def study_effect_previews(
     rows: Sequence[Sequence[object]], family: str, metric: str | None,
     metrics: Sequence[str], confidence_level: float,
 ) -> list[list[tuple[float | None, ...]]]:
-    if r_worker.enabled():
-        with r_execution():
-            return r_worker.study_previews({
-                "type": "previews", "rows": [_numeric_values(row) for row in rows],
-                "family": family, "metric": metric or "",
-                "metrics": metrics, "two_arm": metric in TWO_ARM_METRICS, "confidence": confidence_level,
-            })
-    raw = execute_r_function(
-        "RCMetaR:::rcmetar.study.effect.previews",
-        ro.ListVector(tuple((str(index), _r_numeric_vector(row)) for index, row in enumerate(rows))),
-        family, metric or "", _r_character_vector(metrics), metric in TWO_ARM_METRICS,
-        confidence_level,
-    )
-    return [
-        [tuple(None if _r_na_to_none(value) is None else float(value) for value in effect)
-         for effect in row]
-        for row in raw
-    ]
+    return r_worker.study_previews({
+        "type": "previews", "rows": [_numeric_values(row) for row in rows],
+        "family": family, "metric": metric or "",
+        "metrics": metrics, "two_arm": metric in TWO_ARM_METRICS, "confidence": confidence_level,
+    })
 
 
-@serialized_r_call
 def effect_for_study(
     e1, n1, e2=None, n2=None, two_arm=True, metric="OR", confidence_level=95
 ):
@@ -2808,13 +2038,7 @@ def effect_for_study(
     confidence_level = validate_confidence_level(confidence_level)
     inputs = {"e1": e1, "n1": n1, "e2": e2, "n2": n2}
     params = {"two.arm": bool(two_arm), "metric": str(metric), "conf.level": confidence_level}
-    if r_worker.enabled():
-        result = _worker_calculate("binary_effect", inputs | params)
-    else:
-        result = r_object_to_python(execute_r_function(
-            "rcmetar.binary.study.effect",
-            **{key: _r_null_if_none(value) for key, value in inputs.items()}, **params,
-        ))
+    result = _worker_calculate("binary_effect", inputs | params)
     return normalize_effect_result(result, metric=metric)
 
 
@@ -2831,7 +2055,6 @@ def diagnostic_convert_scale(x, metric_name, convert_to="display.scale"):
     return generic_convert_scale(x, metric_name, "diagnostic", convert_to)
 
 
-@serialized_r_call
 def generic_convert_scale(
     x, metric_name, data_type, convert_to="display.scale", n1=None
 ):
@@ -2840,32 +2063,11 @@ def generic_convert_scale(
     islist = isinstance(x, list) or isinstance(
         x, tuple
     )
-    if r_worker.enabled():
-        return _worker_calculate("scale", {
-            "x": _numeric_values(x) if islist else x,
-            "metric": str(metric_name), "data.type": str(data_type),
-            "convert.to": str(convert_to), "n1": n1,
-        }, vector=islist)
-
-    if islist:
-        x_arg = _r_numeric_vector(x)
-        n1_arg = (
-            _rinterface.NULL if n1 is None else _r_numeric_vector([n1] * len(x))
-        )
-    else:
-        x_arg = x
-        n1_arg = _r_null_if_none(n1)
-
-    transformed = execute_r_function(
-        "rcmetar.convert.scale",
-        x=x_arg,
-        metric=str(metric_name),
-        **{"data.type": str(data_type), "convert.to": str(convert_to), "n1": n1_arg},
-    )
-    transformed_ls = [_r_na_to_none(value) for value in transformed]
-    if not islist:
-        return transformed_ls[0]
-    return transformed_ls
+    return _worker_calculate("scale", {
+        "x": _numeric_values(x) if islist else x,
+        "metric": str(metric_name), "data.type": str(data_type),
+        "convert.to": str(convert_to), "n1": n1,
+    }, vector=islist)
 
 
 def _r_text_values(value) -> list[str]:
@@ -3025,13 +2227,10 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
     return rows, quantities
 
 
-@_serialized_r_call
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
-    if r_worker.enabled():
-        _worker_plot({
-            "type": "artwork_export", "source": source, "output": destination,
-            "width": width, "height": height, "dpi": dpi,
-        })
-        return
-    execute_r_function("rcmetar.export.svg.artwork", source, destination, width, height, dpi)
+    _worker_plot({
+        "type": "artwork_export", "source": source, "output": destination,
+        "width": width, "height": height, "dpi": dpi,
+    })
+    return

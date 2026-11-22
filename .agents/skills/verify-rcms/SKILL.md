@@ -17,7 +17,7 @@ The verification helper owns and closes its own windows. Do not attach it to the
 
 Run `uv run python scripts/verify_rcms.py doctor` before driving a newly configured runtime or whenever readiness is uncertain. This reads runtime identity and opens an empty application in isolated settings; it does not edit projects. Each proof run repeats the same check before its feature.
 
-Inspect the printed evidence directory. `runtime.json` records the actual R home and libraries, authority versions, RCMetaR/rpy2/Qt versions, platform plugin, and Qt build root. Missing dependencies, version mismatches, startup errors, or a nonzero process exit fail the check. An absent `runtime.json` means startup failed before identity could be recorded.
+Inspect the printed evidence directory. `runtime.json` records the actual R home and libraries, authority versions, RCMetaR, worker protocol and Qt versions, platform plugin, and Qt build root. Missing dependencies, version mismatches, startup errors, or a nonzero process exit fail the check. An absent `runtime.json` means startup failed before identity could be recorded.
 
 ## Drive
 
@@ -36,7 +36,7 @@ The advanced workflows in `scripts/advanced_workflows.py` add nondefault inferen
 
 See the [desktop selection policy](../../../docs/maintaining.md#desktop-selection) for producer deduplication. Individual CLI scenarios remain available for debugging.
 
-The driver uses QAction handles, Qt widgets, editors, modal buttons, and the production storage and analysis path. Each child owns its application-data and analysis-scratch subdirectories. `runtime.json` records those paths and confirms that Python and embedded R retain the caller's working directory. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. Native application-data creation and OS file-picker gestures require separate checks. The `csv` scenario starts at the CSV page. Use `xlsx-import` for the unified Import data action and Welcome wizard entry with controlled picker results, and `rm5-import` for RevMan entry and review.
+The driver uses QAction handles, Qt widgets, editors, modal buttons, and the production storage and analysis path. Each child owns its application-data and analysis-scratch subdirectories. `runtime.json` records those paths and confirms that Python and the R worker retain the caller's working directory. File pickers return test-owned paths, and the intentional corrupt-project error is observed without a blocking box. Native application-data creation and OS file-picker gestures require separate checks. The `csv` scenario starts at the CSV page. Use `xlsx-import` for the unified Import data action and Welcome wizard entry with controlled picker results, and `rm5-import` for RevMan entry and review.
 
 When a changed path is absent from the map or uses an unexercised entry point, extend the real driver or perform a targeted native drive. Assert observable data, numerical results, rendered output, saved state, and rollback as applicable. Exercise the failing trigger first and the recovered state afterward. Do not replace an unavailable production dependency with a mock or add source-string/constant inventories as evidence.
 
