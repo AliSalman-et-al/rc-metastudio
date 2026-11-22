@@ -10,8 +10,7 @@ import os
 import re
 import shutil
 import tempfile
-from collections.abc import Generator, Mapping
-from contextlib import contextmanager
+from collections.abc import Mapping
 from pathlib import Path
 from typing import BinaryIO, cast
 from xml.etree import ElementTree as ET
@@ -21,6 +20,7 @@ from PyQt6.QtGui import QPageSize, QPainter, QPdfWriter
 from PyQt6.QtSvg import QSvgRenderer
 
 from rc_metastudio import r_bridge
+from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
 from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
 from rc_metastudio.results.plot_capabilities import PlotRegenerator
 from rc_metastudio.r_call_serialization import serialized_r_call
@@ -122,7 +122,9 @@ class PlotService:
                     width=page_width, page_height=250 / 25.4,
                 )
                 with staged_output(output_path) as temporary:
-                    _write_a4_pdf(str(temporary), paths)
+                    if not paths:
+                        raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+                    compose_export(lambda: _write_a4_pdf(str(temporary), paths))
                 return
             paths = r_bridge.render_plot_bundle(
                 params_path, regenerator, str(source), include_title=include_title,
@@ -130,30 +132,12 @@ class PlotService:
             )
             if not paths:
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
-            ET.register_namespace('', 'http://www.w3.org/2000/svg')
-            ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
-            tree = ET.parse(source)
-            root = tree.getroot()
-            root.set('width', f'{width}in')
-            root.set('height', f'{height}in')
-            x, y, view_width, view_height = map(float, root.attrib['viewBox'].split())
-            # Center the unchanged artwork and fill the physical paper, including
-            # the space freed when the title is excluded.
-            paper_width = max(view_width, view_height * width / height)
-            paper_height = max(view_height, view_width * height / width)
-            x -= (paper_width - view_width) / 2
-            y -= (paper_height - view_height) / 2
-            root.set('viewBox', f'{x} {y} {paper_width} {paper_height}')
-            paper = ET.Element('{http://www.w3.org/2000/svg}rect', {
-                'x': str(x), 'y': str(y), 'width': str(paper_width), 'height': str(paper_height), 'fill': 'white',
-            })
-            root.insert(0, paper)
-            tree.write(source, encoding='utf-8', xml_declaration=True)
-            if extension in (".svg", ".svgz"):
-                with staged_output(output_path) as temporary:
-                    _copy_export_svg(source, temporary, compressed=extension == ".svgz")
-            else:
-                r_bridge.export_svg_artwork(str(source), output_path, width, height, dpi)
+            with staged_output(output_path) as temporary:
+                if extension in (".svg", ".svgz"):
+                    compose_export(lambda: _size_export_svg(source, temporary, width, height))
+                else:
+                    compose_export(lambda: _size_export_svg(source, source, width, height))
+                    r_bridge.export_svg_artwork(str(source), str(temporary), width, height, dpi)
 
     @serialized_r_call
     def export(
@@ -163,26 +147,34 @@ class PlotService:
         """Render a stored plot to an already validated destination path."""
         if regenerator == "none":
             raise PlotServiceError(f"Plot is not regeneratable: {regenerator}")
-        if not r_bridge.render_plot_bundle(params_path, regenerator, output_path,
-                                           include_title=include_title, outline_text=outline_text):
-            raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+        with staged_output(output_path) as temporary:
+            if not r_bridge.render_plot_bundle(params_path, regenerator, str(temporary),
+                                               include_title=include_title, outline_text=outline_text):
+                raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
 
 
-@contextmanager
-def staged_output(path: str | Path) -> Generator[Path]:
-    destination = Path(path).resolve()
-    with tempfile.TemporaryDirectory(prefix=".rcms-export-", dir=destination.parent) as directory:
-        temporary = Path(directory) / destination.name
-        yield temporary
-        temporary.replace(destination)
-
-
-def _copy_export_svg(source: Path, destination: Path, *, compressed: bool) -> None:
-    if compressed:
-        with source.open("rb") as input_file, gzip.open(destination, "wb") as output_file:
-            shutil.copyfileobj(input_file, output_file)
+def _size_export_svg(source: Path, destination: Path, width: float, height: float) -> None:
+    ET.register_namespace('', 'http://www.w3.org/2000/svg')
+    ET.register_namespace('xlink', 'http://www.w3.org/1999/xlink')
+    tree = ET.parse(source)
+    root = tree.getroot()
+    root.set('width', f'{width}in')
+    root.set('height', f'{height}in')
+    x, y, view_width, view_height = map(float, root.attrib['viewBox'].split())
+    # Center the artwork on the physical paper, including space freed by the caption.
+    paper_width = max(view_width, view_height * width / height)
+    paper_height = max(view_height, view_width * height / width)
+    x -= (paper_width - view_width) / 2
+    y -= (paper_height - view_height) / 2
+    root.set('viewBox', f'{x} {y} {paper_width} {paper_height}')
+    root.insert(0, ET.Element('{http://www.w3.org/2000/svg}rect', {
+        'x': str(x), 'y': str(y), 'width': str(paper_width), 'height': str(paper_height), 'fill': 'white',
+    }))
+    if destination.suffix.lower() == ".svgz":
+        with gzip.open(destination, "wb") as stream:
+            tree.write(stream, encoding='utf-8', xml_declaration=True)
     else:
-        shutil.copyfile(source, destination)
+        tree.write(destination, encoding='utf-8', xml_declaration=True)
 
 
 def _paginate_pdf() -> bool:
@@ -200,6 +192,7 @@ def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
         raise OSError("Could not start PDF export.")
     try:
         for index, path in enumerate(paths):
+            check_export_cancelled()
             if index:
                 writer.newPage()
             svg = QSvgRenderer(svg_bytes_for_qt(path))
@@ -273,4 +266,4 @@ def _restore_files(
     return restored
 
 
-__all__ = ["PlotService", "PlotServiceError", "staged_output", "svg_view_box_size"]
+__all__ = ["PlotService", "PlotServiceError", "svg_view_box_size"]

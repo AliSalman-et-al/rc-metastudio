@@ -1450,6 +1450,8 @@ def _execute_versioned_requests(
 
 @serialized_r_call
 def load_plot_parameters(prefix: str) -> object:
+    if r_worker.enabled():
+        return _worker_plot({"type": "plot_parameters", "prefix": prefix})
     return r_object_to_python(execute_r_function("rcmetar.plot.bundle.params", prefix))
 
 
@@ -1461,6 +1463,11 @@ def prepare_plot_edit(
     output: str,
     staging_directory: str,
 ) -> object:
+    if r_worker.enabled():
+        return _worker_plot({
+            "type": "plot_edit", "prefix": prefix, "regenerator": regenerator, "changed": changed,
+            "output": output, "stage": staging_directory,
+        })
     return r_object_to_python(execute_r_function(
         "rcmetar.prepare.plot.bundle.edit",
         prefix, regenerator, _to_r_params(changed), output, staging_directory,
@@ -1469,6 +1476,16 @@ def prepare_plot_edit(
 
 @serialized_r_call
 def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> tuple[float, float] | None:
+    if r_worker.enabled():
+        match _worker_plot({
+            "type": "plot_geometry", "prefix": prefix, "width": width, "include_title": include_title,
+        }):
+            case None:
+                return None
+            case [int() | float() as height, int() | float() as minimum_width]:
+                return float(height), float(minimum_width)
+            case _:
+                raise ValueError("R returned invalid forest geometry.")
     result = execute_r_function("rcmetar.forest.export.dimensions", prefix, width, include_title)
     if _r_is_null(result):
         return None
@@ -1481,12 +1498,32 @@ def render_plot_bundle(prefix: str, regenerator: str, output: str,
                        *, include_title: bool = True, outline_text: bool = True,
                        width: float | None = None, dpi: int | None = None,
                        page_height: float | None = None) -> tuple[str, ...]:
+    if r_worker.enabled():
+        result = _worker_plot({
+            "type": "plot_render", "prefix": prefix, "regenerator": regenerator, "output": output,
+            "include_title": include_title, "outline_text": outline_text,
+            "width": width, "dpi": dpi, "page_height": page_height,
+        })
+        if result is None:
+            return ()
+        if not isinstance(result, list) or not all(isinstance(path, str) for path in result):
+            raise ValueError("R returned invalid plot paths.")
+        paths = tuple(result)
+        directory = Path(output).resolve().parent
+        if any(Path(path).resolve().parent != directory or not Path(path).is_file() for path in paths):
+            raise ValueError("R returned missing plot artwork or artwork outside the export directory.")
+        return paths
     dimensions = {key: value for key, value in (
         ("width", width), ("dpi", dpi), ("page_height", page_height),
     ) if value is not None}
     result = execute_r_function("rcmetar.render.plot.bundle", prefix, regenerator, output,
                                 include_title=include_title, outline_text=outline_text, **dimensions)
     return () if _r_is_null(result) else tuple(str(path) for path in result)
+
+
+def _worker_plot(job: r_worker.PlotJob) -> object:
+    with r_execution():
+        return r_worker.current_worker().call(job, timeout_ms=None)
 
 
 _RESULT_DISPLAY_DIGITS: ContextVar[int | None] = ContextVar("result_display_digits", default=None)
@@ -2991,4 +3028,10 @@ def _structured_matrix_rows(matrix, values, nrow, ncol, headers, first_row_heade
 @serialized_r_call
 def export_svg_artwork(source: str, destination: str, width: float, height: float, dpi: int) -> None:
     """Convert proportionally sized SVG artwork using the installed R renderer."""
+    if r_worker.enabled():
+        _worker_plot({
+            "type": "artwork_export", "source": source, "output": destination,
+            "width": width, "height": height, "dpi": dpi,
+        })
+        return
     execute_r_function("rcmetar.export.svg.artwork", source, destination, width, height, dpi)

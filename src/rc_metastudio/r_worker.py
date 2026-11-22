@@ -65,7 +65,50 @@ class AnalysisJob(TypedDict):
     plot: Mapping[str, object]
 
 
-WorkerJob = CalculatorJob | PreviewJob | AnalysisJob
+class PlotParametersJob(TypedDict):
+    type: Literal["plot_parameters"]
+    prefix: str
+
+
+class PlotGeometryJob(TypedDict):
+    type: Literal["plot_geometry"]
+    prefix: str
+    width: float
+    include_title: bool
+
+
+class PlotEditJob(TypedDict):
+    type: Literal["plot_edit"]
+    prefix: str
+    regenerator: str
+    changed: Mapping[str, object]
+    output: str
+    stage: str
+
+
+class PlotRenderJob(TypedDict):
+    type: Literal["plot_render"]
+    prefix: str
+    regenerator: str
+    output: str
+    include_title: bool
+    outline_text: bool
+    width: float | None
+    dpi: int | None
+    page_height: float | None
+
+
+class ArtworkExportJob(TypedDict):
+    type: Literal["artwork_export"]
+    source: str
+    output: str
+    width: float
+    height: float
+    dpi: int
+
+
+PlotJob = PlotParametersJob | PlotGeometryJob | PlotEditJob | PlotRenderJob | ArtworkExportJob
+WorkerJob = CalculatorJob | PreviewJob | AnalysisJob | PlotJob
 
 
 class _Reply(TypedDict):
@@ -468,6 +511,11 @@ class RWorker(QObject):
             "tsa_run": "Running trial sequential analysis…",
             "tsa_preview": "Preparing trial sequential analysis…",
             "tsa_conclusion": "Checking trial sequential boundaries…",
+            "plot_parameters": "Reading plot settings…",
+            "plot_geometry": "Measuring the forest plot…",
+            "plot_edit": "Applying plot edits…",
+            "plot_render": "Rendering plot artwork…",
+            "artwork_export": "Converting plot artwork…",
         }.get(kind, "Fitting model and drawing plots…")
         dialog = QProgressDialog(label, "Cancel", 0, 0, QApplication.activeWindow())
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)

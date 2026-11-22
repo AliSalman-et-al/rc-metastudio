@@ -877,6 +877,7 @@ rcmetar.draw.metafor.forest <- function(bundle, outpath, width=NULL, dpi=NULL, p
     }
     display <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "fp")
     for (i in seq_along(panels)) {
+        .rcmetar.sequential.progress(i - 1L, length(panels))
         panel <- panels[[i]]
         panel$device$dpi <- dpi
         figure <- bundle

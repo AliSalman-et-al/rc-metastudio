@@ -45,7 +45,7 @@ local({
             auto_unbox=TRUE, digits=I(17), null="null"
         ))
         size <- nchar(body, type="bytes")
-        if (size > limit) stop("Response exceeds frame limit")
+        if (size > limit) stop("The R worker response exceeds the 16 MiB frame limit.", call.=FALSE)
         # R's stdout is text-only. JSON escapes control bytes, and useBytes
         # preserves UTF-8 without locale conversion.
         while (sink.number() > 0L) sink()
@@ -163,6 +163,31 @@ local({
         }))
     }
 
+    plot_job <- function(job, checkpoint) {
+        old <- options(rcmetar.sequential.progress=checkpoint)
+        on.exit(options(old))
+        checkpoint(0L, 0L)
+        result <- switch(job$type,
+            plot_parameters=rcmetar.plot.bundle.params(job$prefix),
+            plot_geometry=as.list(unname(rcmetar.forest.export.dimensions(
+                job$prefix, job$width, job$include_title))),
+            plot_edit=rcmetar.prepare.plot.bundle.edit(
+                job$prefix, job$regenerator, RCMetaR:::.rcmetar.worker.params(job$changed),
+                job$output, job$stage),
+            plot_render=as.list(rcmetar.render.plot.bundle(
+                job$prefix, job$regenerator, job$output, width=job$width,
+                dpi=if (is.null(job$dpi)) 600L else job$dpi,
+                page_height=job$page_height, include_title=job$include_title,
+                outline_text=job$outline_text)),
+            artwork_export={
+                rcmetar.export.svg.artwork(job$source, job$output, job$width, job$height, job$dpi)
+                NULL
+            })
+        checkpoint(1L, 1L)
+        if (job$type %in% c("plot_geometry", "plot_render") && !length(result)) return(NULL)
+        wire_value(result)
+    }
+
     startup <- read_frame()
     stopifnot(identical(startup$protocol, 1L), identical(startup$id, 0L))
     ready <- tryCatch({ warm(startup$job); TRUE }, error=function(error) {
@@ -204,6 +229,9 @@ local({
                                               "tsa_preview", "tsa_conclusion", "tsa_run")) {
                 outcome <- RCMetaR:::.rcmetar.worker.fit(request$job, checkpoint, tsa)
                 RCMetaR:::.rcmetar.worker.result.vector(outcome, wire_value)
+            } else if (request$job$type %in% c("plot_parameters", "plot_geometry", "plot_edit",
+                                              "plot_render", "artwork_export")) {
+                plot_job(request$job, checkpoint)
             } else stop("Unknown R worker job")
             if (file.exists(marker)) reply(request$id, "cancelled")
             else reply(request$id, "ok", result=value)
