@@ -116,7 +116,6 @@ def run(app, window, work, root, record, analyze):
     from advanced_workflows import modal
     from analysis_matrix import set_parameter
     from tests.e2e.plot_observations import load_saved_analysis
-    from rc_metastudio import r_operations
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
     def visible(kind):

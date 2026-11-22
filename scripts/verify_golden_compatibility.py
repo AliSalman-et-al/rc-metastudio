@@ -15,7 +15,7 @@ from pathlib import PurePosixPath
 import stat
 import subprocess
 import sys
-from typing import TypeAlias, TypedDict, cast
+from typing import TypeAlias, TypedDict
 import zipfile
 from uuid import uuid4
 

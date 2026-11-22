@@ -2,7 +2,6 @@ import os
 import sys
 from pathlib import Path
 from dataclasses import replace
-from types import SimpleNamespace
 from collections.abc import Callable
 
 import pytest

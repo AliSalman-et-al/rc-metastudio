@@ -17,10 +17,9 @@ def run(app, window, scenario, record):
         return
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
-    from rc_metastudio import main_wizard, r_operations
+    from rc_metastudio import main_wizard
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
@@ -523,10 +522,9 @@ def run(app, window, scenario, record):
 
 def verify_bundled_sample(app, window, hazard, record):
     """Open the shipped metadat sample, fit it, and preserve original inputs."""
-    from PyQt6 import QtCore, QtWidgets
+    from PyQt6 import QtWidgets
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
-    from rc_metastudio import r_operations
     from rc_metastudio.project.archive import load_project
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog

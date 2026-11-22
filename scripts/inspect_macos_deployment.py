@@ -1842,28 +1842,6 @@ def _signature_text_valid(signature: dict) -> bool:
     )
 
 
-def _validate_preflight(preflight: dict, manifest: dict, target: str) -> None:
-    expected = {
-        "schema_version": 1,
-        "source_commit": manifest["source_commit"],
-        "pyinstaller_version": EXPECTED_VERSIONS["pyinstaller"],
-        "system": "Darwin",
-        "machine": TARGET_CONTRACTS[target]["architecture"],
-        "aliases": {
-            "Versions/Current": "4.6-arm64",
-            "Resources": "Versions/Current/Resources",
-            "R": "Versions/Current/R",
-            "Versions/4.6-arm64/R": "Resources/lib/libR.dylib",
-            "Versions/4.6-arm64/Resources/R": "bin/R",
-        },
-        "passed": True,
-    }
-    if preflight != expected:
-        raise MacOSDeploymentInspectionError(
-            "embedded PyInstaller TOC preflight differs from direct-build provenance"
-        )
-
-
 def _validate_ppm_inventory(ppm_inventory: dict, manifest: dict) -> None:
     expected = {
         "schema_version": 1,
@@ -1999,7 +1977,7 @@ def _validate_archive_inventory(
     info_by_name = {item.filename: item for item in bundle.infolist()}
     for record in records:
         _validate_archive_record(bundle, info_by_name, app_prefix, record)
-    signing = _validate_archive_signing(
+    _validate_archive_signing(
         deployment, records, signing_path, prefix, names
     )
     _validate_archive_delivery(deployment, records, target)

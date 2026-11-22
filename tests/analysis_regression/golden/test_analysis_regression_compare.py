@@ -30,23 +30,6 @@ from tests.analysis_regression.golden.support.analysis_regression_compare import
 
 sys.path.insert(0, os.path.abspath("scripts"))
 import verify_golden_compatibility  # noqa: E402 - scripts path bootstrap
-import verify_rcmetar_r_stack  # noqa: E402 - scripts path bootstrap
-
-
-def _text_result(title, text):
-    return {
-        "version": 1,
-        "texts": {title: text},
-        "sections": [
-            {
-                "id": "test.%s" % title.lower(),
-                "kind": "text",
-                "order": 0,
-                "title": title,
-                "source_key": title,
-            }
-        ],
-    }
 
 
 def _typed_result(
@@ -980,7 +963,6 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
     monkeypatch, tmp_path
 ):
     from tests.analysis_regression.golden.support import headless_analysis
-    from rc_metastudio.analysis import catalog as analysis_catalog
     from rc_metastudio.analysis import requests as analysis_adapter
 
     class DiagnosticModel(object):
@@ -1333,8 +1315,6 @@ def test_empty_comparison_is_not_success():
 
 def test_supplied_environment_cannot_manufacture_authority():
     from tests.analysis_regression.golden.support import golden_analysis as golden
-    from tests.analysis_regression.golden.support import headless_analysis as _headless
-    from rc_metastudio.analysis import catalog as _globals
     measured = {"os": "Linux", "python": "3.11.9", "pyqt": "6.11.0"}
     observed = golden._baseline_environment(golden.MODERN_BASELINE_ENVIRONMENT_EXPECTED, measured)
     assert observed["os"] == "Linux"
@@ -1343,8 +1323,6 @@ def test_supplied_environment_cannot_manufacture_authority():
 
 def test_capture_rejects_stale_configured_plot_but_accepts_current_svg(tmp_path):
     from tests.analysis_regression.golden.support import golden_analysis as golden
-    from tests.analysis_regression.golden.support import headless_analysis as _headless
-    from rc_metastudio.analysis import catalog as _globals
     stale = tmp_path / "old.png"
     stale.write_bytes(b"old plot")
     bundle = {"artifacts": {"Forest Plot": str(stale)}}

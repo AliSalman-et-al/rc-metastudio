@@ -615,7 +615,6 @@ def test_failed_open_and_save_preserve_current_project_dirty_state_and_recents(
     from rc_metastudio import settings
 
     app, window = automation.start_automation()
-    main_window = sys.modules["rc_metastudio.main_window"]
     critical_messages = []
     monkeypatch.setattr(
         QtWidgets.QMessageBox,
@@ -728,7 +727,6 @@ def test_durable_save_and_open_succeed_when_recent_project_bookkeeping_fails(
     qapp, tmp_path, monkeypatch
 ):
     from rc_metastudio import main_window
-    from rc_metastudio import settings
 
     app, window = automation.start_automation()
     warnings = []

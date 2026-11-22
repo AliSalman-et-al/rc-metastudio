@@ -86,7 +86,6 @@ def authority(
     metric=None,
 ):
     """Public metafor reconstruction uses observed input, never RCMS preparation."""
-    from rc_metastudio import r_operations
 
     rows = raw_rows(window)
     vector = lambda i: (
@@ -646,7 +645,6 @@ def plots(app, window, family, record, *, view=None):
         if family == "forest":
             expected_params.update(fp_plot_lb="10", fp_plot_ub="11")
             expected_params.update(fp_study_order="year")
-            from rc_metastudio import r_operations
 
             r_oracle.assign("verified_plot_path", str(artifact.params_path) + ".plotdata")
             bounds = list(
@@ -1002,7 +1000,6 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
 
 
 def calculators(app, window, mode, record):
-    from rc_metastudio import r_operations
     from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
     from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
     from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
@@ -1925,7 +1922,6 @@ def table_covariates(app, window, record):
     from analysis_matrix import set_parameter
 
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio import r_operations
     from rc_metastudio.results import window as results_window
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from tests.analysis_regression.golden.support.golden_analysis import (

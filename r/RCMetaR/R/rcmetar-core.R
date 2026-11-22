@@ -55,7 +55,7 @@
 #' Use \code{rcmetar.method.references()} to inspect the statistical references
 #' associated with a method family.
 #'
-#' @aliases rcmetar.run.analysis rcmetar.run.diagnostic.analyses rcmetar.run.permutation rcmetar.validate.analysis.request rcmetar.analysis.methods rcmetar.analysis.plot.capabilities rcmetar.available.methods rcmetar.method.parameters rcmetar.method.description rcmetar.set.global.conf.level rcmetar.get.mult.from.conf.level rcmetar.create.covariate.values rcmetar.create.binary.data rcmetar.create.continuous.data rcmetar.create.diagnostic.data rcmetar.prepare.analysis.data rcmetar.impute.binary rcmetar.impute.diagnostic rcmetar.impute.continuous.study rcmetar.impute.continuous.prepost rcmetar.back.calculate.continuous rcmetar.convert.scale rcmetar.binary.study.effect rcmetar.continuous.study.effect rcmetar.diagnostic.study.effects rcmetar.regenerate.plot.data rcmetar.regenerate.regression.plot.data rcmetar.save.plot.data rcmetar.draw.forest.plot rcmetar.draw.sroc.plot rcmetar.draw.regression.plot rcmetar.graphics.off rcmetar.method.references
+#' @aliases rcmetar.run.analysis rcmetar.run.diagnostic.analyses rcmetar.run.permutation rcmetar.validate.analysis.request rcmetar.analysis.methods rcmetar.analysis.plot.capabilities rcmetar.available.methods rcmetar.method.parameters rcmetar.set.global.conf.level rcmetar.create.covariate.values rcmetar.create.binary.data rcmetar.create.continuous.data rcmetar.create.diagnostic.data rcmetar.prepare.analysis.data rcmetar.impute.binary rcmetar.impute.diagnostic rcmetar.impute.continuous.study rcmetar.impute.continuous.prepost rcmetar.back.calculate.continuous rcmetar.convert.scale rcmetar.binary.study.effect rcmetar.continuous.study.effect rcmetar.diagnostic.study.effects rcmetar.regenerate.plot.data rcmetar.regenerate.regression.plot.data rcmetar.save.plot.data rcmetar.draw.forest.plot rcmetar.draw.sroc.plot rcmetar.draw.regression.plot rcmetar.method.references
 #' @name RCMetaR-core-api
 NULL
 
@@ -184,14 +184,6 @@ rcmetar.method.parameters <- function(method) {
     parameters
 }
 
-rcmetar.method.description <- function(method) {
-    pretty.names <- .rcmetar.method.pretty.names(method)
-    if (!is.null(pretty.names$description)) {
-        return(as.character(pretty.names$description))
-    }
-    "None provided."
-}
-
 rcmetar.analysis.plot.capabilities <- function(data.type, method, workflow="standard") {
     method <- .rcmetar.validate.method.name(method)
     data.type <- .rcmetar.match.arg(tolower(as.character(data.type)), c("binary", "continuous", "diagnostic", "time_to_event", "event_rates"), "data.type")
@@ -206,10 +198,6 @@ rcmetar.analysis.plot.capabilities <- function(data.type, method, workflow="stan
 
 rcmetar.set.global.conf.level <- function(conf.level) {
     set.global.conf.level(conf.level)
-}
-
-rcmetar.get.mult.from.conf.level <- function(conf.level=get.global.conf.level()) {
-    get.mult.from.conf.level(conf.level)
 }
 
 rcmetar.create.covariate.values <- function(cov.name, cov.vals, cov.type, ref.var) {
@@ -553,10 +541,6 @@ rcmetar.draw.sroc.plot <- function(plot.data, outpath) {
 
 rcmetar.draw.regression.plot <- function(plot.data, outpath) {
     meta.regression.plot(plot.data, outpath)
-}
-
-rcmetar.graphics.off <- function() {
-    grDevices::graphics.off()
 }
 
 rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list(), workflow="standard",

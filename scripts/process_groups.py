@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Start and terminate owned verification process trees."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 import os
 import signal
 import subprocess
@@ -14,50 +15,54 @@ _killpg: Callable[[int, int], None] | None = getattr(os, "killpg", None)
 _sigkill: int = getattr(signal, "SIGKILL", signal.SIGTERM)
 
 
-def start_process(
+@contextmanager
+def owned_process(
     command: list[str],
     *,
     stdin: int | None = None,
     stdout: BinaryIO | None = None,
     stderr: BinaryIO | None = None,
-) -> subprocess.Popen[bytes]:
-    return subprocess.Popen(
+    grace_seconds: float = 5,
+) -> Generator[subprocess.Popen[bytes]]:
+    windows = os.name == "nt"
+    # Assign the job before the command can start a child (including Python's
+    # Windows virtual environment redirector launching the real interpreter).
+    create_suspended = 0x00000004
+    process = subprocess.Popen(
         command,
         stdin=stdin,
         stdout=stdout,
         stderr=stderr,
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+        creationflags=(subprocess.CREATE_NEW_PROCESS_GROUP | create_suspended) if windows else 0,
         start_new_session=os.name == "posix",
     )
+    job = None
+    try:
+        if windows:
+            import psutil
+            from rc_metastudio.r_worker_lifetime import WindowsWorkerJob
+
+            job = WindowsWorkerJob(process.pid)
+            psutil.Process(process.pid).resume()
+        yield process
+    except BaseException:
+        if not windows:
+            terminate_process_group(process, grace_seconds=grace_seconds)
+        raise
+    finally:
+        if windows:
+            if job is None:
+                process.kill()
+            else:
+                job.close()
+            _wait_for_exit(process)
 
 
-def terminate_process_tree(
-    process: subprocess.Popen[bytes], *, grace_seconds: float = 5
-) -> None:
-    if os.name != "nt":
-        terminate_process_group(process, grace_seconds=grace_seconds)
-        return
-    terminated = subprocess.run(
-        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=False,
-    )
-    if terminated.returncode != 0:
-        details = "\n".join(
-            part.strip() for part in (terminated.stdout, terminated.stderr) if part.strip()
-        )
-        raise RuntimeError(
-            f"taskkill /T /F failed for process tree {process.pid} "
-            f"with exit code {terminated.returncode}: {details or 'no diagnostics'}"
-        )
+def _wait_for_exit(process: subprocess.Popen[bytes]) -> None:
     try:
         process.wait(timeout=5)
     except subprocess.TimeoutExpired as error:
-        raise RuntimeError(
-            f"taskkill reported success but process {process.pid} remained alive"
-        ) from error
+        raise RuntimeError(f"process {process.pid} remained alive after cleanup") from error
 
 
 def _signal_group(group_id: int, signum: int) -> bool:
@@ -78,7 +83,7 @@ def terminate_process_group(process: subprocess.Popen[bytes], *, grace_seconds: 
     except subprocess.TimeoutExpired:
         pass
     _signal_group(process.pid, _sigkill)
-    process.wait(timeout=5)
+    _wait_for_exit(process)
 
 
 def wait_for_process_group_exit(group_id: int, *, timeout_seconds: float) -> bool:

@@ -74,13 +74,6 @@ def _validate_failed_analysis(failure: dict[str, object]) -> None:
         raise ValueError("failed analysis changed the user's confidence level")
 
 
-def _install_backend_test_double(
-    backend: object, name: str, implementation: Callable[..., object]
-) -> None:
-    """Patch one explicitly selected R bridge operation for this smoke test."""
-    setattr(backend, name, implementation)
-
-
 def _capture_configuration(dialog: QtWidgets.QWidget, image: Path) -> None:
     image.parent.mkdir(parents=True, exist_ok=True)
     screen = dialog.screen()
@@ -118,7 +111,7 @@ def main() -> int:
 
     backend = analysis_setup_dialog.analysis_adapter.r_operations
 
-    _install_backend_test_double(
+    setattr(
         backend,
         "available_model_methods",
         lambda *_args, **_kwargs: {"binary.random": "Random"},
@@ -133,7 +126,7 @@ def main() -> int:
             {},
         ),
     )
-    _install_backend_test_double(
+    setattr(
         backend, "get_analysis_plot_capabilities", lambda *_args, **_kwargs: []
     )
 
@@ -181,7 +174,7 @@ def main() -> int:
         returned_results.append(result)
         return result
 
-    _install_backend_test_double(backend, "run_model_analysis", run_backend)
+    setattr(backend, "run_model_analysis", run_backend)
 
     def deferred_delete() -> None:
         QtCore.QCoreApplication.sendPostedEvents(
@@ -270,7 +263,7 @@ def main() -> int:
     def fail_backend(*_args: object, **_kwargs: object) -> object:
         raise RuntimeError("native backend failure")
 
-    _install_backend_test_double(backend, "run_model_analysis", fail_backend)
+    setattr(backend, "run_model_analysis", fail_backend)
     original_critical = analysis_setup_dialog.QMessageBox.critical
     setattr(
         analysis_setup_dialog.QMessageBox, "critical", lambda *_args, **_kwargs: None

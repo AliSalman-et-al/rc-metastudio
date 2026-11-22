@@ -4,7 +4,6 @@ from tests.e2e import r_oracle
 
 from pathlib import Path
 
-from rc_metastudio import r_operations
 
 
 def load_serialized_object(path: str | Path) -> None:

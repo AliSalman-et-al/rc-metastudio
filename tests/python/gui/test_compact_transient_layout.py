@@ -21,35 +21,9 @@ def _show(window, qapp):
     qapp.processEvents()
 
 
-
-
-def _frame_margins(window):
-    frame = window.frameGeometry()
-    return QtCore.QSize(
-        max(0, frame.width() - window.width()),
-        max(0, frame.height() - window.height()),
-    )
-
-
 def _pixmap_logical_size(pixmap):
     ratio = max(1.0, pixmap.devicePixelRatioF())
     return QtCore.QSize(round(pixmap.width() / ratio), round(pixmap.height() / ratio))
-
-
-def _assert_content_preferred_outer_size(window, available, fraction, tolerance=6):
-    hint = window.sizeHint().expandedTo(window.minimumSizeHint())
-    frame_extra = _frame_margins(window)
-    expected_width = min(
-        hint.width() + frame_extra.width(), int(available.width() * fraction)
-    )
-    expected_height = min(
-        hint.height() + frame_extra.height(), int(available.height() * fraction)
-    )
-    frame = window.frameGeometry()
-    assert abs(frame.width() - expected_width) <= tolerance
-    assert abs(frame.height() - expected_height) <= tolerance
-
-
 
 
 def _remaining_surface_inventory():

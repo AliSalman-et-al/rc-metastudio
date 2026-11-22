@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from shutil import copyfile
 from unittest.mock import patch
-from uuid import uuid4
 
 from rc_metastudio import r_worker
 from tests.e2e import r_oracle

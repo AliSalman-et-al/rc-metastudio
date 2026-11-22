@@ -35,7 +35,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 os.environ.setdefault("RCMS_QT6_BUILD_ROOT", str(ROOT / "build" / "qt6-verification"))
 
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
-from rc_metastudio.calculators import service as calculator_service, controls as calculator_controls
+from rc_metastudio.calculators import service as calculator_service
 from rc_metastudio.analysis import catalog as analysis_catalog
 
 prepare_generated_ui_imports()
@@ -334,8 +334,6 @@ def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
 def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():
     from rc_metastudio.calculators import (
         controls as calculator_controls,
-        edit_history as calculator_edit_history,
-        effect_readout as calculator_effect_readout,
     )
 
     for text in ("12.5", "12,5"):
@@ -345,8 +343,6 @@ def test_calculator_numeric_input_uses_unambiguous_dot_or_comma_decimal():
 def test_calculator_numeric_input_rejects_grouping_and_non_finite_values():
     from rc_metastudio.calculators import (
         controls as calculator_controls,
-        edit_history as calculator_edit_history,
-        effect_readout as calculator_effect_readout,
     )
 
     for text in ("1,234.5", "1.234,5", "1,2,3", "nan", "inf"):
@@ -650,7 +646,6 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import (
         continuous_dialog as continuous_data_dialog,
-        controls as calculator_controls,
     )
     from rc_metastudio.analysis import catalog as analysis_catalog
 
@@ -807,8 +802,6 @@ def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
 ):
     from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import (
-        controls as calculator_controls,
-        edit_history as calculator_edit_history,
         effect_readout as calculator_effect_readout,
     )
 
@@ -965,7 +958,6 @@ def test_continuous_effect_fields_fit_metric_domain_samples(
 ):
     from rc_metastudio.calculators import (
         controls as calculator_controls,
-        edit_history as calculator_edit_history,
         effect_readout as calculator_effect_readout,
     )
     from rc_metastudio import r_operations
@@ -1034,7 +1026,6 @@ def test_binary_calculator_grid_columns_fill_expanded_table_width(qapp, monkeypa
 def test_binary_effect_fields_follow_metric_display_domains(qapp, monkeypatch):
     from rc_metastudio.calculators import (
         controls as calculator_controls,
-        edit_history as calculator_edit_history,
         effect_readout as calculator_effect_readout,
     )
     from rc_metastudio import r_operations

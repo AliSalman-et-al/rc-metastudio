@@ -14,7 +14,6 @@ from tests.e2e.plot_observations import load_saved_analysis
 
 def run_predictions(app, window, work, record):
     from analysis_matrix import run as matrix
-    from rc_metastudio import r_operations
     from tests.e2e.analysis_result_checks import check_report
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
     for measure, workflow in [('PFT', 'standard'), ('PLO', 'standard'), ('PAS', 'standard'),

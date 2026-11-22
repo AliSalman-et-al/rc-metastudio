@@ -8,7 +8,6 @@ import os
 
 import pytest
 
-from PyQt6 import QtCore
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 

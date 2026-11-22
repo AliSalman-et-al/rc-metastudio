@@ -1,7 +1,6 @@
 from rc_metastudio.domain_ids import RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-from dataclasses import dataclass
 
 from rc_metastudio.workspace.editing import WorkspaceEditingService
 from rc_metastudio.workspace.editing import WorkspaceEditingContext
@@ -23,12 +22,6 @@ class FakeBridge:
     diagnostic_convert_scale = binary_convert_scale
     continuous_effect_for_study = effect_for_study
     diagnostic_effects_for_study = effect_for_study
-
-
-@dataclass
-class Study:
-    include: bool = False
-    manually_excluded: bool = False
 
 
 def test_single_arm_binary_preview_needs_no_fabricated_control():

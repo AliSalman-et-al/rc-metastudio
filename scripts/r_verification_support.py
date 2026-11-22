@@ -12,12 +12,6 @@ import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 
-if __package__:
-    from scripts.dependency_lock import locked_python_versions
-else:
-    from dependency_lock import locked_python_versions
-
-
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 R_BINARY_POLICY = Path("scripts") / "r_binary_policy.R"
 R_POLICY_LOADER = Path("scripts") / "r_dependency_policy.py"

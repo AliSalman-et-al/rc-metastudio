@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import r_verification_support, verify, verify_rcmetar_r_stack as stack, verify_rcms
+from scripts import verify, verify_rcmetar_r_stack as stack, verify_rcms
 from scripts import audit_report_retention as audit
 from scripts.code_health import build_evidence, git_as_of, load_config
 

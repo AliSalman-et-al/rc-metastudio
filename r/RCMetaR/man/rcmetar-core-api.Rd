@@ -10,9 +10,7 @@
 \alias{rcmetar.analysis.plot.capabilities}
 \alias{rcmetar.available.methods}
 \alias{rcmetar.method.parameters}
-\alias{rcmetar.method.description}
 \alias{rcmetar.set.global.conf.level}
-\alias{rcmetar.get.mult.from.conf.level}
 \alias{rcmetar.create.covariate.values}
 \alias{rcmetar.create.binary.data}
 \alias{rcmetar.create.continuous.data}
@@ -33,7 +31,6 @@
 \alias{rcmetar.draw.forest.plot}
 \alias{rcmetar.draw.sroc.plot}
 \alias{rcmetar.draw.regression.plot}
-\alias{rcmetar.graphics.off}
 \alias{rcmetar.method.references}
 \title{RCMetaR core analysis facade}
 \arguments{

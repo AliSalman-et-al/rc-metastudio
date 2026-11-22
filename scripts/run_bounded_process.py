@@ -72,31 +72,34 @@ def run_bounded(
             path.parent.mkdir(parents=True, exist_ok=True)
             return streams.enter_context(path.open("ab"))
 
-        process = process_groups.start_process(
-            command,
-            stdin=subprocess.DEVNULL,
-            stdout=open_log(stdout_path),
-            stderr=open_log(stderr_path),
-        )
+        pid = None
         try:
-            return process.wait(timeout=timeout_seconds)
+            with process_groups.owned_process(
+                command,
+                stdin=subprocess.DEVNULL,
+                stdout=open_log(stdout_path),
+                stderr=open_log(stderr_path),
+                grace_seconds=1,
+            ) as process:
+                pid = process.pid
+                return process.wait(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
             print(
                 f"package process exceeded its {timeout_seconds}-second watchdog: {command!r}",
                 file=sys.stderr,
             )
-            _terminate_package_process(process, owned_pid_path)
+            _confirm_package_exit(pid, owned_pid_path)
             return 124
         except BaseException:
-            _terminate_package_process(process, owned_pid_path)
+            if pid is not None:
+                _confirm_package_exit(pid, owned_pid_path)
             raise
 
 
-def _terminate_package_process(process: subprocess.Popen[bytes], owned_pid_path: Path | None) -> None:
+def _confirm_package_exit(pid: int | None, owned_pid_path: Path | None) -> None:
     try:
-        process_groups.terminate_process_tree(process, grace_seconds=1)
-        if os.name == "posix" and not process_groups.wait_for_process_group_exit(
-            process.pid, timeout_seconds=5
+        if pid is not None and os.name == "posix" and not process_groups.wait_for_process_group_exit(
+            pid, timeout_seconds=5
         ):
             raise RuntimeError("package process group remained alive after SIGKILL")
     finally:

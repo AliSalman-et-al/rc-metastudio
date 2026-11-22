@@ -27,7 +27,7 @@ Calculator and Results evidence defaults to `build/qt6-verification/native-calcu
 
 Frozen comparison covers 11 cases (three basic plus eight binary/continuous extended). The authority script supplies 103 independent public-package comparisons plus effect reconstruction assertions, including single/double-zero correction policies. Current-source R-stack supplies joint Reitsma public-`mada` comparisons and 21-case visual QA. These complement one another; none alone proves all UI modes. Small-study numerical gaps and mandatory targeted recipes are in its feature map.
 
-After a golden-comparator-only correction, preserve the original failed report and re-run that gate without repeating already-passed unchanged package/bridge tests. For a configured warm Windows runtime:
+After a golden-comparator-only correction, preserve the original failed report and re-run that gate without repeating already-passed unchanged package tests. For a configured warm Windows runtime:
 
 ```powershell
 $env:R_HOME = $env:RCMS_R_HOME

@@ -95,7 +95,6 @@ def check_endpoints(path, axis_ticks, geometry, natural, ratio):
 def run(app, window, work, record, family):
     from analysis_matrix import run as matrix
     from advanced_workflows import modal, click
-    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
     baseline = bool(os.environ.get('RCMS_AXIS_BASELINE'))
     cases = [('analysis-data-onearm-proportion', metric) for metric in ('PLO','PAS','PFT','PLN')] if family == 'proportions' else [
@@ -206,8 +205,6 @@ def run(app, window, work, record, family):
 def run_sequential(app, window, work, record):
     """PFT inverses use the actual subset behind each cumulative/omission fit."""
     from analysis_matrix import run as matrix
-    from rc_metastudio.project import model as analysis_dataset
-    from rc_metastudio import r_operations
     for workflow in ('cumulative', 'leave-one-out', 'subgroup'):
         def groups(window):
             if workflow == 'subgroup':

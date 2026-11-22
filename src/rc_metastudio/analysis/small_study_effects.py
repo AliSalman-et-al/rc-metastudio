@@ -15,7 +15,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import Literal, TypeVar, cast
+from typing import TypeVar, cast
 
 from rc_metastudio.analysis.catalog import AnalysisFamily, FAMILY_METRICS
 

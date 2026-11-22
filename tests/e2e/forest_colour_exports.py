@@ -53,7 +53,6 @@ def check_colours(path, colour='#2F5597', require_caps=True):
 def run_colours(app, window, work, record):
     from analysis_matrix import run as matrix
     from advanced_workflows import export_formats, modal, click
-    from rc_metastudio import r_operations
     from rc_metastudio.results.plot_editor import EditPlotDialog
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))

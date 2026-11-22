@@ -27,7 +27,7 @@ from rc_metastudio.calculators.service import (
     Numeric,
 )
 from rc_metastudio.analysis.catalog import BINARY_METRIC_NAMES, BINARY_ONE_ARM_METRICS, BINARY_TWO_ARM_METRICS, DEFAULT_ARM_NAMES
-from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
+from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, normal_confidence_multiplier
 from rc_metastudio.calculators import (
     controls as calculator_controls,
     edit_history as calculator_edit_history,

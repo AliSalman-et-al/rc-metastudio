@@ -2,7 +2,6 @@
 
 import gzip
 from math import ceil
-from pathlib import Path
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 

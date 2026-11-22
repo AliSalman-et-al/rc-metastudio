@@ -500,23 +500,32 @@ def test_native_smoke_timeout_runner_streams_output_and_fails_closed():
     assert sys.executable in completed.stderr
 
 
-@pytest.mark.skipif(os.name != "nt", reason="Windows taskkill contract")
-def test_timeout_runner_reports_taskkill_failure(monkeypatch):
-    runner_path = ROOT / "scripts" / "run_with_timeout.py"
-    spec = importlib.util.spec_from_file_location("timeout_runner_test", runner_path)
-    assert spec is not None and spec.loader is not None
-    runner = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(runner)
+@pytest.mark.skipif(os.name != "nt", reason="Windows job lifetime")
+def test_timeout_runner_reaps_descendant_when_command_exits():
+    import psutil
 
-    class FakeProcess:
-        pid = 424242
-
-    def fail_taskkill(command, **_kwargs):
-        return subprocess.CompletedProcess(command, 5, "", "Access is denied")
-
-    monkeypatch.setattr(runner.subprocess, "run", fail_taskkill)
-    with pytest.raises(RuntimeError, match="taskkill /T /F failed.*Access is denied"):
-        runner.terminate_process_tree(FakeProcess())
+    parent = (
+        "import subprocess,sys; "
+        "child = subprocess.Popen([sys.executable, '-c', "
+        "'import os,time; print(os.getpid(), flush=True); time.sleep(30)'], "
+        "stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True); "
+        "print(child.stdout.readline().strip(), flush=True); child.stdout.close()"
+    )
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/run_with_timeout.py"), "--timeout-seconds",
+         "10", "--label", "descendant cleanup", "--", sys.executable, "-c", parent],
+        cwd=ROOT, capture_output=True, text=True, timeout=20, check=True,
+    )
+    try:
+        child = psutil.Process(int(completed.stdout.strip()))
+    except psutil.NoSuchProcess:
+        return
+    try:
+        child.wait(timeout=5)
+    finally:
+        if child.is_running():
+            child.kill()
+            child.wait(timeout=5)
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX process-group teardown contract")

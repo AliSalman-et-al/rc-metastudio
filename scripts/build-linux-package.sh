@@ -161,11 +161,6 @@ step "Generating Qt resources and compiling the Linux desktop bundle"
 qt6_build_root="$work_root/qt6"
 "$python_exe" "$repo_root/scripts/build_qt6.py" generate --build-root "$qt6_build_root"
 export RCMS_QT6_BUILD_ROOT="$qt6_build_root"
-export RCMS_R_HOME="$r_home"
-export R_HOME="$r_home"
-export R_LIBS="$r_library"
-export R_LIBS_USER="$r_library"
-export LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export RCMS_PYQT_ROOT="$($python_exe -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent)')"
 "$python_exe" -m PyInstaller --noconfirm --clean \
   --workpath "$work_root/pyinstaller-work" \
@@ -178,7 +173,9 @@ mkdir -p "$archive_root"
 cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
 # Resolve the installed closure before pruning only the staged runtime.
-"$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
+R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
+LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+  "$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
 "$python_exe" "$repo_root/scripts/prune_staged_r.py" "$archive_root/R" "$qualification_root/r-closure.txt"
 # Debug sections are unnecessary for execution; preserve symbols used by dlsym.
 "$python_exe" - "$archive_root/R" <<'PYTHON'

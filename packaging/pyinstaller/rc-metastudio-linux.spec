@@ -14,7 +14,6 @@ collection_module = importlib.util.module_from_spec(collection_spec)
 collection_spec.loader.exec_module(collection_module)
 app_source = repo_root / "src" / "rc_metastudio"
 qt6_build_root = Path(os.environ["RCMS_QT6_BUILD_ROOT"]).resolve()
-r_home = Path(os.environ["RCMS_R_HOME"]).resolve()
 pyqt_root = Path(os.environ["RCMS_PYQT_ROOT"]).resolve()
 generated_ui_modules = collection_module.pyinstaller_module_entries(qt6_build_root)
 required_plugins = (
@@ -35,11 +34,6 @@ for relative in required_plugins:
     )
 
 
-def is_private_r_binary(entry):
-    source = Path(entry[1]).resolve()
-    return source == r_home or r_home in source.parents
-
-
 a = Analysis(
     [str(app_source / "__main__.py")],
     pathex=[str(app_source), str(app_source / "forms")],
@@ -53,15 +47,8 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-# libR is resolved from the app-root R directory by the launcher. Do not copy
-# a second R runtime into PyInstaller's private import directory. Qt's bundled
-# TIFF plugin targets libtiff.so.5, which Noble does not provide; the app does
-# not use that Qt image format plugin.
-a.binaries = [
-    entry
-    for entry in a.binaries
-    if not is_private_r_binary(entry) and Path(entry[1]).name != "libqtiff.so"
-]
+# Qt's unused TIFF plugin targets libtiff.so.5, which Noble does not provide.
+a.binaries = [entry for entry in a.binaries if Path(entry[1]).name != "libqtiff.so"]
 a.pure.extend(generated_ui_modules)
 pyz = PYZ(a.pure)
 exe = EXE(

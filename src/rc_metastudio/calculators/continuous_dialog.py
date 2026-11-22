@@ -35,7 +35,7 @@ from rc_metastudio.calculators.service import (
     CalculatorService,
 )
 from rc_metastudio.analysis.catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
-from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, is_empty, normal_confidence_multiplier
+from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, normal_confidence_multiplier
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:

@@ -68,7 +68,6 @@ def check_fixed_references(view, record, method="IV"):
 
 
 def check_standard_heterogeneity(view, record):
-    from rc_metastudio import r_operations
     tables = [t for s in view.results.sections for t in s.tables if t.title.endswith("Heterogeneity")]
     for table, (title, path) in zip(tables, view.results.display_images.items(), strict=True):
         load_serialized_object(str(view.params_paths[title]) + ".plotdata")
@@ -96,7 +95,6 @@ def check_standard_heterogeneity(view, record):
 
 
 def check_subgroup(view, record):
-    from rc_metastudio import r_operations
 
     def compare(cell, expected, tolerance):
         if expected is None:

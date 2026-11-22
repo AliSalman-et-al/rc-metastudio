@@ -81,7 +81,6 @@ def run(
     from PyQt6 import QtCore, QtGui, QtWidgets
     from PyQt6.QtSvg import QSvgRenderer
 
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
     from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
@@ -823,7 +822,7 @@ def run(
         report = view.manuscript_text.toPlainText()
         assert report.startswith("Methods\n"), report
         sensitivity = next(s for s in view.results.sections if s.title == "Sensitivity summary")
-        heterogeneity = next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
+        next(t for t in sensitivity.tables if t.title.endswith('Heterogeneity'))
         from tests.e2e.report_retention import assert_report
         assert_report(view, system_clipboard=system_clipboard)
         assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results") < report.index("Model configuration"), report

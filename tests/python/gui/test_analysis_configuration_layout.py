@@ -723,7 +723,6 @@ def test_meta_regression_estimator_stays_inside_viewport(
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
-    backend = analysis_setup_dialog.analysis_adapter.AnalysisService
     covariate = {'id': 'latitude', 'name': 'latitude', 'data_type': 0}
     dialog = analysis_setup_dialog.AnalysisSetupDialog(
         _AnalysisModel("continuous", (covariate,)),

@@ -9,7 +9,6 @@ from analysis_matrix import run as matrix
 
 
 def references(window, method, workflow, metric):
-    from rc_metastudio import r_operations
     from tests.analysis_regression.golden.support.golden_analysis import _result_row_key
 
     studies = window.model.get_studies(only_if_included=True)
