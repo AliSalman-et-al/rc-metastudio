@@ -2481,6 +2481,8 @@ base_path_patch = patch(
 )
 base_path_patch.start()
 try:
+    if sys.argv[1] == "r-worker-recovery":
+        os.environ["RCMS_R_BACKEND"] = "worker"
     _startup_phases["composition:start"] = time.time()
     def observe_startup(phase):
         _startup_phases[phase] = time.time()
@@ -2556,6 +2558,11 @@ finally:
     for widget in app.topLevelWidgets():
         widget.close()
     automation.dispose_qobjects(app, app.topLevelWidgets())
+    if os.environ.get("RCMS_R_BACKEND") == "worker":
+        from rc_metastudio.r_worker import RWorker
+
+        if (worker := app.findChild(RWorker)) is not None:
+            worker.close()
     app.quit()
     base_path_patch.stop()
 print("WORKFLOW PASSED")
