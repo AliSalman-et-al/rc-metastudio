@@ -12,7 +12,8 @@ def evaluate(expression: str):
     source = directory / "expression.R"
     source.write_text(expression, encoding="utf-8")
     executable = Path(os.environ["R_HOME"]) / "bin" / ("Rscript.exe" if os.name == "nt" else "Rscript")
-    subprocess.run([str(executable), "--vanilla", "-e", """
+    driver = directory / "oracle.R"
+    driver.write_text("""
         suppressPackageStartupMessages(library(RCMetaR))
         if (file.exists("session.RData")) load("session.RData", envir=.GlobalEnv)
         local({
@@ -23,7 +24,12 @@ def evaluate(expression: str):
             jsonlite::write_json(value, "result.json", digits=I(17), null="null", auto_unbox=FALSE)
         })
         save(list=ls(.GlobalEnv, all.names=TRUE), file="session.RData", envir=.GlobalEnv)
-    """], cwd=directory, check=True, capture_output=True, timeout=60)
+    """, encoding="utf-8")
+    process = subprocess.run([str(executable), "--vanilla", str(driver)], cwd=directory,
+                             capture_output=True, timeout=60)
+    if process.returncode:
+        (directory / "stderr.log").write_bytes(process.stderr)
+        process.check_returncode()
     return json.loads((directory / "result.json").read_text(encoding="utf-8"))
 
 
