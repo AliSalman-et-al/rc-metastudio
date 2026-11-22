@@ -21,7 +21,7 @@ def open_sample_menu_action(window, filename):
     assert window.workspace.path.name == filename
 
 
-def check_sample_saves(app, window, work, sample, number, record):
+def check_sample_saves(app, window, work, sample, number, record, picker):
     from advanced_workflows import modal
 
     sample_button = required(window.start_page.findChild(QtWidgets.QPushButton, "empty_recent_sample"))
@@ -43,10 +43,6 @@ def check_sample_saves(app, window, work, sample, number, record):
         next(action for action in window.action_open_recent_2.actions()
              if action.data() == str(sample)).trigger()
 
-    picker = QtWidgets.QFileDialog(window)
-    picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
-    picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
-    picker.setDirectory(str(work))
     window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, False)
     try:
         for route, open_project in (
@@ -143,13 +139,22 @@ def run(app, window, work, root, record, analyze):
     record("sample-file-menu", window.menu_file)
     window.menu_file.close()
 
+    # Keep the offscreen picker's filesystem model alive across sample windows.
+    # Embedded R can dispatch pending Windows messages during the next preview.
+    picker = QtWidgets.QFileDialog(window)
+    picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+    picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+    picker.setDirectory(str(work))
+    for model in picker.findChildren(QtGui.QFileSystemModel):
+        model.setOption(QtGui.QFileSystemModel.Option.DontWatchForChanges)
+
     for number, entry in enumerate(entries, start=1):
         for recent in get_recent_files():
             remove_recent_file(recent)
         sample_window = type(window)()
         sample_window.start()
         try:
-            check_sample_saves(app, sample_window, work, root / "sample_projects" / entry["file"], number, record)
+            check_sample_saves(app, sample_window, work, root / "sample_projects" / entry["file"], number, record, picker)
         finally:
             sample_window.workspace.mark_saved()
             sample_window.close()
