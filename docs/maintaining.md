@@ -75,26 +75,30 @@ uv run python -m rc_metastudio
 
 Without `RCMS_QT6_BUILD_ROOT`, the application looks for generated forms under `build/qt6`.
 
-## Pre-push gate
+## Pull request verification
 
-Set up the tracked hook in your checkout:
+GitHub Actions gates pull requests. The quick stage runs deterministic code health
+on Ubuntu and generates Qt forms, runs strict win32 typing, collects pytest,
+and runs the fast Python, packaging contract, and JavaScript release tests on
+Windows. The classifier-selected native, R-stack, cross-platform, and packaged
+checks wait for the quick stage. The Qt6 Integration Verification Gate reports
+the result.
 
-```powershell
-git config core.hooksPath .githooks
-```
-
-Use Windows with a native Qt desktop, Node.js (`node` on PATH), Poppler (`pdftotext` on PATH), and the locked Python environment above. Set `RCMS_R_HOME` if the default R selection differs from [the runtime pin](../config/r-dependencies.json). The gate checks the actual R version before using it and builds RCMetaR in its own temporary library for the full stack and doctor.
-
-Fetch the default branch for code health, commit your changes and run the gate from a clean tree:
+To run the Windows quick checks before opening a pull request, use the locked
+Python environment, Node.js, and [pinned R](../config/r-dependencies.json) on
+PATH. Fetch the default branch and commit your changes before checking code
+health against the PR diff.
 
 ```powershell
 git fetch origin
-uv run --locked python scripts/verify.py pre-push
+uv run --locked python scripts/verify.py quick
+uv run --locked python -c "from scripts.verify import run_code_health; run_code_health(reuse_baseline=True)"
 ```
 
-The gate fails fast. It generates Qt forms and runs strict win32 typing before any GUI tests. It checks the pinned R runtime, committed code health, strict pytest collection, fast/golden Python tests, GUI tests, packaging contracts and JavaScript release tests. It runs both native Qt sections and the full R check set with a fresh run of every desktop scenario across the three CI shards, followed by doctor in the same owned R library.
-
-The timing table is printed and saved to `artifacts/verification/pre-push.json` with the tested HEAD and clean-tree status. The hook checks that every local lane passed for the exact object being pushed and that the tree is still clean. It only checks the local receipt. Run the gate again after any new commit. The repository's macOS and Linux lanes still run in CI. The release pipeline separately qualifies the exact Windows package on its Windows Server 2025 runner.
+When CI catches a regression that a quick check could have caught, add a fast
+test to the quick stage. The old Windows pre-push hook has been removed. If you
+configured `.githooks` solely for that hook, clear the setting with
+`git config --unset core.hooksPath`.
 
 ## Verification lanes and test suites
 

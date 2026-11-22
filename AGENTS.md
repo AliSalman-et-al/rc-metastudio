@@ -53,4 +53,4 @@ Every qualification starts with the [repository-wide strict typing gate](.agents
 
 For user-visible behavior and verification evidence, use [.agents/skills/verify-rcms/SKILL.md](.agents/skills/verify-rcms/SKILL.md). Its feature map distinguishes exercised paths from coverage that still needs a targeted drive.
 
-Before pushing or opening a PR: [pre-push gate](docs/maintaining.md#pre-push-gate).
+Before opening a PR, see [pull request verification](docs/maintaining.md#pull-request-verification).

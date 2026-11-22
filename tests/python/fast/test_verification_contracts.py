@@ -113,35 +113,6 @@ def test_code_health_always_checks_current_commit(monkeypatch, tmp_path, reuse, 
     assert "--baseline" in commands[-1]
 
 
-def test_pre_push_uses_one_prepared_build_for_all_checks(monkeypatch, tmp_path):
-    build = tmp_path / "generated-ui"
-    receipt = tmp_path / "pre-push.json"
-    head = "a" * 40
-    monkeypatch.setenv("RCMS_QT6_BUILD_ROOT", str(build))
-    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
-    monkeypatch.setattr(verify, "PRE_PUSH_RECEIPT", receipt)
-    monkeypatch.setattr(verify.sys, "platform", "win32")
-    monkeypatch.setattr(verify, "git_output", lambda command, *_args: head if command == "rev-parse" else "")
-    monkeypatch.setattr(verify, "pinned_r_environment", lambda env: env.update(RCMS_RSCRIPT="pinned/Rscript"))
-    commands = []
-    monkeypatch.setattr(verify, "run", lambda command, **options: commands.append((command, options)))
-    monkeypatch.setattr(verify, "run_typing", lambda root: commands.append((["ty", str(root)], {})))
-
-    assert verify.main(["pre-push"]) == 0
-    result = json.loads(receipt.read_text(encoding="utf-8"))
-    assert result["head"] == head and result["clean"] is True
-    assert all(row["status"] == "pass" for row in result["steps"] if row["step"] in verify.pre_push_steps())
-    assert [command[0][0] for command in commands].count("ty") == 1
-    assert len([command for command, _ in commands if "scripts/build_qt6.py" in command]) == 1
-    gui = next(options for command, options in commands if "tests/python/gui" in command)
-    assert gui["env"]["RCMS_QT6_BUILD_ROOT"] == str(build)
-    native = [command for command, _ in commands if "scripts/verify-qt6.ps1" in command]
-    assert [(command[-3], command[-1]) for command in native] == [
-        ("Core", str(build)),
-        ("RemainingSurfaces", str(build)),
-    ]
-
-
 def test_r_version_is_part_of_manifest_check(monkeypatch):
     policy = json.loads((ROOT / 'config/r-dependencies.json').read_text())
     packages = {d['name']: d['installed_version'] for d in policy['direct_RCMetaR_dependencies']}
