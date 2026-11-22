@@ -74,48 +74,55 @@ def shell_step(step, tmp_path, values, prelude=""):
 
 
 @pytest.mark.parametrize(
-    "old,new,source_required,package_required",
+    "old,new,event,draft,expected",
     [
-        ("src/removed.py", "docs/moved.txt", True, True),
-        ("docs/old.txt", "src/new.py", True, True),
-        ("packaging/old.spec", "docs/old.spec", True, True),
-        ("", ".agents/skills/verify-rcms/scripts/analysis_matrix.py", True, True),
-        ("", "scripts/qt6_build_impl.py", True, True),
-        ("scripts/r-bundle-closure.R", "scripts/new-r-bundle-closure.R", True, True),
-        ("", "scripts/prune_staged_r.py", True, True),
-        ("", "scripts/configure_linux_r_launchers.py", True, True),
-        ("", ".github/workflows/code-health.yml", True, False),
-        ("", "config/desktop-durations.json", True, False),
-        ("", "docs/maintaining.md", False, False),
+        ("src/removed.py", "docs/moved.txt", "pull_request", False, {"qt6-verification", "remaining-surface-verification", "source-fast-targets", "full-r-stack"}),
+        ("", "docs/maintaining.md", "pull_request", False, set()),
+        ("", "src/rc_metastudio/calculators/binary_dialog.py", "pull_request", True, {"qt6-verification", "remaining-surface-verification", "source-fast-targets", "full-r-stack"}),
+        ("", "r/RCMetaR/R/binary_methods.R", "push", False, {"source-fast-targets", "full-r-stack"}),
+        ("", "packaging/app.spec", "pull_request", True, {"windows-package-qualification"}),
+        ("", "packaging/app.spec", "pull_request", False, {"windows-package-qualification", "macos-package-qualification", "linux-package-qualification", "packaging-contract-macos"}),
+        ("", ".github/workflows/fast-verification.yml", "pull_request", False, None),
+        ("", "docs/maintaining.md", "schedule", False, None),
     ],
 )
-def test_input_classification_executes_workflow(tmp_path, old, new, source_required, package_required):
-    step = workflow("fast-verification")["jobs"]["change-classifier"]["steps"][1]
-    files = [{"filename": new, "previous_filename": old}]
-    (tmp_path / "files.json").write_text(json.dumps(files))
-    # The fake API honors the actual jq projection supplied by the action.
-    (tmp_path / "api.py").write_text(
-        'import json,sys\nfor f in json.load(open("files.json")):\n print(f["filename"])\n if "previous_filename" in sys.argv[-1]: print(f["previous_filename"])\n'
-    )
-    (tmp_path / "scripts").mkdir()
-    policy_path = "scripts/package_input_policy.py"
-    (tmp_path / policy_path).write_text(release_proof_source(policy_path), encoding="utf-8")
-    python = Path(sys.executable).as_posix()
+def test_input_classification_executes_workflow(tmp_path, old, new, event, draft, expected):
+    workflow_jobs = workflow("fast-verification")["jobs"]
+    step = workflow_jobs["change-classifier"]["steps"][1]
+    # Feed Git's NUL-delimited output, including both sides of a rename.
+    git = f"function git() {{ if [[ \"$1\" == diff ]]; then printf '%s\\0' {old or new} {new}; fi; }}"
     result = shell_step(
         step,
         tmp_path,
         {
-            "github.event_name": "pull_request",
-            "github.event.pull_request.number": "42",
-            "github.repository": "owner/repo",
+            "github.event_name": event,
+            "github.event.pull_request.draft": str(draft).lower(),
+            "github.event.pull_request.base.sha": "base",
+            "github.event.before": "base",
         },
-        f'function gh() {{ "{python}" api.py "$@"; }}\nfunction python3() {{ "{python}" "$@"; }}',
+        f'{git}\nexport PYTHONPATH={ROOT.as_posix()!r}\nfunction python3() {{ "{Path(sys.executable).as_posix()}" "$@"; }}',
     )
     assert result.returncode == 0, result.stderr
-    outputs = (tmp_path / "outputs").read_text()
-    fields = dict(line.split("=", 1) for line in outputs.splitlines())
-    assert fields["run-source"] == str(source_required).lower()
-    assert fields["run-windows-package"] == str(package_required).lower()
+    fields = dict(line.split("=", 1) for line in (tmp_path / "outputs").read_text().splitlines())
+    lanes = set(json.loads(fields["lanes"]))
+    assert lanes == (expected if expected is not None else set(workflow_jobs["fast-verification-gate"]["needs"]) - {"change-classifier", "quick", "code-health"})
+    if draft and "source-fast-targets" in lanes:
+        assert [target["platform"] for target in json.loads(fields["targets"])] == ["windows"]
+        parts = json.loads(fields["r-stack-parts"])
+        assert parts and all(row["scenarios"] for row in parts)
+    if new.startswith("r/"):
+        assert {row["part"] for row in json.loads(fields["r-stack-parts"])} == {"checks", "1", "2", "3"}
+
+
+@pytest.mark.parametrize("selected,result,passes", [(False, "skipped", True), (True, "success", True), (True, "skipped", False), (True, "failure", False)])
+def test_verification_gate_requires_selected_jobs(tmp_path, selected, result, passes):
+    step = workflow("fast-verification")["jobs"]["fast-verification-gate"]["steps"][0]
+    required = dict.fromkeys(("change-classifier", "quick", "code-health"), {"result": "success"})
+    observation = shell_step(step, tmp_path, {
+        "toJSON(needs)": json.dumps(required | {"full-r-stack": {"result": result}}),
+        "needs.change-classifier.outputs.lanes": json.dumps(["full-r-stack"] if selected else []),
+    }, f'function python3() {{ "{Path(sys.executable).as_posix()}" "$@"; }}')
+    assert (observation.returncode == 0) is passes, observation.stderr
 
 
 def test_historical_master_ancestor_executes_workflow(tmp_path):

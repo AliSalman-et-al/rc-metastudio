@@ -6,23 +6,30 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+from importlib import metadata
 import json
 import os
+import platform
+import shutil
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
 if __package__:
-    from scripts import r_verification_support as r_support
+    from scripts import package_input_policy, r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
-    from scripts.verification_evidence import source_digest, typing_command, verified_typing
+    from scripts.verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
 else:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from scripts import package_input_policy
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
-    from verification_evidence import source_digest, typing_command, verified_typing
+    from verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
 
 
 class VerificationError(RuntimeError):
@@ -322,6 +329,34 @@ def run_packaging_contracts(env: dict[str, str] | None = None) -> None:
     run([sys.executable, "-m", "pytest", "-q", "tests/packaging/contract"], env=env)
 
 
+def run_macos_packaging_contracts() -> None:
+    run([
+        sys.executable, "-m", "pytest", "-q",
+        "tests/packaging/contract/test_macos_embedded_r_adapter_behavior.py::test_pyinstaller_preserves_miniature_cran_framework_toc",
+        "tests/packaging/contract/test_macos_native_pipeline_contract.py",
+    ])
+
+
+def run_linux_source() -> None:
+    env = prepare_qt_environment(REPO_ROOT / "build/qt6")
+    run(["xvfb-run", "-a", sys.executable, "scripts/build_qt6.py", "native-smoke"], env=env)
+    env["PYTHONPATH"] = str(REPO_ROOT)
+    run([
+        sys.executable, "-m", "pytest", "--strict-markers", "--confcutdir=tests/python/fast",
+        "tests/python/fast/test_r_runtime.py::test_frozen_linux_r_home_requires_private_shared_library",
+        "tests/python/fast/test_r_runtime.py::test_frozen_linux_runtime_does_not_require_integration_kit",
+        "tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_is_pinned_to_official_pyside6_version",
+        "tests/python/fast/test_qt6_build_slice.py::test_linux_rcc_resolution_checks_selected_pyside_environment",
+        "tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_requires_xcb_and_x86_64",
+        "tests/python/fast/test_qt6_build_slice.py::test_native_linux_smoke_selects_xcb",
+    ], env=env)
+    run([
+        sys.executable, "-m", "pytest", "--strict-markers", "--confcutdir=tests/packaging/contract",
+        "tests/packaging/contract/test_delivery_state_machine.py",
+        "tests/packaging/contract/test_linux_distributable_contract.py",
+    ], env=env)
+
+
 def run_quick() -> None:
     build_root = configured_build_root(dict(os.environ))
     env = prepare_qt_environment(build_root)
@@ -333,6 +368,120 @@ def run_quick() -> None:
     )
     run_packaging_contracts(env)
     run(["node", "--test", "tests/packaging/contract/release_actions.test.cjs"], env=env)
+
+
+def ready_actions() -> dict[str, Callable[[], None]]:
+    def verify(*args: str) -> None:
+        run([sys.executable, "scripts/verify.py", *args])
+
+    if sys.platform == "win32":
+        return {
+            package_input_policy.QT[0]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "Core"]),
+            package_input_policy.QT[1]: lambda: run(["powershell", "-File", "scripts/verify-qt6.ps1", "-Section", "RemainingSurfaces"]),
+            package_input_policy.SOURCE: lambda: verify("fast", "--skip-r-evidence"),
+            package_input_policy.WINDOWS_PACKAGE: lambda: run(["powershell", "-File", "scripts/package-windows.ps1"]),
+        }
+    if sys.platform == "darwin":
+        return {
+            package_input_policy.SOURCE: lambda: verify("smoke", "--require-r-evidence"),
+            "macos-package-qualification": lambda: run(["bash", "scripts/package-macos.sh", "--architecture", "arm64"]),
+            "packaging-contract-macos": run_macos_packaging_contracts,
+        }
+    return {
+        package_input_policy.SOURCE: run_linux_source,
+        "linux-package-qualification": lambda: run(["bash", "scripts/package-linux.sh"]),
+    }
+
+
+def ready_desktop(part: str, scenarios: str, args: argparse.Namespace) -> None:
+    command = [
+        sys.executable, "scripts/verify_rcmetar_r_stack.py",
+        "--rscript", selected_rscript(args),
+        "--r-library-cache-root", str(args.r_library_cache_root or FULL_R_LIBRARY_CACHE),
+    ]
+    if part == "checks":
+        command.append("--skip-desktop")
+    else:
+        command += ["--desktop-shard", part]
+    if scenarios:
+        command += ["--desktop-scenarios", scenarios]
+    run(command)
+
+
+def ready_toolchain(args: argparse.Namespace) -> dict[str, object]:
+    env = dict(os.environ)
+    rscript = r_support.resolve_rscript(selected_rscript(args))
+    tools = [shutil.which(name) for name in ("git", "uv", "node", "bash", "powershell", "rcc", "xvfb-run", *PDF_TOOLS)]
+    executables = {Path(path).resolve() for path in tools if path} | {Path(sys.executable).resolve()}
+    if rscript:
+        executables.add(rscript.resolve())
+    return {
+        "platform": platform.platform(),
+        "python": sys.version,
+        "distributions": sorted((d.metadata["Name"], d.version) for d in metadata.distributions()),
+        "executables": {str(path): file_digest(path) for path in sorted(executables)},
+        "r_version": subprocess.check_output([str(rscript), "--version"], stderr=subprocess.STDOUT, text=True).strip() if rscript else None,
+        "environment": {key: value for key, value in env.items() if key.startswith(("RCMS_", "QT_", "R_", "RPY2_", "LC_")) or key in {"PATH", "PYTHONPATH", "LANG"}},
+    }
+
+
+def ready_key(lane: str, selection: str, toolchain: dict[str, object]) -> str:
+    identity = hashlib.sha256(json.dumps([lane, selection, toolchain], sort_keys=True).encode())
+    if lane == "code-health" or lane in package_input_policy.PACKAGES:
+        identity.update(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT))
+    paths = package_input_policy.git_paths("ls-files", "-z", "--cached", "--others", "--exclude-standard")
+    for name in sorted(set(paths)):
+        path = REPO_ROOT / name
+        if package_input_policy.lane_reads(name, lane) and path.is_file():
+            identity.update(json.dumps([name, file_digest(path)]).encode())
+    return identity.hexdigest()
+
+
+def run_ready_lane(lane: str, selection: str, action: Callable[[], None], args: argparse.Namespace) -> None:
+    toolchain = ready_toolchain(args)
+    key = ready_key(lane, selection, toolchain)
+    cache = REPO_ROOT / "artifacts/verification/ready" / lane
+    receipt = cache / f"{key}.json"
+    record = json.dumps({"lane": lane, "inputs_sha256": key}) + "\n"
+    if not args.full and receipt.is_file() and receipt.read_text(encoding="utf-8") == record:
+        write_step(f"Reusing passed {lane}: {receipt}")
+        return
+    action()
+    if ready_key(lane, selection, ready_toolchain(args)) == key:
+        cache.mkdir(parents=True, exist_ok=True)
+        temp = cache / f"{uuid4().hex}.tmp"
+        temp.write_text(record, encoding="utf-8")
+        temp.replace(receipt)
+    else:
+        write_step(f"Inputs changed while running {lane}. Result was not cached.")
+
+
+def run_ready(args: argparse.Namespace) -> None:
+    base = subprocess.check_output(["git", "merge-base", "origin/master", "HEAD"], cwd=REPO_ROOT, text=True).strip()
+    paths = package_input_policy.changed_paths(base, working_tree=True)
+    paths += package_input_policy.git_paths("ls-files", "-z", "--others", "--exclude-standard")
+    selected = package_input_policy.plan(paths, full="--full" if args.full else "")
+    local = ready_actions()
+    actions = [
+        ("quick", "", "always", run_quick),
+        ("code-health", base, "always, compares committed HEAD", lambda: run_code_health(base, reuse_baseline=True)),
+    ]
+    for job in selected.jobs:
+        if job in local:
+            actions.append((job, "", ", ".join(selected.reasons[job]), local[job]))
+        elif job != package_input_policy.R:
+            write_step(f"CI only on this host: {job} ({', '.join(selected.reasons[job])})")
+    for part, scenarios in selected.parts.items():
+        lane = "checks" if part == "checks" else f"desktop-{part}"
+        reason = ", ".join(selected.reasons["checks" if part == "checks" else "desktop"])
+        actions.append((lane, scenarios, reason, lambda part=part, scenarios=scenarios: ready_desktop(part, scenarios, args)))
+    write_step(f"Ready plan against merge base {base}")
+    for lane, selection, reason, _ in actions:
+        detail = f" [{selection}]" if lane.startswith("desktop-") and selection else ""
+        print(f"  {lane}{detail} - {reason}", flush=True)
+    if not args.dry_run:
+        for lane, selection, _, action in actions:
+            run_ready_lane(lane, selection, action, args)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -379,6 +528,10 @@ def parser() -> argparse.ArgumentParser:
     add_rscript_options(r_stack)
     r_stack.add_argument("--build-root", default=DEFAULT_BUILD_ROOT, type=Path)
     subparsers.add_parser("quick", help="run the Windows quick CI checks")
+    ready = subparsers.add_parser("ready", help="run quick checks and the lanes selected for your changes")
+    ready.add_argument("--dry-run", action="store_true")
+    ready.add_argument("--full", action="store_true")
+    add_rscript_options(ready)
     return cli
 
 
@@ -391,6 +544,8 @@ def main(argv: list[str] | None = None) -> int:
             run_source_lane(args, smoke=False)
         elif args.lane == "quick":
             run_quick()
+        elif args.lane == "ready":
+            run_ready(args)
         else:
             run_full_r_stack(args)
     except (VerificationError, r_support.RVerificationSupportError, subprocess.CalledProcessError) as exc:
