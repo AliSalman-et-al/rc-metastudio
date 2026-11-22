@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox
 
 from rc_metastudio import settings
 from rc_metastudio.r_call_serialization import r_execution_active
+from rc_metastudio.r_worker import RJobCancelled
 
 
 UNEXPECTED_ERROR_TITLE = "Something went wrong"
@@ -57,6 +58,8 @@ def show_unexpected_error(exc_value, parent=None, *, log_path=None):
 
 def handle_exception(exc_type, exc_value, exc_traceback, parent=None):
     global _handling_exception
+    if isinstance(exc_value, RJobCancelled):
+        return
     if issubclass(exc_type, KeyboardInterrupt):
         if _previous_excepthook is not None:
             _previous_excepthook(exc_type, exc_value, exc_traceback)

@@ -28,6 +28,7 @@ class PlotExportDialog(QDialog):
         self.forest_dimensions: tuple[float, float] | None = None
         self._minimum_mm = 0.0
         self._layout_error = ""
+        self._measuring = False
         self._measure_timer = QTimer(self)
         self._measure_timer.setSingleShot(True)
         self._measure_timer.setInterval(150)
@@ -127,10 +128,15 @@ class PlotExportDialog(QDialog):
         self._refresh()
 
     def _measure_width(self):
+        if self._measuring:
+            self._measure_timer.start()
+            return
         self._layout_error = ""
         self.forest_dimensions = None
         self._minimum_mm = 0.0
         if self._forest_geometry is not None:
+            self._measuring = True
+            self._refresh()
             try:
                 dimensions = self._forest_geometry(self._width_inches, self.include_title.isChecked())
                 if dimensions is None:
@@ -141,6 +147,8 @@ class PlotExportDialog(QDialog):
                 self._layout_error = "Could not measure the forest plot because the analysis backend is unavailable."
             except Exception as error:
                 self._layout_error = f"Could not measure the forest plot. {error}"
+            finally:
+                self._measuring = False
         self._refresh()
 
     def _readable_width_mm(self) -> float:
@@ -170,7 +178,7 @@ class PlotExportDialog(QDialog):
 
     def _refresh(self):
         width, height, dpi = self.dimensions()
-        pending = self._measure_timer.isActive()
+        pending = self._measuring or self._measure_timer.isActive()
         blocked = pending or bool(self._layout_error) or width * 25.4 + 1e-8 < self._minimum_mm
         self.height_label.setText("Measuring…" if pending else f'{height * self.unit_factor():.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')

@@ -9,7 +9,7 @@ import json
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets, sip
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
     QMouseEvent,
@@ -230,6 +230,8 @@ class SheetTabBar(QtWidgets.QTabBar):
         """)
 
     def eventFilter(self, a0: QtCore.QObject | None, a1: QtCore.QEvent | None) -> bool:
+        if a0 is not None and sip.isdeleted(a0):
+            return True
         if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
             self.changeEvent(a1)
         return super().eventFilter(a0, a1)

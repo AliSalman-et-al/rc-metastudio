@@ -33,6 +33,16 @@ curve color with the rendered SVG. Decoded TIFF exports must report at least
 600 DPI. These source drives inspect the selected file filter but do not prove
 the native picker presentation.
 
+`r-worker-plot-parity` compares worker and embedded publication files across the
+golden analyses. `r-worker-exports` compares the 400-study forest and retains a
+10 ms GUI timer measurement for PDF and DOCX export. It interrupts a live DOCX
+export with Cancel and worker
+termination, checks the original destination and committed figure bytes, then
+exports again. It also converts an SVG larger than 16 MiB through the worker
+using a temporary file. Set `RCMS_R_BACKEND=worker` and
+`RCMS_VERIFY_WORKER_PLOT_PARITY=1` to compare exports after the existing plot
+editor drives apply their changes.
+
 The small-study drive sends a wheel event over the focused correction selector;
 the funnel editor drive does the same over sampling confidence. Both preserve
 settings while retaining keyboard editing. Their scroll areas route wheel events

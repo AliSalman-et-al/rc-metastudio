@@ -1,6 +1,6 @@
 """Manuscript content taken exclusively from an executed result."""
-from collections.abc import Callable, Generator
-from contextlib import contextmanager
+from collections.abc import Callable, Generator, Sequence
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Protocol
@@ -19,7 +19,7 @@ from html import escape
 import io
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QMarginsF, QRectF, Qt
-from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QImageReader, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
+from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QImageReader, QPainter, QPdfWriter, QTextDocument, QPageLayout, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor, Pt
@@ -30,6 +30,7 @@ from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import parse_xml
 from rc_metastudio import r_bridge
 from rc_metastudio import __version__
+from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
 
 if TYPE_CHECKING:
     from rc_metastudio.project.model import Sheet
@@ -1200,18 +1201,39 @@ def _figure_height_budget(number: int, figure: ResultSection, width_mm: float, h
     return min(250, height_mm - caption.size().height() / 96 * 25.4 - 9)
 
 
-def _docx_figures(document, figures):
-    section = document.sections[0]
-    width_mm = (section.page_width - section.left_margin - section.right_margin) / Mm(1)
-    height_mm = (section.page_height - section.top_margin - section.bottom_margin) / Mm(1)
+@dataclass(frozen=True)
+class _ReportFigure:
+    section: ResultSection
+    width_mm: float
+    height_mm: float
+    paths: tuple[str, ...]
+
+
+@contextmanager
+def _report_figures(report: ManuscriptReport, width_mm: float, height_mm: float
+                    ) -> Generator[list[_ReportFigure]]:
+    with ExitStack() as stack:
+        figures = []
+        for number, figure in enumerate(report.figures, 1):
+            ratio = _figure_ratio(figure.display_image or figure.value)
+            width = min(width_mm, _figure_width(figure, ratio))
+            available = _figure_height_budget(number, figure, width_mm, height_mm)
+            paths = stack.enter_context(_figure_panels(figure, width, available))
+            figures.append(_ReportFigure(figure, width, available, paths))
+        yield figures
+
+
+_DOCX_WIDTH_MM = 210
+_DOCX_HEIGHT_MM = 297
+_DOCX_MARGIN_MM = 20
+
+
+def _docx_figures(document, figures: Sequence[_ReportFigure]) -> None:
     for number, figure in enumerate(figures, 1):
-        ratio = _figure_ratio(figure.display_image or figure.value)
-        width = min(width_mm, _figure_width(figure, ratio))
-        available = _figure_height_budget(number, figure, width_mm, height_mm)
-        with _figure_panels(figure, width, available) as paths:
-            for index, path in enumerate(paths):
-                _add_docx_figure_panel(document, path, width, available, number, index)
-                _add_docx_figure_caption(document, figure, number, index)
+        for index, path in enumerate(figure.paths):
+            check_export_cancelled()
+            _add_docx_figure_panel(document, path, figure.width_mm, figure.height_mm, number, index)
+            _add_docx_figure_caption(document, figure.section, number, index)
 
 
 def _add_docx_figure_caption(document, figure: ResultSection, number: int, index: int) -> None:
@@ -1257,16 +1279,25 @@ def _add_docx_figure_panel(document, path, width: float, available: float, numbe
         ))
 
 
-def write_docx(report, path):
+def write_docx(report: ManuscriptReport, path: str | Path) -> None:
+    with (
+        staged_output(path) as temporary,
+        _report_figures(report, _DOCX_WIDTH_MM - 2 * _DOCX_MARGIN_MM,
+                        _DOCX_HEIGHT_MM - 2 * _DOCX_MARGIN_MM) as figures,
+    ):
+        compose_export(lambda: _write_docx(report, temporary, figures))
+
+
+def _write_docx(report: ManuscriptReport, path: Path, figures: Sequence[_ReportFigure]) -> None:
     document = Document()
     _docx_styles(document)
     compatibility = document.settings.element.xpath('./w:compat/w:compatSetting[@w:name="compatibilityMode"]')[0]
     compatibility.set(qn('w:val'), '15')
     section = document.sections[0]
-    section.page_width = Mm(210)
-    section.page_height = Mm(297)
-    section.top_margin = section.bottom_margin = Mm(20)
-    section.left_margin = section.right_margin = Mm(20)
+    section.page_width = Mm(_DOCX_WIDTH_MM)
+    section.page_height = Mm(_DOCX_HEIGHT_MM)
+    section.top_margin = section.bottom_margin = Mm(_DOCX_MARGIN_MM)
+    section.left_margin = section.right_margin = Mm(_DOCX_MARGIN_MM)
     document.add_heading(report.title, 0)
     document.add_paragraph(report.comparison)
     for heading, text in (('Methods', report.methods), ('Results', report.results)):
@@ -1281,11 +1312,9 @@ def write_docx(report, path):
         document.add_heading('Model configuration', 1)
         paragraph = document.add_paragraph(report.configuration)
         paragraph.paragraph_format.keep_together = True
-    _docx_figures(document, report.figures)
-    from rc_metastudio.results.plot_service import staged_output
-
-    with staged_output(path) as temporary:
-        document.save(str(temporary))
+    _docx_figures(document, figures)
+    check_export_cancelled()
+    document.save(str(path))
 
 
 def _print_document():
@@ -1300,18 +1329,25 @@ def _print_document():
     return document
 
 
-def write_pdf(report, path):
-    from rc_metastudio.results.plot_service import staged_output
-
-    with staged_output(path) as temporary:
-        _write_pdf(report, temporary)
+_PDF_DPI = 600
 
 
-def _write_pdf(report, path):
+def write_pdf(report: ManuscriptReport, path: str | Path) -> None:
+    layout = QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait,
+                         QMarginsF(20, 20, 20, 20), QPageLayout.Unit.Millimeter)
+    page = layout.paintRectPixels(_PDF_DPI)
+    with (
+        staged_output(path) as temporary,
+        _report_figures(report, page.width() / _PDF_DPI * 25.4, page.height() / _PDF_DPI * 25.4) as figures,
+    ):
+        compose_export(lambda: _write_pdf(report, temporary, layout, figures))
+
+
+def _write_pdf(report: ManuscriptReport, path: Path, layout: QPageLayout,
+               figures: Sequence[_ReportFigure]) -> None:
     writer = QPdfWriter(str(path))
-    writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
-    writer.setPageMargins(QMarginsF(20, 20, 20, 20))
-    writer.setResolution(600)
+    writer.setPageLayout(layout)
+    writer.setResolution(_PDF_DPI)
     document = _print_document()
     document.setHtml(report.html(figure_notes=False) + report.html(supplementary=True))
     # QTextDocument prints paginated real tables; figures get their own pages so
@@ -1324,27 +1360,23 @@ def _write_pdf(report, path):
         raise OSError("Could not start PDF export.")
     try:
         _print_pdf_pages(document, writer, painter, width, height, scale)
-        for number, figure in enumerate(report.figures, 1):
-            ratio = _figure_ratio(figure.display_image or figure.value)
-            width_mm = page.width() / writer.resolution() * 25.4
-            height_mm = page.height() / writer.resolution() * 25.4
-            mm = min(width_mm, _figure_width(figure, ratio))
-            available = _figure_height_budget(number, figure, width_mm, height_mm)
-            with _figure_panels(figure, mm, available) as paths:
-                for index, path_ in enumerate(paths):
-                    writer.newPage()
-                    source, ratio = figure_source(path_)
-                    w = min(mm, available * ratio) / 25.4 * writer.resolution()
-                    h = w / ratio
-                    paint_figure(painter, source, QRectF((page.width() - w) / 2, 0, w, h))
-                    caption = _caption_document(
-                        _figure_caption(number, figure, bool(index)), () if index else figure.paragraphs, width_mm
-                    )
-                    painter.save()
-                    painter.scale(scale, scale)
-                    painter.translate(0, h / scale + 12)
-                    caption.drawContents(painter)
-                    painter.restore()
+        for number, figure in enumerate(figures, 1):
+            for index, panel in enumerate(figure.paths):
+                check_export_cancelled()
+                writer.newPage()
+                source, ratio = figure_source(panel)
+                w = min(figure.width_mm, figure.height_mm * ratio) / 25.4 * writer.resolution()
+                h = w / ratio
+                paint_figure(painter, source, QRectF((page.width() - w) / 2, 0, w, h))
+                caption = _caption_document(
+                    _figure_caption(number, figure.section, bool(index)),
+                    () if index else figure.section.paragraphs, page.width() / writer.resolution() * 25.4,
+                )
+                painter.save()
+                painter.scale(scale, scale)
+                painter.translate(0, h / scale + 12)
+                caption.drawContents(painter)
+                painter.restore()
     finally:
         painter.end()
 
@@ -1460,7 +1492,6 @@ def _style_docx_cell(cell, value, width, numeric, heading, font_size):
 
 def _print_pdf_pages(document, writer, painter, width, height, scale):
     from PyQt6.QtCore import QSizeF
-    from PyQt6.QtGui import QAbstractTextDocumentLayout
 
     document.setPageSize(QSizeF(width, height))
     # Qt allows a table with unbreakable cells to exceed the page width.
@@ -1476,18 +1507,17 @@ def _print_pdf_pages(document, writer, painter, width, height, scale):
     # Moving a table and its caption can push a later paragraph across a page.
     _keep_pdf_blocks_together(document, height)
     # Start painting from a fresh layout after setting paragraph and table breaks.
-    document = document.clone()
-    document.setPageSize(QSizeF(width, height))
-    for number in range(document.pageCount()):
+    printable = document.clone()
+    printable.setPageSize(QSizeF(width, height))
+    for number in range(printable.pageCount()):
+        check_export_cancelled()
         if number:
             writer.newPage()
         painter.save()
         painter.scale(scale, scale)
         painter.setClipRect(QRectF(0, 0, width, height))
         painter.translate(0, -number * height)
-        context = QAbstractTextDocumentLayout.PaintContext()
-        context.clip = QRectF(0, number * height, width, height)
-        required(document.documentLayout(), "report document layout").draw(painter, context)
+        printable.drawContents(painter, QRectF(0, number * height, width, height))
         painter.restore()
 
 

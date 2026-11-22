@@ -998,7 +998,19 @@ def export_formats(app, view, directory, family, record, invoke=None, *, include
             format=extension,
             exports={extension: str(destination)},
         )
+    _compare_worker_exports(app, view, directory, family, record, invoke, include_title, files)
     return files
+
+
+def _compare_worker_exports(app, view, directory, family, record, invoke, include_title, files):
+    if os.environ.get("RCMS_VERIFY_WORKER_PLOT_PARITY") != "1" or os.environ.get("RCMS_R_BACKEND") != "worker":
+        return
+    from tests.e2e.r_worker_plot_parity import compare_file
+
+    with patch.dict(os.environ, {"RCMS_R_BACKEND": "embedded"}):
+        embedded = export_formats(app, view, directory / "embedded", family, record, invoke, include_title=include_title)
+    parity = {extension: compare_file(Path(embedded[extension]), Path(path)) for extension, path in files.items()}
+    record("edited-plot-publication-parity", view, family=family, parity=parity)
 
 
 def calculators(app, window, mode, record):
