@@ -414,6 +414,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     outlined <- if (extension == "svg") path else tempfile(fileext=".svg")
     on.exit(unlink(c(source, if (extension == "svgz") outlined)), add=TRUE)
     rcmetar.render.plot_file(source, size, draw, caption=title)
+    .rcmetar.require.package("rsvg")
     rsvg::rsvg_svg(source, outlined)
     # Cairo writes unitless sizes. Restore the SVG's physical print size.
     original <- xml2::read_xml(source)
@@ -455,7 +456,9 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     }
     extension <- rcmetar.plot.file.extension(path)
     if (export && extension %in% c("svg", "svgz")) {
-        .tsa.render.outlined.svg(path, size, draw, title, extension)
+        rcmetar.write.plot.atomically(path, function(temporary) {
+            .tsa.render.outlined.svg(temporary, size, draw, title, extension)
+        })
     } else {
         rcmetar.render.plot_file(path, size, draw, caption=title)
     }

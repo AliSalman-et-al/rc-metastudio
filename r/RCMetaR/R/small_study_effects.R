@@ -1349,6 +1349,16 @@ rcmetar.run.small.study.effects <- function(om.data, params) {
     .small.study.fit.report(om.data, prepared)
 }
 
+rcmetar.warm.small.study.effects <- function() {
+    data <- rcmetar.create.binary.data(
+        c(3, 7, 4), c(47, 53, 36), c(6, 8, 9), c(42, 47, 34),
+        study.names=c("A", "B", "C")
+    )
+    invisible(rcmetar.run.small.study.effects(data, list(
+        version=1L, data.type="binary", metric="OR", preview=TRUE
+    )))
+}
+
 .small.study.funnel.index <- function(params) {
     index <- suppressWarnings(as.integer(params$funnel.index %||% 1L))
     if (!length(index) || !is.finite(index[[1L]]) || index[[1L]] < 1L) return(1L)

@@ -69,7 +69,8 @@ def load(name):
 
 def version_tree(tmp_path):
     for name in ('pyproject.toml', 'uv.lock', 'src/rc_metastudio/__init__.py',
-                 'r/RCMetaR/DESCRIPTION', 'CHANGELOG.md', 'CITATION.cff'):
+                 'r/RCMetaR/DESCRIPTION', 'r/RCMetaR/NAMESPACE', 'r/RCMetaR/R/rcmetar-package.R',
+                 'r/RCMetaR/inst/source.sha256', 'CHANGELOG.md', 'CITATION.cff'):
         dest = tmp_path / name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / name, dest)
@@ -98,7 +99,7 @@ def test_bump_write_failure_restores_bytes(tmp_path, monkeypatch):
     bump = load('bump_version')
     write = bump.write_text
     def fail(path, text):
-        if path.name == 'uv.lock':
+        if path.name == 'source.sha256':
             raise OSError('injected write failure')
         write(path, text)
     monkeypatch.setattr(bump, 'write_text', fail)

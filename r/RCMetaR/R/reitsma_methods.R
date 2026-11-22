@@ -352,6 +352,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
     prediction.capture <- rcmetar.reitsma.capture.warnings({
         mu <- fit$coefficients["(Intercept)",]
         Sigma <- fit$Psi + stats::vcov(fit)
+        .rcmetar.require.package("ellipse")
         ell <- ellipse::ellipse(Sigma, centre=mu, level=level)
         cbind(mada::talpha(fit$alphafpr)$linkinv(ell[,2]), mada::talpha(fit$alphasens)$linkinv(ell[,1]))
     })
@@ -1144,6 +1145,8 @@ diagnostic.reitsma.is.feasible <- function(diagnostic.data, metric) {
     if (!nzchar(extension)) extension <- "svg"
     path <- paste0(tools::file_path_sans_ext(output), "_", spec$suffix, ".", extension)
     plot.params <- params
+    plot.params$fp_outpath <- path
+    plot.params$fp_display_path <- NULL
     plot.params$reitsma.coefficient.scale <- scale
     plot.params$reitsma.moderator.coding <- coding
     bundle <- rcmetar.reitsma.coefficient.bundle(spec$data, scale, plot.params)

@@ -19,6 +19,12 @@ checks. Native DPI and release packages have separate verification lanes.
 
 Users inspect analysis summaries and plots, apply plot edits, discard subsequent drafts, and export rendered figures.
 
+`large-forest-export` drives a 400-study SVG and waits for the real export
+debounce. An R callback during a refit fires the Analysis actions and Results
+shortcuts, checking application modality, one published result and no picker or
+error dialog. The TSA workflow also checks the default futility polygon fill
+and completes a refit after deliberately stalling the conclusion child.
+
 The manuscript export drive measures visible text enlargement at 150%, checks
 that hidden figure zoom stays unchanged, and restores independent zoom settings
 across navigation. Plot workflows reject reversed, equal and nonfinite bounds

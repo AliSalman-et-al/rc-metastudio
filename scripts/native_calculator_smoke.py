@@ -254,7 +254,9 @@ def _run_main() -> int:
     _install_backend_test_double(
         r_bridge,
         "effect_for_study",
-        lambda *_args, **_kwargs: {"calc_scale": (1.2, 0.8, 1.8)},
+        lambda *_args, **_kwargs: {
+            "calc_scale": (1.2, 0.8, 1.8), "display_scale": (1.2, 0.8, 1.8),
+        },
     )
     setattr(
         r_bridge,

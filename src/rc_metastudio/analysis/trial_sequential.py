@@ -12,9 +12,9 @@ from rc_metastudio import r_bridge
 from rc_metastudio.project.model import PooledAnalysis, PooledModel
 from rc_metastudio.analysis.identity import plot_caption
 from rc_metastudio.results.contract import AnalysisResult, ResultSection
+from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyle
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import analysis_output_path
-from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyle
 
 if TYPE_CHECKING:
     from rc_metastudio.workspace.table_model import DatasetTableModel
@@ -265,25 +265,45 @@ class TsaRun:
 
 
 class TsaService:
+    def __init__(self) -> None:
+        self._prepared: tuple[DatasetTableModel, TsaRequest, object] | None = None
+        self._evidence: object | None = None
+
     def preview(self, model: "DatasetTableModel", request: TsaRequest) -> TsaPreview:
-        fields = r_bridge.preview_trial_sequential_analysis(
+        self._prepared = None
+        self._evidence = None
+        fields, prepared = r_bridge.preview_trial_sequential_analysis(
             model, request.family, request.metric, request.to_mapping(),
         )
+        self._prepared = model, request, prepared
         return TsaPreview.from_mapping(fields)
 
+    def _prepare_for(self, model: "DatasetTableModel", request: TsaRequest) -> object:
+        if self._prepared is None or self._prepared[:2] != (model, request):
+            self.preview(model, request)
+        assert self._prepared is not None
+        return self._prepared[2]
+
     def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
-        return r_bridge.trial_sequential_conclusion_command(
-            model, request.family, request.metric, request.to_mapping(), directory,
-        )
+        return r_bridge.trial_sequential_conclusion_command(self._prepare_for(model, request), directory)
+
+    def finish_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
+                          path: Path, accrued: float, ris: float) -> str:
+        if self._prepared is None or self._prepared[:2] != (model, request):
+            return ""
+        outcome, evidence = r_bridge.load_trial_sequential_evidence(path)
+        self._evidence = evidence
+        return preview_conclusion(str(outcome["category"]), str(outcome["look"]), str(outcome["study"]), accrued, ris)
 
     def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
         path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
-        params = {
-            **request.to_mapping(),
-            "plot_caption": plot_caption(model),
-            "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT].region_color,
-        }
+        prepared = self._prepare_for(model, request)
+        if self._evidence is None:
+            self._evidence = r_bridge.trial_sequential_evidence(prepared)
         fields, sections = r_bridge.run_trial_sequential_analysis(
-            model, request.family, request.metric, params, path,
+            prepared, self._evidence, {
+                "plot_caption": plot_caption(model),
+                "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT].region_color,
+            }, path,
         )
         return TsaRun.from_mapping(fields, sections)

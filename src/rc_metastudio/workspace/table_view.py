@@ -512,9 +512,7 @@ class DatasetTableView(QtWidgets.QTableView):
 
                 def apply_calculator_result():
                     model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
-                    model.update_all_effect_previews()
-                    model.reset_model()
-                    self.synchronize_column_widths()
+                    model.update_row_effect_previews(study_index)
 
                 required(self.edit_transaction, "workspace edit transaction")(apply_calculator_result)
         finally:

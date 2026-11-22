@@ -29,13 +29,30 @@ def _scale(value: object, *_args: object, **_kwargs: object) -> object:
 
 
 def _effect(*_args: object, **_kwargs: object) -> dict[str, tuple[float, float, float]]:
-    return {"calc_scale": (1.0, 0.5, 1.5)}
+    values = (1.0, 0.5, 1.5)
+    return {"calc_scale": values, "display_scale": values}
 
 
 def _diagnostic_effects(
     *_args: object, metrics: tuple[str, ...] = ("Spec", "Sens"), **_kwargs: object
 ) -> dict[str, dict[str, tuple[float, float, float]]]:
     return {metric: {"calc_scale": (1.0, 0.5, 1.5)} for metric in metrics}
+
+
+def _study_previews(rows, family, metric, metrics, level):
+    def scales(effect, measure):
+        values = r_bridge.effect_triplet(effect, "calc_scale", metric=measure)
+        return (*values, *values)
+
+    output = []
+    for row in rows:
+        if family == "diagnostic":
+            effects = r_bridge.diagnostic_effects_for_study(*row, metrics=metrics, confidence_level=level)
+            output.append([scales(effects[key], key) for key in metrics])
+        else:
+            calculate = r_bridge.effect_for_study if family == "binary" else r_bridge.continuous_effect_for_study
+            output.append([scales(calculate(*row, metric=metric, confidence_level=level), metric)])
+    return output
 
 
 def _confidence(_level: object) -> float:
@@ -65,6 +82,7 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "binary_convert_scale": _scale,
         "continuous_convert_scale": _scale,
         "diagnostic_convert_scale": _scale,
+        "study_effect_previews": _study_previews,
         "effect_for_study": _effect,
         "continuous_effect_for_study": _effect,
         "diagnostic_effects_for_study": _diagnostic_effects,

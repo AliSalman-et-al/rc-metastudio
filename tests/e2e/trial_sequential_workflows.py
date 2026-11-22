@@ -2,6 +2,7 @@
 import csv
 import json
 import os
+import sys
 from math import ceil, isclose
 from pathlib import Path
 from statistics import median
@@ -20,6 +21,7 @@ from rc_metastudio.project import (
     archive as project_format,
 )
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+from rc_metastudio.analysis.trial_sequential import TsaService
 from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 from rc_metastudio.results.plot_editor import EditPlotDialog
@@ -140,6 +142,9 @@ def check_artwork(path, case, style, contract, *, percent=False):
     else:
         assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
     assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()
+    if case == "bcg" and style == "default":
+        fills = [node.attrib.get("style", "") for node in svg.iter(NAMESPACE + "polygon")]
+        assert any("fill: #DDE6F4;" in fill for fill in fills), fills
     monitoring = [node for node in svg.iter(NAMESPACE + "polyline")
                   if "#333333" in node.attrib.get("style", "") and "stroke-dasharray" not in node.attrib["style"]]
     assert monitoring and len(monitoring[0].attrib["points"].split()) >= 2
@@ -575,8 +580,15 @@ def run(app, window, work, record, case):
         # original study snapshot, while a later Save includes the live edit.
         assert window.model.setData(window.model.index(0, window.model.NAME), "Edited in source sheet")
         assert window.save(destination=saved)
-        modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, None), view.change_settings_action.trigger)
+        with patch.object(TsaService, "conclusion_command", return_value=(
+            sys.executable, ["-c", "import time; time.sleep(30)"]
+        )):
+            started = perf_counter()
+            modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, None), view.change_settings_action.trigger)
+            elapsed = perf_counter() - started
+        assert elapsed < 30, elapsed
         assert not window.workspace.is_dirty and view._report_tables[0].rows == entered_rows
+        record("tsa-child-timeout-fallback", view, elapsed=elapsed, results_preserved=True)
         view.report_action.setChecked(True)
         record("tsa-change-settings-result", view, same_window=visible is view, project_dirty=window.workspace.is_dirty,
                before=original_methods, after=view.manuscript.methods)

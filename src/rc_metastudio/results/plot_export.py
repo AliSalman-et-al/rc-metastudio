@@ -6,6 +6,7 @@ from collections.abc import Callable
 
 from PyQt6.QtCore import QSettings, QSignalBlocker, QTimer
 from rc_metastudio.qt_object_guard import required
+from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QPushButton, QSpinBox
 
 from rc_metastudio.results.plot_service import RASTER_MAX_DIMENSION, RASTER_MAX_PIXELS
@@ -24,7 +25,7 @@ class PlotExportDialog(QDialog):
         self.resizable = resizable
         self.text_per_inch = text_per_inch
         self._forest_geometry = forest_geometry
-        self._layout_height: float | None = None
+        self.forest_dimensions: tuple[float, float] | None = None
         self._minimum_mm = 0.0
         self._layout_error = ""
         self._measure_timer = QTimer(self)
@@ -127,15 +128,19 @@ class PlotExportDialog(QDialog):
 
     def _measure_width(self):
         self._layout_error = ""
+        self.forest_dimensions = None
+        self._minimum_mm = 0.0
         if self._forest_geometry is not None:
             try:
                 dimensions = self._forest_geometry(self._width_inches, self.include_title.isChecked())
                 if dimensions is None:
                     raise ValueError("Plot layout is unavailable.")
-                self._layout_height, minimum = dimensions
-                self._minimum_mm = math.ceil(minimum * 254 - 1e-9) / 10
+                self.forest_dimensions = dimensions
+                self._minimum_mm = math.ceil(dimensions[1] * 254 - 1e-9) / 10
+            except AnalysisBackendUnavailableError:
+                self._layout_error = "Could not measure the forest plot because the analysis backend is unavailable."
             except Exception as error:
-                self._layout_error = str(error)
+                self._layout_error = f"Could not measure the forest plot. {error}"
         self._refresh()
 
     def _readable_width_mm(self) -> float:
@@ -151,7 +156,7 @@ class PlotExportDialog(QDialog):
         self.width_control.setValue(self._readable_width_value())
 
     def _largest_dpi(self, width: float) -> int:
-        height = self._layout_height if self._layout_height is not None else width * self.ratio
+        height = self.forest_dimensions[0] if self.forest_dimensions is not None else width * self.ratio
         dpi = min(self.dpi.maximum(), math.floor(min(
             RASTER_MAX_DIMENSION / max(width, height),
             math.sqrt(RASTER_MAX_PIXELS / (width * height)),
@@ -212,7 +217,7 @@ class PlotExportDialog(QDialog):
 
     def dimensions(self) -> tuple[float, float, int]:
         width = self._width_inches
-        height = self._layout_height if self._layout_height is not None else width * self.ratio
+        height = self.forest_dimensions[0] if self.forest_dimensions is not None else width * self.ratio
         return width, height, self.dpi.value()
 
     def accept(self):

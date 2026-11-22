@@ -116,7 +116,6 @@ def run(app, window, scenario, record):
                 assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
                 assert model.setData(model.index(i, model.OUTCOMES[7]), "person-months")
         assert model.current_sheet.rows[i].include
-    model.update_all_effect_previews()
     if not hazard:
         assert [model.data(model.index(2, column)) for column in model.OUTCOMES[:3]] == [
             "Not estimable", "\u2014", "\u2014"

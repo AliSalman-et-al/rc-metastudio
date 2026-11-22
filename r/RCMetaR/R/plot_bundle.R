@@ -143,8 +143,12 @@ rcmetar.prepare.plot.bundle.edit <- function(prefix, regenerator, changed, outpu
                 staged.paths <- c(staged.paths, staged.display)
             }
         }
-        renderer$draw(renderer$build(bundle$om.data, bundle$res, candidate), staged.output)
         plot.data <- renderer$build(bundle$om.data, bundle$res, params)
+        edit.data <- plot.data
+        edit.data$params[[output.param]] <- candidate[[output.param]]
+        edit.data$params[[display.param]] <- candidate[[display.param]]
+        if (identical(regenerator, "sroc")) edit.data$display.path <- candidate[[display.param]]
+        renderer$draw(edit.data, staged.output)
         save.plot.data(plot.data, staged.prefix)
         destinations <- c(destinations, .rcmetar.plot.bundle.paths(prefix, "plot.data"))
         staged.paths <- c(staged.paths, .rcmetar.plot.bundle.paths(staged.prefix, "plot.data"))

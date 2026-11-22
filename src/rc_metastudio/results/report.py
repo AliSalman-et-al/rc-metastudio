@@ -19,7 +19,7 @@ from html import escape
 import io
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QMarginsF, QRectF, Qt
-from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
+from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QImageReader, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor, Pt
@@ -1044,6 +1044,19 @@ def figure_source(path):
     return image, image.width() / image.height()
 
 
+def _figure_ratio(path):
+    from rc_metastudio.results.plot_service import svg_view_box_size
+
+    if str(path).lower().endswith((".svg", ".svgz")):
+        width, height = svg_view_box_size(path)
+    else:
+        size = QImageReader(str(path)).size()
+        width, height = size.width(), size.height()
+    if width <= 0 or height <= 0:
+        raise ValueError(f"Cannot read figure size: {path}")
+    return width / height
+
+
 def paint_figure(painter, source, rect):
     if isinstance(source, QSvgRenderer):
         source.render(painter, rect)
@@ -1192,7 +1205,7 @@ def _docx_figures(document, figures):
     width_mm = (section.page_width - section.left_margin - section.right_margin) / Mm(1)
     height_mm = (section.page_height - section.top_margin - section.bottom_margin) / Mm(1)
     for number, figure in enumerate(figures, 1):
-        _, ratio = figure_source(figure.display_image or figure.value)
+        ratio = _figure_ratio(figure.display_image or figure.value)
         width = min(width_mm, _figure_width(figure, ratio))
         available = _figure_height_budget(number, figure, width_mm, height_mm)
         with _figure_panels(figure, width, available) as paths:
@@ -1269,7 +1282,10 @@ def write_docx(report, path):
         paragraph = document.add_paragraph(report.configuration)
         paragraph.paragraph_format.keep_together = True
     _docx_figures(document, report.figures)
-    document.save(path)
+    from rc_metastudio.results.plot_service import staged_output
+
+    with staged_output(path) as temporary:
+        document.save(str(temporary))
 
 
 def _print_document():
@@ -1285,6 +1301,13 @@ def _print_document():
 
 
 def write_pdf(report, path):
+    from rc_metastudio.results.plot_service import staged_output
+
+    with staged_output(path) as temporary:
+        _write_pdf(report, temporary)
+
+
+def _write_pdf(report, path):
     writer = QPdfWriter(str(path))
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
     writer.setPageMargins(QMarginsF(20, 20, 20, 20))
@@ -1297,29 +1320,33 @@ def write_pdf(report, path):
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     width, height = page.width() / scale, page.height() / scale
     painter = QPainter(writer)
-    _print_pdf_pages(document, writer, painter, width, height, scale)
-    for number, figure in enumerate(report.figures, 1):
-        _, ratio = figure_source(figure.display_image or figure.value)
-        width_mm = page.width() / writer.resolution() * 25.4
-        height_mm = page.height() / writer.resolution() * 25.4
-        mm = min(width_mm, _figure_width(figure, ratio))
-        available = _figure_height_budget(number, figure, width_mm, height_mm)
-        with _figure_panels(figure, mm, available) as paths:
-            for index, path_ in enumerate(paths):
-                writer.newPage()
-                source, ratio = figure_source(path_)
-                w = min(mm, available * ratio) / 25.4 * writer.resolution()
-                h = w / ratio
-                paint_figure(painter, source, QRectF((page.width() - w) / 2, 0, w, h))
-                caption = _caption_document(
-                    _figure_caption(number, figure, bool(index)), () if index else figure.paragraphs, width_mm
-                )
-                painter.save()
-                painter.scale(scale, scale)
-                painter.translate(0, h / scale + 12)
-                caption.drawContents(painter)
-                painter.restore()
-    painter.end()
+    if not painter.isActive():
+        raise OSError("Could not start PDF export.")
+    try:
+        _print_pdf_pages(document, writer, painter, width, height, scale)
+        for number, figure in enumerate(report.figures, 1):
+            ratio = _figure_ratio(figure.display_image or figure.value)
+            width_mm = page.width() / writer.resolution() * 25.4
+            height_mm = page.height() / writer.resolution() * 25.4
+            mm = min(width_mm, _figure_width(figure, ratio))
+            available = _figure_height_budget(number, figure, width_mm, height_mm)
+            with _figure_panels(figure, mm, available) as paths:
+                for index, path_ in enumerate(paths):
+                    writer.newPage()
+                    source, ratio = figure_source(path_)
+                    w = min(mm, available * ratio) / 25.4 * writer.resolution()
+                    h = w / ratio
+                    paint_figure(painter, source, QRectF((page.width() - w) / 2, 0, w, h))
+                    caption = _caption_document(
+                        _figure_caption(number, figure, bool(index)), () if index else figure.paragraphs, width_mm
+                    )
+                    painter.save()
+                    painter.scale(scale, scale)
+                    painter.translate(0, h / scale + 12)
+                    caption.drawContents(painter)
+                    painter.restore()
+    finally:
+        painter.end()
 
 
 def _figure_width(figure: ResultSection, ratio: float) -> int:

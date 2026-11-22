@@ -29,11 +29,8 @@
 #' implementation functions stay loadable inside the package namespace but are
 #' intentionally not exported as caller-facing interface.
 #'
-#' @import boot
-#' @importFrom ellipse ellipse
 #' @import grDevices
 #' @import graphics
-#' @import meta
 #' @import metafor
 #' @import stats
 #' @import utils
@@ -45,6 +42,11 @@
 #' @rawNamespace exportClasses(AnalysisSpecification, BinaryData, ContinuousData, CovariateValues, DiagnosticData, OMData)
 #' @noRd
 NULL
+
+.rcmetar.require.package <- function(package) {
+    if (!requireNamespace(package, quietly=TRUE))
+        stop(sprintf("RCMetaR requires the %s R package for this operation.", package), call.=FALSE)
+}
 
 if (getRversion() >= "2.15.1") {
     utils::globalVariables(c(

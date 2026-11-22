@@ -1570,22 +1570,29 @@ def calculators(app, window, mode, record):
         modal(app, kind, lambda dialog: check_partial_count_previews(app, dialog, cell, record), launch)
 
     acceptance_notifications = []
+    acceptance_resets = []
 
-    def observe_acceptance():
+    def observe_acceptance(top, bottom, _roles):
         model = window.model
         unit = model.get_current_analysis_unit_for_study(0)
         acceptance_notifications.append({
+            "rows": [top.row(), bottom.row()],
             "raw": list(unit.get_raw_data_for_arms(model.arm_names)),
             "effect_cells": [str(model.data(model.index(0, column))) for column in model.OUTCOMES[:3]],
         })
 
+    def observe_reset():
+        acceptance_resets.append(True)
+
     if mode == "back-binary":
-        window.model.modelReset.connect(observe_acceptance)
+        window.model.dataChanged.connect(observe_acceptance)
+        window.model.modelReset.connect(observe_reset)
     try:
         modal(app, kind, drive, launch)
     finally:
         if mode == "back-binary":
-            window.model.modelReset.disconnect(observe_acceptance)
+            window.model.dataChanged.disconnect(observe_acceptance)
+            window.model.modelReset.disconnect(observe_reset)
     display_unit = 10 ** -window.model.NUM_DIGITS
 
     def grid_matches(actual, expected):
@@ -1596,9 +1603,11 @@ def calculators(app, window, mode, record):
 
     if mode == "back-binary":
         record("calculator-acceptance-notifications", window, notifications=acceptance_notifications,
-               expected_interval=observed["reconstruction_interval"])
+               resets=len(acceptance_resets), expected_interval=observed["reconstruction_interval"])
+        assert not acceptance_resets
         accepted = [state for state in acceptance_notifications if state["raw"] == observed["accepted_raw"]]
         assert accepted, acceptance_notifications
+        assert all(state["rows"] == [0, 0] for state in accepted)
         expected_cells = observed["reconstruction_interval"]
         assert all(
             all(grid_matches(actual, expected)

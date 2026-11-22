@@ -4,6 +4,7 @@ import tomllib
 from pathlib import Path
 
 from ._module_loader import load_module_from_path
+from rc_metastudio.rcmetar_identity import source_sha
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -45,7 +46,6 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         "CITATION.cff",
         "src/rc_metastudio/__init__.py",
         "src/rc_metastudio/application_metadata.py",
-        "r/RCMetaR/DESCRIPTION",
     ]
     for relative_path in paths_to_copy:
         source = ROOT / relative_path
@@ -53,7 +53,9 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
 
-    description_path = tmp_path / "r/RCMetaR/DESCRIPTION"
+    r_package = tmp_path / "r/RCMetaR"
+    shutil.copytree(ROOT / "r/RCMetaR", r_package)
+    description_path = r_package / "DESCRIPTION"
     description = description_path.read_text(encoding="utf-8")
     description_path.write_bytes(description.replace("\n", "\r\n").encode("utf-8"))
 
@@ -84,5 +86,6 @@ def test_version_bump_script_updates_all_release_version_surfaces(tmp_path, monk
     assert application_metadata.VERSION == next_version
     assert rcmetar_fields["Version"] == next_version
     assert rcmetar_fields["Date"] == "2024-02-29"
+    assert (r_package / "inst/source.sha256").read_text(encoding="ascii").strip() == source_sha(r_package)
     assert f'name = "rc-metastudio"\nversion = "{next_version}"' in lockfile
     assert f"## {next_version} - Unreleased" in changelog

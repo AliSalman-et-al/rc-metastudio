@@ -247,8 +247,9 @@ bootstrap <- function(fname, omdata, params) {
 	}
 
     statistic <- switch(bootstrap.type, boot.ma=vanilla.statistic, boot.meta.reg=meta.reg.statistic)
+    .rcmetar.require.package("boot")
 	extra.attempts <- 0
-	boot.res <- boot(omdata.rows, statistic=statistic, R=params$num.bootstrap.replicates)
+	boot.res <- boot::boot(omdata.rows, statistic=statistic, R=params$num.bootstrap.replicates)
 	params$extra.attempts <- extra.attempts
 
     results <- switch(bootstrap.type,
@@ -281,7 +282,7 @@ construct.boot.res.and.value.info.for.results <- function(results, boot.res, boo
 
 
 boot.ma.output.results <- function(boot.results, params, bootstrap.plot.path) {
-	conf.interval <- boot.ci(boot.out = boot.results, type = "norm", conf=validate.conf.level(params$conf.level)/100)
+	conf.interval <- boot::boot.ci(boot.out = boot.results, type = "norm", conf=validate.conf.level(params$conf.level)/100)
 	mean_boot <- mean(boot.results$t)
 
 	conf.interval.msg <- paste("The ", conf.interval$norm[1]*100, "% confidence interval: [", round(conf.interval$norm[2],digits=params$digits), ", ", round(conf.interval$norm[3],digits=params$digits), "]", sep="")
@@ -305,7 +306,7 @@ calc.meta.reg.coeffs.and.cis <- function(boot.results, conf.level=95) {
 	coeffs.and.cis <- data.frame(b=c(), ci.lb=c(), ci.ub=c())
 	for (i in 1:num.coeffs) {
 		mean_coeff <- mean(boot.results$t[,i])
-		conf.interval <- boot.ci(boot.out = boot.results, type="norm", index=i, conf=validate.conf.level(conf.level)/100)
+		conf.interval <- boot::boot.ci(boot.out = boot.results, type="norm", index=i, conf=validate.conf.level(conf.level)/100)
 		new.result.row <- data.frame(b=mean_coeff, ci.lb=conf.interval$norm[2], ci.ub=conf.interval$norm[3])
 		coeffs.and.cis <- rbind(coeffs.and.cis, new.result.row)
 	}
@@ -351,10 +352,12 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 }
 
 rcmetar.draw.bootstrap.histogram <- function(path, boot.results, title, xlabs, ci.lb, ci.ub, height=480) {
-    grDevices::png(filename=path, width=480, height=height)
-    device <- grDevices::dev.cur()
-    on.exit(grDevices::dev.off(device))
-    plot.custom.boot(boot.results, title, ci.lb, ci.ub, xlabs)
+    rcmetar.write.plot.atomically(path, function(temporary) {
+        grDevices::png(filename=temporary, width=480, height=height)
+        device <- grDevices::dev.cur()
+        on.exit(rcmetar.close.plot.device(device))
+        plot.custom.boot(boot.results, title, ci.lb, ci.ub, xlabs)
+    })
 }
 
 plot.custom.boot <- function(boot.out, title="Bootstrap histogram", ci.lb, ci.ub, xlabs=c("Effect estimate")) {

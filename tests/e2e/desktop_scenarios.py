@@ -240,6 +240,7 @@ SCENARIOS = {
     "results-window": Scenario(external("ux_workflows", standard_args), 600, qualifies=False),
     "manuscript-export-direct": Scenario(external("manuscript_export", standard_args, direct_write=True), 600),
     "manuscript-export": Scenario(external("manuscript_export", standard_args, direct_write=False), 600),
+    "large-forest-export": Scenario(external("large_forest_export", standard_args), 240, qualifies=False),
     "manuscript-split-figure": Scenario(external("manuscript_split_figure", standard_args)),
     "results-presentation": Scenario(external("results_presentation", standard_args)),
     "results-values": Scenario(external("results_values", standard_args), 600),

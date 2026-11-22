@@ -24,7 +24,7 @@ from rc_metastudio.results.report import ManuscriptReport, trial_sequential_repo
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import make_r_tmp
 from rc_metastudio.analysis.trial_sequential import (
-    EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService, preview_conclusion,
+    EFFECT_SOURCES, HKSJ_NOTE, TSA_TITLE, TsaOptions, TsaPreview, TsaRequest, TsaService,
 )
 
 TOOLTIPS = {
@@ -378,12 +378,10 @@ class TrialSequentialAnalysisDialog(QDialog):
             if (code != 0 or status != QProcess.ExitStatus.NormalExit
                     or active is None or self.conclusion_dir is None):
                 return
-            outcome = Path(self.conclusion_dir.name) / "outcome.txt"
-            if outcome.is_file():
-                category, look, study = outcome.read_text(encoding="utf-8").split("\n", 2)
-                _, accrued, ris = active
-                text = preview_conclusion(category, look, study, accrued, ris)
-        except (OSError, ValueError) as error:
+            request, accrued, ris = active
+            path = Path(self.conclusion_dir.name) / "evidence.rds"
+            text = self.service.finish_conclusion(self.model, request, path, accrued, ris)
+        except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
         finally:
             self._release_conclusion_files()
@@ -494,12 +492,19 @@ class TrialSequentialAnalysisDialog(QDialog):
             self.conclusion.clear()
 
     def _run(self) -> None:
-        self._stop_conclusion()
+        if not self.run_button.isEnabled():
+            return
+        self.conclusion_timer.stop()
         self.run_button.setEnabled(False)
+        self.ready_preview = None
         progress = progress_dialog.AnalysisProgressDialog(self, operation="Running trial sequential analysis…")
         progress.show()
         progress.repaint()
         try:
+            if (self.conclusion_process.state() != QProcess.ProcessState.NotRunning
+                    and not self.conclusion_process.waitForFinished(500)):
+                self._stop_conclusion()
+            self.conclusion.clear()
             request = self._request()
             run = self.service.run(self.model, request)
             context = dataset_identity(self.model)

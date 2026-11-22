@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import json
+from pathlib import Path
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, sip
@@ -20,7 +21,7 @@ def open_sample_menu_action(window, filename):
     assert window.workspace.path.name == filename
 
 
-def check_sample_saves(app, window, work, sample, number, record):
+def check_sample_saves(app, window, work, sample, number, record, picker):
     from advanced_workflows import modal
 
     sample_button = required(window.start_page.findChild(QtWidgets.QPushButton, "empty_recent_sample"))
@@ -42,7 +43,6 @@ def check_sample_saves(app, window, work, sample, number, record):
         next(action for action in window.action_open_recent_2.actions()
              if action.data() == str(sample)).trigger()
 
-    get_save_file_name = QtWidgets.QFileDialog.getSaveFileName
     window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, False)
     try:
         for route, open_project in (
@@ -65,8 +65,11 @@ def check_sample_saves(app, window, work, sample, number, record):
                 nonlocal picker_count
                 picker_count += 1
                 assert kwargs["caption"] == "Save project as"
+                assert kwargs["parent"] is window
+                assert Path(kwargs["directory"]).name == sample.name
+                picker.setWindowTitle(kwargs["caption"])
+                picker.setNameFilter(kwargs["filter"])
                 submit = picker_count == 2
-                result = None
 
                 def drive_picker(dialog):
                     assert dialog.windowTitle() == "Save project as"
@@ -77,12 +80,10 @@ def check_sample_saves(app, window, work, sample, number, record):
                     else:
                         dialog.reject()
 
-                def launch_picker():
-                    nonlocal result
-                    result = get_save_file_name(**kwargs, options=QtWidgets.QFileDialog.Option.DontUseNativeDialog)
-
-                modal(app, QtWidgets.QFileDialog, drive_picker, launch_picker)
-                return result
+                modal(app, QtWidgets.QFileDialog, drive_picker, picker.exec)
+                if picker.result() == QtWidgets.QDialog.DialogCode.Accepted:
+                    return picker.selectedFiles()[0], picker.selectedNameFilter()
+                return "", ""
 
             def save_on_close(dialog):
                 assert dialog.windowTitle() == "Unsaved changes"
@@ -138,13 +139,22 @@ def run(app, window, work, root, record, analyze):
     record("sample-file-menu", window.menu_file)
     window.menu_file.close()
 
+    # Keep the offscreen picker's filesystem model alive across sample windows.
+    # Embedded R can dispatch pending Windows messages during the next preview.
+    picker = QtWidgets.QFileDialog(window)
+    picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+    picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+    picker.setDirectory(str(work))
+    for model in picker.findChildren(QtGui.QFileSystemModel):
+        model.setOption(QtGui.QFileSystemModel.Option.DontWatchForChanges)
+
     for number, entry in enumerate(entries, start=1):
         for recent in get_recent_files():
             remove_recent_file(recent)
         sample_window = type(window)()
         sample_window.start()
         try:
-            check_sample_saves(app, sample_window, work, root / "sample_projects" / entry["file"], number, record)
+            check_sample_saves(app, sample_window, work, root / "sample_projects" / entry["file"], number, record, picker)
         finally:
             sample_window.workspace.mark_saved()
             sample_window.close()

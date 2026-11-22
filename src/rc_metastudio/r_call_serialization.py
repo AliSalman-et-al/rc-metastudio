@@ -35,6 +35,8 @@ def r_transaction() -> Generator[None, None, None]:
     """Serialize one complete R operation, including Python-side result parsing."""
     _assert_main_thread()
     with _r_call_lock:
+        if r_execution_active():
+            raise RuntimeError("Another R operation is running.")
         depth = getattr(_transaction_state, "depth", 0)
         _transaction_state.depth = depth + 1
         try:
@@ -43,8 +45,22 @@ def r_transaction() -> Generator[None, None, None]:
             _transaction_state.depth = depth
 
 
+@contextmanager
+def r_execution() -> Generator[None, None, None]:
+    require_r_transaction()
+    _transaction_state.executing = True
+    try:
+        yield
+    finally:
+        _transaction_state.executing = False
+
+
 def r_transaction_active() -> bool:
     return getattr(_transaction_state, "depth", 0) > 0
+
+
+def r_execution_active() -> bool:
+    return getattr(_transaction_state, "executing", False)
 
 
 def require_r_transaction() -> None:

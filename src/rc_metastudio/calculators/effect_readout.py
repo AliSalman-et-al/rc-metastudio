@@ -67,8 +67,8 @@ def effect_values_on_display_scale(analysis_unit, current_effect, arm_key, data_
         n = raw[1] if len(raw) >= 2 and raw[1] not in EMPTY_VALS else None
         if n is None and any(value is not None for value in values):
             raise ValueError("PFT display requires the actual arm sample size.")
-        return [calculator.binary_convert_scale(value, current_effect, n1=n) for value in values]
-    return [converter(value, current_effect) for value in values]
+        return calculator.binary_convert_scale(tuple(values), current_effect, n1=n)
+    return converter(tuple(values), current_effect)
 
 
 def parse_effect_draft(
@@ -154,8 +154,7 @@ def update_binary_metric_table(
     table.show()
     for row, metric in enumerate(COMPARATIVE_BINARY_METRICS):
         result = calculator.effect_for_study(e1, n1, e2, n2, metric=metric, confidence_level=confidence_level)
-        values = calculator.effect_triplet(result)
-        display = [calculator.binary_convert_scale(value, metric) for value in values]
+        display = calculator.effect_triplet(result, "display_scale")
         for column, value in enumerate((metric, *display)):
             text = value if isinstance(value, str) else (
                 "" if value is None else format_calculator_display_value(value)

@@ -5,12 +5,15 @@
 from __future__ import annotations
 
 import gzip
+import io
 import os
 import re
 import shutil
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Generator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
+from typing import BinaryIO, cast
 from xml.etree import ElementTree as ET
 
 from PyQt6.QtCore import QMarginsF, QRectF, QSettings
@@ -99,9 +102,10 @@ class PlotService:
     @serialized_r_call
     def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
                      output_path: str, width: float, height: float, dpi: int,
-                     include_title: bool = True) -> None:
+                     include_title: bool = True, geometry: tuple[float, float] | None = None) -> None:
         """Render at publication dimensions without changing analysis state."""
-        geometry = r_bridge.forest_export_dimensions(params_path, width, include_title) if regenerator == "forest" else None
+        if geometry is None and regenerator == "forest":
+            geometry = r_bridge.forest_export_dimensions(params_path, width, include_title)
         if geometry is not None:
             height, minimum_width = geometry
             if width < minimum_width - 1e-8:
@@ -117,7 +121,8 @@ class PlotService:
                     params_path, regenerator, str(source), include_title=include_title,
                     width=page_width, page_height=250 / 25.4,
                 )
-                _write_a4_pdf(output_path, paths)
+                with staged_output(output_path) as temporary:
+                    _write_a4_pdf(str(temporary), paths)
                 return
             paths = r_bridge.render_plot_bundle(
                 params_path, regenerator, str(source), include_title=include_title,
@@ -144,11 +149,9 @@ class PlotService:
             })
             root.insert(0, paper)
             tree.write(source, encoding='utf-8', xml_declaration=True)
-            if Path(output_path).suffix.lower() == '.svgz':
-                with source.open('rb') as input_file, gzip.open(output_path, 'wb') as output_file:
-                    shutil.copyfileobj(input_file, output_file)
-            elif Path(output_path).suffix.lower() == '.svg':
-                shutil.copyfile(source, output_path)
+            if extension in (".svg", ".svgz"):
+                with staged_output(output_path) as temporary:
+                    _copy_export_svg(source, temporary, compressed=extension == ".svgz")
             else:
                 r_bridge.export_svg_artwork(str(source), output_path, width, height, dpi)
 
@@ -165,6 +168,23 @@ class PlotService:
             raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
 
 
+@contextmanager
+def staged_output(path: str | Path) -> Generator[Path]:
+    destination = Path(path).resolve()
+    with tempfile.TemporaryDirectory(prefix=".rcms-export-", dir=destination.parent) as directory:
+        temporary = Path(directory) / destination.name
+        yield temporary
+        temporary.replace(destination)
+
+
+def _copy_export_svg(source: Path, destination: Path, *, compressed: bool) -> None:
+    if compressed:
+        with source.open("rb") as input_file, gzip.open(destination, "wb") as output_file:
+            shutil.copyfileobj(input_file, output_file)
+    else:
+        shutil.copyfile(source, destination)
+
+
 def _paginate_pdf() -> bool:
     return str(QSettings().value("export/paginate_pdf", True)).lower() == "true"
 
@@ -176,6 +196,8 @@ def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
     writer.setResolution(600)
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     painter = QPainter(writer)
+    if not painter.isActive():
+        raise OSError("Could not start PDF export.")
     try:
         for index, path in enumerate(paths):
             if index:
@@ -194,9 +216,22 @@ def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float
     opener = gzip.open if str(path).lower().endswith(".svgz") else open
     with opener(path, "rb") as source:
         svg = source.read()
-    _, _, view_width, view_height = map(float, ET.fromstring(svg).attrib["viewBox"].split())
+    view_width, view_height = _view_box_size(io.BytesIO(svg))
     sizes = map(float, re.findall(rb"font-size:\s*([\d.]+)px", svg))
     return min(sizes, default=0.0) * 72 * min(1 / view_width, height_per_width / view_height)
+
+
+def svg_view_box_size(path: str | Path) -> tuple[float, float]:
+    opener = gzip.open if str(path).lower().endswith(".svgz") else open
+    with opener(path, "rb") as source:
+        return _view_box_size(source)
+
+
+def _view_box_size(source: BinaryIO | gzip.GzipFile) -> tuple[float, float]:
+    with_root = ET.iterparse(source, events=("start",))
+    _, root = cast(tuple[str, ET.Element], next(with_root))
+    _, _, width, height = map(float, root.attrib["viewBox"].replace(",", " ").split())
+    return width, height
 
 
 def _staged_files(prepared: object, staging: Path) -> dict[Path, Path]:
@@ -238,4 +273,4 @@ def _restore_files(
     return restored
 
 
-__all__ = ["PlotService", "PlotServiceError"]
+__all__ = ["PlotService", "PlotServiceError", "staged_output", "svg_view_box_size"]

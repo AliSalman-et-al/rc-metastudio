@@ -38,8 +38,9 @@ class AnalysisProgressDialog(QDialog, _ui_progress_dialog.Ui_ProgressDialog):
             configure_context_label(label)
             self.verticalLayout.insertWidget(1, label)
         self.verticalLayout.insertSpacing(self.verticalLayout.count() - 1, self.fontMetrics().lineSpacing() // 2)
-        if self.cancel_button is not None:
+        if blocking or cancellable:
             self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        if self.cancel_button is not None:
             self.cancel_button.clicked.connect(self.reject)
             self.verticalLayout.addWidget(self.cancel_button)
         elif blocking:
