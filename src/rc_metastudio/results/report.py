@@ -1307,6 +1307,8 @@ def _write_pdf(report, path):
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     width, height = page.width() / scale, page.height() / scale
     painter = QPainter(writer)
+    if not painter.isActive():
+        raise OSError("Could not start PDF export.")
     try:
         _print_pdf_pages(document, writer, painter, width, height, scale)
         for number, figure in enumerate(report.figures, 1):

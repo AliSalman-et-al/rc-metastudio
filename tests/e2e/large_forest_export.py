@@ -1,9 +1,7 @@
 """Exercise SVG display, geometry failure recovery and export on a 400-study forest."""
 
-import copy
 from pathlib import Path
 from unittest.mock import patch
-from uuid import uuid4
 from xml.etree import ElementTree
 
 from PyQt6 import QtCore, QtWidgets
@@ -13,19 +11,11 @@ from rc_metastudio.results.plot_export import PlotExportDialog
 
 
 def run(app, window, work, root, record, analyze):
-    assert window.open(str(root / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
+    fixture = root / "tests/e2e/fixtures/400-study-forest.rcms"
+    assert window.open(str(fixture), raise_on_error=True)
     sheet = window.model.current_sheet
-    templates = tuple(sheet.rows)
-    sheet.rows.clear()
-    for index in range(400):
-        row = copy.deepcopy(templates[index % len(templates)])
-        row.id = uuid4().hex
-        row.label = f"Forest study {index + 1:03}"
-        sheet.rows.append(row)
-    window.model.set_current_sheet(window.model.current_sheet_id)
-    fixture = work / "400-study-forest.rcms"
-    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(fixture), "")):
-        assert window.save_as()
+    assert len(sheet.rows) == 400
+    record("400-study-project-opened", window, input=str(fixture))
 
     view = analyze(app, window, "binary.random")
     figure = view.manuscript.figures[0]

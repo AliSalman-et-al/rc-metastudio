@@ -196,6 +196,8 @@ def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
     writer.setResolution(600)
     page = writer.pageLayout().paintRectPixels(writer.resolution())
     painter = QPainter(writer)
+    if not painter.isActive():
+        raise OSError("Could not start PDF export.")
     try:
         for index, path in enumerate(paths):
             if index:

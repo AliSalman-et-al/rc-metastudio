@@ -38,6 +38,19 @@ def _diagnostic_effects(
     return {metric: {"calc_scale": (1.0, 0.5, 1.5)} for metric in metrics}
 
 
+def _study_previews(rows, family, metric, metrics, level):
+    output = []
+    for row in rows:
+        if family == "diagnostic":
+            effects = r_bridge.diagnostic_effects_for_study(*row, metrics=metrics, confidence_level=level)
+            output.append([(*effects[key]["calc_scale"], *effects[key]["calc_scale"]) for key in metrics])
+        else:
+            calculate = r_bridge.effect_for_study if family == "binary" else r_bridge.continuous_effect_for_study
+            values = calculate(*row, metric=metric, confidence_level=level)["calc_scale"]
+            output.append([(*values, *values)])
+    return output
+
+
 def _confidence(_level: object) -> float:
     return 1.96
 
@@ -65,6 +78,7 @@ def inject_python_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
         "binary_convert_scale": _scale,
         "continuous_convert_scale": _scale,
         "diagnostic_convert_scale": _scale,
+        "study_effect_previews": _study_previews,
         "effect_for_study": _effect,
         "continuous_effect_for_study": _effect,
         "diagnostic_effects_for_study": _diagnostic_effects,

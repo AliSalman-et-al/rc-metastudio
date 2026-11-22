@@ -1812,8 +1812,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not self._confirm_export_destination(file_path, destination):
             return
         if unscaled_image:
-            if not unscaled_image.save(destination, export_format.qt_format):
-                raise OSError(f"Could not save plot: {destination}")
+            from rc_metastudio.results.plot_service import staged_output
+
+            with staged_output(destination) as temporary:
+                if not unscaled_image.save(str(temporary), export_format.qt_format):
+                    raise OSError(f"Could not save plot: {destination}")
         elif dimensions is not None:
             width, height, dpi = dimensions
             self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,

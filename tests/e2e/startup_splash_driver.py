@@ -31,7 +31,7 @@ def observe(phase):
     if phase == "splash:visible" or phase.startswith("r-library:") and phase.endswith(":start"):
         splash = next(w for w in app.topLevelWidgets() if isinstance(w, QtWidgets.QSplashScreen) and w.isVisible())
         assert not any(isinstance(w, QtWidgets.QMainWindow) and w.isVisible() for w in app.topLevelWidgets())
-        assert splash.message() == {"splash:visible": "Starting R…", "r-library:metafor:start": "Loading metafor…", "r-library:RCMetaR:start": "Loading RCMetaR…", "r-library:grid:start": "Loading grid…"}[phase]
+        assert splash.message() == {"splash:visible": "Starting R…", "r-library:RCMetaR:start": "Loading RCMetaR…"}[phase]
         assert splash.windowFlags() & QtCore.Qt.WindowType.FramelessWindowHint
         assert splash.testAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         assert not splash.windowIcon().isNull()
@@ -69,8 +69,7 @@ def capture_error(widget):
     assert widget.isVisible()
     assert widget.windowTitle() == "Analysis unavailable"
     assert paint_observer.paint_count > 0, "Startup shell never painted before the error dialog"
-    assert "analyses are unavailable" in widget.text(), widget.text()
-    assert "The grid R package could not be loaded" in widget.text(), widget.text()
+    assert "The installed RCMetaR does not match" in widget.text(), widget.text()
     errors.append(widget.text())
     observations.append({"shell_paint_events_before_error_capture": paint_observer.paint_count,
                          "startup_error": widget.text()})
@@ -120,22 +119,19 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         timer.stop()
         raise SystemExit(0)
     if args.failure:
-        # Patch only the final package call; the runtime and prior packages are real.
-        from rc_metastudio import r_bridge
+        # The runtime and package are real. Supply a different expected source.
+        from rc_metastudio import rcmetar_identity
         from rc_metastudio.main_window import MainWindow
         show_error = MainWindow._show_analysis_backend_error
         def observed_error(window, exception, *, startup=False):
             assert paint_observer.paint_count > 0, "Shell must paint before opening the startup error"
             observations.append({"shell_paint_events_before_dialog": paint_observer.paint_count})
             show_error(window, exception, startup=startup)
-        execute_r_function = r_bridge.execute_r_function
-
-        def fail_loading_grid(function, *args, **kwargs):
-            if function == "library" and args == ("grid",):
-                raise RuntimeError("Injected grid load failure after real R packages")
-            return execute_r_function(function, *args, **kwargs)
-
-        with patch.object(r_bridge, "execute_r_function", fail_loading_grid), patch.object(MainWindow, "_show_analysis_backend_error", observed_error):
+        version, _ = rcmetar_identity.expected_source()
+        with (
+            patch.object(rcmetar_identity, "expected_source", return_value=(version, "0" * 64)),
+            patch.object(MainWindow, "_show_analysis_backend_error", observed_error),
+        ):
             _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
     else:
         _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)

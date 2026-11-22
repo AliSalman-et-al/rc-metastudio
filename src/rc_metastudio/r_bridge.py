@@ -2078,6 +2078,8 @@ def _is_r_string_vector(r_object):
 
 
 def _r_attribute(r_object, name):
+    if not isinstance(r_object, ro.vectors.Vector):
+        return None
     try:
         value = r_object.do_slot(name)
     except (AttributeError, LookupError):
