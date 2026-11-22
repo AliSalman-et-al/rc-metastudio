@@ -234,19 +234,17 @@ def _resolve_parent(parent):
 
 
 class SafeApplication(QApplication):
-    def notify(
-        self, receiver: QObject | None, event: QEvent | None
-    ) -> bool:
-        try:
-            if event is not None and should_suppress_context_menu_event(event):
-                event.accept()
-                return True
-            return super(SafeApplication, self).notify(receiver, event)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception as e:
-            handle_exception(type(e), e, e.__traceback__, parent=receiver)
-            return False
+    def __init__(self, argv: list[str]) -> None:
+        super().__init__(argv)
+        # Application filters run on the GUI thread. A notify override also
+        # intercepts events sent to short-lived objects in export threads.
+        self.installEventFilter(self)
+
+    def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:
+        if event is not None and should_suppress_context_menu_event(event):
+            event.accept()
+            return True
+        return super().eventFilter(watched, event)
 
 
 def get_or_create_application(argv):
