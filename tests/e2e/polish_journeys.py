@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import json
+from pathlib import Path
 from unittest.mock import patch
 
 from PyQt6 import QtCore, QtGui, QtWidgets, sip
@@ -42,7 +43,10 @@ def check_sample_saves(app, window, work, sample, number, record):
         next(action for action in window.action_open_recent_2.actions()
              if action.data() == str(sample)).trigger()
 
-    get_save_file_name = QtWidgets.QFileDialog.getSaveFileName
+    picker = QtWidgets.QFileDialog(window)
+    picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
+    picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
+    picker.setDirectory(str(work))
     window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, False)
     try:
         for route, open_project in (
@@ -65,8 +69,11 @@ def check_sample_saves(app, window, work, sample, number, record):
                 nonlocal picker_count
                 picker_count += 1
                 assert kwargs["caption"] == "Save project as"
+                assert kwargs["parent"] is window
+                assert Path(kwargs["directory"]).name == sample.name
+                picker.setWindowTitle(kwargs["caption"])
+                picker.setNameFilter(kwargs["filter"])
                 submit = picker_count == 2
-                result = None
 
                 def drive_picker(dialog):
                     assert dialog.windowTitle() == "Save project as"
@@ -77,12 +84,10 @@ def check_sample_saves(app, window, work, sample, number, record):
                     else:
                         dialog.reject()
 
-                def launch_picker():
-                    nonlocal result
-                    result = get_save_file_name(**kwargs, options=QtWidgets.QFileDialog.Option.DontUseNativeDialog)
-
-                modal(app, QtWidgets.QFileDialog, drive_picker, launch_picker)
-                return result
+                modal(app, QtWidgets.QFileDialog, drive_picker, picker.exec)
+                if picker.result() == QtWidgets.QDialog.DialogCode.Accepted:
+                    return picker.selectedFiles()[0], picker.selectedNameFilter()
+                return "", ""
 
             def save_on_close(dialog):
                 assert dialog.windowTitle() == "Unsaved changes"
