@@ -561,7 +561,7 @@ def _exercise_plot_actions(app, results, svg: Path, root: Path, slug: str):
             raise RuntimeError("native Results export action raised an error") from action_errors[0]
         if export_errors:
             raise RuntimeError(f"native Results export dialog could not save: {export_errors[0]}")
-        if measured_prefixes != [str(base), str(base)]:
+        if measured_prefixes != [str(base)]:
             raise RuntimeError(f"native Results export did not measure the fixture forest: {measured_prefixes}")
         if not destination.exists() or not destination.read_text(encoding='utf-8').startswith('<?xml'):
             raise RuntimeError("native Results export action did not write edited plot")

@@ -90,25 +90,14 @@ rcmetar.open.svg_device <- function(outpath, size) {
     invisible(NULL)
 }
 
-rcmetar.svg.style.has.property <- function(node, property) {
-    presentation <- xml2::xml_attr(node, property)
-    if (!is.na(presentation)) {
-        return(TRUE)
+rcmetar.materialize.svg.properties <- function(nodes, defaults) {
+    styles <- xml2::xml_attr(nodes, "style")
+    for (property in names(defaults)) {
+        missing <- is.na(xml2::xml_attr(nodes, property)) &
+            !grepl(paste0("(^|;)[[:space:]]*", property, "[[:space:]]*:"),
+                   styles, ignore.case=TRUE, perl=TRUE)
+        xml2::xml_set_attr(nodes[missing], property, defaults[[property]])
     }
-    style <- xml2::xml_attr(node, "style")
-    !is.na(style) && grepl(
-        paste0("(^|;)[[:space:]]*", property, "[[:space:]]*:"),
-        style,
-        ignore.case=TRUE,
-        perl=TRUE
-    )
-}
-
-rcmetar.materialize.svg.property <- function(node, property, value) {
-    if (!rcmetar.svg.style.has.property(node, property)) {
-        xml2::xml_set_attr(node, property, value)
-    }
-    invisible(node)
 }
 
 rcmetar.sanitize.svg.xml <- function(svg) {
@@ -146,11 +135,9 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
     # Keep the primary face, but let Windows rasterizers find mathematical glyphs.
     text <- xml2::xml_find_all(document,
         "//*[local-name()='text' and contains(@style, 'font-family:') and not(contains(@style, 'Segoe UI Symbol'))]")
-    for (node in text) {
-        style <- xml2::xml_attr(node, "style")
-        xml2::xml_set_attr(node, "style",
-            sub("(font-family:[^;]+)", '\\1, "Segoe UI Symbol", sans-serif', style))
-    }
+    styles <- xml2::xml_attr(text, "style")
+    xml2::xml_set_attr(text, "style",
+        sub("(font-family:[^;]+)", '\\1, "Segoe UI Symbol", sans-serif', styles))
     shapes <- xml2::xml_find_all(
         document,
         "//*[local-name()='g' and contains(concat(' ', normalize-space(@class), ' '), ' svglite ')]//*[local-name()='line' or local-name()='polyline' or local-name()='polygon' or local-name()='path' or local-name()='rect' or local-name()='circle']"
@@ -169,20 +156,8 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
         `stroke-linejoin`="round",
         `stroke-miterlimit`="10.00"
     )
-    for (node in shapes) {
-        for (property in names(defaults)) {
-            rcmetar.materialize.svg.property(node, property, defaults[[property]])
-        }
-    }
-
-    for (node in glyph.paths) {
-        if (!rcmetar.svg.style.has.property(node, "fill")) {
-            xml2::xml_set_attr(node, "fill", "inherit")
-        }
-        if (!rcmetar.svg.style.has.property(node, "stroke")) {
-            xml2::xml_set_attr(node, "stroke", "none")
-        }
-    }
+    rcmetar.materialize.svg.properties(shapes, defaults)
+    rcmetar.materialize.svg.properties(glyph.paths, c(fill="inherit", stroke="none"))
 
     normalized <- as.character(document)
 
@@ -192,22 +167,40 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
     invisible(svg.path)
 }
 
-rcmetar.render.plot_svg <- function(svg.path, size, draw) {
-    rcmetar.open.svg_device(svg.path, size)
-    close.device <- TRUE
-    on.exit({
-        if (isTRUE(close.device)) {
-            grDevices::dev.off()
-        }
-    }, add=TRUE)
-    result <- draw()
-    grDevices::dev.off()
-    close.device <- FALSE
-    rcmetar.normalize.svglite.svg(svg.path)
+rcmetar.close.plot.device <- function(device) {
+    if (device %in% grDevices::dev.list()) grDevices::dev.off(device)
+}
+
+rcmetar.write.plot.atomically <- function(path, write) {
+    temporary <- tempfile(".rcmetar-", tmpdir=dirname(path),
+                          fileext=paste0(".", rcmetar.plot.file.extension(path)))
+    on.exit(unlink(temporary))
+    result <- write(temporary)
+    if (!file.rename(temporary, path)) {
+        stop(sprintf("Could not replace plot file: %s", path), call.=FALSE)
+    }
     invisible(result)
 }
 
+rcmetar.render.plot_svg <- function(svg.path, size, draw) {
+    rcmetar.write.plot.atomically(svg.path, function(temporary) {
+        rcmetar.open.svg_device(temporary, size)
+        device <- grDevices::dev.cur()
+        on.exit(rcmetar.close.plot.device(device))
+        result <- draw()
+        grDevices::dev.off(device)
+        rcmetar.normalize.svglite.svg(temporary)
+        result
+    })
+}
+
 rcmetar.export.svg_render <- function(svg.path, outpath, size) {
+    rcmetar.write.plot.atomically(outpath, function(temporary) {
+        .rcmetar.export.svg_render(svg.path, temporary, size)
+    })
+}
+
+.rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     ext <- rcmetar.plot.file.extension(outpath)
     pixels <- rcmetar.plot.pixel.size(size)
     if (ext %in% c("png", "tif", "tiff") && (max(pixels) > 32000 || prod(pixels) > 150e6))
@@ -235,10 +228,9 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
             compression="lzw",
             bg="white"
         )
-        tryCatch(
-            grid::grid.raster(bitmap, interpolate=FALSE),
-            finally=grDevices::dev.off()
-        )
+        device <- grDevices::dev.cur()
+        on.exit(rcmetar.close.plot.device(device))
+        grid::grid.raster(bitmap, interpolate=FALSE)
         return(invisible(ext))
     }
     # The PDF device defaults to the viewBox extent even when the SVG
@@ -303,7 +295,9 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
         dir.create(dirname(display.path), recursive=TRUE, showWarnings=FALSE)
         result <- rcmetar.render.plot_svg(display.path, size, draw)
         if (!rcmetar.plot.paths.equal(display.path, outpath))
-            .rcmetar.copy.plot.svg(display.path, outpath, ext)
+            rcmetar.write.plot.atomically(outpath, function(temporary) {
+                .rcmetar.copy.plot.svg(display.path, temporary, ext)
+            })
         return(invisible(result))
     }
 

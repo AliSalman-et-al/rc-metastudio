@@ -455,7 +455,9 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     }
     extension <- rcmetar.plot.file.extension(path)
     if (export && extension %in% c("svg", "svgz")) {
-        .tsa.render.outlined.svg(path, size, draw, title, extension)
+        rcmetar.write.plot.atomically(path, function(temporary) {
+            .tsa.render.outlined.svg(temporary, size, draw, title, extension)
+        })
     } else {
         rcmetar.render.plot_file(path, size, draw, caption=title)
     }

@@ -1716,15 +1716,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
     def _plot_export_options(self, artifact, unscaled_image):
         from rc_metastudio.results.plot_export import PlotExportDialog
-        from rc_metastudio.results.report import figure_source
-        source, ratio = figure_source(artifact.display_path())
-        from PyQt6.QtSvg import QSvgRenderer
+        from rc_metastudio.results.plot_service import svg_view_box_size
         text_per_inch = (0.0, 0.0)
         forest_geometry = None
-        if isinstance(source, QSvgRenderer):
-            bounds = source.viewBoxF()
-            width = bounds.width() / 72
-            ratio = bounds.width() / bounds.height()
+        native_dpi = 96
+        if artifact.has_vector_display():
+            view_width, view_height = svg_view_box_size(artifact.display_path())
+            width = view_width / 72
+            ratio = view_width / view_height
             if artifact.params_path and artifact.capability.plot_kind in {
                 "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
             }:
@@ -1745,12 +1744,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                         svg_text_points_per_inch(artifact.display_path(), 1 / ratio),
                     )
         else:
+            source = QImage(artifact.display_path())
+            if source.isNull():
+                raise ValueError("Could not read the plot image.")
+            native_dpi = round(source.dotsPerMeterX() * .0254)
             width = source.width() / max(1, source.dotsPerMeterX() * .0254)
+            ratio = source.width() / source.height()
         dialog = PlotExportDialog(
             artifact.export_formats(), width, width / ratio, self,
             resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
             forest_geometry=forest_geometry,
-            native_dpi=round(source.dotsPerMeterX() * .0254) if isinstance(source, QImage) else 96,
+            native_dpi=native_dpi,
         )
         if not dialog.exec():
             return
@@ -1759,16 +1763,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if not artifact.params_path:
             unscaled_image = QImage(artifact.image_path)
 
-        return format, dimensions, unscaled_image, dialog.include_title.isChecked()
+        return format, dimensions, unscaled_image, dialog.include_title.isChecked(), dialog.forest_dimensions
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
         dimensions = None
+        forest_dimensions = None
         include_title = True
         if format is None:
             options = self._plot_export_options(artifact, unscaled_image)
             if options is None:
                 return
-            format, dimensions, unscaled_image, include_title = options
+            format, dimensions, unscaled_image, include_title, forest_dimensions = options
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
@@ -1813,7 +1818,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             width, height, dpi = dimensions
             self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,
                                            output_path=destination, width=width, height=height, dpi=dpi,
-                                           include_title=include_title)
+                                           include_title=include_title, geometry=forest_dimensions)
         else:
             self.plot_service.export(
                 regenerator=regenerator,
