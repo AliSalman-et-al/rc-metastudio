@@ -1,4 +1,4 @@
-"""Focused contract tests for the explicit macOS embedded-R product profile."""
+"""Focused contract tests for the explicit macOS R runtime profile."""
 
 from __future__ import annotations
 

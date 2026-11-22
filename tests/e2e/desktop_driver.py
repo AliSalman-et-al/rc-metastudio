@@ -2235,8 +2235,7 @@ def hillclimb(app, window):
         failures = []
         timer = QtCore.QTimer(app)
         def callback():
-            # Embedded R can dispatch native Windows events while the dialog
-            # constructor is still computing its preview. Drive only after Show.
+            # The worker can yield to Qt during preview. Drive the dialog after Show.
             if not any(isinstance(w, cls) and w.isVisible() for w in app.topLevelWidgets()):
                 return
             timer.stop()

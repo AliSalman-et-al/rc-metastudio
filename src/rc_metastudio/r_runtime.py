@@ -50,14 +50,6 @@ def _configure_private_runtime_directories(root):
     tempfile.tempdir = str(temporary)
 
 
-def macos_r_framework_version(r_version: str) -> str:
-    """Return the stable major.minor directory name for an R framework."""
-    parts = r_version.split(".")
-    if len(parts) < 2 or not all(part.isdigit() for part in parts):
-        raise ValueError(f"invalid R version for a macOS framework: {r_version!r}")
-    return ".".join(parts[:2])
-
-
 def _runtime_candidates(root, frozen):
     if frozen and sys.platform == "linux":
         return [os.path.abspath(os.path.join(root, "..", "R"))]

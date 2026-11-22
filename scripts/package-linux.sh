@@ -25,5 +25,6 @@ fi
 
 cd "$repo_root"
 uv python install
+uv sync --locked
 bash "$repo_root/scripts/build-linux-package.sh" \
   --python-exe "$repo_root/.venv/bin/python"

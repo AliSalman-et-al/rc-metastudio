@@ -142,7 +142,6 @@ def run(app, window, work, root, record, analyze):
     window.menu_file.close()
 
     # Keep the offscreen picker's filesystem model alive across sample windows.
-    # Embedded R can dispatch pending Windows messages during the next preview.
     picker = QtWidgets.QFileDialog(window)
     picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
     picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)

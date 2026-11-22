@@ -398,7 +398,7 @@ Cancel, and confirm the setup remains visible with no result or error.
 `project-axis-sequential` checks the cumulative dataset-row ordering note once in
 the rendered plot and in report details, alongside its existing public-fit checks.
 
-The in-process R bridge contract first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
+The forest resizing drive first checks the automatic 9 pt SVG text floor and horizontal overflow at a narrow window, then explicitly requests Fit width before asserting shrink/grow resizing.
 
 Analysis PNG/TIFF previews with a separate SVG are reduced only when their decoded
 size exceeds Qt's 256 MiB limit and no DPI was specified. They use at most 120 dpi
