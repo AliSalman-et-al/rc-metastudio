@@ -19,7 +19,7 @@ from html import escape
 import io
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QMarginsF, QRectF, Qt
-from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
+from PyQt6.QtGui import QFont, QFontMetricsF, QImage, QImageReader, QPainter, QPdfWriter, QTextDocument, QPageSize, QTextOption
 from PyQt6.QtSvg import QSvgRenderer
 from docx import Document
 from docx.shared import Mm, RGBColor, Pt
@@ -1044,6 +1044,19 @@ def figure_source(path):
     return image, image.width() / image.height()
 
 
+def _figure_ratio(path):
+    from rc_metastudio.results.plot_service import svg_view_box_size
+
+    if str(path).lower().endswith((".svg", ".svgz")):
+        width, height = svg_view_box_size(path)
+    else:
+        size = QImageReader(str(path)).size()
+        width, height = size.width(), size.height()
+    if width <= 0 or height <= 0:
+        raise ValueError(f"Cannot read figure size: {path}")
+    return width / height
+
+
 def paint_figure(painter, source, rect):
     if isinstance(source, QSvgRenderer):
         source.render(painter, rect)
@@ -1192,7 +1205,7 @@ def _docx_figures(document, figures):
     width_mm = (section.page_width - section.left_margin - section.right_margin) / Mm(1)
     height_mm = (section.page_height - section.top_margin - section.bottom_margin) / Mm(1)
     for number, figure in enumerate(figures, 1):
-        _, ratio = figure_source(figure.display_image or figure.value)
+        ratio = _figure_ratio(figure.display_image or figure.value)
         width = min(width_mm, _figure_width(figure, ratio))
         available = _figure_height_budget(number, figure, width_mm, height_mm)
         with _figure_panels(figure, width, available) as paths:
@@ -1312,7 +1325,7 @@ def _write_pdf(report, path):
     try:
         _print_pdf_pages(document, writer, painter, width, height, scale)
         for number, figure in enumerate(report.figures, 1):
-            _, ratio = figure_source(figure.display_image or figure.value)
+            ratio = _figure_ratio(figure.display_image or figure.value)
             width_mm = page.width() / writer.resolution() * 25.4
             height_mm = page.height() / writer.resolution() * 25.4
             mm = min(width_mm, _figure_width(figure, ratio))

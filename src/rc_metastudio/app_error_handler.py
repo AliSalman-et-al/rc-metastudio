@@ -8,6 +8,7 @@ from PyQt6.QtCore import QEvent, QObject
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox
 
 from rc_metastudio import settings
+from rc_metastudio.r_call_serialization import r_execution_active
 
 
 UNEXPECTED_ERROR_TITLE = "Something went wrong"
@@ -136,6 +137,8 @@ def _call_with_compatible_signal_args(callback, args, kwargs):
 
 def safe_slot(callback, parent=None):
     def _safe_slot(*args, **kwargs):
+        if r_execution_active():
+            return None
         try:
             return _call_with_compatible_signal_args(callback, args, kwargs)
         except (KeyboardInterrupt, SystemExit):

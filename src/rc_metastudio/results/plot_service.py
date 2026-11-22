@@ -273,4 +273,4 @@ def _restore_files(
     return restored
 
 
-__all__ = ["PlotService", "PlotServiceError"]
+__all__ = ["PlotService", "PlotServiceError", "staged_output", "svg_view_box_size"]

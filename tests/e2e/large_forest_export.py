@@ -4,12 +4,72 @@ from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree
 
-from PyQt6 import QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 from advanced_workflows import modal
 
 from rc_metastudio import r_bridge
+from rc_metastudio.analysis.progress_dialog import AnalysisProgressDialog
+from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
+from rc_metastudio.r_call_serialization import r_execution_active
 from rc_metastudio.results.plot_export import PlotExportDialog
+from rc_metastudio.results.window import ResultsWindow
+from tests.python.gui.qt_test_support import key_click, required, wait
+
+
+def _drive_reentry(app, window, view, record):
+    qt = QtCore.Qt
+    actions = (
+        window.action_go, window.action_cum_ma, window.action_loo_ma,
+        window.action_trial_sequential_analysis, window.action_subgroup_ma,
+        window.action_meta_regression, window.action_publication_bias,
+        view.edit_plot_action, view.export_plot_action, view.export_report_action,
+        view.change_settings_action,
+    )
+    observed = []
+
+    def during_fit():
+        progress = app.activeModalWidget()
+        before = {widget for widget in app.topLevelWidgets() if widget.isVisible()}
+        busy = r_execution_active()
+        key_click(window, qt.Key.Key_R, qt.KeyboardModifier.ControlModifier)
+        key_click(view, qt.Key.Key_E, qt.KeyboardModifier.ControlModifier)
+        for key in (qt.Key.Key_E, qt.Key.Key_S, qt.Key.Key_R):
+            key_click(view, key, qt.KeyboardModifier.ControlModifier | qt.KeyboardModifier.ShiftModifier)
+        window.analysis_button.click()
+        for action in actions:
+            action.triggered.emit(False)
+        app.processEvents()
+        after = {widget for widget in app.topLevelWidgets() if widget.isVisible()}
+        observed.append((busy, isinstance(progress, AnalysisProgressDialog), before == after))
+        return r_bridge._rinterface.NULL
+
+    view.change_settings_action.trigger()
+    setup = next(widget for widget in app.topLevelWidgets()
+                 if isinstance(widget, AnalysisSetupDialog) and widget.isVisible())
+    callback = r_bridge._rinterface.rternalize(during_fit)
+    previous = r_bridge.execute_r_function("options", **{"rcms.verify.reentry": callback})
+    r_bridge.execute_r_string(
+        'trace("rcmetar.run.analysis", quote(getOption("rcms.verify.reentry")()), '
+        'where=as.environment("package:RCMetaR"), print=FALSE)'
+    )
+    try:
+        with (
+            patch.object(QtWidgets.QMessageBox, "critical", return_value=QtWidgets.QMessageBox.StandardButton.Ok) as error_box,
+            patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=("", "")) as picker,
+        ):
+            required(setup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)).click()
+            app.processEvents()
+        assert not error_box.called and not picker.called
+    finally:
+        r_bridge.execute_r_string('untrace("rcmetar.run.analysis", where=as.environment("package:RCMetaR"))')
+        r_bridge.execute_r_function("options", previous)
+    result, = [widget for widget in app.topLevelWidgets()
+               if isinstance(widget, ResultsWindow) and widget.isVisible()]
+    assert result is not view and observed == [(True, True, True)], observed
+    record("fit-reentry-blocked", result, keyboard=["Ctrl+R", "Ctrl+E", "Ctrl+Shift+E", "Ctrl+Shift+S", "Ctrl+Shift+R"],
+           actions=[action.text() for action in actions[:-4]], results=1)
+    return result
 
 
 def run(app, window, work, root, record, analyze):
@@ -20,6 +80,7 @@ def run(app, window, work, root, record, analyze):
     record("400-study-project-opened", window, input=str(fixture))
 
     view = analyze(app, window, "binary.random")
+    view = _drive_reentry(app, window, view, record)
     figure = view.manuscript.figures[0]
     display = Path(figure.display_image or figure.value)
     assert display.suffix == ".svg" and display.is_file()
@@ -45,8 +106,10 @@ def run(app, window, work, root, record, analyze):
             return
         dialog.format_control.setCurrentIndex(dialog.format_control.findData("svg"))
         dialog.include_title.setChecked(True)
-        dialog._measure_timer.stop()
-        dialog._measure_width()
+        deadline = QtCore.QDeadlineTimer(5000)
+        while not dialog.save_button.isEnabled() and not deadline.hasExpired():
+            wait(10)
+        assert dialog.save_button.isEnabled(), dialog.raster_limit.text()
         record("400-study-export-options", dialog, dimensions=dialog.dimensions())
         dialog.save_button.click()
 
