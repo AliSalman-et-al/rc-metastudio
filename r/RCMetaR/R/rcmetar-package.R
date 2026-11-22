@@ -34,6 +34,7 @@
 #' @import metafor
 #' @import stats
 #' @import utils
+#' @importFrom jsonlite fromJSON toJSON
 #' @importFrom methods is new setClass slot
 #' @rawNamespace S3method(print,summary.data)
 #' @rawNamespace S3method(print,summary.display)

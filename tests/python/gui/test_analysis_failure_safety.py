@@ -771,6 +771,25 @@ def test_safe_application_notify_reports_event_handler_exceptions(
         app.processEvents()
 
 
+def test_unexpected_error_dialog_uses_only_live_widget_parents(monkeypatch):
+    from rc_metastudio import app_error_handler
+
+    app = app_error_handler.get_or_create_application([])
+    shown = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda parent, *_: shown.append(parent))
+
+    window = QtWidgets.QWidget()
+    deleted = QtWidgets.QWidget()
+    sip.delete(deleted)
+    try:
+        for parent in (QtCore.QObject(), deleted, None, window):
+            app_error_handler.show_unexpected_error(RuntimeError("export failed"), parent=parent)
+        assert shown == [None, None, None, window]
+    finally:
+        window.close()
+        app.processEvents()
+
+
 def test_context_menu_popup_helper_ignores_reentrant_popups(monkeypatch):
     from PyQt6.QtCore import QPoint
 

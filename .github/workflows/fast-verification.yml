@@ -241,20 +241,6 @@ jobs:
           path: artifacts/r-default-library-cache
           key: r-default-evidence-v2-${{ matrix.target }}-r-4.6.2-public-ppm-2026-11-13-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'scripts/verify_rcmetar_r_default.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION') }}
 
-      - name: Provision macOS native R build libraries
-        if: ${{ matrix.platform == 'macos' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          brew install libpng pkg-config
-          libpng_prefix="$(brew --prefix libpng)"
-          mkdir -p "$HOME/.R"
-          printf 'CPPFLAGS += -I%s/include\nLDFLAGS += -L%s/lib\n' \
-            "$libpng_prefix" "$libpng_prefix" >> "$HOME/.R/Makevars"
-          echo "CPPFLAGS=-I$libpng_prefix/include ${CPPFLAGS:-}" >> "$GITHUB_ENV"
-          echo "LDFLAGS=-L$libpng_prefix/lib ${LDFLAGS:-}" >> "$GITHUB_ENV"
-          echo "PKG_CONFIG_PATH=$libpng_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
-
       # Windows runs the shared Python and golden contracts. macOS validates
       # the installed R worker; Linux validates native xcb with R evidence skipped.
       - name: Run Platform-Neutral Python Verification

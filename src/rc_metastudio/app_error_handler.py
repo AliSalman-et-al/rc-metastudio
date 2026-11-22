@@ -4,8 +4,9 @@ import sys
 import traceback
 from datetime import datetime, timezone
 
+from PyQt6 import sip
 from PyQt6.QtCore import QEvent, QObject
-from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QWidget
 
 from rc_metastudio import settings
 from rc_metastudio.r_worker import RJobCancelled, foreground_busy
@@ -48,6 +49,8 @@ def log_exception(exc_type, exc_value, exc_traceback):
 
 
 def show_unexpected_error(exc_value, parent=None, *, log_path=None):
+    if not isinstance(parent, QWidget) or sip.isdeleted(parent):
+        parent = None
     details = str(exc_value) or exc_value.__class__.__name__
     message = UNEXPECTED_ERROR_MESSAGE.format(details=details)
     if log_path is not None:
@@ -234,19 +237,17 @@ def _resolve_parent(parent):
 
 
 class SafeApplication(QApplication):
-    def notify(
-        self, receiver: QObject | None, event: QEvent | None
-    ) -> bool:
-        try:
-            if event is not None and should_suppress_context_menu_event(event):
-                event.accept()
-                return True
-            return super(SafeApplication, self).notify(receiver, event)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception as e:
-            handle_exception(type(e), e, e.__traceback__, parent=receiver)
-            return False
+    def __init__(self, argv: list[str]) -> None:
+        super().__init__(argv)
+        # Application filters run on the GUI thread. A notify override also
+        # intercepts events sent to short-lived objects in export threads.
+        self.installEventFilter(self)
+
+    def eventFilter(self, watched: QObject | None, event: QEvent | None) -> bool:
+        if event is not None and should_suppress_context_menu_event(event):
+            event.accept()
+            return True
+        return super().eventFilter(watched, event)
 
 
 def get_or_create_application(argv):
