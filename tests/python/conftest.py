@@ -39,15 +39,18 @@ def _diagnostic_effects(
 
 
 def _study_previews(rows, family, metric, metrics, level):
+    def scales(effect, measure):
+        values = r_bridge.effect_triplet(effect, "calc_scale", metric=measure)
+        return (*values, *values)
+
     output = []
     for row in rows:
         if family == "diagnostic":
             effects = r_bridge.diagnostic_effects_for_study(*row, metrics=metrics, confidence_level=level)
-            output.append([(*effects[key]["calc_scale"], *effects[key]["calc_scale"]) for key in metrics])
+            output.append([scales(effects[key], key) for key in metrics])
         else:
             calculate = r_bridge.effect_for_study if family == "binary" else r_bridge.continuous_effect_for_study
-            values = calculate(*row, metric=metric, confidence_level=level)["calc_scale"]
-            output.append([(*values, *values)])
+            output.append([scales(calculate(*row, metric=metric, confidence_level=level), metric)])
     return output
 
 
