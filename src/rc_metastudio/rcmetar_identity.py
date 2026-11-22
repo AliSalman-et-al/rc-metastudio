@@ -16,7 +16,7 @@ _ROOT = Path(__file__).resolve().parents[2]
 
 def source_sha(package: Path, *, description: bytes | None = None) -> str:
     digest = hashlib.sha256()
-    sources = ["DESCRIPTION", "NAMESPACE", *sorted(
+    sources = ["DESCRIPTION", "NAMESPACE", "inst/worker.R", *sorted(
         path.relative_to(package).as_posix()
         for path in (package / "R").iterdir() if path.is_file() and path.suffix.lower() == ".r"
     )]

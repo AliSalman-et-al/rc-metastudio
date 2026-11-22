@@ -197,7 +197,7 @@ def _emit_automation_phase(phase_callback, phase):
 
 def load_R_libraries(app, splash=None, phase_callback=None):
     """Load R packages while updating the splash screen."""
-    from rc_metastudio import r_bridge
+    from rc_metastudio import r_bridge, r_worker
 
     def observe_package(name: str, phase: str) -> None:
         if phase == "start":
@@ -207,6 +207,10 @@ def load_R_libraries(app, splash=None, phase_callback=None):
         _emit_automation_phase(phase_callback, f"r-library:{name}:{phase}")
 
     r_bridge.load_required_packages(observe_package)
+    if r_worker.enabled():
+        observe_package("R worker", "start")
+        r_worker.current_worker().ensure_ready()
+        observe_package("R worker", "complete")
 
 
 def _open_startup_project(app, meta, project_path, startup_argv):
