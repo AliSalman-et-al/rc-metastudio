@@ -38,3 +38,20 @@ def assign(name: str, value: str) -> None:
 def apply(expression: str, *args):
     arguments = json.dumps(json.dumps(args, ensure_ascii=False), ensure_ascii=False)
     return evaluate(f"do.call(({expression}), jsonlite::fromJSON({arguments}, simplifyVector=FALSE))")
+
+
+def evaluate_result_vector(expression: str):
+    """Retain the dimensions and statistical metadata used by the result decoder."""
+    from rc_metastudio.r_worker import _decode_number
+
+    encoded = evaluate(f"""local({{
+        scalar <- function(value) {{
+            if (is.numeric(value) && is.infinite(value))
+                return(list("$num"=if (value > 0) "+Inf" else "-Inf"))
+            if (is.na(value)) return(NULL)
+            unname(value)
+        }}
+        vector <- RCMetaR:::.rcmetar.worker.result.vector({{{expression}}}, scalar)
+        jsonlite::toJSON(vector, auto_unbox=TRUE, digits=I(17), null="null")
+    }})""")
+    return json.loads(encoded[0], object_hook=_decode_number)

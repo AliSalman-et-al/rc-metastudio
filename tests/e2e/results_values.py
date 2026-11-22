@@ -21,7 +21,7 @@ def run(app, window, work, root, record, analyze):
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     # Failure obligations at the real R/Python boundary: residue and tiny values,
     # infinities, missingness and bounded P must survive without display parsing.
-    edge = r_oracle.evaluate('''local({
+    edge = r_oracle.evaluate_result_vector('''local({
       x <- rbind(c("Estimate", "Lower", "Upper", "P", "Unavailable"),
                  c("0.000", "0.000", "Inf", "< 0.001", "Not estimable"))
       x <- RCMetaR:::rcmetar.numeric.fields(x, 1:5,
@@ -41,7 +41,7 @@ def run(app, window, work, root, record, analyze):
     else:
         raise AssertionError('R accepted misaligned quantities')
     record('numeric-boundary-states', values=asdict(parsed[0]))
-    pft = r_oracle.evaluate('''local({
+    pft = r_oracle.evaluate_result_vector('''local({
       fit <- metafor::rma.uni(yi=c(.05, .4, 1.2, 1.5), sei=c(.1, .2, .2, .1), method="REML", level=90)
       params <- list(measure="PFT", conf.level=90, digits=3)
       transform <- RCMetaR:::rcmetar.transform.by.name("binary.transform.f", "PFT")
