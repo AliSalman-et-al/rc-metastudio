@@ -172,6 +172,7 @@ rcmetar.close.plot.device <- function(device) {
 }
 
 rcmetar.write.plot.atomically <- function(path, write) {
+    dir.create(dirname(path), recursive=TRUE, showWarnings=FALSE)
     temporary <- tempfile(".rcmetar-", tmpdir=dirname(path),
                           fileext=paste0(".", rcmetar.plot.file.extension(path)))
     on.exit(unlink(temporary))
@@ -188,7 +189,7 @@ rcmetar.render.plot_svg <- function(svg.path, size, draw) {
         device <- grDevices::dev.cur()
         on.exit(rcmetar.close.plot.device(device))
         result <- draw()
-        grDevices::dev.off(device)
+        rcmetar.close.plot.device(device)
         rcmetar.normalize.svglite.svg(temporary)
         result
     })
@@ -201,6 +202,7 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
 }
 
 .rcmetar.export.svg_render <- function(svg.path, outpath, size) {
+    .rcmetar.require.package("rsvg")
     ext <- rcmetar.plot.file.extension(outpath)
     pixels <- rcmetar.plot.pixel.size(size)
     if (ext %in% c("png", "tif", "tiff") && (max(pixels) > 32000 || prod(pixels) > 150e6))
@@ -209,6 +211,7 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         if (is.null(size$dpi)) {
             rsvg::rsvg_png(svg.path, outpath, width=pixels[["width"]], height=pixels[["height"]])
         } else {
+            .rcmetar.require.package("png")
             bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]],
                 height=pixels[["height"]]), native=TRUE)
             png::writePNG(bitmap, outpath, dpi=rcmetar.plot.export.dpi(size))
@@ -216,6 +219,7 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         return(invisible(ext))
     }
     if (identical(ext, "tif") || identical(ext, "tiff")) {
+        .rcmetar.require.package("png")
         # Keep publication rasters packed: a floating-point RGBA array plus
         # channel copies exhausts memory for large subgroup figures.
         bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]], height=pixels[["height"]]), native=TRUE)

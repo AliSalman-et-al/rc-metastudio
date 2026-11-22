@@ -43,6 +43,11 @@
 #' @noRd
 NULL
 
+.rcmetar.require.package <- function(package) {
+    if (!requireNamespace(package, quietly=TRUE))
+        stop(sprintf("RCMetaR requires the %s R package for this operation.", package), call.=FALSE)
+}
+
 if (getRversion() >= "2.15.1") {
     utils::globalVariables(c(
         "CONF.LEVEL.GLOBAL",

@@ -154,8 +154,7 @@ def update_binary_metric_table(
     table.show()
     for row, metric in enumerate(COMPARATIVE_BINARY_METRICS):
         result = calculator.effect_for_study(e1, n1, e2, n2, metric=metric, confidence_level=confidence_level)
-        values = calculator.effect_triplet(result)
-        display = [calculator.binary_convert_scale(value, metric) for value in values]
+        display = calculator.effect_triplet(result, "display_scale")
         for column, value in enumerate((metric, *display)):
             text = value if isinstance(value, str) else (
                 "" if value is None else format_calculator_display_value(value)

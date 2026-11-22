@@ -352,6 +352,7 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
     prediction.capture <- rcmetar.reitsma.capture.warnings({
         mu <- fit$coefficients["(Intercept)",]
         Sigma <- fit$Psi + stats::vcov(fit)
+        .rcmetar.require.package("ellipse")
         ell <- ellipse::ellipse(Sigma, centre=mu, level=level)
         cbind(mada::talpha(fit$alphafpr)$linkinv(ell[,2]), mada::talpha(fit$alphasens)$linkinv(ell[,1]))
     })

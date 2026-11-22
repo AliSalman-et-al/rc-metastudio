@@ -387,20 +387,9 @@ rcmetar.numeric.values <- function(value) {
 }
 
 rcmetar.binary.study.effect <- function(e1, n1, e2=NULL, n2=NULL, two.arm=TRUE, metric="OR", conf.level=95) {
-    conf.level <- validate.conf.level(conf.level)
-    if (isTRUE(two.arm)) {
-        effect <- escalc(measure=metric, ai=c(e1), n1i=c(n1), ci=c(e2), n2i=c(n2))
-    } else {
-        effect <- escalc(measure=metric, xi=c(e1), ni=c(n1))
-    }
-    point.estimate <- effect[1, 1]
-    se <- sqrt(effect[1, 2])
-    mult <- abs(stats::qnorm((1 - conf.level / 100) / 2))
-    calc.scale <- c(point.estimate, point.estimate - mult * se, point.estimate + mult * se)
-    list(
-        calc_scale=calc.scale,
-        display_scale=rcmetar.convert.scale(calc.scale, metric, "binary", n1=n1)
-    )
+    effect <- .rcmetar.binary.preview.fit(e1, n1, e2, n2, two.arm, metric)
+    values <- .rcmetar.preview.values(effect$yi[[1L]], sqrt(effect$vi[[1L]]), conf.level, metric, "binary", n1)
+    list(calc_scale=unname(values[1L, 1:3]), display_scale=unname(values[1L, 4:6]))
 }
 
 rcmetar.continuous.study.effect <- function(n1, m1, sd1, se1=NULL, n2=NULL, m2=NULL, sd2=NULL, se2=NULL,
@@ -411,7 +400,7 @@ rcmetar.continuous.study.effect <- function(n1, m1, sd1, se1=NULL, n2=NULL, m2=N
             point.estimate <- m1 - m2
             se <- sqrt(sum(c(se1, se2)^2))
         } else {
-            effect <- escalc(metric, n1i=c(n1), n2i=c(n2), m1i=c(m1), m2i=c(m2), sd1i=c(sd1), sd2i=c(sd2))
+            effect <- .rcmetar.continuous.preview.fit(n1, m1, sd1, n2, m2, sd2, two.arm, metric)
             point.estimate <- effect[1, 1]
             se <- sqrt(effect[1, 2])
         }

@@ -11,6 +11,7 @@ import tempfile
 import shutil
 from datetime import date
 from pathlib import Path
+from rc_metastudio.rcmetar_identity import source_sha
 
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
@@ -133,6 +134,9 @@ def main(argv: list[str] | None = None) -> int:
         path = root / "CHANGELOG.md"
         updates[path] = changelog_text(path, args.version)
 
+    package = root / "r" / "RCMetaR"
+    description = updates[package / "DESCRIPTION"].encode("utf-8")
+    updates[package / "inst" / "source.sha256"] = source_sha(package, description=description) + "\n"
     _write_updates(updates)
 
     print(f"Bumped RC MetaStudio version surfaces to {args.version}.")

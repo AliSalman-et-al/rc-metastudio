@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 
-from rc_metastudio.rcmetar_identity import source_sha
+from rc_metastudio.rcmetar_identity import STAMP_COMMAND, source_sha
 
 
 APPLICATION_HIDDEN_IMPORTS = [
@@ -28,12 +28,13 @@ def application_data(app_source: Path, qt6_build_root: Path) -> list[tuple[str, 
     package = app_source.parents[1] / "r" / "RCMetaR"
     fingerprint = package / "inst" / "source.sha256"
     if fingerprint.read_text(encoding="ascii").strip() != source_sha(package):
-        raise ValueError("Update the RCMetaR source SHA before packaging.")
+        raise ValueError(f"Update the RCMetaR source SHA before packaging. Run {STAMP_COMMAND}.")
     project_schema_dir = Path("rc_metastudio") / "project_schemas"
     project_schemas = (app_source / "project_schemas").glob("v*/*.schema.json")
     data = [
         *copy_metadata("rpy2"),
         (str(fingerprint), "rc_metastudio"),
+        (str(app_source.parents[1] / "config" / "r-dependencies.json"), "rc_metastudio"),
         *collect_data_files("docx", includes=["templates/*"]),
         (str(qt6_build_root / "resources" / "icons.rcc"), "resources"),
     ]

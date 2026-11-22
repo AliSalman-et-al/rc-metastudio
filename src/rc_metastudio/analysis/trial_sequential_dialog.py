@@ -378,9 +378,9 @@ class TrialSequentialAnalysisDialog(QDialog):
             if (code != 0 or status != QProcess.ExitStatus.NormalExit
                     or active is None or self.conclusion_dir is None):
                 return
-            _, accrued, ris = active
+            request, accrued, ris = active
             path = Path(self.conclusion_dir.name) / "evidence.rds"
-            text = self.service.finish_conclusion(path, accrued, ris)
+            text = self.service.finish_conclusion(self.model, request, path, accrued, ris)
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
         finally:
@@ -501,10 +501,10 @@ class TrialSequentialAnalysisDialog(QDialog):
         progress.show()
         progress.repaint()
         try:
-            if self.conclusion_process.state() != QProcess.ProcessState.NotRunning:
-                if not self.conclusion_process.waitForFinished(-1):
-                    self._stop_conclusion()
-                    raise RuntimeError("Trial sequential boundary calculations could not finish.")
+            if (self.conclusion_process.state() != QProcess.ProcessState.NotRunning
+                    and not self.conclusion_process.waitForFinished(500)):
+                self._stop_conclusion()
+            self.conclusion.clear()
             request = self._request()
             run = self.service.run(self.model, request)
             context = dataset_identity(self.model)

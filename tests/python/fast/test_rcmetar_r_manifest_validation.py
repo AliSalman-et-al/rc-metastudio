@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from rc_metastudio.rcmetar_identity import STAMP_COMMAND, source_sha
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -22,6 +23,13 @@ from scripts import verify_rcmetar_r_stack as stack_verifier
 VALIDATOR = REPO_ROOT / "scripts" / "validate_rcmetar_r_manifests.py"
 DEPENDENCY_MANIFEST = Path("config/r-dependencies.json")
 DRIFT_MANIFEST = Path("config/r-statistical-drift.json")
+
+
+def test_rcmetar_source_stamp():
+    package = REPO_ROOT / "r/RCMetaR"
+    assert (package / "inst/source.sha256").read_text(encoding="ascii").strip() == source_sha(package), (
+        f"RCMetaR source stamp is stale. Regenerate it with {STAMP_COMMAND}."
+    )
 
 
 def test_shared_r_verification_support_resolves_home_and_normalizes_windows_locale(

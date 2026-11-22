@@ -185,14 +185,6 @@ def _r_eval(expression: str) -> object:
     return evaluator(expression)
 
 
-def _call_dynamic(function: object, *args: object, **kwargs: object) -> object:
-    """Call a value returned by R after checking that it is callable."""
-    caller = getattr(function, "__call__", None)
-    if not callable(caller):
-        raise TypeError("R value is not callable")
-    return caller(*args, **kwargs)
-
-
 def _first_dynamic(value: object) -> object:
     """Read the first element of an R vector after checking its shape."""
     getitem = getattr(value, "__getitem__", None)
@@ -227,28 +219,42 @@ def load_required_packages(
     on_phase: Callable[[str, str], None] | None = None,
 ) -> None:
     """Verify the installed RCMetaR before exposing the analysis backend."""
-    from rc_metastudio.rcmetar_identity import expected_source
+    from rc_metastudio.rcmetar_identity import STAMP_COMMAND, expected_source, runtime_versions
 
     global _INITIALIZATION_ERROR
     initialize_r()
     if on_phase is not None:
         on_phase("RCMetaR", "start")
+    action = "The analysis backend requires an editable RC MetaStudio source checkout or the packaged application."
     try:
-        installed = execute_r_string(
-            "local({ path <- find.package('RCMetaR'); "
-            "c(utils::packageDescription('RCMetaR', fields='Version'), "
-            "readLines(file.path(path, 'source.sha256'), n=1L, warn=FALSE)) })"
+        expected = expected_source()
+        action = "The installed RCMetaR does not match this version of RC MetaStudio."
+        pins = runtime_versions()
+        packages = ", ".join(f'"{name}"' for name in pins if name != "R")
+        location, version, sha, *versions = execute_r_string(
+            "local({ path <- find.package('RCMetaR'); lib <- dirname(path); "
+            "stamp <- file.path(path, 'source.sha256'); "
+            "c(lib, utils::packageDescription('RCMetaR', lib.loc=lib, fields='Version'), "
+            "if (file.exists(stamp)) readLines(stamp, warn=FALSE)[1L] else NA_character_, "
+            "as.character(getRversion()), "
+            f"vapply(c({packages}), function(p) as.character(utils::packageDescription(p, fields='Version')), "
+            "character(1))) })"
         )
-        if tuple(installed) != expected_source():
-            raise ValueError("RCMetaR version or source SHA differs")
+        if (version, sha) != expected:
+            raise ValueError(f"RCMetaR expected version and source {expected!r}, installed {(version, sha)!r}")
+        ordered = ["R", *(name for name in pins if name != "R")]
+        for name, actual in zip(ordered, versions, strict=True):
+            if actual != pins[name]:
+                raise ValueError(f"{name} requires version {pins[name]}, found {actual}")
+        action = "RCMetaR could not load."
+        execute_r_function("library", "RCMetaR", **{"lib.loc": location})
     except Exception as error:
-        failure = r_runtime.AnalysisBackendUnavailableError(
-            "The installed RCMetaR does not match this version of RC MetaStudio. "
-            "Reinstall RCMetaR from the matching source or repair the application."
-        )
+        recovery = ("Repair the packaged application." if getattr(sys, "frozen", False)
+                    else f"For a source checkout, run {STAMP_COMMAND} from the repository root "
+                    "and reinstall RCMetaR into the configured R library.")
+        failure = r_runtime.AnalysisBackendUnavailableError(f"{action}\n\n{recovery}")
         _INITIALIZATION_ERROR = failure
         raise failure from error
-    execute_r_function("library", "RCMetaR")
     if on_phase is not None:
         on_phase("RCMetaR", "complete")
 
@@ -283,7 +289,7 @@ def impute_diagnostic_data(diagnostic_data):
         if val is None:
             diagnostic_data.pop(param)
 
-    dataf = _r_function("data.frame")(**diagnostic_data)
+    dataf = execute_r_function("data.frame", **diagnostic_data)
     two_by_two = execute_r_function("rcmetar.impute.diagnostic", dataf)
 
     imputed_2x2 = named_r_list_to_dict(two_by_two)
@@ -296,7 +302,7 @@ def impute_binary_data(binary_data):
     binary_data = normalize_confidence_level_params(binary_data)
     remove_entries_with_value(None, binary_data)
 
-    dataf = _r_function("data.frame")(**binary_data)
+    dataf = execute_r_function("data.frame", **binary_data)
     two_by_two = execute_r_function("rcmetar.impute.binary", dataf)
 
     res_as_dict = r_object_to_python(two_by_two)
@@ -313,9 +319,9 @@ def back_calculate_continuous_data(
     remove_entries_with_value(None, group2_data)
     remove_entries_with_value(None, effect_data)
 
-    dataf_grp1 = _r_function("data.frame")(**group1_data)
-    dataf_grp2 = _r_function("data.frame")(**group2_data)
-    dataf_effect = _r_function("data.frame")(**effect_data)
+    dataf_grp1 = execute_r_function("data.frame", **group1_data)
+    dataf_grp2 = execute_r_function("data.frame", **group2_data)
+    dataf_effect = execute_r_function("data.frame", **effect_data)
 
     r_res = execute_r_function(
         "rcmetar.back.calculate.continuous",
@@ -435,7 +441,7 @@ def impute_continuous_data(continuous_data, alpha):
     if not continuous_data:
         return {"succeeded": False}
 
-    dataf = _r_function("data.frame")(**continuous_data)
+    dataf = execute_r_function("data.frame", **continuous_data)
     c_data = execute_r_function("rcmetar.impute.continuous.study", dataf, alpha=alpha)
 
     return r_object_to_python(c_data)
@@ -446,7 +452,7 @@ def impute_pre_post_continuous_data(continuous_data, correlation, alpha):
     if len(list(continuous_data.items())) == 0:
         return {"succeeded": False}
 
-    dataf = _r_function("data.frame")(**continuous_data)
+    dataf = execute_r_function("data.frame", **continuous_data)
     c_data = execute_r_function(
         "rcmetar.impute.continuous.prepost",
         dataf,
@@ -486,9 +492,7 @@ def get_params(method_name):
     if "var_order" in param_d:
         order_vars = list(param_d["var_order"])
 
-    pretty_names_and_descriptions = r_object_to_python(
-        param_d.get("pretty.names", _r_function("list")())
-    )
+    pretty_names_and_descriptions = _r_mapping_or_empty(param_d.get("pretty.names"))
 
     return (
         r_object_to_python(param_d["parameters"]),
@@ -1530,13 +1534,9 @@ _RESULT_METADATA_KEYS = frozenset(
         "plot_capabilities",
         "sections",
         "res",
-        "res.info",
         "study.names",
         "input_params",
         "analysis.scale",
-        "eligibility",
-        "tests.data",
-        "Trim-and-fill data",
     }
 )
 

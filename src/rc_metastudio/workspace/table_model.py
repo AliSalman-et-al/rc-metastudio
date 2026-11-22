@@ -861,6 +861,8 @@ class DatasetTableModel(QAbstractTableModel):
     def update_row_effect_previews(self, row: int) -> None:
         study = self._study_for_row(row)
         self.editing_service.update_effect_previews_if_possible(study, self._editing_context())
+        self.recalculate_display_scale(study)
+        self.dataChanged.emit(self.index(row, 0), self.index(row, self.columnCount() - 1), [])
 
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""
@@ -1012,16 +1014,17 @@ class DatasetTableModel(QAbstractTableModel):
         return self._study_for_row(study_index).analysis_unit
 
 
-    def recalculate_display_scale(self):
+    def recalculate_display_scale(self, edited_study: StudyRow | None = None):
         sheet = self.current_sheet
         if sheet is None or sheet.data_type in RATIO_DATA_TYPES or not r_runtime.is_ready():
             return
         arm_key = self.get_current_arm_key()
         metrics = ("Sens", "Spec") if sheet.data_type == DIAGNOSTIC else (self.current_effect,)
+        rows = sheet.rows if edited_study is None else (edited_study,)
         for metric in metrics:
             if metric is None:
                 continue
-            for study in sheet.rows:
+            for study in rows:
                 unit = study.analysis_unit
                 n1 = self._raw_value(study, 1) if metric == "PFT" else None
                 unit.calculate_display_effect_and_ci(

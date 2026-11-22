@@ -9,6 +9,29 @@ s2_data <- function() rcmetar.create.continuous.data(y=c(.2,.5,.1,.7,.3,.8),
  SE=c(.1,.2,.15,.12,.17,.2), study.names=letters[1:6],
  covariates=list(new("CovariateValues",cov.name="Region",cov.vals=rep(c("A","B"),3),cov.type="factor",ref.var="A")))
 
+test_that("batched previews retain per-study effects and single-arm sample sizes", {
+ rows <- list(c(0,20,3,30),c(8,45,6,40))
+ for (metric in c("OR","RR","RD","PFT")) {
+  two <- metric != "PFT"
+  actual <- rcmetar.study.effect.previews(rows, "binary", metric, metric, two, 90)
+  expected <- lapply(rows,function(row) list(unlist(
+    rcmetar.binary.study.effect(row[1],row[2],row[3],row[4],two,metric,90), use.names=FALSE)))
+  expect_equal(actual, expected)
+ }
+ rows <- list(c(20,2,1,21,3,1.2),c(34,7,2,22,9,2.3))
+ actual <- rcmetar.study.effect.previews(rows, "continuous", "SMD", "SMD", TRUE, 90)
+ expected <- lapply(rows,function(row) list(unlist(rcmetar.continuous.study.effect(
+   row[1],row[2],row[3],n2=row[4],m2=row[5],sd2=row[6],metric="SMD",conf.level=90), use.names=FALSE)))
+ expect_equal(actual, expected)
+})
+
+test_that("result payload assigns missing names and prepares nested summaries", {
+ fitted <- rcmetar.run.analysis(s2_data(), method="continuous.fixed", params=s2_params())
+ payload <- .rcmetar.result.payload(setNames(list(list(fitted$Summary)), NA_character_))
+ expect_named(payload$values, "Result 1")
+ expect_identical(attr(payload$values[[1]][[1]], "rcms.formatted"), format(fitted$Summary))
+})
+
 test_that("MH subgroup differences follow meta and incomplete estimates remain unavailable", {
  d <- rcmetar.create.ratio.data("IRR", estimate=rep(NA_real_,4),lower=rep(NA_real_,4),upper=rep(NA_real_,4),se=rep(NA_real_,4),scale=rep("ratio",4),confidence=rep(95,4),unit=rep("years",4), x1=c(0,0,3,4),x2=c(2,4,5,6),
  t1=rep(20,4),t2=rep(25,4),source=rep("raw",4),study.names=letters[1:4],

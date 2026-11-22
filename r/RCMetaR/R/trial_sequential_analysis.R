@@ -282,6 +282,7 @@
 }
 
 .tsa.critical <- function(timing, spending.time, tail.alpha, spending, symmetric) {
+  .rcmetar.require.package("gsDesign")
   if (spending == "obf") {
     # Same spending as sfLDOF, evaluated in the survival tail to preserve
     # the probabilities of very early looks.
@@ -736,7 +737,7 @@ rcmetar.run.trial.sequential.analysis <- function(om.data, params) {
   }
   output <- rcmetar.plot.scalar_path(plot.params$fp_outpath)
   if (!is.null(output)) {
-    s$plot_caption <- plot.params$plot_caption
+    s <- utils::modifyList(s, plot.params)
     s$fp_style <- s$fp_style %||% "default"
     data <- prepared$data
     res <- list(summary=summary, looks=looks, boundary=monitored$boundary)

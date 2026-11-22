@@ -9,7 +9,7 @@
     if ((!is.list(result) && is.null(names(result))) || !is.null(dim(result))) result <- list(Result=result)
     if (!is.list(result)) result <- as.list(result)
     keys <- names(result) %||% rep("", length(result))
-    missing <- !nzchar(keys)
+    missing <- is.na(keys) | !nzchar(keys)
     keys[missing] <- paste("Result", which(missing))
     names(result) <- keys
     fit <- result[["res"]]
@@ -20,11 +20,15 @@
     studies <- if (isS4(result[["input_data"]]) && "study.names" %in% methods::slotNames(result[["input_data"]]))
         methods::slot(result[["input_data"]], "study.names")
     result[intersect(names(result), c("input_data", "res.info", "eligibility", "tests.data", "Trim-and-fill data"))] <- NULL
-    summaries <- vapply(result, inherits, logical(1), "summary.display")
-    for (index in which(summaries)) {
-        value <- result[[index]]
+    list(values=lapply(result, .rcmetar.format.result.summary), request=request, execution=execution,
+         studies=studies, contributors=contributors)
+}
+
+.rcmetar.format.result.summary <- function(value) {
+    if (inherits(value, "summary.display")) {
         attr(value, "rcms.formatted") <- format(value)
-        result[[index]] <- value
+    } else if (is.list(value) && !is.object(value) && is.null(dim(value))) {
+        value[] <- lapply(value, .rcmetar.format.result.summary)
     }
-    list(values=result, request=request, execution=execution, studies=studies, contributors=contributors)
+    value
 }

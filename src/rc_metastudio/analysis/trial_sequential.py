@@ -12,6 +12,7 @@ from rc_metastudio import r_bridge
 from rc_metastudio.project.model import PooledAnalysis, PooledModel
 from rc_metastudio.analysis.identity import plot_caption
 from rc_metastudio.results.contract import AnalysisResult, ResultSection
+from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyle
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.settings import analysis_output_path
 
@@ -286,7 +287,10 @@ class TsaService:
     def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
         return r_bridge.trial_sequential_conclusion_command(self._prepare_for(model, request), directory)
 
-    def finish_conclusion(self, path: Path, accrued: float, ris: float) -> str:
+    def finish_conclusion(self, model: "DatasetTableModel", request: TsaRequest,
+                          path: Path, accrued: float, ris: float) -> str:
+        if self._prepared is None or self._prepared[:2] != (model, request):
+            return ""
         outcome, evidence = r_bridge.load_trial_sequential_evidence(path)
         self._evidence = evidence
         return preview_conclusion(str(outcome["category"]), str(outcome["look"]), str(outcome["study"]), accrued, ris)
@@ -297,6 +301,9 @@ class TsaService:
         if self._evidence is None:
             self._evidence = r_bridge.trial_sequential_evidence(prepared)
         fields, sections = r_bridge.run_trial_sequential_analysis(
-            prepared, self._evidence, {"plot_caption": plot_caption(model)}, path,
+            prepared, self._evidence, {
+                "plot_caption": plot_caption(model),
+                "funnel.region.color": FUNNEL_STYLE_PRESETS[FunnelStyle.DEFAULT].region_color,
+            }, path,
         )
         return TsaRun.from_mapping(fields, sections)
