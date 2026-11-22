@@ -1939,7 +1939,7 @@ def calculator(app, window, family):
                             scroll_maximum=dialog.content_scroll.verticalScrollBar().maximum())
                 dialog.content_scroll.verticalScrollBar().setValue(0)
                 assert dialog.raw_data_table.verticalScrollBar().maximum() == 0
-                assert "SE" in dialog.wald_readout.text() and "two-sided p" in dialog.wald_readout.text()
+                assert "SE" in dialog.wald_readout.text() and "two-sided P" in dialog.wald_readout.text()
                 widths = [dialog.metric_readout.columnWidth(i) for i in range(4)]
                 header = required(dialog.metric_readout.horizontalHeader())
                 for col, width in enumerate(widths):

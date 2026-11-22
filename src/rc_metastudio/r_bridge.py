@@ -2024,7 +2024,7 @@ def _format_nested_value(r_object, study_names=None, field_name=None):
     dims = _r_dims(r_object)
     if len(dims) == 2:
         if dims[0] > 20 or dims[0] * dims[1] > 100:
-            return "%d rows x %d columns" % (dims[0], dims[1])
+            return "%d rows × %d columns" % (dims[0], dims[1])
         return _format_r_matrix(r_object, study_names=study_names)
     if len(dims) == 3:
         rendered = _format_r_array_sections(

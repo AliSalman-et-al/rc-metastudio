@@ -2,7 +2,7 @@
 
 Base: 7dec12db. Entries are keyed by row number in Gemini’s replacements.csv. File and line refer to the audit location.
 
-Totals: 377 applied, 52 changed, 58 skipped. The table includes all 33 meaning-change verdicts.
+Totals: 376 applied, 53 changed, 58 skipped. The table includes all 33 meaning-change verdicts.
 
 | # | Audit location | Outcome | Reason / meaning-change verdict |
 |---:|---|---|---|
@@ -114,7 +114,7 @@ Totals: 377 applied, 52 changed, 58 skipped. The table includes all 33 meaning-c
 | 106 | `src/rc_metastudio/workspace/editing.py:556` | applied | Removes second-person blame ('You have already...') and replaces 'outcome' (sheet concept) with 'effect estimate' and 'raw data' with 'arm data'. |
 | 107 | `src/rc_metastudio/calculators/binary_dialog.py:1158` | skipped | Old literal no longer exists at this surface in current HEAD. |
 | 108 | `src/rc_metastudio/forms/binary_back_calculation_dialog.ui:15` | applied | Tighter, calmer phrasing matching binary_dialog.py. |
-| 109 | `src/rc_metastudio/main_window.py:603` | applied | Generic 'Warning' QMessageBox title; name the problem. |
+| 109 | `src/rc_metastudio/main_window.py:603` | changed | The shared error surface covers study edits and rejected clipboard data. Generic 'Warning' QMessageBox title; name the problem. |
 | 110 | `src/rc_metastudio/main_window.py:991` | applied | Generic 'Warning' QMessageBox title; name the problem. |
 | 111 | `src/rc_metastudio/main_window.py:1005` | applied | Generic 'Warning' QMessageBox title; name the problem. |
 | 112 | `src/rc_metastudio/main_window.py:1144` | applied | Generic 'Warning' QMessageBox title; name the problem. |

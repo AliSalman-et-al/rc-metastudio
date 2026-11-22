@@ -598,7 +598,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._model_signal_connections = []
 
     def data_error(self, msg):
-        QMessageBox.warning(self, "Invalid study value", msg)
+        QMessageBox.warning(self, "Could not edit study data", msg)
 
     def populate_open_recent_menu(self):
         recent_datasets = get_recent_files()

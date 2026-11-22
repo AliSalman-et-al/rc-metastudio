@@ -72,7 +72,7 @@ test_that("publication-bias text sections do not expose missing-value artifacts"
     sep = "\n"
   )
   expect_match(rendered, "Studies: Not available", fixed = TRUE)
-  expect_match(rendered, "Exact p-value: Not available", fixed = TRUE)
+  expect_match(rendered, "Exact P value: Not available", fixed = TRUE)
   expect_false(grepl("(^|[[:space:]])(NA|NaN|Inf|NULL)([[:space:]]|$)", rendered))
   expect_false(grepl("\\[1\\]", rendered))
 })
@@ -303,7 +303,7 @@ test_that("references follow the methods and plots that produced the result", {
   expect_match(result$`Method details`, "Package:")
   expect_match(result$`Method details`, "Predictor:")
   expect_match(result$`Method details`, "Weighting:")
-  expect_match(result$`Method details`, "Exact p-value:")
+  expect_match(result$`Method details`, "Exact P value:")
   expect_match(result$`Method details`, "Call:")
   expect_true(any(grepl("Egger, M.", result$References, fixed=TRUE)))
   expect_true(any(grepl("Sterne, J. A. C., & Egger", result$References, fixed=TRUE)))

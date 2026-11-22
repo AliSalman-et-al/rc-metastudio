@@ -280,7 +280,7 @@ test_that("the LIL floors the log-log penalty and uses within-study precision", 
   expect_equal(result$looks$lil.z[2], result$looks$z[2]/sqrt(2*log(log(info))))
 
   expect_error(rcmetar.run.trial.sequential.analysis(data,
-    tsa.request("RR", alpha=.08, lil=TRUE)), "Hu")
+    tsa.request("RR", alpha=.08, lil=TRUE)), "available for one-sided alpha")
 })
 
 test_that("one-sided Pocock honours direction and defaults use a conventional 95% CI", {

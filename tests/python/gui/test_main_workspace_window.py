@@ -57,7 +57,7 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         assert window.action_auto_fit_columns.text() == "Fit columns"
 
         assert window.menuMetric.title() == "Effect measure"
-        assert "calculator" in window.menuMetric.toolTip().lower()
+        assert window.menuMetric.toolTip() == "Choose the effect measure for this outcome."
 
         window._handle_wizard_results(
             {
@@ -80,8 +80,8 @@ def test_main_is_a_managed_workspace_with_expanding_table_and_layouted_navigatio
         assert not window.sheet_tabs.autoHide()
         assert window.sheet_tabs.elideMode() == QtCore.Qt.TextElideMode.ElideRight
         assert [action.text() for action in window.menuMetric.actions()] == [
-            "Two-arm metrics",
-            "One-arm metrics",
+            "Two-arm effect measures",
+            "One-arm effect measures",
         ]
         assert all(action.toolTip() for action in window.menuMetric.actions())
         for menu_action in window.menuMetric.actions():
