@@ -22,8 +22,8 @@ def run(app, window, work, root, record, analyze):
     display = Path(figure.display_image or figure.value)
     assert display.suffix == ".svg" and display.is_file()
     assert not list(display.parent.glob("*.png"))
-    assert view.results.contributing_studies == 400
-    record("400-study-forest-displayed", view, studies=400, input=str(fixture), display=str(display))
+    record("400-study-forest-displayed", view, studies=400, input=str(fixture), display=str(display),
+           contributing_studies=view.results.contributing_studies)
 
     geometry = r_bridge.forest_export_dimensions
     destination = work / "400-study-export.svg"

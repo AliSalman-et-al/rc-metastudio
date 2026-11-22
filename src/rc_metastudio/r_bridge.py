@@ -903,9 +903,30 @@ def preview_trial_sequential_analysis(
 
 
 @serialized_r_call
-def trial_sequential_evidence(prepared: object) -> tuple[Mapping[str, object], object]:
-    evidence = execute_r_function("RCMetaR:::.tsa.evidence", prepared)
+def trial_sequential_conclusion_command(prepared: object, directory: Path) -> tuple[str, list[str]]:
+    inputs = directory / "prepared.rds"
+    execute_r_function("saveRDS", prepared, str(inputs))
+    script = (
+        "args <- commandArgs(TRUE); "
+        "evidence <- RCMetaR:::.tsa.evidence(readRDS(args[1L])); "
+        "saveRDS(evidence, args[2L])"
+    )
+    bin_dir = Path(os.environ["R_HOME"]) / "bin"
+    paths = [str(inputs), str(directory / "evidence.rds")]
+    if os.name == "nt":
+        return str(bin_dir / "x64" / "Rterm.exe"), ["--vanilla", "--slave", "-e", script, "--args", *paths]
+    return str(bin_dir / "Rscript"), ["--vanilla", "-e", script, *paths]
+
+
+@serialized_r_call
+def load_trial_sequential_evidence(path: Path) -> tuple[Mapping[str, object], object]:
+    evidence = execute_r_function("readRDS", str(path))
     return _r_mapping_or_empty(evidence.rx2("outcome")), evidence
+
+
+@serialized_r_call
+def trial_sequential_evidence(prepared: object) -> object:
+    return execute_r_function("RCMetaR:::.tsa.evidence", prepared)
 
 
 @serialized_r_call

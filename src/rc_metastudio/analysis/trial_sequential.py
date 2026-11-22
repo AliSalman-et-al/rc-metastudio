@@ -4,6 +4,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -265,7 +266,7 @@ class TsaRun:
 class TsaService:
     def __init__(self) -> None:
         self._prepared: tuple[DatasetTableModel, TsaRequest, object] | None = None
-        self._evidence: tuple[Mapping[str, object], object] | None = None
+        self._evidence: object | None = None
 
     def preview(self, model: "DatasetTableModel", request: TsaRequest) -> TsaPreview:
         self._prepared = None
@@ -276,24 +277,26 @@ class TsaService:
         self._prepared = model, request, prepared
         return TsaPreview.from_mapping(fields)
 
-    def _prepared_evidence(self, model: "DatasetTableModel", request: TsaRequest) -> tuple[object, Mapping[str, object], object]:
+    def _prepare_for(self, model: "DatasetTableModel", request: TsaRequest) -> object:
         if self._prepared is None or self._prepared[:2] != (model, request):
             self.preview(model, request)
         assert self._prepared is not None
-        prepared = self._prepared[2]
-        if self._evidence is None:
-            self._evidence = r_bridge.trial_sequential_evidence(prepared)
-        outcome, evidence = self._evidence
-        return prepared, outcome, evidence
+        return self._prepared[2]
 
-    def conclusion(self, model: "DatasetTableModel", request: TsaRequest, accrued: float, ris: float) -> str:
-        _, outcome, _ = self._prepared_evidence(model, request)
+    def conclusion_command(self, model: "DatasetTableModel", request: TsaRequest, directory: Path) -> tuple[str, list[str]]:
+        return r_bridge.trial_sequential_conclusion_command(self._prepare_for(model, request), directory)
+
+    def finish_conclusion(self, path: Path, accrued: float, ris: float) -> str:
+        outcome, evidence = r_bridge.load_trial_sequential_evidence(path)
+        self._evidence = evidence
         return preview_conclusion(str(outcome["category"]), str(outcome["look"]), str(outcome["study"]), accrued, ris)
 
     def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
         path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
-        prepared, _, evidence = self._prepared_evidence(model, request)
+        prepared = self._prepare_for(model, request)
+        if self._evidence is None:
+            self._evidence = r_bridge.trial_sequential_evidence(prepared)
         fields, sections = r_bridge.run_trial_sequential_analysis(
-            prepared, evidence, {"plot_caption": plot_caption(model)}, path,
+            prepared, self._evidence, {"plot_caption": plot_caption(model)}, path,
         )
         return TsaRun.from_mapping(fields, sections)
