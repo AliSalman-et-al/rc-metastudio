@@ -818,6 +818,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type == "diagnostic":
             method = REITSMA_METHOD
             parameters["fp_outpath"] = f"{self._fit_output_stem}.svg"
+            parameters["fp_display_path"] = parameters["fp_outpath"]
             parameters["joint.metrics"] = "Sens,Spec"
         return analysis_adapter.make_analysis_request(
             data_type=self.data_type,
@@ -2034,6 +2035,7 @@ def add_plot_params(specs_form: AnalysisSetupDialog) -> None:
                 "bp_plot_lb": _validated_plot_bound(specs_form.plot_lb_le),
                 "bp_plot_ub": _validated_plot_bound(specs_form.plot_ub_le),
                 "bp_outpath": f"{output_stem}.svg",
+                "bp_display_path": f"{output_stem}.svg",
                 "bp_show_regression_line": specs_form.show_regression_line.isChecked(),
                 "bp_show_confidence_band": specs_form.show_confidence_band.isChecked(),
                 "bp_show_prediction_interval": specs_form.show_prediction_interval.isChecked(),
@@ -2057,6 +2059,7 @@ def add_plot_params(specs_form: AnalysisSetupDialog) -> None:
     specs_form.current_param_vals["fp_col4_str"] = _text_value(specs_form.col4_str_edit)
     specs_form.current_param_vals.update(plot_axis_label_params(specs_form.x_lbl_le, "fp"))
     specs_form.current_param_vals["fp_outpath"] = f"{output_stem}.svg"
+    specs_form.current_param_vals["fp_display_path"] = specs_form.current_param_vals["fp_outpath"]
 
     specs_form.current_param_vals["fp_plot_lb"] = _validated_plot_bound(specs_form.plot_lb_le)
     specs_form.current_param_vals["fp_plot_ub"] = _validated_plot_bound(specs_form.plot_ub_le)
@@ -2140,6 +2143,7 @@ def _diagnostic_analysis_requests(
 
         output_stem = f"{specs_form._fit_output_stem}_{diagnostic_metric.lower()}"
         param_vals["fp_outpath"] = f"{output_stem}.svg"
+        param_vals["fp_display_path"] = param_vals["fp_outpath"]
         param_vals.pop("measure", None)
         if joint is not None and diagnostic_metric == "Sens":
             param_vals["joint.metrics"] = "Sens,Spec"
