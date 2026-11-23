@@ -39,8 +39,6 @@ BROAD = (
     "scripts/local_r_test_backend.py", "tests/conftest.py",
     ".agents/skills/verify-rcms/scripts/*",
 )
-# These feature boundaries have explicit drives in the verify-rcms feature map.
-# Shared shell, analysis, workspace and results code can affect many more drives.
 FEATURES = (
     (("src/rc_metastudio/calculators/*", "src/rc_metastudio/forms/*calculation*.ui",
       "src/rc_metastudio/forms/*_data_dialog.ui"),
@@ -151,7 +149,6 @@ def git_paths(*args: str) -> list[str]:
 
 def changed_paths(base: str, *, working_tree: bool = False) -> list[str]:
     target = [] if working_tree else ["HEAD"]
-    # Treat renames as deletion plus addition so both boundaries are selected.
     return git_paths("diff", "--no-renames", "--name-only", "-z", base, *target, "--")
 
 

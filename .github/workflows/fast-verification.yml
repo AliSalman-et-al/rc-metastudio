@@ -66,17 +66,14 @@ jobs:
     name: Deterministic code-health baseline and gates
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CODE_HEALTH_BASELINE: 8b7796bcc840c3505c5fb0a1328cdd7682880e48
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
       - name: Fetch pre-squash baseline
-        id: baseline-source
-        run: |
-          set -euo pipefail
-          sha="$(python3 -c 'from scripts.verify import STABLE_BASELINE; print(STABLE_BASELINE)')"
-          git fetch origin "$sha"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+        run: git fetch origin "$CODE_HEALTH_BASELINE"
       - uses: ./.github/actions/setup-rcms
       - run: uv sync --frozen --only-group dev --no-install-project
       - name: Cache fixed code-health baseline
@@ -86,7 +83,7 @@ jobs:
           path: |
             artifacts/code-health/baseline.json
             artifacts/code-health/baseline.txt
-          key: code-health-baseline-${{ runner.os }}-${{ runner.arch }}-${{ steps.baseline-source.outputs.sha }}-${{ hashFiles('scripts/code_health.py', 'config/code-health.json', 'pyproject.toml', '.python-version', 'uv.lock') }}
+          key: code-health-baseline-${{ runner.os }}-${{ runner.arch }}-${{ env.CODE_HEALTH_BASELINE }}-${{ hashFiles('scripts/code_health.py', 'config/code-health.json', 'pyproject.toml', '.python-version', 'uv.lock') }}
       - name: Resolve comparison base
         id: base
         shell: bash
@@ -112,8 +109,8 @@ jobs:
           BASELINE_CACHE_HIT: ${{ steps.baseline-cache.outputs.cache-hit }}
         run: >-
           uv run --no-sync python -c
-          "from scripts.verify import run_code_health; import os;
-          run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'],
+          "from scripts.verify import run_code_health_with_trend; import os;
+          run_code_health_with_trend(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'], os.environ['CODE_HEALTH_BASELINE'],
           reuse_baseline=os.environ['BASELINE_CACHE_HIT'] == 'true')"
       - name: Enforce comment ratchet
         env:
