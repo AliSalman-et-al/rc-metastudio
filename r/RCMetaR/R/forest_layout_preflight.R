@@ -94,17 +94,20 @@ rcmetar.forest.panel.height <- function(plan) {
 }
 
 rcmetar.forest.margins <- function(plan) {
-    if (!is.null(plan$footer$axis)) return(c(.2, 0, .36, 0))
+    if (!is.null(plan$footer$axis)) return(c(.2, 0, if (identical(plan$headers$spanning, FALSE)) .08 else .36, 0))
     bottom <- if (plan$device$direction_lines > 0) 2.2 + .85 * plan$device$direction_lines else 1.8
-    c(.2 * bottom, 0, if (plan$rows$manual_sequential_labels) .2 else .28, 0)
+    top <- if (plan$rows$manual_sequential_labels) .2 else if (isTRUE(plan$device$sparse_export)) .18 else .28
+    c(.2 * bottom, 0, top, 0)
 }
 
 rcmetar.forest.width.budget <- function(bundle, fixed.width, cex) {
-    study.min <- 40 / 25.4
-    study.wanted <- max(c(study.min, graphics::strwidth(bundle$slab, units="inches", cex=cex)), na.rm=TRUE)
     width <- bundle$target_width
     natural <- is.null(width)
-    graph.min <- if (natural) 60 / 25.4 else 45 / 25.4
+    sparse <- !natural && ncol(bundle$ilab$matrix) == 0L
+    em <- 12 * cex / 72
+    study.min <- if (sparse) 6 * em else 40 / 25.4
+    study.wanted <- max(c(study.min, graphics::strwidth(bundle$slab, units="inches", cex=cex)), na.rm=TRUE)
+    graph.min <- if (natural) 60 / 25.4 else if (sparse) 6 * em else 45 / 25.4
     minimum <- fixed.width + study.min + graph.min
     if (natural) {
         width <- min(260 / 25.4, max(180 / 25.4, fixed.width + study.wanted + graph.min,
@@ -353,6 +356,8 @@ rcmetar.forest.default.rows <- function(bundle) {
 
 rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
     size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
+    size$sparse_export <- !is.null(bundle$target_width) && !length(bundle$ilab$columns) &&
+        !identical(bundle$forest_variant, "subgroup")
     alim <- if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         rcmetar.forest.journal.ratio.alim(bundle)
     } else {
@@ -361,6 +366,12 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
     alim <- rcmetar.forest.axis.alim(bundle, alim)
     layout <- rcmetar.forest.default.layout.coordinates(bundle, size, alim)
     rows <- rcmetar.forest.default.rows(bundle)
+    inference <- NULL
+    if (!rows$manual_sequential_labels && is.null(bundle$subgroups) && inherits(bundle$res, "rma")) {
+        inference <- rcmetar.forest.with.measurement.device(rcmetar.forest.inference.lines(
+            rcmetar.forest.inference.labels(bundle), size$width - .12, size$cex))
+        rows$ylim[1L] <- min(rows$ylim[1L], -2 - length(inference))
+    }
     rcmetar.forest.layout.plan(
         style=style,
         template=if (rows$manual_sequential_labels) "compact" else if (identical(style, "revman")) "compact" else "default",
@@ -384,6 +395,7 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
             study=rcmetar.metafor.study.header(bundle),
             effect=if (rows$manual_sequential_labels) rcmetar.metafor.effect.header(bundle) else size$effect_header
         ),
+        footer=list(inference=inference),
         metrics=size,
         layout=layout
     )

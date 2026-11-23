@@ -1169,6 +1169,86 @@
           "after": "Continuous random-effects model\n\nEffect measure: Standardized mean difference\n\nModel results\n Subgroups       k  Estimate  Lower bound (95% CI)  Upper bound (95% CI)  SE (standardized scale)  P value  z value\n Subgroup early  3     0.285                 0.055                 0.515                    0.117    0.015    2.427\n Subgroup late   3     0.395                 0.068                 0.721                    0.167    0.018    2.370\n Overall         6     0.358                 0.152                 0.565                    0.105  < 0.001    3.400\n\nHeterogeneity\n Subgroups            Q  df  P value     I²     τ²\n Subgroup early   1.939   2    0.379   0.0%  0.000\n Subgroup late    8.209   2    0.016  75.6%  0.062\n Overall         11.914   5    0.036  58.0%  0.037\n\nPrediction interval\n Subgroups       Lower bound (95% PI)  Upper bound (95% PI)\n Subgroup early  0.055                                0.515\n Subgroup late   −0.194                               0.983\n Overall         −0.072                               0.789\n\nTest of subgroup differences\n Test                      Statistic  df  P value\n Subgroup differences (Q)      0.293   1    0.589\n\nSubgroup rows show within-group effect tests; the subgroup-difference test compares effects across groups."
         }
       }
+    },
+    {
+      "id": "issue-644-bubble-typography-amino-binary-meta-regression",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-meta-regression"
+      ],
+      "affected_workflows": [
+        "amino-binary-meta-regression"
+      ],
+      "reason": "Issue #644 specifies a shared physical scale for plot text and measured margins for the bubble plot.",
+      "approved_by": "Issue #644 publication layout request",
+      "approved_at": "2026-11-23",
+      "before_behavior": "The bubble plot uses independent x- and y-axis title scales and fixed panel margins.",
+      "after_behavior": "The bubble plot uses consistent axis typography and measures margins from rendered labels and legend keys.",
+      "follow_up": "The binding matches the raster image from the pinned Windows replay of the updated bubble layout. The frozen numerical contract remains the comparison authority.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Regression Plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Regression Plot": {
+          "before": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "d12a54c6938c372da271fc624a3c58329d8a88a18652efb73062ae05962d5669",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "df48b97348c0bc9a575c9e20a7b4b8a7c7945880b9edc9cd6332560a6cd88e27",
+            "metadata": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "issue-644-bubble-typography-continuous-meta-regression",
+      "status": "accepted",
+      "ids": [
+        "continuous-meta-regression"
+      ],
+      "affected_workflows": [
+        "continuous-meta-regression"
+      ],
+      "reason": "Issue #644 specifies a shared physical scale for plot text and measured margins for the bubble plot.",
+      "approved_by": "Issue #644 publication layout request",
+      "approved_at": "2026-11-23",
+      "before_behavior": "The bubble plot uses independent x- and y-axis title scales and fixed panel margins.",
+      "after_behavior": "The bubble plot uses consistent axis typography and measures margins from rendered labels and legend keys.",
+      "follow_up": "The binding matches the raster image from the pinned Windows replay of the updated bubble layout. The frozen numerical contract remains the comparison authority.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Regression Plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Regression Plot": {
+          "before": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "aa6de004c0b447121cb73470dafdd02215f1eda17d8202def5fa1ccb8cafbd60",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "99272f439084a80087b2a245e4770f3cb33b01c437dc55dc0d1d39e0ce7d6162",
+            "metadata": {}
+          }
+        }
+      }
     }
   ]
 }

@@ -282,7 +282,7 @@ rcmetar.bubble.legend.labels <- function(bundle) {
     labels
 }
 
-rcmetar.bubble.draw.legend <- function(bundle, style.args, cex) {
+rcmetar.bubble.draw.legend <- function(bundle, style.args, cex, plot=TRUE) {
     if (!rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)) {
         return(invisible(NULL))
     }
@@ -304,7 +304,7 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args, cex) {
         rcmetar.bubble.param.is.true(bundle, "bp_show_confidence_band", TRUE),
         if (length(lty) == 4) TRUE)
     rcmetar.bubble.legend(labels, pch=pch[visible], pt.bg=pt.bg[visible],
-                          col=col[visible], lty=lty[visible], lwd=lwd[visible], cex=cex)
+                          col=col[visible], lty=lty[visible], lwd=lwd[visible], cex=cex, plot=plot)
 }
 
 rcmetar.bubble.legend <- function(labels, ..., cex=rcmetar.bubble.legend.cex()) {
@@ -355,14 +355,14 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         stop("Meta-regression bubble plots require a fitted meta-regression plot.", call.=FALSE)
     }
     size <- rcmetar.plot.device.size(rcmetar.bubble.measure.device(bundle), width, height, dpi)
+    size$cex <- rcmetar.plot.axis.cex(size$width)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
     if (is.null(display.path) && is.null(dpi)) size$dpi <- 600
-    compact <- !is.null(height) && size$width < 6
     rcmetar.render.plot_file(outpath, size, function() {
         show.legend <- rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)
         rcmetar.bubble.panel(size, show.legend)
-        legend.cex <- if (is.null(height)) rcmetar.bubble.legend.cex() else .8
-        if (compact) graphics::par(mgp=c(1.65, .45, 0), tcl=-.25)
+        legend.cex <- .9
+        graphics::par(mgp=c(1.65, .45, 0), tcl=-.25)
         args <- rcmetar.bubble.style.args(bundle)
         ylim <- rcmetar.bubble.ylim(bundle)
         automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], "[default]")
@@ -394,22 +394,22 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         )
         args$xaxt <- "n"
         args <- rcmetar.bubble.compact.args(args)
-        tick.width <- rcmetar.forest.with.measurement.device({
+        measured <- rcmetar.forest.with.measurement.device({
             graphics::par(cex=size$cex, family="sans")
             do.call(metafor::regplot, args)
             labels <- rcmetar.bubble.tick.labels(bundle,
                 rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4]))
-            max(graphics::strwidth(labels, units="inches"))
+            legend <- rcmetar.bubble.draw.legend(bundle, args, legend.cex, plot=FALSE)
+            bounds <- legend$rect
+            width <- if (is.null(bounds)) 0 else diff(graphics::grconvertX(
+                c(bounds$left, bounds$left + bounds$w), to="inches"))
+            list(ticks=max(graphics::strwidth(labels, units="inches")), legend=width)
         })
-        margins <- graphics::par("mai")
-        margins[[2]] <- max(margins[[2]], tick.width + 0.75)
-        if (compact) {
-            legend.labels <- unlist(strsplit(rcmetar.bubble.legend.labels(bundle), "\n", fixed=TRUE))
-            right <- if (show.legend) .33 + max(graphics::strwidth(
-                legend.labels, cex=legend.cex, units="inches")) else .10
-            margins <- c(.38, tick.width + .34, .08, right)
-        }
-        graphics::par(mai=margins)
+        tick.width <- measured$ticks
+        em <- 12 * size$cex / 72
+        right <- measured$legend + .012 * size$width + em
+        title.offset <- tick.width + 1.75 * em
+        graphics::par(mai=c(3.4 * em, title.offset + 1.55 * em, em, right))
         result <- tryCatch(
             do.call(metafor::regplot, args),
             error=function(e) {
@@ -422,9 +422,8 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)
-        graphics::mtext(bundle$ylabel, side=2,
-                        line=(max(graphics::strwidth(labels, units="inches")) +
-                            if (compact) .15 else .40) / graphics::par("csi"))
+        graphics::mtext(bundle$ylabel, side=2, cex=size$cex,
+                        line=title.offset / graphics::par("csi"))
         if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
         graphics::axis(1, at=x.ticks, labels=rcmetar.compact.numeric.labels(
             vapply(x.ticks, format, character(1), trim=TRUE, scientific=FALSE)))

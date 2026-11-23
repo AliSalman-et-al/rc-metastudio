@@ -254,7 +254,13 @@ rcmetar.draw.default.heterogeneity <- function(bundle, x, cex, plan) {
         return(invisible(NULL))
     }
     rcmetar.draw.forest.summary.label(x, -1, plan$summary_labels[[1L]], cex)
-    rcmetar.draw.forest.inference(bundle, x, -1 - plan$summary_extra[[1L]], cex)
+    if (is.null(plan$footer$inference)) {
+        rcmetar.draw.forest.inference(bundle, x, -1 - plan$summary_extra[[1L]], cex)
+    } else {
+        lines <- plan$footer$inference
+        graphics::text(x, -1 - plan$summary_extra[[1L]] - seq_along(lines),
+                       lines, adj=c(0, .5), font=1, cex=cex)
+    }
     invisible(NULL)
 }
 

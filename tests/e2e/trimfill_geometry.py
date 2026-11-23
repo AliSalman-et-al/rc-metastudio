@@ -36,10 +36,13 @@ def check_trimfill(view, record, *, side=None):
         circles = list(root.iter('{http://www.w3.org/2000/svg}circle'))
         text = {node.text for node in root.iter('{http://www.w3.org/2000/svg}text')}
         assert {"Observed", "Imputed"} <= text
-        legend = circles[-2:]
-        assert legend[0].get("cx") == legend[1].get("cx")
+        def is_hollow(node):
+            return node.attrib.get('fill') == 'none' or 'fill: none' in node.attrib.get('style', '')
+
+        observed_key, imputed_key = circles[-2:]
+        assert not is_hollow(observed_key) and is_hollow(imputed_key)
         circles = circles[:-2]
-        hollow = [node for node in circles if node.attrib.get('fill') == 'none' or 'fill: none' in node.attrib.get('style', '')]
+        hollow = [node for node in circles if is_hollow(node)]
         assert len(observed) == 17, len(observed)
         assert sum(filled) == k0, (title, sum(filled), k0)
         assert len(circles) == len(observed) + k0, (title, len(circles), len(observed), k0)

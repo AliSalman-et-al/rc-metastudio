@@ -1502,27 +1502,32 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
-.small.study.funnel.legend <- function(settings, labels, ...) {
-    if (!isTRUE(settings$compact)) return(graphics::legend("topright", labels, ..., bty="n"))
-    size <- grDevices::dev.size("in")
-    graphics::legend(
-        graphics::grconvertX(size[1L] / 2, from="inches"),
-        graphics::grconvertY(size[2L] - graphics::par("omi")[3L] - .01, from="inches"),
-        legend=labels, ..., xjust=.5, yjust=1, ncol=2, text.width=NA_real_,
-        bty="n", xpd=NA, seg.len=1.4, x.intersp=.65)
+.small.study.funnel.legend <- function(settings, ...) {
+    args <- list(...)
+    for (i in seq_along(settings$legend.rows)) {
+        row <- settings$legend.rows[[i]]
+        symbols <- lapply(args, function(arg) if (length(arg) == 1L) arg else arg[row])
+        do.call(graphics::legend, c(list(
+            x=graphics::grconvertX(.5, from="npc"),
+            y=graphics::grconvertY(1, from="npc") +
+                graphics::yinch(settings$legend.leading * (length(settings$legend.rows) - i + 1.5)),
+            legend=settings$legend.labels[row], cex=.9,
+            xjust=.5, yjust=1, horiz=TRUE, text.width=NA_real_,
+            bty="n", xpd=NA, seg.len=1.4, x.intersp=.65), symbols))
+    }
 }
 
-.small.study.draw.deeks <- function(om.data, params, settings, y, se, keep, compact) {
+.small.study.draw.deeks <- function(om.data, params, settings, y, se, keep) {
     effective <- as.numeric(params$deeks.ess %||% numeric())
     predictor <- as.numeric(params$deeks.predictor %||% numeric())
     if (length(effective) != sum(keep))
         stop("persisted Deeks effective sample sizes do not match prepared effects")
     xlab <- if (settings$xlab == "1/sqrt(ESS)") expression(1/sqrt(ESS)) else settings$xlab
-    plot(predictor, y[keep], main=if (!compact) .small.study.deeks.title, xlab=xlab, ylab=settings$ylab, las=1,
+    plot(predictor, y[keep], xlab=xlab, ylab=settings$ylab, las=1,
          xlim=settings$xlim, xaxt=if (is.null(settings$at)) "s" else "n",
          pch=settings$point.symbol, cex=settings$point.size,
          col=settings$point.color, bg=settings$point.color)
-    if (compact) graphics::mtext(.small.study.deeks.title, side=3, line=.35, cex=.8, font=2,
+    graphics::mtext(.small.study.deeks.title, side=3, line=.35, cex=.8, font=2,
         at=graphics::grconvertX(grDevices::dev.size("in")[1L] / 2, from="inches"))
     if (!is.null(settings$at)) axis(1, at=settings$at)
     line <- as.numeric(params$deeks.line %||% c(NA_real_, NA_real_))
@@ -1547,45 +1552,56 @@ rcmetar.warm.small.study.effects <- function() {
     .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.funnel(y[keep], se[keep], center, settings, om.data@study.names[keep])
     if (identical(settings$kind, "trimfill")) {
-        .small.study.funnel.legend(settings, c("Observed", "Imputed"),
+        .small.study.funnel.legend(settings,
             pch=c(settings$point.symbol, 1), col=settings$point.color)
     } else if (settings$show.reference || settings$show.pooled) {
         show <- c(settings$show.pooled, settings$show.reference)
-        .small.study.funnel.legend(settings, c("Pooled estimate", "No effect")[show],
-            lty=c(2, 1)[show], lwd=c(2, 1)[show], col=settings$reference.color, cex=.8)
+        .small.study.funnel.legend(settings,
+            lty=c(2, 1)[show], lwd=c(2, 1)[show], col=settings$reference.color)
     }
+}
+
+.small.study.contour.levels <- function(params) {
+    raw <- .small.study.plot.setting(params, "funnel.contour.levels",
+                                     .small.study.funnel.index(params), "90,95,99")
+    levels <- as.numeric(strsplit(as.character(raw), ",", fixed=TRUE)[[1L]])
+    levels <- sort(unique(levels[is.finite(levels) & levels > 0 & levels < 100]))
+    if (length(levels)) levels else c(90, 95, 99)
+}
+
+.small.study.funnel.legend.labels <- function(settings, levels) {
+    if (settings$kind == "deeks") return(character())
+    if (settings$kind == "trimfill") return(c("Observed", "Imputed"))
+    if (settings$kind != "contour")
+        return(c("Pooled estimate", "No effect")[c(settings$show.pooled, settings$show.reference)])
+    thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
+    c(paste0("P > ", thresholds[[1L]]),
+      if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
+      paste0("P \u2264 ", tail(thresholds, 1)))
 }
 
 .small.study.draw.contour.funnel <- function(om.data, res, params, settings,
                                              y, se, keep) {
     model <- .small.study.funnel.model(res, y, se, keep)
     center <- as.numeric(params$funnel.center %||% 0)
-    raw <- .small.study.plot.setting(params, "funnel.contour.levels",
-                                     .small.study.funnel.index(params), "90,95,99")
-    levels <- as.numeric(strsplit(as.character(raw), ",", fixed=TRUE)[[1L]])
-    levels <- sort(unique(levels[is.finite(levels) & levels > 0 & levels < 100]))
-    if (!length(levels)) levels <- c(90, 95, 99)
+    levels <- settings$levels
     ratio <- .small.study.funnel.ratio(params)
     args <- .small.study.funnel.args(settings, center, se[keep], ratio)
     args$refline <- 0
     args$level <- levels
+    args$yaxt <- "n"
     # Match metafor 5.0-1's scalar-shade expansion on our white device.
     args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#7F7F7F"))(length(levels))
     if (length(levels) > 1L) args$shade[-1L] <- rev(args$shade[-1L])
     args$colci <- settings$reference.color
     do.call(metafor::funnel, c(list(model), args))
+    ticks <- pretty(args$ylim, n=4)
+    graphics::axis(2, at=ticks[ticks >= 0 & ticks <= max(args$ylim)], las=1)
     .small.study.draw.guides(settings, center)
     .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.funnel(y[keep], se[keep], 0, settings, om.data@study.names[keep])
-    thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
-    bands <- c(paste0("P > ", thresholds[[1L]]),
-               if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
-               paste0("P \u2264 ", tail(thresholds, 1)))
-    .small.study.funnel.legend(settings, bands, fill=c(args$shade, settings$background.color),
+    .small.study.funnel.legend(settings, fill=c(args$shade, settings$background.color),
                               border=settings$reference.color)
-    if (any(levels != display.confidence.level(params)))
-        graphics::mtext(sprintf("Analysis CI %g%%.", display.confidence.level(params)),
-                        side=1, line=4.3, adj=0, cex=.8)
 }
 
 .small.study.draw.funnel.notes <- function(om.data, params, settings) {
@@ -1613,24 +1629,30 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     settings <- .small.study.funnel.settings(params)
     size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     size <- rcmetar.plot.device.size(size, width, height, dpi)
-    compact <- !is.null(height) && size$width < 6
-    settings$compact <- compact
+    settings$levels <- .small.study.contour.levels(params)
+    settings$legend.labels <- .small.study.funnel.legend.labels(settings, settings$levels)
     ylab <- settings$ylab
-    if (compact) settings$ylab <- ""
+    settings$ylab <- ""
     rcmetar.render.plot_file(path, size, function() {
-        graphics::par(xpd=FALSE, mar=c(6.2, 4.8, 3, 2))
-        if (compact) {
-            top <- switch(settings$kind, contour=.39, deeks=.26, .24)
-            graphics::par(cex=.75, mgp=c(2.55, .55, 0), mex=.53, tcl=-.25, las=1,
-                          mai=c(.58, .63, top, .19))
-        }
+        axis.cex <- rcmetar.plot.axis.cex(size$width)
+        em <- 12 * axis.cex / 72
+        graphics::par(xpd=FALSE, cex=axis.cex, mgp=c(2.55, .55, 0), mex=.53, tcl=-.25, las=1)
+        left <- max(graphics::strwidth(format(pretty(c(0, max(se[keep]))), trim=TRUE),
+                                      units="inches")) + 3 * em
+        right <- 1.5 * em
+        settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - left - right, .9)
+        settings$legend.leading <- 1.15 * em
+        top <- max(1, length(settings$legend.rows) + 1.75) * settings$legend.leading
+        notes <- (!is.null(settings$xlim) ||
+            (!settings$kind %in% c("deeks", "contour") && settings$sampling.level != display.confidence.level(params)))
+        graphics::par(mai=c((if (notes) 4.9 else 3.4) * em, left, top, right))
         if (!is.null(settings$xlim)) graphics::par(xaxs="i")
         if (identical(settings$kind, "deeks") && is(om.data, "DiagnosticData"))
-            .small.study.draw.deeks(om.data, params, settings, y, se, keep, compact)
+            .small.study.draw.deeks(om.data, params, settings, y, se, keep)
         else if (identical(settings$kind, "contour"))
             .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
         else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
-        if (compact) graphics::mtext(ylab, side=2, line=4.5, cex=.75, las=0)
+        graphics::mtext(ylab, side=2, line=4.5, cex=axis.cex, las=0)
         .small.study.draw.funnel.notes(om.data, params, settings)
     }, caption=params$plot_caption)
     path

@@ -6,12 +6,14 @@ from itertools import combinations
 import math
 from pathlib import Path
 import re
+import subprocess
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
 from pdfminer.high_level import extract_pages
-from pdfminer.layout import LTChar, LTContainer
+from pdfminer.layout import LTChar, LTContainer, LTLine, LTRect
 from PyQt6.QtWidgets import QDialogButtonBox, QFileDialog
+from scripts.verification_evidence import desktop_tool_executable
 
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
@@ -24,14 +26,114 @@ from tests.python.gui.qt_test_support import metric_action, required, wait
 
 
 EXPECTED_LABELS = {
+    "forest": {"Study", "Risk ratio"},
     "regression": {"Absolute latitude", "Risk ratio", "Regression line"},
     "funnel": {"Mean difference", "Standard error (outcome scale)", "No effect"},
-    "contour_funnel": {"Mean difference", "Standard error (outcome scale)", "Analysis CI 95%."},
+    "contour_funnel": {"Mean difference", "Standard error (outcome scale)"},
     "trimfill_funnel": {"Odds ratio", "Standard error of log odds ratio", "Observed", "Imputed"},
     "deeks_funnel": {"Deeks effective-sample-size funnel", "Log diagnostic odds ratio"},
     "sroc": {"False positive rate", "Sensitivity", "Confidence region", "Joint prediction region"},
     "trial_sequential": {"Cumulative statistical information", "Cumulative Z-curve", "Conventional boundary"},
 }
+
+
+def editorial_observations(kind, runs, page):
+    numbers = [(text, size, box) for text, size, box in runs
+               if re.fullmatch(r"[−-]?\d+(?:,\d{3})*(?:\.\d+)?", text)]
+    observed = {}
+    if kind == "forest":
+        observed["top_gap_mm"] = round((page.height - max(box[3] for _, _, box in runs)) * 25.4 / 72, 2)
+        observed["prediction_interval"] = next((text for text, _, _ in runs
+                                                if "prediction interval" in text.lower()), "")
+    axis_titles = {
+        "regression": {"Absolute latitude", "Risk ratio"},
+        "trial_sequential": {"Cumulative statistical information", "Cumulative Z-score"},
+        "contour_funnel": {"Mean difference", "Standard error (outcome scale)"},
+        "sroc": {"False positive rate", "Sensitivity"},
+    }.get(kind, set())
+    titles = [(size, box) for text, size, box in runs if text in axis_titles]
+    if titles and numbers:
+        sizes = [size for size, _ in titles]
+        tick_size = max(size for _, size, _ in numbers)
+        observed["axis_title_pt"] = [round(size, 2) for size in sizes]
+        observed["tick_pt"] = round(tick_size, 2)
+        observed["axis_font_ratio"] = round(max(sizes) / min(sizes), 2)
+        observed["axis_to_tick_ratio"] = [round(size / tick_size, 2) for size in sizes]
+    rectangles = [item for item in page if isinstance(item, LTRect)
+                  and page.width * .25 < item.width < page.width - 2 and item.height > page.height * .25]
+    frame = max(rectangles, key=lambda item: item.width * item.height).bbox if rectangles else None
+    if kind == "trial_sequential":
+        vertical = [item for item in page if isinstance(item, LTLine) and item.width < .1 and item.height > 10]
+        horizontal = [item for item in page if isinstance(item, LTLine) and item.width > page.width * .3]
+        if vertical and horizontal:
+            left = min(vertical, key=lambda item: item.x0)
+            right = max((item.x1 for item in horizontal if abs(item.x0 - left.x0) < 1), default=left.x0)
+            frame = (left.x0, left.y0, right, left.y1)
+            observed["panel_height_mm"] = round(left.height * 25.4 / 72, 2)
+            y_title = next(((box[1] + box[3]) / 2 for text, _, box in runs
+                            if text == "Cumulative Z-score"), None)
+            if y_title is not None:
+                observed["y_title_center_offset_pt"] = round(abs(y_title - (left.y0 + left.y1) / 2), 2)
+                title_right = next(box[2] for text, _, box in runs if text == "Cumulative Z-score")
+                observed["y_title_axis_gap_pt"] = round(left.x0 - title_right, 2)
+    legend_entries = {
+        "sroc": {"Confidence region", "Joint prediction region"},
+        "trial_sequential": {"Cumulative Z-curve", "Monitoring boundary", "Futility region", "Conventional boundary"},
+    }.get(kind, set())
+    legend = [box for text, _, box in runs if text in legend_entries
+              or (kind == "contour_funnel" and (" < P " in text or text.startswith(("P > ", "P ≤ "))))]
+    if kind == "trial_sequential" and titles:
+        legend_fonts = [size for text, size, _ in runs if text in legend_entries]
+        if legend_fonts:
+            observed["axis_to_legend_ratio"] = round(max(size for size, _ in titles) / min(legend_fonts), 2)
+    if frame and legend:
+        bounds = (min(box[0] for box in legend), min(box[1] for box in legend),
+                  max(box[2] for box in legend), max(box[3] for box in legend))
+        observed["legend_clearance_pt"] = round(min(
+            max(bounds[0] - box[2], box[0] - bounds[2], bounds[1] - box[3], box[1] - bounds[3])
+            for box in [frame, *(box for _, box in titles)]
+        ), 2)
+        observed["panel_aspect"] = round((frame[2] - frame[0]) / (frame[3] - frame[1]), 2)
+    if kind == "contour_funnel":
+        ticks = [float(text.replace(",", "")) for text, _, box in numbers
+                 if frame and box[2] < frame[0] and box[3] >= frame[1]]
+        observed["standard_error_ticks"] = sorted(ticks)
+        observed["analysis_ci_note"] = any(text.startswith("Analysis CI") for text, _, _ in runs)
+    if kind == "sroc":
+        observed["vertical_numeric_labels"] = [text for text, size, box in numbers
+                                               if box[3] - box[1] > max(box[2] - box[0], 1.05 * size)]
+    return observed
+
+
+def editorial_failures(kind, observed):
+    failures = []
+    if kind == "forest":
+        if observed["top_gap_mm"] > 4:
+            failures.append("blank band above forest headers")
+        if not re.search(r"\([^()]+ to [^()]+\)|\[[^\[\]]+, [^\[\]]+\]", observed["prediction_interval"]):
+            failures.append("prediction interval is split")
+    if kind in {"regression", "contour_funnel", "trial_sequential", "sroc"}:
+        ratios = observed.get("axis_to_tick_ratio", [])
+        if len(ratios) != 2 or observed["axis_font_ratio"] > 1.1 or not all(1 <= ratio <= 1.25 for ratio in ratios):
+            failures.append("inconsistent axis title and tick hierarchy")
+    if kind in {"contour_funnel", "trial_sequential", "sroc"} and observed.get("legend_clearance_pt", -1) <= 0:
+        failures.append("legend intersects plot frame or title")
+    if kind == "contour_funnel":
+        ticks = observed["standard_error_ticks"]
+        if len(ticks) < 2 or not all(math.isclose(tick * 10, round(tick * 10), abs_tol=1e-7) for tick in ticks):
+            failures.append("standard error ticks are not round")
+        if observed["analysis_ci_note"]:
+            failures.append("unexplained analysis CI note")
+    if kind == "trial_sequential":
+        if (observed.get("panel_height_mm", 0) < 12 or observed.get("y_title_center_offset_pt", 10) > 1
+                or not 0 < observed.get("y_title_axis_gap_pt", 0) <= 30):
+            failures.append("TSA plot frame is squeezed or y title is detached")
+        if not 1 <= observed.get("axis_to_legend_ratio", 0) <= 1.25:
+            failures.append("inconsistent TSA axis and legend hierarchy")
+    if kind == "sroc":
+        if observed["vertical_numeric_labels"]:
+            failures.append("rotated SROC tick labels")
+    return failures
 
 
 def _glyphs(container):
@@ -75,7 +177,7 @@ def pdf_text_runs(page) -> list[tuple[str, float, tuple[float, float, float, flo
     return runs
 
 
-def pdf_observations(path: Path, width: float, height: float) -> dict:
+def pdf_observations(path: Path, width: float, height: float, kind: str = "") -> dict:
     pages = list(extract_pages(path, laparams=None))
     assert len(pages) == 1
     page, = pages
@@ -100,6 +202,7 @@ def pdf_observations(path: Path, width: float, height: float) -> dict:
         "outside": outside,
         "overlaps": overlaps,
         "page_pt": [page.width, page.height],
+        "editorial": editorial_observations(kind, runs, page),
     }
 
 
@@ -128,7 +231,8 @@ def sroc_observations(path: Path) -> dict:
 def run(app, window, work, root, record, analyze):
     from advanced_workflows import modal
 
-    failures = []
+    failures: list[tuple[object, ...]] = []
+    default_sizes: dict[tuple[str, str], list[float]] = {}
 
     def visible(kind):
         for _ in range(100):
@@ -151,18 +255,23 @@ def run(app, window, work, root, record, analyze):
         selector.setCurrentIndex(selector.findData("bmj" if style == "custom" else style))
         if style == "custom":
             editor.sroc_prediction_color.setText("#a11159")
+        if isinstance(editor, EditPlotDialog) and editor.show_weight.isVisible():
+            editor.show_weight.setChecked(False)
+            editor.show_raw_counts.setChecked(False)
         editor.accept()
         assert not editor.isVisible()
 
     def export(view, kind, style, width, *, blocked=False):
         name = f"{kind}-{style}"
-        destination = work / f"{name}-{width:.2f}.pdf"
+        size_name = "proposed" if width is None else f"{width}mm"
+        destination = work / f"{name}-{size_name}.pdf"
         dimensions = []
 
         def configure(dialog):
             dialog.format_control.setCurrentIndex(dialog.format_control.findData("pdf"))
-            dialog.units.setCurrentText("in")
-            dialog.width_control.setValue(width)
+            dialog.units.setCurrentText("mm")
+            if width is not None:
+                dialog.width_control.setValue(width)
             wait(350)
             dimensions.extend(dialog.dimensions()[:2])
             enabled = dialog.save_button.isEnabled()
@@ -183,12 +292,22 @@ def run(app, window, work, root, record, analyze):
             assert not picker.called
         elif picker.called:
             assert destination.is_file(), destination
-            observed = pdf_observations(destination, *dimensions)
-            record("print-export-pdf", figure=name, width=width, exports={"pdf": str(destination)}, **observed)
+            png = destination.with_suffix(".png")
+            subprocess.run([desktop_tool_executable("pdftoppm"), "-r", "300", "-singlefile",
+                            "-png", str(destination), str(png.with_suffix(""))], check=True, capture_output=True)
+            assert png.is_file()
+            observed = pdf_observations(destination, *dimensions, kind)
+            record("print-export-pdf", figure=name, width=width,
+                   exports={"pdf": str(destination), "png": str(png)}, **observed)
             if observed["min_font_pt"] < 6 or observed["outside"] or observed["overlaps"]:
                 failures.append((name, width, observed))
             if missing := EXPECTED_LABELS[kind] - set(observed["labels"]):
                 failures.append((name, width, "missing labels", sorted(missing)))
+            if defects := editorial_failures(kind, observed["editorial"]):
+                failures.append((name, width, defects, observed["editorial"]))
+            if width is None and "tick_pt" in observed["editorial"]:
+                editorial = observed["editorial"]
+                default_sizes[style, kind] = [editorial["tick_pt"], *editorial["axis_title_pt"]]
 
     def check_plots(view, kinds):
         for kind in kinds:
@@ -199,10 +318,10 @@ def run(app, window, work, root, record, analyze):
             editor = FunnelPlotEditorDialog if "funnel" in kind else EditPlotDialog
             for style in ("default", "bmj"):
                 modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
-                for width in (2.60, 5.39):
+                for width in (66, 137, None):
                     export(view, kind, style, width)
             if kind == "sroc":
-                export(view, kind, "bmj", .75, blocked=True)
+                export(view, kind, "bmj", 19, blocked=True)
                 for style, expected in (("default", {"#2f5597", "#b45f06"}), ("revman", {"#000000"}),
                                         ("bmj", {"#5f4c9a"}), ("custom", {"#5f4c9a", "#a11159"})):
                     modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
@@ -229,6 +348,7 @@ def run(app, window, work, root, record, analyze):
 
     open_sample("Colditz 1994")
     metric_action(window.menuMetric, "RR").trigger()
+    check_plots(analyze(app, window, "binary.random"), ("forest",))
     window.action_meta_regression.trigger()
     setup = visible(AnalysisSetupDialog)
     for covariate, checkbox in setup.covs_and_check_boxes:
@@ -256,4 +376,10 @@ def run(app, window, work, root, record, analyze):
 
     modal(app, TrialSequentialAnalysisDialog, start_tsa, window.action_trial_sequential_analysis.trigger)
     check_plots(visible(ResultsWindow), ("trial_sequential",))
+    for style in ("default", "bmj"):
+        typography = {kind: default_sizes.get((style, kind))
+                      for kind in ("regression", "contour_funnel", "sroc", "trial_sequential")}
+        record("proposed-export-typography", style=style, axis_and_tick_pt=typography)
+        if not all(sizes and all(8.75 <= size <= 9.25 for size in sizes) for sizes in typography.values()):
+            failures.append((style, "proposed sizes lack a shared 9 pt axis scale", typography))
     assert not failures, failures
