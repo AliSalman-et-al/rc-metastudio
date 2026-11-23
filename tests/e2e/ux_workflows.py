@@ -248,7 +248,7 @@ def _run(app, window, work, root, record, analyze):
     from xml.etree import ElementTree
     svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
     nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
-    directions = [node for node in nodes if "Favors" in "".join(node.itertext())]
+    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
     assert len(directions) == 2
     def box(node):
         import re
@@ -329,7 +329,7 @@ def _run(app, window, work, root, record, analyze):
 
 
     for arm in window.model.arm_names:
-        assert "Favors" in svg and arm in svg
+        assert "Favours" in svg and arm in svg
     assert view.result_identity.isVisible()
     assert view._fit_width_active
     for width in (900, 796):
@@ -466,12 +466,12 @@ def _run(app, window, work, root, record, analyze):
         swapped = analyze(app, window, "binary.random")
         svg = ElementTree.parse(next(iter(swapped.results.display_images.values()))).getroot()
         labels = {node.text: float(node.attrib["x"]) for node in svg.iter("{http://www.w3.org/2000/svg}text")
-                  if (node.text or "").startswith("Favors ")}
+                  if (node.text or "").startswith("Favours ")}
         below, above = window.model.current_sheet.effect_direction_arms()
         if not direction:
             assert not labels
         else:
-            assert labels[f"Favors {below}"] < labels[f"Favors {above}"]
+            assert labels[f"Favours {below}"] < labels[f"Favours {above}"]
         record("effect-direction-swapped", swapped, direction=direction, labels=labels)
         close_result(swapped)
         window.action_swap_arms.trigger()
@@ -617,11 +617,11 @@ def _run(app, window, work, root, record, analyze):
         artifact = result._selected_plot()[0]
         return list(ElementTree.parse(artifact.display_path()).getroot().iter('{http://www.w3.org/2000/svg}text'))
     continuous_nodes = forest_nodes(continuous)
-    direction_nodes = [n for n in continuous_nodes if 'Favors' in ''.join(n.itertext())]
+    direction_nodes = [n for n in continuous_nodes if 'Favours' in ''.join(n.itertext())]
     assert len(direction_nodes) == 2
     direction_lines = []
     for node, arm in zip(direction_nodes, window.model.arm_names, strict=True):
-        expected = 'Favors ' + arm
+        expected = 'Favours ' + arm
         observed = ''.join(node.itertext())
         assert observed == expected, (observed, expected)
         direction_lines.append(observed)

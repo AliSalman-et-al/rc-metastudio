@@ -24,6 +24,9 @@ rcmetar.forest.layout.preflight <- function(bundle, style=bundle$fp_style, width
         plan$rows$study_rows[bundle$display_order] <- sort(plan$rows$study_rows, decreasing=TRUE)
     }
     plan$device$direction_lines <- rcmetar.forest.direction.metrics(bundle, plan)
+    if (!is.null(plan$footer$axis) && plan$device$direction_lines > 0) {
+        plan$rows$ylim[[1L]] <- plan$rows$ylim[[1L]] - 1.25 * plan$device$direction_lines
+    }
     plan$headers$height <- rcmetar.forest.header.height(bundle, plan$typography$cex)
     if (is.null(plan$footer$axis) && !plan$rows$manual_sequential_labels) {
         study.header <- rcmetar.forest.wrap.summary.labels(plan$headers$study, plan$device$study_width, plan$typography$cex)
@@ -89,7 +92,7 @@ rcmetar.forest.expand.wrapped.rows <- function(bundle, plan, subgroup) {
 rcmetar.forest.panel.height <- function(plan) {
     margins <- rcmetar.forest.margins(plan)
     plan$device$height <- diff(plan$rows$ylim) * .145 + sum(margins[c(1, 3)]) +
-        plan$headers$height + if (!is.null(plan$footer$axis)) .15 * plan$device$direction_lines else 0
+        plan$headers$height
     plan
 }
 

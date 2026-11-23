@@ -336,9 +336,9 @@ rcmetar.plot.axis.cex <- function(width) {
     min(9, 7.5 + max(0, width - 66/25.4) * 1.5 / (7 - 66/25.4)) / 12
 }
 
-rcmetar.plot.legend.rows <- function(labels, width, cex) {
-    item.width <- graphics::strwidth(labels, units="inches", cex=cex) +
-        4.5 * graphics::par("cin")[1L] * graphics::par("cex") * cex
+rcmetar.plot.legend.rows <- function(labels, width, cex,
+                                    padding=4.5 * graphics::par("cin")[1L] * graphics::par("cex") * cex) {
+    item.width <- graphics::strwidth(labels, units="inches", cex=cex) + padding
     rows <- list()
     while (length(item.width)) {
         count <- max(1L, sum(cumsum(item.width) <= width))

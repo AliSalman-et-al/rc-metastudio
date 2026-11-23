@@ -16,8 +16,8 @@ for (style in c("default", "revman", "bmj")) {
         data <- qa_fixture_for("binary_two_arm", 6, FALSE)
         params <- qa_base_params("OR", file.path(output, paste0(style, "-", long, ".svg")),
             style, qa_scenario_settings()$base)
-        params$fp_favours_left <- if (long) "Favours Antibiotic impregnated central venous catheter" else "Favours Oxygen"
-        params$fp_favours_right <- if (long) "Favours Standard catheter with unbrokenlongarmname" else "Favours Control"
+        params$fp_direction_left <- if (long) "Favours Antibiotic impregnated central venous catheter" else "Favours Oxygen"
+        params$fp_direction_right <- if (long) "Favours Standard catheter with unbrokenlongarmname" else "Favours Control"
         saveRDS(list(data=data, params=params), file.path(output, paste0(style, "-", long, "-inputs.rds")))
         result <- rcmetar.run.analysis(data, list(version=1, method="binary.random", params=params))
         cat(style, long, unname(result$images[[1]]), "\n")

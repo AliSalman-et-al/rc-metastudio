@@ -64,8 +64,8 @@ rcmetar.forest.axis.title <- function(bundle) {
 }
 
 rcmetar.forest.direction.labels <- function(bundle) {
-    list(left=if (is.null(bundle$params$fp_favours_left)) "" else as.character(bundle$params$fp_favours_left),
-         right=if (is.null(bundle$params$fp_favours_right)) "" else as.character(bundle$params$fp_favours_right),
+    list(left=if (is.null(bundle$params$fp_direction_left)) "" else as.character(bundle$params$fp_direction_left),
+         right=if (is.null(bundle$params$fp_direction_right)) "" else as.character(bundle$params$fp_direction_right),
          axis=if (identical(bundle$data_type, "diagnostic") ||
              as.character(bundle$params$measure) %in% c(binary.one.arm.metrics, continuous.one.arm.metrics))
              rcmetar.display.metric.name(bundle$params) else "")

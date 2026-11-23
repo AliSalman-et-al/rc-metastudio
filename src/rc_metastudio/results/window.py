@@ -1664,8 +1664,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         if persist and self._save_plot_override is not None:
             exclusions = {"fp_outpath", "fp_display_path", "bp_outpath", "bp_display_path",
                           "funnel.outpath", "funnel.kind", "funnel.index", "funnel.center"}
+            defaults = self._plot_defaults.get(artifact.title, {})
             overrides = {name: value for name, value in updated_params.items()
-                         if name not in exclusions and (name in {"plot_caption", "tsa_x_axis"}
+                         if name not in exclusions
+                             and (not name.startswith("fp_direction_") or value != defaults.get(name))
+                             and (name in {"plot_caption", "tsa_x_axis"}
                              or name.startswith(("fp_", "bp_", "funnel.")))}
             self._plot_overrides[artifact.title] = overrides
             self._save_plot_override(artifact.title, overrides)

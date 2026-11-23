@@ -829,7 +829,7 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
     long.fixture$data@study.names,
     "International protocol-defined multicentre trial with extended label"
   )
-  long.fixture$params$fp_favours_right <- paste("Favours", long.fixture$params$fp_col3_str)
+  long.fixture$params$fp_direction_right <- paste("Favours", long.fixture$params$fp_col3_str)
   long.bundle <- make_bundle(long.fixture)
   long.plan <- rcmetar.forest.layout.preflight(long.bundle)
 

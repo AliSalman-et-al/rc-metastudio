@@ -173,7 +173,7 @@ rcmetar.bubble.style.args <- function(bundle, revman.accent=rcmetar.default.plot
             bg=grDevices::adjustcolor(accent, alpha.f=0.34),
             lcol=accent,
             lwd=2.2,
-            lty=c("solid", "solid", "dashed"),
+            lty=c("solid", "dashed", "dotted"),
             shade=c(grDevices::adjustcolor(accent, alpha.f=0.10), grDevices::adjustcolor(accent, alpha.f=0.045)),
             grid=FALSE,
             bty="l",
@@ -287,7 +287,7 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args, cex, plot=TRUE) {
         return(invisible(NULL))
     }
     labels <- rcmetar.bubble.legend.labels(bundle)
-    lty <- c(NA, "solid", style.args$lty[[2]])
+    lty <- c(NA, style.args$lty[[1]], "22")
     lwd <- c(NA, style.args$lwd, style.args$lwd)
     pch <- c(style.args$pch, NA, NA)
     col <- c(style.args$col, style.args$lcol, style.args$lcol)

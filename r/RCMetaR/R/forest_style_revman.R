@@ -433,18 +433,18 @@ rcmetar.draw.revman.bottom.blocks <- function(bundle, x, cex, layout, plan) {
     }
     inference <- plan$footer$inference
     graphics::text(x, -2 - extra - seq_along(inference), inference, adj=c(0, .5), cex=cex)
-    rcmetar.draw.revman.axis.footer(bundle, layout, cex, -extra)
+    rcmetar.draw.revman.axis.footer(bundle, layout, cex, -extra, -2 - extra - length(inference))
     invisible(NULL)
 }
 
-rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex, offset=0) {
+rcmetar.draw.revman.axis.footer <- function(bundle, layout, cex, offset=0, stats.bottom=Inf) {
     axis.footer <- rcmetar.revman.axis.footer.layout(bundle, layout)
     spacing <- graphics::strheight("Mg", cex=cex) * 1.65
     label.y <- -2.3 + offset - 2 * spacing
     if (nzchar(bundle$style_blocks$axis_label)) {
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex, adj=c(.5, 0))
     }
-    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, label.y - spacing, cex)
+    rcmetar.draw.forest.direction.blocks(bundle, axis.footer, min(label.y, stats.bottom) - spacing, cex)
     invisible(NULL)
 }
 
