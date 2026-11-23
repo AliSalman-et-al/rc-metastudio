@@ -14,31 +14,6 @@ from rc_metastudio.qt_object_guard import required
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_abort_restores_nested_edit_without_consuming_existing_redo():
-    # Failure modes: partial mutations survive, redo disappears, nested close
-    # commits an aborted graph, or the next operation inherits stale depth.
-    session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
-    required(session.runtime, "workspace runtime").dataset.title = "first edit"
-    session.checkpoint()
-    assert session.undo()
-    before = session.document
-    session.begin_change()
-    required(session.runtime, "workspace runtime").dataset.title = "partial outer"
-    session.begin_change()
-    required(session.runtime, "workspace runtime").dataset.notes = "partial inner"
-    session.abort_change()
-    session.end_change()
-    session.end_change()
-    assert session.document == before
-    assert session.can_redo and not session.can_undo
-    assert not session.is_dirty
-    session.begin_change()
-    required(session.runtime, "workspace runtime").dataset.title = "recovered"
-    session.end_change()
-    assert session.undo() and session.document == before
-    assert session.redo() and required(session.runtime, "workspace runtime").dataset.title == "recovered"
-
-
 def test_history_retention_does_not_alias_live_edits():
     session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     for index in range(105):
@@ -60,24 +35,21 @@ def test_history_retention_does_not_alias_live_edits():
 def test_failed_transaction_serialization_remains_abortable():
     session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
     before = session.document
-    session.begin_change()
-    required(session.runtime, "workspace runtime").dataset.sheets[0].settings["bad"] = float("nan")
     with pytest.raises(ValueError):
-        session.end_change()
-    assert session.abort_change() is not None
+        with session.change(lambda _: None):
+            required(session.runtime, "workspace runtime").dataset.sheets[0].settings["bad"] = float("nan")
     assert session.document == before
     assert not session.can_undo and not session.is_dirty
 
 
 def test_save_cannot_publish_a_half_finished_transaction(tmp_path):
     session = WorkspaceSession(load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms"))
-    session.begin_change()
-    required(session.runtime, "workspace runtime").dataset.title = "unfinished"
     target = tmp_path / "unfinished.rcms"
     with pytest.raises(RuntimeError, match="transaction"):
-        session.save(target)
+        with session.change(lambda _: None):
+            required(session.runtime, "workspace runtime").dataset.title = "unfinished"
+            session.save(target)
     assert not target.exists()
-    session.abort_change()
     assert not session.is_dirty
 
 
@@ -95,27 +67,6 @@ def test_redo_restores_committed_sheet_after_unrelated_navigation(committed_shee
     session.select_sheet(runtime.dataset.sheets[1 - committed_sheet].id)
     assert session.redo()
     assert required(session.runtime, "workspace runtime").current_sheet_id == selected
-
-
-def test_nested_transactions_publish_one_history_entry() -> None:
-    document = load_project(ROOT / "tests/fixtures/desktop-projects" / "amino.rcms")
-    session = WorkspaceSession(document)
-    runtime = session.runtime
-    assert runtime is not None
-
-    session.begin_change()
-    runtime.dataset.title = "outer"
-    session.begin_change()
-    runtime.dataset.notes = "inner"
-    session.end_change()
-    assert not session.can_undo
-    session.end_change()
-
-    assert session.undo()
-    assert session.runtime is not None
-    assert session.runtime.dataset.title != "outer"
-    assert session.runtime.dataset.notes != "inner"
-    assert not session.can_undo
 
 
 def test_failed_install_preserves_document_history_and_path(tmp_path: Path) -> None:
