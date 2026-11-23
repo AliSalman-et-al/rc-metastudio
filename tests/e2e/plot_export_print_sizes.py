@@ -72,12 +72,18 @@ def editorial_observations(kind, runs, page):
                             if text == "Cumulative Z-score"), None)
             if y_title is not None:
                 observed["y_title_center_offset_pt"] = round(abs(y_title - (left.y0 + left.y1) / 2), 2)
+                title_right = next(box[2] for text, _, box in runs if text == "Cumulative Z-score")
+                observed["y_title_axis_gap_pt"] = round(left.x0 - title_right, 2)
     legend_entries = {
         "sroc": {"Confidence region", "Joint prediction region"},
         "trial_sequential": {"Cumulative Z-curve", "Monitoring boundary", "Futility region", "Conventional boundary"},
     }.get(kind, set())
     legend = [box for text, _, box in runs if text in legend_entries
               or (kind == "contour_funnel" and (" < P " in text or text.startswith(("P > ", "P ≤ "))))]
+    if kind == "trial_sequential" and titles:
+        legend_fonts = [size for text, size, _ in runs if text in legend_entries]
+        if legend_fonts:
+            observed["axis_to_legend_ratio"] = round(max(size for size, _ in titles) / min(legend_fonts), 2)
     if frame and legend:
         bounds = (min(box[0] for box in legend), min(box[1] for box in legend),
                   max(box[2] for box in legend), max(box[3] for box in legend))
@@ -116,8 +122,11 @@ def editorial_failures(kind, observed):
         if observed["analysis_ci_note"]:
             failures.append("unexplained analysis CI note")
     if kind == "trial_sequential":
-        if observed.get("panel_height_mm", 0) < 12 or observed.get("y_title_center_offset_pt", 10) > 1:
+        if (observed.get("panel_height_mm", 0) < 12 or observed.get("y_title_center_offset_pt", 10) > 1
+                or not 0 < observed.get("y_title_axis_gap_pt", 0) <= 30):
             failures.append("TSA plot frame is squeezed or y title is detached")
+        if not 1 <= observed.get("axis_to_legend_ratio", 0) <= 1.25:
+            failures.append("inconsistent TSA axis and legend hierarchy")
     if kind == "sroc":
         if observed["vertical_numeric_labels"]:
             failures.append("rotated SROC tick labels")

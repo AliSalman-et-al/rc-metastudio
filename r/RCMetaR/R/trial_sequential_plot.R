@@ -183,10 +183,11 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     outcome <- annotation$outcome
     rcmetar.bubble.panel(size, TRUE)
     graphics::par(family=typography$family, font.axis=typography$axis, xaxs="i", yaxs="i")
-    graphics::par(mgp=c(1.65, .48, 0), mex=.75, tcl=-.23)
+    axis.cex <- .9
+    graphics::par(mgp=c(1.65, .48, 0), mex=.75, tcl=-.23, cex.axis=axis.cex, cex.lab=axis.cex)
     em <- 12 * size$cex / 72
     tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
-    tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis))
+    tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis, cex=axis.cex))
     left <- tick.width + 4.3 * em
     legend.cex <- max(6.2/(12*size$cex), rcmetar.bubble.legend.cex())
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
@@ -211,7 +212,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
 
     list(tick.labels=tick.labels, tick.width=tick.width,
          legend.cex=legend.cex, legend.below=legend.below, conventional.cex=conventional.cex,
-         caption.cex=caption.cex, header=header, em=em,
+         axis.cex=axis.cex, caption.cex=caption.cex, header=header, em=em,
          legend.rows=legend.rows, legend.leading=legend.leading)
 }
 
@@ -227,7 +228,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     at <- axis$x(axis$ticks)
     label.at <- at
     last.tick <- length(at)
-    half <- graphics::xinch(graphics::strwidth(axis$labels, units="inches")/2 + .026)
+    half <- graphics::xinch(graphics::strwidth(axis$labels, units="inches", cex=panel$axis.cex)/2 + .026)
     if (length(axis$join)) {
         join.tick <- last.tick - 1L
         label.at[join.tick] <- min(at[join.tick], at[last.tick] - half[last.tick] - half[join.tick])
@@ -243,13 +244,13 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
                    gap.axis=0, tick=FALSE)
     # At narrow print widths the wider Z range can pack nine labels into
     # the same height. Fit them to the tick spacing.
-    y.tick.cex <- min(1, .97 * step / graphics::yinch(graphics::par("ps")/72 * size$cex))
+    y.tick.cex <- min(panel$axis.cex, .97 * step / graphics::yinch(graphics::par("ps")/72 * size$cex))
     graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0, cex.axis=y.tick.cex)
     graphics::segments(0, -limit, 0, limit)
     graphics::segments(0, -limit, 1, -limit)
     title.offset <- tick.width + (if (length(favours)) 3.1 else 1.45) * panel$em
     graphics::text(-graphics::xinch(title.offset), 0, ylabel, srt=90, adj=c(.5, .5),
-                   cex=1, xpd=NA, col=theme$text.col)
+                   cex=panel$axis.cex, xpd=NA, col=theme$text.col)
     .tsa.draw.favours(favours, limit, tick.width + 1.9 * panel$em, theme$text.col)
     center <- graphics::grconvertX(size$width/2, from="inches")
     graphics::text(center, limit + graphics::yinch(panel$em * (rev(seq_along(panel$header)) + .5)),
