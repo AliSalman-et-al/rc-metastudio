@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import base64
+import hashlib
 import tarfile
 from pathlib import Path
 
@@ -71,6 +72,43 @@ def shell_step(step, tmp_path, values, prelude=""):
         )
     )
     return result
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_macos_final_smoke_uses_the_staple_validated_bytes(tmp_path, changed):
+    steps = workflow("macos-trusted-release-candidate")["jobs"]["finalize-macos"]["steps"]
+    step = next(step for step in steps if step.get("name") == "Launch final signed and stapled macOS bytes")
+    name = "RCMetaStudio-macos-arm64.dmg"
+    qualified = tmp_path / "qualified"
+    qualified.mkdir()
+    archive = qualified / name
+    validated = b"fixture DMG after successful stapler validation"
+    archive.write_bytes(b"different DMG" if changed else validated)
+    (tmp_path / f"{name}.sha256").write_bytes(f"{hashlib.sha256(validated).hexdigest()}  {name}\n".encode())
+    result = shell_step(
+        step,
+        tmp_path,
+        {"matrix.artifact": name, "matrix.candidate_artifact": "candidate.zip"},
+        '''
+export RUNNER_TEMP=.
+export PATH="/usr/bin/core_perl:$PATH"
+ditto() { :; }
+codesign() { :; }
+xcrun() { echo 'NSURLErrorDomain Code=-1005' >&2; exit 68; }
+hdiutil() {
+    if [[ "$1" == attach ]]; then
+        echo "Mounting $2" >&2
+        exit 71
+    fi
+}
+''',
+    )
+    if changed:
+        assert result.returncode == 1, result.stderr
+        assert "FAILED" in result.stdout
+    else:
+        assert result.returncode == 71, result.stderr
+        assert f"Mounting qualified/{name}" in result.stderr
 
 
 @pytest.mark.parametrize(

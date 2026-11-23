@@ -411,6 +411,7 @@ jobs:
             --submission-result "submitted/evidence/$TARGET.notarization-submission.json" \
             --notarization-result "qualified/evidence/$TARGET.notarization.json" \
             --verification-result "qualified/evidence/$TARGET.gatekeeper.txt"
+          (cd qualified && shasum -a 256 "$ARTIFACT") > "$RUNNER_TEMP/$ARTIFACT.sha256"
       - name: Launch final signed and stapled macOS bytes
         shell: bash
         env:
@@ -418,12 +419,13 @@ jobs:
           CANDIDATE_ARTIFACT: ${{ matrix.candidate_artifact }}
         run: |
           set -euo pipefail
+          stapled_digest="$(cd "$RUNNER_TEMP" && pwd)/$ARTIFACT.sha256"
+          (cd qualified && shasum -a 256 -c "$stapled_digest")
           mkdir -p qualified/tree qualified/candidate-tree qualified/diagnostics
           ditto -x -k "candidate/artifacts/$CANDIDATE_ARTIFACT" qualified/candidate-tree
           attach_plist="$RUNNER_TEMP/rcms-release-attach.plist"
           hdiutil verify "qualified/$ARTIFACT"
           codesign --verify --verbose=4 "qualified/$ARTIFACT"
-          xcrun stapler validate "qualified/$ARTIFACT"
           hdiutil attach "qualified/$ARTIFACT" -readonly -nobrowse -plist > "$attach_plist"
           mount_point="$(python3 -c 'import plistlib,sys; p=plistlib.load(open(sys.argv[1], "rb")); m=[e["mount-point"] for e in p["system-entities"] if "mount-point" in e]; assert len(m)==1; print(m[0])' "$attach_plist")"
           trap 'hdiutil detach "$mount_point" >/dev/null 2>&1 || true' EXIT
