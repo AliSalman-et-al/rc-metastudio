@@ -365,9 +365,10 @@ boot.meta.reg.output.results <- function(boot.results, params, bootstrap.plot.pa
 
 rcmetar.draw.bootstrap.histogram <- function(path, boot.results, title, xlabs, ci.lb, ci.ub, height=480) {
     rcmetar.write.plot.atomically(path, function(temporary) {
+        previous <- grDevices::dev.cur()
         grDevices::png(filename=temporary, width=480, height=height)
         device <- grDevices::dev.cur()
-        on.exit(rcmetar.close.plot.device(device))
+        on.exit(rcmetar.close.plot.device(device, previous))
         plot.custom.boot(boot.results, title, ci.lb, ci.ub, xlabs)
     })
 }
