@@ -377,7 +377,6 @@ def source_install_key(source: Path, env: dict[str, str]) -> str:
     for variable, default in (("R_ENVIRON_USER", ".Renviron"), ("R_PROFILE_USER", ".Rprofile")):
         startup_files.append(Path(env.get(variable) or Path.home() / default))
     startup_files.extend(Path(env[name]) for name in ("R_ENVIRON", "R_PROFILE") if env.get(name))
-    # The dependency library is a private copy. Its bytes, not its path, identify it.
     settings = {
         name: value for name, value in env.items()
         if name not in {"R_LIBS", "R_LIBS_USER"}
@@ -425,8 +424,6 @@ def install_stack_source(
 ) -> Path:
     source = root / RCMetaR_PACKAGE
     library = Path(env["R_LIBS"])
-    # A package with build hooks or native code also depends on the host compiler
-    # and tools. RCMetaR is pure R, so keep those builds on the uncached path.
     if any((source / name).exists() for name in ("src", "configure", "configure.win", "cleanup", "cleanup.win")):
         tarball = build_stack_source(source, r_exe, env, work_dir)
         run([r_exe, "CMD", "INSTALL", f"--library={library}", tarball], cwd=root, env=env)
@@ -468,8 +465,6 @@ def prepare_stack_library(
         verify_manifest_versions(root, python, rscript, env)
         verify_dependency_closure(root, rscript, env)
     if args.desktop_shard is None:
-        # R CMD check installs into its own output directory by default.
-        # Its check build must not replace the package used by desktop evidence.
         run(
             [
                 r_exe,
