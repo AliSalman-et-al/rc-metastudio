@@ -13,7 +13,7 @@ METADAT = "metadat-clinical.json"
 BARZA = "barza1996.json"
 
 
-def sheet(index, name, family, subtype, metric, groups, studies, covariates=()):
+def sheet(index, name, family, subtype, metric, groups, studies, covariates=(), *, effect_direction=None):
     sheet_id = f"sheet:{index}"
     arms = [dict(id=f"{sheet_id}:arm:{i}", name=group) for i, group in enumerate(groups)]
     factors = [dict(id=f"{sheet_id}:cov:{i}", name=label, data_type=kind, stable_id=None)
@@ -29,11 +29,14 @@ def sheet(index, name, family, subtype, metric, groups, studies, covariates=()):
             entered_effects=[dict(metric=metric, arms=arm_ids, values=entered)] if entered else [],
             ratio_inputs=[],
         ))
+    settings = dict(metric=metric, arms=arm_ids, confidence_level=95.0)
+    if effect_direction is not None:
+        settings["effect_direction"] = effect_direction
     return dict(
         id=sheet_id, name=name, family=family, sub_type=subtype,
         data_type={"binary": 0, "continuous": 1, "diagnostic": 2}[family],
         arms=arms, covariates=factors, rows=rows,
-        settings=dict(metric=metric, arms=arm_ids, confidence_level=95.0),
+        settings=settings,
     )
 
 
@@ -66,7 +69,7 @@ def build():
                   "two-arm event counts, latitude meta-regression and trial sequential analysis.", METADAT,
                   "The 13 trials compare BCG vaccination with unvaccinated controls. Latitude is absolute latitude in degrees.",
                   [sheet(0, "Tuberculosis", "binary", "proportions", "OR", ["BCG vaccine", "Unvaccinated control"],
-                         bcg, [("Absolute latitude", 1), ("Allocation method", 4)])])
+                         bcg, [("Absolute latitude", 1), ("Allocation method", 4)], effect_direction="below")])
 
     barza = json.loads((SAMPLES / "sources" / BARZA).read_text(encoding="utf-8"))
     yield project("Binary", "Aminoglycoside dosing, Barza 1996",

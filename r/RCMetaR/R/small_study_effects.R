@@ -1502,7 +1502,7 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
-.small.study.funnel.legend <- function(settings, ...) {
+.small.study.funnel.legend <- function(settings, ..., x.intersp=.65) {
     args <- list(...)
     for (i in seq_along(settings$legend.rows)) {
         row <- settings$legend.rows[[i]]
@@ -1513,7 +1513,7 @@ rcmetar.warm.small.study.effects <- function() {
                 graphics::yinch(settings$legend.leading * (length(settings$legend.rows) - i + 1.5)),
             legend=settings$legend.labels[row], cex=.9,
             xjust=.5, yjust=1, horiz=TRUE, text.width=NA_real_,
-            bty="n", xpd=NA, seg.len=1.4, x.intersp=.65), symbols))
+            bty="n", xpd=NA, seg.len=1.4, x.intersp=x.intersp), symbols))
     }
 }
 
@@ -1591,6 +1591,7 @@ rcmetar.warm.small.study.effects <- function() {
     args$refline <- 0
     args$level <- levels
     args$yaxt <- "n"
+    args$hlines <- NA
     bands <- character()
     if (settings$show.region) {
         background <- grDevices::col2rgb(settings$background.color)
@@ -1608,10 +1609,10 @@ rcmetar.warm.small.study.effects <- function() {
     .small.study.label.funnel(y[keep], se[keep], 0, settings, om.data@study.names[keep])
     show <- c(settings$show.reference, settings$show.pooled)
     line.color <- settings$reference.color
-    .small.study.funnel.legend(settings, fill=c(bands, rep(NA, sum(show))),
-        border=c(rep(line.color, length(bands)), rep(NA, sum(show))),
+    .small.study.funnel.legend(settings, pch=c(rep(22L, length(bands)), rep(NA, sum(show))),
+        pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE,
         lty=c(rep(NA, length(bands)), c("solid", "12")[show]),
-        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color)
+        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color, x.intersp=.15)
 }
 
 .small.study.draw.funnel.notes <- function(om.data, params, settings) {

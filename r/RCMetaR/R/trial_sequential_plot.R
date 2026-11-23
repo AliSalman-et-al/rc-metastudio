@@ -246,7 +246,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     # At narrow print widths the wider Z range can pack nine labels into
     # the same height. Fit them to the tick spacing.
     y.tick.cex <- min(panel$axis.cex, .97 * step / graphics::yinch(graphics::par("ps")/72 * size$cex))
-    graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0, cex.axis=y.tick.cex)
+    graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, font=1, gap.axis=0, cex.axis=y.tick.cex)
     graphics::segments(0, -limit, 0, limit)
     graphics::segments(0, -limit, 1, -limit)
     title.offset <- tick.width + (if (any(nzchar(trimws(favours)))) 3.1 else 1.45) * panel$em

@@ -19,6 +19,7 @@ from scripts.verification_evidence import desktop_tool_executable
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 from rc_metastudio.analysis.trial_sequential_dialog import TrialSequentialAnalysisDialog
+from rc_metastudio.project.archive import load_project, save_project
 from rc_metastudio.results.funnel_editor import FunnelPlotEditorDialog
 from rc_metastudio.results.plot_editor import EditPlotDialog
 from rc_metastudio.results.plot_export import PlotExportDialog
@@ -223,9 +224,21 @@ def publication_observations(kind, page, runs, png):
                                    round((page.height - (item.y0 + item.y1) / 2) * scale)).getRgbF()[:3]
                   for item in keys if item and item.fill]
         guides = [key(label, LTLine) for label in ("No effect", "Common-effect estimate") if label in labels]
+        frame = max((item for item in shapes if isinstance(item, LTRect) and item.fill
+                     and .25 * page.width < item.width < page.width - 2 and item.height > .25 * page.height),
+                    key=lambda item: item.width * item.height)
+        grids = [item.y0 for item in shapes if isinstance(item, LTLine) and item.height < .05
+                 and abs(item.x0 - frame.x0) < .25 and abs(item.x1 - frame.x1) < .25
+                 and frame.y0 + .25 < item.y0 < frame.y1 - .25]
+        tick_lines = [item.y0 for item in shapes if isinstance(item, LTLine)
+                      and item.height < .05 and 0 < item.width < 3 and abs(item.x1 - frame.x0) < .25]
         return {"band_luminance": [round(luminance(color), 4) for color in pixels],
                 "bands_match_panel": all(color in panel_fills for color in fills),
                 "guide_dashed": [bool(item.dashing_style and item.dashing_style[0]) for item in guides if item],
+                "gridline_count": len(grids),
+                "off_tick_gridlines": [y for y in grids if not any(abs(y - tick) <= .25 for tick in tick_lines)],
+                "band_key_gaps_pt": [round(labels[label][0] - item.x1, 2)
+                                     for label, item in zip(bands, keys) if item],
                 "white_key_pixels": key_gaps(guides)}
     if kind == "forest":
         title_y = min((box[1] for text, _, box in runs if text == "Risk ratio"), default=0)
@@ -243,7 +256,11 @@ def publication_observations(kind, page, runs, png):
                     y, joined = next_y, f"{joined} {line}"
                     readings.append(joined)
             directions.append(readings)
-        return {"directions": directions, "directions_below_axis": all(box[3] <= title_y for _, box, _, _ in starts)}
+        null = next(((box[0] + box[2]) / 2 for text, _, box in runs if text == "1" and box[1] > title_y), None)
+        centers = [(box[0] + box[2]) / 2 for _, box, _, _ in starts]
+        return {"directions": directions, "directions_below_axis": all(box[3] <= title_y for _, box, _, _ in starts),
+                "direction_centers_pt": centers, "null_tick_pt": null,
+                "direction_span_pt": [value for first, box, _, _ in starts for value in (first, box[2])]}
     if kind == "trial_sequential":
         image = QImage(str(png))
         scale = 300 / 72
@@ -258,7 +275,11 @@ def publication_observations(kind, page, runs, png):
             if pixels:
                 dark, light = min(map(luminance, pixels)), max(map(luminance, pixels))
                 contrast[label] = round((light + .05) / (dark + .05), 2)
-        return {"conventional_contrast": contrast}
+        tick_boxes = [box for label, _, box in runs if re.fullmatch(r"[−-]?\d+(?:,\d{3})*", label)]
+        fonts = sorted({char.fontname.split("+")[-1] for char in _glyphs(page)
+                        if any(box[0] <= char.x0 and char.x1 <= box[2] and box[1] <= char.y0 and char.y1 <= box[3]
+                               for box in tick_boxes)})
+        return {"conventional_contrast": contrast, "tick_fonts": fonts}
     return {}
 
 
@@ -348,8 +369,8 @@ def run(app, window, work, root, record, analyze):
         editor.accept()
         assert not editor.isVisible()
 
-    def export(view, kind, style, width, *, blocked=False):
-        name = f"{kind}-{style}"
+    def export(view, kind, style, width, *, blocked=False, prefix=""):
+        name = f"{prefix}{kind}-{style}"
         size_name = "proposed" if width is None else f"{width}mm"
         destination = work / f"{name}-{size_name}.pdf"
         dimensions = []
@@ -403,14 +424,24 @@ def run(app, window, work, root, record, analyze):
                 gaps = publication["white_key_pixels"]
                 valid = (len(bands) == 4 and all(a > b for a, b in zip(bands, bands[1:]))
                          and len(gaps) == 2 and gaps[0] == 0 and gaps[1] > 3
+                         and not publication["off_tick_gridlines"]
+                         and len(publication["band_key_gaps_pt"]) == 4
+                         and max(publication["band_key_gaps_pt"]) <= 6
                          and publication["bands_match_panel"] and publication["guide_dashed"] == [False, True])
             elif kind == "forest":
                 labels = publication["directions"]
                 valid = (len(labels) == len(directions) and publication["directions_below_axis"]
                          and all(expected in found for expected, found in zip(directions, labels)))
+                if valid and len(directions) == 2:
+                    left, right = publication["direction_centers_pt"]
+                    null = publication["null_tick_pt"]
+                    if width == 66:
+                        left, _, _, right = publication["direction_span_pt"]
+                    valid = null is not None and left < null < right
             elif kind == "trial_sequential":
                 contrast = publication["conventional_contrast"]
-                valid = len(contrast) == 2 and min(contrast.values()) >= 4.5
+                fonts = publication["tick_fonts"]
+                valid = len(contrast) == 2 and min(contrast.values()) >= 4.5 and len(fonts) == 1 and "Bold" not in fonts[0]
             if not valid:
                 failures.append((name, width, publication))
             if width is None and "tick_pt" in observed["editorial"]:
@@ -471,10 +502,7 @@ def run(app, window, work, root, record, analyze):
 
     open_sample("Colditz 1994")
     metric_action(window.menuMetric, "RR").trigger()
-    window.effect_direction_menu.aboutToShow.emit()
-    first, second = window.model.arm_names
-    directions[:] = [f"Favours {second}", f"Favours {first}"]
-    window.effect_direction_menu.actions()[2].trigger()
+    directions[:] = ["Favours BCG vaccine", "Favours Unvaccinated control"]
     check_plots(analyze(app, window, "binary.random"), ("forest",))
     window.action_meta_regression.trigger()
     setup = visible(AnalysisSetupDialog)
@@ -484,6 +512,40 @@ def run(app, window, work, root, record, analyze):
     check_plots(visible(ResultsWindow), ("regression",))
     metric_action(window.menuMetric, "OR").trigger()
     funnels(("trimfill_funnel",))
+
+    source, = (root / "sample_projects").glob("*Colditz*.rcms")
+    project = load_project(source)
+    sheets = project.project["sheets"]
+    assert isinstance(sheets, list)
+    sheet, = sheets
+    assert isinstance(sheet, dict)
+    sheet["name"] = "Free of tuberculosis"
+    settings, rows = sheet["settings"], sheet["rows"]
+    assert isinstance(settings, dict) and isinstance(rows, list)
+    settings["effect_direction"] = "above"
+    for row in rows:
+        assert isinstance(row, dict)
+        arms = row["raw_data"]
+        assert isinstance(arms, dict)
+        for arm, counts in arms.items():
+            assert isinstance(counts, list)
+            events, total = counts
+            assert isinstance(events, int) and isinstance(total, int)
+            arms[arm] = [total - events, total]
+    beneficial = work / "colditz-tuberculosis-free.rcms"
+    save_project(beneficial, project.project, project.state)
+    window.workspace.mark_saved()
+    assert window.open(str(beneficial), raise_on_error=True)
+    record("print-beneficial-outcome", window, exports={"project": str(beneficial)})
+    metric_action(window.menuMetric, "RR").trigger()
+    directions[:] = ["Favours Unvaccinated control", "Favours BCG vaccine"]
+    result = analyze(app, window, "binary.random")
+    entry, = [entry for entry in result._plots.values() if entry.artifact.plot_kind == "forest"]
+    result.nav_tree.setCurrentItem(entry.navigation_item)
+    for style in ("default", "revman", "bmj"):
+        modal(app, EditPlotDialog, lambda dialog: pick_style(dialog, style), result.edit_plot_action.trigger)
+        export(result, "forest", style, None, prefix="beneficial-")
+    result.close()
 
     open_sample("Poole 2003")
     metric_action(window.menuMetric, "MD").trigger()
