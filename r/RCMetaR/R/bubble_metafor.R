@@ -187,7 +187,7 @@ rcmetar.bubble.style.args <- function(bundle, revman.accent=rcmetar.default.plot
             lwd=2,
             lty=c("solid", "dashed", "dotted"),
             shade=c(ci.shade, pi.shade),
-            grid=TRUE,
+            grid=FALSE,
             bty="l",
             las=1
         )
@@ -418,13 +418,17 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
             }
         )
         panel <- graphics::par("usr")
+        ticks <- rcmetar.bubble.axis.ticks(bundle, panel[3:4])
+        if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
+        # metafor's built-in grid uses base axis breaks, even for custom axes.
+        if (bundle$bp_style == "default") {
+            graphics::abline(h=ticks, v=x.ticks, col="grey80", lty="dotted")
+        }
         rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
-        ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)
         graphics::mtext(bundle$ylabel, side=2, cex=size$cex,
                         line=title.offset / graphics::par("csi"))
-        if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
         graphics::axis(1, at=x.ticks, labels=rcmetar.compact.numeric.labels(
             vapply(x.ticks, format, character(1), trim=TRUE, scientific=FALSE)))
         rcmetar.bubble.draw.legend(bundle, args, legend.cex)

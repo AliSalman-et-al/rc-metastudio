@@ -64,6 +64,7 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
 
 - `amino`, `continuous` and `lymph` exercise summary text, plot rendering and PDF export. The sample driver checks Results activation, the horizontal origin after manual zoom, and unique Supplementary details and References headings.
 - `plot-edit` applies an axis label to the R plot and its saved parameters, then verifies that Cancel discards a later draft.
+- `sample-colditz` fits BCG risk ratio on absolute latitude through the meta-regression dialog, compares the Default chart's SVG grid coordinates with both axes' tick marks, and retains the default-size Figure 3A PNG export.
 
 ## How to get to it (user POV)
 
