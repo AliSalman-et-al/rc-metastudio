@@ -59,6 +59,17 @@ rcmetar.plot.export.dpi <- function(size) {
     600
 }
 
+rcmetar.plot.device.size <- function(size, width, height, dpi) {
+    if (!is.null(width) && !is.null(height)) {
+        size$width <- width
+        size$height <- height
+        size$caption.in.height <- TRUE
+        size$caption.cex <- .85
+    }
+    size$dpi <- dpi %||% size$dpi
+    size
+}
+
 rcmetar.plot.pixel.size <- function(size) {
     dpi <- rcmetar.plot.export.dpi(size)
     c(
@@ -168,8 +179,9 @@ rcmetar.normalize.svglite.svg <- function(svg.path) {
     invisible(svg.path)
 }
 
-rcmetar.close.plot.device <- function(device) {
+rcmetar.close.plot.device <- function(device, previous) {
     if (device %in% grDevices::dev.list()) grDevices::dev.off(device)
+    if (previous %in% grDevices::dev.list()) invisible(grDevices::dev.set(previous))
 }
 
 rcmetar.write.plot.atomically <- function(path, write) {
@@ -186,11 +198,13 @@ rcmetar.write.plot.atomically <- function(path, write) {
 
 rcmetar.render.plot_svg <- function(svg.path, size, draw) {
     rcmetar.write.plot.atomically(svg.path, function(temporary) {
+        previous <- grDevices::dev.cur()
         rcmetar.open.svg_device(temporary, size)
         device <- grDevices::dev.cur()
-        on.exit(rcmetar.close.plot.device(device))
+        on.exit(rcmetar.close.plot.device(device, previous))
         result <- draw()
-        rcmetar.close.plot.device(device)
+        rcmetar.close.plot.device(device, previous)
+        on.exit(NULL)
         rcmetar.normalize.svglite.svg(temporary)
         result
     })
@@ -222,6 +236,7 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     if (identical(ext, "tif") || identical(ext, "tiff")) {
         .rcmetar.require.package("png")
         bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]], height=pixels[["height"]]), native=TRUE)
+        previous <- grDevices::dev.cur()
         grDevices::tiff(
             filename=outpath,
             width=pixels[["width"]],
@@ -232,7 +247,7 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
             bg="white"
         )
         device <- grDevices::dev.cur()
-        on.exit(rcmetar.close.plot.device(device))
+        on.exit(rcmetar.close.plot.device(device, previous))
         grid::grid.raster(bitmap, interpolate=FALSE)
         return(invisible(ext))
     }

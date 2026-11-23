@@ -38,6 +38,10 @@ freeze computed defaults as user overrides.
   Carry physical viewport dimensions to the PDF backend in points and
   keep publication rasters packed to bound memory. Preview devices can
   cap DPI while explicit publication exports keep their requested DPI.
+- Lay out regression, funnel, SROC and trial sequential exports at the
+  requested physical dimensions. Check the text advances on the same
+  svglite device before enabling Save. The editor keeps its natural-size
+  preview, and forest exports retain their measured minimum width.
 - Print real paginated text tables on white pages under either app palette.
   Give figures and captions their own pages. Keep short captions and
   tables together, allow long tables to paginate with repeated headers,

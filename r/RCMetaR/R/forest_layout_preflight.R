@@ -166,9 +166,10 @@ rcmetar.forest.layout.plan <- function(
 rcmetar.forest.with.measurement.device <- function(expr) {
     scratch <- tempfile("forest-measure-", tmpdir=rcmetar.scratch.path(), fileext=".svg")
     on.exit(unlink(scratch), add=TRUE, after=FALSE)
+    previous <- grDevices::dev.cur()
     rcmetar.open.svg_device(scratch, list(width=1200 / 144, height=800 / 144))
     device <- grDevices::dev.cur()
-    on.exit(rcmetar.close.plot.device(device), add=TRUE, after=FALSE)
+    on.exit(rcmetar.close.plot.device(device, previous), add=TRUE, after=FALSE)
     force(expr)
 }
 

@@ -2,6 +2,11 @@
 
 All notable RC MetaStudio changes will be recorded in this file.
 
+## Unreleased
+
+- Redraw regression, funnel, SROC and trial sequential plots at the selected export dimensions. The export dialog flags sizes that would clip or crowd labels or produce text below 6 pt.
+- Keep SROC study markers visible at 0 and 1. Apply the BMJ and RevMan palettes to curves, regions and markers, with custom colours available in the editor.
+
 ## 0.7.0 - 2026-11-21
 
 - Bundled nine published sample projects with cited source tables, descriptive names and analysis suggestions. The window title identifies samples, and saving a sample opens Save As.

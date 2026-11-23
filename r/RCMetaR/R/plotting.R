@@ -383,8 +383,5 @@ pretty.metric.name <- function(metric, label=NULL) {
 
 
 meta.regression.plot <- function(plot.data, outpath, ...) {
-    if (!rcmetar.is.metafor.bubble.bundle(plot.data)) {
-        stop("Meta-regression bubble plots require a fitted meta-regression plot.", call.=FALSE)
-    }
     rcmetar.draw.metafor.bubble(plot.data, outpath)
 }

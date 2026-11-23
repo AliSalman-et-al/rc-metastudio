@@ -8,6 +8,9 @@ from pathlib import Path
 from typing import BinaryIO, cast
 from xml.etree import ElementTree as ET
 
+from PyQt6.QtCore import QRectF
+from PyQt6.QtGui import QTransform
+
 
 _FONT_STACK = re.compile(r"""(font-family\s*:\s*)("[^"]*"|'[^']*'|[^,;}]+)\s*,[^;}]+""", re.IGNORECASE)
 
@@ -49,6 +52,41 @@ def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float
 def svg_view_box_size(path: str | Path) -> tuple[float, float]:
     with _open_svg(path) as source:
         return _view_box_size(source)
+
+
+def plot_text_layout_issue(path: Path) -> str | None:
+    """Check text written by svglite using the device's measured advances."""
+    root = ET.parse(path).getroot()
+    canvas = QRectF(*map(float, root.attrib["viewBox"].split())).adjusted(-.5, -.5, .5, .5)
+    boxes: list[QRectF] = []
+    for node in root.iter("{http://www.w3.org/2000/svg}text"):
+        size = re.search(r"font-size:\s*([\d.]+)px", node.get("style", ""))
+        length = node.get("textLength")
+        if size is None or length is None or not (node.text or "").strip():
+            continue
+        font = float(size[1])
+        if font < 6:
+            return "The smallest text is below 6 pt."
+        width = float(length.removesuffix("px"))
+        offset = {"middle": width / 2, "end": width}.get(node.get("text-anchor", ""), 0)
+        bounds = QRectF(-offset, -.74 * font, width, .94 * font)
+        transform = re.fullmatch(r"translate\(([-\d.]+),\s*([-\d.]+)\) rotate\(([-\d.]+)\)",
+                                 node.get("transform", ""))
+        if transform:
+            x, y, degrees = map(float, transform.groups())
+            bounds = QTransform.fromTranslate(x, y).rotate(degrees).mapRect(bounds)
+        else:
+            bounds.translate(float(node.get("x", "0")), float(node.get("y", "0")))
+        if not canvas.contains(bounds):
+            return f"‘{node.text}’ extends beyond the figure."
+        for other in boxes:
+            intersection = bounds.intersected(other)
+            if intersection.width() * intersection.height() > .2 * min(
+                bounds.width() * bounds.height(), other.width() * other.height()
+            ):
+                return f"‘{node.text}’ overlaps other text."
+        boxes.append(bounds)
+    return None
 
 
 def _view_box_size(source: BinaryIO | gzip.GzipFile) -> tuple[float, float]:

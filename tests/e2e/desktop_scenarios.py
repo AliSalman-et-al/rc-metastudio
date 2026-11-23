@@ -235,6 +235,7 @@ SCENARIOS = {
         for example in ("colditz", "barza", "poole", "kearon", "greenland", "abe", "feng")
     },
     "doctor": Scenario(readiness, qualifies=False),
+    "plot-export-print-sizes": Scenario(external("plot_export_print_sizes", standard_args), 480, qualifies=False),
     "hillclimb": Scenario(local("hillclimb"), 600),
     "analysis-dialog": Scenario(local("analysis_dialog")),
     "grid-entry": Scenario(local("grid_entry")),

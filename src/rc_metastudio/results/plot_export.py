@@ -29,7 +29,8 @@ class PlotExportDialog(QDialog):
     def __init__(self, formats, width: float, height: float, parent=None, *,
                  resizable: bool = True, native_dpi: int = 96,
                  text_per_inch: tuple[float, float] = (0, 0),
-                 forest_geometry: Callable[[float, bool], tuple[float, float] | None] | None = None):
+                 forest_geometry: Callable[[float, bool], tuple[float, float] | None] | None = None,
+                 check_layout: Callable[[float, bool], None] | None = None):
         super().__init__(parent)
         self.setWindowTitle('Export plot')
         self.setMinimumWidth(360)
@@ -37,6 +38,7 @@ class PlotExportDialog(QDialog):
         self.resizable = resizable
         self.text_per_inch = text_per_inch
         self._forest_geometry = forest_geometry
+        self._check_layout = check_layout
         self.forest_dimensions: tuple[float, float] | None = None
         self._minimum_mm = 0.0
         self._layout_error = ""
@@ -135,7 +137,7 @@ class PlotExportDialog(QDialog):
         self._width_changed()
 
     def _width_changed(self):
-        if self._forest_geometry is not None:
+        if self._forest_geometry is not None or self._check_layout is not None:
             self._measure_timer.start()
         self._refresh()
 
@@ -146,22 +148,31 @@ class PlotExportDialog(QDialog):
         self._layout_error = ""
         self.forest_dimensions = None
         self._minimum_mm = 0.0
-        if self._forest_geometry is not None:
+        if self._forest_geometry is not None or self._check_layout is not None:
             self._measuring = True
             self._refresh()
             try:
-                dimensions = self._forest_geometry(self._width_inches, self.include_title.isChecked())
-                if dimensions is None:
-                    raise ValueError("Plot layout is unavailable.")
-                self.forest_dimensions = dimensions
-                self._minimum_mm = math.ceil(dimensions[1] * 254 - 1e-9) / 10
+                self._measure_layout()
             except AnalysisBackendUnavailableError:
-                self._layout_error = "Could not measure the forest plot because the analysis backend is unavailable."
+                self._layout_error = "Could not measure the plot because the analysis backend is unavailable."
             except Exception as error:
-                self._layout_error = f"Could not measure the forest plot. {error}"
+                self._layout_error = (
+                    f"The plot cannot fit at this size. Increase the width or shorten its labels. {error}"
+                )
             finally:
                 self._measuring = False
         self._refresh()
+
+    def _measure_layout(self):
+        width, include_title = self._width_inches, self.include_title.isChecked()
+        if self._check_layout is not None:
+            self._check_layout(width, include_title)
+        elif self._forest_geometry is not None:
+            dimensions = self._forest_geometry(width, include_title)
+            if dimensions is None:
+                raise ValueError("Plot layout is unavailable.")
+            self.forest_dimensions = dimensions
+            self._minimum_mm = math.ceil(dimensions[1] * 254 - 1e-9) / 10
 
     def _readable_width_mm(self) -> float:
         if self._forest_geometry is not None:

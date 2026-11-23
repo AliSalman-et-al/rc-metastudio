@@ -190,7 +190,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
     tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis))
     left <- tick.width + if (compact) .52 else .72
-    legend.cex <- max(6/(12*size$cex), rcmetar.bubble.legend.cex())
+    legend.cex <- max(6.2/(12*size$cex), rcmetar.bubble.legend.cex())
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
     # legend() includes the line sample, text inset and padding in character units.
     legend.width <- max(inches(labels, legend.cex)) +

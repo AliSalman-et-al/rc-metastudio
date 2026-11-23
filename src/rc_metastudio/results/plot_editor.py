@@ -107,6 +107,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.color_btn.setText("Choose…")
         self.color_btn.setMaximumWidth(self.fontMetrics().height() * 12)
         configure_plot_style(self.style_cbo, self.accent_color, self.color_btn, accents=self._style_accents)
+        if plot_type == "sroc":
+            self.style_cbo.currentIndexChanged.connect(self._set_sroc_colors)
         apply_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Apply), "plot Apply button")
         apply_button.clicked.connect(self._commit)
         reset = self.buttonBox.addButton("Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole)
@@ -476,6 +478,15 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         if color.isValid():
             edit.setText(color.name())
 
+    def _sroc_prediction_color(self, style: str) -> str:
+        return "#b45f06" if style == "default" else self._style_accents[style]
+
+    def _set_sroc_colors(self) -> None:
+        style = selected_plot_style(self.style_cbo)
+        self.sroc_curve_color.setText(self._style_accents[style])
+        self.sroc_confidence_color.setText(self._style_accents[style])
+        self.sroc_prediction_color.setText(self._sroc_prediction_color(style))
+
     def _load_params(self, image_path):
         load_plot_style(
             self.style_cbo,
@@ -560,9 +571,16 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self.sroc_marker_area.setCurrentIndex(1 if marker == "sample-size" else 0)
             self.sroc_show_labels.setChecked(self._bool_param("fp_show_labels", False))
             self.sroc_extrapolate.setChecked(self._bool_param("fp_extrapolate", False))
-            self._set_text(self.sroc_curve_color, self._params.get("fp_curve_color") or self._params.get("fp_accent_color") or "#2f5597")
-            self._set_text(self.sroc_confidence_color, self._params.get("fp_confidence_color", "#2f5597"))
-            self._set_text(self.sroc_prediction_color, self._params.get("fp_prediction_color", "#b45f06"))
+            self._set_sroc_colors()
+            for key, field in (
+                ("fp_curve_color", self.sroc_curve_color),
+                ("fp_confidence_color", self.sroc_confidence_color),
+                ("fp_prediction_color", self.sroc_prediction_color),
+            ):
+                if self._params.get(key):
+                    self._set_text(field, self._params[key])
+            if not self._params.get("fp_curve_color") and self._params.get("fp_accent_color"):
+                self._set_text(self.sroc_curve_color, self._params["fp_accent_color"])
             self.sroc_curve_lty.setCurrentIndex(max(0, self._int_param("fp_curve_lty", 1) - 1))
             self.sroc_confidence_lty.setCurrentIndex(max(0, self._int_param("fp_confidence_lty", 2) - 1))
             self.sroc_prediction_lty.setCurrentIndex(max(0, self._int_param("fp_prediction_lty", 3) - 1))
@@ -711,7 +729,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
                     "fp_extrapolate": self.sroc_extrapolate.isChecked(),
                     "fp_curve_color": plot_color(self.sroc_curve_color.text()) or self._style_accents[style],
                     "fp_confidence_color": plot_color(self.sroc_confidence_color.text()) or self._style_accents[style],
-                    "fp_prediction_color": plot_color(self.sroc_prediction_color.text()) or "#b45f06",
+                    "fp_prediction_color": plot_color(self.sroc_prediction_color.text()) or self._sroc_prediction_color(style),
                     "fp_curve_lty": self.sroc_curve_lty.currentIndex() + 1,
                     "fp_confidence_lty": self.sroc_confidence_lty.currentIndex() + 1,
                     "fp_prediction_lty": self.sroc_prediction_lty.currentIndex() + 1,

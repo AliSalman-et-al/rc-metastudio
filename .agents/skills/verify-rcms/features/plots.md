@@ -445,6 +445,15 @@ and resolution. Native OS picker presentation remains a separate manual check.
 
 ## Trial sequential plot
 
+The targeted `plot-export-print-sizes` scenario drives the Results export
+dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Run
+`uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`;
+the locked dev group provides pdfminer.six for the PDF measurements.
+The evidence includes PDFs at 2.60 and 5.39 inches, measured point sizes and
+text bounds, an undersized dialog with Save disabled, and SROC frame and
+palette measurements from the rendered SVGs. The file-picker destination is
+controlled by the driver.
+
 The TSA desktop scenarios retain the actual preflight, report, plot bundle,
 render and editor steps. `tsa-peto` uses the default TSA design on BCG after a
 Peto fixed-effect fit. It checks the 6301% overrun and switches from participants

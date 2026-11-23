@@ -7,7 +7,7 @@
 \usage{
 rcmetar.run.small.study.effects(om.data, params)
 rcmetar.regenerate.small.study.funnel(om.data, res, params, output.path = NULL,
-  dpi = 120)
+  dpi = 120, width = NULL, height = NULL)
 }
 \arguments{
   \item{om.data}{An RCMetaR analysis data object.}
@@ -15,6 +15,7 @@ rcmetar.regenerate.small.study.funnel(om.data, res, params, output.path = NULL,
   \item{res}{The persisted pooled model for the run.}
   \item{output.path}{Optional output image path.}
   \item{dpi}{Raster resolution in dots per inch. Previews default to 120; publication exports use 600. Vector output retains its physical dimensions.}
+  \item{width,height}{Optional publication dimensions in inches. Supply both to lay out the plot at the requested size.}
 }
 \details{
 Tests are selected by identifier: classical-egger, mixed-effects-egger,

@@ -166,7 +166,7 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
         if (is.null(bundle)) return(NULL)
         if (!include_title) bundle$params$plot_caption <- NULL
         return(rcmetar.regenerate.small.study.funnel(
-            bundle$om.data, bundle$res, bundle$params, output.path, dpi=600))
+            bundle$om.data, bundle$res, bundle$params, output.path, dpi=dpi, width=width, height=height))
     }
     bundle <- .rcmetar.read.plot.bundle(prefix, "plot.data")
     if (is.null(bundle)) return(NULL)
@@ -181,11 +181,12 @@ rcmetar.render.plot.bundle <- function(prefix, regenerator, output.path, width=N
         rcmetar.forest <- rcmetar.draw.metafor.forest(bundle$plot.data, output.path, width, dpi, page_height)
         return(if (is.null(page_height)) output.path else rcmetar.forest)
     }
-    if (identical(regenerator, "trial_sequential")) {
-        rcmetar.draw.tsa.plot(bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text))
-    } else {
-        .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path)
-    }
+    switch(regenerator,
+        trial_sequential=rcmetar.draw.tsa.plot(
+            bundle$plot.data, output.path, width, height, dpi, export=isTRUE(outline_text)),
+        regression=rcmetar.draw.metafor.bubble(bundle$plot.data, output.path, width, height, dpi),
+        sroc=rcmetar.reitsma.draw(bundle$plot.data, output.path, width, height, dpi),
+        .rcmetar.plot.bundle.renderer(regenerator)$draw(bundle$plot.data, output.path))
     output.path
 }
 

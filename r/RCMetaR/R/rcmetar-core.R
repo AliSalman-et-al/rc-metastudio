@@ -542,7 +542,6 @@ rcmetar.draw.forest.plot <- function(plot.data, outpath) {
 #' @rdname RCMetaR-core-api
 #' @export
 rcmetar.draw.sroc.plot <- function(plot.data, outpath) {
-    if (!is.list(plot.data) || !identical(plot.data$kind, "sroc")) stop("SROC plot data expected.", call.=FALSE)
     rcmetar.reitsma.draw(plot.data, outpath)
 }
 
