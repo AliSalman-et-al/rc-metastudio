@@ -387,6 +387,8 @@ def source_install_key(source: Path, env: dict[str, str]) -> str:
         tree_digest(source),
         tree_digest(Path(env["R_HOME"])),
         tree_digest(Path(env["R_LIBS"])),
+        [tree_digest(Path(path)) for path in env.get("R_LIBS_SITE", "").split(os.pathsep)
+         if path and Path(path).is_dir()],
         file_digest(Path(__file__)),
         {str(path): file_digest(path) for path in startup_files if path.is_file()},
         settings,
@@ -460,6 +462,8 @@ def prepare_stack_library(
         verify_manifest_versions(root, python, rscript, env)
         verify_dependency_closure(root, rscript, env)
     if args.desktop_shard is None:
+        # R CMD check installs into its own output directory by default.
+        # Its check build must not replace the package used by desktop evidence.
         run(
             [
                 r_exe,
@@ -467,7 +471,6 @@ def prepare_stack_library(
                 "check",
                 "--no-manual",
                 "--no-build-vignettes",
-                f"--library={r_library}",
                 tarball,
             ],
             cwd=work_dir,
