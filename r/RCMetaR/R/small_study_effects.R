@@ -1616,7 +1616,7 @@ rcmetar.warm.small.study.effects <- function() {
     show <- c(settings$show.reference, settings$show.pooled)
     line.color <- settings$reference.color
     .small.study.funnel.legend(settings, pch=c(rep(22L, length(bands)), rep(NA, sum(show))),
-        pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE, pt.cex=1.3,
+        pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE, pt.cex=1.8,
         lty=c(rep(NA, length(bands)), c("solid", "12")[show]),
         lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color)
 }
@@ -1658,7 +1658,7 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
                                       units="inches")) + 3 * em
         right <- 1.5 * em
         if (settings$kind == "contour") {
-            settings$legend.entry.gap <- .9 * em
+            settings$legend.entry.gap <- .54 * em
             settings$legend.key.gap <- .15
             char.width <- .9 * axis.cex * graphics::par("cin")[1L]
             padding <- (1 + settings$legend.key.gap + 1.4 - .7) * char.width + settings$legend.entry.gap
