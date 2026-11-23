@@ -1503,7 +1503,7 @@ rcmetar.warm.small.study.effects <- function() {
 }
 
 .small.study.funnel.legend <- function(settings, labels, ...) {
-    if (!settings$compact) return(graphics::legend("topright", labels, ..., bty="n"))
+    if (!isTRUE(settings$compact)) return(graphics::legend("topright", labels, ..., bty="n"))
     size <- grDevices::dev.size("in")
     graphics::legend(
         graphics::grconvertX(size[1L] / 2, from="inches"),
