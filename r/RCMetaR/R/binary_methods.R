@@ -197,6 +197,7 @@ binary.fixed.mh <- function(binary.data, params){
                 digits=params$digits,
                 add=c(params$adjust, if (pool.correction) params$adjust else 0),
                 to=c(target, if (pool.correction) target else "none"),
+                drop00=c(TRUE, pool.correction),
                 measure=params$measure)
     pure.res <- res
     if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
