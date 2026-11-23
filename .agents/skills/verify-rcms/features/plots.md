@@ -449,8 +449,10 @@ The targeted `plot-export-print-sizes` scenario drives the Results export
 dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Run
 `uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`;
 the locked dev group provides pdfminer.six for the PDF measurements.
-The evidence includes Default and BMJ PDFs at 66 and 137 mm and a 300 DPI PNG
-of each page. The Colditz forest hides the arm counts and weight columns.
+The evidence includes Default and BMJ PDFs at 66 mm, 137 mm, and each plot's
+proposed export size, with a 300 DPI PNG of each page. The Colditz forest hides
+the arm counts and weight columns. At the proposed sizes the four Cartesian
+plot families use a common 9 pt axis scale.
 PDF checks cover point sizes, text bounds, forest header and footer spacing,
 axis title and tick hierarchy, legend clearance, contour standard-error ticks,
 and horizontal SROC tick labels. The driver also checks that the undersized

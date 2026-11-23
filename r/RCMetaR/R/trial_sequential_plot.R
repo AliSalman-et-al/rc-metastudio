@@ -98,10 +98,10 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     if (!is.null(width)) {
         size$width <- width
         size$height <- height %||% (width * 9/16)
-        size$cex <- .70
-        size$caption.cex <- size$cex
         size$caption.in.height <- TRUE
     }
+    size$cex <- rcmetar.plot.axis.cex(size$width) / .9
+    size$caption.cex <- .9 * size$cex
     size$dpi <- dpi
     size
 }
@@ -189,7 +189,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
     tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis, cex=axis.cex))
     left <- tick.width + (if (has.favours) 4.3 else 2.65) * em
-    legend.cex <- max(6.2/(12*size$cex), rcmetar.bubble.legend.cex())
+    legend.cex <- max(6.2/(12*size$cex), .9 * axis.cex)
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
     # legend() includes the line sample, text inset and padding in character units.
     legend.width <- max(inches(labels, legend.cex)) +

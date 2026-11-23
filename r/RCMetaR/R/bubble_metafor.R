@@ -355,12 +355,13 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         stop("Meta-regression bubble plots require a fitted meta-regression plot.", call.=FALSE)
     }
     size <- rcmetar.plot.device.size(rcmetar.bubble.measure.device(bundle), width, height, dpi)
+    size$cex <- rcmetar.plot.axis.cex(size$width)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
     if (is.null(display.path) && is.null(dpi)) size$dpi <- 600
     rcmetar.render.plot_file(outpath, size, function() {
         show.legend <- rcmetar.bubble.param.is.true(bundle, "bp_show_legend", FALSE)
         rcmetar.bubble.panel(size, show.legend)
-        legend.cex <- .8
+        legend.cex <- .9
         graphics::par(mgp=c(1.65, .45, 0), tcl=-.25)
         args <- rcmetar.bubble.style.args(bundle)
         ylim <- rcmetar.bubble.ylim(bundle)

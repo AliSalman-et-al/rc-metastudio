@@ -1502,7 +1502,7 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
-.small.study.funnel.legend <- function(settings, ..., cex=.8) {
+.small.study.funnel.legend <- function(settings, ...) {
     args <- list(...)
     for (i in seq_along(settings$legend.rows)) {
         row <- settings$legend.rows[[i]]
@@ -1511,7 +1511,7 @@ rcmetar.warm.small.study.effects <- function() {
             x=graphics::grconvertX(.5, from="npc"),
             y=graphics::grconvertY(1, from="npc") +
                 graphics::yinch(settings$legend.leading * (length(settings$legend.rows) - i + 1.5)),
-            legend=settings$legend.labels[row], cex=cex,
+            legend=settings$legend.labels[row], cex=.9,
             xjust=.5, yjust=1, horiz=TRUE, text.width=NA_real_,
             bty="n", xpd=NA, seg.len=1.4, x.intersp=.65), symbols))
     }
@@ -1557,7 +1557,7 @@ rcmetar.warm.small.study.effects <- function() {
     } else if (settings$show.reference || settings$show.pooled) {
         show <- c(settings$show.pooled, settings$show.reference)
         .small.study.funnel.legend(settings,
-            lty=c(2, 1)[show], lwd=c(2, 1)[show], col=settings$reference.color, cex=.8)
+            lty=c(2, 1)[show], lwd=c(2, 1)[show], col=settings$reference.color)
     }
 }
 
@@ -1634,12 +1634,13 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     ylab <- settings$ylab
     settings$ylab <- ""
     rcmetar.render.plot_file(path, size, function() {
-        em <- 9 / 72
-        graphics::par(xpd=FALSE, cex=.75, mgp=c(2.55, .55, 0), mex=.53, tcl=-.25, las=1)
+        axis.cex <- rcmetar.plot.axis.cex(size$width)
+        em <- 12 * axis.cex / 72
+        graphics::par(xpd=FALSE, cex=axis.cex, mgp=c(2.55, .55, 0), mex=.53, tcl=-.25, las=1)
         left <- max(graphics::strwidth(format(pretty(c(0, max(se[keep]))), trim=TRUE),
                                       units="inches")) + 3 * em
         right <- 1.5 * em
-        settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - left - right, .8)
+        settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - left - right, .9)
         settings$legend.leading <- 1.15 * em
         top <- max(1, length(settings$legend.rows) + 1.75) * settings$legend.leading
         notes <- (!is.null(settings$xlim) ||
@@ -1651,7 +1652,7 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
         else if (identical(settings$kind, "contour"))
             .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
         else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
-        graphics::mtext(ylab, side=2, line=4.5, cex=.75, las=0)
+        graphics::mtext(ylab, side=2, line=4.5, cex=axis.cex, las=0)
         .small.study.draw.funnel.notes(om.data, params, settings)
     }, caption=params$plot_caption)
     path

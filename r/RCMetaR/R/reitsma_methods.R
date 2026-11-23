@@ -579,12 +579,27 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
         if (inset * sum(automatic) >= 1) stop("The study markers need more plot area.", call.=FALSE)
         limits + c(-1, 1) * automatic * diff(limits) * inset / (1 - inset * sum(automatic))
     }
+    axis.cex <- rcmetar.plot.axis.cex(size$width)
+    legend.cex <- .9 * axis.cex
+    draw.legend <- function(rows, side, inner.width, em) {
+        for (i in seq_along(rows)) {
+            row <- rows[[i]]
+            x <- if (side) graphics::grconvertX(1, from="npc") + graphics::xinch(em / 3) else
+                graphics::grconvertX(inner.width / 2, from="inches")
+            y <- if (side) graphics::grconvertY(.5, from="npc") else
+                graphics::grconvertY(1, from="npc") + graphics::yinch((length(rows) - i + 1.6) * em)
+            graphics::legend(x, y, legend=legend.spec$labels[row], col=legend.spec$col[row],
+                lty=legend.spec$lty[row], pch=legend.spec$pch[row], pt.cex=legend.spec$pt.cex[row],
+                pt.bg=legend.spec$pt.bg[row], cex=legend.cex, bty="n", xpd=NA,
+                xjust=if (side) 0 else .5, yjust=if (side) .5 else 1, horiz=!side, text.width=NA_real_)
+        }
+    }
     draw <- function() {
         em <- 12 / 72
         graphics::par(xaxs="i", yaxs="i", las=1, mgp=c(1.7, .5, 0),
-                      mex=.68, tcl=-.25, cex.axis=.75, cex.lab=.8)
+                      mex=.68, tcl=-.25, cex.axis=axis.cex, cex.lab=axis.cex)
         left <- 2.25 * em + max(graphics::strwidth(format(axis.ticks(style$yticks, ylim), trim=TRUE),
-                                               units="inches", cex=.75), 0)
+                                               units="inches", cex=axis.cex), 0)
         bottom <- (3.1 + (count > 0)) * em
         caption <- auc.caption()
         top <- (1 + length(caption)) * em
@@ -592,10 +607,10 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
         inner <- grDevices::dev.size("in") - c(sum(graphics::par("omi")[c(2, 4)]),
                                                sum(graphics::par("omi")[c(1, 3)]))
         labels <- legend.spec$labels
-        legend.width <- max(graphics::strwidth(labels, cex=.8, units="inches"), 0) + 3 * em
+        legend.width <- max(graphics::strwidth(labels, cex=legend.cex, units="inches"), 0) + 3 * em
         side <- length(labels) > 0 && inner[1L] - left - right - legend.width >= inner[2L] - top - bottom
         rows <- if (side) list(seq_along(labels)) else
-            rcmetar.plot.legend.rows(labels, inner[1L] - 2 * em, .8)
+            rcmetar.plot.legend.rows(labels, inner[1L] - 2 * em, legend.cex)
         if (side) right <- inner[1L] - left - (inner[2L] - top - bottom)
         else top <- top + (length(rows) + .4) * em
         graphics::par(mai=c(bottom, left, top, right))
@@ -604,7 +619,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
             marker.limits(xlim, 1L, style$plot.lb, style$plot.ub),
             marker.limits(ylim, 2L, style$y.plot.lb, style$y.plot.ub))
         graphics::title(xlab=as.character(style$xlabel %||% "False positive rate"))
-        graphics::mtext(as.character(style$ylabel %||% "Sensitivity"), side=2, line=2.05, cex=.8, las=0)
+        graphics::mtext(as.character(style$ylabel %||% "Sensitivity"), side=2, line=2.05, cex=axis.cex, las=0)
         graphics::box()
         points(plot.data$fpr, plot.data$sensitivity, pch=as.integer(style$point.pch %||% 21),
                bg="white", col=accent.color, cex=marker.cex)
@@ -617,18 +632,8 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
         if (length(caption)) graphics::text(
             graphics::grconvertX(inner[1L] / 2, from="inches"),
             graphics::grconvertY(1, from="npc") + graphics::yinch((if (side) 1.3 else length(rows) + 1.7) * em),
-            caption, cex=label.cex, xpd=NA)
-        for (i in seq_along(rows)) {
-            row <- rows[[i]]
-            x <- if (side) graphics::grconvertX(1, from="npc") + graphics::xinch(em / 3) else
-                graphics::grconvertX(inner[1L] / 2, from="inches")
-            y <- if (side) graphics::grconvertY(.5, from="npc") else
-                graphics::grconvertY(1, from="npc") + graphics::yinch((length(rows) - i + 1.6) * em)
-            graphics::legend(x, y, legend=labels[row], col=legend.spec$col[row],
-                lty=legend.spec$lty[row], pch=legend.spec$pch[row], pt.cex=legend.spec$pt.cex[row],
-                pt.bg=legend.spec$pt.bg[row], cex=.8, bty="n", xpd=NA,
-                xjust=if (side) 0 else .5, yjust=if (side) .5 else 1, horiz=!side, text.width=NA_real_)
-        }
+            caption, cex=legend.cex, xpd=NA)
+        draw.legend(rows, side, inner[1L], em)
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
     rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$style$caption)

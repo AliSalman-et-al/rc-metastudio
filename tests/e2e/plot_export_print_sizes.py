@@ -39,7 +39,7 @@ EXPECTED_LABELS = {
 
 def editorial_observations(kind, runs, page):
     numbers = [(text, size, box) for text, size, box in runs
-               if re.fullmatch(r"[−-]?\d+(?:\.\d+)?", text)]
+               if re.fullmatch(r"[−-]?\d+(?:,\d{3})*(?:\.\d+)?", text)]
     observed = {}
     if kind == "forest":
         observed["top_gap_mm"] = round((page.height - max(box[3] for _, _, box in runs)) * 25.4 / 72, 2)
@@ -55,6 +55,8 @@ def editorial_observations(kind, runs, page):
     if titles and numbers:
         sizes = [size for size, _ in titles]
         tick_size = max(size for _, size, _ in numbers)
+        observed["axis_title_pt"] = [round(size, 2) for size in sizes]
+        observed["tick_pt"] = round(tick_size, 2)
         observed["axis_font_ratio"] = round(max(sizes) / min(sizes), 2)
         observed["axis_to_tick_ratio"] = [round(size / tick_size, 2) for size in sizes]
     rectangles = [item for item in page if isinstance(item, LTRect)
@@ -93,7 +95,8 @@ def editorial_observations(kind, runs, page):
         ), 2)
         observed["panel_aspect"] = round((frame[2] - frame[0]) / (frame[3] - frame[1]), 2)
     if kind == "contour_funnel":
-        ticks = [float(text) for text, _, box in numbers if frame and box[2] < frame[0] and box[3] >= frame[1]]
+        ticks = [float(text.replace(",", "")) for text, _, box in numbers
+                 if frame and box[2] < frame[0] and box[3] >= frame[1]]
         observed["standard_error_ticks"] = sorted(ticks)
         observed["analysis_ci_note"] = any(text.startswith("Analysis CI") for text, _, _ in runs)
     if kind == "sroc":
@@ -229,6 +232,7 @@ def run(app, window, work, root, record, analyze):
     from advanced_workflows import modal
 
     failures = []
+    default_sizes: dict[tuple[str, str], list[float]] = {}
 
     def visible(kind):
         for _ in range(100):
@@ -259,13 +263,15 @@ def run(app, window, work, root, record, analyze):
 
     def export(view, kind, style, width, *, blocked=False):
         name = f"{kind}-{style}"
-        destination = work / f"{name}-{width}mm.pdf"
+        size_name = "proposed" if width is None else f"{width}mm"
+        destination = work / f"{name}-{size_name}.pdf"
         dimensions = []
 
         def configure(dialog):
             dialog.format_control.setCurrentIndex(dialog.format_control.findData("pdf"))
             dialog.units.setCurrentText("mm")
-            dialog.width_control.setValue(width)
+            if width is not None:
+                dialog.width_control.setValue(width)
             wait(350)
             dimensions.extend(dialog.dimensions()[:2])
             enabled = dialog.save_button.isEnabled()
@@ -299,6 +305,9 @@ def run(app, window, work, root, record, analyze):
                 failures.append((name, width, "missing labels", sorted(missing)))
             if defects := editorial_failures(kind, observed["editorial"]):
                 failures.append((name, width, defects, observed["editorial"]))
+            if width is None and "tick_pt" in observed["editorial"]:
+                editorial = observed["editorial"]
+                default_sizes[style, kind] = [editorial["tick_pt"], *editorial["axis_title_pt"]]
 
     def check_plots(view, kinds):
         for kind in kinds:
@@ -309,7 +318,7 @@ def run(app, window, work, root, record, analyze):
             editor = FunnelPlotEditorDialog if "funnel" in kind else EditPlotDialog
             for style in ("default", "bmj"):
                 modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
-                for width in (66, 137):
+                for width in (66, 137, None):
                     export(view, kind, style, width)
             if kind == "sroc":
                 export(view, kind, "bmj", 19, blocked=True)
@@ -367,4 +376,10 @@ def run(app, window, work, root, record, analyze):
 
     modal(app, TrialSequentialAnalysisDialog, start_tsa, window.action_trial_sequential_analysis.trigger)
     check_plots(visible(ResultsWindow), ("trial_sequential",))
+    for style in ("default", "bmj"):
+        typography = {kind: default_sizes.get((style, kind))
+                      for kind in ("regression", "contour_funnel", "sroc", "trial_sequential")}
+        record("proposed-export-typography", style=style, axis_and_tick_pt=typography)
+        if not all(sizes and all(8.75 <= size <= 9.25 for size in sizes) for sizes in typography.values()):
+            failures.append((style, "proposed sizes lack a shared 9 pt axis scale", typography))
     assert not failures, failures
