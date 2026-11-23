@@ -114,8 +114,6 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
     "tiff": (".tif", ".tiff"),
     "svg": (".svg", ".svgz"),
 }
-ROW_HEIGHT = 15
-SECTION_SPACING = ROW_HEIGHT
 MAX_VECTOR_PLOT_SCALE = 4.0
 QGraphicsSvgItem = None
 QSvgRenderer = None
@@ -1210,7 +1208,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             index = self._layout_items.index(item) if item in self._layout_items else len(self._layout_items)
             heading = self._layout_items[index - 1] if index else None
             heading_height = heading.boundingRect().height() if isinstance(heading, QGraphicsTextItem) else 0
-            available = self.graphics_view.maximumViewportSize().height() - heading_height - SECTION_SPACING - 2 * padding
+            available = self.graphics_view.maximumViewportSize().height() - heading_height - self._section_spacing() - 2 * padding
             target_scale = min(target_scale, max(1, available) / height)
         if body_pixels:
             target_scale = max(target_scale, math.nextafter(12 / body_pixels, math.inf))
@@ -1427,6 +1425,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             scale = self._automatic_plot_scale(item, float(scaled_width) / float(logical_width), logical_height, 0)
             item.setScale(scale if self._fit_width_active else 1)
 
+    def _section_spacing(self) -> int:
+        return self.fontMetrics().lineSpacing()
+
     def _relayout_sections(self):
         """Place every result item from its current measured size and stored order."""
         next_y = float(self.add_offset)
@@ -1436,7 +1437,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             item.setPos(self.x_coord, next_y)
             next_y = math.ceil(item.sceneBoundingRect().bottom())
             if not isinstance(item, QGraphicsTextItem):
-                next_y += SECTION_SPACING
+                next_y += self._section_spacing()
 
         self.y_coord = next_y
 
@@ -1507,7 +1508,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             'Right-click the plot and choose Export plot…, or press Ctrl+Shift+E.'
         )
 
-        self.y_coord += item.boundingRect().size().height() + SECTION_SPACING
+        self.y_coord += item.boundingRect().size().height() + self._section_spacing()
         item.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
 
         # layout-audit: allow=intrinsic-ratio; reason=scene follows its intrinsic-ratio visual artifact
@@ -1562,7 +1563,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         scaled_width, scaled_height = self._fit_vector_plot_to_viewport(item)
 
-        self.y_coord += scaled_height + SECTION_SPACING
+        self.y_coord += scaled_height + self._section_spacing()
         # layout-audit: allow=intrinsic-ratio; reason=scene follows its intrinsic-ratio visual artifact
         self.scene.setSceneRect(
             0,

@@ -263,6 +263,36 @@ def test_dpr_raster_uses_device_independent_dimensions_for_viewport_fit(qapp, tm
         _dispose(window, qapp)
 
 
+@pytest.mark.parametrize("enlarged", [False, True])
+def test_figure_sections_follow_font_spacing_after_resize(qapp, tmp_path, enlarged):
+    _use_isolated_settings(tmp_path)
+    path = tmp_path / "figure.svg"
+    path.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="1200"><rect width="300" height="1200"/></svg>', encoding="utf-8")
+    window = results_window.ResultsWindow(_analysis_result({
+        "images": {title: str(path) for title in ("First", "Second")},
+        "plot_capabilities": {title: _plot_capability(plot_kind="other", editable=False, styleable=False, regenerator="none") for title in ("First", "Second")},
+    }))
+    try:
+        if enlarged:
+            font = QtGui.QFont(window.font())
+            font.setPixelSize(32)
+            window.setFont(font)
+        window.showNormal()
+        for width, height in ((780, 620), (690, 510)):
+            window.resize(width, height)
+            qapp.processEvents()
+            window._refit_viewport_items()
+            first = window._svg_plot_items[0]
+            index = window._layout_items.index(first)
+            heading, next_heading = window._layout_items[index - 1], window._layout_items[index + 1]
+            gap = next_heading.sceneBoundingRect().top() - first.sceneBoundingRect().bottom()
+            assert gap == pytest.approx(window.fontMetrics().lineSpacing(), abs=1)
+            assert first.sceneBoundingRect().height() + heading.sceneBoundingRect().height() + gap <= window.graphics_view.maximumViewportSize().height() + 1
+            assert window.grab().save(str(tmp_path / f"results-{width}x{height}.png"))
+    finally:
+        _dispose(window, qapp)
+
+
 def test_plot_editor_is_screen_bounded_transactional_dialog_with_fixed_actions(
     qapp, tmp_path
 ):
