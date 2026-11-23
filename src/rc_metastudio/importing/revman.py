@@ -22,23 +22,18 @@ def _configure_analysis(sheet, outcome, metric, differences):
     family, name = sheet.family, sheet.name
     method = outcome.get('METHOD', 'IV')
     random = outcome.get('RANDOM') == 'YES'
-    mapped = None
-    if random and method == 'IV':
-        mapped = f'{family}.random'
-    elif not random:
-        mapped = ({'IV': 'binary.fixed.inv.var', 'MH': 'binary.fixed.mh',
-                   'PETO': 'binary.fixed.peto'}.get(method) if family == 'binary'
-                  else f'{family}.fixed' if method == 'IV' else None)
-    if mapped == 'binary.fixed.peto' and metric != 'OR':
-        mapped = None
-    if mapped:
-        parameters = {}
+    mapped, parameters = None, {}
+    if method == 'IV':
         if random:
-            parameters['rm.method'] = 'DL'
-        elif mapped == 'binary.fixed.mh':
-            parameters.update({'adjust': 0.5, 'to': 'only0', 'pool.correction': 'TRUE'})
-        elif mapped == 'binary.fixed.peto':
-            parameters['adjust'] = 0
+            mapped, parameters = f'{family}.random', {'rm.method': 'DL'}
+        else:
+            mapped = 'binary.fixed.inv.var' if family == 'binary' else f'{family}.fixed'
+    elif (family, method, random) == ('binary', 'MH', False):
+        mapped = 'binary.fixed.mh'
+        parameters = {'adjust': 0.5, 'to': 'only0', 'pool.correction': 'TRUE'}
+    elif (family, method, random, metric) == ('binary', 'PETO', False, 'OR'):
+        mapped, parameters = 'binary.fixed.peto', {'adjust': 0}
+    if mapped is not None:
         sheet.settings['analysis'] = dict(method=mapped,
             parameters=parameters,
             fixed_effects=not random, covariates=[])
