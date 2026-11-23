@@ -1184,7 +1184,7 @@
       "approved_at": "2026-11-23",
       "before_behavior": "The bubble plot uses independent x- and y-axis title scales and fixed panel margins.",
       "after_behavior": "The bubble plot uses consistent axis typography and measures margins from rendered labels and legend keys.",
-      "follow_up": "The binding matches the raster image from Windows CI run 45171710642 and the local pinned Windows replay. The frozen numerical contract remains the comparison authority.",
+      "follow_up": "The binding matches the raster image from the pinned Windows replay of the updated bubble layout. The frozen numerical contract remains the comparison authority.",
       "accepted_classifications": [
         "text_artifact_drift"
       ],
@@ -1204,7 +1204,7 @@
             "label": "Regression Plot",
             "name": "reg.png",
             "type": "png",
-            "sha256": "1b779a64d4759f8f3b40f5b51d9e0a58b5739b8ff5285d843a21c18edad1ec9b",
+            "sha256": "df48b97348c0bc9a575c9e20a7b4b8a7c7945880b9edc9cd6332560a6cd88e27",
             "metadata": {}
           }
         }
@@ -1224,7 +1224,7 @@
       "approved_at": "2026-11-23",
       "before_behavior": "The bubble plot uses independent x- and y-axis title scales and fixed panel margins.",
       "after_behavior": "The bubble plot uses consistent axis typography and measures margins from rendered labels and legend keys.",
-      "follow_up": "The binding matches the raster image from Windows CI run 45171710642 and the local pinned Windows replay. The frozen numerical contract remains the comparison authority.",
+      "follow_up": "The binding matches the raster image from the pinned Windows replay of the updated bubble layout. The frozen numerical contract remains the comparison authority.",
       "accepted_classifications": [
         "text_artifact_drift"
       ],
@@ -1244,7 +1244,7 @@
             "label": "Regression Plot",
             "name": "reg.png",
             "type": "png",
-            "sha256": "a90a1eeeafce48efbd9531ec3620dde6a66d1df72e815632e8a321151621a8ad",
+            "sha256": "99272f439084a80087b2a245e4770f3cb33b01c437dc55dc0d1d39e0ce7d6162",
             "metadata": {}
           }
         }
