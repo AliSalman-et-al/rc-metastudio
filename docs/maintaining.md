@@ -103,7 +103,10 @@ uv run --locked python scripts/verify.py ready
 ```
 
 The command prints each lane and why it was selected, then runs the quick checks
-and selected checks available for the host. It reuses passed lane receipts in
+and selected checks available for the host. Desktop shards check the shared
+per-scenario evidence against the installed R runtime and dependencies. Local
+R-stack runs and `ready` use the same RCMetaR installation cache under
+`artifacts/r-library-cache/` by default. Other lanes reuse passed receipts in
 `artifacts/verification/ready/` when the inputs and toolchain match. Use
 `ready --full` to run every local lane with fresh lane receipts, or combine it
 with `--dry-run` to inspect the full plan. GitHub Actions supplies the other

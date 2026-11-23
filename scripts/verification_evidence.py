@@ -68,10 +68,6 @@ def tree_digest(root: Path) -> str:
         if not path.is_file() or "__pycache__" in path.parts or path.suffix == ".pyc":
             continue
         name = path.relative_to(root).as_posix()
-        # INSTALL metadata embeds the temporary directory and build timestamp.
-        # Executable R code, data, native libraries and DESCRIPTION remain bound.
-        if name == "RCMetaR/Meta/package.rds":
-            continue
         digest.update(name.encode())
         digest.update(file_digest(path).encode())
     return digest.hexdigest()

@@ -430,7 +430,10 @@ def run_ready(args: argparse.Namespace) -> None:
         print(f"  {lane}{detail} - {reason}", flush=True)
     if not args.dry_run:
         for lane, selection, _, action in actions:
-            run_ready_lane(lane, selection, action, args)
+            if lane.startswith("desktop-"):
+                action()
+            else:
+                run_ready_lane(lane, selection, action, args)
 
 
 def parser() -> argparse.ArgumentParser:

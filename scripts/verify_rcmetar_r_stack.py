@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import shutil
@@ -16,11 +17,11 @@ from pathlib import Path
 if __package__:
     from scripts import r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
-    from scripts.verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, run_typing
+    from scripts.verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, file_digest, run_typing, tree_digest
 else:
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
-    from verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, run_typing
+    from verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, file_digest, run_typing, tree_digest
 
 
 RCMetaR_PACKAGE = Path("r") / "RCMetaR"
@@ -125,20 +126,9 @@ def ensure_dependency_library(
     env: dict[str, str],
     python: str,
     cran_repo: str,
-    cache_root: Path | None,
+    cache_root: Path,
     work_dir: Path,
 ) -> Path:
-    if cache_root is None:
-        r_library = work_dir / "library"
-        r_library.mkdir(parents=True)
-        install_env = isolated_r_env(env, r_library)
-        install_env["RCMS_CRAN_REPO"] = cran_repo
-        install_env["RCMS_POLICY_PYTHON"] = python
-        step(f"Installing R dependencies into isolated library at {r_library}")
-        run([rscript, R_DEP_INSTALLER], cwd=root, env=install_env)
-        verify_manifest_versions(root, python, rscript, install_env)
-        return r_library
-
     cache_library = (
         cache_root
         / r_support.dependency_cache_key(root, rscript, env, cran_repo, R_DEP_INSTALLER, "rdeps")
@@ -375,6 +365,70 @@ def verify_analysis_authorities(root: Path, rscript: Path, env: dict[str, str]) 
          f"in {time.monotonic() - started:.2f}s")
 
 
+def build_stack_source(
+    source: Path, r_exe: Path, env: dict[str, str], work_dir: Path
+) -> Path:
+    run([r_exe, "CMD", "build", "--no-build-vignettes", source], cwd=work_dir, env=env)
+    return built_RCMetaR_tarball(work_dir)
+
+
+def source_install_key(source: Path, env: dict[str, str]) -> str:
+    startup_files = [source.parent.parent / name for name in (".Renviron", ".Rprofile")]
+    for variable, default in (("R_ENVIRON_USER", ".Renviron"), ("R_PROFILE_USER", ".Rprofile")):
+        startup_files.append(Path(env.get(variable) or Path.home() / default))
+    startup_files.extend(Path(env[name]) for name in ("R_ENVIRON", "R_PROFILE") if env.get(name))
+    # The dependency library is a private copy. Its bytes, not its path, identify it.
+    settings = {
+        name: value for name, value in env.items()
+        if name not in {"R_LIBS", "R_LIBS_USER"}
+        and (name.startswith(("R_", "_R_", "LC_")) or name in {"LANG", "PATH", "TZ"})
+    }
+    inputs = (
+        tree_digest(source),
+        tree_digest(Path(env["R_HOME"])),
+        tree_digest(Path(env["R_LIBS"])),
+        file_digest(Path(__file__)),
+        {str(path): file_digest(path) for path in startup_files if path.is_file()},
+        settings,
+    )
+    return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
+
+
+def install_stack_source(
+    root: Path, r_exe: Path, env: dict[str, str], work_dir: Path, cache_root: Path
+) -> Path:
+    source = root / RCMetaR_PACKAGE
+    library = Path(env["R_LIBS"])
+    # A package with build hooks or native code also depends on the host compiler
+    # and tools. RCMetaR is pure R, so keep those builds on the uncached path.
+    if any((source / name).exists() for name in ("src", "configure", "configure.win", "cleanup", "cleanup.win")):
+        tarball = build_stack_source(source, r_exe, env, work_dir)
+        run([r_exe, "CMD", "INSTALL", f"--library={library}", tarball], cwd=root, env=env)
+        return tarball
+
+    source_cache = cache_root / "source"
+    source_cache.mkdir(parents=True, exist_ok=True)
+    key = source_install_key(source, env)
+    entry = source_cache / key
+    if not entry.is_dir():
+        with tempfile.TemporaryDirectory(prefix="install-", dir=source_cache) as temporary:
+            staging = Path(temporary) / "entry"
+            staging.mkdir()
+            tarball = build_stack_source(source, r_exe, env, staging)
+            run([r_exe, "CMD", "INSTALL", f"--library={staging}", tarball], cwd=root, env=env)
+            if source_install_key(source, env) != key:
+                raise VerificationError("RCMetaR installation inputs changed during the build")
+            try:
+                staging.rename(entry)
+            except OSError:
+                if not entry.is_dir():
+                    raise
+    else:
+        step(f"Using cached RCMetaR installation at {entry}")
+    copy_library(entry / "RCMetaR", library / "RCMetaR")
+    return built_RCMetaR_tarball(entry)
+
+
 def prepare_stack_library(
     args: argparse.Namespace, root: Path, rscript: Path, base_env: dict[str, str],
     python: str, cran_repo: str, work_dir: Path,
@@ -385,9 +439,7 @@ def prepare_stack_library(
     r_home = r_support.resolve_r_home(rscript, root, env)
     env = isolated_r_env(base_env, bootstrap_library, r_home)
     r_exe = r_support.resolve_r_exe(rscript, root, env)
-    cache_root = (
-        args.r_library_cache_root.resolve() if args.r_library_cache_root else None
-    )
+    cache_root = (args.r_library_cache_root or root / "artifacts/r-library-cache").resolve()
     prepared = args.prepared_r_library.resolve() if args.prepared_r_library else None
     if prepared is None:
         r_library = ensure_dependency_library(
@@ -402,12 +454,7 @@ def prepare_stack_library(
     step(f"Using isolated R verification library at {r_library}")
 
     if prepared is None:
-        run(
-            [r_exe, "CMD", "build", "--no-build-vignettes", root / RCMetaR_PACKAGE],
-            cwd=work_dir,
-            env=env,
-        )
-        tarball = built_RCMetaR_tarball(work_dir)
+        tarball = install_stack_source(root, r_exe, env, work_dir, cache_root)
     else:
         tarball = built_RCMetaR_tarball(prepared / "source")
         verify_manifest_versions(root, python, rscript, env)
@@ -426,13 +473,6 @@ def prepare_stack_library(
             cwd=work_dir,
             env=env,
         )
-    if prepared is None:
-        run(
-            [r_exe, "CMD", "INSTALL", f"--library={r_library}", tarball],
-            cwd=root,
-            env=env,
-        )
-
     return env
 
 
