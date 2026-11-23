@@ -677,6 +677,10 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
     def _param_name(self, suffix):
         return "%s_%s" % ("bp" if self.plot_type == "regression" else "fp", suffix)
 
+    def _direction_params(self) -> dict[str, str]:
+        return {key: qt_text.to_native_text(plot_text_value(field)).strip()
+                for key, field in self.direction_fields.items()}
+
     def plot_params(self):
         style = selected_plot_style(self.style_cbo)
         params = {
@@ -704,8 +708,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
             "fp_outpath": self._image_path,
-            **{key: qt_text.to_native_text(plot_text_value(field)).strip()
-               for key, field in self.direction_fields.items()},
+            **self._direction_params(),
         }
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:
