@@ -39,8 +39,6 @@ BROAD = (
     "scripts/local_r_test_backend.py", "tests/conftest.py",
     ".agents/skills/verify-rcms/scripts/*",
 )
-# These feature boundaries have explicit drives in the verify-rcms feature map.
-# Shared shell, analysis, workspace and results code can affect many more drives.
 FEATURES = (
     (("src/rc_metastudio/calculators/*", "src/rc_metastudio/forms/*calculation*.ui",
       "src/rc_metastudio/forms/*_data_dialog.ui"),

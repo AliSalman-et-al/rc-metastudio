@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+from scripts import verify
 from scripts.code_health import (
     build_evidence,
     changed_lines,
@@ -109,6 +111,26 @@ def _commit(cwd: Path, message: str, timestamp: str) -> str:
     subprocess.run(["git", "add", "src/pkg.py"], cwd=cwd, check=True, env=env)
     subprocess.run(["git", "commit", "-m", message], cwd=cwd, check=True, env=env, capture_output=True)
     return _git(cwd, "rev-parse", "HEAD")
+
+
+def test_local_code_health_works_with_only_the_comparison_history(tmp_path, monkeypatch):
+    for relative in ("scripts/code_health.py", "config/code-health.json"):
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True)
+        shutil.copyfile(ROOT / relative, target)
+    package = tmp_path / "src/rc_metastudio"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    _git(tmp_path, "init", "--quiet")
+    _git(tmp_path, "add", "src")
+    _git(tmp_path, "-c", "user.name=Test", "-c", "user.email=test@example.test", "commit", "-m", "Initial checkout")
+    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
+
+    verify.run_code_health("HEAD")
+
+    evidence = json.loads((tmp_path / "artifacts/code-health/final.json").read_text(encoding="utf-8"))
+    assert evidence["head"] == evidence["base"] == _git(tmp_path, "rev-parse", "HEAD")
+    assert evidence["gate"]["passed"]
 
 
 def test_code_health_emits_machine_readable_evidence_and_report(tmp_path: Path) -> None:

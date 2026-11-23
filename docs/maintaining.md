@@ -285,13 +285,10 @@ and layout-audit directives remain subject to the ratchet.
 ### Complexity, coupling, and churn (`scripts/code_health.py`)
 
 ```powershell
-uv run python scripts/code_health.py --base 8b7796b --head HEAD `
-  --baseline artifacts/code-health/baseline.json `
-  --output artifacts/code-health/final.json `
-  --report artifacts/code-health/final.txt
+uv run python scripts/code_health.py --base (git merge-base origin/master HEAD)
 ```
 
-Measurements always inspect the named Git revisions (not dirty worktree files). `--base` governs pass/fail gates (new cycles, forbidden imports, changed-function complexity); `--baseline` supplies trend context only.
+Code health compares the committed revisions. The same gate runs in `verify.py ready`. CI also supplies a historical trend baseline. For a local trend comparison, pass a previously generated evidence JSON with `--baseline`.
 
 ### Unused Python code (`vulture`)
 

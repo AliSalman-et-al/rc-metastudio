@@ -48,7 +48,6 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = discover_repo_root(SCRIPT_DIR)
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
-STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 SMOKE_TESTS = (
     "tests/analysis_regression/golden/test_analysis_regression_compare.py::"
     "test_golden_summary_parser_reads_current_RCMetaR_summary_display",
@@ -229,7 +228,20 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
 
 
 def run_code_health(
-    base: str = "origin/master", head: str = "HEAD", *, reuse_baseline: bool = False
+    base: str, head: str = "HEAD", *, baseline: Path | None = None,
+) -> None:
+    command = [
+        sys.executable, "scripts/code_health.py", "--base", base, "--head", head,
+        "--output", "artifacts/code-health/final.json",
+        "--report", "artifacts/code-health/final.txt",
+    ]
+    if baseline is not None:
+        command.extend(("--baseline", str(baseline)))
+    run(command)
+
+
+def run_code_health_with_trend(
+    base: str, head: str, baseline_revision: str, *, reuse_baseline: bool,
 ) -> None:
     baseline = Path("artifacts/code-health/baseline.json")
     report = baseline.with_suffix(".txt")
@@ -241,7 +253,7 @@ def run_code_health(
             from code_health import CodeHealthError, load_baseline
 
         try:
-            cached = load_baseline(REPO_ROOT / baseline).get("head") == STABLE_BASELINE
+            cached = load_baseline(REPO_ROOT / baseline).get("head") == baseline_revision
         except CodeHealthError:
             pass
     if not cached:
@@ -250,9 +262,9 @@ def run_code_health(
                 sys.executable,
                 "scripts/code_health.py",
                 "--base",
-                STABLE_BASELINE,
+                baseline_revision,
                 "--head",
-                STABLE_BASELINE,
+                baseline_revision,
                 "--allow-fail",
                 "--output",
                 str(baseline),
@@ -260,22 +272,7 @@ def run_code_health(
                 str(report),
             ]
         )
-    run(
-        [
-            sys.executable,
-            "scripts/code_health.py",
-            "--base",
-            base,
-            "--head",
-            head,
-            "--baseline",
-            str(baseline),
-            "--output",
-            "artifacts/code-health/final.json",
-            "--report",
-            "artifacts/code-health/final.txt",
-        ]
-    )
+    run_code_health(base, head, baseline=baseline)
 
 
 def run_packaging_contracts(env: dict[str, str] | None = None) -> None:
@@ -416,7 +413,7 @@ def run_ready(args: argparse.Namespace) -> None:
     local = ready_actions()
     actions = [
         ("quick", "", "always", run_quick),
-        ("code-health", base, "always, compares committed HEAD", lambda: run_code_health(base, reuse_baseline=True)),
+        ("code-health", base, "always, compares committed HEAD", lambda: run_code_health(base)),
     ]
     for job in selected.jobs:
         if job in local:
