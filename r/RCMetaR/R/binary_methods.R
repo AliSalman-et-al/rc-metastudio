@@ -186,14 +186,17 @@ binary.fixed.mh <- function(binary.data, params){
 
     results <- NULL
     input.params <- params
+    target <- .rcmetar.correction.target(params)
+    pool.correction <- isTRUE(as.logical(params$pool.correction)) &&
+        params$adjust != 0 && target != "none"
 
     res<-rma.mh(ai=binary.data@g1O1, bi=binary.data@g1O2,
                 ci=binary.data@g2O1, di=binary.data@g2O2,
                 slab=binary.data@study.names,
                 level=params$conf.level,
                 digits=params$digits,
-                add=c(params$adjust, 0),
-                to=c(.rcmetar.correction.target(params), "none"),
+                add=c(params$adjust, if (pool.correction) params$adjust else 0),
+                to=c(target, if (pool.correction) target else "none"),
                 measure=params$measure)
     pure.res <- res
     if (length(binary.data@y) == 0 || length(binary.data@SE) == 0) {
@@ -263,14 +266,16 @@ binary.fixed.mh.value.info <- function() {
 }
 
 binary.fixed.mh.parameters <- function(){
-    apply_adjustment_to = c("only0", "all")
+    apply_adjustment_to = c("only0", "all", "none")
 
     params <- list("conf.level"="float", "digits"="int",
-                            "adjust"="float", "to"=apply_adjustment_to)
+                            "adjust"="float", "to"=apply_adjustment_to,
+                            "pool.correction"=c("TRUE", "FALSE"))
 
-    defaults <- list("conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS, "adjust"=.5, "to"="only0")
+    defaults <- list("conf.level"=95, "digits"=RCMETAR_DEFAULT_DISPLAY_DIGITS, "adjust"=.5, "to"="only0",
+                     "pool.correction"="FALSE")
 
-    var_order = c("conf.level", "digits", "adjust", "to")
+    var_order = c("conf.level", "digits", "adjust", "to", "pool.correction")
 
     parameters <- list("parameters"=params, "defaults"=defaults, "var_order"=var_order)
 }
@@ -281,7 +286,8 @@ binary.fixed.mh.pretty.names <- function() {
                          "conf.level"=list("pretty.name"="Confidence level", "description"="Level at which to compute confidence intervals"),
                          "digits"=list("pretty.name"="Decimal places", "description"="Decimal places for displayed estimates and intervals. P values use at least three decimal places."),
                          "adjust"=list("pretty.name"="Continuity correction", "description"="Constant c that is added to the entries of a two-by-two table."),
-                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Correct individual study estimates for studies with a zero cell or for all studies. Pooled MH estimates use the original counts.")
+                         "to"=list("pretty.name"="Apply correction to", "to.names"=c(only0="Studies with any zero cell", all="All studies", if0all="All studies if any zero exists", none="None"), "description"="Choose which studies receive the continuity correction."),
+                         "pool.correction"=list("pretty.name"="Use correction in pooling", "description"="Use the corrected 2\u00d72 counts in the pooled estimate (matches RevMan), not just individual study effects.")
                           )
 }
 

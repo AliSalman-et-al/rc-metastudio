@@ -32,9 +32,18 @@ def _configure_analysis(sheet, outcome, metric, differences):
     if mapped == 'binary.fixed.peto' and metric != 'OR':
         mapped = None
     if mapped:
+        parameters = {}
+        if random:
+            parameters['rm.method'] = 'DL'
+        elif mapped == 'binary.fixed.mh':
+            parameters.update({'adjust': 0.5, 'to': 'only0', 'pool.correction': 'TRUE'})
+        elif mapped == 'binary.fixed.peto':
+            parameters['adjust'] = 0
         sheet.settings['analysis'] = dict(method=mapped,
-            parameters={'rm.method': 'DL'} if random else {},
+            parameters=parameters,
             fixed_effects=not random, covariates=[])
+    elif random and method == 'MH':
+        differences.append(f'{name}: RevMan random-effects Mantel–Haenszel is unavailable. It estimates between-study variance using Mantel–Haenszel heterogeneity. Analysis setup retains its default.')
     else:
         differences.append(f'{name}: RevMan {method}, {"random (DerSimonian–Laird)" if random else "fixed"} is unavailable; Analysis setup retains its default.')
     if metric == 'SMD':
