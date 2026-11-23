@@ -6,6 +6,7 @@ from PyQt6.QtCore import QCoreApplication, QDeadlineTimer, QEvent, Qt
 from PyQt6.QtWidgets import QComboBox, QLabel, QDialogButtonBox
 from PyQt6.QtTest import QTest
 from typing import Callable, cast
+from unittest.mock import patch
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
 
@@ -331,4 +332,24 @@ def check_partial_count_previews(app, dialog, cell, record):
         if metric in ('Sens', 'Spec'):
             assert select(metric) != '', metric
     record('dta-complete-preview-recovered', dialog, raw=dialog.get_raw_diagnostic_data())
+    for metric, column, pair, counts in (
+        ('Sens', 0, (0, 10), (0, 10, None, None)),
+        ('Spec', 1, (10, 0), (None, None, 10, 0)),
+    ):
+        dialog.clear_button.click()
+        calculate = dialog.calculator.diagnostic_effects_for_study
+        with patch.object(dialog.calculator, 'diagnostic_effects_for_study', wraps=calculate) as calls:
+            for row, count in enumerate(pair):
+                cell(table, row, column, count)
+            calls.assert_called_with(*counts, metrics=[metric], confidence_level=dialog.confidence_level)
+        actual = float(select(metric))
+        expected = 0.5 / 11
+        assert abs(actual - expected) < .0001, (metric, actual, expected)
+        for unavailable in {'Sens', 'Spec', 'PLR', 'NLR', 'DOR'} - {metric}:
+            preview = dialog.analysis_unit.get_effect_and_ci_for_source(
+                'derived_preview', unavailable, dialog.arm_key, dialog.confidence_multiplier,
+            )
+            assert preview == (None, None, None), (unavailable, preview)
+        record('dta-zero-in-available-pair', dialog, metric=metric, counts=counts,
+               actual=actual, expected=expected)
     dialog.reject()
