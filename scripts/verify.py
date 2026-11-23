@@ -387,6 +387,9 @@ def ready_key(lane: str, selection: str, toolchain: dict[str, object]) -> str:
 
 
 def run_ready_lane(lane: str, selection: str, action: Callable[[], None], args: argparse.Namespace) -> None:
+    if lane.startswith("desktop-"):
+        action()
+        return
     toolchain = ready_toolchain(args)
     key = ready_key(lane, selection, toolchain)
     cache = REPO_ROOT / "artifacts/verification/ready" / lane
@@ -430,10 +433,7 @@ def run_ready(args: argparse.Namespace) -> None:
         print(f"  {lane}{detail} - {reason}", flush=True)
     if not args.dry_run:
         for lane, selection, _, action in actions:
-            if lane.startswith("desktop-"):
-                action()
-            else:
-                run_ready_lane(lane, selection, action, args)
+            run_ready_lane(lane, selection, action, args)
 
 
 def parser() -> argparse.ArgumentParser:

@@ -396,6 +396,30 @@ def source_install_key(source: Path, env: dict[str, str]) -> str:
     return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
 
 
+def cached_stack_source(root: Path, r_exe: Path, env: dict[str, str], source_cache: Path) -> Path:
+    source = root / RCMetaR_PACKAGE
+    key = source_install_key(source, env)
+    entry = source_cache / key
+    if entry.is_dir():
+        step(f"Using cached RCMetaR installation at {entry}")
+        return entry
+
+    source_cache.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="install-", dir=source_cache) as temporary:
+        staging = Path(temporary) / "entry"
+        staging.mkdir()
+        tarball = build_stack_source(source, r_exe, env, staging)
+        run([r_exe, "CMD", "INSTALL", f"--library={staging}", tarball], cwd=root, env=env)
+        if source_install_key(source, env) != key:
+            raise VerificationError("RCMetaR installation inputs changed during the build")
+        try:
+            staging.rename(entry)
+        except OSError:
+            if not entry.is_dir():
+                raise
+    return entry
+
+
 def install_stack_source(
     root: Path, r_exe: Path, env: dict[str, str], work_dir: Path, cache_root: Path
 ) -> Path:
@@ -408,25 +432,7 @@ def install_stack_source(
         run([r_exe, "CMD", "INSTALL", f"--library={library}", tarball], cwd=root, env=env)
         return tarball
 
-    source_cache = cache_root / "source"
-    source_cache.mkdir(parents=True, exist_ok=True)
-    key = source_install_key(source, env)
-    entry = source_cache / key
-    if not entry.is_dir():
-        with tempfile.TemporaryDirectory(prefix="install-", dir=source_cache) as temporary:
-            staging = Path(temporary) / "entry"
-            staging.mkdir()
-            tarball = build_stack_source(source, r_exe, env, staging)
-            run([r_exe, "CMD", "INSTALL", f"--library={staging}", tarball], cwd=root, env=env)
-            if source_install_key(source, env) != key:
-                raise VerificationError("RCMetaR installation inputs changed during the build")
-            try:
-                staging.rename(entry)
-            except OSError:
-                if not entry.is_dir():
-                    raise
-    else:
-        step(f"Using cached RCMetaR installation at {entry}")
+    entry = cached_stack_source(root, r_exe, env, cache_root / "source")
     copy_library(entry / "RCMetaR", library / "RCMetaR")
     return built_RCMetaR_tarball(entry)
 
