@@ -1,37 +1,32 @@
-from rc_metastudio.domain_ids import RowId, SheetId
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from rc_metastudio.workspace.editing import WorkspaceEditingService
-from rc_metastudio.workspace.editing import WorkspaceEditingContext
-from rc_metastudio.project.model import Dataset, Sheet, StudyRow
+from rc_metastudio import r_operations, r_runtime
+from rc_metastudio.analysis.catalog import BINARY
+from rc_metastudio.workspace.editing import ConfidenceSettings, WorkspaceEditingContext, WorkspaceEditingService
+from rc_metastudio.project.model import Arm, Dataset, Sheet, StudyRow
 from rc_metastudio.project.study import AnalysisUnit
 
 
-class FakeBridge:
-    def effect_for_study(self, *args, **kwargs):
-        return {"calc_scale": 0.5}
-
-    def effect_triplet(self, value, scale, *, metric):
-        return (value[scale], None, None)
-
-    def binary_convert_scale(self, value, effect, *, convert_to, n1=None):
-        return value
-
-    continuous_convert_scale = binary_convert_scale
-    diagnostic_convert_scale = binary_convert_scale
-    continuous_effect_for_study = effect_for_study
-    diagnostic_effects_for_study = effect_for_study
-
-
-def test_single_arm_binary_preview_needs_no_fabricated_control():
+def test_single_arm_binary_preview_needs_no_fabricated_control(monkeypatch):
     # A valid single-arm row must calculate without inventing control values;
     # comparative metrics still require their complete second arm.
-    from rc_metastudio.analysis.study_selection import calculate_raw_effects
+    arm = Arm(ArmId("reported"), "Treatment")
+    sheet = Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[arm])
+    row = StudyRow(RowId("row"), "Study", AnalysisUnit(sheet, raw_data=[[4, 20]]))
+    context = WorkspaceEditingContext.for_sheet(sheet, "PLO", ConfidenceSettings(95, 1.96))
+    monkeypatch.setattr(r_runtime, "is_ready", lambda: True)
 
-    result, sample_size = calculate_raw_effects(FakeBridge(), 0, "PLO", [4, 20], 95)
-    assert result == (0.5, None, None)
-    assert sample_size == 20
+    def preview(rows, family, metric, metrics, confidence):
+        assert [list(raw) for raw in rows] == [[4, 20]]
+        assert (family, metric, tuple(metrics), confidence) == ("binary", "PLO", ("PLO",), 95)
+        return [[(.5, .1, .9, .6, .2, 1.0)]]
+
+    monkeypatch.setattr(r_operations, "study_effect_previews", preview)
+    WorkspaceEditingService().update_effect_previews((row,), context, update_inclusion=True)
+    assert row.analysis_unit.get_effect_for_source("derived_preview", "PLO", (arm.id,)).estimate == .5
+    assert row.analysis_unit.get_display_effect_for_source("derived_preview", "PLO", (arm.id,)) == .6
 
 
 def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
@@ -40,7 +35,6 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
     dataset.sheets.append(sheet)
     sheet.rows.extend(StudyRow(RowId(str(i)), name, AnalysisUnit(sheet)) for i, name in enumerate(("Alpha", "Beta")))
     context = WorkspaceEditingContext(
-        sheet_id=SheetId("sheet"),
         arm_names=(),
         current_effect=None,
         data_type=None,
@@ -49,16 +43,16 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
         confidence_level=95.0,
         confidence_multiplier=1.96,
     )
-    service = WorkspaceEditingService(FakeBridge())
+    service = WorkspaceEditingService()
 
     normalized = service.apply_edit(
-        dataset, 0, "name", context, "  Renamed  "
+        dataset.sheets[0], 0, "name", context, "  Renamed  "
     )
     duplicate = service.apply_edit(
-        dataset, 0, "name", context, " Beta "
+        dataset.sheets[0], 0, "name", context, " Beta "
     )
     blank = service.apply_edit(
-        dataset, 0, "name", context, " \t "
+        dataset.sheets[0], 0, "name", context, " \t "
     )
 
     assert normalized is None
@@ -70,7 +64,6 @@ def test_study_rename_normalizes_and_rejects_blank_or_duplicate_names():
 def test_new_study_rejects_whitespace_name_without_mutating_dataset():
     dataset = Dataset(sheets=[Sheet(SheetId("sheet"), "Outcome", 0)])
     context = WorkspaceEditingContext(
-        sheet_id=SheetId("sheet"),
         arm_names=(),
         current_effect=None,
         data_type=None,
@@ -80,8 +73,8 @@ def test_new_study_rejects_whitespace_name_without_mutating_dataset():
         confidence_multiplier=1.96,
     )
 
-    result = WorkspaceEditingService(FakeBridge()).apply_edit(
-        dataset, 0, "name", context, "   "
+    result = WorkspaceEditingService().apply_edit(
+        dataset.sheets[0], 0, "name", context, "   "
     )
 
     assert result is not None and result.message == "Study names cannot be empty."

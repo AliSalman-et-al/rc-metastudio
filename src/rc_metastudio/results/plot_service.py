@@ -5,29 +5,33 @@
 from __future__ import annotations
 
 import gzip
-import io
 import os
-import re
 import shutil
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
-from typing import BinaryIO, cast
 from xml.etree import ElementTree as ET
 
-from PyQt6.QtCore import QMarginsF, QRectF, QSettings
-from PyQt6.QtGui import QPageSize, QPainter, QPdfWriter
+from PyQt6.QtCore import QMarginsF, QRectF
+from PyQt6.QtGui import QImage, QPageSize, QPainter, QPdfWriter
 from PyQt6.QtSvg import QSvgRenderer
 
 from rc_metastudio import r_operations
 from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
-from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
-from rc_metastudio.results.plot_capabilities import PlotRegenerator
+from rc_metastudio.results.svg_rendering import svg_bytes_for_qt, svg_text_points_per_inch, svg_view_box_size
+from rc_metastudio.results.plot_capabilities import PlotCapability, PlotRegenerator, uses_forest_layout
+from rc_metastudio.results.plot_geometry import A4_CONTENT_HEIGHT_INCHES
 
 
-# Match RCMetaR's bitmap device guard.
-RASTER_MAX_DIMENSION = 32000
-RASTER_MAX_PIXELS = 150_000_000
+@dataclass(frozen=True, slots=True)
+class PlotExportGeometry:
+    width: float
+    height: float
+    native_dpi: int = 96
+    text_per_inch: tuple[float, float] = (0.0, 0.0)
+    forest_measurement: Callable[[float, bool], tuple[float, float] | None] | None = None
 
 
 class PlotServiceError(RuntimeError):
@@ -36,6 +40,35 @@ class PlotServiceError(RuntimeError):
 
 class PlotService:
     """Apply plot edits and render exports without leaking R into the UI."""
+
+    def export_geometry(
+        self, path: str, capability: PlotCapability, params_path: str | None,
+    ) -> PlotExportGeometry:
+        if not path.lower().endswith((".svg", ".svgz")):
+            source = QImage(path)
+            if source.isNull():
+                raise ValueError("Could not read the plot image.")
+            dpi = source.dotsPerMeterX() * .0254
+            width = source.width() / max(1, dpi)
+            return PlotExportGeometry(width, width / (source.width() / source.height()), round(dpi))
+
+        view_width, view_height = svg_view_box_size(path)
+        width = view_width / 72
+        ratio = view_width / view_height
+        height = width / ratio
+        if not params_path:
+            return PlotExportGeometry(width, height)
+        if uses_forest_layout(capability.plot_kind):
+            return PlotExportGeometry(width, height, forest_measurement=partial(
+                r_operations.forest_export_dimensions, params_path,
+            ))
+        with tempfile.TemporaryDirectory(prefix="rcms-export-size-") as directory:
+            untitled = Path(directory) / "untitled.svg"
+            self.export(regenerator=capability.regenerator, params_path=params_path, output_path=str(untitled),
+                        include_title=False, outline_text=False)
+            text_per_inch = (svg_text_points_per_inch(untitled, 1 / ratio),
+                             svg_text_points_per_inch(path, 1 / ratio))
+        return PlotExportGeometry(width, height, text_per_inch=text_per_inch)
 
     def load_params(self, params_path: str) -> dict[str, object] | None:
         """Load persisted plot parameters, returning ``None`` when unavailable."""
@@ -96,11 +129,14 @@ class PlotService:
             if not retain_recovery:
                 shutil.rmtree(staging, ignore_errors=True)
 
-    def export_sized(self, *, regenerator: PlotRegenerator, params_path: str,
+    def export_sized(self, *, capability: PlotCapability, params_path: str,
                      output_path: str, width: float, height: float, dpi: int,
-                     include_title: bool = True, geometry: tuple[float, float] | None = None) -> None:
+                     include_title: bool = True, geometry: tuple[float, float] | None = None,
+                     paginate_pdf: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
-        if geometry is None and regenerator == "forest":
+        regenerator = capability.regenerator
+        forest_layout = uses_forest_layout(capability.plot_kind)
+        if geometry is None and forest_layout:
             geometry = r_operations.forest_export_dimensions(params_path, width, include_title)
         if geometry is not None:
             height, minimum_width = geometry
@@ -109,7 +145,8 @@ class PlotService:
         with tempfile.TemporaryDirectory(prefix='rcms-export-') as directory:
             source = Path(directory) / 'plot.svg'
             extension = Path(output_path).suffix.lower()
-            if geometry is not None and extension == ".pdf" and height > 267 / 25.4 and _paginate_pdf():
+            if (geometry is not None and forest_layout
+                    and extension == ".pdf" and height > A4_CONTENT_HEIGHT_INCHES and paginate_pdf):
                 _export_paged_forest(params_path, source, output_path, width, geometry[1], include_title)
                 return
             paths = r_operations.render_plot_bundle(
@@ -161,7 +198,6 @@ def _size_export_svg(source: Path, destination: Path, width: float, height: floa
     root.set('width', f'{width}in')
     root.set('height', f'{height}in')
     x, y, view_width, view_height = map(float, root.attrib['viewBox'].split())
-    # Center the artwork on the physical paper, including space freed by the caption.
     paper_width = max(view_width, view_height * width / height)
     paper_height = max(view_height, view_width * height / width)
     x -= (paper_width - view_width) / 2
@@ -175,10 +211,6 @@ def _size_export_svg(source: Path, destination: Path, width: float, height: floa
             tree.write(stream, encoding='utf-8', xml_declaration=True)
     else:
         tree.write(destination, encoding='utf-8', xml_declaration=True)
-
-
-def _paginate_pdf() -> bool:
-    return str(QSettings().value("export/paginate_pdf", True)).lower() == "true"
 
 
 def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
@@ -202,29 +234,6 @@ def _write_a4_pdf(output: str, paths: tuple[str, ...]) -> None:
             svg.render(painter, QRectF((page.width() - w) / 2, 0, w, h))
     finally:
         painter.end()
-
-
-def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float:
-    """Measure the smallest SVG font against the physical export viewport."""
-    opener = gzip.open if str(path).lower().endswith(".svgz") else open
-    with opener(path, "rb") as source:
-        svg = source.read()
-    view_width, view_height = _view_box_size(io.BytesIO(svg))
-    sizes = map(float, re.findall(rb"font-size:\s*([\d.]+)px", svg))
-    return min(sizes, default=0.0) * 72 * min(1 / view_width, height_per_width / view_height)
-
-
-def svg_view_box_size(path: str | Path) -> tuple[float, float]:
-    opener = gzip.open if str(path).lower().endswith(".svgz") else open
-    with opener(path, "rb") as source:
-        return _view_box_size(source)
-
-
-def _view_box_size(source: BinaryIO | gzip.GzipFile) -> tuple[float, float]:
-    with_root = ET.iterparse(source, events=("start",))
-    _, root = cast(tuple[str, ET.Element], next(with_root))
-    _, _, width, height = map(float, root.attrib["viewBox"].replace(",", " ").split())
-    return width, height
 
 
 def _staged_files(prepared: object, staging: Path) -> dict[Path, Path]:
@@ -266,4 +275,4 @@ def _restore_files(
     return restored
 
 
-__all__ = ["PlotService", "PlotServiceError", "svg_view_box_size"]
+__all__ = ["PlotService", "PlotServiceError"]

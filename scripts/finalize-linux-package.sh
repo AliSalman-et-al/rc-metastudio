@@ -1,33 +1,68 @@
+#!/usr/bin/env bash
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
+set -euo pipefail
+
+if [ "$#" -ne 15 ]; then
+  echo "Linux finalization needs Python, the staged app, qualification directory, build R, two output paths and nine provenance fields." >&2
+  exit 2
+fi
+python_exe="$1"
+archive_root="$2"
+qualification_root="$3"
+r_home="$4"
+artifact_path="$5"
+evidence_path="$6"
+shift 6
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+artifact_dir="$(dirname -- "$artifact_path")"
+archive_member="$(basename -- "$archive_root")"
+smoke_log="$qualification_root/packaged-smoke.log"
+smoke_evidence="$qualification_root/packaged-smoke.json"
+hidden_r_home="$r_home-hidden"
+
+step() {
+  printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$1"
+}
+
+die() {
+  echo "$1" >&2
+  exit 1
+}
+
+[ ! -e "$hidden_r_home" ] || die "A hidden Linux build runtime already exists at $hidden_r_home."
 
 step "Creating the portable tar.gz"
 candidate_dir="$(mktemp -d "$artifact_dir/.linux-candidate.XXXXXX")"
-candidate_archive="$candidate_dir/$artifact_name.tar.gz"
+candidate_archive="$candidate_dir/$(basename -- "$artifact_path")"
 candidate_evidence="$candidate_dir/qualification.json"
-retain_failed_candidate() {
-  status=$?
-  if [ "$status" -ne 0 ]; then
+finish_candidate() {
+  local status=$?
+  if [ -d "$hidden_r_home" ] && ! mv "$hidden_r_home" "$r_home"; then
+    [ "$status" -ne 0 ] || status=1
+  fi
+  if [ "$status" -eq 0 ]; then
+    rmdir "$candidate_dir" || true
+  else
     cp -R "$qualification_root" "$candidate_dir/qualification" || true
   fi
   exit "$status"
 }
-trap retain_failed_candidate EXIT
-mkdir -p "$work_root/archive-staging"
-mv "$archive_root" "$work_root/archive-staging/$artifact_name"
+trap finish_candidate EXIT
 tar --sort=name --mtime='UTC 2020-01-01' --owner=0 --group=0 --numeric-owner \
-  -I 'gzip -9' -cf "$candidate_archive" -C "$work_root/archive-staging" "$artifact_name"
+  -I 'gzip -9' -cf "$candidate_archive" -C "$(dirname -- "$archive_root")" -- "$archive_member"
 
 
 step "Extracting the archive and running native package qualification"
 extract_root="$qualification_root/extracted"
 mkdir -p "$extract_root"
 tar -xzf "$candidate_archive" -C "$extract_root"
-extracted_root="$extract_root/$artifact_name"
+extracted_root="$extract_root/$archive_member"
 [ -x "$extracted_root/LaunchRCMetaStudio.sh" ] || die "Extracted Linux archive is missing its launcher."
-mv "$r_home" "$work_root/r-home-hidden"
+mv "$r_home" "$hidden_r_home"
 if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" \
-  "$python_exe" "$repo_root/scripts/assemble_packaged_smoke_evidence.py" \
+  "$python_exe" "$script_dir/assemble_packaged_smoke_evidence.py" \
   --workflow-observation "$qualification_root/workflow-observation.json" \
   --surface-records "$qualification_root/surface-records.json" \
   --sample-observations "$qualification_root/sample-observations.json" \
@@ -41,14 +76,13 @@ if ! env -u LD_LIBRARY_PATH xvfb-run -a env PATH="$extracted_root/R/bin" \
   --output "$smoke_evidence" \
   > "$qualification_root/packaged-smoke.stdout.log" \
   2> "$qualification_root/packaged-smoke.stderr.log"; then
-  mv "$work_root/r-home-hidden" "$r_home"
   die "Extracted package smoke failed; see $qualification_root/packaged-smoke.stderr.log."
 fi
-mv "$work_root/r-home-hidden" "$r_home"
+mv "$hidden_r_home" "$r_home"
 [ -s "$smoke_evidence" ] || die "Extracted package smoke did not produce evidence."
 
 step "Recording artifact identity and runtime qualification"
-"$python_exe" - "$candidate_archive" "$candidate_evidence" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$r_deb_sha256" "$cursor_library_sha256" "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc" <<'PY'
+"$python_exe" - "$candidate_archive" "$candidate_evidence" "$qualification_root/extracted-runtime-probe.json" "$smoke_evidence" "$@" <<'PY'
 import hashlib
 import json
 from pathlib import Path

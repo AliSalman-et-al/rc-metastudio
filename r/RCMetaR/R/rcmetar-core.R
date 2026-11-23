@@ -64,16 +64,16 @@ NULL
     pooling <- c(repeated, "bootstrap")
     method <- function(families, fit, parameters, pretty.names, overall=NULL,
                        feasible=NULL, workflows=pooling, raw.data=FALSE, regression=NULL,
-                       plots=NULL) {
+                       plots=NULL, requires.counts=FALSE) {
         list(families=families, workflows=workflows, fit=fit, overall=overall,
              parameters=parameters, pretty.names=pretty.names, feasible=feasible,
-             raw.data=raw.data, regression=regression, plots=plots)
+             raw.data=raw.data, regression=regression, plots=plots, requires.counts=requires.counts)
     }
-    ratio <- function(family, key, workflows=pooling, feasible=NULL) {
+    ratio <- function(family, key, workflows=pooling, feasible=NULL, requires.counts=FALSE) {
         force(key)
         descriptor <- method(family, function(data, params) ratio.analysis(data, params, key),
                              function() ratio.parameters(key), function() ratio.pretty.names(key),
-                             function(result) result$res, feasible, workflows)
+                             function(result) result$res, feasible, workflows, requires.counts=requires.counts)
         setNames(list(descriptor), key)
     }
     univariate.and.joint <- list(
@@ -82,10 +82,10 @@ NULL
             binary.fixed.inv.var.overall),
         binary.fixed.mh=method("binary", binary.fixed.mh,
             binary.fixed.mh.parameters, binary.fixed.mh.pretty.names,
-            binary.fixed.mh.overall, binary.fixed.mh.is.feasible),
+            binary.fixed.mh.overall, binary.fixed.mh.is.feasible, requires.counts=TRUE),
         binary.fixed.peto=method("binary", binary.fixed.peto,
             binary.fixed.peto.parameters, binary.fixed.peto.pretty.names,
-            binary.fixed.peto.overall, binary.fixed.peto.is.feasible, raw.data=TRUE),
+            binary.fixed.peto.overall, binary.fixed.peto.is.feasible, raw.data=TRUE, requires.counts=TRUE),
         binary.random=method("binary", binary.random,
             binary.random.parameters, binary.random.pretty.names, binary.random.overall),
         continuous.fixed=method("continuous", continuous.fixed,
@@ -97,17 +97,17 @@ NULL
             diagnostic.fixed.inv.var.overall, diagnostic.fixed.inv.var.is.feasible, repeated),
         diagnostic.fixed.mh=method("diagnostic", diagnostic.fixed.mh,
             diagnostic.fixed.mh.parameters, diagnostic.fixed.mh.pretty.names,
-            diagnostic.fixed.mh.overall, diagnostic.fixed.mh.is.feasible, repeated),
+            diagnostic.fixed.mh.overall, diagnostic.fixed.mh.is.feasible, repeated, requires.counts=TRUE),
         diagnostic.fixed.peto=method("diagnostic", diagnostic.fixed.peto,
             diagnostic.fixed.peto.parameters, diagnostic.fixed.peto.pretty.names,
-            diagnostic.fixed.peto.overall, diagnostic.fixed.peto.is.feasible, repeated),
+            diagnostic.fixed.peto.overall, diagnostic.fixed.peto.is.feasible, repeated, requires.counts=TRUE),
         diagnostic.random=method("diagnostic", diagnostic.random,
             diagnostic.random.parameters, diagnostic.random.pretty.names,
             diagnostic.random.overall, diagnostic.random.is.feasible, repeated),
         diagnostic.reitsma=method("diagnostic", diagnostic.reitsma,
             diagnostic.reitsma.parameters, diagnostic.reitsma.pretty.names,
             feasible=diagnostic.reitsma.is.feasible, workflows=c("standard", "meta-regression"),
-            raw.data=TRUE,
+            raw.data=TRUE, requires.counts=TRUE,
             regression=function(data, params, cond.means.data, stop.at.rma)
                 diagnostic.reitsma.meta.regression(data, params, stop.at.rma),
             plots=c(standard="sroc", "meta-regression"="reitsma_coefficient")),
@@ -121,7 +121,7 @@ NULL
         ratio("event_rates", "event_rates.fixed"),
         ratio("event_rates", "event_rates.random"),
         ratio("event_rates", "event_rates.mh", repeated,
-              function(data, metric) ratio.mh.feasible(data))
+              function(data, metric) ratio.mh.feasible(data), requires.counts=TRUE)
     )
 }
 
@@ -258,9 +258,14 @@ rcmetar.create.diagnostic.data <- function(TP=numeric(), FN=numeric(), TN=numeri
     )
 }
 
+.rcmetar.complete.raw.rows <- function(required, study.count) {
+    if (study.count == 0L || any(lengths(required) != study.count)) return(logical())
+    Reduce(`&`, lapply(required, is.finite), init=rep(TRUE, study.count))
+}
+
 .rcmetar.has.complete.raw.data <- function(required, study.count) {
-    study.count > 0 && all(vapply(required, function(x)
-        length(x) == study.count && all(is.finite(x)), logical(1)))
+    complete <- .rcmetar.complete.raw.rows(required, study.count)
+    length(complete) > 0L && all(complete)
 }
 
 rcmetar.prepare.analysis.data <- function(om.data, params) {
@@ -271,9 +276,6 @@ rcmetar.prepare.analysis.data <- function(om.data, params) {
     switch(
         data.type,
         binary={
-            # Raw counts are authoritative whenever the complete row is
-            # available.  Entered effects remain untouched for effect-only
-            # rows, which is important for imported analyses without counts.
             measure <- as.character(params$measure %||% "")
             required <- if (measure %in% binary.one.arm.metrics) {
                 list(om.data@g1O1, om.data@g1O2)
@@ -285,7 +287,7 @@ rcmetar.prepare.analysis.data <- function(om.data, params) {
         },
         continuous=.rcmetar.prepare.continuous.data(om.data, params, study.count),
         diagnostic={
-            required <- list(om.data@TP, om.data@FN, om.data@TN, om.data@FP)
+            required <- .rcmetar.diagnostic.counts(om.data)
             has.raw <- .rcmetar.has.complete.raw.data(required, study.count)
             if (isTRUE(has.raw) && !is.null(params$measure)) compute.diag.point.estimates(om.data, params) else om.data
         }
@@ -407,11 +409,16 @@ rcmetar.continuous.study.effect <- function(n1, m1, sd1, se1=NULL, n2=NULL, m2=N
 rcmetar.diagnostic.study.effects <- function(tp, fn, fp, tn, metrics=c("Spec", "Sens"), conf.level=95) {
     conf.level <- validate.conf.level(conf.level)
     diagnostic.data <- new("DiagnosticData", TP=c(tp), FN=c(fn), TN=c(tn), FP=c(fp))
+    .rcmetar.diagnostic.study.effects(.rcmetar.diagnostic.counts(diagnostic.data), metrics, conf.level)
+}
+
+.rcmetar.diagnostic.study.effects <- function(counts, metrics, conf.level) {
+    observed <- !vapply(counts, is.null, logical(1))
+    counts[observed] <- .rcmetar.correct.counts(counts[observed], 0.5, "only0")
     effects <- list()
     for (metric in metrics) {
-        prepared <- compute.diag.point.estimates(diagnostic.data,
-            list(to="only0", measure=metric, conf.level=conf.level, adjust=0.5))
-        result <- metafor::rma.uni(yi=prepared@y, sei=prepared@SE, method="FE", level=conf.level)
+        quantities <- .rcmetar.diagnostic.effect.quantities(counts, list(measure=metric))
+        result <- metafor::rma.uni(yi=quantities$y, sei=quantities$se, method="FE", level=conf.level)
         calc.scale <- c(result$b[[1]], result$ci.lb[[1]], result$ci.ub[[1]])
         effects[[metric]] <- list(
             calc_scale=calc.scale,
@@ -556,7 +563,6 @@ rcmetar.run.analysis <- function(om.data, request=NULL, method=NULL, params=list
         stop.at.rma=stop.at.rma
     )
 
-    # Peto and Reitsma delegate count transformation to the fit authority.
     selected.method <- .rcmetar.method.registry()[[request$method]]
     if (!selected.method$raw.data) {
         om.data <- rcmetar.prepare.analysis.data(om.data, request$params)

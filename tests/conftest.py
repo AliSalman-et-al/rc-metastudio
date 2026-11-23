@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-# Python verification tests inject a local fake at the R bridge seam.
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +29,6 @@ def _get_qapplication():
     app = QtWidgets.QApplication.instance()
     if app is None:
         app = QtWidgets.QApplication([])
-    # Match desktop startup: install the application style before any widgets.
     from rc_metastudio.qt_layout import configure_application_controls
 
     configure_application_controls(app)

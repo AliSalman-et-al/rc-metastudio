@@ -28,7 +28,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
-from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text, r_worker
+from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text, r_operations, r_worker
 from rc_metastudio.analysis import (
     catalog as analysis_catalog,
     identity as analysis_identity,
@@ -56,11 +56,10 @@ from rc_metastudio.results.plot_text import (
 )
 from rc_metastudio.analysis.catalog import (
     ALL_METRIC_NAMES, CONTINUOUS, DIAGNOSTIC_METRIC_GROUPS, ONE_ARM_METRICS,
-    RATIO_DATA_TYPES, RAW_COUNT_METHODS, REITSMA_METHOD,
+    REITSMA_METHOD,
     TWO_ARM_METRICS,
 )
 from rc_metastudio.analysis.validation import ANALYSIS_DIGITS_MAX, ANALYSIS_DIGITS_MIN, ANALYSIS_NON_NEGATIVE_FLOAT_PARAMS, ANALYSIS_NUMERIC_MAX, ANALYSIS_NUMERIC_MIN, CONFIDENCE_LEVEL_DISPLAY_MAX, parse_plot_bound, is_valid_plot_tick_list, validate_analysis_digits, validate_analysis_float, validate_confidence_level, validate_correction_factor
-from rc_metastudio.settings import analysis_output_path
 from rc_metastudio.qt_object_guard import required
 
 if TYPE_CHECKING:
@@ -167,7 +166,7 @@ class _DiagnosticMethodPanel(object):
         self._method_changed()
 
     def _method_changed(self, saved=None):
-        definitions, defaults, order, metadata = self.owner.analysis_service.parameters(
+        definitions, defaults, order, metadata = r_operations.get_params(
             self.method
         )
         self.definitions = definitions
@@ -202,17 +201,18 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         diagnostic_metrics=None,
         diagnostic_analysis_details=None,
         confidence_level=None,
-        analysis_service=None,
         initial_settings=None,
         *,
         on_result: "AnalysisResultHandler | None" = None,
+        on_pooled_fit: "Callable[[Sheet, PooledAnalysis], None] | None" = None,
         source_sheet: "Sheet | None" = None,
         replaces: QtWidgets.QWidget | None = None,
     ):
 
         super(AnalysisSetupDialog, self).__init__(parent)
-        self.analysis_service = analysis_service or analysis_adapter.AnalysisService()
+        self._raw_count_methods: set[str] = set()
         self._on_result = on_result
+        self._on_pooled_fit = on_pooled_fit
         self._replaces = replaces
         self._rerun_source_sheet = source_sheet
         self.setupUi(self)
@@ -362,7 +362,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                      fixed_effects=self.fixed_effects_radio.isChecked())
         if self._combined_diagnostic:
             saved["lr_dor"] = (self.lr_dor_panel.method, copy.deepcopy(self.lr_dor_panel.params))
-        parent, service = self.parentWidget(), self.analysis_service
+        parent = self.parentWidget()
         on_result = self._on_result
         workflow, metrics = self.analysis_type, self.diagnostic_metrics
         details = copy.deepcopy(self.diagnostic_analysis_details)
@@ -378,21 +378,16 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             form = AnalysisSetupDialog(model, parent=parent, analysis_type=workflow,
                 external_params=restored["parameters"], diagnostic_metrics=metrics,
                 diagnostic_analysis_details=copy.deepcopy(details), confidence_level=confidence,
-                analysis_service=service, initial_settings=restored, on_result=on_result,
+                initial_settings=restored, on_result=on_result,
                 source_sheet=source_sheet, replaces=origin)
             form.show()
 
         return reopen
 
     def _initialize_controls(self, external_params, analysis_type):
-        # Method controls must fit inside the adaptive viewport. An
-        # outer horizontal scrollbar would hide the estimator control on
-        # narrow first-use dialog sizes.
         self.content_scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        # Preserve natural row heights, but let wrapping forms negotiate their
-        # width down to the viewport instead of exporting unwrapped text widths.
         for widget in (self.content_scroll_area_widget, self.specs_tab,
                        self.methods_tab, self.parameter_grp_box):
             # layout-audit: allow=content-overflow-control; reason=scroll content retains vertical minima while fitting the viewport width
@@ -436,7 +431,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.analysis_type = analysis_type
         self.is_meta_regression = analysis_type == "meta-regression"
         plot_kind = "reg" if self.is_meta_regression else "forest"
-        self._fit_output_stem = analysis_output_path(f"{uuid4().hex}-{plot_kind}")
+        self._fit_output_stem = f"{uuid4().hex}-{plot_kind}"
         self._setup_plot_controls()
         self._load_plot_params()
 
@@ -447,7 +442,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if confidence_level is None:
             raise ValueError("Specify a confidence level before running the analysis.")
         self.confidence_level = validate_confidence_level(confidence_level)
-        self.data_type = self.model.get_current_data_type()
+        self.data_type = self.model.get_current_family()
         self.current_widgets = []
         self.current_method = ""
         self.current_params: dict[str, object] = {}
@@ -556,8 +551,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         layout.activate()
 
     def _active_content_height(self):
-        # QTabWidget's hint includes hidden pages, even when their size policy
-        # is Ignored. Measure the selected layout instead of the entire stack.
         page = required(self.specs_tab.currentWidget(), "active analysis tab")
         layout = required(page.layout(), "active analysis layout")
         height = (layout.totalHeightForWidth(page.width()) if layout.hasHeightForWidth()
@@ -736,7 +729,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _configure_plot_option_groups(self):
         workflow = self.analysis_type or "standard"
-        capabilities = self.analysis_service.plot_capabilities(
+        capabilities = r_operations.get_analysis_plot_capabilities(
             self.data_type, self.current_method, workflow=workflow
         )
         plot_kinds = [str(capability["plot_kind"]) for capability in capabilities]
@@ -925,7 +918,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             if missing_inputs:
                 self._show_analysis_error(missing_inputs)
                 return
-            result = self._execute_with_progress(requests, regression)
+            result = regression() if regression is not None else self._execute_requests(requests)
             if result is None:
                 return
             pooled_fit = self._pooled_fit_for_sheet(requests, source_sheet)
@@ -941,14 +934,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return
         finally:
             run_button.setEnabled(True)
-        if source_sheet is not None and pooled_fit is not None:
-            source_sheet.last_meta_analysis = pooled_fit
+        if source_sheet is not None and pooled_fit is not None and self._on_pooled_fit is not None:
+            self._on_pooled_fit(source_sheet, pooled_fit)
         self.done(QDialog.DialogCode.Accepted.value)
         shown = on_result(result, source_sheet=source_sheet, change_settings=change_settings, manuscript=manuscript)
         self._close_replaced_result(shown)
-
-    def _execute_with_progress(self, requests, regression: Callable[[], AnalysisResult] | None):
-        return regression() if regression is not None else self._execute_requests(requests)
 
     def _close_replaced_result(self, shown) -> None:
         if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
@@ -982,7 +972,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             return ("No studies are included. Select Include for at least one study with complete data."
                     if not self.model.get_studies() else "No included study has values for the selected covariates.")
         selected_ids = {study.id for study in studies}
-        ratio_input = self.model.get_current_data_type(get_str=False) in RATIO_DATA_TYPES
+        ratio_input = self.model.get_current_family() in ("time_to_event", "event_rates")
         arm_inputs = {
             "binary": "events and totals",
             "continuous": "sample size, mean, and standard deviation",
@@ -1033,7 +1023,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 has_raw and has_effect
                 and study.analysis_unit.ratio_input(self.model.arm_names).selected_source(raw, metric=request.metric) == "raw"
             )
-        if has_raw or (has_effect and request.method not in RAW_COUNT_METHODS):
+        if has_raw or (has_effect and request.method not in self._raw_count_methods):
             return None
         return absent
 
@@ -1046,7 +1036,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         else:
             parts = self._describe_missing_arm_fields(fields, absent, arm_inputs)
         inputs = ", ".join(parts)
-        if request.method not in RAW_COUNT_METHODS:
+        if request.method not in self._raw_count_methods:
             estimate = "an estimate with its confidence interval or standard error"
             return f"{inputs}, or {estimate}" if inputs else estimate
         if not inputs and ratio_input:
@@ -1352,10 +1342,11 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.method_changed()
 
     def _methods_for_metrics(self, metrics):
-        return dict(self.analysis_service.available_methods(
-            model=self.model, for_data_type=self.data_type, metrics=metrics,
-            workflow=self.analysis_type,
-        ))
+        choices = r_operations.available_model_methods(
+            self.model, self.data_type, metrics, workflow=self.analysis_type or "standard",
+        )
+        self._raw_count_methods.update(method for method, choice in choices.items() if choice.requires_raw_counts)
+        return {method: choice.label for method, choice in choices.items()}
 
     def _method_query_metrics(self):
         if self.data_type != "diagnostic":
@@ -1439,9 +1430,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.parameter_grp_box.setLayout(parameter_layout)
         if not isinstance(parameter_layout, QGridLayout):
             raise TypeError("Analysis parameters require a grid layout")
-        # Labels keep their natural width; value editors consume the remaining
-        # method-panel width instead of forcing the panel wider than its
-        # adaptive viewport.
         parameter_layout.setColumnStretch(0, 0)
         parameter_layout.setColumnStretch(1, 1)
         return parameter_layout
@@ -1698,8 +1686,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _configure_method_selector(self, widget):
         adaptive_controls.configure_choice_control(widget, visible_characters=48)
-        # Unlike parameter editors, the primary method selector determines the
-        # dialog's useful preferred width and must keep its readable size hint.
         widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, widget.sizePolicy().verticalPolicy()
         )
@@ -1729,8 +1715,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         active_page = self.specs_tab.currentWidget()
         assert active_page is not None
         content_height = self._active_content_height()
-        # Method changes stay inside the scroll body. Explicit disclosure of
-        # Advanced controls may grow the dialog while preserving its placement.
         if not self.isVisible() or resize_window:
             position = self.pos()
             previous_size = self.size()
@@ -1834,7 +1818,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def setup_params(self):
         self.current_params, self.current_defaults, self.var_order, self.param_d = (
-            self.analysis_service.parameters(self.current_method)
+            r_operations.get_params(self.current_method)
         )
 
         self._method_defaults = dict(self.current_defaults)
@@ -1865,7 +1849,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         self.setWindowTitle("Method and parameters")
         self.method_lbl.setText(diagnostic_metric_group_display_label("sens_spec") + " method")
 
-        # Stack the method panels while keeping labels beside their selectors.
         for widget in (self.lr_dor_method_lbl, self.lr_dor_method_cbo_box,
                        self.lr_dor_parameter_grp_box, self.shared_diagnostic_params_box):
             self.gridLayout.removeWidget(widget)
@@ -1962,9 +1945,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         params.update(_present_values(shared, self.current_param_vals))
         local_names = set(definitions).difference(SHARED_DIAGNOSTIC_PARAMS)
         params.update(_present_values(local_names, local_params))
-        # Subgroup selection is workflow state, not a method parameter. Keep it
-        # on each filtered request so combined diagnostic panels use the same
-        # subgroup while retaining per-method parameter filtering above.
         for key in ("cov_name", "cum_sequence"):
             if key in self.current_param_vals:
                 params[key] = self.current_param_vals[key]
@@ -1982,7 +1962,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
         window_title = ""
         if self.is_meta_regression:
-            # Reitsma estimates the joint random-effects model directly.
             self.regression_model_group.hide()
             window_title = "Reitsma meta-regression"
         elif self._combined_diagnostic:
@@ -2171,8 +2150,6 @@ def _diagnostic_pending_requests(specs_form):
         for metric in ordered_metrics
         if metric in specs_form.diagnostic_analysis_details
     ]
-    # Sensitivity and specificity are one Reitsma request.  The pair is a
-    # request-only joint metric and is never persisted as a project effect.
     joint = None
     if "Sens" in configured and "Spec" in configured:
         sens_details = specs_form.diagnostic_analysis_details["Sens"]

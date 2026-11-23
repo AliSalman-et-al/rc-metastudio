@@ -58,7 +58,6 @@ def run(app, window, record):
     compare_authority(view, authority(window, 'continuous', 'DL', 'z', 95), 'continuous', record)
     view.close()
 
-    # CSV's visible preview and production import must preserve all float digits.
     csv = work / 'precision.csv'
     headers = ['Study Name', 'Year', 'Intervention N', 'Intervention Mean', 'Intervention SD', 'Control N', 'Control Mean', 'Control SD', 'SMD', 'Lower', 'Upper']
     csv.write_text(','.join(headers) + '\n' + '\n'.join(

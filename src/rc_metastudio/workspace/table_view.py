@@ -51,8 +51,6 @@ class DatasetTableView(QtWidgets.QTableView):
     covariateRenameRequested = pyqtSignal(object)
     covariateDeletionRequested = pyqtSignal(object)
     covariateConversionRequested = pyqtSignal(object)
-    undoRequested = pyqtSignal()
-    redoRequested = pyqtSignal()
     pasteNotice = pyqtSignal(str)
     clipboardError = pyqtSignal(str)
 
@@ -181,6 +179,7 @@ class DatasetTableView(QtWidgets.QTableView):
     def _end_column_schema_change(self, *_args):
         self._apply_column_visibility()
         self._column_widths.end_schema_change()
+        self.refresh_study_calculator()
 
     def synchronize_column_widths(self, *_args):
         self._apply_column_visibility()
@@ -336,16 +335,8 @@ class DatasetTableView(QtWidgets.QTableView):
             if event.key() in (QtCore.Qt.Key.Key_Tab, QtCore.Qt.Key.Key_Backtab):
                 QWidget.focusNextPrevChild(self, event.key() != QtCore.Qt.Key.Key_Backtab and not event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier)
                 event.accept()
-            elif event.key() == QtCore.Qt.Key.Key_Z:
-                self.undoRequested.emit()
-            elif event.key() == QtCore.Qt.Key.Key_Y:
-                self.redoRequested.emit()
             elif event.key() == QtCore.Qt.Key.Key_D:
                 self.fill_down()
-            elif event.key() == QtCore.Qt.Key.Key_C:
-                self.copy()
-            elif event.key() == QtCore.Qt.Key.Key_V:
-                self.paste()
             elif event.key() == QtCore.Qt.Key.Key_A:
                 self.selectAll()
                 event.accept()
@@ -378,50 +369,14 @@ class DatasetTableView(QtWidgets.QTableView):
         if model is None or selection_model is None:
             return False
 
-        indexes = selection_model.selectedIndexes()
-        if not indexes:
-            indexes = [self.currentIndex()]
-
-        editable_indexes = []
-        seen = set()
-        for index in indexes:
-            if index is None or not index.isValid():
-                continue
-            key = (index.row(), index.column())
-            if key in seen:
-                continue
-            seen.add(key)
-            if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
-                editable_indexes.append(index)
-
-        if not editable_indexes:
-            return False
-
-        def clear():
-            for index in editable_indexes:
-                model.setData(index, "")
-            model.reset_model()
-        required(self.edit_transaction, "workspace edit transaction")(clear)
-        return True
+        indexes = selection_model.selectedIndexes() or [self.currentIndex()]
+        return model.clear_cells(indexes)
 
     def fill_down(self):
+        model = self.model()
         selection = self.selectionModel()
-        if selection is None:
-            return
-        indexes = selection.selectedIndexes()
-        if not indexes:
-            return
-        columns = sorted({index.column() for index in indexes})
-        def fill():
-            model = self.model()
-            for column in columns:
-                rows = sorted(index.row() for index in indexes if index.column() == column)
-                value = model.data(model.index(rows[0], column), Qt.ItemDataRole.EditRole)
-                for row in rows[1:]:
-                    index = model.index(row, column)
-                    if model.flags(index) & Qt.ItemFlag.ItemIsEditable:
-                        model.setData(index, value)
-        required(self.edit_transaction, "workspace edit transaction")(fill)
+        if model is not None and selection is not None:
+            model.fill_cells(selection.selectedIndexes())
 
     def _move_current_index_vertically(self, row_delta):
         self._move_index_vertically_from(self.currentIndex(), row_delta)
@@ -472,7 +427,7 @@ class DatasetTableView(QtWidgets.QTableView):
             arm_names = self.model().arm_names
             current_effect = self.model().current_effect
             arm_key = self.model().get_current_arm_key()
-            data_type = self.model().get_current_data_type()
+            data_type = self.model().get_current_family()
             study_name = self.model()._study_for_row(row).label
 
             if data_type == "binary":
@@ -543,7 +498,6 @@ class DatasetTableView(QtWidgets.QTableView):
 
         new_content = self._str_to_matrix(clipboard_text)
 
-        # Drop a trailing blank row commonly included in copied spreadsheet data.
         if new_content and new_content[-1] == [""]:
             new_content = new_content[:-1]
         if not any(new_content):

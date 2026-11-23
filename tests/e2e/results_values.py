@@ -17,6 +17,7 @@ from tests.sample_projects import SAMPLE_FILES
 
 def run(app, window, work, root, record, analyze):
     from rc_metastudio import r_operations
+    from rc_metastudio.results.r_presentation import _structured_matrix
     from tests.e2e.analysis_presentation_workflows import analyze_existing
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     # Failure obligations at the real R/Python boundary: residue and tiny values,
@@ -31,7 +32,7 @@ def run(app, window, work, root, record, analyze):
       RCMetaR:::rcmetar.table(x, "supporting")
     })''')
     from rc_metastudio.results.contract import _report_content
-    _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [r_operations._structured_matrix('Boundary', edge, [], first_row_headers=True)]})
+    _, parsed, _, _ = _report_content({'paragraphs': [], 'tables': [_structured_matrix('Boundary', edge, [], first_row_headers=True)]})
     cells = parsed[0].quantities[0]
     assert [q[0].value for q in cells] == [2.2e-17, 1e-19, math.inf, 1e-8, None]
     try:
@@ -47,7 +48,7 @@ def run(app, window, work, root, record, analyze):
       transform <- RCMetaR:::rcmetar.transform.by.name("binary.transform.f", "PFT")
       RCMetaR:::rcmetar.summary.prediction(fit, params, transform, NULL, 3)$interval
     })''')
-    _, parsed_pft, _, _ = _report_content({'paragraphs': [], 'tables': [r_operations._structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
+    _, parsed_pft, _, _ = _report_content({'paragraphs': [], 'tables': [_structured_matrix('PFT prediction', pft, [], first_row_headers=True)]})
     pft_quantities = [q for row in parsed_pft[0].quantities for cell in row for q in cell]
     assert {q.role for q in pft_quantities} == {'pi_lower', 'pi_upper'}
     assert all(q.scale == 'freeman-tukey' and q.level == 90.0 for q in pft_quantities)

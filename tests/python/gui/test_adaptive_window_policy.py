@@ -97,14 +97,6 @@ def test_workspace_roles_apply_maximized_or_eighty_percent_first_use(qapp):
     assert main.windowState() & QtCore.Qt.WindowState.WindowMaximized
     assert results.windowState() & QtCore.Qt.WindowState.WindowMaximized
     assert edit_dataset.frameGeometry().size() == QtCore.QSize(800, 640)
-    assert (
-        adaptive_window.adaptive_window_state(edit_dataset).policy.archetype
-        is adaptive_window.WindowArchetype.WORKSPACE
-    )
-    assert (
-        adaptive_window.adaptive_window_state(edit_dataset).role
-        is adaptive_window.WindowRole.EDIT_DATASET
-    )
 
 
 def test_unparented_workspace_uses_active_screen_before_maximizing(qapp):

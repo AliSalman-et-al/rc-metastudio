@@ -41,7 +41,6 @@ INVOCATION_DIR = Path.cwd()
 APPLICATION_DATA = WORK / "appdata"
 sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
 
-# Keep preferences and working artifacts out of the user's normal workspace.
 QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
 QtCore.QSettings.setPath(
     QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, str(WORK)
@@ -285,7 +284,7 @@ def doctor(app, window):
         "application_base_path": settings.get_base_path(),
         "working_directory": str(INVOCATION_DIR),
         "r_working_directory": str(r_working_directory),
-        "analysis_scratch_path": settings.get_r_tmp_path(),
+        "analysis_scratch_path": str(settings.analysis_scratch().root),
     }
     if EVIDENCE is not None:
         (EVIDENCE / "runtime.json").write_text(
@@ -307,7 +306,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
     else:
         window.action_go.trigger()
     app.processEvents()
-    if window.model.get_current_data_type() == "diagnostic":
+    if window.model.get_current_family() == "diagnostic":
         metrics = next(
             w
             for w in app.topLevelWidgets()
@@ -731,17 +730,27 @@ def sheets_persist(app, window):
     table = window.tableView
     model = window.model
     original = copy.deepcopy(dataset_to_project(model.dataset)["sheets"][0])
-    table.setFocus()
-    selection = QtCore.QItemSelection(model.index(0, model.NAME), model.index(0, model.columnCount() - 1))
-    table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
-    key_click(table, QtCore.Qt.Key.Key_C, QtCore.Qt.KeyboardModifier.ControlModifier)
-    assert app.clipboard().text()
-    tabs.setCurrentIndex(2)
-    table.setCurrentIndex(model.index(0, model.NAME))
-    table.setFocus()
-    key_click(table, QtCore.Qt.Key.Key_V, QtCore.Qt.KeyboardModifier.ControlModifier)
-    app.processEvents()
-    assert model.rowCount() > 1
+    source_study = model.data(model.index(0, model.NAME))
+    assert source_study
+    clipboard = app.clipboard()
+    saved_clipboard = QtCore.QMimeData()
+    mime_data = clipboard.mimeData()
+    if mime_data is not None:
+        for mime in mime_data.formats():
+            saved_clipboard.setData(mime, mime_data.data(mime))
+    try:
+        selection = QtCore.QItemSelection(model.index(0, model.NAME), model.index(0, model.columnCount() - 1))
+        table.selectionModel().select(selection, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
+        window.action_copy.trigger()
+        tabs.setCurrentIndex(2)
+        destination_cell = model.index(0, model.NAME)
+        table.setCurrentIndex(destination_cell)
+        table.selectionModel().select(destination_cell, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
+        window.action_paste.trigger()
+        app.processEvents()
+        assert model.data(model.index(0, model.NAME)) == source_study
+    finally:
+        clipboard.setMimeData(saved_clipboard)
     table.setCurrentIndex(model.index(0, model.NAME))
     table.edit(table.currentIndex())
     app.processEvents()
@@ -829,7 +838,7 @@ def sheets_swap(app, window):
         for iteration in range(3):
             assert window.action_swap_arms.isEnabled()
             with observe_fit() as fit:
-                view = analyze(app, window, model.get_current_data_type() + ".random")
+                view = analyze(app, window, model.get_current_family() + ".random")
             if metric in ("OR", "RD", "MD"):
                 load_saved_analysis(next(iter(view.results.image_params_paths.values())))
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
@@ -897,7 +906,7 @@ def sheets_legacy(app, window):
         for index, row in enumerate(rows):
             window.sheet_tabs.setCurrentIndex(index)
             view = analyze(app, window, row["method"], estimator="DL", diagnostic_metrics=("sens", "spec", "dor")
-                           if window.model.get_current_data_type() == "diagnostic" else None)
+                           if window.model.get_current_family() == "diagnostic" else None)
             actual = parsed_numeric_sections(view.results)
             assert actual == row["sections"], (filename, actual, row["sections"])
             record_step("legacy-original-numerics", view, file=filename, sha256=digest, sections=actual)
@@ -1281,7 +1290,6 @@ def editing(app, window):
         str(window.model.data(window.model.index(0, window.model.NAME)))
         == "München – edited"
     )
-    # A malformed project must leave the current document and save path intact.
     broken = WORK / "broken.rcms"
     broken.write_bytes(b"not a project")
     with patch.object(
@@ -2104,10 +2112,16 @@ def calculator(app, window, family):
     analyze(app, window, method).close()
 
 
+def _focus_workspace_grid(app, window):
+    if app.platformName() == "offscreen" and app.activeWindow() is not window:
+        app.setActiveWindow(window)
+    window.tableView.setFocus()
+    app.processEvents()
+
+
 def grid_entry(app, window):
     from rc_metastudio import main_wizard
     from PyQt6 import QtCore, QtWidgets
-    # Use the real wizard, clipboard, delegate and workspace history.
     def create():
         dialog = app.activeModalWidget()
         dialog.currentPage().twoarm_proportions_Button.click()
@@ -2118,6 +2132,7 @@ def grid_entry(app, window):
         dialog.button(QtWidgets.QWizard.WizardButton.FinishButton).click()
     QtCore.QTimer.singleShot(100, create)
     window.action_new_dataset.trigger()
+    _focus_workspace_grid(app, window)
     table = window.tableView
     fixture = (ROOT / "tests/e2e/fixtures/hillclimb/binary.tsv").read_text()
     rows = [line.split("\t") for line in fixture.strip().splitlines()]
@@ -2300,6 +2315,7 @@ def hillclimb(app, window):
         text(field, "Mortality")
         click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
     modal(main_wizard.MainWizard, create, lambda: action(window.action_new_dataset))
+    _focus_workspace_grid(app, window)
     fixture = ROOT / "tests/e2e/fixtures/hillclimb/binary.tsv"
     app.clipboard().setText(fixture.read_text().rstrip("\n"))
     index = window.model.index(0, window.model.NAME)
@@ -2360,7 +2376,6 @@ def hillclimb(app, window):
     end(bias)
     bias.close()
 
-    # T4 starts from the committed populated diagnostic project, as PLAN specifies.
     window.workspace.mark_saved()
     assert window.open(str(ROOT / "tests/fixtures/desktop-projects/lymph.rcms"), raise_on_error=True)
     begin("T4")
@@ -2368,7 +2383,6 @@ def hillclimb(app, window):
     end(diagnostic)
     diagnostic.close()
 
-    # Restore T1 input for manuscript export; setup is excluded.
     window.workspace.mark_saved()
     assert window.open(str(WORK / "hillclimb-t1.rcms"), raise_on_error=True)
     basic = analyze(app, window, "binary.random")

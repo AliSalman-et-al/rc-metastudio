@@ -2,6 +2,7 @@
 """Publication export controls and physical size validation."""
 
 import math
+from dataclasses import dataclass
 from collections.abc import Callable
 
 from PyQt6.QtCore import QSettings, QSignalBlocker, QTimer
@@ -9,8 +10,19 @@ from rc_metastudio.qt_object_guard import required
 from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 from PyQt6.QtWidgets import QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QLabel, QPushButton, QSpinBox
 
-from rc_metastudio.results.plot_service import RASTER_MAX_DIMENSION, RASTER_MAX_PIXELS
+from rc_metastudio.results.plot_geometry import A4_CONTENT_HEIGHT_INCHES, raster_dpi_limit
 from rc_metastudio.settings import load_plot_export_format, save_plot_export_format
+
+
+@dataclass(frozen=True, slots=True)
+class PlotExportSelection:
+    extension: str
+    width: float
+    height: float
+    dpi: int
+    include_title: bool
+    paginate_pdf: bool
+    forest_dimensions: tuple[float, float] | None
 
 
 class PlotExportDialog(QDialog):
@@ -165,16 +177,7 @@ class PlotExportDialog(QDialog):
 
     def _largest_dpi(self, width: float) -> int:
         height = self.forest_dimensions[0] if self.forest_dimensions is not None else width * self.ratio
-        dpi = min(self.dpi.maximum(), math.floor(min(
-            RASTER_MAX_DIMENSION / max(width, height),
-            math.sqrt(RASTER_MAX_PIXELS / (width * height)),
-        )))
-        while dpi > 0:
-            w, h = math.ceil(width * dpi), math.ceil(height * dpi)
-            if max(w, h) <= RASTER_MAX_DIMENSION and w * h <= RASTER_MAX_PIXELS:
-                break
-            dpi -= 1
-        return dpi
+        return raster_dpi_limit(width, height, self.dpi.maximum())
 
     def _refresh(self):
         width, height, dpi = self.dimensions()
@@ -183,8 +186,9 @@ class PlotExportDialog(QDialog):
         self.height_label.setText("Measuring…" if pending else f'{height * self.unit_factor():.2f} {self.units.currentText()}')
         raster = self.format_control.currentData() in ('png', 'tiff')
         self._refresh_save_controls(dpi, blocked=blocked, raster=raster)
-        self.paginate_pdf.setVisible(self.resizable and self.format_control.currentData() == "pdf"
-                                     and not blocked and height > 267 / 25.4)
+        self.paginate_pdf.setVisible(self.resizable and self._forest_geometry is not None
+                                     and self.format_control.currentData() == "pdf"
+                                     and not blocked and height > A4_CONTENT_HEIGHT_INCHES)
         self.dpi.setEnabled(self.resizable and raster)
         self.pixel_label.setVisible(raster and not blocked)
         self.pixel_label.setText(f'{math.ceil(width * dpi):,} × {math.ceil(height * dpi):,} pixels')
@@ -227,6 +231,13 @@ class PlotExportDialog(QDialog):
         width = self._width_inches
         height = self.forest_dimensions[0] if self.forest_dimensions is not None else width * self.ratio
         return width, height, self.dpi.value()
+
+    def selection(self) -> PlotExportSelection:
+        width, height, dpi = self.dimensions()
+        return PlotExportSelection(
+            self.format_control.currentData(), width, height, dpi,
+            self.include_title.isChecked(), self.paginate_pdf.isChecked(), self.forest_dimensions,
+        )
 
     def accept(self):
         if self._measure_timer.isActive():

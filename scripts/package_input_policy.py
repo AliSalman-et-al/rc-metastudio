@@ -103,7 +103,6 @@ def desktop_parts(patterns: set[str]) -> dict[str, str]:
         return {str(shard): "" for shard in DESKTOP_SHARDS}
     if not patterns:
         return {}
-    # Same ordering and duration lookup as the pytest collection hook.
     durations = json.loads((ROOT / "config/desktop-durations.json").read_text(encoding="utf-8"))
     nodes = [f"[{scenario}]" for scenario in QUALIFICATION_SCENARIOS]
     bins, _ = partition(nodes, durations)

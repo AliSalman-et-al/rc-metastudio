@@ -7,8 +7,11 @@ from rc_metastudio.domain_ids import ArmId, SheetId
 
 import json
 import os
+from dataclasses import replace
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
+from uuid import UUID
 from PyQt6 import QtCore, QtGui, QtWidgets, sip
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import (
@@ -49,6 +52,7 @@ from rc_metastudio import name_validation
 from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project import archive as project_format
 from rc_metastudio.importing import tabular as csv_import
+from rc_metastudio.importing.materialize import populate_imported_sheet
 from rc_metastudio.workspace import editing as workspace_editing
 from rc_metastudio.settings import (
     add_file_to_recent_files,
@@ -83,7 +87,7 @@ from rc_metastudio import main_wizard
 from rc_metastudio import about_legal_dialog
 
 from rc_metastudio.results.contract import AnalysisResult
-from rc_metastudio.workspace.session import WorkspaceSession
+from rc_metastudio.workspace.session import SheetAttachment, WorkspaceSession
 
 
 DEFAULT_DATASET_NAME = "untitled_dataset"
@@ -266,7 +270,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.analysis_service = analysis_adapter.AnalysisService()
         self.small_study_effects_service = small_study_effects.SmallStudyEffectsService()
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.setupUi(self)
@@ -426,8 +429,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             (self.tableView.covariateRenameRequested, self.rename_covariate),
             (self.tableView.covariateDeletionRequested, self.delete_covariate),
             (self.tableView.covariateConversionRequested, self.change_covariate_type),
-            (self.tableView.undoRequested, self.undo),
-            (self.tableView.redoRequested, self.redo),
             (self.tableView.pasteNotice, self._show_paste_notice),
             (self.tableView.clipboardError, self.data_error),
         ):
@@ -554,14 +555,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.action_meta_regression.setEnabled(can_analyze and bool(covariates))
         self.action_subgroup_ma.setEnabled(can_analyze and has_factor)
 
-        for action, label, minimum, shortcut in (
-            (self.action_go, "Meta-analysis", 1, " (Ctrl+R)"),
-            (self.action_cum_ma, "Cumulative meta-analysis", 1, ""),
-            (self.action_loo_ma, "Leave-one-out meta-analysis", 2, ""),
-        ):
+        for action, _workflow, label, minimum in self._pooled_analysis_actions():
             enabled, tooltip = _pooled_analysis_availability(label, minimum, included, r_ready)
+            shortcut = action.shortcut().toString(QKeySequence.SequenceFormat.PortableText)
             action.setEnabled(enabled)
-            action.setToolTip(tooltip + shortcut)
+            action.setToolTip(f"{tooltip} ({shortcut})" if shortcut else tooltip)
         tsa_enabled, tsa_tooltip = _pooled_analysis_availability(
             trial_sequential_analysis.TSA_TITLE, 2, included, r_ready,
         )
@@ -627,7 +625,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _locate_recent_project(self, path):
         replacement, _filter = QFileDialog.getOpenFileName(self, "Locate project", os.path.dirname(path), "RC MetaStudio projects (*.rcms)")
         if replacement:
-            # Validate the replacement before removing the unavailable path.
             project_format.load_project(replacement)
             add_file_to_recent_files(replacement)
             if os.path.normcase(os.path.realpath(replacement)) != os.path.normcase(os.path.realpath(path)):
@@ -674,6 +671,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         model = self.model
         self._model_signal_connections.append(
             app_error_handler.connect_safely(
+                model.currentSheetChanged, self.workspace.select_sheet, parent=self,
+            )
+        )
+        self._model_signal_connections.append(
+            app_error_handler.connect_safely(
                 model.workspaceEditCommitted,
                 self._workspace_edit_committed,
                 parent=self,
@@ -691,10 +693,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         connect_action(self.action_save_as, self.save_as)
         connect_action(self.action_open, self.open)
         connect_action(self.action_new_dataset, self.create_new_dataset)
-        connect_action(self.action_quit, self.quit)
-        connect_action(self.action_go, self._launch_analysis)
-        connect_action(self.action_cum_ma, lambda: self._launch_analysis("cumulative"))
-        connect_action(self.action_loo_ma, lambda: self._launch_analysis("leave-one-out"))
+        connect_action(self.action_quit, self.close)
+        for action, workflow, *_ in self._pooled_analysis_actions():
+            connect_action(action, partial(self._launch_analysis, workflow), parent=self)
         connect_action(self.action_trial_sequential_analysis, self._trial_sequential_analysis)
 
         connect_action(self.action_undo, self.undo)
@@ -711,6 +712,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         connect_action(self.action_about_legal, self.show_about_legal)
         connect_action(self.action_change_confidence_level, self._change_global_ci)
         connect_action(self.action_import_csv, self._import_data)
+
+    def _pooled_analysis_actions(self) -> tuple[
+        tuple[QAction, analysis_adapter.AnalysisWorkflow | None, str, int], ...
+    ]:
+        return (
+            (self.action_go, None, "Meta-analysis", 1),
+            (self.action_cum_ma, "cumulative", "Cumulative meta-analysis", 1),
+            (self.action_loo_ma, "leave-one-out", "Leave-one-out meta-analysis", 2),
+        )
 
     def _update_confidence_level_label(self):
         confidence_level = self.model.get_confidence_level()
@@ -756,7 +766,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self.model,
             parent=self,
             analysis_service=self.small_study_effects_service,
-            on_result=self.analysis,
+            on_result=self._result_handler(),
         )
         form.exec()
 
@@ -764,10 +774,15 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         sheet = self.model.current_sheet
         if sheet is None:
             return
+        attachment = self.workspace.attach_sheet(sheet)
+        show_analysis = self._result_handler()
         settings = trial_sequential_analysis.TSA_SETTINGS
         saved = trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))
         model = dataset_table_model.DatasetTableModel(
             dataset=copy.deepcopy(self.model.dataset), add_blank_study=False, current_sheet_id=sheet.id,
+        )
+        base_request = trial_sequential_analysis.TsaRequest.from_sheet(
+            model, saved, fit=self.workspace.last_pooled_fit(sheet),
         )
         view: results_window.ResultsWindow | None = None
 
@@ -782,19 +797,20 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if options != trial_sequential_analysis.TsaOptions.from_mapping(live_sheet.settings.get(settings, {})):
                     live_sheet.settings[settings] = options.to_mapping()
 
-            if self.workspace.edit_sheet(sheet, update):
+            if self.workspace.edit_sheet(attachment, update):
                 self._update_project_identity()
 
         def show_result(result: AnalysisResult, manuscript: ManuscriptReport) -> None:
             nonlocal view
             if view is None:
-                view = self.analysis(result, source_sheet=sheet, change_settings=reopen, manuscript=manuscript)
+                view = show_analysis(result, source_sheet=sheet, change_settings=reopen, manuscript=manuscript)
             else:
                 view.replace_trial_sequential_result(result, manuscript)
 
         def reopen(_plot_parameters: dict[str, object], _origin: QtWidgets.QWidget | None = None) -> None:
             form = trial_sequential_analysis_dialog.TrialSequentialAnalysisDialog(
-                model, view or self, saved=saved, on_result=show_result, on_settings_saved=save_options,
+                model, view or self, request=replace(base_request, options=saved),
+                on_result=show_result, on_settings_saved=save_options,
             )
             form.exec()
             form.deleteLater()
@@ -811,21 +827,13 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
 
     def _commit_model_operation(self, operation):
         """Run one already validated UI operation as one workspace change."""
-        self.workspace.begin_change()
-        try:
+        def restore(runtime: project_adapter.RuntimeProject) -> None:
+            self._install_workspace_runtime(runtime)
+            self._update_project_identity()
+
+        with self.workspace.change(restore):
             operation()
             self.workspace.record_edit(self.model.dataset, self.model.current_sheet_id)
-            self.workspace.end_change()
-        except BaseException as error:
-            runtime = self.workspace.abort_change()
-            if runtime is None:
-                raise
-            try:
-                self._install_workspace_runtime(runtime)
-                self._update_project_identity()
-            except Exception as restore_error:
-                error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
-            raise
         self._update_project_identity()
         self.refresh_analysis_actions()
 
@@ -845,8 +853,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             return analysis_setup_dialog.AnalysisSetupDialog(
                 self.model, parent=self, analysis_type=analysis_type,
                 external_params=external_params, diagnostic_metrics=diagnostic_metrics,
-                confidence_level=confidence_level, analysis_service=self.analysis_service,
-                on_result=self.analysis,
+                confidence_level=confidence_level,
+                on_result=self._result_handler(),
+                on_pooled_fit=self.workspace.record_pooled_fit,
             )
         except Exception as e:
             self._show_analysis_specs_error(e)
@@ -897,13 +906,12 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         if self._metric_actions is not None:
             self._metric_actions.deleteLater()
         self.menuMetric.clear()
-        data_type = self.model.get_current_data_type(get_str=False)
         single, paired = {
-            analysis_catalog.BINARY: (analysis_catalog.BINARY_ONE_ARM_METRICS, analysis_catalog.BINARY_TWO_ARM_METRICS),
-            analysis_catalog.CONTINUOUS: (analysis_catalog.CONTINUOUS_ONE_ARM_METRICS, analysis_catalog.CONTINUOUS_TWO_ARM_METRICS),
-            analysis_catalog.TIME_TO_EVENT: ((), ("HR",)),
-            analysis_catalog.EVENT_RATES: ((), ("IRR",)),
-        }.get(data_type, ((), ()))
+            "binary": (analysis_catalog.BINARY_ONE_ARM_METRICS, analysis_catalog.BINARY_TWO_ARM_METRICS),
+            "continuous": (analysis_catalog.CONTINUOUS_ONE_ARM_METRICS, analysis_catalog.CONTINUOUS_TWO_ARM_METRICS),
+            "time_to_event": ((), ("HR",)),
+            "event_rates": ((), ("IRR",)),
+        }.get(self.model.get_current_family(), ((), ()))
         self.menuMetric.setEnabled(bool(single or paired))
         if not self.menuMetric.isEnabled():
             self._metric_actions = None
@@ -936,25 +944,38 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._commit_model_operation(apply_metric)
         self.tableView.synchronize_column_widths()
 
+    def _result_handler(self):
+        runtime = self.workspace.runtime
+        if runtime is None:
+            return self.analysis
+        return partial(self.analysis, source_lineage=runtime.lineage)
+
     def analysis(
         self, result: AnalysisResult, *,
         source_sheet: analysis_dataset.Sheet | None = None,
+        source_lineage: UUID | None = None,
         change_settings=None, manuscript: ManuscriptReport | None = None,
     ) -> results_window.ResultsWindow | None:
-        sheet = source_sheet or self.model.current_sheet
+        sheet = source_sheet
+        if source_lineage is None:
+            sheet = sheet or self.model.current_sheet
+            attachment = self.workspace.attach_sheet(sheet)
+        else:
+            attachment = SheetAttachment(source_lineage, sheet.id) if sheet is not None else None
+        plot_sheet = self.workspace.attached_sheet(attachment) or sheet
         identity = result.identity.splitlines()[0] if result.identity else ""
         plot_key = result.analysis_method + " | " + identity
         saved_plots = {
             title: {key: value for key, value in overrides.items() if not key.startswith("fp_favours_")}
-            for title, overrides in sheet.settings.get("plot_overrides", {}).get(plot_key, {}).items()
-        } if sheet else {}
+            for title, overrides in plot_sheet.settings.get("plot_overrides", {}).get(plot_key, {}).items()
+        } if plot_sheet else {}
 
         def save_plot_override(title: str, overrides: dict[str, object]) -> None:
             def update(live_sheet: analysis_dataset.Sheet) -> None:
                 plots = live_sheet.settings.setdefault("plot_overrides", {}).setdefault(plot_key, {})
                 plots[title] = overrides
 
-            if self.workspace.edit_sheet(sheet, update):
+            if self.workspace.edit_sheet(attachment, update):
                 self._update_project_identity()
 
         try:
@@ -1180,6 +1201,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     ):
         model = dataset_table_model.DatasetTableModel(
             dataset=data_model, add_blank_study=False, current_sheet_id=current_sheet_id,
+            editing_service=self.model.editing_service,
         )
         model.reset_model(refresh_previews=recalculate_effect_previews)
         self._disconnect_model_signals()
@@ -1224,7 +1246,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         def update(live_sheet: analysis_dataset.Sheet) -> None:
             live_sheet.settings["effect_direction"] = direction
             live_sheet.settings.pop("favours_labels", None)
-        if self.workspace.edit_sheet(sheet, update):
+        if self.workspace.edit_sheet(self.workspace.attach_sheet(sheet), update):
             self._update_project_identity()
 
     def _swap_sheet_arms(self):
@@ -1391,13 +1413,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         except Exception:
             self._refresh_sheet_tabs()
             raise
-        self.workspace.select_sheet(sheet_id)
         self._refresh_projected_sheet_controls()
 
     def _sheet_change(self, sheet_id, operation):
         if sheet_id != self.model.current_sheet_id:
             self.model.set_current_sheet(sheet_id)
-        self.workspace.select_sheet(sheet_id)
         def commit():
             self.model_updated(sheet_id=operation())
         self._commit_model_operation(commit)
@@ -1493,6 +1513,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         def delete():
             remaining = [item for item in self.model.dataset.sheets if item.id != sheet.id]
             self.model.dataset.sheets.remove(sheet)
+            self.workspace.discard_pooled_fit(sheet.id)
             return remaining[max(0, index - 1)].id
         self._sheet_change(sheet.id, delete)
 
@@ -1503,9 +1524,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         def move():
             sheets[:] = order
         self._commit_model_operation(move)
-
-    def quit(self):
-        self.close()
 
     def prompt_to_save_unsaved_data(self):
         prompt = QMessageBox(self)
@@ -1575,8 +1593,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             )
             return False
 
-        # The durable document commit is complete. Machine-local recent-project
-        # bookkeeping must never turn this successful save into a false failure.
         self._update_project_identity("Saved")
         if durability_error is not None:
             self._report_durability_uncertain_save(destination, durability_error)
@@ -1593,7 +1609,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         subtype = dataset_info.get("sub_type")
         groups = dataset_info.get("groups") or analysis_catalog.default_arm_names(data_type, subtype)
         return Sheet(
-            SheetId(uuid.uuid4().hex), name, data_type, subtype, family,
+            SheetId(uuid.uuid4().hex), name, data_type, subtype,
             [Arm(ArmId(uuid.uuid4().hex), group) for group in groups],
             settings={"metric": dataset_info.get("effect")},
         )
@@ -1623,8 +1639,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
     def _install_csv_import(self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportResult):
         sheet = self._sheet_from_dataset_info(dataset_info)
         dataset = analysis_dataset.Dataset(sheets=[sheet])
-        for name, data_type in zip(csv_data.covariate_names, csv_data.covariate_types, strict=True):
-            workspace_editing.add_covariate(sheet, name, data_type)
         progress = ImportProgressDialog(self, len(csv_data.rows))
         try:
             progress.progress_bar.setValue(0)
@@ -1633,8 +1647,8 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             def show_progress(completed: int) -> None:
                 progress.progress_bar.setValue(completed)
                 progress.progress_bar.repaint()
-            warnings = workspace_editing.WorkspaceEditingService().load_import_rows(
-                dataset, sheet, csv_data.rows, show_progress,
+            warnings = populate_imported_sheet(
+                sheet, csv_data, self.model.editing_service, show_progress,
             )
         finally:
             progress_dialog.dispose(progress)

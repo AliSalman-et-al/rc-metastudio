@@ -318,6 +318,11 @@ def check_partial_count_previews(app, dialog, cell, record):
         if metric in ('Sens', 'Spec'):
             assert select(metric) == '', (metric, dialog.effect_text_box.text())
     assert abs(float(select('Sens')) - 10 / 15) < .0001, ('Sens', dialog.effect_text_box.text())
+    cell(table, 0, 1, '0')
+    assert dialog.get_raw_diagnostic_data() == {"TP": 10, "FN": 5, "FP": 0, "TN": None}
+    assert abs(float(select('Sens')) - 10.5 / 16) < .0001, dialog.effect_text_box.text()
+    assert select('Spec') == ''
+    record('dta-incomplete-preview-observed-zero', dialog, raw=dialog.get_raw_diagnostic_data())
     cell(table, 0, 1, '2')
     cell(table, 1, 1, '8')
     for metric in ('Sens', 'Spec', 'PLR', 'NLR', 'DOR'):

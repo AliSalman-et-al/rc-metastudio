@@ -86,7 +86,6 @@
 .rcmetar.worker.result.vector <- function(value, scalar) {
     if (is.null(value) || (!is.atomic(value) && !is.list(value))) return(NULL)
     if (inherits(value, "summary.display")) {
-        # The formatted text and structured tables already carry the model output.
         value["MAResults"] <- NULL
     }
     metadata <- attributes(value)[intersect(names(attributes(value)),

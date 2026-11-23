@@ -58,8 +58,6 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-# Never let an unrelated toolchain on PATH replace the Windows API-set, UCRT,
-# or system ICU forwarders with private copies in the application directory.
 a.binaries = [entry for entry in a.binaries if not is_windows_system_runtime(entry)]
 a.pure.extend(generated_ui_modules)
 pyz = PYZ(a.pure)

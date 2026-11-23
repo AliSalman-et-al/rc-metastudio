@@ -12,8 +12,13 @@ import platform
 import re
 import subprocess
 
+if __package__:
+    from scripts.dependency_lock import locked_python_versions
+else:
+    from dependency_lock import locked_python_versions
 
-QT_RCC_VERSION = "6.12.0"
+
+QT_RCC_VERSION = locked_python_versions("pyqt6-qt6")["pyqt6-qt6"]
 
 
 def discover_macos_rcc(sdk_root: Path) -> Path:

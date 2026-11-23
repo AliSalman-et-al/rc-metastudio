@@ -34,14 +34,10 @@ cursor_deb_url="https://archive.ubuntu.com/ubuntu/pool/universe/x/xcb-util-curso
 cursor_deb_expected_sha256="137cf52479b5a9d8c5926d70d311af04be41941a32ee777340d704cc458c06d8"
 cursor_deb_sha256=""
 cursor_source=""
-cran_repo="https://packagemanager.posit.co/cran/2026-11-13"
-linux_cran_repo="https://packagemanager.posit.co/cran/__linux__/noble/2026-11-13"
 r_home="$work_root/r-home"
 r_library="$r_home/library"
 ppm_archives="$qualification_root/ppm-archives"
 runtime_probe="$qualification_root/runtime-probe.json"
-smoke_evidence="$qualification_root/packaged-smoke.json"
-smoke_log="$qualification_root/packaged-smoke.log"
 runtime_probe_stdout="$qualification_root/runtime-probe.stdout.log"
 runtime_probe_stderr="$qualification_root/runtime-probe.stderr.log"
 
@@ -76,6 +72,9 @@ fi
 command -v dpkg-deb >/dev/null 2>&1 || die "Linux packaging requires dpkg-deb."
 command -v curl >/dev/null 2>&1 || die "Linux packaging requires curl."
 command -v xvfb-run >/dev/null 2>&1 || die "Linux packaging requires xvfb-run for native Qt qualification."
+linux_cran_repo="$("$python_exe" "$script_dir/r_dependency_policy.py" \
+  --manifest "$repo_root/config/r-dependencies.json" --emit-dcf |
+  sed -n 's/^Linux-Binary-Repository: //p')"
 
 cd "$repo_root"
 mkdir -p "$artifact_dir/download-cache/linux-x64" "$qualification_root"
@@ -121,7 +120,6 @@ else
 R_LIBS="$r_library" \
 R_LIBS_USER="$r_library" \
 RCMS_R_LIBS="$r_library" \
-RCMS_CRAN_REPO="$cran_repo" \
 RCMS_POLICY_PYTHON="$python_exe" \
 RCMS_R_PACKAGE_ARCHIVE_DIR="$ppm_archives" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
@@ -177,7 +175,6 @@ R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"
 "$python_exe" "$repo_root/scripts/prune_staged_r.py" "$archive_root/R" "$qualification_root/r-closure.txt"
-# Debug sections are unnecessary for execution; preserve symbols used by dlsym.
 "$python_exe" - "$archive_root/R" <<'PYTHON'
 from pathlib import Path
 import subprocess
@@ -277,4 +274,7 @@ env -u R_HOME -u R_LIBS -u R_LIBS_USER xvfb-run -a \
     > "$runtime_probe_stdout" 2> "$runtime_probe_stderr"
 [ -s "$runtime_probe" ] || die "Packaged runtime probe did not produce evidence."
 
-source "$repo_root/scripts/finalize-linux-package.sh"
+exec bash "$script_dir/finalize-linux-package.sh" "$python_exe" "$archive_root" "$qualification_root" \
+  "$r_home" "$artifact_path" "$evidence_path" "$r_deb_sha256" "$cursor_library_sha256" \
+  "$cursor_source" "$cursor_deb_sha256" "$linux_cran_repo" \
+  "${ID:-unknown}" "${VERSION_ID:-unknown}" "${PRETTY_NAME:-unknown}" "$host_glibc"

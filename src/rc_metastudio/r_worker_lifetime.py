@@ -10,7 +10,6 @@ import sys
 def worker_command(program: str, args: list[str]) -> tuple[str, list[str]]:
     if sys.platform == "win32":
         return program, args
-    # R takes over the shell PID. The watcher holds none of the protocol pipes.
     watch_parent = """
 parent=$1
 shift

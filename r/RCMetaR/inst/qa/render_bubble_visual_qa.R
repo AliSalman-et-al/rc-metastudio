@@ -1,4 +1,3 @@
-#!/usr/bin/env Rscript
 
 qa_find_repo_root <- function(start = getwd()) {
   current <- normalizePath(start, winslash = "/", mustWork = TRUE)

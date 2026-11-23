@@ -2,10 +2,18 @@ import math
 
 import pytest
 
+from rc_metastudio.domain_ids import ArmId, SheetId
 from rc_metastudio.ratio_data import RatioInput
 from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project.archive import load_project, save_project, CURRENT_FORMAT_VERSION
+from rc_metastudio.project.model import Arm, Sheet
+from rc_metastudio.project.study import AnalysisUnit
 from tests.python.fast.test_project_adapter import _multi_arm_project
+
+
+def _comparison_unit(data_type, raw_data=None):
+    sheet = Sheet(SheetId("s"), "Outcome", data_type, arms=[Arm(ArmId("a"), "A"), Arm(ArmId("b"), "B")])
+    return AnalysisUnit(sheet, raw_data)
 
 
 def test_selected_source_is_explicit_and_never_falls_back():
@@ -77,10 +85,8 @@ def test_invalid_reported_input_is_rejected(changes):
 
 
 def test_clearing_entered_effect_invalidates_display_cache():
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.analysis import catalog as analysis_catalog
-    from rc_metastudio.domain_ids import SheetId
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.CONTINUOUS), arm_names=['A', 'B'])
+    unit = _comparison_unit(analysis_catalog.CONTINUOUS)
     unit.set_effect_for_source('entered', 'MD', tuple(arm.stable_id for arm in unit.arms.values()), 1, 0, 3)
     unit.calculate_display_effect_and_ci('MD', tuple(arm.stable_id for arm in unit.arms.values()), lambda x: x, 95, 1.96, source='entered')
     unit.set_effect('MD', tuple(arm.stable_id for arm in unit.arms.values()), None)
@@ -91,12 +97,10 @@ def test_clearing_entered_effect_invalidates_display_cache():
 
 @pytest.mark.parametrize('selected', ['raw', 'reported'])
 def test_ratio_dialog_accepts_only_active_source_and_retains_other_record(qapp, monkeypatch, selected):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.analysis import catalog as analysis_catalog
-    from rc_metastudio.domain_ids import SheetId
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
     from PyQt6.QtWidgets import QMessageBox, QDialog
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.EVENT_RATES), raw_data=[[2, 30], [3, 40]], arm_names=['A', 'B'])
+    unit = _comparison_unit(analysis_catalog.EVENT_RATES, [[2, 30], [3, 40]])
     record = RatioInput(estimate=2, lower=.5, upper=3, se=.4, source='reported')
     unit.set_ratio_input(['A', 'B'], record)
     dialog = RatioDataDialog(unit, ['A', 'B'], 'IRR')
@@ -115,11 +119,9 @@ def test_ratio_dialog_accepts_only_active_source_and_retains_other_record(qapp, 
 
 
 def test_ratio_format_round_trip_preserves_interval_and_reversal(qapp):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.analysis import catalog as analysis_catalog
-    from rc_metastudio.domain_ids import SheetId
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.TIME_TO_EVENT), arm_names=['A', 'B'])
+    unit = _comparison_unit(analysis_catalog.TIME_TO_EVENT)
     unit.set_ratio_input(['A', 'B'], RatioInput(estimate=2, lower=.5, upper=3, se=.4, source='reported'))
     dialog = RatioDataDialog(unit, ['A', 'B'], 'HR')
     dialog.fields['scale'].setCurrentIndex(1)

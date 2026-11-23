@@ -130,8 +130,9 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
         worker.progress.disconnect(progress.append)
     stall = _max_gap(ticks, start, end)
     sent, received = worker_spans[-1]
+    observed = dialog
     if mode == "complete":
-        assert len(_results(app) - before) == 1
+        observed, = _results(app) - before
         assert len(ticks) > 5
         if family == "tsa":
             assert len(progress) > 10
@@ -140,7 +141,7 @@ def _attempt(app, worker, run_button, dialog, family, mode, record):
         worker.ensure_ready()
         if mode == "kill":
             assert worker.pid != pid
-    record(f"{family}-{mode}-observed", dialog, elapsed_seconds=end - start,
+    record(f"{family}-{mode}-observed", observed, elapsed_seconds=end - start,
            max_timer_gap_seconds=stall, ticks=len(ticks), heartbeat_count=len(progress),
            worker_seconds=received - sent, worker_timer_gap_seconds=_max_gap(ticks, sent, received),
            pid_before=pid, pid_after=worker.pid)

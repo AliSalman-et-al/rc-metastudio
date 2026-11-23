@@ -23,6 +23,9 @@ permissions:
 jobs:
   validate-candidate:
     runs-on: ubuntu-latest
+    outputs:
+      attestation-matrix: ${{ steps.attestation.outputs.matrix }}
+      qualification-matrix: ${{ steps.qualification.outputs.matrix }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Authenticate protected candidate producer
@@ -35,21 +38,23 @@ jobs:
           set -euo pipefail
           test "$WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
           node scripts/release_actions.cjs validate-candidate
+      - name: Resolve attestation subjects
+        id: attestation
+        run: |
+          set -euo pipefail
+          matrix="$(python scripts/delivery.py attestation-matrix --trust-profile unsigned-community)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+      - name: Resolve native qualification targets
+        id: qualification
+        run: |
+          set -euo pipefail
+          matrix="$(python scripts/delivery.py qualification-matrix)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   qualify:
     needs: validate-candidate
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - target: windows-x64
-            runner: windows-2025
-            artifact: RCMetaStudio-windows-x64.zip
-          - target: macos-arm64
-            runner: macos-15
-            artifact: RCMetaStudio-macos-arm64.zip
-          - target: linux-x64
-            runner: ubuntu-24.04
-            artifact: RCMetaStudio-linux-x64.tar.gz
+      matrix: ${{ fromJSON(needs.validate-candidate.outputs.qualification-matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
@@ -77,14 +82,14 @@ jobs:
         shell: pwsh
         env:
           TARGET: ${{ matrix.target }}
+          ARCHIVE: ${{ matrix.artifact }}
           SOURCE_SHA: ${{ inputs.source_sha }}
           VERSION: ${{ inputs.version }}
         run: |
           $manifest = Get-ChildItem candidate -Recurse -Filter release-set.json
           $record = Get-ChildItem candidate -Recurse -Filter "$env:TARGET.assembled.json"
           if (@($manifest).Count -ne 1 -or @($record).Count -ne 1) { throw "Ambiguous candidate evidence." }
-          $extension = if ($env:TARGET -eq 'linux-x64') { 'tar.gz' } else { 'zip' }
-          uv run python scripts/delivery.py verify-archive --manifest $manifest.FullName --result $record.FullName --target "$env:TARGET" --archive "candidate/artifacts/RCMetaStudio-$env:TARGET.$extension" --source-sha "$env:SOURCE_SHA" --version "$env:VERSION" --repository "$env:GITHUB_REPOSITORY" --trust-profile unsigned-community
+          uv run python scripts/delivery.py verify-archive --manifest $manifest.FullName --result $record.FullName --target "$env:TARGET" --archive "candidate/artifacts/$env:ARCHIVE" --source-sha "$env:SOURCE_SHA" --version "$env:VERSION" --repository "$env:GITHUB_REPOSITORY" --trust-profile unsigned-community
           if ($LASTEXITCODE -ne 0) { throw "Candidate archive binding failed." }
       - name: Install Linux display and Qt runtime libraries
         if: matrix.target == 'linux-x64'
@@ -112,7 +117,9 @@ jobs:
       - name: Expand unsigned Windows artifact
         if: matrix.target == 'windows-x64'
         shell: pwsh
-        run: Expand-Archive -LiteralPath candidate/artifacts/${{ matrix.artifact }} -DestinationPath qualified/tree
+        env:
+          ARCHIVE: ${{ matrix.artifact }}
+        run: Expand-Archive -LiteralPath "candidate/artifacts/$env:ARCHIVE" -DestinationPath qualified/tree
       - name: Launch exact unsigned Windows bytes
         if: matrix.target == 'windows-x64'
         shell: pwsh
@@ -147,11 +154,15 @@ jobs:
       - name: Expand unsigned native macOS artifact
         if: startsWith(matrix.target, 'macos-')
         shell: bash
-        run: mkdir -p qualified/tree && ditto -x -k "candidate/artifacts/${{ matrix.artifact }}" qualified/tree
+        env:
+          ARCHIVE: ${{ matrix.artifact }}
+        run: mkdir -p qualified/tree && ditto -x -k "candidate/artifacts/$ARCHIVE" qualified/tree
       - name: Expand unsigned Linux artifact
         if: matrix.target == 'linux-x64'
         shell: bash
-        run: mkdir -p qualified/tree && tar -xzf "candidate/artifacts/${{ matrix.artifact }}" -C qualified/tree
+        env:
+          ARCHIVE: ${{ matrix.artifact }}
+        run: mkdir -p qualified/tree && tar -xzf "candidate/artifacts/$ARCHIVE" -C qualified/tree
       - name: Launch exact unsigned native macOS bytes
         if: startsWith(matrix.target, 'macos-')
         shell: bash
@@ -237,16 +248,9 @@ jobs:
           compression-level: 0
 
   attest:
-    needs: qualify
+    needs: [validate-candidate, qualify]
     strategy:
-      matrix:
-        include:
-          - target: windows-x64
-            artifact: RCMetaStudio-windows-x64.zip
-          - target: macos-arm64
-            artifact: RCMetaStudio-macos-arm64.zip
-          - target: linux-x64
-            artifact: RCMetaStudio-linux-x64.tar.gz
+      matrix: ${{ fromJSON(needs.validate-candidate.outputs.attestation-matrix) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

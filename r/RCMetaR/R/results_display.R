@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Keep exact package values beside the formatted arrays consumed by the GUI.
-# Multiple fields may share one display column (for example an F test's df).
 rcmetar.table <- function(value, role, params=list(), inference="", vertical=FALSE, label.column=NULL) {
   attr(value, "rcms.table") <- list(role=role, metric=as.character(params$measure %||% ""),
     metric_label=if (length(params$measure)) rcmetar.display.metric.name(params) else "",
@@ -10,8 +8,6 @@ rcmetar.table <- function(value, role, params=list(), inference="", vertical=FAL
   value
 }
 
-# Only unquantified named display output can be converted to supporting here.
-# Quantified arrays must already have a deliberate role from their producer.
 rcmetar.supporting.tables <- function(value) {
   if (is.null(value)) return(value)
   if (inherits(value, c("rma", "reitsma"))) return(value)
@@ -525,7 +521,6 @@ create.regression.display <- function(res, params, display.data) {
       c("Residual H\u00b2", rcmetar.regression.display.value(res$H2, result.digits)),
       c("Heterogeneity explained (R\u00b2)", rcmetar.regression.display.value(res$R2, result.digits, percent=TRUE))
     ))
-    # Each row has a distinct meaning; keep these as supporting values.
     heterogeneity <- rcmetar.numeric.fields(heterogeneity, 2L, "value",
       c(res$tau2 %||% NA_real_, res$se.tau2 %||% NA_real_, sqrt(res$tau2 %||% NA_real_),
         res$I2 %||% NA_real_, res$H2 %||% NA_real_, res$R2 %||% NA_real_),

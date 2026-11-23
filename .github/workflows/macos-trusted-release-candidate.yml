@@ -24,6 +24,8 @@ jobs:
   validate-candidate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      attestation-matrix: ${{ steps.attestation.outputs.matrix }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
@@ -61,6 +63,12 @@ jobs:
             grep -Fx "$required" <<<"$artifacts"
           done
           git merge-base --is-ancestor "$EXPECTED_SOURCE_SHA" origin/master
+      - name: Resolve attestation subjects
+        id: attestation
+        run: |
+          set -euo pipefail
+          matrix="$(python scripts/delivery.py attestation-matrix --trust-profile macos-trusted)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   carry-windows:
     needs: validate-candidate
@@ -500,17 +508,10 @@ jobs:
           path: qualified
           compression-level: 0
   attest:
-    needs: [carry-windows, carry-linux, finalize-macos]
+    needs: [validate-candidate, carry-windows, carry-linux, finalize-macos]
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - target: windows-x64
-            artifact: RCMetaStudio-windows-x64.zip
-          - target: macos-arm64
-            artifact: RCMetaStudio-macos-arm64.dmg
-          - target: linux-x64
-            artifact: RCMetaStudio-linux-x64.tar.gz
+      matrix: ${{ fromJSON(needs.validate-candidate.outputs.attestation-matrix) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

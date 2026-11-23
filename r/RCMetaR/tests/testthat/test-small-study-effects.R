@@ -694,7 +694,6 @@ test_that("diagnostic Deeks uses corrected DOR and effective-sample-size geometr
     FP=c(2, 1, 3, 4, 2, 5, 3, 2, 4, 1),
     TN=c(20, 18, 16, 15, 19, 14, 17, 18, 16, 19),
     y=rep(999, 10), SE=rep(.001, 10), study.names=paste0("d", 1:10), years=as.integer(2011:2020))
-  # Diagnostic configuration selects only the Deeks plot and test.
   result <- rcmetar.run.small.study.effects(data, list(
     version=1L, data.type="diagnostic", metric="DOR", funnels="deeks",
     tests=character()

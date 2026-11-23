@@ -210,9 +210,9 @@ def run(
                 assert_retained_table(view, *held[0])
         assert view.results.images, dict(view.texts)
         if scenario == "analysis-data-twoarm-mean" and workflow == "standard":
-            from rc_metastudio import r_operations
+            from rc_metastudio.r_result_wire import r_object_to_python
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
-            headers = r_operations.r_object_to_python(r_oracle.evaluate("plot.data$ilab$headers"))
+            headers = r_object_to_python(r_oracle.evaluate("plot.data$ilab$headers"))
             style = dialog.current_param_vals["fp_style"]
             expected_headers = (["Mean", "SD", "N", "Mean", "SD", "N", "Weight (%)"] if style == "default" else
                                 ["Total", "Mean", "SD", "Total", "Mean", "SD", "Weight (%)"] if style == "bmj" else
@@ -365,7 +365,7 @@ def run(
         QtCore.QTimer.singleShot(0, create)
         window.action_new_dataset.trigger()
         assert not callback_errors, callback_errors
-        assert window.model.get_current_data_type() == family
+        assert window.model.get_current_family() == family
         assert window.model.get_current_data_subtype() == subtype
         assert window.model.current_effect == metric
         assert window.model.current_outcome_name == "Verification outcome Δ"
@@ -427,7 +427,7 @@ def run(
         assert window.open(window.workspace.path, raise_on_error=True)
         assert window.model.current_effect == metric
         assert window.model.current_outcome_name == "Verification outcome Δ"
-        assert window.model.get_current_data_type() == family
+        assert window.model.get_current_family() == family
         assert window.model.get_current_data_subtype() == subtype
         assert sum(s.include for s in window.model.current_sheet.rows) == 6
         after = [
@@ -682,7 +682,7 @@ def run(
         assert subgroup.covariate_combo_box.count() == 1
         click(subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok))
     if (
-        window.model.get_current_data_type() == "diagnostic"
+        window.model.get_current_family() == "diagnostic"
         and workflow != "meta-regression"
     ):
         dialog = visible(DiagnosticMetricsDialog)
@@ -784,7 +784,6 @@ def run(
                            for node in sorted(weight_nodes, key=lambda node: float(node.attrib["y"]))]
         assert plotted_weights == [float(row[-1].removesuffix("%")) for row in rows] + [100.0], (plotted_weights, rows)
         if dialog.current_param_vals["fp_style"] == "default":
-            from rc_metastudio import r_operations
             load_serialized_object(str(next(iter(view.params_paths.values()))) + ".plotdata")
             fitted_weights = [float(value) for value in r_oracle.evaluate("plot.data$weights")]
             assert len(fitted_weights) == len(rows), (fitted_weights, rows)

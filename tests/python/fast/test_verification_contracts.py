@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import verify, verify_rcmetar_r_stack as stack, verify_rcms
+from scripts import verification_evidence, verify, verify_rcmetar_r_stack as stack, verify_rcms
 from scripts import audit_report_retention as audit
 from scripts.code_health import build_evidence, git_as_of, load_config
 
@@ -21,7 +21,7 @@ def test_typing_before_direct_desktop(monkeypatch, unverified_context):
     def typing(root):
         calls.append('typing')
         raise verify.VerificationError('controlled typing failure')
-    monkeypatch.setattr(verify, 'run_typing', typing)
+    monkeypatch.setattr(verification_evidence, 'run_typing', typing)
     monkeypatch.setattr(verify_rcms, '_reuse_evidence', lambda *a: calls.append('desktop') or True)
     monkeypatch.setattr(verify_rcms, 'source_digest', lambda _root: 'same')
     monkeypatch.setattr(sys, 'argv', ['verify_rcms', 'doctor'])
@@ -38,11 +38,10 @@ def test_typing_receipt_is_reused_only_for_the_same_completed_check(monkeypatch,
     from scripts import verification_evidence as evidence_store
 
     monkeypatch.setattr(evidence_store, "ROOT", tmp_path)
-    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
-    monkeypatch.setattr(verify, "source_digest", lambda root: "source")
-    monkeypatch.setattr(verify.subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "", ""))
+    monkeypatch.setattr(evidence_store, "source_digest", lambda root: "source")
+    monkeypatch.setattr(evidence_store.subprocess, "run", lambda command, **kwargs: subprocess.CompletedProcess(command, 0, "", ""))
     build = tmp_path / "generated-ui"
-    receipt = verify.run_typing(build)
+    receipt = evidence_store.run_typing(build)
     record = json.loads(receipt.read_text(encoding="utf-8"))
     if mismatch in record:
         record[mismatch] = record["command"][:-1] if mismatch == "command" else "other"
@@ -52,7 +51,7 @@ def test_typing_receipt_is_reused_only_for_the_same_completed_check(monkeypatch,
     elif mismatch == "stderr.log":
         receipt.with_name(mismatch).unlink()
 
-    reused = verify.ensure_typing(build, {verify.TYPING_RECEIPT_ENV: str(receipt)})
+    reused = evidence_store.ensure_typing(build, {evidence_store.TYPING_RECEIPT_ENV: str(receipt)})
     assert (reused == receipt) == (mismatch is None)
 
 
@@ -134,7 +133,7 @@ def test_desktop_preserves_private_workspace_and_recorded_tools(monkeypatch, tmp
     monkeypatch.setattr(verify_rcms, "run_metadata", lambda *_args: {})
     monkeypatch.setattr(verify_rcms, "git_output", lambda *_args: "")
     monkeypatch.setattr(verify_rcms, "source_digest", lambda _root: "source")
-    monkeypatch.setattr(verify, "run_typing", lambda _root: tmp_path / "typing.json")
+    monkeypatch.setattr(evidence_store, "run_typing", lambda _root: tmp_path / "typing.json")
     monkeypatch.setattr(evidence_store, "_runtime_environment", lambda env: {"PATH": env["PATH"]})
     monkeypatch.delenv("RCMS_E2E_CONTEXT", raising=False)
     monkeypatch.setattr(sys, "argv", ["verify_rcms", "doctor"])
@@ -283,7 +282,6 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
 
 @pytest.mark.parametrize('code,records,expected', [(0, True, 0), (7, True, 1), (0, False, 1)])
 def test_retention_exit_retains_report(monkeypatch, tmp_path, code, records, expected):
-    # The desktop subprocess is the external boundary; audit aggregation is real.
     def child(command, **kwargs):
         if records:
             target = tmp_path / 'amino/current'

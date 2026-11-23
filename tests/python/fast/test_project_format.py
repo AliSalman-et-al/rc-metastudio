@@ -1106,7 +1106,6 @@ def test_storage_boundary_legacy_string_summary_reopens(tmp_path, version):
     state = _legacy_state()
     project["schema_version"] = state["schema_version"] = version
     _object(project["dataset"])["summary"] = "Original summary text"
-    # Construct a schema-valid legacy container, with authenticated members.
     path = tmp_path / "legacy.rcms"
     save_project(path, _minimal_project(), _minimal_state())
     _replace_json_member(path, "project.json", project)

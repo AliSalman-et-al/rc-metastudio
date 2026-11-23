@@ -1,4 +1,3 @@
-// GitHub operations shared by the two candidate consumers; no shell parsing.
 async function validateCandidate({ github, context, runId, sourceSha }) {
   if (!/^[1-9][0-9]*$/.test(runId) || !/^[0-9a-f]{40}$/.test(sourceSha))
     throw Error("Invalid run ID or source SHA");
@@ -18,8 +17,6 @@ async function validateCandidate({ github, context, runId, sourceSha }) {
     run.head_repository?.full_name !== fullName
   )
     throw Error("Unauthorized candidate producer");
-  // Dispatch workflow revision and selected build source may be different old
-  // master commits. Both must belong to protected master, never a fork/PR head.
   for (const sha of [run.head_sha, sourceSha]) {
     const { data } = await github.rest.repos.compareCommitsWithBasehead({
       ...repo,
@@ -67,8 +64,6 @@ async function withdraw({ github, context, tag, replacement, reason }) {
   let issue = matching[0];
   if (issue && !issue.body.includes(notice))
     throw Error("Withdrawal retry differs from tracked request");
-  // Create the audit record first. An edit failure leaves a tracked pending
-  // withdrawal; rerun the same request to resume. Never roll back safety state.
   if (!issue)
     ({ data: issue } = await github.rest.issues.create({
       ...repo,

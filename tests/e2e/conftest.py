@@ -27,7 +27,7 @@ def pytest_configure(config: pytest.Config) -> None:
     if hasattr(config, "workerinput"):
         config.stash[_DESKTOP_ENV] = dict(os.environ) | config.workerinput["desktop_launch"]
         return
-    from scripts.verify import ensure_typing
+    from scripts.verification_evidence import ensure_typing
 
     env = desktop_environment()
     receipt = ensure_typing(Path(env["RCMS_QT6_BUILD_ROOT"]), env)

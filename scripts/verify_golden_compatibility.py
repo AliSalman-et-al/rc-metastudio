@@ -1100,7 +1100,7 @@ def main(argv: list[str] | None = None) -> int:
     if root != REPOSITORY_ROOT:
         print("--root must select the script checkout", file=sys.stderr)
         return 1
-    from scripts.verify import configured_build_root, ensure_typing
+    from scripts.verification_evidence import configured_build_root, ensure_typing
     env = dict(os.environ)
     build_root = configured_build_root(env)
     typing_evidence = ensure_typing(build_root, env)

@@ -96,7 +96,6 @@ copy_app_from_dmg() {
 
   hdiutil verify "$dmg"
   hdiutil attach "$dmg" -readonly -nobrowse -plist > "$attach_plist"
-  # Record every mounted volume before validating the single-volume contract.
   local points_file="$work_root/mount-points"
   python3 - "$attach_plist" > "$points_file" <<'PY'
 import plistlib

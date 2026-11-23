@@ -144,8 +144,8 @@ def _sheet_model(data_type, label="Alpha", add_blank_study=False):
     names = ["test 1"] if diagnostic else list(analysis_catalog.DEFAULT_ARM_NAMES)
     arms = [analysis_dataset.Arm(ArmId(f"arm:{i}"), name) for i, name in enumerate(names)]
     sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type,
-        family={0: "binary", 1: "continuous", 2: "diagnostic"}[data_type], arms=arms)
-    unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in arms])
+        arms=arms)
+    unit = AnalysisUnit(sheet)
     sheet.rows.append(analysis_dataset.StudyRow(RowId("study1"), label, unit, include=bool(label)))
     return dataset_table_model.DatasetTableModel(
         dataset=analysis_dataset.Dataset(sheets=[sheet]), add_blank_study=add_blank_study)
@@ -237,10 +237,10 @@ def test_effect_edit_failure_preserves_the_previous_standard_error(monkeypatch):
     arm = analysis_dataset.Arm(ArmId("group"), "Group")
     sheet = analysis_dataset.Sheet(
         SheetId("sheet"), "Measurement", analysis_catalog.CONTINUOUS,
-        sub_type="generic_effect", family="continuous", arms=[arm],
+        sub_type="generic_effect", arms=[arm],
         settings={"metric": "Mean"},
     )
-    unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
+    unit = AnalysisUnit(sheet)
     unit.set_effect_for_source("entered", "Mean", (arm.id,), 1.0, standard_error=0.1)
     study = analysis_dataset.StudyRow(RowId("study"), "Study", unit)
     sheet.rows.append(study)
@@ -325,7 +325,7 @@ def test_direct_effect_edit_on_unnamed_study_emits_study_name_error(monkeypatch)
     errors = []
     model.dataError.connect(errors.append)
     monkeypatch.setattr(
-        model.editing_service.bridge,
+        r_operations,
         "binary_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -362,7 +362,7 @@ def test_pft_outcome_edit_uses_first_arm_sample_size_for_scale_conversion(monkey
         calls.append((convert_to, n1))
         return value
 
-    monkeypatch.setattr(model.editing_service.bridge, "binary_convert_scale", convert)
+    monkeypatch.setattr(r_operations, "binary_convert_scale", convert)
 
     assert model.setData(model.index(0, model.OUTCOMES[0]), "0.2") is True
     assert ("calc.scale", 20) in calls
@@ -456,7 +456,7 @@ def test_diagnostic_partial_raw_count_edit_clears_all_derived_metrics(monkeypatc
     model.current_sheet.rows[0].include = True
 
     monkeypatch.setattr(
-        model.editing_service.bridge,
+        r_operations,
         "diagnostic_convert_scale",
         lambda value, *args, **kwargs: value,
     )
@@ -499,7 +499,7 @@ def test_diagnostic_raw_count_edit_rolls_back_when_effect_calculation_fails(
         raise RuntimeError("simulated diagnostic calculation failure")
 
     monkeypatch.setattr(
-        model.editing_service.bridge,
+        r_operations,
         "diagnostic_effects_for_study",
         diagnostic_effects_for_study,
     )

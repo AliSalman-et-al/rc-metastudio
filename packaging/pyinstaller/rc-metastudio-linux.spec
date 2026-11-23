@@ -47,7 +47,6 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-# Qt's unused TIFF plugin targets libtiff.so.5, which Noble does not provide.
 a.binaries = [entry for entry in a.binaries if Path(entry[1]).name != "libqtiff.so"]
 a.pure.extend(generated_ui_modules)
 pyz = PYZ(a.pure)

@@ -16,7 +16,6 @@ from scripts.packaged_smoke_contract import EXPECTED_SUMMARY_SHA256_BY_SAMPLE
 from scripts.verification_evidence import ROOT, desktop_environment
 
 
-# Set the Qt settings location before starting the ordinary automation entry point.
 _SOURCE_ENTRY = """
 import sys
 from PyQt6.QtCore import QSettings, QStandardPaths

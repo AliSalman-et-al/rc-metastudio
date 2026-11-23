@@ -296,7 +296,6 @@ test_that("one-sided Pocock honours direction and defaults use a conventional 95
   expect_equal(calculated$summary$ris, (qnorm(.9)+qnorm(.8))^2/log(.8)^2)
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("HR", alpha=.10,
     alternative="lower", spending="pocock", manual.ris=200, futility=FALSE))
-  # First look spends .10 * log(1 + (e-1)/2) in the single monitored tail.
   expect_equal(result$looks$efficacy.lower[1], qnorm(.10*log1p(expm1(1)/2)))
   expect_true(all(is.na(result$looks$efficacy.upper)))
   expect_true(all(is.na(result$looks$adjusted.lower)))

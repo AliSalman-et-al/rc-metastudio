@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# The Reitsma path deliberately stays small.  mada owns estimation and
-# inference; this file only validates the count contract, converts FPR to the
-# clinical specificity representation, and organizes public mada outputs.
 
 rcmetar.reitsma.capture.warnings <- function(expr) {
     captured <- character()
@@ -76,9 +73,6 @@ rcmetar.reitsma.validate.counts <- function(diagnostic.data) {
 
 
 
-# Keep the FPR-to-specificity ordering in one place.  Both the operating
-# point and marginal prediction intervals are reported as estimate/lower/upper
-# on the clinical specificity scale.
 rcmetar.reitsma.fpr.interval.to.specificity <- function(fpr) {
     if (is.null(fpr)) return(NULL)
     c(lower=1 - fpr[["upper"]], estimate=1 - fpr[["estimate"]],
@@ -176,9 +170,6 @@ rcmetar.reitsma.estimator <- function(params) {
     candidate <- params$estimator %||% params$method %||% params$rm.method %||% "REML"
     method <- tolower(as.character(candidate[[1L]]))
     if (method %in% c("reml", "ml")) return(method)
-    # Generic meta-regression can carry a univariate rm.method.
-    # Reitsma has its own estimator contract, so an absent Reitsma-specific
-    # estimator means the documented REML default rather than a hard failure.
     if (!explicit) return("reml")
     stop("Reitsma estimator must be REML or ML.", call.=FALSE)
 }
@@ -367,10 +358,6 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
         curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
         confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
         prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
-        # The accent is intentionally separate from curve-specific colors.
-        # It styles observed-study markers and the summary point, so the
-        # shared appearance/preset control remains visibly useful without
-        # silently overriding a researcher's curve palette.
         accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
         point.size.multiplier=as.numeric(params$fp_point_size_multiplier %||% 1),
         digits=as.integer(params$digits %||% 3),
@@ -379,9 +366,6 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
         show.summary=isTRUE(params$fp_show_summary %||% TRUE),
         show.auc=isTRUE(params$fp_show_auc %||% TRUE),
         point.area.by.sample.size=isTRUE(params$fp_point_area_by_sample_size %||% FALSE),
-        # Keep the curve legend on by default so confidence and prediction
-        # regions remain distinguishable in a static export. Marker-size
-        # legend state is independent from the curve legend.
         show.legend=isTRUE(params$fp_show_legend %||% TRUE),
         show.marker.legend={
             marker.scaled <- identical(as.character(params$fp_marker_area %||% "uniform"), "sample-size") ||
@@ -615,9 +599,6 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
 }
 
 rcmetar.reitsma.apply.saved.style <- function(plot.data, params) {
-    # Re-rendering is deliberately geometry-preserving: mutable presentation
-    # controls are overlaid onto the captured SROC bundle, never re-extracted
-    # from the fitted model.
     style <- plot.data$style %||% list()
     fields <- c(curve.color="fp_curve_color", confidence.color="fp_confidence_color",
         prediction.color="fp_prediction_color", accent.color="fp_accent_color",
@@ -776,9 +757,6 @@ rcmetar.reitsma.extract.standard.components <- function(prepared, fitted) {
     fit <- fitted$fit
     section.warnings <- character()
     summary.capture <- rcmetar.reitsma.capture.warnings(summary(fit, level=level))
-    # A converged fit remains authoritative when an optional extractor fails.
-    # Keep every independently available result instead of replacing it with
-    # an estimator fallback or failing the entire report.
     sm <- summary.capture$value
     summary.warnings <- rcmetar.reitsma.warning.messages(summary.capture, "Model summary warning: ")
     if (!is.null(summary.capture$error)) section.warnings <- c(section.warnings, paste("Model summary unavailable:", summary.capture$error))
@@ -786,8 +764,6 @@ rcmetar.reitsma.extract.standard.components <- function(prepared, fitted) {
     point <- point.capture$value
     section.warnings <- c(section.warnings,
         rcmetar.reitsma.operation.messages(point.capture, "Summary operating point"))
-    # Keep mada's sampling-based ratios reproducible without exposing an RNG
-    # control as an analysis parameter or a user-facing result.
     summary.seed <- 380381L
     summary.iterations <- 1000000L
     summary.points.capture <- rcmetar.reitsma.capture.warnings(
@@ -809,8 +785,6 @@ rcmetar.reitsma.extract.standard.components <- function(prepared, fitted) {
     section.warnings <- c(section.warnings,
         rcmetar.reitsma.operation.messages(plot.capture, "SROC-derived geometry"))
     if (!is.null(plot.data$warnings)) section.warnings <- c(section.warnings, plot.data$warnings)
-    # mada's full AUC uses .01 through .99, while its normalized partial AUC
-    # uses the observed FPR range clipped to those same endpoints.
     observed.fpr <- fit$freqdata$FP / (fit$freqdata$FP + fit$freqdata$TN)
     pauc.bounds <- range(observed.fpr)
     pauc.bounds[[1L]] <- max(0.01, pauc.bounds[[1L]])

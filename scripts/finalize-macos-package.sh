@@ -1,20 +1,71 @@
+#!/usr/bin/env bash
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
+set -euo pipefail
+
+if [ "$#" -lt 8 ]; then
+  echo "macOS finalization needs Python, the app and qualification directories, ZIP path, archive root and framework version, smoke mode, and target." >&2
+  exit 2
+fi
+python_exe="$1"
+app_bundle="$2"
+qualification_root="$3"
+zip_path="$4"
+archive_root_name="$5"
+r_framework_version="$6"
+skip_smoke="$7"
+target="$8"
+shift 8
+case "$archive_root_name" in
+  ''|.|..|*/*|*\\*)
+    echo "The macOS archive root must be a directory name." >&2
+    exit 2
+    ;;
+esac
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+repo_root="$(dirname -- "$script_dir")"
+source "$script_dir/macos_copy_tree.sh"
+
+work_root="$(dirname -- "$qualification_root")"
+artifact_dir="$(dirname -- "$zip_path")"
+artifact_name="$(basename -- "${zip_path%.zip}")"
+archive_staging_root="$work_root/zip-staging"
+archive_root_dir="$archive_staging_root/$archive_root_name"
+deployment_manifest_path="$qualification_root/deployment-manifest.json"
+signing_inventory_path="$qualification_root/ad-hoc-signing-inventory.json"
+runtime_probe_path="$qualification_root/runtime-probe.json"
+runtime_stdout_path="$qualification_root/runtime-probe.stdout.log"
+runtime_stderr_path="$qualification_root/runtime-probe.stderr.log"
+r_runtime_profile_path="$qualification_root/r-runtime-profile.json"
+r_direct_build_manifest_path="$qualification_root/direct-r-build-manifest.json"
+smoke_evidence_path="$qualification_root/packaged-smoke.json"
+smoke_log_path="$qualification_root/packaged-smoke.log"
+smoke_stdout_path="$qualification_root/packaged-smoke.stdout.log"
+smoke_stderr_path="$qualification_root/packaged-smoke.stderr.log"
+hang_trace_path="$qualification_root/packaged-smoke.hang-trace.log"
+launchservices_marker_path="$qualification_root/launchservices-completion.json"
+
+step() {
+  printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$1"
+}
 
 candidate_dir="$(mktemp -d "$artifact_dir/.macos-candidate.XXXXXX")"
 tmp_zip_path="$candidate_dir/$artifact_name.zip"
-final_archive_inspection_path="$archive_inspection_path"
-final_qualification_evidence_path="$qualification_evidence_path"
+final_archive_inspection_path="$artifact_dir/$artifact_name-archive-inspection.json"
+final_qualification_evidence_path="$artifact_dir/$artifact_name-evidence.json"
 archive_inspection_path="$candidate_dir/$artifact_name-archive-inspection.json"
 qualification_evidence_path="$candidate_dir/$artifact_name-evidence.json"
-retain_failed_candidate() {
-  status=$?
-  if [ "$status" -ne 0 ]; then
+finish_candidate() {
+  local status=$?
+  if [ "$status" -eq 0 ]; then
+    rmdir "$candidate_dir" || true
+  else
     cp -R "$qualification_root" "$candidate_dir/qualification" || true
   fi
   exit "$status"
 }
-trap retain_failed_candidate EXIT
+trap finish_candidate EXIT
 (
   step "Creating macOS artifact ZIP"
   rm -rf "$archive_staging_root"
@@ -23,7 +74,7 @@ trap retain_failed_candidate EXIT
   ditto -c -k --norsrc --keepParent "$archive_root_dir" "$tmp_zip_path"
 )
 
-python3 - "$tmp_zip_path" "$archive_root_name" "$skip_smoke" "$r_framework_version" <<'PY'
+"$python_exe" - "$tmp_zip_path" "$archive_root_name" "$skip_smoke" "$r_framework_version" <<'PY'
 import stat
 import sys
 import zipfile
@@ -94,7 +145,7 @@ PY
 
 if [ "$skip_smoke" -eq 0 ]; then
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" archive \
-    --target "macos-$architecture" \
+    --target "$target" \
     --archive "$tmp_zip_path" --archive-root-name "$archive_root_name" \
     --deployment-manifest "$deployment_manifest_path" \
     --signing-inventory "$signing_inventory_path" \
@@ -174,16 +225,10 @@ if [ "$skip_smoke" -eq 0 ]; then
     --require-atomic-completion
   rm -f "$extracted_pid"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" inspect \
-    ${inspection_options[@]+"${inspection_options[@]}"} \
-    --target "macos-$architecture" --app-root "$extracted_app" \
-    --output "$extracted_manifest" --source-commit "$source_commit" \
-    --runtime-probe "$extracted_probe" --signing-inventory "$signing_inventory_path" \
-    --locked-qt-root "$locked_qt_root" --python-version "$python_version" \
-    --pyqt6-version "$pyqt6_version" --qt-version "$qt_version" \
-    --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version" \
-    --r-version "$r_version" --pyinstaller-version "$pyinstaller_version"
+    "$@" --app-root "$extracted_app" --output "$extracted_manifest" \
+    --runtime-probe "$extracted_probe"
   "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" evidence \
-    --target "macos-$architecture" --archive "$tmp_zip_path" \
+    --target "$target" --archive "$tmp_zip_path" \
     --deployment-manifest "$deployment_manifest_path" --signing-inventory "$signing_inventory_path" \
     --runtime-probe "$runtime_probe_path" --r-runtime-profile "$r_runtime_profile_path" \
     --direct-build-manifest "$r_direct_build_manifest_path" \

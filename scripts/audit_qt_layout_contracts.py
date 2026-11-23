@@ -139,10 +139,6 @@ SOURCE_EXCEPTION_RULES = {
             "setMinimumSize",
         },
     },
-    "verification-layout-fixture": {
-        "paths": {"adaptive_layout_evidence.py"},
-        "methods": {"adjustSize", "move", "resize"},
-    },
 }
 
 UI_SEMANTIC_SIZE_CATEGORIES = {

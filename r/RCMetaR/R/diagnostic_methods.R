@@ -12,9 +12,13 @@ diagnostic.summary.metric.name <- function(metric) {
     pretty.metric.name(metric)
 }
 
+.rcmetar.diagnostic.counts <- function(diagnostic.data) {
+    list(TP=diagnostic.data@TP, FN=diagnostic.data@FN,
+         TN=diagnostic.data@TN, FP=diagnostic.data@FP)
+}
+
 rcmetar.corrected.diagnostic.counts <- function(diagnostic.data, params) {
-    values <- list(TP=diagnostic.data@TP, FN=diagnostic.data@FN,
-                   TN=diagnostic.data@TN, FP=diagnostic.data@FP)
+    values <- .rcmetar.diagnostic.counts(diagnostic.data)
     if (length(values$TP) == 0L) return(values)
     .rcmetar.correct.counts(values, as.numeric(params$adjust %||% 0),
                            .rcmetar.correction.target(params))
@@ -28,19 +32,23 @@ compute.diag.point.estimates <- function(diagnostic.data, params) {
         stop("Diagnostic point estimates require either TP/FN/TN/FP counts or entered effect estimates and standard errors.")
     }
 
-    data.adj <- rcmetar.corrected.diagnostic.counts(diagnostic.data, params)
-    terms <- compute.diagnostic.terms(raw.data=data.adj, params)
+    counts <- rcmetar.corrected.diagnostic.counts(diagnostic.data, params)
+    quantities <- .rcmetar.diagnostic.effect.quantities(counts, params)
+    diagnostic.data@y <- quantities$y
+    diagnostic.data@SE <- quantities$se
+    diagnostic.data
+}
+
+.rcmetar.diagnostic.effect.quantities <- function(counts, params) {
+    terms <- compute.diagnostic.terms(counts, params)
     metric <- params$measure
-    TP <- data.adj$TP
-    FN <- data.adj$FN
-    TN <- data.adj$TN
-    FP <- data.adj$FP
+    TP <- counts$TP
+    FN <- counts$FN
+    TN <- counts$TN
+    FP <- counts$FP
 
-    y <- terms$numerator / terms$denominator
-
-    diagnostic.data@y <- diagnostic.transform.f(params$measure)$calc.scale(y)
-
-    diagnostic.data@SE <- switch(metric,
+    y <- diagnostic.transform.f(metric)$calc.scale(terms$numerator / terms$denominator)
+    se <- switch(metric,
         Sens = sqrt((1 / TP) + (1 / FN)),
         Spec = sqrt((1 / TN) + (1 / FP)),
         PPV = sqrt((1 / TP) + (1 / FP)),
@@ -51,7 +59,7 @@ compute.diag.point.estimates <- function(diagnostic.data, params) {
         DOR = sqrt((1 / TP) + (1 / FN) + (1 / FP) + (1 / TN)))
 
 
-    diagnostic.data
+    list(y=y, se=se)
 }
 
 compute.diagnostic.terms <- function(raw.data, params) {
@@ -250,8 +258,10 @@ diagnostic.fixed.inv.var.overall <- function(results) {
 diagnostic.fixed.mh <- function(diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
     results <- NULL
-    counts <- list(TP=diagnostic.data@TP, FN=diagnostic.data@FN,
-                   FP=diagnostic.data@FP, TN=diagnostic.data@TN)
+    counts <- .rcmetar.diagnostic.counts(diagnostic.data)
+    if (!any(.rcmetar.complete.raw.rows(counts, length(diagnostic.data@study.names)))) {
+        stop("Mantel\u2013Haenszel requires complete finite diagnostic cell counts for at least one study.", call.=FALSE)
+    }
     res <- switch(params$measure,
 
         "DOR" = rma.mh(ai=counts$TP, bi=counts$FN,
@@ -339,7 +349,9 @@ diagnostic.fixed.mh.pretty.names <- function() {
 }
 
 diagnostic.fixed.mh.is.feasible <- function(diagnostic.data, metric){
-    metric %in% c("DOR", "PLR", "NLR")
+    metric %in% c("DOR", "PLR", "NLR") &&
+        any(.rcmetar.complete.raw.rows(.rcmetar.diagnostic.counts(diagnostic.data),
+                                      length(diagnostic.data@study.names)))
 }
 
 diagnostic.fixed.mh.overall <- function(results) {
@@ -349,13 +361,11 @@ diagnostic.fixed.mh.overall <- function(results) {
 diagnostic.fixed.peto <- function(diagnostic.data, params){
   if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
-  if (!.rcmetar.has.complete.raw.data(
-      list(diagnostic.data@TP, diagnostic.data@FN, diagnostic.data@FP, diagnostic.data@TN),
-      length(diagnostic.data@study.names))) {
+  counts <- .rcmetar.diagnostic.counts(diagnostic.data)
+  if (!.rcmetar.has.complete.raw.data(counts, length(diagnostic.data@study.names))) {
     stop("Peto requires complete finite diagnostic cell counts for every study.", call.=FALSE)
   }
-  res <- rma.peto(ai=diagnostic.data@TP, bi=diagnostic.data@FN,
-                    ci=diagnostic.data@FP, di=diagnostic.data@TN,
+  res <- rma.peto(ai=counts$TP, bi=counts$FN, ci=counts$FP, di=counts$TN,
 					slab=diagnostic.data@study.names,
                     level=params$conf.level,
 					digits=params$digits,
@@ -443,10 +453,8 @@ diagnostic.fixed.peto.pretty.names <- function() {
 
 diagnostic.fixed.peto.is.feasible <- function(diagnostic.data, metric){
   metric == "DOR" &&
-    length(diagnostic.data@TP)==length(diagnostic.data@FN) &&
-    length(diagnostic.data@FN)==length(diagnostic.data@FP) &&
-    length(diagnostic.data@FP)==length(diagnostic.data@TN) &&
-    length(diagnostic.data@TP) > 0
+    .rcmetar.has.complete.raw.data(.rcmetar.diagnostic.counts(diagnostic.data),
+                                   length(diagnostic.data@study.names))
 }
 
 diagnostic.fixed.peto.overall <- function(results) {

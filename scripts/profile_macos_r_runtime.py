@@ -78,9 +78,6 @@ def is_macho(path: Path) -> bool:
     try:
         with path.open("rb") as stream:
             magic = stream.read(4)
-        # Java ClassFile and fat Mach-O share CAFEBABE.  R's documented Java
-        # support payload contains .class files, which must remain ordinary
-        # resources and must never be passed to otool/lipo.
         if path.suffix.casefold() == ".class" and magic == b"\xca\xfe\xba\xbe":
             return False
         return magic in MACH_O_MAGICS

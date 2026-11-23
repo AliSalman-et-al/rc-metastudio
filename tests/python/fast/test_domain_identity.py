@@ -2,13 +2,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from rc_metastudio.project import model as analysis_dataset
 from rc_metastudio.analysis import catalog as analysis_catalog
-from rc_metastudio.domain_ids import SheetId
+from rc_metastudio.domain_ids import ArmId, SheetId
 from rc_metastudio.project.study import AnalysisUnit
 
 
 def _unit():
-    sheet = analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS)
-    return AnalysisUnit(sheet, arm_names=["group 1"], arm_stable_ids=["arm"])
+    sheet = analysis_dataset.Sheet(
+        SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS,
+        arms=[analysis_dataset.Arm(ArmId("arm"), "group 1")],
+    )
+    return AnalysisUnit(sheet)
 
 
 def test_entered_edit_does_not_hide_which_source_a_preview_belongs_to():

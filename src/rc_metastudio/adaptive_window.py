@@ -54,14 +54,6 @@ class WindowPolicy:
     application_owns_geometry: bool
 
 
-@dataclass(frozen=True)
-class AdaptiveWindowState:
-    """Application-owned window role state, independent of Qt properties."""
-
-    role: WindowRole
-    policy: WindowPolicy
-
-
 WINDOW_POLICIES = {
     WindowRole.MAIN: WindowPolicy(
         WindowArchetype.WORKSPACE, FirstUseBehavior.MAXIMIZED, 1.00, False
@@ -220,32 +212,15 @@ def set_content_preferred_width(window, minimum_width, preferred_width, preferre
     """Set a content-driven width that the adaptive policy can later clamp."""
     minimum = max(1, int(minimum_width))
     preferred = max(minimum, int(preferred_width))
-    # Keep the contract outside Qt's mutable minimum-size property.  Native
-    # QDialog show/adjustSize can replace that property with the style hint.
     window._adaptive_minimum_size_contract = QSize(minimum, 0)
-    # Keep the preferred width separate from the minimum.  The first-use
-    # refit runs after form construction, when a QDialog has not yet exposed
-    # the content widget's measured size hint.
     window._adaptive_preferred_width_contract = preferred
     window._adaptive_preferred_height_contract = max(0, int(preferred_height))
     # layout-audit: allow=adaptive-window-policy; reason=content width is bounded by the registered adaptive window policy
     window.setMinimumWidth(minimum)
-    # SetMinimumSize lets QDialog's native show path replace an explicit
-    # minimum with the platform style's narrow size hint.  This helper owns a
-    # measured content contract, so retain the explicit minimum and let the
-    # adaptive controller perform the actual refit instead.
     if window.layout() is not None:
         window.layout().setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
     # layout-audit: allow=adaptive-window-policy; reason=content width is bounded by the registered adaptive window policy
     window.resize(max(window.width(), preferred), max(window.height(), int(preferred_height)))
-
-
-def adaptive_window_state(window):
-    """Return the typed adaptive policy registered for ``window``."""
-    controller = getattr(window, "_adaptive_window_controller", None)
-    if not isinstance(controller, AdaptiveWindowController):
-        raise LookupError("window is not registered with the adaptive policy")
-    return controller.state
 
 
 class AdaptiveWindowController(QObject):
@@ -263,7 +238,6 @@ class AdaptiveWindowController(QObject):
         self.window = window
         self.role = WindowRole(role)
         self.policy = WINDOW_POLICIES[self.role]
-        self.state = AdaptiveWindowState(self.role, self.policy)
         self._uses_default_available_geometry_provider = (
             available_geometry_provider is None
         )
@@ -296,7 +270,6 @@ class AdaptiveWindowController(QObject):
             )
             window.layout().setSizeConstraint(constraint)
         if self.role == WindowRole.MAIN:
-            # Reserve a usable grid viewport in addition to the native chrome.
             em = window.fontMetrics().height()
             minimum = QSize(max(640, 40 * em), max(400, 24 * em))
             available = self._available_geometry()
@@ -344,10 +317,6 @@ class AdaptiveWindowController(QObject):
                 self._first_show_pending = False
             self._connect_window_handle()
             self.request_runtime_clamp()
-            # Native QDialog show can run an adjustSize pass after the Show
-            # event and replace an explicit minimum with its narrow style
-            # hint.  Restore the application-owned contract on the next event
-            # loop turn, then let the normal refit path compute the safe size.
             if self._has_minimum_size_contract():
                 QTimer.singleShot(0, self._restore_minimum_size_contract)
         return super(AdaptiveWindowController, self).eventFilter(watched, event)
@@ -384,9 +353,6 @@ class AdaptiveWindowController(QObject):
                 # content preference even after the first-use pass.
                 # layout-audit: allow=adaptive-window-policy; reason=measured content preference is restored after native dialog sizing
                 window.resize(preferred_width, window.height())
-        # The explicit preferred resize above completes the initial refit;
-        # dropping an already queued pass avoids a second native adjustSize
-        # from changing the footer geometry after the dialog is interactive.
         self._content_refit_pending = False
 
     def _has_minimum_size_contract(self):
@@ -416,10 +382,6 @@ class AdaptiveWindowController(QObject):
                 self._set_outer_frame_geometry(normal_frame)
                 self._first_restore_geometry = normal_frame
                 self._normal_frame_geometry = normal_frame
-            # The maximized state is complete before first display. Reapplying
-            # setWindowState() from the ensuing Show event can hide the native
-            # Cocoa window after Qt has requested it, leaving a logically
-            # visible QWidget with an unexposed zero-sized QWindow.
             self._first_show_pending = False
             self.window.setWindowState(
                 self.window.windowState() | Qt.WindowState.WindowMaximized
@@ -542,7 +504,6 @@ class AdaptiveWindowController(QObject):
             if available.contains(current):
                 return
             if self.role == WindowRole.MAIN:
-                # The client minimum must leave room for native frame decorations.
                 self.window.setMinimumSize(self.window.minimumSize().boundedTo(
                     client_size_for_frame_size(available.size(), self._frame_margins())))
             target = clamp_frame_geometry(current, available)
@@ -550,8 +511,6 @@ class AdaptiveWindowController(QObject):
                 self._set_outer_frame_geometry(target)
 
     def _available_geometry(self):
-        # The provider owns geometry. The cached screen only owns signal
-        # connections; it must not replace an explicitly supplied geometry.
         try:
             return QRect(self._available_geometry_provider(self.window))
         except RuntimeError:
@@ -574,10 +533,6 @@ class AdaptiveWindowController(QObject):
                 int(getattr(self.window, "_adaptive_preferred_height_contract", 0)),
             )
         )
-        # ``minimumSizeHint()`` describes the layout's natural minimum, but it
-        # does not necessarily include an application-owned minimum installed
-        # with ``setMinimumWidth``/``setMinimumHeight``.  Preserve that
-        # explicit contract when a later content refit recomputes the size.
         contract = QSize(
             getattr(self.window, "_adaptive_minimum_size_contract", self.window.minimumSize())
         )

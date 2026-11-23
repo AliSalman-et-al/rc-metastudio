@@ -140,7 +140,7 @@ def run(app, window, record):
             record('display-metric-popup', menu, family=family,
                    capture_surface='desktop-composite', labels=[action.text() for action in menu.actions()])
             menu.hide()
-        kind = (BinaryDataDialog if window.model.get_current_data_type() == 'binary' else
+        kind = (BinaryDataDialog if window.model.get_current_family() == 'binary' else
                 DiagnosticDataDialog if window.model.is_diagnostic() else
                 RatioDataDialog if family in {'hr','irr'} else ContinuousDataDialog)
         def calculator(dialog):

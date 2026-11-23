@@ -9,9 +9,9 @@ sys.path.insert(0, os.path.abspath("src"))
 
 from rc_metastudio.analysis.validation import normalize_confidence_level_params, is_valid_plot_tick_list, validate_analysis_digits, validate_correction_factor, validate_confidence_level
 from rc_metastudio.analysis.catalog import CONTINUOUS
-from rc_metastudio.project.model import Sheet
+from rc_metastudio.project.model import Arm, Sheet
 from rc_metastudio.project.study import AnalysisUnit
-from rc_metastudio.domain_ids import SheetId
+from rc_metastudio.domain_ids import ArmId, SheetId
 
 
 def test_plot_ticks_accept_only_comma_separated_finite_numbers():
@@ -33,7 +33,10 @@ def test_validate_confidence_level_rejects_endpoints_and_non_finite_values():
     (math.nextafter(100.0, 0.0), 8.292361075813597),
 ])
 def test_entered_interval_uses_its_original_confidence_for_standard_error(level, multiplier):
-    sheet = Sheet(SheetId("effect"), "Effect", CONTINUOUS, sub_type="means")
+    sheet = Sheet(
+        SheetId("effect"), "Effect", CONTINUOUS, sub_type="means",
+        arms=[Arm(ArmId("a"), "Group A"), Arm(ArmId("b"), "Group B")],
+    )
     sheet.settings["confidence_level"] = level
     unit = AnalysisUnit(sheet)
     arms = tuple(arm.stable_id for arm in unit.arms.values())

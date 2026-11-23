@@ -112,16 +112,6 @@ repo_path() {
   esac
 }
 
-project_version() {
-  "$python_exe" - "$repo_root/pyproject.toml" <<'PY'
-import pathlib
-import sys
-import tomllib
-
-print(tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))["project"]["version"])
-PY
-}
-
 resolve_existing_dir() {
   local path="$1"
   local description="$2"
@@ -132,23 +122,7 @@ resolve_existing_dir() {
   (cd "$path" && pwd -P)
 }
 
-copy_tree() {
-  local source="$1"
-  local destination="$2"
-  if [ ! -d "$source" ]; then
-    echo "Source directory was not found: $source" >&2
-    exit 1
-  fi
-  rm -rf "$destination"
-  mkdir -p "$(dirname "$destination")"
-  if command -v rsync >/dev/null 2>&1; then
-    mkdir -p "$destination"
-    rsync -a --delete "$source"/ "$destination"/
-  else
-    mkdir -p "$destination"
-    (cd "$source" && tar -cf - .) | (cd "$destination" && tar -xf -)
-  fi
-}
+source "$script_dir/macos_copy_tree.sh"
 
 if [ "$(uname -s)" != "Darwin" ]; then
   echo "macOS packaging must run on macOS." >&2
@@ -182,8 +156,6 @@ if [ "$host_machine" != "$expected_machine" ]; then
   exit 1
 fi
 
-# Native wheels and R source packages compiled on the runner must not inherit
-# the runner image's newer deployment floor.
 export MACOSX_DEPLOYMENT_TARGET="$minimum_macos_version"
 
 artifact_name="${artifact_name:-$default_artifact}"
@@ -191,7 +163,6 @@ dist_root="$repo_root/build/macos-package/$architecture/dist"
 work_root="$repo_root/build/macos-package/$architecture/work"
 app_bundle="$dist_root/RCMetaStudio.app"
 app_root="$app_bundle/Contents/MacOS"
-archive_staging_root="$work_root/zip-staging"
 zip_path="$artifact_dir/$artifact_name.zip"
 
 qualification_root="$work_root/qualification"
@@ -222,8 +193,6 @@ rcmetar_archive_path="$qualification_root/$rcmetar_archive_name"
 runner_environment_path="$qualification_root/runner-environment.json"
 official_r_signature_path="$qualification_root/official-r-signature.json"
 pre_sign_graph_path="$qualification_root/pre-sign-native-graph.json"
-archive_inspection_path="$artifact_dir/$artifact_name-archive-inspection.json"
-qualification_evidence_path="$artifact_dir/$artifact_name-evidence.json"
 cran_repo="${RCMS_CRAN_REPO:-$pinned_cran_repo}"
 if [ "$cran_repo" != "$pinned_cran_repo" ]; then
   echo "RCMS_CRAN_REPO must match the manifest snapshot: $pinned_cran_repo" >&2
@@ -236,13 +205,10 @@ if [ "$pr_wheels" = true ]; then
   (
     cd "$repo_root"
     uv sync --locked --no-build --no-install-project
-    # Install the editable application after verifying that its dependencies have wheels.
     uv sync --locked
   )
 elif [ "$skip_dependency_install" -eq 0 ]; then
   step "Syncing locked verification environment"
-  # Both the wheel and official binary SDK were linked for 14.4. Build Qt
-  # itself at the package floor before building bindings against that runtime.
   qt_build_root="$repo_root/build/macos-qt-source"
   qt_sdk_root="$qt_build_root/install"
   if [ "${RCMS_MACOS_QT_CACHE_HIT:-false}" = true ] &&
@@ -288,11 +254,8 @@ elif [ "$skip_dependency_install" -eq 0 ]; then
   [ "$("$qt_qmake" -query QT_VERSION)" = "6.12.0" ] || { echo "Qt SDK must be 6.12.0." >&2; exit 1; }
   pyqt_cache_options=(--reinstall-package pyqt6)
   if [ "${RCMS_MACOS_PYQT_CACHE:-false}" = true ] && [ ! -e "$repo_root/.venv" ]; then
-    # Keep the wheel cache outside the SDK tree, which is cleared on a miss.
     pyqt_cache_options=(--cache-dir "$repo_root/build/macos-pyqt-cache")
   fi
-  # Serialize C++ compilation on the hosted runner and stream backend diagnostics.
-  # Keep binding rpaths relative to the single runtime tree collected by PyInstaller.
   (cd "$repo_root" && uv sync --verbose --locked --no-binary-package pyqt6 "${pyqt_cache_options[@]}" \
     --config-settings-package "pyqt6:--confirm-license=" \
     --config-settings-package "pyqt6:--target-qt-dir=Qt6/lib" \
@@ -460,11 +423,10 @@ if [ ! -x "$python_exe" ]; then
   exit 1
 fi
 
-resolved_project_version="$(project_version)"
-archive_root_name="${archive_root_name:-RCMetaStudio-$resolved_project_version-macos-$architecture}"
+project_version="$("$python_exe" "$script_dir/dependency_lock.py" --project-version)"
+archive_root_name="${archive_root_name:-RCMetaStudio-$project_version-macos-$architecture}"
 "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" validate-root \
   --archive-root-name "$archive_root_name"
-archive_root_dir="$archive_staging_root/$archive_root_name"
 
 "$python_exe" - <<'PY'
 import PyInstaller
@@ -483,8 +445,6 @@ if [ -n "${signature_stdout:-}" ]; then
 fi
 require_free_space_gb "$repo_root" 6
 
-# Complete and prove the one private framework before PyInstaller sees it.
-# No R member is populated or mutated in the generated app bundle.
 r_framework="$private_r_framework"
 r_framework_version="$(readlink "$r_framework/Versions/Current")"
 case "$r_framework_version" in
@@ -714,7 +674,6 @@ step "Building the app from the completed staged R framework"
   "$python_exe" scripts/build_qt6.py generate --build-root "$qt6_package_build_root"
   export RCMS_QT6_BUILD_ROOT="$qt6_package_build_root"
   export RCMS_BUNDLE_IDENTIFIER="$bundle_identifier"
-  export RCMS_PROJECT_VERSION="$resolved_project_version"
   export RCMS_TARGET_ARCHITECTURE="$pyinstaller_target_architecture"
   export RCMS_MINIMUM_MACOS_VERSION="$minimum_macos_version"
   pyinstaller_args=(--noconfirm --distpath "$dist_root" --workpath "$work_root" "packaging/pyinstaller/rc-metastudio-macos.spec")
@@ -925,18 +884,18 @@ sip_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version
 sip_runtime_version="$("$python_exe" -c 'from PyQt6 import sip; print(sip.SIP_VERSION_STR)')"
 pyinstaller_version="$("$python_exe" -c 'import importlib.metadata as m; print(m.version("pyinstaller"))')"
 locked_qt_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
+inspection_options+=(
+  --target "macos-$architecture" --source-commit "$source_commit"
+  --signing-inventory "$signing_inventory_path" --locked-qt-root "$locked_qt_root"
+  --python-version "$python_version" --pyqt6-version "$pyqt6_version" --qt-version "$qt_version"
+  --sip-version "$sip_version" --sip-runtime-version "$sip_runtime_version"
+  --r-version "$r_version" --pyinstaller-version "$pyinstaller_version"
+)
 step "Inspecting the coherent target-native macOS deployment"
 "$python_exe" "$repo_root/scripts/inspect_macos_deployment.py" inspect \
-  ${inspection_options[@]+"${inspection_options[@]}"} \
-  --target "macos-$architecture" \
+  "${inspection_options[@]}" \
   --app-root "$app_bundle" --output "$deployment_manifest_path" \
-  --source-commit "$source_commit" --runtime-probe "$runtime_probe_path" \
-  --signing-inventory "$signing_inventory_path" \
-  --locked-qt-root "$locked_qt_root" \
-  --python-version "$python_version" --pyqt6-version "$pyqt6_version" \
-  --qt-version "$qt_version" --sip-version "$sip_version" \
-  --sip-runtime-version "$sip_runtime_version" --r-version "$r_version" \
-  --pyinstaller-version "$pyinstaller_version"
+  --runtime-probe "$runtime_probe_path"
 
 step "Recording canonical direct target-native production provenance"
 cp "$repo_root/scripts/macos_host_r_isolation.sh" "$qualification_root/macos-host-r-isolation.sh"
@@ -948,4 +907,6 @@ cp "$repo_root/scripts/macos_host_r_isolation.sh" "$qualification_root/macos-hos
   --source-commit "$source_commit" \
   --output "$r_direct_build_manifest_path"
 
-source "$repo_root/scripts/finalize-macos-package.sh"
+exec bash "$script_dir/finalize-macos-package.sh" "$python_exe" "$app_bundle" "$qualification_root" \
+  "$zip_path" "$archive_root_name" "$r_framework_version" "$skip_smoke" "macos-$architecture" \
+  "${inspection_options[@]}"

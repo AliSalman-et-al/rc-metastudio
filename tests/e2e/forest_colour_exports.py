@@ -89,7 +89,6 @@ def run_colours(app, window, work, record):
                 record('reviewer-default-style-editor',dialog,scenario=scenario)
                 click(app,dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel))
             modal(app,EditPlotDialog,editor,view.edit_plot_action.trigger)
-            # One full export set per family, including sequential and clinical variants.
             if scenario == 'analysis-data-twoarm-proportion':
                 def clipped(dialog):
                     dialog.plot_lb_le.setText('0.4')

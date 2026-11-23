@@ -34,7 +34,6 @@ def analysis_setup(driver, capture, missing):
         driver.csv_import(driver.app, driver.window)
     finally:
         driver.record_step = original_record
-    # The CSV drive ends on its effects-only example, which has no moderators.
     driver.window.workspace.mark_saved()
     assert driver.window.open(str(driver.WORK / "imported.rcms"), raise_on_error=True)
     for detail, action in (("subgroup", driver.window.action_subgroup_ma),
@@ -125,7 +124,8 @@ def exports(driver, capture, missing, view):
     from pathlib import Path
     from unittest.mock import patch
     from PyQt6 import QtGui
-    from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
+    from rc_metastudio.results.report import ManuscriptReport
+    from rc_metastudio.results.report_export import write_docx, write_pdf
     report = ManuscriptReport.from_result(view.results)
     pdf = driver.WORK / "manuscript.pdf"
     docx = driver.WORK / "manuscript.docx"
@@ -316,7 +316,7 @@ def create_dataset(driver, capture, missing):
     for button in types._data_type_buttons():
         types._button_selected(button)
         if form.require_dataset_info()["data_type"] == "diagnostic":
-            continue  # Diagnostic data has no metric wizard page.
+            continue
         form.setStartId(wizard.Page_ChooseMetric)
         form.restart()
         capture("B-metric-" + "-".join(str(form.require_dataset_info().get(key)) for key in ("data_type", "sub_type")), form)

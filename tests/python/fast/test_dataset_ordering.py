@@ -23,7 +23,7 @@ def _sortable_dataset_model():
         covariates=[{"id": "Dose", "name": "Dose", "data_type": analysis_catalog.CONTINUOUS}])
     dataset = analysis_dataset.Dataset(sheets=[sheet])
     for i, (name, year, dose) in enumerate((("Gamma", 1988, 30), ("Alpha", 1977, 10), ("Beta", 1989, 20))):
-        unit = AnalysisUnit(sheet, arm_names=names, arm_stable_ids=[a.id for a in arms])
+        unit = AnalysisUnit(sheet)
         sheet.rows.append(analysis_dataset.StudyRow(RowId(str(i)), name, unit, year=year, covariate_values={"Dose": dose}))
 
     raw_events_by_name = {"Gamma": 3, "Alpha": 1, "Beta": 2}
@@ -101,11 +101,11 @@ def test_standard_error_sort_does_not_sort_confidence_bounds():
     arm = analysis_dataset.Arm(ArmId("group"), "Group")
     sheet = analysis_dataset.Sheet(
         SheetId("sheet"), "Measurement", analysis_catalog.CONTINUOUS,
-        sub_type="generic_effect", family="continuous", arms=[arm],
+        sub_type="generic_effect", arms=[arm],
         settings={"metric": "Mean", "confidence_level": 90.0},
     )
     for name, se in (("Narrow", 0.1), ("Wide", 1.0)):
-        unit = AnalysisUnit(sheet, arm_names=[arm.name], arm_stable_ids=[arm.id])
+        unit = AnalysisUnit(sheet)
         unit.set_effect_for_source("entered", "Mean", (arm.id,), 1.0, standard_error=se)
         sheet.rows.append(analysis_dataset.StudyRow(RowId(name), name, unit))
     model = dataset_table_model.DatasetTableModel(

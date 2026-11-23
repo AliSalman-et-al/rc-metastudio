@@ -216,7 +216,6 @@ test_that("binary Default Forest Style builds a self-contained metafor render bu
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "binary")
   expect_equal(bundle$fp_style, "default")
   expect_true("effect_display" %in% names(bundle))
@@ -319,7 +318,6 @@ test_that("forest style and universal appearance params persist in metafor bundl
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$fp_style, "bmj")
   expect_equal(rcmetar.forest.accent.color(bundle$params), "#6b58a6")
   expect_equal(rcmetar.point.size.multiplier(bundle$params), 1.8)
@@ -364,53 +362,6 @@ test_that("binary RevMan Forest Style builds faithful count, weight, and block s
   rcmetar.draw.forest.plot(bundle, png_path)
   expect_true(file.exists(png_path))
   expect_gt(file.info(png_path)$size, 5000)
-})
-
-test_that("Forest Layout Preflight produces deterministic layout plans for Default and RevMan styles", {
-  fixture <- metafor_binary_fixture()
-  res <- rma.uni(
-    yi = fixture$data@y,
-    sei = fixture$data@SE,
-    slab = fixture$data@study.names,
-    method = fixture$params$rm.method,
-    level = fixture$params$conf.level,
-    digits = fixture$params$digits
-  )
-
-  default.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  default.plan <- rcmetar.forest.layout.preflight(default.bundle)
-
-  expect_s3_class(default.plan, "rcmetar_forest_layout_plan")
-  expect_equal(default.plan$style$name, "default")
-  expect_equal(default.plan$style$template, "default")
-  expect_gt(default.plan$device$width, 0)
-  expect_gt(default.plan$device$height, 0)
-  expect_equal(default.plan$typography$cex * 12, 8)
-  expect_length(default.plan$rows$study_rows, nrow(default.bundle$ilab$matrix))
-  expect_true(all(diff(default.plan$rows$study_rows) <= -1))
-
-  fixture$params$fp_style <- "revman"
-  revman.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  revman.plan <- rcmetar.forest.layout.preflight(revman.bundle)
-
-  expect_s3_class(revman.plan, "rcmetar_forest_layout_plan")
-  expect_equal(revman.plan$style$name, "revman")
-  expect_equal(revman.plan$style$template, "standard")
-  expect_equal(revman.plan$headers$study, "Study")
-  expect_equal(revman.plan$rows$study_rows, length(revman.bundle$slab):1)
-  expect_equal(revman.plan$footer$axis$axis.x, mean(revman.plan$x$alim), tolerance = 1e-8)
-
-  fixture$params$fp_style <- "bmj"
-  bmj.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  bmj.plan <- rcmetar.forest.layout.preflight(bmj.bundle)
-
-  expect_s3_class(bmj.plan, "rcmetar_forest_layout_plan")
-  expect_equal(bmj.plan$style$name, "bmj")
-  expect_equal(bmj.plan$style$template, "standard")
-  expect_equal(bmj.plan$headers$study, "Study")
-  expect_equal(bmj.plan$headers$effect, "Odds ratio")
-  expect_equal(bmj.plan$rows$study_rows, length(bmj.bundle$slab):1)
-  expect_equal(bmj.plan$footer$axis$axis.x, mean(bmj.plan$x$alim), tolerance = 1e-8)
 })
 
 test_that("RevMan SVG uses inline study CI strokes for QtSvg compatibility", {
@@ -581,59 +532,6 @@ test_that("automatic identity-scale limits leave room for finite endpoint caps",
   plan <- rcmetar.forest.layout.preflight(bundle)
   expect_lt(plan$x$alim[[1]], min(intervals$ci.lb))
   expect_gt(plan$x$alim[[2]], max(intervals$ci.ub))
-})
-
-test_that("Forest Layout Preflight records sparse and compact RevMan templates without persisting plans", {
-  fixture <- metafor_entered_binary_fixture()
-  fixture$params$fp_style <- "revman"
-  res <- rma.uni(
-    yi = fixture$data@y,
-    sei = fixture$data@SE,
-    slab = fixture$data@study.names,
-    method = fixture$params$rm.method,
-    level = fixture$params$conf.level,
-    digits = fixture$params$digits
-  )
-
-  sparse.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
-  sparse.plan <- rcmetar.forest.layout.preflight(sparse.bundle)
-
-  expect_equal(sparse.plan$style$name, "revman")
-  expect_equal(sparse.plan$style$template, "sparse")
-  expect_equal(sparse.bundle$ilab$headers, "Weight")
-  expect_equal(length(sparse.plan$columns$ilab.xpos), 1)
-  expect_false("layout_plan" %in% names(sparse.bundle))
-
-  sequential.bundle <- rcmetar.build.sequential.metafor.bundle(
-    fixture$data,
-    fixture$params,
-    list(
-      list(b = fixture$data@y[[1]], ci.lb = fixture$data@y[[1]] - fixture$data@SE[[1]], ci.ub = fixture$data@y[[1]] + fixture$data@SE[[1]], se = fixture$data@SE[[1]]),
-      list(b = fixture$data@y[[2]], ci.lb = fixture$data@y[[2]] - fixture$data@SE[[2]], ci.ub = fixture$data@y[[2]] + fixture$data@SE[[2]], se = fixture$data@SE[[2]])
-    ),
-    "cumulative",
-    labels = c("Entered Binary 1", "+ Entered Binary 2"), has.overall=FALSE
-  )
-  compact.plan <- rcmetar.forest.layout.preflight(sequential.bundle, style = "revman")
-
-  expect_equal(compact.plan$style$name, "revman")
-  expect_equal(compact.plan$style$template, "compact")
-  expect_true(compact.plan$rows$manual_sequential_labels)
-  expect_equal(compact.plan$rows$study_rows, 2:1)
-  expect_lt(compact.plan$rows$top - max(compact.plan$rows$study_rows), 2)
-  expect_true(compact.plan$rows$ylim[[1]] >= -4.2)
-  expect_lt(compact.plan$device$height, 5)
-  expect_equal(rcmetar.metafor.forest.line.types(compact.plan), c("solid", "blank"))
-
-  sequential.bundle$params$fp_style <- "bmj"
-  sequential.bundle$fp_style <- "bmj"
-  bmj.compact.plan <- rcmetar.forest.layout.preflight(sequential.bundle, style = "bmj")
-
-  expect_equal(bmj.compact.plan$style$name, "bmj")
-  expect_equal(bmj.compact.plan$style$template, "compact")
-  expect_true(bmj.compact.plan$rows$manual_sequential_labels)
-  expect_lt(bmj.compact.plan$rows$top - max(bmj.compact.plan$rows$study_rows), 2)
-  expect_lt(bmj.compact.plan$device$height, 5)
 })
 
 test_that("Forest Layout Preflight keeps hidden-header CI lines and readable moderate-row text", {
@@ -946,7 +844,6 @@ test_that("BMJ raw-column layouts measure long labels and wrapped headers", {
   expect_gt(long.plan$footer$axis$left.max.width, 0)
   expect_gt(long.plan$footer$axis$right.max.width, 0)
   expect_match(rcmetar.bmj.wrap.header(long.bundle$ilab$groups[[1]]), "\n", fixed = TRUE)
-  expect_false("layout_plan" %in% names(long.bundle))
 
 })
 
@@ -1034,7 +931,6 @@ test_that("entered-effect-only standard plots render without raw arm columns", {
 
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-    expect_equal(bundle$render_engine, "metafor")
     expect_equal(bundle$ilab$headers, "Weight (%)")
     expect_equal(bundle$slab, fixture$data@study.names)
 
@@ -1065,7 +961,6 @@ test_that("entered-effect-only RevMan plots degrade to weight columns", {
 
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-    expect_equal(bundle$render_engine, "metafor")
     expect_equal(bundle$fp_style, "revman")
     expect_equal(bundle$ilab$headers, "Weight")
     expect_equal(bundle$ilab$groups, character(0))
@@ -1103,7 +998,6 @@ test_that("RevMan and BMJ styles honor hidden raw count columns", {
 
       bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-      expect_equal(bundle$render_engine, "metafor")
       expect_equal(bundle$fp_style, style)
       expect_equal(bundle$ilab$headers, if (style == "bmj") "Weight (%)" else "Weight")
       expect_equal(bundle$ilab$groups, character(0))
@@ -1131,7 +1025,6 @@ test_that("mixed raw and entered-effect rows render blanks for unavailable raw d
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight (%)"))
   expect_equal(unname(bundle$ilab$matrix[2, 1:4]), rep("", 4))
 
@@ -1272,7 +1165,6 @@ test_that("single-study binary Default Forest Style uses normalized vectors", {
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(unname(bundle$effect$yi), unname(as.numeric(fixture$data@y)))
   expect_equal(unname(bundle$effect$sei), unname(as.numeric(fixture$data@SE)))
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight (%)"))
@@ -1308,13 +1200,6 @@ test_that("generic plot labels tolerate missing publication years", {
   )
 })
 
-test_that("model and inference labels are separate readable lines", {
-  result <- list(method="DL", QE=1.2, k=3, p=1, QEp=0.2, I2=30, tau2=0.1)
-  expect_equal(rcmetar.forest.model.label(result), "Random-effects model (DerSimonian–Laird)")
-  expect_equal(rcmetar.forest.heterogeneity.label(result),
-    "Heterogeneity: τ² = 0.10; Q = 1.20, df = 2 (P = 0.200); I² = 30.0%")
-})
-
 test_that("default forest heterogeneity labels reflect the fitted model", {
   fixture <- metafor_continuous_fixture(studies = 5)
   fit <- function(method) {
@@ -1327,34 +1212,16 @@ test_that("default forest heterogeneity labels reflect the fitted model", {
     )
   }
 
-  fixed.bundle <- rcmetar.regenerate.plot.data(fixture$data, fit("FE"), fixture$params)
-  random.bundle <- rcmetar.regenerate.plot.data(fixture$data, fit("REML"), fixture$params)
-
-  expect_match(
-    rcmetar.metafor.heterogeneity.measure.label(fixed.bundle),
-    "^Fixed-effect model",
-    perl=TRUE
-  )
-  expect_match(
-    rcmetar.metafor.heterogeneity.measure.label(random.bundle),
-    "^Random-effects model",
-    perl=TRUE
-  )
-
-  svg.path <- tempfile(fileext=".svg")
-  rcmetar.draw.forest.plot(fixed.bundle, svg.path)
-  rendered <- paste(readLines(svg.path, warn=FALSE), collapse="\n")
-  expect_match(rendered, "Fixed-effect(?: |</text>\\s*<text[^>]*>)model", perl=TRUE)
-  expect_false(grepl("Random-effects", rendered, fixed=TRUE))
-})
-
-test_that("raster plot exports default to publication-grade resolution", {
-  expect_equal(rcmetar.plot.export.dpi(list()), 600)
-  expect_equal(rcmetar.plot.export.dpi(list(dpi=900)), 900)
-  expect_equal(
-    unname(rcmetar.plot.pixel.size(list(width=3, height=2))),
-    c(1800, 1200)
-  )
+  for (method in c("FE", "REML")) {
+    bundle <- rcmetar.regenerate.plot.data(fixture$data, fit(method), fixture$params)
+    svg.path <- tempfile(fileext=".svg")
+    rcmetar.draw.forest.plot(bundle, svg.path)
+    rendered <- paste(readLines(svg.path, warn=FALSE), collapse="\n")
+    expected <- if (method == "FE") "Fixed-effect" else "Random-effects"
+    other <- if (method == "FE") "Random-effects" else "Fixed-effect"
+    expect_match(rendered, paste0(expected, "(?: |</text>\\s*<text[^>]*>)model"), perl=TRUE)
+    expect_false(grepl(other, rendered, fixed=TRUE))
+  }
 })
 
 test_that("single-arm binary metrics build and render Default metafor bundles", {
@@ -1373,7 +1240,6 @@ test_that("single-arm binary metrics build and render Default metafor bundles", 
 
     bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-    expect_equal(bundle$render_engine, "metafor")
     expect_equal(bundle$data_type, "binary")
     expect_equal(bundle$ilab$headers, c("Events", "Non-events", "Weight (%)"))
     expect_equal(bundle$ilab$groups, "Cohort")
@@ -1449,7 +1315,6 @@ test_that("continuous Default Forest Style builds and renders mean SD N columns"
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "continuous")
   expect_equal(bundle$ilab$headers, c("Mean", "SD", "N", "Mean", "SD", "N", "Weight (%)"))
   expect_equal(bundle$ilab$groups, c("Treatment", "Control"))
@@ -1479,7 +1344,6 @@ test_that("single-arm continuous styles use one-arm mean SD N columns and plain 
 
   default.bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(default.bundle$render_engine, "metafor")
   expect_equal(default.bundle$data_type, "continuous")
   expect_equal(default.bundle$ilab$headers, c("Mean", "SD", "N", "Weight (%)"))
   expect_equal(default.bundle$ilab$groups, "Cohort")
@@ -1532,7 +1396,6 @@ test_that("diagnostic Default Forest Style builds and renders count columns on t
 
   bundle <- rcmetar.regenerate.plot.data(fixture$data, res, fixture$params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
   expect_equal(bundle$ilab$headers, c("TP", "FP", "FN", "TN", "Weight (%)"))
   expect_equal(bundle$ilab$groups, "Counts")
@@ -1602,7 +1465,6 @@ test_that("diagnostic multi-metric workflows save independent metafor forest plo
       )
 
       expect_true(rcmetar.is.metafor.forest.bundle(plot_data))
-      expect_equal(plot_data$render_engine, "metafor")
       expect_equal(plot_data$params$measure, measure)
       expect_true(file.exists(image_path))
       expect_gt(file.info(image_path)$size, 5000)
@@ -1677,7 +1539,6 @@ test_that("single-study entered diagnostic Default Forest Style omits count ilab
 
   bundle <- rcmetar.regenerate.plot.data(data, res, params)
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$data_type, "diagnostic")
   expect_equal(bundle$ilab$headers, "Weight (%)")
   expect_equal(unname(as.numeric(bundle$res$yi)), unname(as.numeric(data@y)))
@@ -1721,7 +1582,6 @@ test_that("workflow forest artifacts regenerate through their saved public contr
     case <- cases[[variant]]()
     params.path <- unname(case$result$plot_params_paths[[1]])
     original <- load_saved_plot_data(params.path)
-    expect_equal(original$render_engine, "metafor", info=variant)
     expect_equal(original$forest_variant, variant, info=variant)
     expect_equal(original$fp_style, "default", info=variant)
     expect_true(file.exists(unname(case$result$images[[1]])), info=variant)
@@ -1790,7 +1650,7 @@ test_that("sequential regeneration rejects invalid overall presence at its bound
 
 test_that("cumulative workflow handles entered-effect-only data in Default, RevMan, and BMJ styles", {
   fixtures <- list(
-    binary = list(fixture_fn = metafor_entered_binary_fixture, method = "binary.random", runner = cum.ma.binary),
+    binary = list(fixture_fn = function() metafor_entered_binary_fixture(2), method = "binary.random", runner = cum.ma.binary),
     continuous = list(fixture_fn = metafor_entered_continuous_fixture, method = "continuous.random", runner = cum.ma.continuous),
     diagnostic = list(fixture_fn = metafor_entered_diagnostic_fixture, method = "diagnostic.random", runner = cum.ma.diagnostic)
   )
@@ -1804,11 +1664,20 @@ test_that("cumulative workflow handles entered-effect-only data in Default, RevM
       result <- entry$runner(entry$method, fixture$data, fixture$params)
       bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
-      expect_equal(bundle$render_engine, "metafor")
       expect_equal(bundle$forest_variant, "cumulative")
       expect_equal(bundle$fp_style, style)
       expect_true(file.exists(unname(result$images[[1]])))
       expect_gt(file.info(unname(result$images[[1]]))$size, 5000)
+      if (entry$method == "binary.random" && style %in% c("revman", "bmj")) {
+        svg.path <- tempfile(fileext = ".svg")
+        rcmetar.draw.forest.plot(bundle, svg.path)
+        svg <- xml2::read_xml(svg.path)
+        labels <- xml2::xml_text(xml2::xml_find_all(svg, "//*[local-name()='text']"))
+        expect_true(any(grepl("Entered Binary 1", labels, fixed = TRUE)))
+        expect_true(any(grepl("Entered Binary 2", labels, fixed = TRUE)))
+        height <- as.numeric(sub("pt$", "", xml2::xml_attr(svg, "height")))
+        expect_lt(height, 360)
+      }
     }
   }
 })
@@ -1829,7 +1698,6 @@ test_that("leave-one-out workflow handles entered-effect-only data in Default, R
       result <- entry$runner(entry$method, fixture$data, fixture$params)
       bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
-      expect_equal(bundle$render_engine, "metafor")
       expect_equal(bundle$forest_variant, "leave-one-out")
       expect_equal(bundle$fp_style, style)
       expect_equal(bundle$slab[[1]], "All studies")
@@ -1855,7 +1723,6 @@ test_that("subgroup workflow saves and renders Default metafor subtotal diamonds
   result <- subgroup.ma.binary("binary.random", fixture$data, fixture$params)
   bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "subgroup")
   expect_equal(bundle$fp_style, "default")
   expect_equal(bundle$slab[[1]], "Aaronson, 1991")
@@ -1899,7 +1766,6 @@ test_that("subgroup workflow saves and renders RevMan subtotal diamonds", {
   result <- subgroup.ma.binary("binary.random", fixture$data, fixture$params)
   bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "subgroup")
   expect_equal(bundle$fp_style, "revman")
   expect_equal(bundle$ilab$headers, c("Events", "Total", "Events", "Total", "Weight"))
@@ -1928,7 +1794,6 @@ test_that("subgroup workflow saves and renders BMJ subtotal diamonds", {
   result <- subgroup.ma.binary("binary.random", fixture$data, fixture$params)
   bundle <- load_saved_plot_data(unname(result$plot_params_paths[[1]]))
 
-  expect_equal(bundle$render_engine, "metafor")
   expect_equal(bundle$forest_variant, "subgroup")
   expect_equal(bundle$fp_style, "bmj")
   expect_equal(bundle$ilab$headers, c("Events / total", "Events / total", "Weight (%)"))

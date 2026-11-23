@@ -87,12 +87,7 @@ def test_about_legal_has_explicit_overflow_and_reachable_action(qapp):
             dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Close),
             "close button",
         )
-        from rc_metastudio import adaptive_window
 
-        assert (
-            adaptive_window.adaptive_window_state(dialog).policy.archetype
-            is adaptive_window.WindowArchetype.TRANSACTIONAL
-        )
         assert (
             required(
                 dialog.content_scroll_area.verticalScrollBar(), "vertical scrollbar"

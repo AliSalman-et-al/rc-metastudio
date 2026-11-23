@@ -26,7 +26,6 @@ rcmetar.draw.forest.diamond <- function(center, lower, upper, row, height, alim,
                           col=color, border=color)
         return(invisible(NULL))
     }
-    # Bound the vertices themselves: the desktop SVG renderer ignores clip paths.
     inset <- min(arrow.length, (right - left) / 3)
     left.base <- left + if (lower < left) inset else 0
     right.base <- right - if (upper > right) inset else 0
@@ -59,7 +58,6 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
 }
 
 rcmetar.forest.outward.directions <- function(bundle, split, cex, font=1) {
-    # Use the entire page width below the axis, keeping the null gutter.
     bounds <- graphics::grconvertX(c(.08, grDevices::dev.size("in")[[1L]] - .08), "inches", "user")
     gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
     at <- split + c(-gap, gap)
@@ -225,21 +223,18 @@ rcmetar.draw.forest.column.headers <- function(bundle, layout, rule.y) {
     leading <- graphics::strheight("Mg", units="user") * 1.8
     lines <- function(label) length(strsplit(label, "\n", fixed=TRUE)[[1]])
     raw.height <- if (length(headers)) max(vapply(headers, lines, integer(1))) else 1
-    # Anchor the lowest raw-header line above the rule, including descenders.
     y <- rule.y + graphics::strheight("Mg", units="user") * 1.6 + (raw.height - 1) / 2 * leading
     for (index in seq_along(headers)) {
         rcmetar.draw.forest.header(layout$ilab.xpos[[index]], y, headers[[index]])
     }
     for (index in seq_along(layout$group.xpos)) {
         label <- rcmetar.forest.wrap.header(names(layout$group.xpos)[[index]])
-        # Reserve both multiline blocks before placing the arm above its columns.
         group.y <- y + (raw.height + lines(label)) / 2 * leading + leading * 0.4
         rcmetar.draw.forest.header(layout$group.xpos[[index]], group.y, label)
     }
     invisible(y)
 }
 
-# Use the same measured baselines for drawing and reserving the full header block.
 rcmetar.forest.header.height <- function(bundle, cex) {
     if (!rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE) ||
             rcmetar.forest.is.sequential.variant(bundle)) return(0)
@@ -249,7 +244,6 @@ rcmetar.forest.header.height <- function(bundle, cex) {
         raw <- count(bundle$ilab$headers)
         groups <- rcmetar.metafor.group.headers(bundle)
         steps <- if (length(groups)) raw + count(groups) - 0.6 else raw - 1
-        # Journal effect/method/CI headings have three lines.
         steps <- max(steps, if (bundle$fp_style == "default") 0 else 2)
         h * (2.6 + steps * 1.8) + 0.15
     })

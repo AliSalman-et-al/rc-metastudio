@@ -19,8 +19,6 @@ done
 }
 [ -x "$python_exe" ] || { echo "locked Python is not executable: $python_exe" >&2; exit 1; }
 [ -f "$normalizer" ] || { echo "Mach-O normalizer is missing: $normalizer" >&2; exit 1; }
-# Resolve once, fail closed on a resources tree outside the explicitly private
-# root (including a symlink which escapes it), and find its framework root.
 private_paths_file="$(mktemp "${TMPDIR:-/tmp}/rcms-r-private-paths.XXXXXX")"
 if ! "$python_exe" - "$resources" "$allowed_root" > "$private_paths_file" <<'PY'
 import os
@@ -81,9 +79,6 @@ r_relative_path() {
     /Library/Frameworks/R.framework/Resources/*) printf '%s\n' "${dependency#/Library/Frameworks/R.framework/Resources/}" ;;
     /Library/Frameworks/R.framework/R|/Library/Frameworks/R.framework/Versions/*/R) printf '%s\n' "lib/libR.dylib" ;;
     /opt/R/*/lib/*.dylib)
-      # CRAN records parts of its own toolchain under /opt/R.  A release may
-      # use only an identical, already-authenticated framework member; it may
-      # never satisfy this edge from the runner's /opt/R tree.
       case "${dependency##*/}" in libtcl*.dylib|libtk*.dylib) return 2 ;; esac
       printf 'lib/%s\n' "${dependency##*/}"
       ;;
@@ -186,9 +181,6 @@ while IFS= read -r -d '' binary; do
   if printf '%s\n' "$report" | grep -E '/Library/Frameworks/R\.framework/|/opt/R/|/opt/X11/' >/dev/null; then
     echo "private R retains an external framework reference: $binary" >&2; exit 1
   fi
-  # lipo and install_name_tool invalidate the official hardened-runtime
-  # signature. Re-sign each relocated member ad hoc before executing the
-  # staged R substrate; the complete app receives its final signature later.
   codesign --force --sign - "$binary"
 done < "$manifest"
 echo "Relocated and verified $macho_count private R Mach-O files."

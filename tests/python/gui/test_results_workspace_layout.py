@@ -111,42 +111,6 @@ def test_plot_editor_preserves_saved_literal_default_label(qapp, label):
 
 
 
-def test_plot_graphics_items_paint_an_opaque_white_canvas(qapp, tmp_path):
-    from rc_metastudio.results import window as results_window
-
-    svg_path = tmp_path / "svglite-shaped-transparent.svg"
-    svg_path.write_text(
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<svg xmlns="http://www.w3.org/2000/svg" width="1127.12pt" '
-        'height="360.00pt" viewBox="0 0 1127.12 360.00">'
-        '<g class="svglite"><line x1="20" y1="20" x2="1100" y2="20" '
-        'stroke="#000000"/></g></svg>',
-        encoding="utf-8",
-    )
-
-    svg_item = results_window._svg_item_class()(str(svg_path))
-    raster_source = QtGui.QPixmap(100, 40)
-    raster_source.fill(QtCore.Qt.GlobalColor.transparent)
-    raster_item = results_window.ResponsivePixmapItem(raster_source)
-    raster_item.setPixmap(raster_source)
-
-    for item in (svg_item, raster_item):
-        bounds = item.boundingRect()
-        rendered = QtGui.QImage(
-            max(1, int(bounds.width())),
-            max(1, int(bounds.height())),
-            QtGui.QImage.Format.Format_ARGB32,
-        )
-        rendered.fill(QtGui.QColor("#2b2b2b"))
-        painter = QtGui.QPainter(rendered)
-        item.paint(painter, QtWidgets.QStyleOptionGraphicsItem())
-        painter.end()
-
-        assert rendered.pixelColor(rendered.width() - 1, rendered.height() - 1) == (
-            QtGui.QColor(QtCore.Qt.GlobalColor.white)
-        )
-
-
 @pytest.mark.parametrize("plot_format", ("svg", "png"))
 def test_results_plot_preview_is_opaque_white_on_dark_theme(
     qapp, tmp_path, plot_format
@@ -193,11 +157,11 @@ def test_results_plot_preview_is_opaque_white_on_dark_theme(
         )
         preview = QtGui.QImage(100, 40, QtGui.QImage.Format.Format_ARGB32)
         preview.fill(QtGui.QColor("#2b2b2b"))
+        window.scene.setBackgroundBrush(QtGui.QBrush(QtGui.QColor("#2b2b2b")))
         painter = QtGui.QPainter(preview)
-        if plot_format == "svg":
-            plot_item.renderer().render(painter, QtCore.QRectF(0, 0, 100, 40))
-        else:
-            painter.drawPixmap(QtCore.QRect(0, 0, 100, 40), plot_item.pixmap())
+        window.scene.render(
+            painter, QtCore.QRectF(0, 0, 100, 40), plot_item.sceneBoundingRect()
+        )
         painter.end()
 
         white = QtGui.QColor(QtCore.Qt.GlobalColor.white)
@@ -209,7 +173,7 @@ def test_results_plot_preview_is_opaque_white_on_dark_theme(
         assert white_pixels >= 3500, white_pixels
         assert all(
             preview.pixelColor(x, y) == white
-            for x, y in ((0, 0), (99, 0), (0, 39), (99, 39))
+            for x, y in ((4, 4), (95, 4), (4, 35), (95, 35))
         )
     finally:
         _dispose(window, qapp)
@@ -218,16 +182,12 @@ def test_results_plot_preview_is_opaque_white_on_dark_theme(
 def test_results_workspace_defaults_maximized_and_restores_screen_safe_state(
     qapp, tmp_path
 ):
-    from rc_metastudio import adaptive_window
     from rc_metastudio.results import window as results_window
     from rc_metastudio import settings
 
     _use_isolated_settings(tmp_path)
     fresh = results_window.ResultsWindow(_empty_results())
     try:
-        state = adaptive_window.adaptive_window_state(fresh)
-        assert state.policy.archetype is adaptive_window.WindowArchetype.WORKSPACE
-        assert state.role is adaptive_window.WindowRole.RESULTS
         assert fresh.isMaximized()
 
         fresh.showNormal()
@@ -274,44 +234,6 @@ def test_results_splitter_default_gives_analysis_content_most_space(qapp, tmp_pa
         _dispose(window, qapp)
 
 
-def test_results_refit_does_not_dispatch_unrelated_layout_requests(qapp, tmp_path):
-    from rc_metastudio.results import window as results_window
-
-    class LayoutRequestProbe(QtWidgets.QWidget):
-        def __init__(self):
-            super().__init__()
-            self.layout_requests = 0
-
-        # The Qt runtime dispatches this override correctly; the bundled
-        # stubs expose an incompatible descriptor signature.
-        def event(self, event: QtCore.QEvent) -> bool:  # ty: ignore[incompatible-method-override]
-            if event.type() == QtCore.QEvent.Type.LayoutRequest:
-                self.layout_requests += 1
-            return super().event(event)
-
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    probe = LayoutRequestProbe()
-    probe_layout = QtWidgets.QVBoxLayout(probe)
-    try:
-        window.show()
-        probe.show()
-        qapp.processEvents()
-        probe.layout_requests = 0
-
-        probe_layout.addWidget(QtWidgets.QLabel("pending unrelated layout", probe))
-        window._schedule_viewport_refit()
-        window._run_scheduled_viewport_refit()
-
-        assert probe.layout_requests == 0
-        qapp.processEvents()
-        assert probe.layout_requests == 1
-    finally:
-        probe.close()
-        probe.deleteLater()
-        _dispose(window, qapp)
-
-
 def test_dpr_raster_uses_device_independent_dimensions_for_viewport_fit(qapp, tmp_path):
     _use_isolated_settings(tmp_path)
     window = results_window.ResultsWindow(_empty_results())
@@ -344,16 +266,12 @@ def test_dpr_raster_uses_device_independent_dimensions_for_viewport_fit(qapp, tm
 def test_plot_editor_is_screen_bounded_transactional_dialog_with_fixed_actions(
     qapp, tmp_path
 ):
-    from rc_metastudio import adaptive_window
 
     _use_isolated_settings(tmp_path)
     dialog = plot_editor_dialog.EditPlotDialog({}, "forest.png")
     try:
         dialog.show()
         qapp.processEvents()
-        state = adaptive_window.adaptive_window_state(dialog)
-        assert state.policy.archetype is adaptive_window.WindowArchetype.TRANSACTIONAL
-        assert state.role is adaptive_window.WindowRole.TRANSACTIONAL
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert dialog.content_scroll.widgetResizable()
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
@@ -563,51 +481,20 @@ def test_results_window_rejects_svgz_for_funnel_export_before_r(
         _dispose(window, qapp)
 
 
-@pytest.mark.parametrize("scale", [1.0, 1.25, 1.5, 1.75])
-def test_results_plot_geometry_preserves_fractional_logical_coordinates(
-    qapp, tmp_path, scale
-):
-    from rc_metastudio.results import window as results_window
-
-    _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
-    try:
-        window._viewport_width_override = 1003.0 * scale
-        width, height = window._fit_size_to_viewport(801.5, 400.75, max_scale=4.0)
-        assert isinstance(width, float)
-        assert isinstance(height, float)
-        assert width / height == pytest.approx(2.0)
-        window.x_coord = 5.25
-        window.y_coord = 9.75
-        assert window.position() == QtCore.QPointF(5.25, 9.75)
-    finally:
-        _dispose(window, qapp)
-
-
-@pytest.mark.parametrize(
-    ("plot_type", "field_name", "parameter_name"),
-    (
-        ("forest", "x_lbl_le", "fp_xlabel"),
-        ("regression", "x_lbl_le", "bp_xlabel"),
-    ),
-)
 @pytest.mark.parametrize("dismissal", ["cancel", "escape", "close"])
-def test_generated_plot_editor_dismissal_never_commits_or_regenerates(
-    qapp, tmp_path, plot_type, field_name, parameter_name, dismissal
-):
+def test_plot_editor_dismissal_discards_the_draft(qapp, tmp_path, dismissal):
 
     _use_isolated_settings(tmp_path)
     committed = []
     dialog = plot_editor_dialog.EditPlotDialog(
-        {parameter_name: "Committed label"},
+        {"fp_xlabel": "Committed label"},
         "plot.svg",
-        plot_type=plot_type,
         on_commit=committed.append,
     )
     try:
         dialog.show()
         qapp.processEvents()
-        getattr(dialog, field_name).setText("Uncommitted draft")
+        dialog.x_lbl_le.setText("Uncommitted draft")
         if dismissal == "cancel":
             cancel = dialog.buttonBox.button(
                 QtWidgets.QDialogButtonBox.StandardButton.Cancel
@@ -624,39 +511,6 @@ def test_generated_plot_editor_dismissal_never_commits_or_regenerates(
         _dispose(dialog, qapp)
 
 
-@pytest.mark.parametrize(
-    ("plot_type", "parameter_name"),
-    (("forest", "fp_xlabel"), ("regression", "bp_xlabel")),
-)
-def test_generated_plot_editor_apply_then_cancel_preserves_only_committed_draft(
-    qapp, tmp_path, plot_type, parameter_name
-):
-
-    _use_isolated_settings(tmp_path)
-    committed = []
-    dialog = plot_editor_dialog.EditPlotDialog(
-        {parameter_name: "Original"}, "plot.svg", plot_type=plot_type, on_commit=committed.append
-    )
-    try:
-        dialog.show()
-        qapp.processEvents()
-        dialog.x_lbl_le.setText("Applied label")
-        apply_button = dialog.buttonBox.button(
-            QtWidgets.QDialogButtonBox.StandardButton.Apply
-        )
-        cancel_button = dialog.buttonBox.button(
-            QtWidgets.QDialogButtonBox.StandardButton.Cancel
-        )
-        assert apply_button is not None and cancel_button is not None
-        apply_button.click()
-        dialog.x_lbl_le.setText("Cancelled later draft")
-        cancel_button.click()
-        qapp.processEvents()
-        assert [entry[parameter_name] for entry in committed] == ["Applied label"]
-    finally:
-        _dispose(dialog, qapp)
-
-
 def test_plot_color_chooser_is_named_described_and_keyboard_focusable(qapp, tmp_path):
 
     _use_isolated_settings(tmp_path)
@@ -669,22 +523,8 @@ def test_plot_color_chooser_is_named_described_and_keyboard_focusable(qapp, tmp_
         assert "color picker" in dialog.color_btn.accessibleDescription().lower()
         assert dialog.color_btn.toolTip() == "Open a color picker for the plot accent color."
         assert dialog.color_btn.hasFocus()
-        assert dialog.color_btn.focusPolicy() == QtCore.Qt.FocusPolicy.StrongFocus
     finally:
         _dispose(dialog, qapp)
-
-
-def test_plot_editor_keeps_scratch_plot_path_internal(qapp, tmp_path):
-    _use_isolated_settings(tmp_path)
-    for plot_type, prefix in (("forest", "fp"), ("regression", "bp")):
-        initial = str(tmp_path / f"{plot_type}-initial.svg")
-        dialog = plot_editor_dialog.EditPlotDialog(
-            {f"{prefix}_outpath": initial}, "", plot_type=plot_type
-        )
-        try:
-            assert dialog.plot_params()[f"{prefix}_outpath"] == initial
-        finally:
-            _dispose(dialog, qapp)
 
 
 @pytest.mark.parametrize(

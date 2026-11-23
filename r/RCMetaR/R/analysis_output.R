@@ -217,9 +217,6 @@ rcmetar.fitted.study.effects <- function(om.data, params, res) {
         on.exit(options(old.options), add=TRUE)
         weights <- rcmetar.metafor.weights(res)
         contributes <- is.finite(weights) & weights > 0
-        # Pooling and individual-effect eligibility can differ. Use the fitted
-        # effect where available, otherwise the prepared display effect only
-        # for studies that contribute to the fit.
         display.data@y[finite] <- res$yi.f[finite]
         display.data@SE[finite] <- sqrt(res$vi.f[finite])
         omitted <- !finite & !contributes

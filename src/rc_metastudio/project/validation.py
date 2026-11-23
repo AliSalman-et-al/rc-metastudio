@@ -378,7 +378,6 @@ def _validate_group_count(
     elif subtype in {"proportion", "mean", "reg_coef", "generic_effect"}:
         valid = group_count >= 1
     elif subtype in {"proportions", "means", "smd", "hazard_ratio", "incidence_rate_ratio"}:
-        # Retain all arms for pair selection even though each comparison is two-arm.
         valid = group_count >= 2
     else:
         return

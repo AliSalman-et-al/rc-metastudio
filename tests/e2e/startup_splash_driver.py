@@ -137,7 +137,6 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
         timer.stop()
         raise SystemExit(0)
     if args.failure:
-        # The runtime and package are real. Supply a different expected source.
         from rc_metastudio.main_window import MainWindow
         show_error = MainWindow._show_analysis_backend_error
         def observed_error(window, exception, *, startup=False):

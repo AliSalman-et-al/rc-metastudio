@@ -23,19 +23,6 @@ rcmetar.bmj.combined.count <- function(events, totals) {
     )
 }
 
-rcmetar.bmj.ilab <- function(columns, n) {
-    matrix <- do.call(cbind, lapply(columns, function(column) column$values))
-    if (is.null(matrix)) {
-        matrix <- matrix(character(0), nrow=n, ncol=0)
-    }
-    mode(matrix) <- "character"
-    headers <- vapply(columns, function(column) column$header, character(1))
-    colnames(matrix) <- headers
-    groups <- unique(vapply(columns, function(column) column$group, character(1)))
-    groups <- groups[nzchar(groups)]
-    list(matrix=matrix, columns=columns, headers=headers, groups=groups)
-}
-
 rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
     n <- length(binary.data@study.names)
     groups <- rcmetar.forest.arm.labels(params)
@@ -71,7 +58,7 @@ rcmetar.bmj.binary.ilab <- function(binary.data, params, res=NULL) {
     columns <- c(columns, list(
         list(key="weight", group="", header="Weight (%)", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
     ))
-    rcmetar.bmj.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.bmj.continuous.ilab <- function(cont.data, params, res=NULL) {
@@ -100,7 +87,7 @@ rcmetar.bmj.continuous.ilab <- function(cont.data, params, res=NULL) {
     columns <- c(columns, list(
         list(key="weight", group="", header="Weight (%)", values=rcmetar.bmj.format.weight(rcmetar.metafor.weights(res), n))
     ))
-    rcmetar.bmj.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.bmj.ilab.for.data <- function(om.data, params, res=NULL) {
@@ -790,7 +777,6 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, plan) {
         }
     }
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
-    # Reserve separate physical lines for the title and each direction block.
     spacing <- graphics::strheight("Mg", cex=cex) * 1.65
     label.y <- -2.37 + (plan$rows$axis_offset %||% 0) - spacing * 2
     if (nzchar(bundle$style_blocks$axis_label)) {

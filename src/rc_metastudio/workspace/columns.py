@@ -256,7 +256,6 @@ _RATIO_EFFECTS = tuple(
 
 
 def _arm_columns(fields: tuple[RawField, ...], visible_arms: int = 2) -> tuple[RawColumn, ...]:
-    # The import template and persisted widths retain both arms' physical slots.
     return tuple(
         RawColumn(field, field_index, arm_index, hidden=arm_index >= visible_arms)
         for arm_index in range(2)

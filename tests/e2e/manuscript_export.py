@@ -24,7 +24,7 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
     from collections import Counter
     from contextlib import ExitStack
     import weakref
-    from rc_metastudio.results import report as manuscript_report
+    from rc_metastudio.results import report_export as manuscript_report
     from PyQt6.QtGui import QColor, QPalette
 
     original_palette = app.palette()
@@ -168,8 +168,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             assert accepted
             selected = dialog.selectedFiles()[0], dialog.selectedNameFilter()
         finally:
-            # Explicitly finish this dialog's deferred destruction before
-            # the next writer or nested event loop. This also checks models.
             dialog.hide()
             dialog.deleteLater()
             for _ in range(2):
@@ -189,7 +187,8 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
 
     def export_report(view, path, suffix):
         if direct_write:
-            from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
+            from rc_metastudio.results.report import ManuscriptReport
+            from rc_metastudio.results.report_export import write_docx, write_pdf
             (write_pdf if suffix == "pdf" else write_docx)(ManuscriptReport.from_result(view.results), path)
         elif suffix in picker_formats:
             with patch.object(QtWidgets.QFileDialog, 'getSaveFileName', return_value=(str(path), suffix)):
@@ -222,7 +221,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         app.processEvents()
         lifetime_marker("close-after", view)
 
-    # Derive boundary cases from real legacy bytes, then open through production IO.
     import copy, io, json, zipfile
     legacy = (root / 'tests/fixtures/legacy-projects/amino.rcms').read_bytes()
     with zipfile.ZipFile(io.BytesIO(legacy)) as archive:
@@ -356,7 +354,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                                    if (section.title == 'Supplementary details') == supplementary for table in section.tables]
                 assert len(doc.tables) == len(expected_tables)
                 for actual, expected_table in zip(doc.tables, expected_tables):
-                    # Nonbreaking spaces keep each interval together in Word.
                     actual_text = tuple(tuple(cell.text.replace('\u00a0', ' ') for cell in row.cells) for row in actual.rows)
                     from rc_metastudio.results.formatting import report_cell
                     expected_rows = tuple(tuple(report_cell(value).replace('\u00a0', ' ')
@@ -518,7 +515,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         window.refresh_analysis_actions()
         view = analyze_existing(app, window, workflow, 'binary.random', record,
                                 parameters={'digits': 3, 'rm.method': 'DL' if workflow == 'subgroup' else 'REML'})
-        from rc_metastudio.results.report import write_docx, write_pdf
+        from rc_metastudio.results.report_export import write_docx, write_pdf
         write_docx(view.manuscript, work / (workflow + '.docx'))
         write_pdf(view.manuscript, work / (workflow + '.pdf'))
         assert workflow.split('-')[0].lower() in view.manuscript.methods.lower()

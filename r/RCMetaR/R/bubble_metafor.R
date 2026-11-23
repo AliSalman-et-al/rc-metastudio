@@ -112,7 +112,6 @@ rcmetar.bubble.axis.ticks <- function(bundle, ylim=NULL) {
             logit(displayed[displayed > 0 & displayed < 1])
         ticks <- ticks[ticks >= ylim[[1]] & ticks <= ylim[[2]]]
     }
-    # Avoid crowded tail labels on wide transformed axes, keeping the full range.
     spaced <- numeric(0)
     for (tick in ticks) {
         if (!length(spaced) || tick - tail(spaced, 1) >= diff(ylim) / 8) spaced <- c(spaced, tick)
@@ -407,8 +406,6 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath) {
                 do.call(metafor::regplot, args)
             }
         )
-        # regplot owns the range, including fitted CI/PI. Choose ticks after it
-        # draws so they cover that actual range rather than only study estimates.
         panel <- graphics::par("usr")
         rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
         ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])

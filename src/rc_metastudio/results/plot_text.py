@@ -2,9 +2,6 @@
 
 from rc_metastudio import qt_text
 
-# These values are emitted by the generated Qt forms for an untouched plot
-# option.  Keep the list at the presentation boundary so renderers receive a
-# real unset value rather than having to know about a GUI placeholder.
 PLOT_DEFAULT_TEXT_SENTINELS = frozenset(
     ("", "[default]", "<default>", "(default)", "default")
 )

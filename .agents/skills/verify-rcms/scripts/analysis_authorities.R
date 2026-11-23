@@ -76,7 +76,6 @@ for (metric in c("OR","RD","RR","AS","YUQ","YUY","PR","PLN","PLO","PAS","PFT")) 
     check(data,"binary.fixed.peto",p,ref,"OR Peto")
   }
 }
-# Include single-zero and double-zero tables and independently apply each policy.
 zero.a <- a; zero.c <- c
 zero.a[1:2] <- 0; zero.c[2] <- 0
 for (target in c("only0","all","if0all")) {
@@ -121,7 +120,6 @@ for (inference in c("t", "knha", "adhoc")) {
   ref <- metafor::rma.uni(effects$yi, vi=effects$vi, method="FE", test=inference, level=95)
   check(data, "continuous.fixed", p, ref, paste("entered continuous fixed", inference))
 }
-# Independently construct diagnostic effects on the correct calculation scales.
 TP <- a; FN <- b; FP <- c; TN <- d
 for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
   effects <- switch(metric,
@@ -150,7 +148,6 @@ for (metric in c("Sens","Spec","PLR","NLR","DOR")) {
     check(data,"diagnostic.fixed.peto",p,ref,"DOR diagnostic Peto")
   }
 }
-# Exercise the entire heterogeneity/inference selector domain on an actual fit.
 effects <- metafor::escalc("OR",ai=a,bi=b,ci=c,di=d,add=0,to="none")
 data <- methods::new("BinaryData",g1O1=a,g1O2=b,g2O1=c,g2O2=d,y=effects$yi + 2,SE=sqrt(effects$vi) * 3,study.names=names)
 for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) {
@@ -199,7 +196,6 @@ for (estimator in c("DL","REML")) {
   close(e$plot.data$subgroups$difference_test$QM,authority$Q.b.random,paste("BCG",estimator))
   cat("BCG",estimator,"Q",sprintf("%.9f",authority$Q.b.random),"\n")
 }
-# Continuous subgroup, sequential and regression use independently entered effects.
 p <- params("MD"); p$cov_name <- "Group"
 y <- c(.2,.8,-.1,.4,1.2,.6); v <- c(.04,.08,.03,.1,.06,.05)
 g <- rep(c("A","B"),each=3)
@@ -286,7 +282,6 @@ cat("PETO raw metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"k",ref$k,"meta",m$
 close(ref$b,m$TE.common,"Peto meta"); close(ref$b,hand,"Peto hand")
 check(data,"binary.fixed.peto",p,ref,"zero Peto raw pooling")
 rows[[length(rows)+1L]] <- list(case="zero MH and Peto",passed=TRUE)
-# SMD convention authority: metafor escalc, separate DL fits, Q among summaries.
 x <- read.csv(text="label,group,n1,m1,s1,n2,m2,s2
 Carroll,early,60,94,22,60,92,20
 Grant,late,65,98,21,65,92,22

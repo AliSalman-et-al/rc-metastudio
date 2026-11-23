@@ -22,17 +22,13 @@ from uuid import uuid4
 if __package__:
     from scripts import package_input_policy, r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
-    from scripts.verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
+    from scripts.verification_evidence import DEFAULT_BUILD_ROOT, PDF_TOOLS, VerificationError, configured_build_root, file_digest, run_typing
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from scripts import package_input_policy
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
-    from verification_evidence import PDF_TOOLS, file_digest, source_digest, typing_command, verified_typing
-
-
-class VerificationError(RuntimeError):
-    """A command-line or verification setup error."""
+    from verification_evidence import DEFAULT_BUILD_ROOT, PDF_TOOLS, VerificationError, configured_build_root, file_digest, run_typing
 
 
 def discover_repo_root(start: Path | None = None) -> Path:
@@ -50,10 +46,8 @@ def discover_repo_root(start: Path | None = None) -> Path:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = discover_repo_root(SCRIPT_DIR)
-DEFAULT_BUILD_ROOT = REPO_ROOT / "build" / "qt6-verification"
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
-TYPING_RECEIPT_ENV = "RCMS_TYPING_RECEIPT"
 STABLE_BASELINE = "8b7796bcc840c3505c5fb0a1328cdd7682880e48"
 SMOKE_TESTS = (
     "tests/analysis_regression/golden/test_analysis_regression_compare.py::"
@@ -107,10 +101,6 @@ def prepare_qt_environment(build_root: Path) -> dict[str, str]:
         path_entries.append(env["PYTHONPATH"])
     env["PYTHONPATH"] = os.pathsep.join(path_entries)
     return env
-
-
-def configured_build_root(env: dict[str, str]) -> Path:
-    return Path(env.get("RCMS_QT6_BUILD_ROOT", DEFAULT_BUILD_ROOT)).resolve()
 
 
 def preflight(env: dict[str, str]) -> None:
@@ -236,42 +226,6 @@ def run_full_r_stack(args: argparse.Namespace) -> None:
         command += ["--desktop-shard", str(args.desktop_shard)]
     write_step("Delegating Full R Stack Evidence")
     run(command, env=env)
-
-
-def run_typing(build_root: Path) -> Path:
-    source_before = source_digest(build_root)
-    command = typing_command(build_root)
-    evidence = REPO_ROOT / "artifacts/verification/typing" / (datetime.now().strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8])
-    evidence.mkdir(parents=True)
-    write_step("$ " + " ".join(command))
-    result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
-    (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
-    (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
-    receipt = evidence / "command.json"
-    source_after = source_digest(build_root)
-    receipt.write_text(json.dumps({
-        "command": command,
-        "python_platform": "win32",
-        "exit_code": result.returncode,
-        "build_root": str(build_root.resolve()),
-        "source_sha256": source_before,
-        "source_unchanged": source_before == source_after,
-    }, indent=2), encoding="utf-8")
-    print(result.stdout, end="")
-    print(result.stderr, end="", file=sys.stderr)
-    print(f"Typing evidence: {evidence}", flush=True)
-    if result.returncode:
-        raise VerificationError(f"strict typing failed; inspect {evidence}")
-    if source_before != source_after:
-        raise VerificationError(f"verification inputs changed during strict typing; inspect {evidence}")
-    return receipt
-
-
-def ensure_typing(build_root: Path, env: dict[str, str]) -> Path:
-    inherited = env.get(TYPING_RECEIPT_ENV)
-    if inherited and verified_typing(inherited, build_root, source_digest(build_root)):
-        return Path(inherited)
-    return run_typing(build_root)
 
 
 def run_code_health(

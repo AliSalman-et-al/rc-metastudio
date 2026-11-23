@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 from rc_metastudio.results.contract import parse_analysis_result
-from rc_metastudio.r_operations import _text_section_metadata
+from rc_metastudio.results.r_presentation import _text_section_metadata
 
 
 def test_expanded_summary_sections_keep_metadata_but_point_to_child_values():
@@ -49,18 +49,48 @@ def test_expanded_summary_sections_keep_metadata_but_point_to_child_values():
     ]
 
 
-def test_selected_raw_rows_are_not_suppressed_by_other_rows(monkeypatch):
+def test_selected_study_columns_keep_canonical_row_order(monkeypatch):
     from types import SimpleNamespace
+
     from rc_metastudio import r_operations
-    class Model:
-        current_effect = 'OR'
-        current_sheet = None
-        def get_current_arm_key(self): return ('a', 'b')
-        def get_current_estimates_and_standard_errors(self, **kw): return [99.], [.2]
-        def get_current_raw_data(self, **kw): return [[4, 40, 8, 40]]
-        def included_studies_have_raw_data(self): return False
-    study = SimpleNamespace(id='selected', label='Selected', year=2026, analysis_unit=SimpleNamespace(calculator_source=lambda *a: None))
-    monkeypatch.setattr(r_operations, '_analysis_data_kwargs', lambda *a, **kw: {})
-    captured = r_operations._binary_data_arguments(Model(), studies=[study])
-    assert captured['g1O1'] == [4]
-    assert captured['g2O1'] == [8]
+    from rc_metastudio.analysis.catalog import BINARY, CONTINUOUS
+    from rc_metastudio.domain_ids import ArmId, RowId, SheetId
+    from rc_metastudio.project.model import Arm, Sheet, StudyRow
+    from rc_metastudio.project.study import AnalysisUnit
+
+    arms = [Arm(ArmId("a"), "Treatment"), Arm(ArmId("b"), "Control")]
+    dose = {"id": "dose", "name": "Dose", "data_type": CONTINUOUS}
+    sheet = Sheet(SheetId("sheet"), "Outcome", BINARY, arms=arms, covariates=[dose])
+    for index in range(1, 4):
+        unit = AnalysisUnit(
+            sheet, raw_data=[[index, 40], [index + 3, 50]],
+        )
+        if index == 2:
+            unit.set_calculator_source("OR", ("a", "b"), "entered")
+        else:
+            unit.set_effect_for_source("derived_preview", "OR", ("a", "b"), index, standard_error=index / 10)
+        sheet.rows.append(StudyRow(
+            RowId(str(index)), f"Study {index}", unit, year=2000 + index,
+            include=index != 2, covariate_values={"dose": 10 * index},
+        ))
+    model = SimpleNamespace(current_sheet=sheet, current_effect="PR", confidence_multiplier=1.96)
+    jobs = []
+    monkeypatch.setattr(
+        r_operations, "_worker_fit", lambda kind, family, columns, request: jobs.append(columns)
+    )
+
+    r_operations.run_model_analysis(
+        model,
+        {"version": 1, "data_type": "binary", "method": "binary.random", "metric": "OR",
+         "workflow": "meta-regression", "params": {}},
+        covs_to_include=[dose], studies=list(reversed(sheet.rows)),
+    )
+
+    [columns] = jobs
+    assert columns == {
+        "study.names": ["Study 1", "Study 3"], "years": [2001, 2003],
+        "y": [1.0, 3.0], "SE": [0.1, 0.3],
+        "g1O1": [1.0, 3.0], "g1O2": [39.0, 37.0],
+        "g2O1": [4.0, 6.0], "g2O2": [46.0, 44.0],
+        "covariates": [{"cov.name": "Dose", "cov.vals": [10.0, 30.0], "cov.type": "continuous", "ref.var": "10"}],
+    }

@@ -13,7 +13,6 @@ from rc_metastudio import r_operations
 from rc_metastudio.project import model as analysis_dataset
 from rc_metastudio.analysis.catalog import AnalysisFamily, FAMILY_METRICS
 from rc_metastudio.results.contract import AnalysisResult, parse_analysis_result
-from rc_metastudio.r_runtime import AnalysisBackendUnavailableError
 
 
 AnalysisValue: TypeAlias = bool | int | float | str | None
@@ -91,38 +90,6 @@ class StudySelectionResult:
     studies: tuple[analysis_dataset.StudyRow, ...]
     has_missing_values: bool
     excluded_study_names: tuple[str, ...] = ()
-
-
-class AnalysisService:
-    """Query the R method registry for the analysis configuration UI."""
-
-    def available_methods(
-        self, *, model: object, for_data_type: str, metrics: Sequence[str],
-        workflow: str | None,
-    ) -> Mapping[str, str]:
-        return _require_backend(lambda: r_operations.available_model_methods(
-            model, for_data_type, metrics, workflow=workflow or "standard"
-        ))
-
-    def parameters(self, method: str):
-        return _require_backend(lambda: r_operations.get_params(method))
-
-
-    def plot_capabilities(
-        self, data_type: str, method: str, *, workflow: str
-    ) -> list[Mapping[str, object]]:
-        return _require_backend(
-            lambda: r_operations.get_analysis_plot_capabilities(
-                data_type, method, workflow=workflow
-            )
-        )
-def _require_backend(operation):
-    try:
-        return operation()
-    except KeyError as error:
-        raise AnalysisBackendUnavailableError(
-            "The RCMetaR method registry is unavailable."
-        ) from error
 
 
 def select_studies_for_covariates(

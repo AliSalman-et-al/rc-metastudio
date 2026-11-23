@@ -147,7 +147,7 @@ def check_forest_footer(source, expected_directions=None):
     if expected_directions is not None:
         check_direction_text(texts, directions, expected_directions)
     if not directions:
-        return []  # Single-arm and diagnostic plots have no treatment direction.
+        return []
     assert len({node.attrib['y'] for node in directions}) == 1, ('direction baselines', source)
     measurements: list[FooterMeasurement] = []
     root = ET.parse(source).getroot()

@@ -1,11 +1,13 @@
 """Translate the sheet runtime graph at the portable file boundary."""
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
+from os import PathLike
 import copy
-from rc_metastudio.project.model import Dataset, Sheet, StudyRow, Arm
+from uuid import UUID, uuid4
+from rc_metastudio.project.model import Dataset, Sheet, StudyRow, Arm, PooledAnalysis
 from rc_metastudio.analysis.catalog import RAW_FIELDS_PER_ARM
 from rc_metastudio.project.study import AnalysisUnit
 from rc_metastudio.domain_ids import SheetId, RowId, ArmId
-from rc_metastudio.project.archive import CURRENT_FORMAT_VERSION, ProjectDocument, migrate_to_latest
+from rc_metastudio.project.archive import CURRENT_FORMAT_VERSION, ProjectDocument, load_project, migrate_to_latest
 from rc_metastudio.project.validation import is_empty_entry_row
 from rc_metastudio.ratio_data import RatioInput
 
@@ -13,6 +15,8 @@ from rc_metastudio.ratio_data import RatioInput
 class RuntimeProject:
     dataset: Dataset
     current_sheet_id: SheetId | None = None
+    lineage: UUID = field(default_factory=uuid4)
+    last_pooled_fits: dict[SheetId, PooledAnalysis] = field(default_factory=dict, repr=False, compare=False)
 
 
 def project_to_dataset(project):
@@ -26,7 +30,7 @@ def project_to_dataset(project):
 def _dataset_from_canonical_project(project):
     dataset = Dataset(project['title'], project['notes'])
     for record in project['sheets']:
-        sheet = Sheet(SheetId(record['id']), record['name'], record['data_type'], record['sub_type'], record['family'], [Arm(ArmId(a['id']), a['name']) for a in record['arms']], copy.deepcopy(record['covariates']), copy.deepcopy(record['settings']))
+        sheet = Sheet(SheetId(record['id']), record['name'], record['data_type'], record['sub_type'], [Arm(ArmId(a['id']), a['name']) for a in record['arms']], copy.deepcopy(record['covariates']), copy.deepcopy(record['settings']))
         for row in record['rows']:
             if is_empty_entry_row(row):
                 continue
@@ -36,8 +40,6 @@ def _dataset_from_canonical_project(project):
                     copy.deepcopy(row["raw_data"].get(arm.id, [""] * RAW_FIELDS_PER_ARM[sheet.data_type]))
                     for arm in sheet.arms
                 ],
-                arm_names=[arm.name for arm in sheet.arms],
-                arm_stable_ids=[arm.id for arm in sheet.arms],
                 present_raw_arms={ArmId(arm_id) for arm_id in row["raw_data"]},
             )
             for entry in row['entered_effects']:
@@ -86,11 +88,15 @@ def runtime_project_to_document(runtime: RuntimeProject) -> ProjectDocument:
 
 def document_to_runtime_project(document: ProjectDocument) -> RuntimeProject:
     project, state = migrate_to_latest(document.format_version, document.project, document.state)
-    return runtime_from_loaded_project(ProjectDocument(CURRENT_FORMAT_VERSION, project, state))
+    return _runtime_from_canonical_project(ProjectDocument(CURRENT_FORMAT_VERSION, project, state))
 
 
-def runtime_from_loaded_project(document: ProjectDocument) -> RuntimeProject:
-    """Adapt a validated document from the archive or migration boundary."""
+def load_runtime_project(path: str | PathLike[str]) -> RuntimeProject:
+    """Authenticate and migrate an archive before building the editable project."""
+    return _runtime_from_canonical_project(load_project(path))
+
+
+def _runtime_from_canonical_project(document: ProjectDocument) -> RuntimeProject:
     selection = document.state["current_sheet_id"]
     assert selection is None or isinstance(selection, str)
     return RuntimeProject(

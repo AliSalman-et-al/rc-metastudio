@@ -117,7 +117,8 @@ def _open_continuous_dialog(
             recorder["metric_choice_exec"].append(dialog.windowTitle())
             dialog.show()
             app.processEvents()
-            mouse_click(dialog.choice2_label, QtCore.Qt.MouseButton.LeftButton)
+            option = required(dialog.findChild(QtWidgets.QLabel, "choice2_label"))
+            mouse_click(option, QtCore.Qt.MouseButton.LeftButton)
             mouse_click(
                 required(
                     dialog.buttonBox.button(
@@ -257,30 +258,10 @@ def test_clear_recovers_invalid_continuous_summary(monkeypatch):
         _close(app, dialog)
 
 
-def test_continuous_back_calculation_choice_opens_only_after_user_action(monkeypatch):
-    recorder = {}
-    app, dialog = _open_continuous_dialog(
-        monkeypatch, QtCore.QRect(20, 30, 1024, 640), recorder=recorder
-    )
-    try:
-        assert recorder["metric_choice_exec"] == []
-        recorder["back_calc"].clear()
-
-        dialog.update_back_calculation_button(engage=True)
-
-        assert recorder["metric_choice_exec"] == ["Population standard deviations"]
-        assert recorder["back_calc"] == []
-    finally:
-        _close(app, dialog)
-
-
-@pytest.mark.parametrize(
-    ("working_parameter", "expected_parameters"),
-    [(True, [True]), (False, [True, False])],
-)
+@pytest.mark.parametrize("working_parameter", [True, False, None])
 @pytest.mark.parametrize("metric", ["MD", "SMD"])
-def test_continuous_back_calculation_enablement_probes_metric_assumptions(
-    monkeypatch, metric, working_parameter, expected_parameters
+def test_continuous_back_calculation_requires_a_feasible_assumption(
+    monkeypatch, metric, working_parameter
 ):
 
     unit = FakeContinuousAnalysisUnit(
@@ -296,14 +277,13 @@ def test_continuous_back_calculation_enablement_probes_metric_assumptions(
         metric=metric,
         analysis_unit=unit,
     )
-    observed_parameters = []
+    before = unit.get_raw_data_for_arms(dialog.arm_names)
 
     def assumption_dependent_solver(
         _group1_data, _group2_data, effect_data, _conf_level
     ):
         parameter = effect_data.get("met.param")
-        observed_parameters.append(parameter)
-        if parameter is not working_parameter:
+        if working_parameter is None or parameter is not working_parameter:
             return {"FAIL": True}
         return {
             "n1": 100,
@@ -323,9 +303,8 @@ def test_continuous_back_calculation_enablement_probes_metric_assumptions(
         dialog.metric_parameter = None
         dialog.update_back_calculation_button()
 
-        assert dialog.back_calculate_button.isEnabled()
-        assert dialog.metric_parameter is None
-        assert observed_parameters == expected_parameters
+        assert dialog.back_calculate_button.isEnabled() is (working_parameter is not None)
+        assert unit.get_raw_data_for_arms(dialog.arm_names) == before
     finally:
         _close(app, dialog)
 
@@ -495,10 +474,6 @@ def test_continuous_variants_are_transactional_and_screen_bounded(monkeypatch, s
         dialog.show()
         app.processEvents()
 
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert dialog.content_scroll.widgetResizable()
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
@@ -601,7 +576,6 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             assert any(payload[0].get("mean") == 95 for payload in recorder["impute"])
 
         if variant == "smd_pre_post":
-            # A failed reconstruction leaves the previously supplied summaries intact.
             assert dialog.effect_text_box.text() == "2.5000"
             assert dialog.lower_text_box.text() == "1.5000"
             assert dialog.upper_text_box.text() == "3.5000"
@@ -801,46 +775,44 @@ def test_continuous_back_calculation_choice_keeps_guidance_and_actions_reachable
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     dialog = continuous_data_dialog.ContinuousBackCalculationDialog(
         "Required back-calculation guidance " * 40,
-        "Use equal population standard deviations",
-        "Use unequal population standard deviations",
+        ("Use equal population standard deviations", "Use unequal population standard deviations"),
     )
     try:
+        first = required(dialog.findChild(QtWidgets.QRadioButton, "choice1_btn"))
+        second = required(dialog.findChild(QtWidgets.QRadioButton, "choice2_btn"))
+        label = required(dialog.findChild(QtWidgets.QLabel, "choice2_label"))
         dialog.show()
         app.processEvents()
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
         assert dialog.info_label.wordWrap()
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
         assert available.contains(dialog.frameGeometry())
-        dialog.choice1_btn.setFocus()
+        first.setFocus()
         app.processEvents()
-        dialog.choice2_btn.setFocus()
+        second.setFocus()
         app.processEvents()
-        mapped = dialog.choice2_btn.mapTo(
+        mapped = second.mapTo(
             required(dialog.content_scroll.viewport(), "content viewport"),
             QtCore.QPoint(),
         )
         assert (
             required(dialog.content_scroll.viewport(), "content viewport")
             .rect()
-            .intersects(QtCore.QRect(mapped, dialog.choice2_btn.size()))
+            .intersects(QtCore.QRect(mapped, second.size()))
         )
-        label_position = dialog.choice2_label.mapTo(
+        label_position = label.mapTo(
             required(dialog.content_scroll.viewport(), "content viewport"),
             QtCore.QPoint(),
         )
         assert (
             required(dialog.content_scroll.viewport(), "content viewport")
             .rect()
-            .intersects(QtCore.QRect(label_position, dialog.choice2_label.size()))
+            .intersects(QtCore.QRect(label_position, label.size()))
         )
-        assert dialog.choice2_label.text() == (
+        assert label.text() == (
             "Use unequal population standard deviations"
         )
-        assert dialog.choice1_btn.isChecked()
-        mouse_click(dialog.choice2_label, QtCore.Qt.MouseButton.LeftButton)
-        assert dialog.choice2_btn.isChecked()
+        assert first.isChecked()
+        mouse_click(label, QtCore.Qt.MouseButton.LeftButton)
+        assert second.isChecked()
     finally:
         dialog.close()

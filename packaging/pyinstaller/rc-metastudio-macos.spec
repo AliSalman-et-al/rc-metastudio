@@ -3,14 +3,11 @@
 
 import os
 import importlib.util
-import tomllib
 from pathlib import Path
+from runpy import run_path
 
 repo_root = Path(SPECPATH).resolve().parents[1]
-project_version = os.environ.get("RCMS_PROJECT_VERSION")
-if project_version is None:
-    with (repo_root / "pyproject.toml").open("rb") as metadata:
-        project_version = tomllib.load(metadata)["project"]["version"]
+metadata = run_path(str(repo_root / "scripts" / "dependency_lock.py"))
 collection_spec = importlib.util.spec_from_file_location(
     "rcms_generated_ui_collection",
     repo_root / "packaging" / "pyinstaller" / "generated_ui_collection.py",
@@ -20,7 +17,6 @@ collection_spec.loader.exec_module(collection_module)
 app_source = repo_root / "src" / "rc_metastudio"
 qt6_build_root = Path(os.environ["RCMS_QT6_BUILD_ROOT"]).resolve()
 generated_ui_modules = collection_module.pyinstaller_module_entries(qt6_build_root)
-# The package builder injects the staged R framework after application collection.
 direct_r_marker = repo_root / "packaging" / "pyinstaller" / "direct-r-spike.marker"
 
 a = Analysis(
@@ -72,7 +68,7 @@ app = BUNDLE(
     bundle_identifier=os.environ.get(
         "RCMS_BUNDLE_IDENTIFIER", "org.researchconsultancy.rc-metastudio"
     ),
-    version=project_version,
+    version=metadata["project_version"](),
     info_plist={
         "LSMinimumSystemVersion": os.environ.get("RCMS_MINIMUM_MACOS_VERSION", "14.0"),
         "NSHighResolutionCapable": True,

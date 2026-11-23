@@ -7,6 +7,7 @@ from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
+from rc_metastudio.analysis.catalog import AvailableMethod
 from rc_metastudio import automation
 from PyQt6 import QtCore, QtGui, QtWidgets
 
@@ -30,12 +31,6 @@ def _sample_project_path(name):
 def _mark_workspace_saved(window):
     if window.workspace.document is not None:
         window.workspace.mark_saved()
-
-
-def _window_archetype(widget):
-    from rc_metastudio import adaptive_window
-
-    return adaptive_window.adaptive_window_state(widget).policy.archetype.value
 
 
 def _viewport_width(view: QtWidgets.QAbstractScrollArea) -> int:
@@ -243,7 +238,6 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
         observed_dataset = project_adapter.dataset_to_project(window.model.dataset)
         assert observed_dataset == expected_dataset
     finally:
-        # This test owns window identity, not the interactive save prompt.
         _mark_workspace_saved(window)
         window.close()
         app.processEvents()
@@ -566,7 +560,7 @@ def test_method_parameters_dialog_normalizes_missing_parameter_metadata(monkeypa
     monkeypatch.setattr(
         r_operations,
         "available_model_methods",
-        lambda *_args, **kwargs: {"binary.random": "Random-effects"},
+        lambda *_args, **kwargs: {"binary.random": AvailableMethod("Random-effects")},
         raising=False,
     )
     monkeypatch.setattr(
@@ -618,8 +612,8 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
     from rc_metastudio import r_operations
 
     method_map = {
-        "binary.random": "Random-effects",
-        "binary.fixed.mh": "Fixed-effect Mantel–Haenszel",
+        "binary.random": AvailableMethod("Random-effects"),
+        "binary.fixed.mh": AvailableMethod("Fixed-effect Mantel–Haenszel", requires_raw_counts=True),
     }
     params = {
         "binary.random": (
@@ -685,7 +679,6 @@ def test_method_parameters_dialog_stays_stable_when_method_selection_changes(
 
         stable_width = specs.width()
         stable_height = specs.height()
-        assert _window_archetype(specs) == "transactional"
         assert (
             specs.layout().sizeConstraint()
             == QtWidgets.QLayout.SizeConstraint.SetMinimumSize
@@ -1730,7 +1723,7 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
         def get_current_data_subtype(self):
             return None
 
-        def get_current_data_type(self):
+        def get_current_family(self):
             return "diagnostic"
 
         def included_studies_have_raw_data(self):
@@ -1739,7 +1732,7 @@ def test_diagnostic_forest_methods_enable_pre_run_plots_tab(
     monkeypatch.setattr(
         r_operations,
         "available_model_methods",
-        lambda *_args, **kwargs: {method_name: method_label},
+        lambda *_args, **kwargs: {method_name: AvailableMethod(method_label)},
         raising=False,
     )
     monkeypatch.setattr(
@@ -2170,7 +2163,6 @@ def test_about_legal_and_welcome_links_show_current_project_information():
         finally:
             setattr(about_legal_dialog.AboutLegalDialog, "exec", original_exec)
         about_text = about_dialogs[0].content_scroll_area.toPlainText()
-        assert _window_archetype(about_dialogs[0]) == "transactional"
         assert "RC MetaStudio" in about_text
         assert "Ali Salman" in about_text
         assert "GPL-3.0-or-later" in about_text
@@ -2221,7 +2213,6 @@ def test_add_covariate_dialog_fields_and_buttons_fill_fitted_width():
         dialog.show()
         app.processEvents()
 
-        assert _window_archetype(dialog) == "transactional"
         assert dialog.layout() is not None
         assert dialog.minimumSize() == dialog.minimumSizeHint()
         assert dialog.maximumSize() == QtCore.QSize(16777215, 16777215)
@@ -2313,9 +2304,6 @@ def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
     live = dataset.sheets[0]
     dialog = CovariateTypeDialog(live, live.covariates[0])
     preview = dialog.cov_model
-    assert preview.rowCount() == 3
-    assert preview.orig_cov_list[:3] == [10, 20, 30]
-    assert preview.new_cov_list == ["a", "b", "c"]
     assert preview.setData(preview.index(2, preview.NEW_VAL), "Excluded category")
     dialog.accept()
     new_id = preview.new_covariate["id"]

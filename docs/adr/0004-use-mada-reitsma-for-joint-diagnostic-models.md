@@ -11,3 +11,13 @@ RCMetaR reports `mada`'s named diagnostic I-squared estimates and discloses the 
 RCMetaR uses `mada::SummaryPts()` for positive and negative likelihood ratios and diagnostic odds ratio, including the package summary's mean, median, and equal-tail interval. It runs the package default of one million draws under a fixed reported seed and restores the prior R random state, preserving package inference while making repeated RC MetaStudio analyses reproducible.
 
 Prediction reconstructs the geometry used by `mada::plot.reitsma()` and describes a new study's underlying sensitivity and specificity, not its observed counts. RCMetaR reports the values returned by `mada::AUC()`, including its SROC AUC over false-positive rates 0.01 through 0.99 and normalized partial SROC AUC over the observed range, without correcting the package's integration or inventing confidence intervals.
+
+The FPR conversion reverses the bounds when reporting clinical specificity.
+When diagnostic meta-regression arrives with only a univariate estimator
+setting, the joint fit uses the documented Reitsma REML default. Optional
+summary extraction can fail after convergence. Keep independently available
+results from the converged model so an unavailable summary cannot discard
+the fit.
+
+The joint Sensitivity/Specificity choice is a request-only metric. Projects
+persist the individual diagnostic effects.

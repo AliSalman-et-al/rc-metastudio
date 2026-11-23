@@ -319,7 +319,7 @@ class SmallStudyEffectsDialog(
             )
 
     def _preview_request(self) -> SmallStudyEffectsRequest:
-        data_type = str(self.model.get_current_data_type())
+        data_type = str(self.model.get_current_family())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         correction_applicable = (
             data_type in {"binary", "diagnostic"} and metric not in ONE_ARM_METRICS
@@ -369,7 +369,7 @@ class SmallStudyEffectsDialog(
         self.automatic_test_label.setText('\n'.join(filter(None, (_available_method_text(available), reasons, explanation.strip()))))
 
     def _context_summary(self, report=None) -> str:
-        data_type = str(self.model.get_current_data_type())
+        data_type = str(self.model.get_current_family())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         included = len(self.model.get_studies())
         report = report or self._eligibility_report
@@ -396,7 +396,7 @@ class SmallStudyEffectsDialog(
         self._update_controls()
 
     def _update_controls(self):
-        data_type = str(self.model.get_current_data_type())
+        data_type = str(self.model.get_current_family())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         deeks = data_type == "diagnostic"
         contour = self.contour_funnel_check.isChecked()
@@ -433,7 +433,7 @@ class SmallStudyEffectsDialog(
             self._eligibility_report and self._eligibility_report.raw_data_available
         )
         correction_applicable = (
-            str(self.model.get_current_data_type())
+            str(self.model.get_current_family())
             in {
                 "binary",
                 "diagnostic",
@@ -459,7 +459,7 @@ class SmallStudyEffectsDialog(
             )
             if control.isChecked()
         ]
-        data_type = str(self.model.get_current_data_type())
+        data_type = str(self.model.get_current_family())
         metric = "DOR" if data_type == "diagnostic" else str(self.model.current_effect)
         selected_tests = [
             item.method
@@ -529,11 +529,11 @@ class SmallStudyEffectsDialog(
         self.failure_label.clear()
         self.failure_label.setVisible(False)
         try:
+            source_sheet = self._source_sheet or self.model.current_sheet
             result = self.analysis_service.execute(self.model, request)
             result = self._with_report_identity(result, request)
             if self._on_result is None:
                 raise TypeError("small-study effects dialog has no results owner")
-            source_sheet = self._source_sheet or self.model.current_sheet
             shown = self._on_result(result, source_sheet=source_sheet,
                                     change_settings=self._change_settings_callback(request, source_sheet))
             if shown is not None and self._replaces is not None and not sip.isdeleted(self._replaces):
@@ -568,7 +568,7 @@ class SmallStudyEffectsDialog(
 
     def _with_report_identity(self, result, request: SmallStudyEffectsRequest):
         from rc_metastudio.analysis.identity import dataset_identity, metric_label
-        metric = "Diagnostic odds ratio" if self.model.get_current_data_type() == "diagnostic" else metric_label(self.model)
+        metric = "Diagnostic odds ratio" if self.model.get_current_family() == "diagnostic" else metric_label(self.model)
         context = dataset_identity(self.model, metric)
         facts = [f"k = {len(self.model.get_studies())}"]
         report = self._eligibility_report

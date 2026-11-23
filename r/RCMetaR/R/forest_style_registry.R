@@ -77,6 +77,19 @@ rcmetar.is.metafor.forest.bundle <- function(plot.data) {
         !is.null(plot.data$fp_style)
 }
 
+rcmetar.forest.ilab <- function(columns, n) {
+    matrix <- do.call(cbind, lapply(columns, function(column) column$values))
+    if (is.null(matrix)) {
+        matrix <- matrix(character(0), nrow=n, ncol=0)
+    }
+    mode(matrix) <- "character"
+    headers <- vapply(columns, function(column) column$header, character(1))
+    colnames(matrix) <- headers
+    groups <- unique(vapply(columns, function(column) column$group, character(1)))
+    groups <- groups[nzchar(groups)]
+    list(matrix=matrix, columns=columns, headers=headers, groups=groups)
+}
+
 rcmetar.ilab.for.data <- function(om.data, params, res=NULL) {
     style <- rcmetar.metafor.style(rcmetar.forest.style(params))
     ilab <- style$ilab.for.data(om.data, params, res)
@@ -90,7 +103,7 @@ rcmetar.ilab.for.data <- function(om.data, params, res=NULL) {
         }
         columns <- c(columns, weight)
     }
-    rcmetar.revman.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.decorate.metafor.bundle <- function(bundle) {

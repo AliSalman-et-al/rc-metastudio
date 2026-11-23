@@ -14,7 +14,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 def run(app, window, work, root, record, analyze):
-    from rc_metastudio.results.report import write_pdf
+    from rc_metastudio.results.report_export import write_pdf
     from rc_metastudio.results.svg_rendering import svg_bytes_for_qt
     from PyQt6.QtSvg import QSvgRenderer
 

@@ -118,8 +118,6 @@ display.confidence.interval.labels <- function(params=NULL) {
   c(paste0("Lower bound (", level, "% CI)"), paste0("Upper bound (", level, "% CI)"))
 }
 
-# Use the pooled PFT inverse for both prediction endpoints, never the two study-N
-# inverse selected by binary.transform.f for a vector of length two.
 rcmetar.prediction.display <- function(bounds, params, transform, sample.sizes=NULL) {
   note <- NULL
   if (identical(as.character(params$measure), "PFT")) {

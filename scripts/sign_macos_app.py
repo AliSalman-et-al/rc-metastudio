@@ -286,9 +286,6 @@ def _diagnose_deep_verification_failure(plan: SigningPlan) -> None:
 
 def _sign(path: Path, *, identity: str, timestamp: bool) -> None:
     arguments = ["--force"]
-    # Hardened runtime enforces library validation. Developer ID members share
-    # a Team ID and satisfy it; ad-hoc members do not, so applying `runtime` to
-    # a local package makes its launcher reject its own bundled libpython.
     if identity != "-":
         arguments.extend(("--options", "runtime"))
     if timestamp:
@@ -312,10 +309,6 @@ def sign_and_verify(
     plan = build_signing_plan(app)
     use_timestamp = identity != "-" if timestamp is None else timestamp
 
-    # Preserve the proven inside-out signing sequence for every Mach-O and
-    # nested bundle. The outer app seal owns the final signing context of its
-    # launcher, however, so validate that launcher through the strict outer-app
-    # checks instead of attempting a standalone check after the app is sealed.
     native = set(plan.native_files)
     app_executables = _main_executables(plan.app, native)
     standalone_verification_files = tuple(
@@ -339,9 +332,6 @@ def sign_and_verify(
         _verify(native_file)
     for bundle in plan.nested_bundles:
         _verify(bundle)
-    # Apple's Gatekeeper-equivalent bundle check is strict deep verification.
-    # A separate shallow pass is redundant and can misclassify PyInstaller's
-    # sealed launcher context before the authoritative recursive validation.
     try:
         _verify(plan.app, deep=True)
     except MacOSSigningError:

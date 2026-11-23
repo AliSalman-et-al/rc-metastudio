@@ -314,7 +314,7 @@ Configure the real Qt/R runtime and start with strict typing as described in
 ```powershell
 uv run python scripts/build_qt6.py generate --build-root build/qt6-verification
 $env:RCMS_QT6_BUILD_ROOT = (Resolve-Path build/qt6-verification).Path
-uv run python -c "from pathlib import Path; from scripts.verify import run_typing; run_typing(Path('build/qt6-verification').resolve())"
+uv run python -c "from pathlib import Path; from scripts.verification_evidence import run_typing; run_typing(Path('build/qt6-verification').resolve())"
 $env:R_LIBS = $env:RCMS_R_LIBS
 $tsaRscript = Join-Path $env:RCMS_R_HOME 'bin/Rscript.exe'
 & $tsaRscript --vanilla -e 'pkgload::load_all("r/RCMetaR"); testthat::test_file("r/RCMetaR/tests/testthat/test-trial-sequential-analysis.R", stop_on_failure=TRUE)'

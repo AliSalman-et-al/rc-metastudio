@@ -261,6 +261,27 @@ uv run python -m coverage report
 
 ## Code health and unused code
 
+### Comment ratchet
+
+Record implementation rationale in [architecture decisions](adr/README.md).
+Run `uv run python scripts/check_comments.py --base HEAD` for working-tree
+edits, or give it the target branch revision to check committed work. CI
+uses the pull request target revision or the previous push revision.
+
+Each existing comment permits one occurrence of the same text in the same
+path. Line shifts preserve allowances. Duplicates, edits and comments in
+new paths fail the check. Once a deletion reaches the target branch, its
+allowance disappears with it. A file move therefore clears its allowances.
+
+The check covers Python and PyInstaller specs, R and Rd, shell, PowerShell,
+JavaScript, YAML, TOML and XML-based resources, plus Git attributes, Git
+ignore rules and the R namespace. It scans supported Bash, PowerShell and
+Python steps and github-script JavaScript in GitHub workflows and composite
+actions. Generated, ignored local output stays outside the worktree check.
+First-line interpreter declarations, file-header SPDX notices and Roxygen
+package inputs are allowed as source metadata. Existing tool suppressions
+and layout-audit directives remain subject to the ratchet.
+
 ### Complexity, coupling, and churn (`scripts/code_health.py`)
 
 ```powershell

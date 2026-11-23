@@ -114,7 +114,7 @@ PLOT_EXPORT_EXTENSION_ALIASES = {
     "tiff": (".tif", ".tiff"),
     "svg": (".svg", ".svgz"),
 }
-ROW_HEIGHT = 15  # by trial-and-error; seems to work very well
+ROW_HEIGHT = 15
 SECTION_SPACING = ROW_HEIGHT
 MAX_VECTOR_PLOT_SCALE = 4.0
 QGraphicsSvgItem = None
@@ -257,8 +257,6 @@ def _opaque_svg_renderer(path, parent):
     renderer = _svg_renderer_class()(QByteArray(svg), parent)
     font_sizes = [float(size) * (96 / 72 if unit == b"pt" else 1)
                   for size, unit in re.findall(rb"font-size:\s*([\d.]+)(px|pt)", svg)]
-    # R repeats the body size for study labels and data cells. Small fitted
-    # annotations (for example Favours labels) must not set the body-text floor.
     body_size = Counter(font_sizes).most_common(1)
     renderer.setProperty("body_text_size", body_size[0][0] if body_size else 0)
     return renderer
@@ -354,8 +352,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         self.graphics_view.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        # Every content page scrolls. Its minimum size hint must not push the
-        # fixed navigation outside a narrow screen when the splitter moves.
         self.content_stack.setSizePolicy(
             QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding
         )
@@ -376,8 +372,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         self.graphics_view.setScene(self.scene)
         self.graphics_view.ensureVisible(QRectF(0, 0, 0, 0))
-        # Establish a starting width; the first visible refit applies saved
-        # proportions again after the native window receives its final geometry.
         self._apply_restored_splitter_proportions()
         self._setup_report_controls(source_sheet_name)
         for entry in self._plots.values():
@@ -390,8 +384,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.texts = results.texts
 
     def replace_trial_sequential_result(self, results: AnalysisResult, manuscript: "ManuscriptReport") -> None:
-        # TSA has one figure. Keep its navigation item and replace its scene
-        # item and export artifact together so they always refer to the same run.
         section, = (section for section in results.sections if section.kind == "image")
         artifact = PlotArtifact.from_section(section)
         entry = self._plots[section.semantic_id]
@@ -1058,7 +1050,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.statusbar.showMessage(name + " copied", 4000)
 
     def _export_report(self):
-        from rc_metastudio.results.report import write_docx, write_pdf
+        from rc_metastudio.results.report_export import write_docx, write_pdf
         path, selected = QFileDialog.getSaveFileName(self, "Export report", self._export_name("report", "pdf"), "PDF (*.pdf);;Word document (*.docx)")
         if path:
             extension = "docx" if "docx" in selected else "pdf"
@@ -1072,7 +1064,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self.statusbar.showMessage(f"Saved report: {Path(path).resolve()}", 4000)
 
     def _confirm_export_destination(self, selected, destination):
-        # The save dialog confirmed the entered name, before suffix normalization.
         if selected != destination and Path(destination).exists():
             return QMessageBox.question(
                 self, "Replace existing file?",
@@ -1339,8 +1330,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._refit_raster_plot_items()
             self._relayout_sections()
             if self._fit_width_active:
-                # Decide from the full viewport, then reserve any required bars.
-                # Reconsidering vertical overflow after narrowing can oscillate.
                 needs_horizontal = self.scene.width() > full_width
                 available_height = full_height - (horizontal.sizeHint().height() if needs_horizontal else 0)
                 needs_vertical = self.scene.height() > available_height
@@ -1471,8 +1460,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             return
         self._splitter_restore_pending = False
         self._set_restored_splitter_sizes()
-        # QSplitter applies child geometry lazily on some Qt platforms.  Refresh
-        # it now so the one queued refit observes the final viewport dimensions.
         self.results_nav_splitter.refresh()
         self._schedule_viewport_refit()
 
@@ -1504,8 +1491,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         super(ResultsWindow, self).closeEvent(event)
         if event is not None and not event.isAccepted():
             return
-        # A later modal loop may deliver deferred deletion. Stop rendering while
-        # the window, viewport and scene are still alive, before that boundary.
         self._closing = True
         self._viewport_refit_timer.stop()
         self._viewport_refit_pending = False
@@ -1715,66 +1700,26 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     plot_item.source_path = outpath
                     self._schedule_viewport_refit()
 
-    def _plot_export_options(self, artifact, unscaled_image):
+    def _plot_export_options(self, artifact):
         from rc_metastudio.results.plot_export import PlotExportDialog
-        from rc_metastudio.results.plot_service import svg_view_box_size
-        text_per_inch = (0.0, 0.0)
-        forest_geometry = None
-        native_dpi = 96
-        if artifact.has_vector_display():
-            view_width, view_height = svg_view_box_size(artifact.display_path())
-            width = view_width / 72
-            ratio = view_width / view_height
-            if artifact.params_path and artifact.capability.plot_kind in {
-                "forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest",
-            }:
-                from functools import partial
-                from rc_metastudio import r_operations
-                forest_geometry = partial(r_operations.forest_export_dimensions, artifact.params_path)
-            elif artifact.params_path:
-                from tempfile import TemporaryDirectory
-                from rc_metastudio.results.plot_service import svg_text_points_per_inch
-
-                with TemporaryDirectory(prefix="rcms-export-size-") as directory:
-                    untitled = Path(directory) / "untitled.svg"
-                    self.plot_service.export(regenerator=artifact.capability.regenerator,
-                                             params_path=artifact.params_path, output_path=str(untitled),
-                                             include_title=False, outline_text=False)
-                    text_per_inch = (
-                        svg_text_points_per_inch(untitled, 1 / ratio),
-                        svg_text_points_per_inch(artifact.display_path(), 1 / ratio),
-                    )
-        else:
-            source = QImage(artifact.display_path())
-            if source.isNull():
-                raise ValueError("Could not read the plot image.")
-            native_dpi = round(source.dotsPerMeterX() * .0254)
-            width = source.width() / max(1, source.dotsPerMeterX() * .0254)
-            ratio = source.width() / source.height()
+        geometry = self.plot_service.export_geometry(artifact.display_path(), artifact.capability, artifact.params_path)
         dialog = PlotExportDialog(
-            artifact.export_formats(), width, width / ratio, self,
-            resizable=bool(artifact.params_path), text_per_inch=text_per_inch,
-            forest_geometry=forest_geometry,
-            native_dpi=native_dpi,
+            artifact.export_formats(), geometry.width, geometry.height, self,
+            resizable=bool(artifact.params_path), text_per_inch=geometry.text_per_inch,
+            forest_geometry=geometry.forest_measurement,
+            native_dpi=geometry.native_dpi,
         )
-        if not dialog.exec():
-            return
-        format = dialog.format_control.currentData()
-        dimensions = dialog.dimensions()
-        if not artifact.params_path:
-            unscaled_image = QImage(artifact.image_path)
-
-        return format, dimensions, unscaled_image, dialog.include_title.isChecked(), dialog.forest_dimensions
+        return dialog.selection() if dialog.exec() else None
 
     def save_image_as(self, artifact, unscaled_image=None, format=None):
-        dimensions = None
-        forest_dimensions = None
-        include_title = True
+        options = None
         if format is None:
-            options = self._plot_export_options(artifact, unscaled_image)
+            options = self._plot_export_options(artifact)
             if options is None:
                 return
-            format, dimensions, unscaled_image, include_title, forest_dimensions = options
+            format = options.extension
+            if not artifact.params_path:
+                unscaled_image = QImage(artifact.image_path)
 
         if format not in PLOT_EXPORT_FORMATS_BY_EXTENSION:
             valid_formats = ", ".join(PLOT_EXPORT_FORMATS_BY_EXTENSION.keys())
@@ -1819,11 +1764,13 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     if not image.save(str(temporary), export_format.qt_format):
                         raise OSError(f"Could not save plot: {destination}")
                 compose_export(write)
-        elif dimensions is not None:
-            width, height, dpi = dimensions
-            self.plot_service.export_sized(regenerator=regenerator, params_path=artifact.params_path,
-                                           output_path=destination, width=width, height=height, dpi=dpi,
-                                           include_title=include_title, geometry=forest_dimensions)
+        elif options is not None:
+            self.plot_service.export_sized(
+                capability=artifact.capability, params_path=artifact.params_path, output_path=destination,
+                width=options.width, height=options.height, dpi=options.dpi,
+                include_title=options.include_title, geometry=options.forest_dimensions,
+                paginate_pdf=options.paginate_pdf,
+            )
         else:
             self.plot_service.export(
                 regenerator=regenerator,

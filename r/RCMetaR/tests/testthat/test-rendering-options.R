@@ -126,14 +126,24 @@ test_that("G1B-009 MA exposes the requested permutation distribution", {
   expect_true("zval.perm" %in% names(actual$res.info))
   expect_null(permuted.ma(d,"DL",iter=99)$res$zval.perm)
 })
-test_that("G1B-010 separate display preserves publication PNG dimensions", {
-  path <- r02.path("large.png")
-  rcmetar.render.plot_file(path,list(width=20,height=10,dpi=600),function() {
-    graphics::plot.new(); graphics::text(.5,.5,"Publication")
-  },display.path=r02.path("large-display.svg"))
-  bytes <- as.integer(readBin(path,"raw",n=24))
-  expect_equal(sum(bytes[17:20]*256^(3:0)),12000)
-  expect_equal(sum(bytes[21:24]*256^(3:0)),6000)
+test_that("PNG exports use publication resolution with or without a separate display", {
+  cases <- list(
+    list(size=list(width=3,height=2), pixels=c(1800,1200)),
+    list(size=list(width=3,height=2,dpi=900), pixels=c(2700,1800)),
+    list(size=list(width=20,height=10,dpi=600), pixels=c(12000,6000),
+         display=r02.path("large-display.svg"))
+  )
+  for (case in cases) {
+    path <- tempfile(fileext=".png")
+    rcmetar.render.plot_file(path, case$size, function() {
+      graphics::par(mar=rep(0,4))
+      graphics::plot.new()
+      graphics::text(.5,.5,"Publication")
+    }, display.path=case$display)
+    bytes <- as.integer(readBin(path,"raw",n=24))
+    expect_equal(bytes[1:8], c(137L,80L,78L,71L,13L,10L,26L,10L))
+    expect_equal(c(sum(bytes[17:20]*256^(3:0)), sum(bytes[21:24]*256^(3:0))), case$pixels)
+  }
 })
 test_that("G1B-011 mixed SVG encoding matches each destination", {
   for(ext in c("svg","svgz")) {

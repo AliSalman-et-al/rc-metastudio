@@ -67,7 +67,7 @@ try {
 
     # Ty resolves generated modules from their flat build search paths while
     # runtime imports remain package-qualified through rc_metastudio.forms.
-    $typingOutput = @(uv run python -c "from scripts.verify import run_typing; from pathlib import Path; import sys; print(run_typing(Path(sys.argv[1])))" $env:RCMS_QT6_BUILD_ROOT)
+    $typingOutput = @(uv run python -c "from scripts.verification_evidence import run_typing; from pathlib import Path; import sys; print(run_typing(Path(sys.argv[1])))" $env:RCMS_QT6_BUILD_ROOT)
     $typingExitCode = $LASTEXITCODE
     $typingOutput | Write-Output
     if ($typingExitCode -ne 0) { throw "Repository-wide strict type verification failed." }

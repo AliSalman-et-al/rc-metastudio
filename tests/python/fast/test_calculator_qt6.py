@@ -1,4 +1,4 @@
-from rc_metastudio.domain_ids import SheetId
+from rc_metastudio.domain_ids import ArmId, SheetId
 import hashlib
 import importlib.util
 import json
@@ -61,26 +61,12 @@ def _required(value, message: str = "expected Qt object"):
     return value
 
 
-def test_single_arm_binary_calculator_preserves_its_only_arm(qapp, monkeypatch):
-    from rc_metastudio.analysis import catalog as analysis_catalog
-    from rc_metastudio.project import model as analysis_dataset
-    from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
-    from PyQt6.QtWidgets import QMessageBox
+def _calculator_unit(data_type, names, raw_data, outcome="Outcome"):
+    from rc_metastudio.project.model import Arm, Sheet
+    from rc_metastudio.project.study import AnalysisUnit
 
-    errors = []
-    monkeypatch.setattr(QMessageBox, "critical", lambda _parent, _title, message: errors.append(message))
-    monkeypatch.setattr(QMessageBox, "warning", lambda _parent, _title, message: errors.append(message))
-    unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("single"), "Proportion", analysis_catalog.BINARY),
-        raw_data=[[4, 20]], arm_names=["Participants"],
-    )
-    key = (unit.arms["Participants"].stable_id,)
-    dialog = BinaryDataDialog(unit, ["Participants"], key, "PR", confidence_level=95)
-    assert not errors, errors
-    assert dialog.raw_data_table.isRowHidden(1)
-    assert list(unit.arms) == ["Participants"]
-    assert unit.get_raw_data_for_arms(["Participants"]) == [4, 20]
-    dialog.reject()
+    sheet = Sheet(SheetId("sheet"), outcome, data_type, arms=[Arm(ArmId(name), name) for name in names])
+    return AnalysisUnit(sheet, raw_data)
 
 
 def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path, qapp):
@@ -159,17 +145,12 @@ def test_native_calculator_capture_falls_back_when_screen_grab_is_null(tmp_path,
         qapp.processEvents()
 
 
-def test_native_calculator_png_encoding_never_calls_qt_save(tmp_path):
+def test_native_calculator_png_preserves_pixel_colors(tmp_path):
     smoke = _load_native_calculator_smoke()
-
-    class SaveFailingImage(QtGui.QImage):
-        def save(self, *args, **kwargs):
-            raise AssertionError("Qt image encoding must not be used")
-
-    source = SaveFailingImage(7, 5, QtGui.QImage.Format.Format_RGBA8888)
+    source = QtGui.QImage(7, 5, QtGui.QImage.Format.Format_RGBA8888)
     source.fill(QtGui.QColor("#d31f45"))
     source.setPixelColor(0, 0, QtGui.QColor("#2d72d9"))
-    image_path = tmp_path / "pillow-encoded.png"
+    image_path = tmp_path / "capture.png"
 
     smoke.encode_capture_png(source, image_path)
 
@@ -198,15 +179,17 @@ def test_calculator_probe_reports_success_only_for_verified_process(status):
 
 def test_native_calculator_teardown_disables_auto_quit_and_restores_on_error():
     smoke = _load_native_calculator_smoke()
-    events = []
 
     class FakeApplication:
+        auto_quit = True
+
         def quitOnLastWindowClosed(self):
-            events.append("read-auto-quit")
-            return True
+            return self.auto_quit
 
         def setQuitOnLastWindowClosed(self, enabled):
-            events.append(("set-auto-quit", enabled))
+            self.auto_quit = enabled
+
+    app = FakeApplication()
 
     class FailingWindow:
         class Workspace:
@@ -218,20 +201,15 @@ def test_native_calculator_teardown_disables_auto_quit_and_restores_on_error():
         workspace = Workspace()
 
         def close(self):
-            events.append("close")
+            assert not app.quitOnLastWindowClosed()
+            assert not self.workspace.is_dirty
             raise RuntimeError("close failed")
 
     window = FailingWindow()
     with pytest.raises(RuntimeError, match="close failed"):
-        smoke.close_automation_window(FakeApplication(), window)
+        smoke.close_automation_window(app, window)
 
-    assert window.workspace.is_dirty is False
-    assert events == [
-        "read-auto-quit",
-        ("set-auto-quit", False),
-        "close",
-        ("set-auto-quit", True),
-    ]
+    assert app.quitOnLastWindowClosed()
 
 
 def test_native_calculator_evidence_is_relocatable_and_tamper_evident(tmp_path):
@@ -577,7 +555,6 @@ class FakeAnalysisUnit:
 def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
     qapp, monkeypatch
 ):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import continuous_dialog as continuous_data_dialog
 
     monkeypatch.setattr(
@@ -612,11 +589,7 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
         lambda result, scale, metric=None: result[scale],
     )
 
-    unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS),
-        raw_data=[[60, 94, 22], [60, 92, 20]],
-        arm_names=["Group 1", "Group 2"],
-    )
+    unit = _calculator_unit(analysis_catalog.CONTINUOUS, ["Group 1", "Group 2"], [[60, 94, 22], [60, 92, 20]])
     unit.set_effect_for_source(
         "entered", "SMD", tuple(arm.stable_id for arm in unit.arms.values()), 0.1, -0.1, 0.3,
         standard_error=0.1827,
@@ -643,7 +616,6 @@ def test_continuous_metric_switch_does_not_reuse_effect_se_as_arm_se(
 
 
 def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatch):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import (
         continuous_dialog as continuous_data_dialog,
     )
@@ -709,11 +681,7 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
     monkeypatch.setattr(
         calculator_service.r_operations, "impute_pre_post_continuous_data", prepost
     )
-    unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", analysis_catalog.CONTINUOUS),
-        raw_data=[[None, None, None], [60, 92, 20]],
-        arm_names=["Group 1", "Group 2"],
-    )
+    unit = _calculator_unit(analysis_catalog.CONTINUOUS, ["Group 1", "Group 2"], [[None, None, None], [60, 92, 20]])
     unit.set_effect_for_source(
         "entered", "SMD", tuple(arm.stable_id for arm in unit.arms.values()), 0.0945, -0.1, 0.29
     )
@@ -800,16 +768,11 @@ def test_continuous_prepost_only_publishes_complete_differences(qapp, monkeypatc
 def test_calculator_effect_source_preserves_entered_partial_and_empty_data(
     data_type, groups, raw_data, metric, arm_key, partial
 ):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import (
         effect_readout as calculator_effect_readout,
     )
 
-    unit = analysis_dataset.AnalysisUnit(
-        analysis_dataset.Sheet(SheetId("sheet"), "Outcome", data_type),
-        raw_data=raw_data,
-        arm_names=groups,
-    )
+    unit = _calculator_unit(data_type, groups, raw_data)
     args = (unit, groups, metric, arm_key, 1.96)
 
     unit.set_effect_for_source("entered", metric, arm_key, 0.5, 0.4, 0.6)
@@ -1248,11 +1211,10 @@ class FakeContinuousAnalysisUnit:
 
 
 def test_diagnostic_clear_refreshes_existing_back_calculation_availability(qapp, monkeypatch):
-    from rc_metastudio.project import model as analysis_dataset
     from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialog
     monkeypatch.setattr(calculator_service.r_operations, 'diagnostic_convert_scale', lambda x, *args, **kwargs: x)
     monkeypatch.setattr(calculator_service.r_operations, 'impute_diagnostic_data', lambda data: {'TP': None, 'FP': None, 'FN': None, 'TN': None})
-    unit = analysis_dataset.AnalysisUnit(analysis_dataset.Sheet(SheetId('s'), 'Outcome', analysis_catalog.DIAGNOSTIC), raw_data=[['', '', '', '']], arm_names=['Test'])
+    unit = _calculator_unit(analysis_catalog.DIAGNOSTIC, ['Test'], [['', '', '', '']])
     form = diagnostic_data_dialog.DiagnosticDataDialog(unit, ['Test'], 'Test', confidence_level=95)
     form.back_calculate_button.setEnabled(True)
     form.clear_form()

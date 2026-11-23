@@ -50,7 +50,6 @@ meta.regression <- function(reg.data, params, cond.means.data=NULL, stop.at.rma=
 	res<-rma.uni(yi=reg.data@y, sei=reg.data@SE, slab=reg.data@study.names,
 					level=params$conf.level, digits=params$digits,
 					method=method, test=inference.method, mods=cov.array)
-    # Count exactly the study rows retained by the authority fit.
     cov.data <- extract.cov.data(reg.data, analysis.rows=res$not.na)
 	pure.res<-res
 	if (stop.at.rma) {

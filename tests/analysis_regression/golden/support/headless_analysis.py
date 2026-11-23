@@ -5,7 +5,6 @@ from rc_metastudio.workspace import table_model as dataset_table_model
 from rc_metastudio.analysis import requests as analysis_adapter
 from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project import archive as project_format
-from rc_metastudio import settings
 
 
 @dataclass(frozen=True)
@@ -40,7 +39,6 @@ def _add_case_covariates(model, covariates):
 def run_headless_analysis(case):
     model = load_dataset_model(case.dataset_path)
     selected_covariates = _add_case_covariates(model, case.covariates)
-    settings.make_r_tmp()
     if not case.requests:
         raise ValueError("an analysis case requires at least one request")
     request = case.requests[0]

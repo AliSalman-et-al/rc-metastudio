@@ -68,7 +68,6 @@ rcmetar.plot.pixel.size <- function(size) {
 }
 
 rcmetar.plot.raster.size <- function(size, keep.display, extension) {
-    # Analysis previews stay bounded; an explicit publication DPI is never reduced.
     if (keep.display && is.null(size$dpi) && extension %in% c("png", "tif", "tiff") &&
             (max(rcmetar.plot.pixel.size(size)) > 32000 ||
              prod(rcmetar.plot.pixel.size(size)) * 4 > 256 * 1024^2)) {
@@ -111,11 +110,6 @@ rcmetar.materialize.svg.properties <- function(nodes, defaults) {
 }
 
 rcmetar.sanitize.svg.xml <- function(svg) {
-    # XML 1.0 permits tab, LF, and CR below U+0020, but not the other
-    # control characters or references that graphics devices can occasionally
-    # emit. Filter bytes first: an invalid control byte can survive in an R
-    # character vector with an unknown encoding and evade a character regex.
-    # Remove both forms before libxml2 expands character references.
     if (!is.raw(svg)) {
         svg <- charToRaw(svg)
     }
@@ -128,9 +122,6 @@ rcmetar.sanitize.svg.xml <- function(svg) {
 
 rcmetar.normalize.svglite.svg <- function(svg.path) {
     compressed <- grepl("[.]svgz$", tolower(svg.path))
-    # svglite declares UTF-8. Reading through the native Windows code page can
-    # corrupt non-ASCII labels before libxml2 sees them, especially when R's
-    # requested UTF-8 locale is unavailable.
     input <- if (compressed) {
         gzfile(svg.path, open="rb")
     } else {
@@ -230,8 +221,6 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
     }
     if (identical(ext, "tif") || identical(ext, "tiff")) {
         .rcmetar.require.package("png")
-        # Keep publication rasters packed: a floating-point RGBA array plus
-        # channel copies exhausts memory for large subgroup figures.
         bitmap <- png::readPNG(rsvg::rsvg_png(svg.path, width=pixels[["width"]], height=pixels[["height"]]), native=TRUE)
         grDevices::tiff(
             filename=outpath,
@@ -247,8 +236,6 @@ rcmetar.export.svg_render <- function(svg.path, outpath, size) {
         grid::grid.raster(bitmap, interpolate=FALSE)
         return(invisible(ext))
     }
-    # The PDF device defaults to the viewBox extent even when the SVG
-    # declares a different physical viewport. Give Cairo its page in points.
     rsvg::rsvg_pdf(svg.path, outpath, width=round(size$width * 72),
                   height=round(size$height * 72))
     invisible(ext)

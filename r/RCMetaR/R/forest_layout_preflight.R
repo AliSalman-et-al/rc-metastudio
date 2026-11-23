@@ -112,7 +112,6 @@ rcmetar.forest.width.budget <- function(bundle, fixed.width, cex) {
     }
     width <- max(width, minimum)
     if (!natural) {
-        # Add the extra graph space gradually as the paper grows beyond manuscript width.
         graph.min <- min(60 / 25.4, graph.min + max(0, width - 180 / 25.4),
                          width - fixed.width - study.min)
     }
@@ -418,8 +417,6 @@ rcmetar.forest.journal.effect.intervals <- function(bundle) {
 
 rcmetar.forest.nonzero.axis.range <- function(alim) {
     magnitude <- max(abs(alim))
-    # Positive SEs can still produce identical floating-point CI endpoints.
-    # Expand only a collapsed range; genuinely small effects keep their scale.
     if (diff(alim) <= 100 * .Machine$double.eps * magnitude) {
         padding <- if (magnitude > 0) magnitude * 0.05 else 0.05
         return(mean(alim) + c(-padding, padding))
@@ -477,7 +474,6 @@ rcmetar.forest.journal.alim <- function(bundle) {
     if (!linear && !proportion && (length(values) < 2 || diff(range(values)) <= 0)) return(raw)
     alim <- if (length(values)) rcmetar.forest.nonzero.axis.range(range(values)) else
         if (proportion) c(0, 1) else raw
-    # Keep endpoint caps inside the panel, then extend linear axes to nice ticks.
     alim <- alim + c(-0.02, 0.02) * diff(alim)
     if (linear || proportion) alim <- range(pretty(alim, n=5))
     if (proportion) alim <- c(max(0, alim[[1]]), min(1, alim[[2]]))

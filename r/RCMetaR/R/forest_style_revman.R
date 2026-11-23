@@ -13,24 +13,6 @@ rcmetar.revman.format.weight <- function(weights, n) {
     labels
 }
 
-rcmetar.revman.ilab <- function(columns, n) {
-    matrix <- do.call(cbind, lapply(columns, function(column) column$values))
-    if (is.null(matrix)) {
-        matrix <- matrix(character(0), nrow=n, ncol=0)
-    }
-    mode(matrix) <- "character"
-    headers <- vapply(columns, function(column) column$header, character(1))
-    colnames(matrix) <- headers
-    groups <- unique(vapply(columns, function(column) column$group, character(1)))
-    groups <- groups[nzchar(groups)]
-    list(
-        matrix = matrix,
-        columns = columns,
-        headers = headers,
-        groups = groups
-    )
-}
-
 rcmetar.revman.binary.ilab <- function(binary.data, params, res=NULL) {
     n <- length(binary.data@study.names)
     groups <- rcmetar.forest.arm.labels(params)
@@ -58,7 +40,7 @@ rcmetar.revman.binary.ilab <- function(binary.data, params, res=NULL) {
     columns <- c(columns, list(
         list(key="weight", group="", header="Weight", values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))
     ))
-    rcmetar.revman.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.revman.continuous.ilab <- function(cont.data, params, res=NULL) {
@@ -87,7 +69,7 @@ rcmetar.revman.continuous.ilab <- function(cont.data, params, res=NULL) {
     columns <- c(columns, list(
         list(key="weight", group="", header="Weight", values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))
     ))
-    rcmetar.revman.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.revman.diagnostic.ilab <- function(diagnostic.data, params, res=NULL) {
@@ -105,7 +87,7 @@ rcmetar.revman.diagnostic.ilab <- function(diagnostic.data, params, res=NULL) {
     columns <- c(columns, list(
         list(key="weight", group="", header="Weight", values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))
     ))
-    rcmetar.revman.ilab(columns, n)
+    rcmetar.forest.ilab(columns, n)
 }
 
 rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
@@ -130,7 +112,7 @@ rcmetar.revman.ilab.for.data <- function(om.data, params, res=NULL) {
         }
         columns <- c(columns, list(list(key="weight", group="", header="Weight",
             values=rcmetar.revman.format.weight(rcmetar.metafor.weights(res), n))))
-        return(rcmetar.revman.ilab(columns, n))
+        return(rcmetar.forest.ilab(columns, n))
     }
     if ("BinaryData" %in% class(om.data)) {
         return(rcmetar.revman.binary.ilab(om.data, params, res))

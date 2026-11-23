@@ -76,7 +76,7 @@ def input_project(work, case):
     sheet = analysis_dataset.Sheet(
         SheetId("tsa"), f"TSA {case}", analysis_catalog.BINARY if binary else analysis_catalog.CONTINUOUS,
         "proportions" if binary else ("smd" if case == "smd" else "means"),
-        "binary" if binary else "continuous", arms,
+        arms,
         settings={"metric": metric, "effect_direction": "below",
                   "analysis": {"method": "binary.fixed.mh" if binary else "continuous.fixed"}},
     )
@@ -91,7 +91,7 @@ def input_project(work, case):
     if stress:
         raw = tuple([[25 + 2*i, 4.5, 2], [25 + 2*i, 5, 2]] for i in range(36))
     for i, cells in enumerate(raw):
-        unit = AnalysisUnit(sheet, cells, arm_names=[a.name for a in arms], arm_stable_ids=[a.id for a in arms])
+        unit = AnalysisUnit(sheet, cells)
         sheet.rows.append(analysis_dataset.StudyRow(
             RowId(str(i)), "Double zero" if binary and i == 0 else f"Trial {i + 1}", unit, 2000 + i,
         ))

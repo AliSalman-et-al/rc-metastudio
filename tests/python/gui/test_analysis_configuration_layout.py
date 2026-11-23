@@ -1,9 +1,10 @@
 from rc_metastudio.project.study import AnalysisUnit
-from rc_metastudio.domain_ids import RowId, SheetId
+from rc_metastudio.analysis.catalog import AvailableMethod
+from rc_metastudio.domain_ids import ArmId, RowId, SheetId
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import cast
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -20,12 +21,6 @@ from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 from qt_test_support import key_click, required, wait
 
 prepare_generated_ui_imports()
-
-if TYPE_CHECKING:
-    from ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
-else:
-    from rc_metastudio.forms.ui_analysis_setup_dialog import Ui_AnalysisSetupDialog
-
 
 class _AnalysisModel(object):
     @property
@@ -45,7 +40,7 @@ class _AnalysisModel(object):
         self.dataset.sheets.append(self.current_sheet)
         self.current_sheet_id = self.current_sheet.id
 
-    def get_current_data_type(self):
+    def get_current_family(self):
         return self._data_type
 
     def included_studies_have_raw_data(self):
@@ -84,20 +79,20 @@ def _install_analysis_backend(monkeypatch, analysis_setup_dialog):
         "digits": 2,
         "label": "complete editable value",
     }
-    backend = analysis_setup_dialog.analysis_adapter.AnalysisService
+    backend = analysis_setup_dialog.r_operations
     monkeypatch.setattr(
         backend,
-        "available_methods",
-        lambda _self, **kwargs: (
-            {method: label for label, method in diagnostic_methods.items()}
-            if kwargs.get("for_data_type") == "diagnostic"
-            else {method: label for label, method in methods.items()}
+        "available_model_methods",
+        lambda _model, family, _metrics, **_kwargs: (
+            {method: AvailableMethod(label) for label, method in diagnostic_methods.items()}
+            if family == "diagnostic"
+            else {method: AvailableMethod(label) for label, method in methods.items()}
         ),
     )
     monkeypatch.setattr(
         backend,
-        "parameters",
-        lambda _self, method: (
+        "get_params",
+        lambda method: (
             {
                 name: definition
                 for name, definition in parameters.items()
@@ -118,42 +113,14 @@ def _install_analysis_backend(monkeypatch, analysis_setup_dialog):
     )
     monkeypatch.setattr(
         backend,
-        "plot_capabilities",
-        lambda _self, _data_type, method, **_kwargs: (
+        "get_analysis_plot_capabilities",
+        lambda _data_type, method, **_kwargs: (
             [{"plot_kind": "forest", "styleable": True}]
             if str(method).endswith("fixed")
             else []
         ),
         raising=False,
     )
-
-
-def test_method_parameters_declares_scroll_body_with_actions_outside(qapp):
-    dialog = QtWidgets.QDialog()
-    ui = Ui_AnalysisSetupDialog()
-    ui.setupUi(dialog)
-    try:
-        assert ui.content_scroll_area.widgetResizable()
-        assert ui.content_scroll_area.isAncestorOf(ui.specs_tab)
-        assert not ui.content_scroll_area.isAncestorOf(ui.buttonBox)
-        layout = required(dialog.layout(), "dialog layout")
-        assert layout.indexOf(ui.buttonBox) > layout.indexOf(ui.content_scroll_area)
-    finally:
-        dialog.close()
-
-
-def test_analysis_setup_plot_accent_control_exposes_accessibility_metadata(qapp):
-    dialog = QtWidgets.QDialog()
-    ui = Ui_AnalysisSetupDialog()
-    ui.setupUi(dialog)
-    try:
-        assert ui.color_btn.text() == "Choose color…"
-        assert ui.color_btn.accessibleName() == "Choose plot accent color"
-        assert ui.color_btn.accessibleDescription()
-        assert ui.color_btn.toolTip()
-        assert ui.accent_label.buddy() is ui.accent_color
-    finally:
-        dialog.close()
 
 
 def test_configuration_controls_have_accessible_label_associations(
@@ -175,6 +142,11 @@ def test_configuration_controls_have_accessible_label_associations(
             assert control.accessibleName() == label.text()
             assert control.accessibleDescription()
             assert control.toolTip()
+
+        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData("fixed"))
+        assert dialog.color_btn.accessibleName() == "Choose plot accent color"
+        assert dialog.color_btn.accessibleDescription()
+        assert dialog.accent_label.buddy() is dialog.accent_color
 
         from rc_metastudio import main_wizard
 
@@ -276,7 +248,7 @@ def test_diagnostic_reitsma_method_layout_and_meta_regression_uses_joint_mode(
     monkeypatch.setattr(
         backend,
         "available_model_methods",
-        lambda *_args, **_kwargs: {"diagnostic.reitsma": "Reitsma bivariate model"},
+        lambda *_args, **_kwargs: {"diagnostic.reitsma": AvailableMethod("Reitsma bivariate model", requires_raw_counts=True)},
         raising=False,
     )
     monkeypatch.setattr(
@@ -441,7 +413,7 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
     monkeypatch.setattr(
         backend,
         "available_model_methods",
-        lambda *_args, **_kwargs: {"diagnostic.reitsma": "Reitsma bivariate model"},
+        lambda *_args, **_kwargs: {"diagnostic.reitsma": AvailableMethod("Reitsma bivariate model", requires_raw_counts=True)},
         raising=False,
     )
     monkeypatch.setattr(
@@ -578,10 +550,6 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
             dialog.show()
             qapp.processEvents()
 
-            assert (
-                adaptive_window.adaptive_window_state(dialog).policy.archetype
-                is adaptive_window.WindowArchetype.TRANSACTIONAL
-            )
             assert dialog.frameGeometry().width() <= 720
             assert dialog.frameGeometry().height() <= 540
             assert dialog.buttonBox.isVisible()
@@ -786,7 +754,7 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         current_sheet = SimpleNamespace(covariates=[{'id': long_name, 'name': long_name, 'data_type': FACTOR}], rows=[study])
 
 
-        def get_current_data_type(self):
+        def get_current_family(self):
             return "binary"
 
         def get_studies(self, only_if_included=False):
@@ -812,10 +780,6 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         covariate_type.show()
         qapp.processEvents()
 
-        assert (
-            adaptive_window.adaptive_window_state(subgroup).policy.archetype
-            is adaptive_window.WindowArchetype.TRANSACTIONAL
-        )
         assert subgroup.covariate_combo_box.currentText() == long_name
         choice = subgroup.covariate_combo_box
         subgroup.move(
@@ -845,10 +809,6 @@ def test_subgroup_and_covariate_selectors_use_transactional_layouts(qapp, monkey
         assert choice.toolTip() == long_name
         assert choice_view.sizeHintForColumn(0) > original_column_width
         choice.hidePopup()
-        assert (
-            adaptive_window.adaptive_window_state(covariate_type).policy.archetype
-            is adaptive_window.WindowArchetype.TRANSACTIONAL
-        )
         assert covariate_type.covariate_preview_table.verticalScrollMode() == (
             QtWidgets.QAbstractItemView.ScrollMode.ScrollPerItem
         )
@@ -1089,7 +1049,7 @@ class Model:
     current_sheet = SimpleNamespace(name="Outcome", settings={}, covariates=[])
     current_sheet_id = "sheet"
     dataset = SimpleNamespace(sheets=[current_sheet])
-    def get_current_data_type(self):
+    def get_current_family(self):
         return "binary"
     def included_studies_have_raw_data(self):
         return True
@@ -1097,7 +1057,7 @@ class Model:
 backend = analysis_adapter.r_operations
 data_calls = []
 backend._binary_data_arguments = lambda *args, **kwargs: data_calls.append("binary")
-backend.available_model_methods = lambda *_args, **kwargs: {"binary.random": "Random"}
+backend.available_model_methods = lambda *_args, **kwargs: {"binary.random": backend.AvailableMethod("Random")}
 backend.get_params = lambda method: (
     {"conf.level": "float"}, {"conf.level": 95.0}, ["conf.level"], {}
 )
@@ -1197,7 +1157,10 @@ def test_manuscript_counts_and_correction_describe_only_fitted_studies(qapp, mon
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog, catalog as analysis_catalog
     _install_analysis_backend(monkeypatch, analysis_setup_dialog)
     model = _AnalysisModel("binary")
-    sheet = analysis_dataset.Sheet(SheetId("counts"), "Outcome", analysis_catalog.BINARY)
+    sheet = analysis_dataset.Sheet(
+        SheetId("counts"), "Outcome", analysis_catalog.BINARY,
+        arms=[analysis_dataset.Arm(ArmId("a"), "Group A"), analysis_dataset.Arm(ArmId("b"), "Group B")],
+    )
     kept, missing = (
         analysis_dataset.StudyRow(RowId(name), name, AnalysisUnit(sheet))
         for name in ("kept", "missing")

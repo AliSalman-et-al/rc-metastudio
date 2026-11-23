@@ -23,7 +23,6 @@ def bez(p0, p1, p2, p3, t):
     )
 
 
-# Ty 0.0.18 miscounts the fixed tuple expansion below; keep the approved drawing intact.
 bez = cast(Any, bez)
 
 # ---- Forest plot: a column of square stars whose horizontal diffraction flares are the whiskers
@@ -91,7 +90,7 @@ def pine(x, y, h):
 
 
 for cx, cy, n in CLUSTERS:
-    h = 6.5 + (cy - 220) * .036  # nearer clusters (lower) are drawn taller
+    h = 6.5 + (cy - 220) * .036
     for k in sorted(range(n), key=lambda k: k % 2):  # back row first
         x = cx + (k - (n - 1) / 2) * h * .42 + tr.uniform(-.6, .6)
         y = cy + (k % 2) * h * .12 + tr.uniform(-.4, .4)
@@ -466,7 +465,6 @@ html = f"""<!doctype html>
 </body>
 </html>
 """
-# Only the output boundary changes the approved drawing/template.
 html = re.sub(r'<p class="p [^" ]+">.*?</p>', '', html)
 html = html.replace('background: #1e1e1e; padding: 40px;', 'background: transparent; padding: 0;')
 html = re.sub(r'box-shadow: [^;]+;', '', html)
