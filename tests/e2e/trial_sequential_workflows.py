@@ -135,10 +135,12 @@ def check_artwork(path, case, style, contract, *, percent=False):
         units = "percent" if percent else "participants"
         assert ticks[-2] == contract["peto"]["join_tick"][units], ticks
     favours = [node for node in text_nodes if (node.text or "").startswith("Favors")]
-    if case in ("peto", "hr"):
+    if case == "hr":
         assert not favours, labels
     else:
         assert len(favours) == 2 and all("rotate(-90" in node.attrib.get("transform", "") for node in favours), labels
+        if case == "peto":
+            assert {node.text for node in favours} == {"Favors BCG vaccine", "Favors Unvaccinated control"}
     assert contract["accents"][style].lower() in path.read_text(encoding="utf-8").lower()
     if case == "bcg" and style == "default":
         fills = [node.attrib.get("style", "") for node in svg.iter(NAMESPACE + "polygon")]
