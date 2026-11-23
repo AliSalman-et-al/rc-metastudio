@@ -410,7 +410,6 @@ def run(app, window, work, root, record, analyze):
                          and all(expected in found for expected, found in zip(directions, labels)))
             elif kind == "trial_sequential":
                 contrast = publication["conventional_contrast"]
-                # Use the normal-text AA contrast target for small print annotations.
                 valid = len(contrast) == 2 and min(contrast.values()) >= 4.5
             if not valid:
                 failures.append((name, width, publication))

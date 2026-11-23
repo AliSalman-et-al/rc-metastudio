@@ -1597,7 +1597,6 @@ rcmetar.warm.small.study.effects <- function() {
         darkest <- pmin(background, .78 * grDevices::col2rgb(settings$region.color))
         ramp <- grDevices::colorRamp(c(settings$background.color, grDevices::rgb(t(darkest), maxColorValue=255)))
         bands <- grDevices::rgb(ramp(seq(.12, 1, length.out=length(levels) + 1L)), maxColorValue=255)
-        # metafor fills the nested contours with shade and the outermost region with back.
         args$shade <- head(bands, -1L)
         args$back <- tail(bands, 1L)
     }
