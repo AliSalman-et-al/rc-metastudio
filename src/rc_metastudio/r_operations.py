@@ -376,11 +376,11 @@ def run_model_analysis(table_model, request, *, covs_to_include=None, studies=No
     """Convert this frozen model and execute it on the R worker."""
     family, _, metric, workflow, params = _validated_versioned_request(request)
     if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
-        metric in TWO_ARM_METRICS or metric in {"HR", "IRR"}
+        metric in TWO_ARM_METRICS
     ) and table_model.current_sheet is not None:
         below, above = table_model.current_sheet.effect_direction_arms()
-        params = {**params, "fp_favours_left": f"Favors {below}" if below else "",
-                  "fp_favours_right": f"Favors {above}" if above else ""}
+        params = {**params, "fp_direction_left": f"Favours {below}" if below else "",
+                  "fp_direction_right": f"Favours {above}" if above else ""}
         request = {**request, "params": params}
     columns = _analysis_columns(table_model, family, metric, covs_to_include=covs_to_include, studies=studies)
     return _worker_fit("fit", family, columns, request)

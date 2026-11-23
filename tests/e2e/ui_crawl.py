@@ -187,7 +187,7 @@ def plots(driver, capture, missing):
             if family == "continuous":
                 from xml.etree import ElementTree as ET
                 texts = [n for path in view.results.display_images.values() for n in ET.parse(path).iter('{http://www.w3.org/2000/svg}text')]
-                directions = [n for n in texts if ''.join(n.itertext()).startswith('Favors')]
+                directions = [n for n in texts if ''.join(n.itertext()).startswith('Favours')]
                 assert not directions
                 import re
                 ticks = [n for n in texts if re.fullmatch(r'-?\d+(\.\d+)?', ''.join(n.itertext())) and float(n.attrib['y']) > max(float(t.attrib['y']) for t in texts if 'Random-effects model' in ''.join(t.itertext()))]

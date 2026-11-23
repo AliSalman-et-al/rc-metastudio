@@ -60,11 +60,17 @@ rcmetar.forest.direction.metrics <- function(bundle, plan) {
 rcmetar.forest.outward.directions <- function(bundle, split, cex, font=1) {
     bounds <- graphics::grconvertX(c(.08, grDevices::dev.size("in")[[1L]] - .08), "inches", "user")
     gap <- graphics::par("ps") * cex * diff(graphics::par("usr")[1:2]) / (144 * graphics::par("pin")[[1]])
+    labels <- rcmetar.forest.direction.labels(bundle)[c("left", "right")]
+    longest <- vapply(labels, function(label) {
+        words <- strsplit(label, "[[:space:]]+")[[1L]]
+        max(c(0, graphics::strwidth(words, cex=cex, font=font)))
+    }, numeric(1))
+    room <- bounds + c(longest[[1L]] + gap, -longest[[2L]] - gap)
+    if (room[[1L]] < room[[2L]]) split <- min(max(split, room[[1L]]), room[[2L]])
     at <- split + c(-gap, gap)
     available <- c(at[[1L]] - bounds[[1L]], bounds[[2L]] - at[[2L]])
-    labels <- rcmetar.forest.direction.labels(bundle)
     lines <- Map(function(text, space) rcmetar.bmj.wrap.direction(text, space, cex, font=font),
-                 labels[c("left", "right")], available)
+                 labels, available)
     list(at=at, lines=lines)
 }
 
