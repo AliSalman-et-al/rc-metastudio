@@ -174,7 +174,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     list(caption=caption, outcome=outcome, crossing=crossing)
 }
 
-.tsa.plot.panel <- function(size, theme, axes, labels, annotation, xlabel) {
+.tsa.plot.panel <- function(size, theme, axes, labels, annotation, xlabel, has.favours) {
     typography <- theme$typography
     yticks <- axes$yticks
     axis <- axes$axis
@@ -188,7 +188,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     em <- 12 * size$cex / 72
     tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
     tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis, cex=axis.cex))
-    left <- tick.width + 4.3 * em
+    left <- tick.width + (if (has.favours) 4.3 else 2.65) * em
     legend.cex <- max(6.2/(12*size$cex), rcmetar.bubble.legend.cex())
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
     # legend() includes the line sample, text inset and padding in character units.
@@ -248,7 +248,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0, cex.axis=y.tick.cex)
     graphics::segments(0, -limit, 0, limit)
     graphics::segments(0, -limit, 1, -limit)
-    title.offset <- tick.width + (if (length(favours)) 3.1 else 1.45) * panel$em
+    title.offset <- tick.width + (if (any(nzchar(trimws(favours)))) 3.1 else 1.45) * panel$em
     graphics::text(-graphics::xinch(title.offset), 0, ylabel, srt=90, adj=c(.5, .5),
                    cex=panel$axis.cex, xpd=NA, col=theme$text.col)
     .tsa.draw.favours(favours, limit, tick.width + 1.9 * panel$em, theme$text.col)
@@ -429,7 +429,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
     title <- params$plot_caption
 
     draw <- function() {
-        panel <- .tsa.plot.panel(size, theme, axes, curves$labels, annotation, bundle$xlabel)
+        panel <- .tsa.plot.panel(size, theme, axes, curves$labels, annotation, bundle$xlabel, any(nzchar(trimws(favours))))
         .tsa.draw.axes(size, theme, axes, panel, favours, bundle$ylabel)
         .tsa.draw.curves(size, theme, axes, curves, panel, looks, last)
         .tsa.draw.markers(size, theme, axes, looks, annotation$crossing)
