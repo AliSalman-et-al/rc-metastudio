@@ -5,6 +5,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Literal
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QColor, QFont, QFontMetricsF, QIcon, QPainter, QPixmap
@@ -17,6 +18,9 @@ prepare_generated_ui_imports()
 from rc_metastudio import adaptive_window, app_error_handler, application_metadata, qt6_resources, r_runtime, settings
 
 APPLICATION_ICON_PATH = ":/misc/meta.png"
+StartupMode = Literal["desktop", "automation", "shell"]
+
+
 def screen_bounded_splash_pixmap(source, available_logical_size):
     """Bound a splash in Logical Layout Space while preserving source DPR."""
     pixmap = QPixmap(source)
@@ -213,12 +217,8 @@ def load_R_libraries(app, splash=None, phase_callback=None):
     observe_package("R worker", "complete")
 
 
-def _open_startup_project(app, meta, project_path, startup_argv):
-    opened = meta.open(project_path)
-    smoke_requested = (
-        os.environ.get("RCMS_STARTUP_PROJECT_SMOKE") == "1"
-        or "--automation-startup-project-smoke" in startup_argv
-    )
+def _open_startup_project(app, meta, project_path, startup_argv, *, smoke_requested: bool):
+    opened = meta.open(project_path, raise_on_error=smoke_requested)
     if not smoke_requested:
         return False, None
 
@@ -260,6 +260,10 @@ def _finish_startup_project(app, window, project_path, opened, *, completion_mar
 
 
 def start(startup_argv: list[str]):
+    smoke_requested = (
+        os.environ.get("RCMS_STARTUP_PROJECT_SMOKE") == "1"
+        or "--automation-startup-project-smoke" in startup_argv
+    )
     startup_project_path = _startup_project_path(startup_argv)
     if startup_project_path:
         startup_project_path = os.path.abspath(startup_project_path)
@@ -267,31 +271,36 @@ def start(startup_argv: list[str]):
     baseline_ids = _top_level_ids(app)
     meta = None
     try:
-        app, meta = compose_application(app=app, interactive=True)
+        app, meta = compose_application(app=app, startup="automation" if smoke_requested else "desktop")
         if startup_project_path:
             handled, result = _open_startup_project(
-                app, meta, startup_project_path, startup_argv
+                app, meta, startup_project_path, startup_argv, smoke_requested=smoke_requested
             )
             if handled:
                 return result
         else:
-            if os.environ.get("RCMS_STARTUP_PROJECT_SMOKE") == "1":
+            if smoke_requested:
                 raise SystemExit(
                     "Startup project smoke test did not receive a project path."
                 )
             meta.start()
         return app.exec()
+    except Exception as error:
+        if smoke_requested:
+            raise SystemExit(f"Startup project smoke failed: {error}") from error
+        raise
     finally:
         if app is not None:
             _dispose_new_top_levels(app, baseline_ids, (meta,) if meta is not None else ())
 
 
 def compose_application(
-    *, app=None, phase_callback=None, interactive=False,
+    *, app=None, phase_callback=None, startup: StartupMode = "shell",
     main_window_loader=None, r_loader=None
 ):
     """Compose the application shell used by startup and qualification hooks."""
-    app_error_handler.install_global_exception_handler()
+    if startup != "automation":
+        app_error_handler.install_global_exception_handler()
     app, main_window = _prepare_composition(app, main_window_loader)
     _emit_automation_phase(phase_callback, "application:configured")
     baseline_ids = _top_level_ids(app)
@@ -309,10 +318,10 @@ def compose_application(
         runtime_error = None
         try:
             splash = _load_composition_runtime(
-                app, interactive=interactive, phase_callback=phase_callback, r_loader=r_loader
+                app, show_splash=startup != "shell", phase_callback=phase_callback, r_loader=r_loader
             )
         except Exception as error:
-            if not interactive:
+            if startup != "desktop":
                 raise
             runtime_error = error
         meta = _finish_composition(app, main_window, splash=splash)
@@ -320,6 +329,8 @@ def compose_application(
         if runtime_error is not None:
             app.processEvents()
             meta._show_analysis_backend_error(runtime_error, startup=True)
+        if startup == "automation":
+            app_error_handler.install_global_exception_handler()
         return app, meta
     except BaseException:
         _dispose_new_top_levels(app, baseline_ids, (splash,))
@@ -335,12 +346,12 @@ def _prepare_composition(app, main_window_loader):
 
 
 def _load_composition_runtime(
-    app, *, interactive, phase_callback, r_loader
+    app, *, show_splash, phase_callback, r_loader
 ):
-    if not interactive and r_loader is None:
+    if not show_splash and r_loader is None:
         return None
     r_runtime.mark_unavailable()
-    splash = create_startup_splash() if interactive else None
+    splash = create_startup_splash() if show_splash else None
     try:
         if splash is not None:
             splash.showMessage("Starting R…")
