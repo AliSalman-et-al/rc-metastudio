@@ -51,7 +51,7 @@ def pdf_text_runs(page) -> list[tuple[str, float, tuple[float, float, float, flo
     lines: dict[tuple, list] = {}
     for char in _glyphs(page):
         a, b, _, _, x, y = char.matrix
-        size = math.hypot(a, b)  # text-matrix scale, so rotated labels measure correctly
+        size = math.hypot(a, b)
         horizontal = abs(a) >= abs(b)
         sign = 1 if (a if horizontal else b) > 0 else -1
         low, high = (char.x0, char.x1) if horizontal else (char.y0, char.y1)
@@ -95,7 +95,6 @@ def pdf_observations(path: Path, width: float, height: float) -> dict:
         if intersection > .2 * min(area(a), area(b)):
             overlaps.append([first, second])
     return {
-        # Text drawn as outlines yields no runs, which fails the 6 pt check.
         "min_font_pt": round(min((size for _, size, _ in runs), default=0), 3),
         "labels": [text for text, _, _ in runs],
         "outside": outside,
