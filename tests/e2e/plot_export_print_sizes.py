@@ -224,6 +224,12 @@ def publication_observations(kind, page, runs, png):
                                    round((page.height - (item.y0 + item.y1) / 2) * scale)).getRgbF()[:3]
                   for item in keys if item and item.fill]
         guides = [key(label, LTLine) for label in ("No effect", "Common-effect estimate") if label in labels]
+        entries = [(*labels[label], item.x0) for label, item in zip(
+            (*bands, "No effect", "Common-effect estimate"), (*keys, *guides)) if item is not None]
+        entry_gap = [round(following[4] - current[2], 2)
+                     for current, following in zip(entries, entries[1:]) if abs(current[1] - following[1]) < .25]
+        reading_order = sorted(entries, key=lambda entry: (-round(entry[1], 1), entry[0]))
+        legend_pt = next((size for label, size, _ in runs if label == bands[0]), 0)
         frame = max((item for item in shapes if isinstance(item, LTRect) and item.fill
                      and .25 * page.width < item.width < page.width - 2 and item.height > .25 * page.height),
                     key=lambda item: item.width * item.height)
@@ -239,6 +245,9 @@ def publication_observations(kind, page, runs, png):
                 "off_tick_gridlines": [y for y in grids if not any(abs(y - tick) <= .25 for tick in tick_lines)],
                 "band_key_gaps_pt": [round(labels[label][0] - item.x1, 2)
                                      for label, item in zip(bands, keys) if item],
+                "band_key_size_pt": [round(item.height, 2) for item in keys if item],
+                "entry_gaps_pt": entry_gap, "legend_pt": legend_pt,
+                "legend_reading_order": len(entries) == 6 and entries == reading_order,
                 "white_key_pixels": key_gaps(guides)}
     if kind == "forest":
         title_y = min((box[1] for text, _, box in runs if text == "Risk ratio"), default=0)
@@ -422,11 +431,19 @@ def run(app, window, work, root, record, analyze):
             elif kind == "contour_funnel":
                 bands = publication["band_luminance"]
                 gaps = publication["white_key_pixels"]
+                legend_pt = publication["legend_pt"]
+                entry_gaps = publication["entry_gaps_pt"]
                 valid = (len(bands) == 4 and all(a > b for a, b in zip(bands, bands[1:]))
                          and len(gaps) == 2 and gaps[0] == 0 and gaps[1] > 3
                          and not publication["off_tick_gridlines"]
                          and len(publication["band_key_gaps_pt"]) == 4
-                         and max(publication["band_key_gaps_pt"]) <= 6
+                         and all(.15 * legend_pt <= gap <= .65 * legend_pt
+                                 for gap in publication["band_key_gaps_pt"])
+                         and all(.7 * legend_pt <= size <= 1.05 * legend_pt
+                                 for size in publication["band_key_size_pt"])
+                         and publication["legend_reading_order"]
+                         and len(entry_gaps) >= 2
+                         and all(.7 * legend_pt <= gap <= 1.4 * legend_pt for gap in entry_gaps)
                          and publication["bands_match_panel"] and publication["guide_dashed"] == [False, True])
             elif kind == "forest":
                 labels = publication["directions"]

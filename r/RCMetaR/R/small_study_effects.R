@@ -1502,17 +1502,20 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
-.small.study.funnel.legend <- function(settings, ..., x.intersp=.65) {
+.small.study.funnel.legend <- function(settings, ..., x.intersp=.65, entry.gap=0) {
     args <- list(...)
     for (i in seq_along(settings$legend.rows)) {
         row <- settings$legend.rows[[i]]
         symbols <- lapply(args, function(arg) if (length(arg) == 1L) arg else arg[row])
+        labels <- settings$legend.labels[row]
+        text.width <- if (entry.gap > 0) graphics::strwidth(labels, cex=.9) +
+            c(rep(graphics::xinch(entry.gap), length(row) - 1L), 0) else NA_real_
         do.call(graphics::legend, c(list(
             x=graphics::grconvertX(.5, from="npc"),
             y=graphics::grconvertY(1, from="npc") +
                 graphics::yinch(settings$legend.leading * (length(settings$legend.rows) - i + 1.5)),
-            legend=settings$legend.labels[row], cex=.9,
-            xjust=.5, yjust=1, horiz=TRUE, text.width=NA_real_,
+            legend=labels, cex=.9,
+            xjust=.5, yjust=1, horiz=TRUE, text.width=text.width,
             bty="n", xpd=NA, seg.len=1.4, x.intersp=x.intersp), symbols))
     }
 }
@@ -1610,9 +1613,10 @@ rcmetar.warm.small.study.effects <- function() {
     show <- c(settings$show.reference, settings$show.pooled)
     line.color <- settings$reference.color
     .small.study.funnel.legend(settings, pch=c(rep(22L, length(bands)), rep(NA, sum(show))),
-        pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE,
+        pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE, pt.cex=1.3,
         lty=c(rep(NA, length(bands)), c("solid", "12")[show]),
-        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color, x.intersp=.15)
+        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color, x.intersp=.15,
+        entry.gap=.9 * graphics::par("ps") * graphics::par("cex") / 72)
 }
 
 .small.study.draw.funnel.notes <- function(om.data, params, settings) {
