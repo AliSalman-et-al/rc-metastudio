@@ -149,6 +149,7 @@ def git_paths(*args: str) -> list[str]:
 
 def changed_paths(base: str, *, working_tree: bool = False) -> list[str]:
     target = [] if working_tree else ["HEAD"]
+    # Treat renames as deletion plus addition so both boundaries are selected.
     return git_paths("diff", "--no-renames", "--name-only", "-z", base, *target, "--")
 
 

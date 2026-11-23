@@ -79,6 +79,30 @@ def test_source_lane_passes_one_selected_rscript_to_pytest_and_r_evidence(monkey
     assert str(selected.resolve()) in children[-1][0]
 
 
+@pytest.mark.parametrize(
+    ("reuse", "cached_head", "expected_passes"),
+    [(True, "historical-commit", 1), (True, "wrong", 2), (True, None, 2),
+     (False, "historical-commit", 2)],
+)
+def test_code_health_always_checks_current_commit(monkeypatch, tmp_path, reuse, cached_head, expected_passes):
+    monkeypatch.setattr(verify, "REPO_ROOT", tmp_path)
+    if cached_head is not None:
+        directory = tmp_path / "artifacts/code-health"
+        directory.mkdir(parents=True)
+        (directory / "baseline.json").write_text(
+            json.dumps({"schema_version": 1, "head": cached_head}), encoding="utf-8"
+        )
+        (directory / "baseline.txt").write_text("cached report", encoding="utf-8")
+    commands = []
+    monkeypatch.setattr(verify, "run", commands.append)
+
+    verify.run_code_health_with_trend("base-commit", "current-commit", "historical-commit", reuse_baseline=reuse)
+
+    assert len(commands) == expected_passes
+    assert commands[-1][commands[-1].index("--head") + 1] == "current-commit"
+    assert "--baseline" in commands[-1]
+
+
 def test_r_version_is_part_of_manifest_check(monkeypatch):
     policy = json.loads((ROOT / 'config/r-dependencies.json').read_text())
     packages = {d['name']: d['installed_version'] for d in policy['direct_RCMetaR_dependencies']}
