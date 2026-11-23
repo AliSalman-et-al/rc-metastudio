@@ -158,6 +158,9 @@ Derived XML inputs cover pending data, non-integer years, duplicate names and
 IV-random/DL, MH-random unavailable and Peto-fixed mapping. Dirty review Cancel
 preserves data/path/dirty/history; confirmation invokes the existing save prompt.
 Malformed and non-RevMan XML leave the project intact. Save/reopen retains settings.
+The import review discloses fixed MH pooling correction. For a published zero-cell
+RR, verify the pooled estimate, interval, heterogeneity, overall test, reopened
+setting and report with the glutamine RevMan 5 review.
 Native pickers and exhaustive DTA structures remain unexercised.
 
 The RM5 derived-fixture drive compares six grouped studies, fixed-IV subgroup

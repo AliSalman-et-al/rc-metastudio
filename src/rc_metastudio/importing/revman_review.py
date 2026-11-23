@@ -37,8 +37,15 @@ def review_rm5(result: Rm5Import, parent: QtWidgets.QWidget) -> bool:
     header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
     table.setFixedHeight(header.height() + sum(table.rowHeight(row) for row in range(table.rowCount())) + 2 * table.frameWidth())
     layout.addWidget(table)
+    imported_settings = []
+    if any(sheet.settings.get('analysis', {}).get('parameters', {}).get('pool.correction') == 'TRUE'
+           for sheet in result.dataset.sheets):
+        imported_settings.append(
+            'Fixed-effect Mantel–Haenszel: "Use correction in pooling" is turned on '
+            '(0.5 for zero-cell studies) to match RevMan.')
     for heading, items in (('Not imported', result.not_imported),
-                           ('Differs from RevMan', result.differences)):
+                           ('Differs from RevMan', result.differences),
+                           ('Imported settings', imported_settings)):
         if items:
             heading_label = QtWidgets.QLabel(heading, dialog)
             configure_heading(heading_label, scale=1.0)
