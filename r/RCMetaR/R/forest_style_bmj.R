@@ -424,8 +424,7 @@ rcmetar.forest.bmj.device.metrics <- function(bundle, cex=8 / 12) {
         left.width <- left.width + budget$study_width
         inference <- c(bundle$style_blocks$heterogeneity, bundle$style_blocks$test_overall,
                        rcmetar.forest.prediction.label(bundle))
-        inference <- unlist(lapply(inference, rcmetar.bmj.wrap.direction,
-                                   available=left.width - .15, cex=cex, units="inches", font=1))
+        inference <- rcmetar.forest.inference.lines(inference, budget$width - .12, cex)
         c(budget, list(
             cex=cex,
             bg="white",
@@ -507,8 +506,9 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle) {
     size <- bundle$size %||% rcmetar.forest.bmj.device.metrics(bundle)
     layout <- rcmetar.forest.bmj.layout.coordinates.from_size(bundle, size)
     k <- length(bundle$slab)
-    top.padding <- 3.2
-    bottom.padding <- max(5.15, 2.15 + .85 * (length(size$inference) - 1L))
+    spanning <- length(layout$group.xpos) > 0
+    top.padding <- if (spanning) 3.2 else 2.8
+    bottom.padding <- 5.15 + .85 * length(size$inference)
     rows <- list(
         k=k,
         study_rows=k:1,
@@ -542,6 +542,7 @@ rcmetar.forest.bmj.layout.preflight <- function(bundle) {
             study=rcmetar.bmj.study.header(bundle),
             effect=rcmetar.bmj.metric.label(bundle),
             method=rcmetar.bmj.method.label(bundle),
+            spanning=spanning,
             groups=if (length(layout$group.xpos) > 0) names(layout$group.xpos) else character(0)
         ),
         footer=list(axis=rcmetar.bmj.axis.footer.layout(bundle, layout)),
@@ -770,11 +771,6 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, plan) {
     graphics::par(xpd=NA)
     if (plan$rows$summary) {
         rcmetar.draw.bmj.total.row(bundle, x, layout, cex, plan$summary_labels[[1L]])
-        inference <- plan$device$inference
-        if (length(inference)) {
-            graphics::text(x, -1.65 - plan$summary_extra[[1L]] - .85 * (seq_along(inference) - 1L),
-                           inference, adj=c(0, .5), cex=cex)
-        }
     }
     axis.footer <- rcmetar.bmj.axis.footer.layout(bundle, layout)
     spacing <- graphics::strheight("Mg", cex=cex) * 1.65
@@ -783,6 +779,12 @@ rcmetar.draw.bmj.bottom.blocks <- function(bundle, x, cex, layout, plan) {
         graphics::text(axis.footer$axis.x, label.y, bundle$style_blocks$axis_label, cex=cex, adj=c(.5, 0))
     }
     rcmetar.draw.bmj.direction(bundle, axis.footer, label.y - spacing, cex)
+    inference <- plan$device$inference
+    if (plan$rows$summary && length(inference)) {
+        stats.y <- label.y - spacing * (1 + plan$device$direction_lines) - .6
+        graphics::text(x, stats.y - .85 * (seq_along(inference) - 1L),
+                       inference, adj=c(0, .5), cex=cex)
+    }
     invisible(NULL)
 }
 

@@ -181,11 +181,28 @@ rcmetar.forest.prediction.label <- function(bundle, res=bundle$res) {
                " (Freeman\u2013Tukey scale; proportion inverse undefined)" else "")
 }
 
-rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {
-    labels <- c(rcmetar.forest.heterogeneity.label(res, bundle$params),
+rcmetar.forest.inference.labels <- function(bundle, res=bundle$res, difference=NULL) {
+    c(rcmetar.forest.heterogeneity.label(res, bundle$params),
                 rcmetar.forest.test.overall.label(list(res=res, single_study=FALSE, params=bundle$params)),
                 if (!is.null(difference)) rcmetar.default.subgroup.difference.label(difference, bundle$params),
                 rcmetar.forest.prediction.label(bundle, res))
+}
+
+rcmetar.forest.inference.lines <- function(labels, width, cex) {
+    unlist(lapply(labels, function(label) {
+        measure <- function(text) graphics::strwidth(text, units="inches", cex=cex, font=1)
+        if (measure(label) <= width) return(label[nzchar(label)])
+        if (grepl("prediction interval:", label, fixed=TRUE)) {
+            interval <- sub("^.*interval: ", "", label)
+            heading <- sub("interval: .*$", "interval:", label)
+            return(c(heading, interval))
+        }
+        rcmetar.bmj.wrap.direction(label, width, cex, units="inches", font=1)
+    }), use.names=FALSE)
+}
+
+rcmetar.draw.forest.inference <- function(bundle, x, row, cex, res=bundle$res, difference=NULL) {
+    labels <- rcmetar.forest.inference.labels(bundle, res, difference)
     for (index in seq_along(labels)) {
         if (nzchar(labels[[index]])) graphics::text(x, row - index, labels[[index]], adj=c(0, .5), font=1, cex=cex)
     }
@@ -243,6 +260,8 @@ rcmetar.forest.header.height <- function(bundle, cex) {
         count <- function(labels) max(c(1, vapply(strsplit(labels, "\n", fixed=TRUE), length, integer(1))))
         raw <- count(bundle$ilab$headers)
         groups <- rcmetar.metafor.group.headers(bundle)
+        if (identical(bundle$fp_style, "bmj") && length(bundle$ilab$groups) == 0L)
+            return(h * 4.2)
         steps <- if (length(groups)) raw + count(groups) - 0.6 else raw - 1
         steps <- max(steps, if (bundle$fp_style == "default") 0 else 2)
         h * (2.6 + steps * 1.8) + 0.15

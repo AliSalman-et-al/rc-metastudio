@@ -331,3 +331,16 @@ rcmetar.render.plot_file <- function(outpath, size, draw, display.path=NULL, cap
     rcmetar.export.svg_render(svg.path, outpath, rcmetar.plot.raster.size(size, keep.display, ext))
     invisible(result)
 }
+
+rcmetar.plot.legend.rows <- function(labels, width, cex) {
+    item.width <- graphics::strwidth(labels, units="inches", cex=cex) +
+        4.5 * graphics::par("cin")[1L] * graphics::par("cex") * cex
+    rows <- list()
+    while (length(item.width)) {
+        count <- max(1L, sum(cumsum(item.width) <= width))
+        start <- sum(lengths(rows))
+        rows[[length(rows) + 1L]] <- start + seq_len(count)
+        item.width <- item.width[-seq_len(count)]
+    }
+    rows
+}

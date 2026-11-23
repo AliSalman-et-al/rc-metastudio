@@ -491,7 +491,6 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
     if (!is.list(plot.data) || !identical(plot.data$kind, "sroc"))
         stop("SROC plot data expected.", call.=FALSE)
     size <- rcmetar.plot.device.size(list(width=7, height=6, bg="white"), width, height, dpi)
-    compact <- !is.null(height) && size$width < 6
     style <- plot.data$style
     if (is.null(style)) style <- list()
     scalar.bool <- function(x, default) if (is.null(x)) default else isTRUE(x)
@@ -542,15 +541,14 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
     marker.cex <- rep_len(size.multiplier * if (identical(style$marker.area, "sample-size") ||
         scalar.bool(style$point.area.by.sample.size, FALSE))
         sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1, nrow(markers))
-    margins <- if (compact) c(.52, .48, .26, .13) else c(1.02, .82, .82, .42)
-    if (compact && count > 0) margins[1L] <- .70
-    draw.auc.caption <- function() {
+    legend.spec <- plot.data$legend %||% rcmetar.reitsma.legend.spec(
+        style, plot.data$curve, plot.data$confidence.region, plot.data$prediction.region,
+        plot.data$sample.size)
+    auc.caption <- function() {
         if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
             digits <- as.integer(style$digits %||% 3L)
             if (length(digits) != 1L || is.na(digits) || digits < 0L || digits > 15L) digits <- 3L
-            rcmetar.draw.panel.caption(
-                sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC),
-                cex=as.numeric(style$text.cex %||% .8))
+            sprintf(paste0("Normalized partial SROC AUC: %.", digits, "f"), plot.data$auc$pAUC)
         }
     }
     draw.annotations <- function() {
@@ -570,17 +568,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
             }
             if (count > length(chosen))
                 graphics::mtext(sprintf("Study labels shown: %d of %d", length(chosen), count),
-                                side=1, line=if (compact) 2.75 else 3.8, cex=label.cex)
-        }
-        draw.auc.caption()
-        legend.spec <- plot.data$legend %||% rcmetar.reitsma.legend.spec(
-            style, plot.data$curve, plot.data$confidence.region, plot.data$prediction.region,
-            plot.data$sample.size
-        )
-        if (length(legend.spec$labels)) {
-            graphics::legend("bottomright", legend=legend.spec$labels, col=legend.spec$col,
-                             lty=legend.spec$lty, pch=legend.spec$pch,
-                             pt.cex=legend.spec$pt.cex, pt.bg=legend.spec$pt.bg, cex=.8, bty="n")
+                                side=1, line=2.75, cex=label.cex)
         }
     }
     marker.limits <- function(limits, axis, lower, upper) {
@@ -592,14 +580,31 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
         limits + c(-1, 1) * automatic * diff(limits) * inset / (1 - inset * sum(automatic))
     }
     draw <- function() {
-        graphics::par(mai=margins, xaxs="i", yaxs="i")
-        if (compact) graphics::par(mgp=c(1.7, .5, 0), mex=.68, tcl=-.25, cex.axis=.75, cex.lab=.8)
+        em <- 12 / 72
+        graphics::par(xaxs="i", yaxs="i", las=1, mgp=c(1.7, .5, 0),
+                      mex=.68, tcl=-.25, cex.axis=.75, cex.lab=.8)
+        left <- 2.25 * em + max(graphics::strwidth(format(axis.ticks(style$yticks, ylim), trim=TRUE),
+                                               units="inches", cex=.75), 0)
+        bottom <- (3.1 + (count > 0)) * em
+        caption <- auc.caption()
+        top <- (1 + length(caption)) * em
+        right <- em
+        inner <- grDevices::dev.size("in") - c(sum(graphics::par("omi")[c(2, 4)]),
+                                               sum(graphics::par("omi")[c(1, 3)]))
+        labels <- legend.spec$labels
+        legend.width <- max(graphics::strwidth(labels, cex=.8, units="inches"), 0) + 3 * em
+        side <- length(labels) > 0 && inner[1L] - left - right - legend.width >= inner[2L] - top - bottom
+        rows <- if (side) list(seq_along(labels)) else
+            rcmetar.plot.legend.rows(labels, inner[1L] - 2 * em, .8)
+        if (side) right <- inner[1L] - left - (inner[2L] - top - bottom)
+        else top <- top + (length(rows) + .4) * em
+        graphics::par(mai=c(bottom, left, top, right))
         graphics::plot.new()
         graphics::plot.window(
             marker.limits(xlim, 1L, style$plot.lb, style$plot.ub),
             marker.limits(ylim, 2L, style$y.plot.lb, style$y.plot.ub))
-        graphics::title(xlab=as.character(style$xlabel %||% "False positive rate"),
-                        ylab=as.character(style$ylabel %||% "Sensitivity"))
+        graphics::title(xlab=as.character(style$xlabel %||% "False positive rate"))
+        graphics::mtext(as.character(style$ylabel %||% "Sensitivity"), side=2, line=2.05, cex=.8, las=0)
         graphics::box()
         points(plot.data$fpr, plot.data$sensitivity, pch=as.integer(style$point.pch %||% 21),
                bg="white", col=accent.color, cex=marker.cex)
@@ -609,6 +614,21 @@ rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dp
         if (scalar.bool(style$show.confidence, TRUE) && !is.null(plot.data$confidence.region)) lines(plot.data$confidence.region, col=confidence.color, lty=as.integer(style$confidence.lty %||% 2))
         if (scalar.bool(style$show.prediction, TRUE) && !is.null(plot.data$prediction.region)) lines(plot.data$prediction.region, col=prediction.color, lty=as.integer(style$prediction.lty %||% 3))
         draw.annotations()
+        if (length(caption)) graphics::text(
+            graphics::grconvertX(inner[1L] / 2, from="inches"),
+            graphics::grconvertY(1, from="npc") + graphics::yinch((if (side) 1.3 else length(rows) + 1.7) * em),
+            caption, cex=label.cex, xpd=NA)
+        for (i in seq_along(rows)) {
+            row <- rows[[i]]
+            x <- if (side) graphics::grconvertX(1, from="npc") + graphics::xinch(em / 3) else
+                graphics::grconvertX(inner[1L] / 2, from="inches")
+            y <- if (side) graphics::grconvertY(.5, from="npc") else
+                graphics::grconvertY(1, from="npc") + graphics::yinch((length(rows) - i + 1.6) * em)
+            graphics::legend(x, y, legend=labels[row], col=legend.spec$col[row],
+                lty=legend.spec$lty[row], pch=legend.spec$pch[row], pt.cex=legend.spec$pt.cex[row],
+                pt.bg=legend.spec$pt.bg[row], cex=.8, bty="n", xpd=NA,
+                xjust=if (side) 0 else .5, yjust=if (side) .5 else 1, horiz=!side, text.width=NA_real_)
+        }
     }
     dir.create(dirname(outpath), recursive=TRUE, showWarnings=FALSE)
     rcmetar.render.plot_file(outpath, size, draw, display.path=plot.data$display.path, caption=plot.data$style$caption)

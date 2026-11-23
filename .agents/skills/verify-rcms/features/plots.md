@@ -449,10 +449,13 @@ The targeted `plot-export-print-sizes` scenario drives the Results export
 dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Run
 `uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`;
 the locked dev group provides pdfminer.six for the PDF measurements.
-The evidence includes PDFs at 2.60 and 5.39 inches, measured point sizes and
-text bounds, an undersized dialog with Save disabled, and SROC frame and
-palette measurements from the rendered SVGs. The file-picker destination is
-controlled by the driver.
+The evidence includes Default and BMJ PDFs at 66 and 137 mm and a 300 DPI PNG
+of each page. The Colditz forest hides the arm counts and weight columns.
+PDF checks cover point sizes, text bounds, forest header and footer spacing,
+axis title and tick hierarchy, legend clearance, contour standard-error ticks,
+and horizontal SROC tick labels. The driver also checks that the undersized
+dialog disables Save and verifies the SROC marker and palette geometry in SVG.
+The driver controls the file-picker destination. Rendering requires Poppler.
 
 The TSA desktop scenarios retain the actual preflight, report, plot bundle,
 render and editor steps. `tsa-peto` uses the default TSA design on BCG after a

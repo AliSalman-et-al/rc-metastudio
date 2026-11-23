@@ -43,9 +43,9 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
          join=if (compressed) join)
 }
 
-.tsa.draw.favours <- function(favours, limit, offset, col, compact) {
+.tsa.draw.favours <- function(favours, limit, offset, col) {
     panel <- graphics::par("pin")
-    available <- panel[2]/2 - if (compact) .08 else .26
+    available <- panel[2]/2 - .08
     available <- max(available, graphics::strwidth("Favors", units="inches", cex=.75))
     x <- -graphics::xinch(offset)
     for (i in seq_along(favours)) {
@@ -77,8 +77,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         baseline <- x + graphics::xinch(.27*em + spacing*(seq_along(lines) - mean(seq_along(lines))))
         # Anchor to the baseline so glyph height cannot move either rotated line.
         graphics::text(baseline, center, lines, adj=c(.5, 0), srt=90, cex=cex, col=col, xpd=NA)
-        arrow.x <- x - graphics::xinch(if (compact) .13 else 0)
-        start <- center + direction*graphics::yinch(if (compact) -.06 else half.label + .025)
+        arrow.x <- x - graphics::xinch(.13)
+        start <- center - direction*graphics::yinch(.06)
         graphics::arrows(arrow.x, start, arrow.x, start + direction*graphics::yinch(.105),
                          length=.06, lwd=1, col=col, xpd=NA)
     }
@@ -98,10 +98,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     if (!is.null(width)) {
         size$width <- width
         size$height <- height %||% (width * 9/16)
-        if (width < 7) {
-            size$cex <- .70
-            size$caption.cex <- if (width <= 89/25.4 + .01) .55 else size$cex
-        }
+        size$cex <- .70
+        size$caption.cex <- size$cex
         size$caption.in.height <- TRUE
     }
     size$dpi <- dpi
@@ -169,7 +167,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
                        format.information(tail(looks$accrued, 1)), 100*last)
     crossing <- design$crossing.look
     outcome <- if (!is.na(crossing)) {
-        sprintf("%s boundary crossed at %.0f%% (%s)",
+        sprintf("%s crossed at %.0f%% (%s)",
                 if (design$conclusion == "crossed-futility") "Futility" else "Monitoring",
                 100*looks$fraction[crossing], looks$study[crossing])
     } else if (design$conclusion == "ris-reached") "Required information size reached without crossing"
@@ -177,7 +175,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
 }
 
 .tsa.plot.panel <- function(size, theme, axes, labels, annotation, xlabel) {
-    compact <- size$width < 7
     typography <- theme$typography
     yticks <- axes$yticks
     axis <- axes$axis
@@ -186,55 +183,47 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     outcome <- annotation$outcome
     rcmetar.bubble.panel(size, TRUE)
     graphics::par(family=typography$family, font.axis=typography$axis, xaxs="i", yaxs="i")
-    if (compact) graphics::par(mgp=c(1.65, .48, 0), mex=.75, tcl=-.23)
+    graphics::par(mgp=c(1.65, .48, 0), mex=.75, tcl=-.23)
+    em <- 12 * size$cex / 72
     tick.labels <- sub("-", "\u2212", yticks, fixed=TRUE)
     tick.width <- max(graphics::strwidth(tick.labels, units="inches", font=typography$axis))
-    left <- tick.width + if (compact) .52 else .72
+    left <- tick.width + 4.3 * em
     legend.cex <- max(6.2/(12*size$cex), rcmetar.bubble.legend.cex())
     inches <- function(text, cex=1) graphics::strwidth(text, units="inches", cex=cex)
     # legend() includes the line sample, text inset and padding in character units.
     legend.width <- max(inches(labels, legend.cex)) +
         4.5 * graphics::par("cin")[1] * size$cex * legend.cex + .012 * size$width + .06
-    legend.below <- (size$width - left - legend.width)/size$width <
-        if (size$width <= 89/25.4 + .01) .60 else .72
+    legend.below <- size$width - left - legend.width < max(size$width * .58, 10 * em)
     conventional.cex <- max(.8, 6/(12*size$cex))
     right <- if (legend.below) {
         max(inches("\u22121.96", conventional.cex) + .075, inches(tail(axis$labels, 1))/2 + .025)
-    } else legend.width
-    bottom <- if (legend.below) (if (compact) .57 else .96) else (if (compact) .34 else .92)
-    center <- (size$width + left - right)/2
-    caption.width <- 2*min(center, size$width - center) - .12
-    caption.cex <- max(.5, min(if (compact) .7 else .8, .8 * caption.width /
-                               max(inches(c(caption, outcome), .8/size$cex))))
-    line <- if (compact) 1.52 else 1.15
-    caption.spacing <- if (compact) 1.35 else 1
-    top <- if (compact) {
-        if (length(outcome)) .44 else .29
-    } else graphics::par("csi") * (line + if (length(outcome)) 2.1 else 1.2)
+    } else legend.width + em
+    legend.rows <- if (legend.below) rcmetar.plot.legend.rows(labels, size$width - em, legend.cex) else list()
+    legend.leading <- em
+    bottom <- 2.65 * em + length(legend.rows) * legend.leading
+    caption.cex <- .85 * size$cex
+    header <- unlist(lapply(c(caption, outcome), rcmetar.bmj.wrap.direction,
+                           available=size$width - em, cex=.85, units="inches", font=1))
+    top <- (1.25 + length(header)) * em
     graphics::par(mai=c(bottom, left, top, right))
     graphics::plot(NA_real_, xlim=c(0, 1), ylim=c(-limit, limit), xaxt="n", yaxt="n",
                    ylab="", xlab=xlabel, bty="n")
 
-    list(tick.labels=tick.labels, tick.width=tick.width, left=left, bottom=bottom,
+    list(tick.labels=tick.labels, tick.width=tick.width,
          legend.cex=legend.cex, legend.below=legend.below, conventional.cex=conventional.cex,
-         caption.cex=caption.cex, line=line, caption.spacing=caption.spacing)
+         caption.cex=caption.cex, header=header, em=em,
+         legend.rows=legend.rows, legend.leading=legend.leading)
 }
 
-.tsa.draw.axes <- function(size, theme, axes, panel, annotation, favours, ylabel) {
-    compact <- size$width < 7
+.tsa.draw.axes <- function(size, theme, axes, panel, favours, ylabel) {
     axis <- axes$axis
     step <- axes$step
     limit <- axes$limit
     yticks <- axes$yticks
     style <- theme$style
-    left <- panel$left
     tick.labels <- panel$tick.labels
     tick.width <- panel$tick.width
     caption.cex <- panel$caption.cex
-    line <- panel$line
-    caption.spacing <- panel$caption.spacing
-    caption <- annotation$caption
-    outcome <- annotation$outcome
     at <- axis$x(axis$ticks)
     label.at <- at
     last.tick <- length(at)
@@ -258,17 +247,17 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, gap.axis=0, cex.axis=y.tick.cex)
     graphics::segments(0, -limit, 0, limit)
     graphics::segments(0, -limit, 1, -limit)
-    title.inset <- if (compact) .14 else .195
-    graphics::mtext(ylabel, side=2, cex=size$cex,
-                    line=(left - title.inset)/(graphics::par("csi") * graphics::par("mex")))
-    .tsa.draw.favours(favours, limit, tick.width + if (compact) .22 else .325, theme$text.col, compact)
-    rcmetar.draw.panel.caption(caption, cex=caption.cex, line=line + caption.spacing*length(outcome))
-    if (length(outcome)) rcmetar.draw.panel.caption(outcome, cex=caption.cex, line=line)
+    title.offset <- tick.width + (if (length(favours)) 3.1 else 1.45) * panel$em
+    graphics::text(-graphics::xinch(title.offset), 0, ylabel, srt=90, adj=c(.5, .5),
+                   cex=1, xpd=NA, col=theme$text.col)
+    .tsa.draw.favours(favours, limit, tick.width + 1.9 * panel$em, theme$text.col)
+    center <- graphics::grconvertX(size$width/2, from="inches")
+    graphics::text(center, limit + graphics::yinch(panel$em * (rev(seq_along(panel$header)) + .5)),
+                   panel$header, cex=caption.cex / size$cex, xpd=NA)
 
 }
 
 .tsa.draw.curves <- function(size, theme, axes, curves, panel, looks, last) {
-    compact <- size$width < 7
     axis <- axes$axis
     ris.x <- axes$ris.x
     x <- axes$x
@@ -298,7 +287,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         }
     }
     graphics::abline(v=ris.x, col="#8C8C8C", lwd=1)
-    graphics::mtext("RIS", side=3, line=if (compact) .07 else .16, at=ris.x, cex=size$cex, col=theme$text.col)
+    graphics::mtext("RIS", side=3, line=.07, at=ris.x, cex=size$cex, col=theme$text.col)
     for (direction in directions) {
         graphics::lines(axis$x(monitor$fraction), direction*monitor$z, col=charcoal, lwd=2)
         if (last > 1 && held <= limit)
@@ -382,18 +371,13 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
                        col=theme$region, border=border, lwd=.8, xpd=NA)
     }
     if (panel$legend.below) {
-        widths <- graphics::strwidth(labels, units="inches", cex=legend.cex) +
-            4 * graphics::par("cin")[1] * size$cex * legend.cex
-        split <- if (sum(widths) <= size$width - .12) length(labels) else
-            which.min(abs(cumsum(widths) - sum(widths)/2))
-        rows <- list(seq_len(split))
-        if (split < length(labels)) rows[[2]] <- seq.int(split + 1, length(labels))
+        rows <- panel$legend.rows
         for (i in seq_along(rows)) {
             row <- rows[[i]]
             args <- legend.args
             for (key in c("col", "lwd", "lty", "pch", "pt.bg", "pt.lwd")) args[[key]] <- args[[key]][row]
-            center <- (size$width/2 - panel$left)/graphics::par("pin")[1]
-            y <- -limit - graphics::yinch(panel$bottom - .27 + (i - 1)*.12)
+            center <- graphics::grconvertX(size$width / 2, from="inches")
+            y <- -limit - graphics::yinch(2.3 * panel$em + (i - 1) * panel$legend.leading)
             legend <- do.call(graphics::legend,
                     c(list(x=center, y=y, legend=labels[row], xjust=.5, bty="n",
                            xpd=NA, horiz=TRUE, text.width=NA_real_, text.col="#222222"), args))
@@ -445,7 +429,7 @@ rcmetar.draw.tsa.plot <- function(plot.data, path, width=NULL, height=NULL, dpi=
 
     draw <- function() {
         panel <- .tsa.plot.panel(size, theme, axes, curves$labels, annotation, bundle$xlabel)
-        .tsa.draw.axes(size, theme, axes, panel, annotation, favours, bundle$ylabel)
+        .tsa.draw.axes(size, theme, axes, panel, favours, bundle$ylabel)
         .tsa.draw.curves(size, theme, axes, curves, panel, looks, last)
         .tsa.draw.markers(size, theme, axes, looks, annotation$crossing)
         .tsa.draw.legend(size, theme, curves, panel, axes$limit)
