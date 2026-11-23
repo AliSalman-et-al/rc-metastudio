@@ -268,29 +268,39 @@ def test_figure_sections_follow_font_spacing_after_resize(qapp, tmp_path, enlarg
     _use_isolated_settings(tmp_path)
     path = tmp_path / "figure.svg"
     path.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="1200"><rect width="300" height="1200"/></svg>', encoding="utf-8")
-    window = results_window.ResultsWindow(_analysis_result({
-        "images": {title: str(path) for title in ("First", "Second")},
-        "plot_capabilities": {title: _plot_capability(plot_kind="other", editable=False, styleable=False, regenerator="none") for title in ("First", "Second")},
-    }))
+    original_font = qapp.font()
+    window = None
     try:
         if enlarged:
-            font = QtGui.QFont(window.font())
+            font = QtGui.QFont(original_font)
             font.setPixelSize(32)
-            window.setFont(font)
+            qapp.setFont(font)
+        window = results_window.ResultsWindow(_analysis_result({
+            "images": {title: str(path) for title in ("First", "Second")},
+            "plot_capabilities": {title: _plot_capability(plot_kind="other", editable=False, styleable=False, regenerator="none") for title in ("First", "Second")},
+        }))
         window.showNormal()
-        for width, height in ((780, 620), (690, 510)):
+        for width, height in ((1000, 820), (920, 720)):
             window.resize(width, height)
             qapp.processEvents()
             window._refit_viewport_items()
             first = window._svg_plot_items[0]
             index = window._layout_items.index(first)
             heading, next_heading = window._layout_items[index - 1], window._layout_items[index + 1]
+            assert isinstance(heading, results_window.QGraphicsTextItem)
+            assert heading.font().pixelSize() == window.font().pixelSize()
+            assert heading.font().pointSizeF() == window.font().pointSizeF()
             gap = next_heading.sceneBoundingRect().top() - first.sceneBoundingRect().bottom()
-            assert gap == pytest.approx(window.fontMetrics().lineSpacing(), abs=1)
-            assert first.sceneBoundingRect().height() + heading.sceneBoundingRect().height() + gap <= window.graphics_view.maximumViewportSize().height() + 1
+            spacing = window.fontMetrics().lineSpacing()
+            assert gap == pytest.approx(spacing, abs=1)
+            budget = window.graphics_view.maximumViewportSize().height() - heading.sceneBoundingRect().height() - spacing - 2 * results_window.padding
+            assert budget > 1
+            assert first.sceneBoundingRect().height() == pytest.approx(budget, abs=1)
             assert window.grab().save(str(tmp_path / f"results-{width}x{height}.png"))
     finally:
-        _dispose(window, qapp)
+        if window is not None:
+            _dispose(window, qapp)
+        qapp.setFont(original_font)
 
 
 def test_plot_editor_is_screen_bounded_transactional_dialog_with_fixed_actions(
