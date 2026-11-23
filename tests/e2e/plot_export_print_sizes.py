@@ -193,8 +193,7 @@ def publication_observations(kind, page, runs, png):
                   and 0 <= x0 - item.x1 < 2 * (y1 - y0) and y0 <= (item.y0 + item.y1) / 2 <= y1)
         return max(nearby, key=lambda item: item.x1, default=None)
 
-    if kind == "regression":
-        keys = [key(label, LTLine) for label in ("Regression line", "95% CI") if label in labels]
+    def key_gaps(keys):
         image = QImage(str(png))
         scale = 300 / 72
         gaps = []
@@ -202,10 +201,17 @@ def publication_observations(kind, page, runs, png):
             if item is None:
                 continue
             y = round((page.height - item.y0) * scale)
-            gaps.append(sum(image.pixelColor(x, y).lightness() >= 245
-                            for x in range(math.ceil(item.x0 * scale), math.floor(item.x1 * scale))))
+            ink = [image.pixelColor(x, y).lightness() < 245
+                   for x in range(math.ceil(item.x0 * scale), math.floor(item.x1 * scale))]
+            painted = [index for index, value in enumerate(ink) if value]
+            if painted:
+                gaps.append(ink[painted[0]:painted[-1] + 1].count(False))
+        return gaps
+
+    if kind == "regression":
+        keys = [key(label, LTLine) for label in ("Regression line", "95% CI") if label in labels]
         return {"line_dashes": [None if item is None else list(item.dashing_style[0]) if item.dashing_style else []
-                                for item in keys], "white_key_pixels": gaps}
+                                for item in keys], "white_key_pixels": key_gaps(keys)}
     if kind == "contour_funnel":
         bands = ("P > 0.10", "0.05 < P ≤ 0.10", "0.01 < P ≤ 0.05", "P ≤ 0.01")
         keys = [key(label, LTRect) for label in bands if label in labels]
@@ -219,7 +225,8 @@ def publication_observations(kind, page, runs, png):
         guides = [key(label, LTLine) for label in ("No effect", "Common-effect estimate") if label in labels]
         return {"band_luminance": [round(luminance(color), 4) for color in pixels],
                 "bands_match_panel": all(color in panel_fills for color in fills),
-                "guide_dashed": [bool(item.dashing_style and item.dashing_style[0]) for item in guides if item]}
+                "guide_dashed": [bool(item.dashing_style and item.dashing_style[0]) for item in guides if item],
+                "white_key_pixels": key_gaps(guides)}
     if kind == "forest":
         title_y = min((box[1] for text, _, box in runs if text == "Risk ratio"), default=0)
         starts = sorted((box[0], box, text, size) for text, size, box in runs if text.startswith("Favours"))
@@ -393,7 +400,9 @@ def run(app, window, work, root, record, analyze):
                 valid = len(dashes) == 2 and dashes[0] == [] and bool(dashes[1]) and len(gaps) == 2 and gaps[1] > gaps[0] + 3
             elif kind == "contour_funnel":
                 bands = publication["band_luminance"]
+                gaps = publication["white_key_pixels"]
                 valid = (len(bands) == 4 and all(a > b for a, b in zip(bands, bands[1:]))
+                         and len(gaps) == 2 and gaps[0] == 0 and gaps[1] > 3
                          and publication["bands_match_panel"] and publication["guide_dashed"] == [False, True])
             elif kind == "forest":
                 labels = publication["directions"]

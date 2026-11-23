@@ -287,7 +287,8 @@ rcmetar.bubble.draw.legend <- function(bundle, style.args, cex, plot=TRUE) {
         return(invisible(NULL))
     }
     labels <- rcmetar.bubble.legend.labels(bundle)
-    lty <- c(NA, style.args$lty[1:2])
+    # Dash lengths scale with line width. Use a short pattern for the legend key.
+    lty <- c(NA, style.args$lty[[1]], "22")
     lwd <- c(NA, style.args$lwd, style.args$lwd)
     pch <- c(style.args$pch, NA, NA)
     col <- c(style.args$col, style.args$lcol, style.args$lcol)

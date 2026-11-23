@@ -1611,7 +1611,7 @@ rcmetar.warm.small.study.effects <- function() {
     line.color <- settings$reference.color
     .small.study.funnel.legend(settings, fill=c(bands, rep(NA, sum(show))),
         border=c(rep(line.color, length(bands)), rep(NA, sum(show))),
-        lty=c(rep(NA, length(bands)), c(1, 2)[show]),
+        lty=c(rep(NA, length(bands)), c("solid", "12")[show]),
         lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color)
 }
 
