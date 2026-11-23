@@ -99,9 +99,9 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         size$width <- width
         size$height <- height %||% (width * 9/16)
         size$caption.in.height <- TRUE
+        size$caption.cex <- rcmetar.plot.axis.cex(size$width)
     }
     size$cex <- rcmetar.plot.axis.cex(size$width) / .9
-    size$caption.cex <- .9 * size$cex
     size$dpi <- dpi
     size
 }
