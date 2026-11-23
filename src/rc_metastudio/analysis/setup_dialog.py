@@ -1243,7 +1243,10 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if self.data_type == "binary":
             from rc_metastudio.results.report import binary_correction_prose
             double_zero = sum(len(row) == 4 and row[0] == 0 and row[2] == 0 for row in raw)
-            return " " + binary_correction_prose(self.current_method, applied_parameters['adjust'], label, double_zero)
+            return " " + binary_correction_prose(
+                self.current_method, applied_parameters['adjust'], label, double_zero,
+                pool_correction=applied_parameters.get("pool.correction") == "TRUE",
+            )
         return f" A continuity correction of {applied_parameters['adjust']} was applied to {label}."
 
     def _has_zero_cell(self, raw):
@@ -1457,6 +1460,13 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
     def _refresh_advanced_summary(self):
         changes = []
         for spec, control, target, default in self._advanced_entries:
+            if spec.name == "pool.correction" and isinstance(control, QCheckBox):
+                enabled = bool(target.get("adjust")) and target.get("to") != "none"
+                control.setEnabled(enabled)
+                if not enabled and control.isChecked():
+                    with QtCore.QSignalBlocker(control):
+                        control.setChecked(False)
+                    target[spec.name] = "FALSE"
             value = target.get(spec.name)
             if str(value) == str(default):
                 continue

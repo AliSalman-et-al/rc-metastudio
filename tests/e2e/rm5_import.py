@@ -236,13 +236,15 @@ def run(app, window, ROOT, WORK, record_step):
         assert dialog.current_method == (expected_method or 'binary.random')
         if expected_method == 'binary.random':
             assert dialog.current_param_vals['rm.method'] == 'DL'
+        if expected_method == 'binary.fixed.peto':
+            assert dialog.current_param_vals['adjust'] == 0
         record_step('rm5-method-combination', dialog, source_method=source_method, random=random, selected=dialog.current_method)
         dialog.reject()
         assert sheet.settings.get('analysis', {}).get('method') == expected_method
         if expected_method == 'binary.random':
             assert sheet.settings['analysis']['parameters']['rm.method'] == 'DL'
         if expected_method is None:
-            assert any('unavailable' in d for d in imported.differences)
+            assert any('unavailable' in d and 'Mantel–Haenszel heterogeneity' in d for d in imported.differences)
     assert not failures, failures
     with patch.object(window, 'prompt_to_save_unsaved_data', return_value=QtWidgets.QMessageBox.StandardButton.Discard):
         assert window.open(str(ROOT / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
@@ -259,6 +261,7 @@ def run(app, window, ROOT, WORK, record_step):
         text = '\n'.join(w.text() for w in dialog.findChildren(QtWidgets.QLabel))
         assert 'Review text, references' in text
         assert 'Differs from RevMan\nSMD: RC MetaStudio uses exact Hedges' in text
+        assert 'Imported settings\nFixed-effect Mantel–Haenszel: "Use correction in pooling" is turned on' in text
         assert 'Not imported' not in text
         assert 'settings are not applied' not in text
         record_step('rm5-review', dialog, summary=text)

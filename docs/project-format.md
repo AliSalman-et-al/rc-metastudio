@@ -22,6 +22,8 @@ Version 1 and 2 projects migrate deterministically to version 3. Each sheet owns
 
 Existing binary, continuous and diagnostic inputs retain their meaning. The distinct time-to-event (HR) and event-rate (IRR) families introduced in version 2 remain supported. Each comparison's optional `ratio_inputs` record preserves its original reported scale, estimate, interval, log-SE, source confidence, selected source and shared person-time unit. Raw IRR arm data contain events and person-time. Inactive raw and reported sources survive save/reopen; read-time migration does not invent a source selection.
 
+Binary fixed Mantel–Haenszel pooling stores the optional `pool.correction` switch in the sheet's existing analysis parameters. An absent switch means off, including in older projects.
+
 An originally omitted raw arm remains omitted while it is entirely blank. Measurements subsequently entered into that arm are persisted and participate in dirty tracking and undo history.
 
 ## Safety and durability

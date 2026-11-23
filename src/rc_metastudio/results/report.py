@@ -38,10 +38,13 @@ _PACKAGE_REFERENCES = {
 }
 
 
-def binary_correction_prose(method, adjust, label, double_zero):
+def binary_correction_prose(method, adjust, label, double_zero, *, pool_correction=False):
     if method in ("binary.fixed.mh", "binary.fixed.peto"):
         estimator = "Mantel–Haenszel" if method.endswith("mh") else "Peto"
-        text = f"A continuity correction of {adjust} was applied to estimable individual study effects only; the pooled {estimator} estimate used the original counts."
+        if pool_correction:
+            text = f"A continuity correction of {adjust} was applied to {label} for both estimable individual study effects and the pooled {estimator} estimate."
+        else:
+            text = f"A continuity correction of {adjust} was applied to estimable individual study effects only; the pooled {estimator} estimate used the original counts."
         if double_zero:
             text += f" The {double_zero} " + ("study with no events in either arm had" if double_zero == 1 else "studies with no events in either arm had") + " no individual effect estimate and did not contribute to pooling or heterogeneity estimation."
         return text
