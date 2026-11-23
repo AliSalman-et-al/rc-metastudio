@@ -285,7 +285,7 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
             graphics::segments(0, y, ris.x, y, col=theme$conventional.col, lty=2, lwd=1)
             graphics::text(1 + graphics::xinch(.035), y,
                            paste0(if (direction > 0) "+" else "\u2212", sprintf("%.2f", conventional)),
-                           adj=c(0, .5), col="#808080", cex=conventional.cex, xpd=NA)
+                           adj=c(0, .5), col=theme$text.col, cex=conventional.cex, xpd=NA)
         }
     }
     graphics::abline(v=ris.x, col="#8C8C8C", lwd=1)

@@ -844,8 +844,8 @@ def sheets_swap(app, window):
                 raw = ('metafor::escalc(params$measure, ai=d@g1O1,bi=d@g1O2,ci=d@g2O1,di=d@g2O2,add=params$adjust,to=params$to,drop00=FALSE)' if metric != "MD" else
                        'metafor::escalc("MD",m1i=d@mean1,sd1i=d@sd1,n1i=d@N1,m2i=d@mean2,sd2i=d@sd2,n2i=d@N2)')
                 receipt = json.loads(str(fit.evaluate('jsonlite::toJSON(local({d<-result$input_data; e<-'+raw+'; ref<-metafor::rma.uni(e$yi,vi=e$vi,method=result$input_params$rm.method); actual<-result$res; stopifnot(max(abs(c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)-c(ref$b,ref$ci.lb,ref$ci.ub,ref$pval)))<1e-6); c(actual$b,actual$ci.lb,actual$ci.ub,actual$pval)}),digits=16)')[0]))
-                observed_labels = list(r_oracle.evaluate('c(params$fp_favours_left,params$fp_favours_right)'))
-                expected_labels = ["Favors " + name for name in model.arm_names]
+                observed_labels = list(r_oracle.evaluate('c(params$fp_direction_left,params$fp_direction_right)'))
+                expected_labels = ["Favours " + name for name in model.arm_names]
                 assert observed_labels == expected_labels, (observed_labels, expected_labels)
                 precise.append(receipt)
                 if iteration == 1:

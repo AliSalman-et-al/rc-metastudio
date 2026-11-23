@@ -450,12 +450,18 @@ dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Run
 `uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`;
 the locked dev group provides pdfminer.six for the PDF measurements.
 The evidence includes Default and BMJ PDFs at 66 mm, 137 mm, and each plot's
-proposed export size, with a 300 DPI PNG of each page. The Colditz forest hides
-the arm counts and weight columns. At the proposed sizes the four Cartesian
-plot families use a common 9 pt axis scale.
+proposed export size, with a 300 DPI PNG of each page. The forest, bubble,
+contour funnel and TSA plots also run in RevMan. The Colditz forest hides the
+arm counts and weight columns and uses the project's above-null direction.
+At the proposed sizes the four Cartesian plot families use a common 9 pt axis scale.
 PDF checks cover point sizes, text bounds, forest header and footer spacing,
 axis title and tick hierarchy, legend clearance, contour standard-error ticks,
-and horizontal SROC tick labels. The driver also checks that the undersized
+the ordered forest direction labels, and horizontal SROC tick labels. Raster
+checks measure the bubble keys' visible gaps, the contour keys' luminance
+and TSA annotation contrast (at least 4.5:1). The contour keys must match the
+plot's fills and identify both guides. The forest editor is used to replace
+one direction label and clear the other before a second export.
+The driver also checks that the undersized
 dialog disables Save and verifies the SROC marker and palette geometry in SVG.
 The driver controls the file-picker destination. Rendering requires Poppler.
 

@@ -73,6 +73,19 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self._option_groups = plot_capabilities.option_groups(plot_type)
         self._setup_study_order()
         self._setup_axis_scale()
+        self.direction_fields: dict[str, QLineEdit] = {}
+        for side in ("left", "right"):
+            key = f"fp_direction_{side}"
+            if key in self._params and "forest" in self._option_groups:
+                field = QLineEdit(self.axis_group)
+                label = QLabel(f"Favours ({side})", self.axis_group)
+                label.setBuddy(field)
+                field.setAccessibleName(label.text())
+                field.setToolTip("Edit this direction label or clear it to remove it.")
+                row = self.gridLayout_4.rowCount()
+                self.gridLayout_4.addWidget(label, row, 0)
+                self.gridLayout_4.addWidget(field, row, 1)
+                self.direction_fields[key] = field
         self.tsa_x_axis = QComboBox(self.axis_group)
         if "tsa_axis" in self._option_groups:
             self._setup_tsa_x_axis()
@@ -488,6 +501,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.sroc_prediction_color.setText(self._sroc_prediction_color(style))
 
     def _load_params(self, image_path):
+        for key, field in self.direction_fields.items():
+            self._set_text(field, self._params.get(key, ""))
         load_plot_style(
             self.style_cbo,
             self.accent_color,
@@ -689,6 +704,8 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_xticks": self._automatic_value(self.x_ticks_le),
             "fp_show_summary_line": self.show_summary_line.isChecked(),
             "fp_outpath": self._image_path,
+            **{key: qt_text.to_native_text(plot_text_value(field)).strip()
+               for key, field in self.direction_fields.items()},
         }
         forest_display_path = self._scalar(self._params.get("fp_display_path", ""))
         if forest_display_path:

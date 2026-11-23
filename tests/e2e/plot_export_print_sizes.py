@@ -11,7 +11,8 @@ from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
 from pdfminer.high_level import extract_pages
-from pdfminer.layout import LTChar, LTContainer, LTLine, LTRect
+from pdfminer.layout import LTChar, LTContainer, LTCurve, LTLine, LTRect
+from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QDialogButtonBox, QFileDialog
 from scripts.verification_evidence import desktop_tool_executable
 
@@ -27,9 +28,9 @@ from tests.python.gui.qt_test_support import metric_action, required, wait
 
 EXPECTED_LABELS = {
     "forest": {"Study", "Risk ratio"},
-    "regression": {"Absolute latitude", "Risk ratio", "Regression line"},
+    "regression": {"Absolute latitude", "Risk ratio", "Regression line", "95% CI"},
     "funnel": {"Mean difference", "Standard error (outcome scale)", "No effect"},
-    "contour_funnel": {"Mean difference", "Standard error (outcome scale)"},
+    "contour_funnel": {"Mean difference", "Standard error (outcome scale)", "No effect", "Common-effect estimate"},
     "trimfill_funnel": {"Odds ratio", "Standard error of log odds ratio", "Observed", "Imputed"},
     "deeks_funnel": {"Deeks effective-sample-size funnel", "Log diagnostic odds ratio"},
     "sroc": {"False positive rate", "Sensitivity", "Confidence region", "Joint prediction region"},
@@ -177,6 +178,83 @@ def pdf_text_runs(page) -> list[tuple[str, float, tuple[float, float, float, flo
     return runs
 
 
+def luminance(rgb):
+    return sum(weight * (value / 12.92 if value <= .04045 else ((value + .055) / 1.055) ** 2.4)
+               for weight, value in zip((.2126, .7152, .0722), rgb))
+
+
+def publication_observations(kind, page, runs, png):
+    labels = {text: box for text, _, box in runs}
+    shapes = [item for item in page if isinstance(item, LTCurve)]
+
+    def key(label, shape_type):
+        x0, y0, _, y1 = labels[label]
+        nearby = (item for item in shapes if isinstance(item, shape_type)
+                  and 0 <= x0 - item.x1 < 2 * (y1 - y0) and y0 <= (item.y0 + item.y1) / 2 <= y1)
+        return max(nearby, key=lambda item: item.x1, default=None)
+
+    if kind == "regression":
+        keys = [key(label, LTLine) for label in ("Regression line", "95% CI") if label in labels]
+        image = QImage(str(png))
+        scale = 300 / 72
+        gaps = []
+        for item in keys:
+            if item is None:
+                continue
+            y = round((page.height - item.y0) * scale)
+            gaps.append(sum(image.pixelColor(x, y).lightness() >= 245
+                            for x in range(math.ceil(item.x0 * scale), math.floor(item.x1 * scale))))
+        return {"line_dashes": [None if item is None else list(item.dashing_style[0]) if item.dashing_style else []
+                                for item in keys], "white_key_pixels": gaps}
+    if kind == "contour_funnel":
+        bands = ("P > 0.10", "0.05 < P ≤ 0.10", "0.01 < P ≤ 0.05", "P ≤ 0.01")
+        keys = [key(label, LTRect) for label in bands if label in labels]
+        fills = [item.non_stroking_color for item in keys if item and item.fill]
+        panel_fills = {item.non_stroking_color for item in shapes if item.fill and item.height > 10}
+        image = QImage(str(png))
+        scale = 300 / 72
+        pixels = [image.pixelColor(round((item.x0 + item.x1) / 2 * scale),
+                                   round((page.height - (item.y0 + item.y1) / 2) * scale)).getRgbF()[:3]
+                  for item in keys if item and item.fill]
+        guides = [key(label, LTLine) for label in ("No effect", "Common-effect estimate") if label in labels]
+        return {"band_luminance": [round(luminance(color), 4) for color in pixels],
+                "bands_match_panel": all(color in panel_fills for color in fills),
+                "guide_dashed": [bool(item.dashing_style and item.dashing_style[0]) for item in guides if item]}
+    if kind == "forest":
+        title_y = min((box[1] for text, _, box in runs if text == "Risk ratio"), default=0)
+        starts = sorted((box[0], box, text, size) for text, size, box in runs if text.startswith("Favours"))
+        directions = []
+        for _, box, text, size in starts:
+            readings = [text]
+            for edge in (0, 2):
+                lines = sorted(((other[1], line) for line, _, other in runs
+                                if other[1] < box[1] and abs(box[edge] - other[edge]) < .5), reverse=True)
+                y, joined = box[1], text
+                for next_y, line in lines:
+                    if y - next_y >= 1.8 * size:
+                        break
+                    y, joined = next_y, f"{joined} {line}"
+                    readings.append(joined)
+            directions.append(readings)
+        return {"directions": directions, "directions_below_axis": all(box[3] <= title_y for _, box, _, _ in starts)}
+    if kind == "trial_sequential":
+        image = QImage(str(png))
+        scale = 300 / 72
+        contrast = {}
+        for label, (x0, y0, x1, y1) in labels.items():
+            if not re.fullmatch(r"[+−-]?1\.96", label):
+                continue
+            pixels = [image.pixelColor(x, y).getRgbF()[:3]
+                      for x in range(math.ceil(x0 * scale), math.floor(x1 * scale))
+                      for y in range(max(0, math.ceil((page.height - y1) * scale)),
+                                     min(image.height(), math.floor((page.height - y0) * scale)))]
+            if pixels:
+                dark, light = min(map(luminance, pixels)), max(map(luminance, pixels))
+                contrast[label] = round((light + .05) / (dark + .05), 2)
+        return {"conventional_contrast": contrast}
+    return {}
+
+
 def pdf_observations(path: Path, width: float, height: float, kind: str = "") -> dict:
     pages = list(extract_pages(path, laparams=None))
     assert len(pages) == 1
@@ -203,6 +281,7 @@ def pdf_observations(path: Path, width: float, height: float, kind: str = "") ->
         "overlaps": overlaps,
         "page_pt": [page.width, page.height],
         "editorial": editorial_observations(kind, runs, page),
+        "publication": publication_observations(kind, page, runs, path.with_suffix(".png")),
     }
 
 
@@ -233,6 +312,7 @@ def run(app, window, work, root, record, analyze):
 
     failures: list[tuple[object, ...]] = []
     default_sizes: dict[tuple[str, str], list[float]] = {}
+    directions = []
 
     def visible(kind):
         for _ in range(100):
@@ -305,6 +385,26 @@ def run(app, window, work, root, record, analyze):
                 failures.append((name, width, "missing labels", sorted(missing)))
             if defects := editorial_failures(kind, observed["editorial"]):
                 failures.append((name, width, defects, observed["editorial"]))
+            publication = observed["publication"]
+            valid = True
+            if kind == "regression":
+                dashes = publication["line_dashes"]
+                gaps = publication["white_key_pixels"]
+                valid = len(dashes) == 2 and dashes[0] == [] and bool(dashes[1]) and len(gaps) == 2 and gaps[1] > gaps[0] + 3
+            elif kind == "contour_funnel":
+                bands = publication["band_luminance"]
+                valid = (len(bands) == 4 and all(a > b for a, b in zip(bands, bands[1:]))
+                         and publication["bands_match_panel"] and publication["guide_dashed"] == [False, True])
+            elif kind == "forest":
+                labels = publication["directions"]
+                valid = (len(labels) == len(directions) and publication["directions_below_axis"]
+                         and all(expected in found for expected, found in zip(directions, labels)))
+            elif kind == "trial_sequential":
+                contrast = publication["conventional_contrast"]
+                # Use the normal-text AA contrast target for small print annotations.
+                valid = len(contrast) == 2 and min(contrast.values()) >= 4.5
+            if not valid:
+                failures.append((name, width, publication))
             if width is None and "tick_pt" in observed["editorial"]:
                 editorial = observed["editorial"]
                 default_sizes[style, kind] = [editorial["tick_pt"], *editorial["axis_title_pt"]]
@@ -316,10 +416,25 @@ def run(app, window, work, root, record, analyze):
             entry, = matches
             view.nav_tree.setCurrentItem(entry.navigation_item)
             editor = FunnelPlotEditorDialog if "funnel" in kind else EditPlotDialog
-            for style in ("default", "bmj"):
+            styles = ("default", "revman", "bmj") if kind in {
+                "forest", "regression", "contour_funnel", "trial_sequential"
+            } else ("default", "bmj")
+            for style in styles:
                 modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
                 for width in (66, 137, None):
                     export(view, kind, style, width)
+            if kind == "forest":
+                def edit_directions(dialog):
+                    left = dialog.direction_fields["fp_direction_left"]
+                    right = dialog.direction_fields["fp_direction_right"]
+                    assert [left.text(), right.text()] == directions
+                    left.setText("Favours placebo")
+                    right.clear()
+                    dialog.accept()
+                    assert not dialog.isVisible()
+                modal(app, editor, edit_directions, view.edit_plot_action.trigger)
+                directions[:] = ["Favours placebo"]
+                export(view, kind, "edited", None)
             if kind == "sroc":
                 export(view, kind, "bmj", 19, blocked=True)
                 for style, expected in (("default", {"#2f5597", "#b45f06"}), ("revman", {"#000000"}),
@@ -348,6 +463,10 @@ def run(app, window, work, root, record, analyze):
 
     open_sample("Colditz 1994")
     metric_action(window.menuMetric, "RR").trigger()
+    window.effect_direction_menu.aboutToShow.emit()
+    first, second = window.model.arm_names
+    directions[:] = [f"Favours {second}", f"Favours {first}"]
+    window.effect_direction_menu.actions()[2].trigger()
     check_plots(analyze(app, window, "binary.random"), ("forest",))
     window.action_meta_regression.trigger()
     setup = visible(AnalysisSetupDialog)

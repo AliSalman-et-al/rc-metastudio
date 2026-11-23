@@ -1575,9 +1575,10 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$kind != "contour")
         return(c("Pooled estimate", "No effect")[c(settings$show.pooled, settings$show.reference)])
     thresholds <- format(1 - levels / 100, digits=3, trim=TRUE)
-    c(paste0("P > ", thresholds[[1L]]),
+    c(if (settings$show.region) c(paste0("P > ", thresholds[[1L]]),
       if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
-      paste0("P \u2264 ", tail(thresholds, 1)))
+      paste0("P \u2264 ", tail(thresholds, 1))),
+      c("No effect", "Common-effect estimate")[c(settings$show.reference, settings$show.pooled)])
 }
 
 .small.study.draw.contour.funnel <- function(om.data, res, params, settings,
@@ -1590,18 +1591,28 @@ rcmetar.warm.small.study.effects <- function() {
     args$refline <- 0
     args$level <- levels
     args$yaxt <- "n"
-    # Match metafor 5.0-1's scalar-shade expansion on our white device.
-    args$shade <- grDevices::colorRampPalette(c(settings$region.color, "#7F7F7F"))(length(levels))
-    if (length(levels) > 1L) args$shade[-1L] <- rev(args$shade[-1L])
-    args$colci <- settings$reference.color
+    bands <- character()
+    if (settings$show.region) {
+        background <- grDevices::col2rgb(settings$background.color)
+        darkest <- pmin(background, .78 * grDevices::col2rgb(settings$region.color))
+        ramp <- grDevices::colorRamp(c(settings$background.color, grDevices::rgb(t(darkest), maxColorValue=255)))
+        bands <- grDevices::rgb(ramp(seq(.12, 1, length.out=length(levels) + 1L)), maxColorValue=255)
+        # metafor fills the nested contours with shade and the outermost region with back.
+        args$shade <- head(bands, -1L)
+        args$back <- tail(bands, 1L)
+    }
     do.call(metafor::funnel, c(list(model), args))
     ticks <- pretty(args$ylim, n=4)
     graphics::axis(2, at=ticks[ticks >= 0 & ticks <= max(args$ylim)], las=1)
     .small.study.draw.guides(settings, center)
     .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.funnel(y[keep], se[keep], 0, settings, om.data@study.names[keep])
-    .small.study.funnel.legend(settings, fill=c(args$shade, settings$background.color),
-                              border=settings$reference.color)
+    show <- c(settings$show.reference, settings$show.pooled)
+    line.color <- settings$reference.color
+    .small.study.funnel.legend(settings, fill=c(bands, rep(NA, sum(show))),
+        border=c(rep(line.color, length(bands)), rep(NA, sum(show))),
+        lty=c(rep(NA, length(bands)), c(1, 2)[show]),
+        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color)
 }
 
 .small.study.draw.funnel.notes <- function(om.data, params, settings) {
