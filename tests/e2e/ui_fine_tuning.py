@@ -41,6 +41,14 @@ def funnel_clip_evidence(view, artifact, work):
                   for node in clip if node.tag.endswith('rect')]
     clip = min(rectangles, key=lambda node: float(node.attrib['width']) * float(node.attrib['height']))
     vx, vy, vw, vh = map(float, root.attrib['viewBox'].split())
+    frame_top = float(clip.attrib['y'])
+    legend_keys = []
+    for node in root.iter('{http://www.w3.org/2000/svg}rect'):
+        if 'stroke:' not in node.attrib.get('style', ''):
+            continue
+        x, y, width, height = (float(node.attrib[key]) for key in ('x', 'y', 'width', 'height'))
+        if y + height < frame_top:
+            legend_keys.append((x, y, x + width, y + height))
     colors = set()
     for node in root.iter():
         match = re.search(r'fill:\s*(#[0-9A-Fa-f]{6})', node.attrib.get('style', ''))
@@ -63,12 +71,18 @@ def funnel_clip_evidence(view, artifact, work):
             top = (float(clip.attrib['y']) - vy) * image.height() / vh
             right = left + float(clip.attrib['width']) * image.width() / vw
             bottom = top + float(clip.attrib['height']) * image.height() / vh
+            key_boxes = [
+                ((x0 - vx) * image.width() / vw, (y0 - vy) * image.height() / vh,
+                 (x1 - vx) * image.width() / vw, (y1 - vy) * image.height() / vh)
+                for x0, y0, x1, y1 in legend_keys
+            ]
             outside = inside = 0
             for y in range(image.height()):
                 for x in range(image.width()):
                     if image.pixel(x, y) in colors:
                         if x < left - 2 or x > right + 2 or y < top - 2 or y > bottom + 2:
-                            outside += 1
+                            outside += not any(x0 - 1 <= x <= x1 + 1 and y0 - 1 <= y <= y1 + 1
+                                               for x0, y0, x1, y1 in key_boxes)
                         else:
                             inside += 1
             assert outside == 0, (artifact.title, surface, scale, outside)
