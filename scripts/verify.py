@@ -286,6 +286,7 @@ def run_macos_packaging_contracts() -> None:
     run([
         sys.executable, "-m", "pytest", "-q",
         "tests/packaging/contract/test_macos_native_pipeline_contract.py",
+        "tests/packaging/contract/test_macos_staple_retry_model.py",
     ])
 
 
