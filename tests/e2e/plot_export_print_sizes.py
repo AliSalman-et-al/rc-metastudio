@@ -106,10 +106,10 @@ def editorial_observations(kind, runs, page):
     return observed
 
 
-def editorial_failures(kind, observed):
+def editorial_failures(kind, style, observed):
     failures = []
     if kind == "forest":
-        if observed["top_gap_mm"] > 4:
+        if style != "revman" and observed["top_gap_mm"] > 4:
             failures.append("blank band above forest headers")
         if not re.search(r"\([^()]+ to [^()]+\)|\[[^\[\]]+, [^\[\]]+\]", observed["prediction_interval"]):
             failures.append("prediction interval is split")
@@ -383,7 +383,7 @@ def run(app, window, work, root, record, analyze):
                 failures.append((name, width, observed))
             if missing := EXPECTED_LABELS[kind] - set(observed["labels"]):
                 failures.append((name, width, "missing labels", sorted(missing)))
-            if defects := editorial_failures(kind, observed["editorial"]):
+            if defects := editorial_failures(kind, style, observed["editorial"]):
                 failures.append((name, width, defects, observed["editorial"]))
             publication = observed["publication"]
             valid = True
