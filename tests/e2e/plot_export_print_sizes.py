@@ -247,6 +247,7 @@ def publication_observations(kind, page, runs, png):
                                      for label, item in zip(bands, keys) if item],
                 "band_key_size_pt": [round(item.height, 2) for item in keys if item],
                 "entry_gaps_pt": entry_gap, "legend_pt": legend_pt,
+                "legend_rows": len({round(entry[1], 1) for entry in entries}),
                 "legend_reading_order": len(entries) == 6 and entries == reading_order,
                 "white_key_pixels": key_gaps(guides)}
     if kind == "forest":
@@ -442,6 +443,7 @@ def run(app, window, work, root, record, analyze):
                          and all(.7 * legend_pt <= size <= 1.05 * legend_pt
                                  for size in publication["band_key_size_pt"])
                          and publication["legend_reading_order"]
+                         and (width != 66 or publication["legend_rows"] == 2)
                          and len(entry_gaps) >= 2
                          and all(.7 * legend_pt <= gap <= 1.4 * legend_pt for gap in entry_gaps)
                          and publication["bands_match_panel"] and publication["guide_dashed"] == [False, True])

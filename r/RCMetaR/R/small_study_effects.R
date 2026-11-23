@@ -1502,8 +1502,11 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
-.small.study.funnel.legend <- function(settings, ..., x.intersp=.65, entry.gap=0) {
+.small.study.funnel.legend <- function(settings, ...) {
     args <- list(...)
+    x <- if (settings$kind == "contour")
+        graphics::grconvertX(grDevices::dev.size("in")[1L] / 2, from="inches") else graphics::grconvertX(.5, from="npc")
+    entry.gap <- settings$legend.entry.gap %||% 0
     for (i in seq_along(settings$legend.rows)) {
         row <- settings$legend.rows[[i]]
         symbols <- lapply(args, function(arg) if (length(arg) == 1L) arg else arg[row])
@@ -1511,12 +1514,12 @@ rcmetar.warm.small.study.effects <- function() {
         text.width <- if (entry.gap > 0) graphics::strwidth(labels, cex=.9) +
             c(rep(graphics::xinch(entry.gap), length(row) - 1L), 0) else NA_real_
         do.call(graphics::legend, c(list(
-            x=graphics::grconvertX(.5, from="npc"),
+            x=x,
             y=graphics::grconvertY(1, from="npc") +
                 graphics::yinch(settings$legend.leading * (length(settings$legend.rows) - i + 1.5)),
             legend=labels, cex=.9,
             xjust=.5, yjust=1, horiz=TRUE, text.width=text.width,
-            bty="n", xpd=NA, seg.len=1.4, x.intersp=x.intersp), symbols))
+            bty="n", xpd=NA, seg.len=1.4, x.intersp=settings$legend.key.gap %||% .65), symbols))
     }
 }
 
@@ -1615,8 +1618,7 @@ rcmetar.warm.small.study.effects <- function() {
     .small.study.funnel.legend(settings, pch=c(rep(22L, length(bands)), rep(NA, sum(show))),
         pt.bg=c(bands, rep(NA, sum(show))), merge=TRUE, pt.cex=1.3,
         lty=c(rep(NA, length(bands)), c("solid", "12")[show]),
-        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color, x.intersp=.15,
-        entry.gap=.9 * graphics::par("ps") * graphics::par("cex") / 72)
+        lwd=c(rep(NA, length(bands)), c(1, 2)[show]), col=line.color)
 }
 
 .small.study.draw.funnel.notes <- function(om.data, params, settings) {
@@ -1655,7 +1657,15 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
         left <- max(graphics::strwidth(format(pretty(c(0, max(se[keep]))), trim=TRUE),
                                       units="inches")) + 3 * em
         right <- 1.5 * em
-        settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - left - right, .9)
+        if (settings$kind == "contour") {
+            settings$legend.entry.gap <- .9 * em
+            settings$legend.key.gap <- .15
+            char.width <- .9 * axis.cex * graphics::par("cin")[1L]
+            padding <- (1 + settings$legend.key.gap + 1.4 - .7) * char.width + settings$legend.entry.gap
+            settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - .07, .9, padding)
+        } else {
+            settings$legend.rows <- rcmetar.plot.legend.rows(settings$legend.labels, size$width - left - right, .9)
+        }
         settings$legend.leading <- 1.15 * em
         top <- max(1, length(settings$legend.rows) + 1.75) * settings$legend.leading
         notes <- (!is.null(settings$xlim) ||
