@@ -265,8 +265,6 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         c(budget, list(
             cex=cex,
             bg="white",
-            sparse_export=!is.null(bundle$target_width) && !length(bundle$ilab$columns) &&
-                !identical(bundle$forest_variant, "subgroup"),
             column_widths=column.widths,
             group_widths=group.widths,
             column_gap=column.gap,
@@ -358,6 +356,8 @@ rcmetar.forest.default.rows <- function(bundle) {
 
 rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
     size <- bundle$size %||% rcmetar.forest.default.device.metrics(bundle)
+    size$sparse_export <- !is.null(bundle$target_width) && !length(bundle$ilab$columns) &&
+        !identical(bundle$forest_variant, "subgroup")
     alim <- if (metric.is.log.scale(as.character(bundle$params$measure)) && !rcmetar.forest.proportion(bundle)) {
         rcmetar.forest.journal.ratio.alim(bundle)
     } else {
