@@ -1,14 +1,16 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Measure real Results exports with PyMuPDF installed in the verification environment."""
+"""Measure real Results exports: PDF text sizes, bounds and overlaps, and SROC markers."""
 
-from importlib import import_module
 from itertools import combinations
+import math
 from pathlib import Path
 import re
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTChar, LTContainer
 from PyQt6.QtWidgets import QDialogButtonBox, QFileDialog
 
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
@@ -32,32 +34,74 @@ EXPECTED_LABELS = {
 }
 
 
+def _glyphs(container):
+    for item in container:
+        if isinstance(item, LTChar):
+            yield item
+        elif isinstance(item, LTContainer):
+            yield from _glyphs(item)
+
+
+def pdf_text_runs(page) -> list[tuple[str, float, tuple[float, float, float, float]]]:
+    """Rebuild each label as (text, smallest point size, bounds) from glyph geometry.
+
+    Cairo writes glyphs grouped by font subset rather than in reading order, so a label
+    is every glyph sharing a direction, baseline and size, split at word-sized gaps.
+    """
+    lines: dict[tuple, list] = {}
+    for char in _glyphs(page):
+        a, b, _, _, x, y = char.matrix
+        size = math.hypot(a, b)  # text-matrix scale, so rotated labels measure correctly
+        horizontal = abs(a) >= abs(b)
+        sign = 1 if (a if horizontal else b) > 0 else -1
+        low, high = (char.x0, char.x1) if horizontal else (char.y0, char.y1)
+        start, end = (low, high) if sign > 0 else (-high, -low)
+        key = (horizontal, sign, round(y if horizontal else x, 1), round(size, 1))
+        lines.setdefault(key, []).append((start, end, char, size))
+    runs = []
+    for glyphs in lines.values():
+        glyphs.sort(key=lambda glyph: glyph[0])
+        groups, last_end = [[]], None
+        for start, end, char, size in glyphs:
+            if last_end is not None and start - last_end > .45 * size:
+                groups.append([])
+            groups[-1].append((char, size))
+            last_end = end
+        for group in groups:
+            if text := "".join(char.get_text() for char, _ in group).strip():
+                runs.append((text, min(size for char, size in group if char.get_text().strip()), (
+                    min(char.x0 for char, _ in group), min(char.y0 for char, _ in group),
+                    max(char.x1 for char, _ in group), max(char.y1 for char, _ in group))))
+    return runs
+
+
 def pdf_observations(path: Path, width: float, height: float) -> dict:
-    pdf = import_module("pymupdf")
-    with pdf.open(path) as document:
-        assert len(document) == 1
-        page = document[0]
-        assert abs(page.rect.width - 72 * width) <= .5
-        assert abs(page.rect.height - 72 * height) <= .5
-        spans = [
-            span for block in page.get_text("dict", clip=pdf.INFINITE_RECT())["blocks"]
-            for line in block.get("lines", ()) for span in line["spans"] if span["text"].strip()
-        ]
-        boxes = [(span["text"], pdf.Rect(span["bbox"])) for span in spans]
-        page_box = page.rect + (-.5, -.5, .5, .5)
-        outside = [label for label, box in boxes if not page_box.contains(box)]
-        overlaps = []
-        for (first, a), (second, b) in combinations(boxes, 2):
-            intersection = a & b
-            if intersection.get_area() > .2 * min(a.get_area(), b.get_area()):
-                overlaps.append([first, second])
-        return {
-            "min_font_pt": round(min((span["size"] for span in spans), default=0), 3),
-            "labels": [label for label, _ in boxes],
-            "outside": outside,
-            "overlaps": overlaps,
-            "page_pt": [page.rect.width, page.rect.height],
-        }
+    pages = list(extract_pages(path, laparams=None))
+    assert len(pages) == 1
+    page, = pages
+    assert abs(page.width - 72 * width) <= .5
+    assert abs(page.height - 72 * height) <= .5
+    runs = pdf_text_runs(page)
+    outside = [text for text, _, (x0, y0, x1, y1) in runs
+               if x0 < -.5 or y0 < -.5 or x1 > page.width + .5 or y1 > page.height + .5]
+
+    def area(box):
+        return (box[2] - box[0]) * (box[3] - box[1])
+
+    overlaps = []
+    for (first, _, a), (second, _, b) in combinations(runs, 2):
+        intersection = (max(0, min(a[2], b[2]) - max(a[0], b[0]))
+                        * max(0, min(a[3], b[3]) - max(a[1], b[1])))
+        if intersection > .2 * min(area(a), area(b)):
+            overlaps.append([first, second])
+    return {
+        # Text drawn as outlines yields no runs, which fails the 6 pt check.
+        "min_font_pt": round(min((size for _, size, _ in runs), default=0), 3),
+        "labels": [text for text, _, _ in runs],
+        "outside": outside,
+        "overlaps": overlaps,
+        "page_pt": [page.width, page.height],
+    }
 
 
 def sroc_observations(path: Path) -> dict:

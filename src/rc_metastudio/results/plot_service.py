@@ -177,8 +177,7 @@ class PlotService:
                 _export_paged_forest(params_path, source, output_path, width, geometry[1], include_title)
                 return
             paths = r_operations.render_plot_bundle(
-                params_path, regenerator, str(source), include_title=include_title,
-                width=width if regenerator == "forest" else None,
+                params_path, regenerator, str(source), include_title=include_title, width=width,
             )
             if not paths:
                 raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")

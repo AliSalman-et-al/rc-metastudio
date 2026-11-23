@@ -446,9 +446,9 @@ and resolution. Native OS picker presentation remains a separate manual check.
 ## Trial sequential plot
 
 The targeted `plot-export-print-sizes` scenario drives the Results export
-dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Install
-the optional PDF decoder with `uv pip install --no-deps pymupdf==2.1`, then
-run `uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`.
+dialog with the bundled Colditz, Poole, Kearon and Pignon projects. Run
+`uv run --locked python scripts/verify_rcms.py plot-export-print-sizes --native`;
+the locked dev group provides pdfminer.six for the PDF measurements.
 The evidence includes PDFs at 2.60 and 5.39 inches, measured point sizes and
 text bounds, an undersized dialog with Save disabled, and SROC frame and
 palette measurements from the rendered SVGs. The file-picker destination is
