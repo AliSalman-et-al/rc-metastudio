@@ -201,7 +201,8 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     } else legend.width + em
     legend.rows <- if (legend.below) rcmetar.plot.legend.rows(labels, size$width - em, legend.cex) else list()
     legend.leading <- em
-    bottom <- 2.65 * em + length(legend.rows) * legend.leading
+    bottom <- 2.65 * em + length(legend.rows) * legend.leading +
+        if (legend.below) .25 * legend.leading else 0
     caption.cex <- .85 * size$cex
     header <- unlist(lapply(c(caption, outcome), rcmetar.bmj.wrap.direction,
                            available=size$width - em, cex=.85, units="inches", font=1))
