@@ -955,7 +955,7 @@ def test_results_window_refits_svg_plots_and_reflows_sections_on_resize(tmp_path
             assert (
                 text_items["Cumulative forest plot"].sceneBoundingRect().top()
                 - svg_items[0].sceneBoundingRect().bottom()
-                >= results_window.SECTION_SPACING
+                >= window.fontMetrics().lineSpacing()
             )
 
         def assert_plot_fills_viewport(plot_item):

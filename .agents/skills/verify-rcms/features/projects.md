@@ -230,7 +230,7 @@ still requires a targeted drive; shared authorization behavior has GUI coverage.
 
 ### Workspace transaction safety
 
-Run `uv run pytest tests/python/fast/test_workspace_history_model.py -q` when changing `WorkspaceSession.change`, undo/redo, or save and reopen. The model checks 343 three-operation histories, with edits nested up to two levels. It compares rollback, history, dirty state and reopened `.rcms` values against expected snapshots. A replay of the pre-#588 begin/commit wrapper at `592f046f` leaves a failed edit in the live document. When changing the transaction contract, check that the historical path still fails and update the modeled operations if needed. The `sheets` desktop drive covers actual Qt installation and projection failures.
+Run `uv run pytest tests/python/fast/test_workspace_history_model.py -q` when changing `WorkspaceSession.change`, undo/redo, or save and reopen. The model checks 343 three-operation histories, with edits nested up to two levels. It compares rollback, history, dirty state and reopened `.rcms` values against expected snapshots. During development, adapting the pre-#588 begin/commit wrapper from `592f046f` to the current session left a failed edit in the live document. Update the modeled operations when the transaction contract changes. The `sheets` desktop drive covers actual Qt installation and projection failures.
 
 `test_workspace_safety_transactions` reuses `workspace_safety_case` for duplicate
 name rejection, later placeholders, Qt insertion notifications, metric undo/redo,
