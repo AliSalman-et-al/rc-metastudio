@@ -44,7 +44,7 @@ def funnel_clip_evidence(view, artifact, work):
     frame_top = float(clip.attrib['y'])
     legend_keys = []
     for node in root.iter('{http://www.w3.org/2000/svg}rect'):
-        if 'stroke:' not in node.attrib.get('style', ''):
+        if 'stroke:' not in node.attrib.get('style', '') or 'x' not in node.attrib or 'y' not in node.attrib:
             continue
         x, y, width, height = (float(node.attrib[key]) for key in ('x', 'y', 'width', 'height'))
         if y + height < frame_top:
