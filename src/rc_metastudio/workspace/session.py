@@ -155,12 +155,12 @@ class WorkspaceSession:
     @contextmanager
     def change(self, restore: InstallRuntime) -> Generator[None]:
         """Commit one operation, restoring the installed view if it fails."""
-        self.begin_change()
+        self._begin_change()
         try:
             yield
-            self.end_change()
+            self._commit_change()
         except BaseException as error:
-            runtime = self.abort_change()
+            runtime = self._abort_change()
             if runtime is None:
                 raise
             try:
@@ -169,8 +169,7 @@ class WorkspaceSession:
                 error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
             raise
 
-    def begin_change(self) -> None:
-        """Start one atomic UI operation."""
+    def _begin_change(self) -> None:
         if self._runtime is None:
             raise ValueError("cannot edit an empty workspace")
         if self._transaction is None:
@@ -178,8 +177,7 @@ class WorkspaceSession:
         else:
             self._transaction.depth += 1
 
-    def abort_change(self) -> RuntimeProject | None:
-        """Abort the entire nested operation; return the graph to reinstall."""
+    def _abort_change(self) -> RuntimeProject | None:
         transaction = self._transaction
         if transaction is None:
             return None
@@ -188,8 +186,7 @@ class WorkspaceSession:
         self._checkpoint = copy.deepcopy(self._runtime)
         return self._runtime
 
-    def end_change(self) -> None:
-        """Publish the current graph as one history entry."""
+    def _commit_change(self) -> None:
         transaction = self._transaction
         if transaction is None:
             return
