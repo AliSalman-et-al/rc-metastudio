@@ -1502,6 +1502,16 @@ rcmetar.warm.small.study.effects <- function() {
     if (settings$show.pooled) graphics::abline(v=center, col=settings$reference.color, lwd=2, lty=2)
 }
 
+.small.study.funnel.legend <- function(settings, labels, ...) {
+    if (!settings$compact) return(graphics::legend("topright", labels, ..., bty="n"))
+    size <- grDevices::dev.size("in")
+    graphics::legend(
+        graphics::grconvertX(size[1L] / 2, from="inches"),
+        graphics::grconvertY(size[2L] - graphics::par("omi")[3L] - .01, from="inches"),
+        legend=labels, ..., xjust=.5, yjust=1, ncol=2, text.width=NA_real_,
+        bty="n", xpd=NA, seg.len=1.4, x.intersp=.65)
+}
+
 .small.study.draw.deeks <- function(om.data, params, settings, y, se, keep, compact) {
     effective <- as.numeric(params$deeks.ess %||% numeric())
     predictor <- as.numeric(params$deeks.predictor %||% numeric())
@@ -1537,13 +1547,12 @@ rcmetar.warm.small.study.effects <- function() {
     .small.study.draw.funnel.axis(settings, ratio)
     .small.study.label.funnel(y[keep], se[keep], center, settings, om.data@study.names[keep])
     if (identical(settings$kind, "trimfill")) {
-        graphics::legend("topright", c("Observed", "Imputed"), pch=c(settings$point.symbol, 1),
-                         col=settings$point.color, bty="n")
+        .small.study.funnel.legend(settings, c("Observed", "Imputed"),
+            pch=c(settings$point.symbol, 1), col=settings$point.color)
     } else if (settings$show.reference || settings$show.pooled) {
         show <- c(settings$show.pooled, settings$show.reference)
-        graphics::legend("topright", c("Pooled estimate", "No effect")[show],
-                         lty=c(2, 1)[show], lwd=c(2, 1)[show],
-                         col=settings$reference.color, bty="n", cex=.8)
+        .small.study.funnel.legend(settings, c("Pooled estimate", "No effect")[show],
+            lty=c(2, 1)[show], lwd=c(2, 1)[show], col=settings$reference.color, cex=.8)
     }
 }
 
@@ -1572,8 +1581,8 @@ rcmetar.warm.small.study.effects <- function() {
     bands <- c(paste0("P > ", thresholds[[1L]]),
                if (length(thresholds) > 1L) paste0(thresholds[-1L], " < P \u2264 ", head(thresholds, -1L)),
                paste0("P \u2264 ", tail(thresholds, 1)))
-    graphics::legend("topright", legend=bands, fill=c(args$shade, settings$background.color),
-                     border=settings$reference.color, bty="n")
+    .small.study.funnel.legend(settings, bands, fill=c(args$shade, settings$background.color),
+                              border=settings$reference.color)
     if (any(levels != display.confidence.level(params)))
         graphics::mtext(sprintf("Analysis CI %g%%.", display.confidence.level(params)),
                         side=1, line=4.3, adj=0, cex=.8)
@@ -1589,12 +1598,13 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
     size <- list(width=1000/120, height=800/120, dpi=dpi, bg=settings$background.color)
     size <- rcmetar.plot.device.size(size, width, height, dpi)
     compact <- !is.null(height) && size$width < 6
+    settings$compact <- compact
     ylab <- settings$ylab
     if (compact) settings$ylab <- ""
     rcmetar.render.plot_file(path, size, function() {
         graphics::par(xpd=FALSE, mar=c(6.2, 4.8, 3, 2))
         if (compact) {
-            top <- if (settings$kind == "deeks") .26 else .15
+            top <- switch(settings$kind, contour=.39, deeks=.26, .24)
             graphics::par(cex=.75, mgp=c(2.55, .55, 0), mex=.53, tcl=-.25, las=1,
                           mai=c(.58, .63, top, .19))
         }
