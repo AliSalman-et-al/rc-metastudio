@@ -187,7 +187,7 @@ rcmetar.bubble.style.args <- function(bundle, revman.accent=rcmetar.default.plot
             lwd=2,
             lty=c("solid", "dashed", "dotted"),
             shade=c(ci.shade, pi.shade),
-            grid=FALSE,
+            grid=TRUE,
             bty="l",
             las=1
         )
@@ -364,6 +364,8 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         legend.cex <- .9
         graphics::par(mgp=c(1.65, .45, 0), tcl=-.25)
         args <- rcmetar.bubble.style.args(bundle)
+        ratio.grid <- bundle$bp_style == "default" && metric.is.log.scale(bundle$params$measure)
+        args$grid <- args$grid && !ratio.grid
         ylim <- rcmetar.bubble.ylim(bundle)
         automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], "[default]")
         at <- if (automatic.ticks) NULL else rcmetar.bubble.axis.ticks(bundle, ylim)
@@ -421,7 +423,7 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         ticks <- rcmetar.bubble.axis.ticks(bundle, panel[3:4])
         if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
         # metafor's built-in grid uses base axis breaks, even for custom axes.
-        if (bundle$bp_style == "default") {
+        if (ratio.grid) {
             graphics::abline(h=ticks, v=x.ticks, col="grey80", lty="dotted")
         }
         rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
