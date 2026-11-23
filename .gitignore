@@ -57,6 +57,7 @@ Desktop.ini
 !.agents/skills/
 .agents/skills/*
 !.agents/skills/verify-rcms/
+!.agents/skills/macos-staple-retries/
 .codex/
 .claude/
 .codex-tmp/
