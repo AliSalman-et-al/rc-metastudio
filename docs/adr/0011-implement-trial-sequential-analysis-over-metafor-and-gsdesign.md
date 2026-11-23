@@ -85,3 +85,17 @@ RCMetaR owns a small numerical surface that has no upstream maintainer. Each
 owned formula needs an end-to-end comparison against the reference program's
 outputs, the manual's worked examples or published tables, and those
 comparisons must be rerun when `metafor` or `gsDesign` is upgraded.
+
+## Boundaries and significance
+
+Evaluate O'Brien–Fleming spending in the survival tail to retain very early
+look probabilities. If gsBound cannot integrate vanishing early increments,
+use their marginal quantiles and carry their probability into the first
+numerically resolvable increment. Closely spaced looks can require finer
+quadrature. Invert a lower Z crossing into an upper confidence limit for the
+effect. In a design sensitivity check, vary the effect that sets the
+information target and keep the fitted looks fixed.
+
+For continuous input, weight arm-pooled participant variances by fixed-effect
+mean-difference precision. The conventional limit nearest the null in the
+Imberger design uses a 95% interval.

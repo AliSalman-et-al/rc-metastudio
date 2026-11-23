@@ -960,56 +960,24 @@ def test_compare_bundle_requires_expected_plot_artifacts(tmp_path):
 
 
 def test_headless_diagnostic_batch_preserves_per_request_confidence(
-    monkeypatch, tmp_path
+    monkeypatch,
 ):
     from tests.analysis_regression.golden.support import headless_analysis
     from rc_metastudio.analysis import requests as analysis_adapter
 
-    class DiagnosticModel(object):
-        dataset = object()
-
+    class DiagnosticBackend:
         def __init__(self):
-            self.current_metric = None
-
-        def included_studies_have_raw_data(self):
-            return True
-
-        def included_studies_have_point_estimates(self, effect):
-            return True
-
-        def set_current_metric(self, metric):
-            self.current_metric = metric
-
-    class DiagnosticBackend(object):
-        def __init__(self):
-            self.conversions = []
             self.runs = []
-            self.data = object()
-
-        def convert(self, model, **kwargs):
-            self.conversions.append((model, kwargs))
-            return self.data
 
         def run(self, requests, data):
-            assert data is self.data
+            assert data["TP"] and data["FP"] and data["TN"] and data["FN"]
             method_names = [request["method"] for request in requests]
             parameter_values = [request["params"] for request in requests]
             self.runs.append((method_names, parameter_values))
             return _empty_result()
 
-    model = DiagnosticModel()
     backend = DiagnosticBackend()
 
-    def load_model(path):
-        return model
-
-    monkeypatch.setattr(headless_analysis, "load_dataset_model", load_model)
-    monkeypatch.setattr(
-        analysis_adapter.r_operations,
-        "_diagnostic_data_arguments",
-        backend.convert,
-        raising=False,
-    )
     monkeypatch.setattr(
         analysis_adapter.r_operations,
         "_worker_diagnostic_fit",
@@ -1022,7 +990,7 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
         {"measure": "Sens", "conf.level": 90.0},
     ]
     case = headless_analysis.HeadlessAnalysisCase(
-        str(tmp_path / "diagnostic.rcms"),
+        str(Path(__file__).resolve().parents[2] / "fixtures/desktop-projects/lymph.rcms"),
         (
             analysis_adapter.make_analysis_request(
                 data_type='diagnostic',

@@ -11,8 +11,10 @@ from PyQt6.QtPdf import QPdfDocument
 
 from rc_metastudio import r_operations
 from rc_metastudio.results.export_files import staged_output
-from rc_metastudio.results.plot_service import PlotService, svg_view_box_size
-from rc_metastudio.results.report import ManuscriptReport, write_docx, write_pdf
+from rc_metastudio.results.plot_service import PlotService
+from rc_metastudio.results.svg_rendering import svg_view_box_size
+from rc_metastudio.results.report import ManuscriptReport
+from rc_metastudio.results.report_export import write_docx, write_pdf
 def export_result(result, directory):
     directory.mkdir(parents=True, exist_ok=True)
     report = ManuscriptReport.from_result(result)
@@ -27,7 +29,7 @@ def export_result(result, directory):
         for extension in extensions:
             destination = directory / f"{index}-{figure.plot_kind}.{extension}"
             service.export_sized(
-                regenerator=regenerator, params_path=figure.plot_data,
+                capability=figure.capability, params_path=figure.plot_data,
                 output_path=str(destination), width=width / 72, height=height / 72, dpi=96,
             )
             files[destination.name] = destination

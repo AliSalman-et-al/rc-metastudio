@@ -13,7 +13,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     valid <- is.finite(values)
     timing <- sqrt(fraction[valid])
     if (length(timing) < 2L || from >= 1) return(list(fraction=1, z=tail(values, 1)))
-    # Include the knots so the rendered path passes through the reported values.
     grid <- sort(unique(c(seq(sqrt(from), 1, length.out=200), timing[timing >= sqrt(from)])))
     grid <- grid[grid >= timing[1]]
     interpolate <- stats::splinefun(timing, values[valid], method="monoH.FC")
@@ -242,7 +241,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     half <- graphics::xinch(graphics::strwidth(axis$labels, units="inches")/2 + .026)
     if (length(axis$join)) {
         join.tick <- last.tick - 1L
-        # Keep both compressed-section labels at narrow print widths.
         label.at[join.tick] <- min(at[join.tick], at[last.tick] - half[last.tick] - half[join.tick])
     }
     keep <- rep(TRUE, last.tick)
@@ -376,7 +374,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     draw.swatch <- function(legend, labels) {
         index <- match("Futility region", labels)
         if (is.na(index)) return()
-        # Use the same character spacing and segment length as graphics::legend.
         char.width <- graphics::xinch(graphics::par("cin")[1] * size$cex * legend.cex)
         right <- legend$text$x[index] - char.width
         y <- legend$text$y[index]
@@ -385,7 +382,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
                        col=theme$region, border=border, lwd=.8, xpd=NA)
     }
     if (panel$legend.below) {
-        # Pack at most two rows against the device width, centring each row.
         widths <- graphics::strwidth(labels, units="inches", cex=legend.cex) +
             4 * graphics::par("cin")[1] * size$cex * legend.cex
         split <- if (sum(widths) <= size$width - .12) length(labels) else

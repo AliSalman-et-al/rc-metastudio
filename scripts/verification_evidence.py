@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -17,10 +18,12 @@ else:
     from r_verification_support import resolve_rscript
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_BUILD_ROOT = ROOT / "build/qt6-verification"
 CACHE = ROOT / "artifacts/verification/rcms/cache"
 R_PATH_VARIABLES = ("R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH")
 PDF_TOOLS = ("pdfimages", "pdfinfo", "pdftohtml", "pdftoppm", "pdftotext")
 DESKTOP_TOOL_PATHS_ENV = "RCMS_E2E_TOOL_PATHS"
+TYPING_RECEIPT_ENV = "RCMS_TYPING_RECEIPT"
 EVIDENCE_ENVIRONMENT = (
     "QT_SCALE_FACTOR", "QT_FONT_DPI", "QT_QPA_FONTDIR", "QT_QPA_PLATFORM",
     "QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "FONTCONFIG_FILE", "FONTCONFIG_PATH",
@@ -28,6 +31,10 @@ EVIDENCE_ENVIRONMENT = (
     "RCMS_AXIS_BASELINE", "RCMS_REVIEWER_BASELINE", "RCMS_UI_DESIGN_PHASE",
     "RCMS_UI_CRAWL_SECTIONS", "RCMS_PROFILE_STARTUP", "RCMS_REPORT_AUDIT_DIR",
 )
+
+
+class VerificationError(RuntimeError):
+    """A command-line or verification setup error."""
 
 
 def file_digest(path: Path) -> str:
@@ -70,13 +77,15 @@ def tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
+def configured_build_root(env: dict[str, str]) -> Path:
+    return Path(env.get("RCMS_QT6_BUILD_ROOT", DEFAULT_BUILD_ROOT)).resolve()
+
+
 def desktop_environment(*, native: bool = False) -> dict[str, str]:
     env = os.environ | {
         "PYTHONIOENCODING": "utf-8",
         "PYTHONPATH": os.pathsep.join((str(ROOT / "src"), str(ROOT))),
-        "RCMS_QT6_BUILD_ROOT": str(Path(os.environ.get(
-            "RCMS_QT6_BUILD_ROOT", ROOT / "build/qt6-verification"
-        )).resolve()),
+        "RCMS_QT6_BUILD_ROOT": str(configured_build_root(dict(os.environ))),
     }
     for variable in ("RCMS_R_HOME", "RCMS_R_LIBS", "QT_QPA_FONTDIR"):
         if env.get(variable):
@@ -123,6 +132,42 @@ def verified_typing(path: object, build_root: Path, source: str) -> bool:
         )
     except (OSError, ValueError, KeyError, TypeError):
         return False
+
+
+def run_typing(build_root: Path) -> Path:
+    source_before = source_digest(build_root)
+    command = typing_command(build_root)
+    evidence = ROOT / "artifacts/verification/typing" / (datetime.now().strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8])
+    evidence.mkdir(parents=True)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] $ {' '.join(command)}", flush=True)
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    (evidence / "stdout.log").write_text(result.stdout, encoding="utf-8")
+    (evidence / "stderr.log").write_text(result.stderr, encoding="utf-8")
+    receipt = evidence / "command.json"
+    source_after = source_digest(build_root)
+    receipt.write_text(json.dumps({
+        "command": command,
+        "python_platform": "win32",
+        "exit_code": result.returncode,
+        "build_root": str(build_root.resolve()),
+        "source_sha256": source_before,
+        "source_unchanged": source_before == source_after,
+    }, indent=2), encoding="utf-8")
+    print(result.stdout, end="")
+    print(result.stderr, end="", file=sys.stderr)
+    print(f"Typing evidence: {evidence}", flush=True)
+    if result.returncode:
+        raise VerificationError(f"strict typing failed; inspect {evidence}")
+    if source_before != source_after:
+        raise VerificationError(f"verification inputs changed during strict typing; inspect {evidence}")
+    return receipt
+
+
+def ensure_typing(build_root: Path, env: dict[str, str]) -> Path:
+    inherited = env.get(TYPING_RECEIPT_ENV)
+    if inherited and verified_typing(inherited, build_root, source_digest(build_root)):
+        return Path(inherited)
+    return run_typing(build_root)
 
 
 def evidence_environment(env: dict[str, str]) -> dict[str, str | None]:

@@ -18,6 +18,8 @@ from PyQt6.QtCore import QCoreApplication, QEventLoop, QObject, QProcess, QProce
 from PyQt6.QtWidgets import QProgressDialog
 
 from rc_metastudio import r_runtime
+from rc_metastudio.settings import ANALYSIS_SCRATCH_ENV_VAR, analysis_scratch
+from rc_metastudio.foreground_operation import OperationCancelled, foreground_operation
 from rc_metastudio.rcmetar_identity import expected_source, runtime_versions
 from rc_metastudio.r_result_wire import result_vector
 from rc_metastudio.r_worker_lifetime import WindowsWorkerJob, kill_worker_group, worker_command
@@ -57,8 +59,11 @@ class PreviewJob(TypedDict):
     confidence: float
 
 
+type AnalysisJobKind = Literal["fit", "diagnostic_fit", "small_study", "tsa_preview", "tsa_conclusion", "tsa_run"]
+
+
 class AnalysisJob(TypedDict):
-    type: Literal["fit", "diagnostic_fit", "small_study", "tsa_preview", "tsa_conclusion", "tsa_run"]
+    type: AnalysisJobKind
     family: str
     columns: Mapping[str, object] | Sequence[Mapping[str, object]]
     request: Mapping[str, object] | Sequence[Mapping[str, object]]
@@ -155,7 +160,7 @@ class RWorkerError(r_runtime.AnalysisBackendUnavailableError):
     """The job did not complete and its changes must not be published."""
 
 
-class RJobCancelled(RWorkerError):
+class RJobCancelled(RWorkerError, OperationCancelled):
     """A cancelled worker job published no result."""
 
 @dataclass
@@ -230,7 +235,6 @@ class RWorker(QObject):
         version, source = expected_source()
         self._startup = _frame(0, {"version": version, "source": source, "pins": runtime_versions()})
         program, script = _runtime_paths()
-        # Start Rterm directly on Windows so the job object owns the interpreter PID.
         script_args = ["--no-echo", "-f", str(script)] if sys.platform == "win32" else [str(script)]
         executable, args = worker_command(str(program), ["--vanilla", *script_args])
         self._process = QProcess(self)
@@ -295,6 +299,11 @@ class RWorker(QObject):
             self.changed.emit()
             return
         env = QProcessEnvironment.systemEnvironment()
+        scratch = analysis_scratch()
+        if scratch.caller_owned:
+            env.insert(ANALYSIS_SCRATCH_ENV_VAR, str(scratch.root))
+        else:
+            env.remove(ANALYSIS_SCRATCH_ENV_VAR)
         if sys.platform == "linux" and getattr(sys, "frozen", False):
             env.insert("LD_LIBRARY_PATH", str(Path(env.value("R_HOME")) / "lib"))
         directory = self._control.path()
@@ -473,13 +482,14 @@ class RWorker(QObject):
             self._cancel_pending(passive)
             self._wait(passive.finished)
         pending = self._submit(job, timeout_ms)
-        try:
-            self._wait(pending.finished, delay_ms=200)
-            if not pending.finished():
-                self._wait_with_cancel(job["type"], pending)
-            return _job_result(pending)
-        finally:
-            self._release(pending)
+        with foreground_operation():
+            try:
+                self._wait(pending.finished, delay_ms=200)
+                if not pending.finished():
+                    self._wait_with_cancel(job["type"], pending)
+                return _job_result(pending)
+            finally:
+                self._release(pending)
 
     def start_background(
         self, job: AnalysisJob, deliver: Callable[[object, Exception | None], None],
@@ -558,7 +568,6 @@ class RWorker(QObject):
             "method_parameters": "Reading analysis settings…",
             "plot_capabilities": "Checking available plots…",
         }.get(kind, "Fitting model and drawing plots…")
-        # The active window can be a transient popup that closes during the wait.
         dialog = QProgressDialog(label, "Cancel", 0, 0)
         dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         dialog.setMinimumDuration(0)
@@ -643,14 +652,6 @@ def _deliver_result(pending: _Pending, deliver: Callable[[object, Exception | No
         deliver(None, error)
     else:
         deliver(result, None)
-
-
-def foreground_busy() -> bool:
-    app = QCoreApplication.instance()
-    if app is None:
-        return False
-    worker = app.findChild(RWorker, options=Qt.FindChildOption.FindDirectChildrenOnly)
-    return worker is not None and worker._pending is not None and worker._background is None
 
 
 def current_worker() -> RWorker:

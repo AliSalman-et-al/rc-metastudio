@@ -14,7 +14,6 @@ from rc_metastudio.results.window import ResultsWindow
 def run(app, window, ROOT, WORK, record_step):
     from rc_metastudio.importing.revman import read_rm5
     from rc_metastudio.project.adapter import dataset_to_project
-    # Exercise existing entered-only paths before deciding their import mapping.
     for index, metric, method, keep_raw in ((0, 'OR', 'binary.fixed.inv.var', False),
                                           (0, 'OR', 'binary.fixed.inv.var', True),
                                           (1, 'MD', 'continuous.fixed', False)):

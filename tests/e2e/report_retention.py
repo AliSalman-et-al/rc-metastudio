@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from docx import Document
 from PyQt6.QtWidgets import QApplication, QFileDialog
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
-from rc_metastudio.results.report import write_docx, write_pdf
+from rc_metastudio.results.report_export import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
 from scripts.verification_evidence import desktop_tool_executable
 
@@ -126,7 +126,6 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
     for word in words:
         x, y, bottom = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'yMax'))
         value = word.text or ''
-        # Join only a decimal's digit continuation on the next line of its cell.
         if (previous is not None and re.fullmatch(r'[+-]?\d+\.\d+', text[-1])
                 and value.isascii() and value.isdigit()
                 and abs(x - previous[0]) < .01 and -1 <= y - previous[1] <= .5):

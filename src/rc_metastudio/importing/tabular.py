@@ -8,9 +8,14 @@ import csv
 from contextlib import ExitStack
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
+from typing import Literal
 
 from rc_metastudio import name_validation, row_padding
+
+
+type ColumnMapping = tuple[int | None, ...]
 
 
 class CsvImportError(ValueError):
@@ -27,8 +32,56 @@ class CsvImportResult:
     covariate_names: tuple[str, ...]
     covariate_types: tuple[str, ...]
 
+type _XlsxSpecialValue = date | Literal["unsaved_formula", "error"]
+
+
+@dataclass(frozen=True, slots=True)
+class _XlsxSpecialCell:
+    row: int
+    column: int
+    location: str
+    value: _XlsxSpecialValue
+
+
+@dataclass(frozen=True, slots=True)
+class XlsxWorksheet:
+    names: list[str]
+    selected: str
+    rows: list[list[str]]
+    special_cells: list[_XlsxSpecialCell]
+    hidden_notices: list[str]
+    formulas: int
+
+    def rows_for_roles(
+        self, *, has_headers: bool, year_column: int | None = None,
+        numeric_columns: Iterable[int] = (), notices: list[str] | None = None,
+    ) -> tuple[list[str], list[list[str]]]:
+        rows = [row.copy() for row in self.rows]
+        first_data_row = int(has_headers)
+        numeric = set(numeric_columns)
+        dates = []
+        if notices is not None:
+            notices.extend(self.hidden_notices)
+        for cell in self.special_cells:
+            if cell.value == "unsaved_formula":
+                raise CsvImportError(f"{cell.location} has a formula with no saved value. Open and save it in Excel first.")
+            if cell.row < first_data_row:
+                continue
+            if cell.value == "error" and cell.column in numeric:
+                raise CsvImportError(f"{cell.location} contains an Excel error value.")
+            if isinstance(cell.value, date) and cell.column == year_column:
+                rows[cell.row][cell.column] = str(cell.value.year)
+                dates.append(cell.location)
+        if notices is not None:
+            if self.formulas:
+                notices.append(f"Formula cells using saved values: {self.formulas}.")
+            if dates:
+                notices.append("Dates use their year: " + ", ".join(dates) + ".")
+        return (rows[0], rows[1:]) if has_headers and rows else ([], rows)
+
+
 def read_rows(
-    path: str | Path,
+    path: str | Path | XlsxWorksheet,
     *,
     has_headers: bool,
     from_excel: bool,
@@ -40,11 +93,17 @@ def read_rows(
     notices: list[str] | None = None,
 ) -> tuple[list[str], list[list[str]]]:
     """Read file cells, omitting fully blank rows from import and preview."""
-    suffix = Path(path).suffix.lower()
-    if suffix == ".xls":
-        raise CsvImportError("Save this workbook as .xlsx before importing it.")
-    if suffix == ".xlsx":
-        headers, rows, _names, _selected = read_xlsx(path, worksheet, has_headers=has_headers, year_column=year_column, numeric_columns=numeric_columns, notices=notices)
+    if not isinstance(path, XlsxWorksheet):
+        suffix = Path(path).suffix.lower()
+        if suffix == ".xls":
+            raise CsvImportError("Save this workbook as .xlsx before importing it.")
+        if suffix == ".xlsx":
+            path = read_xlsx_worksheet(path, worksheet)
+    if isinstance(path, XlsxWorksheet):
+        headers, rows = path.rows_for_roles(
+            has_headers=has_headers, year_column=year_column,
+            numeric_columns=numeric_columns, notices=notices,
+        )
     else:
         with Path(path).open(encoding="utf-8-sig", newline="") as stream:
             reader = (
@@ -59,7 +118,7 @@ def read_rows(
 
 
 def parse_csv(
-    path: str | Path,
+    path: str | Path | XlsxWorksheet,
     *,
     expected_headers: list[str] | tuple[str, ...],
     has_headers: bool,
@@ -68,18 +127,21 @@ def parse_csv(
     quotechar: str = '"',
     year_column: int = 1,
     optional_headers: Mapping[str, str] | None = None,
-    column_mapping: tuple[int, ...] | None = None,
+    column_mapping: ColumnMapping | None = None,
     positional_width: int | None = None,
     header_aliases: Mapping[str, str] | None = None,
     worksheet: str | None = None,
     notices: list[str] | None = None,
 ) -> CsvImportResult:
-    """Read and validate rows; mapping index -1 leaves an optional field empty."""
+    """Read and validate rows; an unmapped field is empty."""
     headers, rows = read_rows(
         path, has_headers=has_headers, from_excel=from_excel,
         delimiter=delimiter, quotechar=quotechar, worksheet=worksheet,
         year_column=column_mapping[year_column] if column_mapping else year_column,
-        numeric_columns=column_mapping[1:] if column_mapping else range(1, len(expected_headers)),
+        numeric_columns=(
+            tuple(index for index in column_mapping[1:] if index is not None)
+            if column_mapping else range(1, len(expected_headers))
+        ),
         notices=notices,
     )
     return normalize_csv_input(
@@ -103,7 +165,7 @@ def normalize_csv_input(
     has_headers: bool,
     year_column: int = 1,
     optional_headers: Mapping[str, str] | None = None,
-    column_mapping: tuple[int, ...] | None = None,
+    column_mapping: ColumnMapping | None = None,
     positional_width: int | None = None,
     header_aliases: Mapping[str, str] | None = None,
 ) -> CsvImportResult:
@@ -185,16 +247,16 @@ def _validate_header_width(headers: list[str], rows: list[list[str]]) -> None:
 
 def _map_columns(
     headers: list[str], rows: list[list[str]],
-    expected_headers: list[str] | tuple[str, ...], column_mapping: tuple[int, ...],
+    expected_headers: list[str] | tuple[str, ...], column_mapping: ColumnMapping,
 ) -> tuple[list[str], list[list[str]]]:
-    mapped = [index for index in column_mapping if index >= 0]
+    mapped = [index for index in column_mapping if index is not None]
     if len(column_mapping) != len(expected_headers) or len(set(mapped)) != len(mapped):
         raise CsvImportError("Map each required field to a different file column.")
-    if any(index < -1 or index >= len(headers) for index in column_mapping):
+    if any(not 0 <= index < len(headers) for index in mapped):
         raise CsvImportError("Select a file column for every required field.")
-    unmapped = [index for index in range(len(headers)) if index not in column_mapping]
+    unmapped = [index for index in range(len(headers)) if index not in mapped]
     indices = [*column_mapping, *unmapped]
-    mapped_rows = [[row[index] if 0 <= index < len(row) else "" for index in indices] for row in rows]
+    mapped_rows = [[row[index] if index is not None and index < len(row) else "" for index in indices] for row in rows]
     return [*expected_headers, *(headers[index] for index in unmapped)], mapped_rows
 
 
@@ -342,28 +404,19 @@ def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
             notices.append(f"{count} hidden {label}{' was' if count == 1 else 's were'} imported.")
 
 
-def _xlsx_cell_value(cell, cached, selected, row_index, output_column, year_column, numeric_columns, dates):
-    from datetime import date, datetime
-    formula = 0
+def _xlsx_cell_value(cell, cached) -> tuple[str, _XlsxSpecialValue | None, bool]:
     value = cell.value
-    location = f"{selected}!{cell.coordinate}" if value is not None else ""
-    if cell.data_type == "f":
+    formula = cell.data_type == "f"
+    if formula:
         value = cached.value if cached is not None else None
         if value is None:
-            raise CsvImportError(f"{location} has a formula with no saved value. Open and save it in Excel first.")
-        formula = 1
+            return "", "unsaved_formula", True
     excel_error = cell.data_type == "e" or str(value).startswith(("#DIV/0!", "#N/A"))
-    if row_index and output_column in numeric_columns and excel_error:
-        raise CsvImportError(f"{location} contains an Excel error value.")
-    if isinstance(value, (datetime, date)):
-        if row_index and output_column == year_column:
-            dates.append(location)
-            value = str(value.year)
-        else:
-            value = value.isoformat()
+    if isinstance(value, date):
+        return value.isoformat(), value, formula
     if isinstance(value, float):
         value = str(int(value)) if value.is_integer() else repr(value)
-    return "" if value is None else str(value), formula
+    return "" if value is None else str(value), "error" if excel_error else None, formula
 
 
 def _xlsx_select_sheet(book, worksheet):
@@ -412,37 +465,41 @@ def xlsx_worksheets(path: str | Path) -> tuple[list[str], str]:
         return _xlsx_select_sheet(_open_workbook(cleanup, path, data_only=False), None)
 
 
-def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numeric_columns=(), notices=None):
-    """Read bounded worksheet rows, preserving coordinates for actionable errors."""
+def read_xlsx_worksheet(path: str | Path, worksheet: str | None = None) -> XlsxWorksheet:
     with ExitStack() as cleanup:
         book = _open_workbook(cleanup, path, data_only=False)
         names, selected = _xlsx_select_sheet(book, worksheet)
         sheet = book[selected]
         row_numbers, columns, has_formulas = _xlsx_extent(sheet)
         if not row_numbers:
-            return [], [], names, selected
-        _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices)
+            return XlsxWorksheet(names, selected, [], [], [], 0)
+        hidden_notices: list[str] = []
+        _xlsx_metadata(path, sheet, selected, row_numbers, columns, hidden_notices)
         cached_rows = None
         if has_formulas:
             cached = _open_workbook(cleanup, path, data_only=True)[selected]
             cached_rows = iter(cached.iter_rows())
-        formulas, dates, result = 0, [], []
+        formulas, special_cells, result = 0, [], []
         for row in sheet.iter_rows():
             cached = next(cached_rows, ()) if cached_rows is not None else ()
             if not any(cell.value is not None for cell in row):
                 continue
             values = []
             for output_column, i in enumerate(columns):
-                value, formula = _xlsx_cell_value(
-                    row[i], cached[i] if i < len(cached) else None, selected,
-                    len(result) + int(not has_headers), output_column,
-                    year_column, numeric_columns, dates)
+                cell = row[i]
+                value, special, formula = _xlsx_cell_value(cell, cached[i] if i < len(cached) else None)
+                if special is not None:
+                    special_cells.append(_XlsxSpecialCell(len(result), output_column, f"{selected}!{cell.coordinate}", special))
                 formulas += formula
                 values.append(value)
             result.append(values)
-        if notices is not None:
-            if formulas:
-                notices.append(f"Formula cells using saved values: {formulas}.")
-            if dates:
-                notices.append("Dates use their year: " + ", ".join(dates) + ".")
-        return (result[0], result[1:], names, selected) if has_headers else ([], result, names, selected)
+        return XlsxWorksheet(names, selected, result, special_cells, hidden_notices, formulas)
+
+
+def read_xlsx(path, worksheet=None, *, has_headers=True, year_column=None, numeric_columns=(), notices=None):
+    source = read_xlsx_worksheet(path, worksheet)
+    headers, rows = source.rows_for_roles(
+        has_headers=has_headers, year_column=year_column,
+        numeric_columns=numeric_columns, notices=notices,
+    )
+    return headers, rows, source.names, source.selected

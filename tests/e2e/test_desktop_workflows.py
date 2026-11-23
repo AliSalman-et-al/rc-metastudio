@@ -19,7 +19,6 @@ ROOT = Path(__file__).resolve().parents[2]
     QUALIFICATION_SCENARIOS,
 )
 def test_desktop_workflow(scenario, desktop_launch_environment):
-    # The same launcher owns timeouts, isolation and durable evidence in CI.
     result = subprocess.run(
         [
             sys.executable,

@@ -30,3 +30,24 @@ saved-object contract. Executed fits supply authority-package versions and actua
 inference codes. Setup constructs the pure report, identity and rerun snapshot
 before accepting and delivering the result once; preparation errors leave setup
 open and preserve the previous result.
+
+## Result normalization
+
+Named R character vectors can represent an estimate and interval. Render the
+fields as a structured estimate so each value survives. A named R container
+can render into multiple sections. Keep the container's semantic title on
+the first rendered child while preserving the one-section-per-value contract.
+The one-study path unwraps its technical MAResults transport container before
+assigning headings.
+
+Data frames can reach the bridge as column vectors, while matrices can carry a
+flat column-major vector. Both describe the same dimensions. Normalize the
+shape before indexing. Percentile headings already carry display punctuation
+and bypass identifier normalization. For combined diagnostic requests, carry
+the chosen subgroup on every filtered request independently of each method's
+parameter list.
+
+Normalize text identifiers with the same rules in section headings and nested
+display values. Pad missing cells in a partially populated display matrix so
+the available results can still be read. The exact quantity contract continues
+to validate the declared dimensions.

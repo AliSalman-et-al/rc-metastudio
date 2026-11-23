@@ -5,6 +5,7 @@ from dataclasses import replace
 from collections.abc import Callable
 
 import pytest
+from rc_metastudio.analysis.catalog import AvailableMethod
 from rc_metastudio import automation
 from PyQt6 import QtCore, QtWidgets, sip
 
@@ -34,11 +35,10 @@ def test_result_owner_exception_deletes_specs(
 ):
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
 
-    from rc_metastudio.project import adapter, archive
+    from rc_metastudio.project import adapter
     from rc_metastudio.workspace.table_model import DatasetTableModel
 
-    sample = archive.load_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms")
-    project = adapter.runtime_from_loaded_project(sample)
+    project = adapter.load_runtime_project(ROOT / "tests/fixtures/desktop-projects/amino.rcms")
     model = DatasetTableModel(project.dataset, add_blank_study=False, current_sheet_id=project.current_sheet_id)
 
     class Owner(QtWidgets.QWidget):
@@ -47,7 +47,7 @@ def test_result_owner_exception_deletes_specs(
 
     backend = analysis_setup_dialog.analysis_adapter.r_operations
     monkeypatch.setattr(
-        backend, "available_model_methods", lambda *_args, **_kwargs: {"binary.random": "Random"}
+        backend, "available_model_methods", lambda *_args, **_kwargs: {"binary.random": AvailableMethod("Random")}
     )
     monkeypatch.setattr(backend, "get_params", lambda _method: ({}, {}, [], {}))
     monkeypatch.setattr(
@@ -132,7 +132,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         _create_binary_dataset(window)
         _add_study(window, [[1, 10], [2, 10]])
         monkeypatch.setattr(backend, '_binary_data_arguments', lambda *a, **k: None)
-        monkeypatch.setattr(backend, 'available_model_methods', lambda *_args, **k: {'binary.random': 'Random'})
+        monkeypatch.setattr(backend, 'available_model_methods', lambda *_args, **k: {'binary.random': AvailableMethod('Random')})
         monkeypatch.setattr(backend, 'get_params', lambda method: ({}, {}, [], {}))
         monkeypatch.setattr(backend, 'get_analysis_plot_capabilities', lambda *a, **k: [])
         def unexpected_result(*args, **_kwargs):
@@ -168,7 +168,7 @@ def test_result_preparation_failure_keeps_setup_open_and_old_result(qapp, monkey
         def prepare(result):
             report_calls.append(result)
             return build_report(result)
-        def check_delivered_result(result, *, source_sheet, change_settings, manuscript):
+        def check_delivered_result(result, *, source_sheet, source_lineage, change_settings, manuscript):
             view = ResultsWindow(result, parent=window, change_settings=change_settings, manuscript=manuscript)
             assert view.manuscript is manuscript
             assert manuscript == build_report(view.results)
@@ -227,7 +227,7 @@ def test_binary_analysis_failure_shows_inline_error_and_does_not_open_results(mo
             monkeypatch,
             backend,
             "available_model_methods",
-            lambda *_args, **kwargs: {"binary.random": "Binary Random-Effects"},
+            lambda *_args, **kwargs: {"binary.random": AvailableMethod("Binary Random-Effects")},
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
@@ -319,7 +319,7 @@ def test_continuous_workflow_failure_shows_inline_error_and_does_not_open_result
             monkeypatch,
             backend,
             "available_model_methods",
-            lambda *_args, **kwargs: {"continuous.random": "Continuous Random-Effects"},
+            lambda *_args, **kwargs: {"continuous.random": AvailableMethod("Continuous Random-Effects")},
         )
         _set_backend(
             monkeypatch, backend, "get_params", lambda method: ({}, {}, [], {})
@@ -394,8 +394,8 @@ def test_diagnostic_configuration_recovers_when_run_setup_raises(monkeypatch):
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.reitsma": "Reitsma bivariate model",
-                "diagnostic.random": "Diagnostic Random-Effects",
+                "diagnostic.reitsma": AvailableMethod("Reitsma bivariate model", requires_raw_counts=True),
+                "diagnostic.random": AvailableMethod("Diagnostic Random-Effects"),
             },
         )
         _set_backend(

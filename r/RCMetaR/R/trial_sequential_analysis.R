@@ -183,14 +183,12 @@
     defaults$control.proportion.source <- "wetterslev-2017-unweighted-control-mean"
   }
   if (md) {
-    # Weight arm-pooled, participant-level variances by fixed-effect MD precision.
     pooled <- ((data@N1-1)*data@sd1^2 + (data@N2-1)*data@sd2^2)/(data@N1 + data@N2 - 2)
     vi <- compute.for.one.cont.study(data, list(measure="MD"))$vi
     keep <- is.finite(vi) & vi > 0
     defaults$variance <- weighted.mean(pooled[keep], 1/vi[keep])
     defaults$variance.source <- "wetterslev-2017-fixed-weights-pooled-arm-variance"
   } else {
-    # Imberger 2016 specifies the conventional 95% limit closest to the null.
     ci <- as.numeric(fit$b) + c(-1, 1)*qnorm(.975)*fit$se
     if (ci[1] > 0 || ci[2] < 0) {
       nearest <- ci[which.min(abs(ci))]
@@ -284,8 +282,6 @@
 .tsa.critical <- function(timing, spending.time, tail.alpha, spending, symmetric) {
   .rcmetar.require.package("gsDesign")
   if (spending == "obf") {
-    # Same spending as sfLDOF, evaluated in the survival tail to preserve
-    # the probabilities of very early looks.
     z <- qnorm(tail.alpha/2, lower.tail=FALSE)/sqrt(spending.time)
     log.spend <- log(2) + pnorm(z, lower.tail=FALSE, log.p=TRUE)
     log.spend[spending.time == 1] <- log(tail.alpha)
@@ -295,9 +291,6 @@
     log.spend <- log(spent)
   }
   upper <- rep(NA_real_, length(timing))
-  # gsBound can fail to integrate vanishing early tails. Approximate these
-  # looks by their marginal quantiles and include their entire (sub-precision)
-  # probability in the first numerically resolvable increment.
   negligible <- spent <= .Machine$double.eps * tail.alpha
   upper[negligible] <- qnorm(log.spend[negligible], lower.tail=FALSE, log.p=TRUE)
   increment <- diff(c(0, replace(spent, negligible, 0)))
@@ -306,7 +299,6 @@
     upper.spend <- increment[active]
     lower.spend <- if (symmetric) upper.spend else rep(0, length(active))
     bound <- gsDesign::gsBound(timing[active], trueneg=lower.spend, falsepos=upper.spend)
-    # Close looks can need finer quadrature to resolve the spending increment.
     if (bound$error != 0L)
       bound <- gsDesign::gsBound(timing[active], trueneg=lower.spend, falsepos=upper.spend, r=80L)
     if (bound$error != 0L || any(!is.finite(bound$b)))
@@ -562,8 +554,6 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
   looks$ci.lower <- transform(field("ci.lb"))
   looks$ci.upper <- transform(field("ci.ub"))
   if (s$lil) {
-    # Lan et al. (2003), section 3.2: use within-study information for
-    # the penalty, even when the numerator is the random-effects Z.
     information <- if (random) vapply(fits, function(fit) {
       if (is.null(fit)) NA_real_ else sum(1/fit$vi)
     }, numeric(1)) else looks$statistical.information
@@ -587,7 +577,6 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     looks[[name]][estimable] <- rep_len(bounds[[name]], length(estimable))
   }
   transform <- if (ratio) exp else identity
-  # A lower Z boundary tests a decrease and therefore gives an upper CI limit.
   looks$adjusted.lower <- transform(path$estimate - looks$efficacy.upper*path$se)
   looks$adjusted.upper <- transform(path$estimate - looks$efficacy.lower*path$se)
   looks$adjusted.lower[fraction >= 1] <- NA_real_
@@ -650,8 +639,6 @@ rcmetar.preview.trial.sequential.analysis <- function(om.data, params) {
     list(label=label, effect=effect, rrr=rrr, summary=summary, look=look)
   }
   result <- list(row(primary, prepared$effect, primary.rrr, summary, tail(looks, 1)))
-  # Wetterslev 2017 discusses sensitivity to design inputs. Keep all fitted
-  # looks fixed while changing the effect that sets the information target.
   reduction <- c(.1, .2, .3)
   increase <- as.numeric(prepared$fit$b) > 0
   rr <- if (increase) 1/(1-reduction) else 1-reduction

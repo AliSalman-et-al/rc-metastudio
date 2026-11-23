@@ -13,7 +13,6 @@ from rc_metastudio.analysis.identity import plot_caption
 from rc_metastudio.results.contract import AnalysisResult, ResultSection
 from rc_metastudio.results.plot_defaults import FUNNEL_STYLE_PRESETS, FunnelStyle
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.settings import analysis_output_path
 
 if TYPE_CHECKING:
     from rc_metastudio.workspace.table_model import DatasetTableModel
@@ -104,10 +103,12 @@ class TsaRequest:
         return "upper" if self.arm1_above else "lower"
 
     @classmethod
-    def from_sheet(cls, model: "DatasetTableModel", options: TsaOptions) -> "TsaRequest":
+    def from_sheet(
+        cls, model: "DatasetTableModel", options: TsaOptions, *, fit: PooledAnalysis | None = None,
+    ) -> "TsaRequest":
         sheet = required(model.current_sheet, "active outcome")
         saved = sheet.settings.get("analysis", {})
-        fit = sheet.last_meta_analysis or PooledAnalysis.from_method(
+        fit = fit or PooledAnalysis.from_method(
             str(saved.get("method", "")), saved.get("parameters", {})
         )
         metric = str(model.current_effect)
@@ -294,7 +295,7 @@ class TsaService:
         return prepared.conclusion(completed)
 
     def run(self, model: "DatasetTableModel", request: TsaRequest) -> TsaRun:
-        path = analysis_output_path(f"trial-sequential-{uuid4().hex}.svg")
+        path = f"trial-sequential-{uuid4().hex}.svg"
         prepared = self._prepare_for(model, request)
         fields, sections = r_operations.run_trial_sequential_analysis(
             prepared, {

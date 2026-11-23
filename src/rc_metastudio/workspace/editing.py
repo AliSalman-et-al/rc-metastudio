@@ -11,38 +11,36 @@ calculate the same raw-data preview as the table.
 from __future__ import annotations
 from rc_metastudio.domain_ids import RowId, SheetId
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Buffer, Callable, Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass, replace
+import math
 import uuid
-from typing import Literal, Protocol
+from typing import Literal, Protocol, SupportsFloat, SupportsIndex, cast
 
 from rc_metastudio import name_validation, qt_text
 from rc_metastudio import r_runtime, r_operations
-from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES, EVENT_RATES, TIME_TO_EVENT, ONE_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis.catalog import (
+    BINARY, BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC,
+    DIAGNOSTIC_METRICS, EVENT_RATES, FACTOR, RATIO_DATA_TYPES, TIME_TO_EVENT, TYPE_TO_STR_DICT,
+)
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
-from rc_metastudio.project.model import Dataset, Sheet, StudyRow
+from rc_metastudio.project.model import Sheet, StudyRow
 from rc_metastudio.project.study import AnalysisUnit, EffectEstimate
 from rc_metastudio.analysis.study_selection import (
     has_study_entered_data,
-    BINARY,
-    CONTINUOUS,
-    DIAGNOSTIC,
-    ScaleBridge,
-    calculate_raw_effects,
+    comparison_key,
+    display_effect_source,
     raw_data_is_complete,
     raw_data_is_empty,
-    make_display_scale_converter,
-    to_calculation_scale,
 )
-from rc_metastudio.analysis.catalog import BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC_METRICS, FACTOR
 from rc_metastudio.analysis.validation import (
-    DEFAULT_CONFIDENCE_LEVEL,
     is_an_int, is_empty,
     normal_confidence_multiplier, validate_confidence_interval_order, validate_confidence_level,
 )
 from rc_metastudio.workspace.columns import (
-    FIRST_IMPORT_COLUMN, FIRST_RAW_COLUMN, CovariateCell, EditableField, OutcomeCell,
+    CovariateCell, EditableField, OutcomeCell,
     RawCell, RawColumn, RawInputKind, sheet_columns,
 )
 
@@ -75,7 +73,6 @@ def _effect_value(effect: Mapping[str, object] | EffectEstimate, field: str):
 class WorkspaceEditingContext:
     """Domain values needed to edit one visible workspace."""
 
-    sheet_id: SheetId | None
     arm_names: tuple[str, ...]
     current_effect: str | None
     data_type: int | None
@@ -83,11 +80,11 @@ class WorkspaceEditingContext:
     arm_key: tuple[str, ...]
     confidence_level: float
     confidence_multiplier: float
+    preserve_entered_effects_with_raw: bool = False
 
     @classmethod
     def for_sheet(cls, sheet: Sheet | None, metric: str | None, confidence: ConfidenceSettings):
         return cls(
-            sheet.id if sheet else None,
             tuple(arm.name for arm in sheet.arms) if sheet else (),
             metric,
             sheet.data_type if sheet else None,
@@ -108,18 +105,21 @@ class WorkspaceViewState:
     confidence_multiplier: float = 1.96
 
 
+def ratio_effect_is_editable(unit: AnalysisUnit, arm_names: Sequence[str], metric: str | None) -> bool:
+    record = unit.ratio_input(arm_names)
+    try:
+        raw_source = record.selected_source(unit.get_raw_data_for_arms(arm_names), metric=metric or "") == "raw"
+    except ValueError:
+        raw_source = False
+    return not raw_source and record.scale != "log"
+
+
 def selected_metric(sheet: Sheet | None) -> str | None:
     if sheet is None:
         return None
     defaults = {BINARY: "OR", CONTINUOUS: "SMD", TIME_TO_EVENT: "HR", EVENT_RATES: "IRR"}
     return sheet.settings.get("metric") or sheet.settings.get("active_effect") or defaults.get(sheet.data_type)
 
-
-def comparison_key(sheet: Sheet | None, metric: str | None) -> tuple[str, ...]:
-    if sheet is None:
-        return ()
-    arms = sheet.arms[:1] if metric in ONE_ARM_METRICS else sheet.arms
-    return tuple(arm.id for arm in arms)
 
 
 def add_covariate(sheet: Sheet, name, data_type, *, values=None, stable_id=None):
@@ -164,16 +164,33 @@ def _parse_study_identity_year(value: object) -> int | None:
         return int(float(text)) if is_an_int(text) else None
 
 
+def _convert_effect_scale(
+    value: object, data_type: object, effect: str | None,
+    direction: Literal["calc.scale", "display.scale"], n1: object,
+) -> object:
+    if data_type in RATIO_DATA_TYPES:
+        if value in (None, ""):
+            return None
+        if direction == "display.scale":
+            return math.exp(float(cast(str | Buffer | SupportsFloat | SupportsIndex, value)))
+        if not isinstance(value, (str, int, float)):
+            raise TypeError("A numerical ratio is required.")
+        return math.log(float(value))
+    if data_type == BINARY:
+        return r_operations.binary_convert_scale(value, effect, convert_to=direction, n1=n1)
+    if data_type == CONTINUOUS:
+        return r_operations.continuous_convert_scale(value, effect, convert_to=direction)
+    if data_type == DIAGNOSTIC:
+        return r_operations.diagnostic_convert_scale(value, effect, convert_to=direction)
+    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+
+
 class WorkspaceEditingService:
-    """Perform backend-facing edit work without importing Qt.
+    """Validate edits and calculate their workspace effects."""
 
-    ``bridge`` is injectable for deterministic tests and for applications that
-    provide another analysis backend.  The default remains the production
-    RCMetaR bridge, preserving the existing statistical contract.
-    """
-
-    def __init__(self, bridge: ScaleBridge | None = None) -> None:
-        self.bridge = r_operations if bridge is None else bridge
+    @staticmethod
+    def backend_ready() -> bool:
+        return r_runtime.is_ready()
 
     @staticmethod
     def update_inclusion_after_edit(
@@ -213,51 +230,50 @@ class WorkspaceEditingService:
         validated = validate_confidence_level(level)
         return ConfidenceSettings(validated, normal_confidence_multiplier(validated))
 
-    def preview_raw_effects(
-        self,
-        data_type: object,
-        effect: str | None,
-        raw_data: tuple[object, ...] | list[object],
-        confidence_level: float,
-    ):
-        """Calculate raw effects for a candidate edit."""
-        return calculate_raw_effects(
-            self.bridge, data_type, effect, raw_data, confidence_level
-        )
-
-    def to_calculation_scale(
-        self,
-        value: object,
-        data_type: object,
-        effect: str | None,
-        n1: object = None,
-    ):
-        return to_calculation_scale(self.bridge, value, data_type, effect, n1)
-
     def display_scale_converter(
         self,
         data_type: object,
         effect: str | None,
         n1: object = None,
-    ):
-        if not r_runtime.is_ready():
+    ) -> Callable[[object], object]:
+        if not self.backend_ready():
             return lambda value: None
-        return make_display_scale_converter(self.bridge, data_type, effect, n1)
+        return lambda value: _convert_effect_scale(value, data_type, effect, "display.scale", n1)
+
+    def recalculate_display_scale(
+        self, studies: Sequence[StudyRow], context: WorkspaceEditingContext,
+    ) -> None:
+        if context.data_type in RATIO_DATA_TYPES or not self.backend_ready():
+            return
+        metrics = ("Sens", "Spec") if context.data_type == DIAGNOSTIC else (context.current_effect,)
+        for metric in metrics:
+            if metric is None:
+                continue
+            for study in studies:
+                unit = study.analysis_unit
+                raw = unit.get_raw_data_for_arms(context.arm_names) if metric == "PFT" else ()
+                n1 = raw[1] if len(raw) > 1 else None
+                unit.calculate_display_effect_and_ci(
+                    metric, context.arm_key,
+                    self.display_scale_converter(context.data_type, metric, n1),
+                    confidence_level=context.confidence_level,
+                    confidence_multiplier=context.confidence_multiplier,
+                    check_if_necessary=True,
+                    source=display_effect_source(unit, context.current_effect, context.arm_key, context.arm_names),
+                )
 
     def apply_edit(
         self,
-        dataset: Dataset,
+        sheet: Sheet | None,
         row: int,
         field: EditableField,
         context: WorkspaceEditingContext,
         value: object,
         *,
-        allow_raw_and_entered: bool = False,
         row_order: Sequence[int] | None = None,
     ) -> CellRejection | None:
-        if context.sheet_id is None or row < 0:
+        if sheet is None or row < 0:
             return CellRejection("Select an outcome and a study row before editing.")
-        sheet = dataset.sheet(context.sheet_id)
         if field in ("name", "year"):
             rejection, _ = self.edit_study_identities(sheet, {row: {field: value}}, row_order=row_order)
             return rejection
@@ -267,7 +283,7 @@ class WorkspaceEditingService:
         if not study.label.strip() and not qt_text.is_blank(value):
             return CellRejection("Enter a study name first.")
         if isinstance(field, (RawCell, OutcomeCell)):
-            return self._edit_measurement(study, field, context, value, allow_raw_and_entered=allow_raw_and_entered)
+            return self._edit_measurement(study, field, context, value)
         if field == "include":
             if type(value) is not bool:
                 return CellRejection("Study inclusion must be checked or unchecked.")
@@ -275,47 +291,70 @@ class WorkspaceEditingService:
             return None
         return self._edit_covariate(study, field, value)
 
-    def load_import_rows(
-        self, dataset: Dataset, sheet: Sheet, rows: Sequence[Sequence[str]],
-        on_row_loaded: Callable[[int], None],
-    ) -> list[str]:
-        """Apply normalized tabular input to a detached sheet before publishing it."""
-        columns = sheet_columns(sheet.data_type, sheet.sub_type)
-        sections = range(FIRST_IMPORT_COLUMN, columns.first_covariate + len(sheet.covariates))
-        fields = [columns.editable_field(section, sheet.covariates) for section in sections]
-        confidence = self.confidence_settings(sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL))
-        context = WorkspaceEditingContext.for_sheet(sheet, selected_metric(sheet), confidence)
-        rejection, _ = self.edit_study_identities(
-            sheet, {row: {"name": values[0], "year": values[1]} for row, values in enumerate(rows)},
+    def prepare_paste(
+        self, sheet: Sheet, context: WorkspaceEditingContext, visible_order: Sequence[int],
+        first_row: int, fields: Sequence[EditableField | None], values: Sequence[Sequence[object]],
+    ) -> tuple[list[StudyRow], list[int], int]:
+        """Prepare a rectangular edit before publishing anything to the workspace."""
+        staged = deepcopy(sheet)
+        old_count = len(staged.rows)
+        indexed = [(visible_order[row] if row < len(visible_order) else row, cells)
+                   for row, cells in enumerate(values, start=first_row)]
+        identities: dict[int, Mapping[str, object]] = {
+            row: {field: value for field, value in zip(fields, cells, strict=True) if field in ("name", "year")}
+            for row, cells in indexed
+        }
+        rejection, skipped = self.edit_study_identities(
+            staged, identities, row_order=visible_order, skip_invalid_year=True,
         )
         if rejection is not None:
             raise ValueError(rejection.message)
-        warnings = []
-        for row, values in enumerate(rows):
-            for section, field, value in zip(sections, fields, values):
-                if section < FIRST_RAW_COLUMN:
-                    continue
-                if field is None:
-                    raise ValueError(f"Study row {row + 1}, column {section} is calculated automatically and cannot be edited directly.")
-                rejection = self.apply_edit(dataset, row, field, context, value, allow_raw_and_entered=True)
-                if rejection is not None:
-                    message = f"Study row {row + 1}, column {section}: {rejection.message}"
-                    if rejection.kind == "backend":
-                        raise ValueError(message)
-                    warnings.append(message)
-            on_row_loaded(row + 1)
-        return warnings
+        for row, cells in indexed:
+            skipped += self._paste_measurements(staged, row, fields, cells, context)
+        self.recalculate_display_scale(staged.rows, context)
+        order = [*visible_order, *range(old_count, len(staged.rows))]
+        return staged.rows, order, skipped
+
+    def _paste_measurements(
+        self, sheet: Sheet, row: int, fields: Sequence[EditableField | None], cells: Sequence[object],
+        context: WorkspaceEditingContext,
+    ) -> int:
+        skipped = 0
+        for field, value in zip(fields, cells, strict=True):
+            if field in ("name", "year"):
+                continue
+            if field is None:
+                raise ValueError("This cell is read-only.")
+            if self._paste_is_overwriting_ratio(sheet, row, field, context):
+                raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
+            rejection = self.apply_edit(sheet, row, field, context, value)
+            if rejection is not None:
+                if rejection.kind != "number":
+                    raise ValueError(rejection.message)
+                skipped += 1
+        return skipped
+
+    def _paste_is_overwriting_ratio(
+        self, sheet: Sheet, row: int, field: EditableField, context: WorkspaceEditingContext,
+    ) -> bool:
+        if context.data_type not in RATIO_DATA_TYPES or not isinstance(field, OutcomeCell) or field.position >= 3:
+            return False
+        if not self.backend_ready():
+            return True
+        return row < len(sheet.rows) and not ratio_effect_is_editable(
+            sheet.rows[row].analysis_unit, context.arm_names, context.current_effect,
+        )
 
     def _edit_measurement(
         self, study: StudyRow, field: RawCell | OutcomeCell, context: WorkspaceEditingContext,
-        value: object, *, allow_raw_and_entered: bool,
+        value: object,
     ) -> CellRejection | None:
         draft = replace(study, analysis_unit=study.analysis_unit.copy_for_edit())
         try:
-            rejection = self._apply_measurement(draft, field, context, value, allow_raw_and_entered)
+            rejection = self._apply_measurement(draft, field, context, value)
             if rejection is not None:
                 return rejection
-            self._update_inclusion(draft, context, allow_raw_and_entered=allow_raw_and_entered)
+            self._update_inclusion(draft, context)
         except Exception as error:
             edited = "raw data" if isinstance(field, RawCell) else "outcome data"
             return CellRejection(f"Could not compute study effects from the edited {edited}: {error}", kind="backend")
@@ -323,12 +362,12 @@ class WorkspaceEditingService:
         study.include = draft.include
         return None
 
-    def _apply_measurement(self, study, field: RawCell | OutcomeCell, context, value, allow_raw_and_entered):
+    def _apply_measurement(self, study, field: RawCell | OutcomeCell, context, value):
         if isinstance(field, RawCell):
             return self._edit_raw_data(study, field.position, context, value)
         if context.data_type in RATIO_DATA_TYPES:
             return self._edit_ratio_input(study, field.position, context, value)
-        return self._edit_outcome(study, field.position, context, value, allow_raw_and_entered)
+        return self._edit_outcome(study, field.position, context, value)
 
     def _edit_ratio_input(self, study, position: int, context, value):
         unit = study.analysis_unit
@@ -354,12 +393,10 @@ class WorkspaceEditingService:
         self,
         study,
         context,
-        *,
-        allow_raw_and_entered: bool = False,
     ) -> None:
         if (
             context.data_type == DIAGNOSTIC
-            or (allow_raw_and_entered and not raw_data_is_empty(self._raw_data(study, context)))
+            or (context.preserve_entered_effects_with_raw and not raw_data_is_empty(self._raw_data(study, context)))
         ):
             return
         unit = study.analysis_unit
@@ -442,8 +479,7 @@ class WorkspaceEditingService:
     def _apply_study_identities(sheet: Sheet, updates: dict[int, tuple[str, int | None]]) -> None:
         for index, (name, year) in sorted(updates.items()):
             while len(sheet.rows) <= index:
-                unit = AnalysisUnit(sheet, arm_names=[arm.name for arm in sheet.arms],
-                                    arm_stable_ids=[arm.id for arm in sheet.arms])
+                unit = AnalysisUnit(sheet)
                 sheet.rows.append(StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False))
             study = sheet.rows[index]
             if name != study.label and not study.manually_excluded and not has_study_entered_data(study):
@@ -522,14 +558,14 @@ class WorkspaceEditingService:
         return None
 
     def _verify_outcome_data(
-        self, study: StudyRow, position: int, context: WorkspaceEditingContext, number: float, allow_raw_and_entered: bool
+        self, study: StudyRow, position: int, context: WorkspaceEditingContext, number: float,
     ) -> CellRejection | None:
         unit = study.analysis_unit
         previous_display = self._previous_display_outcome(
             study, position, context, unit
         )
         raw_data = self._raw_data(study, context)
-        if not allow_raw_and_entered and not all(is_empty(item) for item in raw_data):
+        if not context.preserve_entered_effects_with_raw and not all(is_empty(item) for item in raw_data):
             error = self._verify_raw_override(number, previous_display, position)
             if error:
                 return error
@@ -545,7 +581,8 @@ class WorkspaceEditingService:
         converter = self.display_scale_converter(
             context.data_type, metric, self._outcome_sample_size(study, context)
         )
-        return tuple(converter(item) for item in effect)
+        estimate, lower, upper = effect
+        return converter(estimate), converter(lower), converter(upper)
 
     @staticmethod
     def _verify_raw_override(number: float, previous_display, position) -> CellRejection | None:
@@ -592,17 +629,17 @@ class WorkspaceEditingService:
             if error is not None:
                 return error
         raw_data[column.field_index] = "" if number is None else number
-        self.update_effect_previews_if_possible(study, context)
+        self.update_effect_previews((study,), context, update_inclusion=True)
         return None
 
     def _edit_outcome(
-        self, study: StudyRow, position: int, context: WorkspaceEditingContext, value: object, allow_raw_and_entered: bool
+        self, study: StudyRow, position: int, context: WorkspaceEditingContext, value: object,
     ) -> CellRejection | None:
         display_value, valid = qt_text.parse_optional_decimal(value)
         if not valid:
             return CellRejection("Enter a number.", kind="number")
         if display_value is not None:
-            error = self._verify_outcome_data(study, position, context, display_value, allow_raw_and_entered)
+            error = self._verify_outcome_data(study, position, context, display_value)
             if error is not None:
                 return error
         unit = study.analysis_unit
@@ -610,8 +647,8 @@ class WorkspaceEditingService:
         if metric is None:
             return CellRejection("Choose an effect measure first.")
         n1 = self._outcome_sample_size(study, context)
-        calculation_value = self.to_calculation_scale(
-            display_value, context.data_type, metric, n1
+        calculation_value = _convert_effect_scale(
+            display_value, context.data_type, metric, "calc.scale", n1,
         )
         self._set_entered_outcome(
             unit, metric, outcome_index, calculation_value, context
@@ -700,41 +737,32 @@ class WorkspaceEditingService:
         except ValueError:
             return None, False
 
-    def update_effect_previews_if_possible(
-        self,
-        study: StudyRow,
-        context: WorkspaceEditingContext,
-        *,
-        update_inclusion: bool = True,
-    ) -> None:
-        self.update_effect_previews((study,), context, update_inclusion=update_inclusion)
-
     def update_effect_previews(
         self, studies: Sequence[StudyRow], context: WorkspaceEditingContext, *,
         update_inclusion: bool,
     ) -> None:
         pending = []
-        runtime_ready = r_runtime.is_ready()
+        runtime_ready = self.backend_ready()
+        if not runtime_ready and not update_inclusion:
+            return
         for study in studies:
             raw_data = self._raw_data(study, context)
             if self._prepare_effect_preview(study, raw_data, context, update_inclusion) and runtime_ready:
                 pending.append((study, raw_data))
         if not pending or context.data_type is None:
             return
-        if self.bridge is not r_operations:
-            for study, raw in pending:
-                self._calculate_complete_effect_previews(study.analysis_unit, raw, context)
-            return
-
-        metrics = DIAGNOSTIC_METRICS if context.data_type == DIAGNOSTIC else (context.current_effect,)
+        requested = DIAGNOSTIC_METRICS if context.data_type == DIAGNOSTIC else (context.current_effect,)
+        metrics = tuple(metric for metric in requested if metric is not None)
         previews = r_operations.study_effect_previews(
             [raw for _, raw in pending], TYPE_TO_STR_DICT[context.data_type], context.current_effect,
-            tuple(metric for metric in metrics if metric is not None), context.confidence_level,
+            metrics, context.confidence_level,
         )
         for (study, _), row in zip(pending, previews, strict=True):
             for metric, values in zip(metrics, row, strict=True):
+                estimate, lower, upper, display_estimate, display_lower, display_upper = values
                 self._store_derived_effect_preview(
-                    study.analysis_unit, metric, context, *values[:3], display=values[3:],
+                    study.analysis_unit, metric, context, estimate, lower, upper,
+                    display=(display_estimate, display_lower, display_upper),
                 )
 
     def _prepare_effect_preview(self, study, raw_data, context, update_inclusion) -> bool:
@@ -776,23 +804,6 @@ class WorkspaceEditingService:
             )
         return not self._has_point_estimate(unit, context)
 
-    def _calculate_complete_effect_previews(
-        self, unit, raw_data, context,
-    ) -> None:
-        calculated = self.preview_raw_effects(
-            context.data_type, context.current_effect, raw_data, context.confidence_level
-        )
-        if context.data_type == DIAGNOSTIC:
-            if not isinstance(calculated, dict):
-                raise TypeError("diagnostic effects must be a metric mapping")
-            for metric, (est, lower, upper) in calculated.items():
-                self._store_derived_effect_preview(unit, metric, context, est, lower, upper)
-            return
-        if not isinstance(calculated, tuple):
-            raise TypeError("non-diagnostic effects must be a result tuple")
-        (est, lower, upper), n1 = calculated
-        self._store_derived_effect_preview(unit, context.current_effect, context, est, lower, upper, n1)
-
     def _clear_incomplete_effect_previews(self, unit, context) -> None:
         metrics = (
             DIAGNOSTIC_METRICS
@@ -811,23 +822,18 @@ class WorkspaceEditingService:
             context.confidence_multiplier,
         )
 
+    @staticmethod
     def _store_derived_effect_preview(
-        self, unit: AnalysisUnit, metric: str | None, context: WorkspaceEditingContext,
-        estimate: object, lower: object, upper: object, n1: object = None, *,
-        display: tuple[float | None, ...] | None = None,
+        unit: AnalysisUnit, metric: str, context: WorkspaceEditingContext,
+        estimate: object, lower: object, upper: object, *,
+        display: tuple[float | None, float | None, float | None],
     ) -> None:
-        if metric is None:
-            return
         unit.set_derived_effect_preview(metric, context.arm_key, estimate, lower, upper, confidence_multiplier=context.confidence_multiplier)
-        converted = (lambda _value: next(values)) if display is not None else self.display_scale_converter(
-            context.data_type, metric, n1
-        )
-        values = iter(display or ())
-        unit.calculate_display_effect_and_ci(
-            metric, context.arm_key, converted,
-            confidence_level=context.confidence_level,
-            confidence_multiplier=context.confidence_multiplier,
-            source="derived_preview",
+        standard_error = unit.get_se("derived_preview", metric, context.arm_key, context.confidence_multiplier)
+        unit.set_display_effect_and_ci(
+            "derived_preview", metric, context.arm_key,
+            *(display if estimate is not None else (None, None, None)),
+            standard_error if estimate is not None else None, confidence_level=context.confidence_level,
         )
 
     @staticmethod
@@ -835,7 +841,7 @@ class WorkspaceEditingService:
         if metric is None:
             return
         unit.set_effect_for_source("derived_preview", metric, context.arm_key, None, None, None, None)
-        unit.set_display_effect_for_source("derived_preview", metric, context.arm_key, None)
-        unit.set_display_lower_for_source("derived_preview", metric, context.arm_key, None)
-        unit.set_display_upper_for_source("derived_preview", metric, context.arm_key, None)
-        unit.set_display_se_for_source("derived_preview", metric, context.arm_key, None)
+        unit.set_display_effect_and_ci(
+            "derived_preview", metric, context.arm_key,
+            None, None, None, None, confidence_level=None,
+        )

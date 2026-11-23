@@ -18,6 +18,7 @@ class _Model:
         self._data_type = data_type
         self.current_effect = metric
         self.current_outcome_name = "Clinical outcome"
+        self.current_sheet = None
         self._confidence_level = confidence_level
         self.studies = [SimpleNamespace(include=True), SimpleNamespace(include=False)]
 
@@ -27,7 +28,7 @@ class _Model:
     def get_current_raw_data(self):
         return []
 
-    def get_current_data_type(self):
+    def get_current_family(self):
         return self._data_type
 
     def get_current_data_subtype(self):

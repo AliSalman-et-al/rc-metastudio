@@ -43,3 +43,12 @@ the interpreter, numerical objects and graphics devices. Bind each job to
 its input snapshot and discard cancelled or stale work. Give work that produces
 files a job-owned staging directory. Qt validates and publishes those files
 only after success, so an interrupted job leaves committed results usable.
+
+Start Rterm directly on Windows so the Job Object owns the interpreter PID.
+Assign the job before it can launch another process, including the Windows
+virtual-environment redirector. On POSIX, R replaces the launcher shell
+process. Its parent watcher holds none of the protocol pipes.
+
+R writes byte-counted UTF-8 text. JSON escapes control bytes, and the byte
+preserving write avoids locale conversion. A synchronous wait can use a
+transient active window that disappears while Qt is processing events.

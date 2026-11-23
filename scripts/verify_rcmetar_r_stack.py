@@ -16,9 +16,11 @@ from pathlib import Path
 if __package__:
     from scripts import r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
+    from scripts.verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, run_typing
 else:
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
+    from verification_evidence import TYPING_RECEIPT_ENV, configured_build_root, run_typing
 
 
 RCMetaR_PACKAGE = Path("r") / "RCMetaR"
@@ -440,15 +442,15 @@ def verify(args: argparse.Namespace) -> None:
         from scripts import verify as source_verifier
     else:
         import verify as source_verifier
-    build_root = source_verifier.configured_build_root(dict(os.environ))
+    build_root = configured_build_root(dict(os.environ))
     prepared_env = source_verifier.prepare_qt_environment(build_root)
-    receipt = source_verifier.run_typing(build_root)
+    receipt = run_typing(build_root)
     python = (
         str(Path(args.python).absolute()) if Path(args.python).exists() else args.python
     )
     rscript = resolve_rscript(args.rscript)
     base_env = r_support.verification_base_env(prepared_env)
-    base_env[source_verifier.TYPING_RECEIPT_ENV] = str(receipt)
+    base_env[TYPING_RECEIPT_ENV] = str(receipt)
     base_env["RCMS_RSCRIPT"] = str(rscript)
     cran_repo = r_support.configure_binary_repository(root, base_env, python, args.cran_repo)
 

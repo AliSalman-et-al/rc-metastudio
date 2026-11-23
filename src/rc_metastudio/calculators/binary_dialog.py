@@ -47,8 +47,6 @@ else:
     )
     from rc_metastudio.forms import ui_binary_data_dialog as _ui_binary_data_dialog
 
-# this is the maximum size of a residual that we're willing to accept
-# when computing 2x2 data
 BINARY_RAW_COUNT_CELLS = frozenset(((0, 0), (0, 1), (1, 0), (1, 1)))
 BINARY_ARM_TOTAL_CELLS = frozenset(((0, 2), (1, 2)))
 
@@ -407,13 +405,11 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 dialog = BinaryBackCalculationDialog(imputed, self.arm_names, parent=self)
                 if dialog.exec():
                     choice = dialog.get_choice()
-                else:  # don't do anything if cancelled
+                else:
                     return None
-            else:  # only one option
+            else:
                 choice = "op1"
 
-            # The nested choice is part of this transaction. Do not clear or
-            # rewrite either the table or its copied model until it accepts.
             for x in range(3):
                 self.clear_column(x)
             with QSignalBlocker(self.raw_data_table):
@@ -837,8 +833,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         return old_analysis_unit, old_table
 
     def cell_changed(self, row, col):
-        # tries to make sense of user input before passing
-        # on to the R routine
 
         if not self._raw_count_cell_is_editable(row, col):
             self._update_data_table()
@@ -865,15 +859,15 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         except Exception as e:
             msg = e.args[0]
             self._mark_table_invalid(msg)
-            QMessageBox.warning(self, "Invalid study counts", msg)  # popup warning
+            QMessageBox.warning(self, "Invalid study counts", msg)
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table
-            )  # brings things back to the way they were
+            )
             self._mark_table_invalid(msg)
-            return  # and leave
+            return
 
         try:
-            self._update_analysis_unit()  # table widget --> analysis_unit
+            self._update_analysis_unit()
             self.update_effect_from_raw_data()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
@@ -994,7 +988,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                     computed_params["r1sum"] + computed_params["r2sum"]
                 )
             if computed_params:
-                self._set_vals(computed_params)  # computed --> table widget
+                self._set_vals(computed_params)
 
     def _is_empty(self, i, j):
         val = self.raw_data_table.item(i, j)
@@ -1012,7 +1006,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 val = int(calculator_controls.numeric_value(text))
             return val
         else:
-            return None  # its good to be explicit
+            return None
 
     def _is_blank(self, x):
         return x is None or x == ""
@@ -1125,7 +1119,7 @@ class BinaryBackCalculationDialog(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
 
-        op1 = imputed_data["op1"]  # option 1 data
+        op1 = imputed_data["op1"]
         a, b, c, d = op1["a"], op1["b"], op1["c"], op1["d"]
         a, b, c, d = int(round(a)), int(round(b)), int(round(c)), int(round(d))
         option1_txt = (
@@ -1166,6 +1160,6 @@ class BinaryBackCalculationDialog(
         choices = ["op1", "op2"]
 
         if self.choice1_btn.isChecked():
-            return choices[0]  # op1
+            return choices[0]
         else:
-            return choices[1]  # op2
+            return choices[1]

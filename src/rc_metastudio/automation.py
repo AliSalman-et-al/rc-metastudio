@@ -168,7 +168,8 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
     _reject_output_aliases([output_path, destination], [project_path, xlsx_path, rm5_path])
     _reject_output_aliases([output_path], [destination])
     from rc_metastudio.importing import tabular as csv_import, revman as rm5_import
-    from rc_metastudio.results.report import ManuscriptReport, write_docx
+    from rc_metastudio.results.report import ManuscriptReport
+    from rc_metastudio.results.report_export import write_docx
     from docx import Document
 
     headers, rows, names, selected = csv_import.read_xlsx(xlsx_path)
@@ -198,7 +199,8 @@ def start_package_import_export(output_path, project_path, xlsx_path, rm5_path):
 def start_package_worker_smoke(output_path: str, project_path: str) -> int:
     """Qualify the first real jobs and worker restart in the packaged application."""
     from rc_metastudio import r_operations
-    from rc_metastudio.results.report import ManuscriptReport, write_docx
+    from rc_metastudio.results.report import ManuscriptReport
+    from rc_metastudio.results.report_export import write_docx
 
     output = Path(output_path).resolve()
     plot = output.with_suffix(".svg")

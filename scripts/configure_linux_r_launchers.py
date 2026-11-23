@@ -29,7 +29,6 @@ launcher.write_text(header + tail, encoding="utf-8")
 launcher.chmod(0o755)
 
 rscript = home / "bin" / "Rscript"
-# Keep upstream's option parser: R itself does not implement Rscript argv rules.
 rscript.rename(home / "bin" / "Rscript.real")
 rscript.write_text('''#!/bin/sh
 r_script_dir=${0%/*}

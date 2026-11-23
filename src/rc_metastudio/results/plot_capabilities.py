@@ -25,6 +25,10 @@ PlotKind = Literal[
 PlotRegenerator = Literal["forest", "regression", "funnel", "sroc", "trial_sequential", "none"]
 
 
+def uses_forest_layout(kind: str | None) -> bool:
+    return kind in {"forest", "cumulative_forest", "leave_one_out_forest", "subgroup_forest"}
+
+
 @dataclass(frozen=True, slots=True)
 class PlotCapability:
     """Immutable capability data attached to one semantic plot artifact."""

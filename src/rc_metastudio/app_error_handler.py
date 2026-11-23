@@ -9,7 +9,7 @@ from PyQt6.QtCore import QEvent, QObject
 from PyQt6.QtWidgets import QApplication, QMenu, QMessageBox, QWidget
 
 from rc_metastudio import settings
-from rc_metastudio.r_worker import RJobCancelled, foreground_busy
+from rc_metastudio.foreground_operation import OperationCancelled, is_active
 
 
 UNEXPECTED_ERROR_TITLE = "Something went wrong"
@@ -21,16 +21,6 @@ UNEXPECTED_ERROR_MESSAGE = (
 _previous_excepthook = None
 _handling_exception = False
 _active_context_menu = None
-
-
-def enable_qt_native_high_dpi():
-    """Enable Qt's logical-pixel scaling before constructing an application."""
-    # Qt 6 enables high-DPI scaling and pixmaps natively.  This retained entry
-    # point intentionally has no Qt 5 application attributes to toggle.
-    return None
-
-
-enable_qt_native_high_dpi()
 
 
 def exception_log_path():
@@ -60,7 +50,7 @@ def show_unexpected_error(exc_value, parent=None, *, log_path=None):
 
 def handle_exception(exc_type, exc_value, exc_traceback, parent=None):
     global _handling_exception
-    if isinstance(exc_value, RJobCancelled):
+    if isinstance(exc_value, OperationCancelled):
         return
     if issubclass(exc_type, KeyboardInterrupt):
         if _previous_excepthook is not None:
@@ -142,8 +132,7 @@ def _call_with_compatible_signal_args(callback, args, kwargs):
 
 def safe_slot(callback, parent=None):
     def _safe_slot(*args, **kwargs):
-        app = QApplication.instance()
-        if foreground_busy() or (app is not None and app.property("rcmsExportInProgress")):
+        if is_active():
             return None
         try:
             return _call_with_compatible_signal_args(callback, args, kwargs)
@@ -158,9 +147,10 @@ def safe_slot(callback, parent=None):
     return _safe_slot
 
 
-def connect_action(action, callback):
+def connect_action(action, callback, *, parent=None):
     """Connect a parameterless command without passing QAction's checked state."""
-    parent = getattr(callback, "__self__", None)
+    if parent is None:
+        parent = getattr(callback, "__self__", None)
     action.triggered.connect(safe_slot(lambda checked=False: callback(), parent=parent))
 
 

@@ -165,7 +165,7 @@ def _desktop_typing(build_root: Path, source: str, env: dict[str, str], *, nativ
         if context is not None and context.get("external_tools") != external_tools(env):
             raise RuntimeError("Verification tools changed after desktop collection; restart the run")
         return typing_evidence, context
-    from scripts.verify import run_typing
+    from scripts.verification_evidence import run_typing
     return str(run_typing(build_root)), None
 
 

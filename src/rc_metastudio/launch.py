@@ -300,8 +300,6 @@ def compose_application(
         if getattr(sys, "frozen", False):
             from rc_metastudio import r_runtime
 
-            # Frozen bootstrap changes HOME, which Qt uses for AppDataLocation.
-            # Configure it before resolving the application data directory.
             r_runtime.configure_bundled_r_environment()
         if not getattr(sys, "frozen", False):
             for name in ("RCMS_R_HOME", "RCMS_R_LIBS"):

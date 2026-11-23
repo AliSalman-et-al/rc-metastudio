@@ -9,13 +9,16 @@ import math
 import ntpath
 import posixpath
 from dataclasses import dataclass
+from pathlib import Path
 from PyQt6 import QtCore, QtGui
 from rc_metastudio import qt_text
+from rc_metastudio.analysis.scratch import AnalysisScratch
 from rc_metastudio.workspace.column_identity import WorkspaceColumnWidthState
 
 QDir = QtCore.QDir
 QSettings = QtCore.QSettings
 ANALYSIS_SCRATCH_ENV_VAR = "RCMS_ANALYSIS_SCRATCH_DIR"
+_launch_scratch: tuple[str | None, AnalysisScratch] | None = None
 
 
 MAX_RECENT_FILES = 10
@@ -587,12 +590,12 @@ def get_default_open_directory(recent_files=None):
 
 def setup_directories():
     """Prepare application data and anchor any caller-owned analysis scratch."""
-    override = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR)
-    if override:
-        os.environ[ANALYSIS_SCRATCH_ENV_VAR] = os.path.abspath(override)
+    global _launch_scratch
     make_base_path()
-    make_r_tmp()
-    clear_r_tmp()
+    override = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR) or None
+    scratch = _resolve_analysis_scratch(override)
+    scratch.prepare_launch()
+    _launch_scratch = (override, scratch)
 
 
 def make_base_path():
@@ -605,74 +608,26 @@ def make_base_path():
     return base_path
 
 
-def get_base_path(normalize=False):
-    """Normalize changes the path separators according to the OS,
-    Usually this shouldn't be done because R is confused by backward slashes \
-    because it sees it as an escape character and Qt is fine with / throughout
-    """
-    base_path = str(
+def get_base_path() -> str:
+    return str(
         QtCore.QStandardPaths.writableLocation(
             QtCore.QStandardPaths.StandardLocation.AppDataLocation
         )
     )
-    if normalize:
-        base_path = str(QDir.toNativeSeparators(base_path))
-    return base_path
 
 
-def get_r_tmp_path(normalize=False):
-    """Return the managed analysis scratch directory."""
-    override_path = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR)
-    r_tmp_path = (
-        override_path
-        if override_path
-        else os.path.join(get_base_path(), "r_tmp", "process-%s" % os.getpid())
-    )
-    if normalize:
-        r_tmp_path = str(QDir.toNativeSeparators(r_tmp_path))
-    return r_tmp_path
+def _resolve_analysis_scratch(override: str | None) -> AnalysisScratch:
+    if override:
+        return AnalysisScratch(Path(os.path.abspath(override)), caller_owned=True)
+    root = Path(get_base_path()) / "r_tmp" / f"process-{os.getpid()}"
+    return AnalysisScratch(root, caller_owned=False)
 
 
-def make_r_tmp():
-    """Create the managed analysis scratch folder and return its path."""
-    r_tmp_path = get_r_tmp_path()
-    success = QDir().mkpath(r_tmp_path)
-    if not success:
-        raise Exception("Could not create r_tmp path at %s" % r_tmp_path)
-    return r_tmp_path
-
-
-def analysis_output_path(filename, normalize=False):
-    """Return a file path inside the managed analysis scratch directory."""
-    path = os.path.join(make_r_tmp(), filename)
-    if normalize:
-        return str(QDir.toNativeSeparators(path))
-    return to_posix_path(path)
-
-
-def to_posix_path(path):
-    r"""Convert native separators to POSIX-style separators for R strings.
-
-    The input must already be a literal path, not an escaped string.
-    """
-    new_path = path.replace("\\", "/")
-    return new_path
-
-
-def clear_r_tmp():
-    # A supplied directory can contain caller files or another launch's output.
-    if os.environ.get(ANALYSIS_SCRATCH_ENV_VAR):
-        return
-    r_tmp_dir = get_r_tmp_path(normalize=True)
-    if not os.path.isdir(r_tmp_dir):
-        return
-    for file_p in os.listdir(r_tmp_dir):
-        file_path = os.path.join(r_tmp_dir, file_p)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)  # same as remove
-        except OSError:
-            pass
+def analysis_scratch() -> AnalysisScratch:
+    override = os.environ.get(ANALYSIS_SCRATCH_ENV_VAR) or None
+    if _launch_scratch is not None and _launch_scratch[0] == override:
+        return _launch_scratch[1]
+    return _resolve_analysis_scratch(override)
 
 
 def get_user_documents_path():

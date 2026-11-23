@@ -47,6 +47,7 @@ POLICY_INPUTS = (
     "scripts/build-linux-package.sh",
     "scripts/finalize-linux-package.sh",
     "scripts/finalize-macos-package.sh",
+    "scripts/macos_copy_tree.sh",
     "scripts/install-r-deps-linux.R",
     "scripts/r_binary_policy.R",
     "scripts/r_dependency_policy.py",
@@ -213,11 +214,13 @@ def required_stages(manifest: dict, target: str) -> list[str]:
 
 
 def repository_version() -> str:
-    import tomllib
+    """Resolve a version only for commands that run in a full source checkout."""
+    if __name__ == "__main__" and not __package__:
+        from dependency_lock import project_version
+    else:
+        from scripts.dependency_lock import project_version
 
-    return tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))[
-        "project"
-    ]["version"]
+    return project_version()
 
 
 def assert_commit(commit: str) -> None:
@@ -472,6 +475,22 @@ def target_asset_names(name: str, target: dict, trust_profile: str) -> tuple[str
     return archive, f"{name}.cdx.json"
 
 
+def print_attestation_matrix(args: argparse.Namespace) -> None:
+    subjects = [
+        {"target": name, "artifact": target_asset_names(name, target, args.trust_profile)[0]}
+        for name, target in targets().items()
+    ]
+    print(json.dumps({"include": subjects}, separators=(",", ":")))
+
+
+def print_qualification_matrix(_args: argparse.Namespace) -> None:
+    jobs = [
+        {"target": name, "runner": target["runner"], "artifact": candidate_artifact(target)}
+        for name, target in targets().items()
+    ]
+    print(json.dumps({"include": jobs}, separators=(",", ":")))
+
+
 def verify(args: argparse.Namespace) -> None:
     manifest = load(Path(args.manifest))
     attested = verify_manifest(manifest, getattr(args, "repository", None))
@@ -578,13 +597,14 @@ def print_digest(args: argparse.Namespace) -> None:
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     commands = root.add_subparsers(required=True)
+    trust_profiles = tuple(load(TARGETS_PATH)["trust_profiles"])
     init = commands.add_parser("init")
     init.add_argument("--version", required=True)
     init.add_argument("--commit", required=True)
     init.add_argument("--repository", required=True)
     init.add_argument(
         "--trust-profile",
-        choices=tuple(load(TARGETS_PATH)["trust_profiles"]),
+        choices=trust_profiles,
         default="unsigned-community",
     )
     init.add_argument(
@@ -654,6 +674,10 @@ def parser() -> argparse.ArgumentParser:
     publication_parser = commands.add_parser("publication-assets")
     publication_parser.add_argument("--manifest", required=True)
     publication_parser.set_defaults(func=publication_assets)
+    attestation_parser = commands.add_parser("attestation-matrix")
+    attestation_parser.add_argument("--trust-profile", required=True, choices=trust_profiles)
+    attestation_parser.set_defaults(func=print_attestation_matrix)
+    commands.add_parser("qualification-matrix").set_defaults(func=print_qualification_matrix)
     digest_parser = commands.add_parser("digest")
     digest_parser.add_argument("--json", required=True)
     digest_parser.add_argument("--release-identity", action="store_true")

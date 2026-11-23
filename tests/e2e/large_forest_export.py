@@ -9,7 +9,8 @@ from PyQt6 import QtCore, QtWidgets
 
 from advanced_workflows import modal
 
-from rc_metastudio import r_operations, r_worker
+from rc_metastudio import r_operations
+from rc_metastudio.foreground_operation import is_active
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.results.plot_export import PlotExportDialog
 from rc_metastudio.results.window import ResultsWindow
@@ -33,7 +34,7 @@ def _drive_reentry(app, window, view, record):
             return
         ticker.stop()
         before = {widget for widget in app.topLevelWidgets() if widget.isVisible()}
-        busy = r_worker.foreground_busy()
+        busy = is_active()
         key_click(window, qt.Key.Key_R, qt.KeyboardModifier.ControlModifier)
         key_click(view, qt.Key.Key_E, qt.KeyboardModifier.ControlModifier)
         for key in (qt.Key.Key_E, qt.Key.Key_S, qt.Key.Key_R):

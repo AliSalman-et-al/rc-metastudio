@@ -603,7 +603,6 @@ def _run(app, window, work, root, record, analyze):
     assert form.result() == QtWidgets.QDialog.DialogCode.Accepted.value
     record("ux-mapped-reopened", window, project=str(window.workspace.path))
 
-    # Exercise the layouts whose geometry cannot be proved by the binary default.
     import sys
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
     from advanced_workflows import modal

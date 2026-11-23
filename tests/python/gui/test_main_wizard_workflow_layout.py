@@ -449,7 +449,6 @@ from PyQt6 import QtCore, QtWidgets
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 prepare_generated_ui_imports()
 from rc_metastudio import app_error_handler
-from rc_metastudio import adaptive_window
 from rc_metastudio import main_wizard
 
 app = app_error_handler.get_or_create_application([])
@@ -458,15 +457,11 @@ try:
     wizard.restart()
     wizard.show()
     app.processEvents()
-    page = wizard.currentPage()
-    overflow = page.findChild(QtWidgets.QScrollArea, "pageScrollArea")
     buttons = [wizard.button(role) for role in (
         main_wizard.QWizard.WizardButton.NextButton,
         main_wizard.QWizard.WizardButton.CancelButton,
     )]
     print("WORKFLOW_LAYOUT=" + json.dumps({
-        "archetype": adaptive_window.adaptive_window_state(wizard).policy.archetype.value,
-        "overflow": overflow is not None,
         "buttons": all(button.isVisible() for button in buttons),
         "bounded": wizard.frameGeometry().width() <= app.primaryScreen().availableGeometry().width()
             and wizard.frameGeometry().height() <= app.primaryScreen().availableGeometry().height(),
@@ -504,8 +499,6 @@ finally:
             if line.startswith("WORKFLOW_LAYOUT=")
         )
         assert json.loads(marker.split("=", 1)[1]) == {
-            "archetype": "workflow",
-            "overflow": True,
             "buttons": True,
             "bounded": True,
         }

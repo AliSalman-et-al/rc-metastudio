@@ -4,7 +4,9 @@
 
 # This dialog edits the analysis unit directly because most displayed fields
 # are transient imputation inputs rather than stored raw data.
+from collections.abc import Sequence
 from contextlib import ExitStack
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeGuard, cast
 
 from rc_metastudio.qt_layout import configure_context_label, style_inline_error
@@ -13,9 +15,11 @@ from PyQt6.QtGui import QAction, QKeySequence, QPalette
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
     QMessageBox,
+    QRadioButton,
     QSizePolicy,
     QStyle,
     QTableWidgetItem,
@@ -32,7 +36,9 @@ from rc_metastudio.calculators import (
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio.calculators.service import (
+    BackCalculationResult,
     CalculatorService,
+    Numeric,
 )
 from rc_metastudio.analysis.catalog import CONTINUOUS_METRIC_NAMES, CONTINUOUS_ONE_ARM_METRICS, CONTINUOUS_TWO_ARM_METRICS
 from rc_metastudio.analysis.validation import EMPTY_VALS, is_nan, normal_confidence_multiplier
@@ -81,6 +87,13 @@ class _BackCalculationCancelled(Exception):
     """Internal control flow for a nested choice that rejects the transaction."""
 
 
+
+
+@dataclass(frozen=True, slots=True)
+class _BackCalculationDraft:
+    groups: tuple[dict[str, Numeric], dict[str, Numeric]]
+    metric: str
+    effect: tuple[Numeric | None, Numeric | None, Numeric | None]
 
 
 def is_list(x: object) -> TypeGuard[list[float | int | None] | tuple[float | int | None, ...]]:
@@ -178,7 +191,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             table.setAccessibleName(f"{group} pre/post summaries")
             table.setAccessibleDescription(f"Pre-treatment and post-treatment summary values for {group}.")
 
-        self.setup_clear_button_palettes()  # Color for clear_button_pallette
+        self.setup_clear_button_palettes()
         self.initialize_form()
         self._field_history = calculator_edit_history.TransientEditHistory()
 
@@ -502,9 +515,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             app_error_handler.safe_slot(self.clear_form, parent=self)
         )
         self.back_calculate_button.clicked.connect(
-            app_error_handler.safe_slot(
-                lambda: self.update_back_calculation_button(engage=True), parent=self
-            )
+            app_error_handler.safe_slot(self.back_calculate, parent=self)
         )
 
         self.effect_text_box.editingFinished.connect(
@@ -830,7 +841,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             return
 
         try:
-            self._copy_raw_data_from_table_to_analysis_unit()  # table --> analysis_unit
+            self._copy_raw_data_from_table_to_analysis_unit()
             self.update_effect_from_raw_data()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
@@ -1007,7 +1018,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         if not (row, col) == (
             None,
             None,
-        ):  # means this was called through user interaction, not programmatically
+        ):
             old_analysis_unit, old_tables_data = (
                 self._save_analysis_unit_and_table_states(
                     tables=self.tables,
@@ -1105,8 +1116,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.update_clear_button_color()
         self._fit_tables_to_contents()
 
-        # function was invoked as a result of user interaction, not
-        # programmatically
         if not (row, col) == (None, None):
             new_analysis_unit, new_tables_data = (
                 self._save_analysis_unit_and_table_states(
@@ -1203,7 +1212,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
                     n1,
                     m1,
                     sd1,
-                    # Use SE only to reconstruct a missing SD; SE cells may be derived.
                     se1=se1 if self._is_empty_value(sd1) else None,
                     n2=n2,
                     m2=m2,
@@ -1278,234 +1286,148 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         finally:
             self.back_calculate_button.blockSignals(blocked)
 
-    def update_back_calculation_button(self, engage=False):
-        if not engage:
-            return self._update_back_calculation_button(engage=False)
-        state = self._capture_dialog_state()
-        try:
-            return self._update_back_calculation_button(
-                engage=True, transaction_state=state
-            )
-        except _BackCalculationCancelled:
-            self._restore_dialog_state(state)
-            return None
-        except Exception:
-            self._restore_dialog_state(state)
-            raise
+    def _back_calculation_draft(self) -> _BackCalculationDraft:
+        headers = self.get_column_header_strs()
 
-    def _update_back_calculation_button(self, engage=False, transaction_state=None):
-        if (
-            engage
-            and self.metric_parameter is None
-            and self.current_effect in ["MD", "SMD"]
-        ):
-            if self.current_effect == "MD":
-                info = (
-                    "Back-calculation depends on the relationship between the "
-                    "two population standard deviations.\n\n"
-                    "Should RC MetaStudio assume they are equal?"
-                )
-                option0_txt = "Yes (default)"
-                option1_txt = "No"
-                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
-                dialog.setWindowTitle("Population standard deviations")
-                if not dialog.exec():
-                    raise _BackCalculationCancelled()
-                self.metric_parameter = True if dialog.get_choice() == 0 else False
-            elif self.current_effect == "SMD":
-                info = (
-                    "Which standardized mean difference should RC MetaStudio use "
-                    "for back-calculation?"
-                )
-                option0_txt = "Hedges' g (default)"
-                option1_txt = "Cohen's d"
-                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
-                dialog.setWindowTitle("Standardized mean difference")
-                if not dialog.exec():
-                    raise _BackCalculationCancelled()
-                self.metric_parameter = True if dialog.get_choice() == 0 else False
+        def read_arm(row: int) -> dict[str, Numeric]:
+            data: dict[str, Numeric] = {}
+            for column, header in enumerate(headers):
+                value = self._get_float(row, column)
+                if value is not None:
+                    data[self._imputation_field_name(header)] = value
+            return data
 
-        def build_data_dicts():
-            var_names = self.get_column_header_strs()
-            tmp = []
-            for row_index in range(2):
+        effect = self.analysis_unit.get_effect_and_ci_for_source(
+            "entered", self.current_effect, self.arm_key, self.confidence_multiplier,
+        )
+        return _BackCalculationDraft((read_arm(0), read_arm(1)), self.current_effect, effect)
 
-                def value(x):
-                    return self._get_float(row_index, x)
-
-                tmp.append(
-                    [
-                        (self._imputation_field_name(var_name), value(i))
-                        for i, var_name in enumerate(var_names)
-                        if value(i) is not None
-                    ]
-                )
-            group1_data = dict(tmp[0])
-            group2_data = dict(tmp[1])
-
-            tmp = self.analysis_unit.get_effect_and_ci_for_source(
-                "entered",
-                self.current_effect,
-                self.arm_key,
-                self.confidence_multiplier,
-            )
-            effect_data = {
-                "est": tmp[0],
-                "low": tmp[1],
-                "high": tmp[2],
-                "metric": self.current_effect,
-                "met.param": self.metric_parameter,
-            }
-
-            return (group1_data, group2_data, effect_data)
-
-        def new_data(g1_data, g2_data, imputed):
-            changed = False
-
-            new_data = (
-                imputed["n1"],
-                imputed["sd1"],
-                imputed["mean1"],
-                imputed["n2"],
-                imputed["sd2"],
-                imputed["mean2"],
-            )
-            old_data = (
-                g1_data["n"] if "n" in g1_data else None,
-                g1_data["sd"] if "sd" in g1_data else None,
-                g1_data["mean"] if "mean" in g1_data else None,
-                g2_data["n"] if "n" in g2_data else None,
-                g2_data["sd"] if "sd" in g2_data else None,
-                g2_data["mean"] if "mean" in g2_data else None,
-            )
-
-            def new_item_available(old, new):
-                return (old is None) and (new is not None)
-
-            comparison = [
-                new_item_available(old_data[i], new_data[i])
-                for i in range(len(new_data))
-            ]
-            if any(comparison):
-                changed = True
-            else:
-                changed = False
-            return changed
-
-        if self.current_effect not in ["MD", "SMD"]:
-            was_hidden = self.back_calculate_button.isHidden()
-            self.back_calculate_button.setVisible(False)
-            if not was_hidden:
-                self._content_layout_changed()
-            return None
-        else:
-            was_hidden = self.back_calculate_button.isHidden()
-            self.back_calculate_button.setVisible(True)
-            if was_hidden:
-                self._content_layout_changed()
-
-        (group1_data, group2_data, effect_data) = build_data_dicts()
-
-        # The metric-specific assumption is chosen only after the user clicks.
-        # Probe both choices here so the button can become reachable without
-        # prematurely committing either assumption to the form.
-        if not engage and self.metric_parameter is None:
-            for candidate in (True, False):
-                candidate_effect_data = dict(effect_data)
-                candidate_effect_data["met.param"] = candidate
-                candidate_imputed = self.calculator.back_calculate_continuous_data(
-                    group1_data,
-                    group2_data,
-                    candidate_effect_data,
-                    self.confidence_level,
-                )
-                if "FAIL" not in candidate_imputed and new_data(
-                    group1_data, group2_data, candidate_imputed
-                ):
-                    self.back_calculate_button.setEnabled(True)
-                    self.update_clear_button_color()
-                    return None
-            self.back_calculate_button.setEnabled(False)
-            self.update_clear_button_color()
-            return None
-
-        imputed = self.calculator.back_calculate_continuous_data(
-            group1_data, group2_data, effect_data, self.confidence_level
+    def _solve_back_calculation(
+        self, draft: _BackCalculationDraft, assumption: bool,
+    ) -> BackCalculationResult:
+        estimate, lower, upper = draft.effect
+        group1, group2 = draft.groups
+        return self.calculator.back_calculate_continuous_data(
+            dict(group1), dict(group2),
+            {"est": estimate, "low": lower, "high": upper, "metric": draft.metric, "met.param": assumption},
+            self.confidence_level,
         )
 
-        if "FAIL" in imputed:
-            self.back_calculate_button.setEnabled(False)
-            return None
+    @staticmethod
+    def _back_calculation_adds_data(draft: _BackCalculationDraft, result: BackCalculationResult) -> bool:
+        return "FAIL" not in result and any(
+            field not in group and result[f"{field}{index}"] is not None
+            for index, group in enumerate(draft.groups, start=1)
+            for field in ("n", "mean", "sd")
+        )
 
-        if new_data(group1_data, group2_data, imputed):
-            self.back_calculate_button.setEnabled(True)
-        else:
-            self.back_calculate_button.setEnabled(False)
+    def update_back_calculation_button(self) -> None:
+        supported = self.current_effect in ("MD", "SMD")
+        was_hidden = self.back_calculate_button.isHidden()
+        self.back_calculate_button.setVisible(supported)
+        if was_hidden == supported:
+            self._content_layout_changed()
+        if not supported:
+            return
+
+        draft = self._back_calculation_draft()
+        assumptions = (True, False) if self.metric_parameter is None else (self.metric_parameter,)
+        available = any(
+            self._back_calculation_adds_data(draft, self._solve_back_calculation(draft, assumption))
+            for assumption in assumptions
+        )
+        self.back_calculate_button.setEnabled(available)
         self.update_clear_button_color()
 
-        if not engage:
-            return None
+    def _choose_back_calculation(
+        self, message: str, options: Sequence[str], *, title: str | None = None,
+    ) -> int:
+        dialog = ContinuousBackCalculationDialog(message, options, self)
+        if title is not None:
+            dialog.setWindowTitle(title)
+        try:
+            if not dialog.exec():
+                raise _BackCalculationCancelled()
+            return dialog.get_choice()
+        finally:
+            dialog.deleteLater()
 
-        keys_to_names = {
-            f"{field}{index}": f"{name} {label}"
-            for index, name in enumerate(self.arm_names, start=1)
+    def _back_calculation_assumption(self, metric: str) -> bool:
+        if self.metric_parameter is not None:
+            return self.metric_parameter
+        if metric == "MD":
+            choice = self._choose_back_calculation(
+                "Back-calculation depends on the relationship between the two population standard deviations.\n\n"
+                "Should RC MetaStudio assume they are equal?",
+                ("Yes (default)", "No"), title="Population standard deviations",
+            )
+        else:
+            choice = self._choose_back_calculation(
+                "Which standardized mean difference should RC MetaStudio use for back-calculation?",
+                ("Hedges' g (default)", "Cohen's d"), title="Standardized mean difference",
+            )
+        return choice == 0
+
+    def _select_back_calculation_values(self, result: BackCalculationResult) -> dict[str, Numeric | None]:
+        names = {
+            f"{field}{index}": f"{arm} {label}"
+            for index, arm in enumerate(self.arm_names, start=1)
             for field, label in (("n", "sample size"), ("sd", "standard deviation"), ("mean", "mean"))
         }
-        for key, value in imputed.items():
-            # The R imputation code can theoretically yield up to four values
-            # for n1 and n2, but empirical testing shows that path is unused.
-            # ContinuousBackCalculationDialog options can be generated dynamically if
-            # multi-value n1/n2 results are later exposed.
-
+        selected: dict[str, Numeric | None] = {}
+        for field, value in result.items():
             if is_list(value):
-                info = (
-                    "More than one "
-                    + keys_to_names[key]
-                    + " matches the entered values. Choose one:"
-                )
-                option0_txt = keys_to_names[key] + " = " + str(value[0])
-                option1_txt = keys_to_names[key] + " = " + str(value[1])
+                index = 0
+                if len(value) > 1:
+                    name = names[field]
+                    index = self._choose_back_calculation(
+                        f"More than one {name} matches the entered values. Choose one:",
+                        [f"{name} = {option}" for option in value],
+                    )
+                value = value[index] if value else None
+            selected[field] = cast(Numeric | None, value)
+        return selected
 
-                dialog = ContinuousBackCalculationDialog(info, option0_txt, option1_txt)
-                if dialog.exec():
-                    imputed[key] = value[0] if dialog.get_choice() == 0 else value[1]
-                else:  # pressed cancel
-                    raise _BackCalculationCancelled()
+    def back_calculate(self) -> None:
+        if self.current_effect not in ("MD", "SMD"):
+            return
+        before = self._capture_dialog_state()
+        try:
+            draft = self._back_calculation_draft()
+            assumption = self._back_calculation_assumption(draft.metric)
+            result = self._solve_back_calculation(draft, assumption)
+            if not self._back_calculation_adds_data(draft, result):
+                self.metric_parameter = assumption
+                self.back_calculate_button.setEnabled(False)
+                return
+            selected = self._select_back_calculation_values(result)
+            self.metric_parameter = assumption
+            self._apply_back_calculation(selected)
+            after = self._capture_dialog_state()
+            self._field_history.record(
+                restore_state=self._restore_dialog_state, old_state=(before,), new_state=(after,),
+            )
+        except _BackCalculationCancelled:
+            self._restore_dialog_state(before)
+        except Exception:
+            self._restore_dialog_state(before)
+            raise
 
-        var_names = self.get_column_header_strs()
-        group1_data = {
-            "n": cast(float | int | None, imputed["n1"]),
-            "sd": cast(float | int | None, imputed["sd1"]),
-            "mean": cast(float | int | None, imputed["mean1"]),
-        }
-        group2_data = {
-            "n": cast(float | int | None, imputed["n2"]),
-            "sd": cast(float | int | None, imputed["sd2"]),
-            "mean": cast(float | int | None, imputed["mean2"]),
-        }
+    def _apply_back_calculation(self, values: dict[str, Numeric | None]) -> None:
+        headers = self.get_column_header_strs()
         for row in range(len(self.arm_names)):
-            for var_index, var_name in enumerate(var_names):
-                field_name = self._imputation_field_name(var_name)
-                if field_name not in ["n", "sd", "mean"]:
+            for column, header in enumerate(headers):
+                field = self._imputation_field_name(header)
+                if field not in ("n", "sd", "mean"):
                     continue
-                val = group1_data[field_name] if row == 0 else group2_data[field_name]
-                if field_name == "n" and val not in EMPTY_VALS:
-                    val = int(round(val))  # convert float to integer
-                self._set_val(row, var_index, val, self.simple_table, supplied=True)
+                value = values[f"{field}{row + 1}"]
+                if field == "n" and value is not None:
+                    value = round(value)
+                self._set_val(row, column, value, self.simple_table, supplied=True)
 
         self.impute_data()
         self._copy_raw_data_from_table_to_analysis_unit()
-
-        # The committed result has filled every value exposed by this
-        # back-calculation, so no second R probe is needed to refresh the button.
         self.back_calculate_button.setEnabled(False)
-        new_state = self._capture_dialog_state()
-
-        self._field_history.record(
-            restore_state=self._restore_dialog_state,
-            old_state=(transaction_state,),
-            new_state=(new_state,),
-        )
 
     def clear_form(self):
         self._validation_failed = False
@@ -1588,10 +1510,34 @@ class ContinuousBackCalculationDialog(
     _ui_continuous_back_calculation_dialog.Ui_ContinuousBackCalculationDialog,
 ):
     def __init__(
-        self, info_text, op1_txt, op2_txt, parent=None
+        self, info_text: str, options: Sequence[str], parent: QWidget | None = None,
     ):
         super(ContinuousBackCalculationDialog, self).__init__(parent)
         self.setupUi(self)
+
+        self._choices: list[tuple[QRadioButton, QLabel]] = []
+        for index, text in enumerate(options, start=1):
+            button = QRadioButton(self.content_widget)
+            button.setObjectName(f"choice{index}_btn")
+            button.setAccessibleName(text)
+            label = QLabel(text, self.content_widget)
+            label.setObjectName(f"choice{index}_label")
+            label.setWordWrap(True)
+            label.setBuddy(button)
+            row = QHBoxLayout()
+            row.addWidget(button)
+            row.addWidget(label)
+            self.content_layout.addLayout(row)
+            if self._choices:
+                QWidget.setTabOrder(self._choices[-1][0], button)
+            self._choices.append((button, label))
+        self._choices[0][0].setChecked(True)
+        ok = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "back-calculation OK button")
+        cancel = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel), "back-calculation Cancel button")
+        QWidget.setTabOrder(self.content_scroll, self._choices[0][0])
+        QWidget.setTabOrder(self._choices[-1][0], ok)
+        QWidget.setTabOrder(ok, cancel)
+        self._choices[0][0].setFocus()
 
         for widget in self.content_widget.findChildren(QWidget):
             widget.installEventFilter(self)
@@ -1602,9 +1548,6 @@ class ContinuousBackCalculationDialog(
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
-
-        self.choice1_label.setText(op1_txt)
-        self.choice2_label.setText(op2_txt)
 
         self.info_label.setText(info_text)
         self._layout_controller.request_content_refit()
@@ -1617,12 +1560,10 @@ class ContinuousBackCalculationDialog(
                 watched, event
             )
         if event.type() == QEvent.Type.MouseButtonRelease:
-            if watched is self.choice1_label:
-                self.choice1_btn.setChecked(True)
-                return True
-            if watched is self.choice2_label:
-                self.choice2_btn.setChecked(True)
-                return True
+            for button, label in self._choices:
+                if watched is label:
+                    button.setChecked(True)
+                    return True
         if (
             isinstance(watched, QWidget)
             and event.type() == QEvent.Type.FocusIn
@@ -1642,8 +1583,5 @@ class ContinuousBackCalculationDialog(
         except RuntimeError:
             pass
 
-    def get_choice(self):
-        if self.choice1_btn.isChecked():
-            return 0
-        else:
-            return 1
+    def get_choice(self) -> int:
+        return next(index for index, (button, _) in enumerate(self._choices) if button.isChecked())

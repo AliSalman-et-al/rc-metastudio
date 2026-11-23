@@ -89,7 +89,6 @@ def shell_step(step, tmp_path, values, prelude=""):
 def test_input_classification_executes_workflow(tmp_path, old, new, event, draft, expected):
     workflow_jobs = workflow("fast-verification")["jobs"]
     step = workflow_jobs["change-classifier"]["steps"][1]
-    # Feed Git's NUL-delimited output, including both sides of a rename.
     git = f"function git() {{ if [[ \"$1\" == diff ]]; then printf '%s\\0' {old or new} {new}; fi; }}"
     result = shell_step(
         step,
@@ -249,7 +248,6 @@ def test_shell_inputs_remain_data(tmp_path, name, job, step_name):
     }
     (tmp_path / "scripts").mkdir()
     (tmp_path / "scripts/delivery.py").write_text("import sys\nraise SystemExit(2)\n")
-    # No command in this isolated replay can reach a real release or Git remote.
     prelude = """function gh() { if [ "$2" = view ]; then return 1; fi; return 0; }
 function git() { return 1; }
 function jq() { if [ "$2" = .trust_profile ]; then echo macos-trusted; else printf 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n'; fi; }

@@ -34,7 +34,7 @@ def navigation_selection_pixels(view):
 def run(app, window, work, root, record, analyze):
     from rc_metastudio.main_wizard import MainWizard, DataTypePage, ChooseMetricPage, OutcomeNamePage
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
-    from rc_metastudio.results.report import write_docx
+    from rc_metastudio.results.report_export import write_docx
     from analysis_matrix import run as matrix
 
     failures = []

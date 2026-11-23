@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from collections.abc import Callable
 
+from rc_metastudio.analysis.catalog import AvailableMethod
 from rc_metastudio import automation
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -67,8 +68,6 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
     try:
         _create_diagnostic_dataset(window)
 
-        # Simulate a Method & Parameters construction failure raised after the
-        # diagnostic metrics dialog hands off to the shared builder.
         def _boom(*args, **kwargs):
             raise ValueError("simulated preparation failure")
 
@@ -85,7 +84,6 @@ def test_diagnostic_next_surfaces_specs_failure_instead_of_silent_dead_end():
         form = window.findChild(diagnostic_metrics_dialog.DiagnosticMetricsDialog)
         assert form is not None
 
-        # The bug: this used to raise out of the slot with no user feedback.
         form.ok()
 
         assert shown, "diagnostic next > swallowed the backend error silently"
@@ -131,7 +129,7 @@ def test_diagnostic_backend_failure_does_not_open_empty_results(monkeypatch):
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.random": "Random-effects",
+                "diagnostic.random": AvailableMethod("Random-effects"),
             },
         )
         _set_backend(
@@ -210,8 +208,8 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.reitsma": "Reitsma bivariate model",
-                "diagnostic.random": "Random-effects",
+                "diagnostic.reitsma": AvailableMethod("Reitsma bivariate model", requires_raw_counts=True),
+                "diagnostic.random": AvailableMethod("Random-effects"),
             },
         )
         _set_backend(
@@ -318,7 +316,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.random": "Random-effects",
+                "diagnostic.random": AvailableMethod("Random-effects"),
             },
         )
         _set_backend(
@@ -464,9 +462,9 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.reitsma": "Reitsma bivariate model",
-                "diagnostic.random": "Random-effects",
-                "diagnostic.fixed.inv.var": "Fixed-effect inverse-variance",
+                "diagnostic.reitsma": AvailableMethod("Reitsma bivariate model", requires_raw_counts=True),
+                "diagnostic.random": AvailableMethod("Random-effects"),
+                "diagnostic.fixed.inv.var": AvailableMethod("Fixed-effect inverse-variance"),
             },
         )
         _set_backend(
@@ -502,7 +500,6 @@ def test_diagnostic_direct_effects_do_not_offer_count_based_methods(monkeypatch)
 
 def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkeypatch):
     from rc_metastudio import adaptive_controls
-    from rc_metastudio import adaptive_window
     from PyQt6 import QtCore, QtWidgets
 
     app, window = automation.start_automation()
@@ -533,8 +530,8 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
             backend,
             "available_model_methods",
             lambda *_args, **kwargs: {
-                "diagnostic.random": "Random-effects",
-                "diagnostic.fixed.inv.var": "Fixed-effect inverse-variance",
+                "diagnostic.random": AvailableMethod("Random-effects"),
+                "diagnostic.fixed.inv.var": AvailableMethod("Fixed-effect inverse-variance"),
             },
         )
         _set_backend(
@@ -585,10 +582,6 @@ def test_diagnostic_method_selector_exposes_full_choices_without_root_cap(monkey
         assert form.method_cbo_box.toolTip() == form.method_cbo_box.currentText()
         form.method_cbo_box.hidePopup()
         assert form.method_cbo_box.maximumWidth() == QtWidgets.QWIDGETSIZE_MAX
-        assert (
-            adaptive_window.adaptive_window_state(form).policy.archetype
-            is adaptive_window.WindowArchetype.TRANSACTIONAL
-        )
     finally:
         for name, value in saved.items():
             setattr(backend, name, value)

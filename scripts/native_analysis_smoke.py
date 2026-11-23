@@ -106,15 +106,14 @@ def main() -> int:
     setattr(app_error_handler, "install_global_exception_handler", lambda: None)
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.workspace.table_model import DatasetTableModel
-    from rc_metastudio.project.adapter import document_to_runtime_project
-    from rc_metastudio.project.archive import load_project
+    from rc_metastudio.project.adapter import load_runtime_project
 
     backend = analysis_setup_dialog.analysis_adapter.r_operations
 
     setattr(
         backend,
         "available_model_methods",
-        lambda *_args, **_kwargs: {"binary.random": "Random"},
+        lambda *_args, **_kwargs: {"binary.random": backend.AvailableMethod("Random")},
     )
     setattr(
         backend,
@@ -183,7 +182,7 @@ def main() -> int:
         app.processEvents()
 
     def make_configuration() -> analysis_setup_dialog.AnalysisSetupDialog:
-        project = document_to_runtime_project(load_project(repo_root / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms"))
+        project = load_runtime_project(repo_root / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms")
         model = DatasetTableModel(dataset=project.dataset, add_blank_study=False)
         if project.current_sheet_id is not None:
             model.set_current_sheet(project.current_sheet_id)

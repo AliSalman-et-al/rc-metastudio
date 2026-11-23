@@ -2,12 +2,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Read the source checkout's pinned runtime and distribution identities."""
 
+import argparse
 import json
 import tomllib
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def project_version() -> str:
+    with (ROOT / "pyproject.toml").open("rb") as stream:
+        version = tomllib.load(stream)["project"]["version"]
+    if not isinstance(version, str) or not version:
+        raise ValueError("pyproject.toml must declare a project version")
+    return version
 
 
 def locked_python_versions(*names: str) -> dict[str, str]:
@@ -30,7 +39,6 @@ def packaged_stack() -> dict[str, str]:
         "pyqt6": packages["pyqt6"],
         "qt": packages["pyqt6-qt6"],
         "sip": packages["pyqt6-sip"],
-        # This is PyQt6.sip.SIP_VERSION_STR, separate from the wheel version.
         "sip_runtime": "6.17.3",
         "r": r_dependencies["target_runtime"]["r"],
         "pyinstaller": packages["pyinstaller"],
@@ -38,4 +46,7 @@ def packaged_stack() -> dict[str, str]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(packaged_stack()))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--project-version", action="store_true", help="Print only the project version.")
+    args = parser.parse_args()
+    print(project_version() if args.project_version else json.dumps(packaged_stack()))

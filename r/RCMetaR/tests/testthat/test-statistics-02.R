@@ -66,7 +66,6 @@ test_that("bootstrap pooled and coefficient intervals preserve requested coverag
 
 test_that("subgroup workers receive resolved names and suppress intermediate writes", {
  d <- s2_data(); p <- s2_params()
- # A late nonestimable subgroup must not leave an ordinary forest at the final destination.
  d@y[5:6] <- NA_real_; d@covariates[[1]]@cov.vals <- c("A","A","A","A","B","B")
  p$supress.output <- FALSE; p$cov_name <- "Region"
  expect_error(suppressWarnings(rcmetar.run.analysis(d,method="continuous.fixed",params=p,workflow="subgroup",selected.cov="Region")),"k = 0",fixed=TRUE)
@@ -132,15 +131,7 @@ test_that("HR and IRR cumulative non-normal inference keeps all study identities
  }
 })
 
-test_that("public bootstrap uses selected output coverage", {
- p <- s2_params(bootstrap.type="boot.ma", num.bootstrap.replicates=99,
- bootstrap.plot.path=tempfile(tmpdir=rcmetar.scratch.path(),fileext=".png"),histogram.title="Proof",histogram.xlab="Effect")
- withr::local_seed(52)
- x <- rcmetar.run.analysis(s2_data(),method="continuous.fixed",params=p,workflow="bootstrap")
- expect_match(x$Summary,"90% confidence",fixed=TRUE)
-})
-
-test_that("bootstrap without an explicit output keeps each histogram in owned scratch", {
+test_that("bootstrap reports selected coverage and keeps each histogram in owned scratch", {
  scratch <- tempfile("bootstrap-scratch-")
  withr::local_envvar(c(RCMS_ANALYSIS_SCRATCH_DIR=scratch))
  withr::local_seed(52)
@@ -153,9 +144,11 @@ test_that("bootstrap without an explicit output keeps each histogram in owned sc
   for (device in setdiff(grDevices::dev.list(), existing.devices)) grDevices::dev.off(device)
  })
  run <- function() rcmetar.run.analysis(s2_data(), method="continuous.fixed",
-                                      params=p, workflow="bootstrap")$images[["Histogram"]]
- first <- run()
- second <- run()
+                                      params=p, workflow="bootstrap")
+ result <- run()
+ expect_match(result$Summary,"90% confidence",fixed=TRUE)
+ first <- result$images[["Histogram"]]
+ second <- run()$images[["Histogram"]]
  expect_false(identical(first, second))
  for (path in c(first, second)) {
   expect_identical(normalizePath(dirname(path), winslash="/"),

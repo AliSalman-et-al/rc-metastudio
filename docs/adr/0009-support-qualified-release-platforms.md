@@ -22,3 +22,40 @@ Intel macOS remains unsupported for future releases. Historical Intel macOS rele
 - Linux release assets use a portable tar archive and receive no platform signing or notarization.
 - Ubuntu 24.04 x86_64 is the tested release baseline; broader distribution compatibility is not promised.
 - Existing Windows and Apple silicon macOS artifact formats and trust stages remain in place.
+
+## Runtime collection and trust
+
+- Ubuntu excludes the unused Qt TIFF plugin because it requests libtiff.so.5,
+  which Noble lacks. Symbol stripping preserves the symbols required by
+  dynamic lookup. Linux keeps upstream Rscript's option parser.
+- Windows PyInstaller collection resolves API-set, UCRT and system ICU
+  forwarders through the system so another toolchain on PATH cannot supply
+  private copies. The Windows packaging wrapper supplies build
+  roots to the authoritative PyInstaller spec.
+- macOS sets the target deployment floor before native compilation. When
+  the binary Qt wheel and SDK require a newer floor, build Qt at the app's
+  floor and compile bindings against it with relocatable paths to one runtime.
+  Serialize the C++ build to fit hosted-runner memory. Use a separate cache
+  for the binding wheel so clearing an SDK staging tree cannot erase it.
+- Assemble and qualify one private R framework before injecting it into the
+  collected macOS app. A CRAN edge referring to /opt/R can resolve only
+  to an identical authenticated framework member. Re-sign staged binaries
+  ad hoc after architecture or install-name changes so they can run for proof
+  before the final app signature.
+- Developer ID members share a Team ID and use hardened runtime. Locally
+  ad-hoc-signed members lack that shared identity, so hardened-runtime library
+  validation on the local launcher would reject its bundled libpython.
+  Sign nested members and bundles from the inside out. The outer signature
+  owns the launcher's final context. Validate it there with strict deep
+  verification, which also checks the nested members.
+- Mach-O inspection preserves R's Java class resources. A Java class and a
+  fat Mach-O can share the CAFEBABE header, so the magic bytes alone cannot
+  identify the file as native code.
+
+The candidate workflow may select an earlier protected-master revision.
+Its target registry and fallbacks account for revisions before the macOS
+resolver, independent SDK and binding caches, and verification recorder moved
+or were introduced. The dispatch revision and selected build revision may
+differ. Both must come from protected master. A withdrawal creates its audit
+record before editing release state. A retry resumes from that pending record
+if the edit failed.

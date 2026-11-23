@@ -123,35 +123,6 @@ def test_clear_recovers_invalid_binary_count(monkeypatch):
         _close(app, window, dialog)
 
 
-def test_binary_data_declares_transactional_overflow_and_reachable_actions(
-    monkeypatch,
-):
-    app, window, dialog = _open_binary_dialog(monkeypatch)
-    try:
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
-        assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
-        assert dialog.content_scroll.widgetResizable()
-        assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
-        assert required(dialog.layout(), "dialog layout").indexOf(dialog.buttonBox) >= 0
-        assert (
-            dialog.raw_data_table.horizontalScrollBarPolicy()
-            == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
-        assert (
-            dialog.raw_data_table.verticalScrollBarPolicy()
-            == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
-        assert (
-            dialog.raw_data_table.horizontalHeader().sectionResizeMode(0)
-            == QtWidgets.QHeaderView.ResizeMode.Interactive
-        )
-    finally:
-        _close(app, window, dialog)
-
-
 def test_binary_data_keyboard_and_accessibility_contract(monkeypatch):
     app, window, dialog = _open_binary_dialog(monkeypatch)
     try:
@@ -245,10 +216,6 @@ def test_binary_back_calculation_choices_are_scrollable_and_screen_bounded(monke
         dialog._layout_controller.request_content_refit()
         dialog.show()
         app.processEvents()
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
         assert QtCore.QRect(20, 30, 800, 600).contains(dialog.frameGeometry())

@@ -1,0 +1,210 @@
+import argparse
+import io
+import re
+import subprocess
+import sys
+import tokenize
+from bisect import bisect_right
+from collections import Counter
+from pathlib import Path
+from textwrap import dedent
+
+import yaml
+from pygments.lexers import get_lexer_by_name
+from pygments.token import Comment
+
+LEXERS = {
+    ".rd": "rd",
+    ".sh": "bash",
+    ".ps1": "powershell",
+    ".cjs": "javascript",
+    ".js": "javascript",
+    ".mjs": "javascript",
+    ".yml": "yaml",
+    ".yaml": "yaml",
+    ".cff": "yaml",
+    ".toml": "toml",
+    ".lock": "toml",
+    ".ui": "xml",
+    ".qrc": "xml",
+    ".svg": "xml",
+    ".xml": "xml",
+}
+
+HASH_CONFIG = {".gitignore", ".gitattributes", "r/RCMetaR/NAMESPACE"}
+SHELLS = {"sh": "bash", "pwsh": "powershell", "powershell": "powershell"}
+LICENSE = re.compile(r"# SPDX-(?:License-Identifier|FileCopyrightText): \S.*")
+
+R_LEXEMES = re.compile(
+    r"""[rR](?P<round_quote>['"])(?P<round>-*)\([\s\S]*?\)(?P=round)(?P=round_quote)|"""
+    r"""[rR](?P<square_quote>['"])(?P<square>-*)\[[\s\S]*?\](?P=square)(?P=square_quote)|"""
+    r"""[rR](?P<brace_quote>['"])(?P<brace>-*)\{[\s\S]*?\}(?P=brace)(?P=brace_quote)|"""
+    r"""(?P<quote>['"`])(?:\\[\s\S]|(?!(?P=quote))[^\\])*(?P=quote)|(?P<comment>#[^\n]*)"""
+)
+
+
+def git(*args: str) -> bytes:
+    return subprocess.check_output(["git", *args])
+
+
+def paths(output: bytes) -> set[str]:
+    return set(output.decode("utf-8").split("\0")) - {""}
+
+
+def lexer_comments(language: str, source: str):
+    starts = [0, *(match.end() for match in re.finditer("\n", source))]
+    lexer = get_lexer_by_name(language)
+    pending = ""
+    start = 0
+    for offset, token, value in lexer.get_tokens_unprocessed(source):
+        if token in Comment.Multiline or (token in Comment and language != "xml"):
+            if pending and offset == start + len(pending) and token in Comment.Multiline:
+                pending += value
+                continue
+            if pending:
+                yield bisect_right(starts, start), pending.rstrip()
+            start, pending = offset, value
+        elif pending:
+            yield bisect_right(starts, start), pending.rstrip()
+            pending = ""
+    if pending:
+        yield bisect_right(starts, start), pending.rstrip()
+
+
+def mapping(node: yaml.Node | None) -> dict[str, yaml.Node]:
+    if isinstance(node, yaml.MappingNode):
+        return {key.value: value for key, value in node.value if isinstance(key, yaml.ScalarNode)}
+    return {}
+
+
+def scalar(node: yaml.Node | None, default: str = "") -> str:
+    return node.value if isinstance(node, yaml.ScalarNode) else default
+
+
+def default_shell(entries: dict[str, yaml.Node], fallback: str) -> str:
+    run = mapping(mapping(entries.get("defaults")).get("run"))
+    return scalar(run.get("shell"), fallback)
+
+
+def embedded_comments(language: str, script: yaml.Node | None, source: str):
+    if not isinstance(script, yaml.ScalarNode):
+        return
+    start, end = script.start_mark, script.end_mark
+    if start is None or end is None:
+        raise ValueError("GitHub script node has no source location")
+    offset = start.line
+    code = script.value
+    if script.style in {"|", ">"}:
+        code = dedent(source[start.index:end.index].partition("\n")[2])
+        offset += 1
+    if language == "python":
+        found = python_comments(code)
+    elif language in {"bash", "powershell", "javascript"}:
+        found = lexer_comments(language, code)
+    else:
+        return
+    for line, comment in found:
+        yield offset + line, comment
+
+
+def workflow_comments(source: str):
+    root = mapping(yaml.compose(source))
+    workflow_shell = default_shell(root, "")
+    jobs = mapping(root.get("jobs")).values()
+    for job in [mapping(root.get("runs")), *(mapping(node) for node in jobs)]:
+        runner = scalar(job.get("runs-on"))
+        fallback = "powershell" if runner.startswith("windows-") else "bash"
+        shell = default_shell(job, workflow_shell or fallback)
+        steps = job.get("steps")
+        if not isinstance(steps, yaml.SequenceNode):
+            continue
+        for node in steps.value:
+            step = mapping(node)
+            choice = scalar(step.get("shell"), shell).partition(" ")[0]
+            yield from embedded_comments(SHELLS.get(choice, choice), step.get("run"), source)
+            if scalar(step.get("uses")).startswith("actions/github-script@"):
+                yield from embedded_comments("javascript", mapping(step.get("with")).get("script"), source)
+
+
+def python_comments(source: str):
+    for token in tokenize.generate_tokens(io.StringIO(source).readline):
+        if token.type == tokenize.COMMENT:
+            yield token.start[0], token.string.rstrip()
+
+
+def r_comments(source: str):
+    for match in R_LEXEMES.finditer(source):
+        if match.group("comment") is not None:
+            yield source.count("\n", 0, match.start()) + 1, match["comment"].rstrip()
+
+
+def source_comments(path: str, source: str):
+    suffix = Path(path).suffix.lower()
+    if suffix in {".py", ".spec"}:
+        yield from python_comments(source)
+    elif suffix == ".r":
+        yield from r_comments(source)
+    elif path in HASH_CONFIG:
+        yield from (
+            (line, value.strip())
+            for line, value in enumerate(source.splitlines(), 1)
+            if value.lstrip().startswith("#")
+        )
+    elif suffix in LEXERS:
+        yield from lexer_comments(LEXERS[suffix], source)
+    if path.startswith(".github/") and suffix in {".yml", ".yaml"}:
+        yield from workflow_comments(source)
+
+
+def comments(path: str, data: bytes):
+    source = data.decode("utf-8-sig").replace("\r\n", "\n")
+    suffix = Path(path).suffix.lower()
+    for line, comment in source_comments(path, source):
+        if LICENSE.fullmatch(comment) and line <= 5:
+            continue
+        if comment.startswith("#!") and line == 1 and suffix in {".py", ".r", ".sh"}:
+            continue
+        if suffix == ".r" and path.startswith("r/RCMetaR/R/") and comment.startswith("#'"):
+            continue
+        yield line, comment
+
+
+def check(base: str) -> int:
+    revision = git("rev-parse", "--verify", "--end-of-options", f"{base}^{{commit}}").decode().strip()
+    existing = paths(git("ls-tree", "--name-only", "-rz", revision))
+    changed = paths(git("diff", "--no-renames", "--name-only", "-z", "--diff-filter=ACMT", revision, "--"))
+    changed |= paths(git("ls-files", "--others", "--exclude-standard", "-z"))
+    failures = 0
+    for path in sorted(changed):
+        file = Path(path)
+        if not file.is_file() or file.is_symlink():
+            continue
+        if path not in HASH_CONFIG and file.suffix.lower() not in LEXERS.keys() | {".py", ".spec", ".r"}:
+            continue
+        baseline = git("cat-file", "blob", f"{revision}:{path}") if path in existing else b""
+        allowed = Counter(text for _, text in comments(path, baseline))
+        for line, text in comments(path, file.read_bytes()):
+            if allowed[text]:
+                allowed[text] -= 1
+                continue
+            print(f"{path}:{line}: new comment {text.splitlines()[0]}")
+            failures += 1
+    if failures:
+        print(f"Comment ratchet rejected {failures} new comment(s). Record decisions in docs/adr/.")
+        return 1
+    print(f"Comment ratchet passed against {revision}.")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Reject comments added since a Git revision.")
+    parser.add_argument("--base", default="HEAD")
+    try:
+        return check(parser.parse_args().base)
+    except (OSError, ValueError, SyntaxError, subprocess.CalledProcessError, tokenize.TokenError, yaml.YAMLError) as error:
+        print(f"Comment ratchet could not run: {error}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

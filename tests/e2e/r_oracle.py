@@ -5,9 +5,11 @@ import os
 from pathlib import Path
 import subprocess
 
+from rc_metastudio.settings import analysis_scratch
+
 
 def evaluate(expression: str):
-    directory = Path(os.environ["RCMS_ANALYSIS_SCRATCH_DIR"]) / "oracle"
+    directory = analysis_scratch().root / "oracle"
     directory.mkdir(parents=True, exist_ok=True)
     source = directory / "expression.R"
     source.write_text(expression, encoding="utf-8")

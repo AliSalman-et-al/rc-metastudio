@@ -35,14 +35,6 @@ function Resolve-CommandOrRepoPath {
     return $command.Source
 }
 
-function Get-ProjectVersion {
-    param([string]$PythonExe)
-    $pyprojectPath = Join-Path $repoRoot "pyproject.toml"
-    $version = & $PythonExe -c "import pathlib, sys, tomllib; print(tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))['project']['version'])" $pyprojectPath
-    if ($LASTEXITCODE -ne 0 -or -not $version) { throw "Could not resolve RC MetaStudio version from pyproject.toml." }
-    return $version.Trim()
-}
-
 function Assert-PathExists {
     param([string]$Path, [string]$Description)
     if (-not (Test-Path $Path)) { throw "$Description was not found at '$Path'." }
@@ -526,7 +518,9 @@ if ($LASTEXITCODE -ne 0) { throw "Package download retry self-test failed." }
 & $PythonExe -c "import sys; raise SystemExit(0 if sys.version_info[:2] == (3, 14) else 1)"
 if ($LASTEXITCODE -ne 0) { throw "Windows packaging requires the locked Python 3.14 runtime." }
 
-$projectVersion = Get-ProjectVersion -PythonExe $PythonExe
+$projectVersion = & $PythonExe (Join-Path $PSScriptRoot "dependency_lock.py") --project-version
+if ($LASTEXITCODE -ne 0 -or -not $projectVersion) { throw "Could not resolve RC MetaStudio version from pyproject.toml." }
+$projectVersion = $projectVersion.Trim()
 $artifactName = "RCMetaStudio-$projectVersion-windows-x64"
 $archiveRootName = $artifactName
 $zipPath = Join-Path $artifactDir "$artifactName.zip"
@@ -590,8 +584,6 @@ Push-Location $repoRoot
 $previousPyQtRoot = $env:RCMS_PYQT_ROOT
 $previousQt6BuildRoot = $env:RCMS_QT6_BUILD_ROOT
 try {
-    # packaging/pyinstaller/rc-metastudio.spec is the sole authoritative
-    # PyInstaller collection definition. This wrapper only supplies build roots.
     $env:RCMS_PYQT_ROOT = $pyQtRoot
     $qt6PackageBuildRoot = Join-Path $workRoot "qt6-input"
     & $PythonExe (Join-Path $repoRoot "scripts\build_qt6.py") generate --build-root $qt6PackageBuildRoot

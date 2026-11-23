@@ -2,166 +2,140 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Domain operations shared by the dataset table adapter."""
 
-import math
+from dataclasses import dataclass
 from rc_metastudio.analysis.catalog import (
-    BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, RAW_FIELDS_PER_ARM,
+    BINARY_ONE_ARM_METRICS, CONTINUOUS_ONE_ARM_METRICS, ONE_ARM_METRICS, RAW_FIELDS_PER_ARM,
     RATIO_DATA_TYPES,
 )
 
-from collections.abc import Buffer, Callable, Mapping, Sequence
-from typing import Protocol, SupportsFloat, SupportsIndex, TypeAlias, cast, runtime_checkable
+from collections.abc import Callable, Mapping, Sequence
+from typing import Protocol, cast
 
-from rc_metastudio.project.model import StudyRow
-from rc_metastudio.project.study import AnalysisUnit
-from rc_metastudio.analysis.catalog import BINARY, BINARY_TWO_ARM_METRICS, CONTINUOUS, CONTINUOUS_TWO_ARM_METRICS, DIAGNOSTIC, DIAGNOSTIC_METRICS
+from rc_metastudio.domain_ids import RowId
+from rc_metastudio.project.model import Sheet, StudyRow
+from rc_metastudio.project.study import AnalysisUnit, EffectSource
+from rc_metastudio.ratio_data import RATIO_FIELDS
+from rc_metastudio.analysis.catalog import BINARY, CONTINUOUS, DIAGNOSTIC
 from rc_metastudio.analysis.validation import EMPTY_VALS
 
-Scalar: TypeAlias = float | int | str | None
+def comparison_key(sheet: Sheet | None, metric: str | None) -> tuple[str, ...]:
+    if sheet is None:
+        return ()
+    arms = sheet.arms[:1] if metric in ONE_ARM_METRICS else sheet.arms
+    return tuple(arm.id for arm in arms)
 
 
-@runtime_checkable
-class ScaleBridge(Protocol):
-    def binary_convert_scale(self, value: object, effect: object, *, convert_to: str, n1: object = None) -> object: ...
-    def continuous_convert_scale(self, value: object, effect: object, *, convert_to: str) -> object: ...
-    def diagnostic_convert_scale(self, value: object, effect: object, *, convert_to: str) -> object: ...
-    def effect_for_study(self, *args: object, **kwargs: object) -> object: ...
-    def continuous_effect_for_study(self, *args: object, **kwargs: object) -> object: ...
-    def effect_triplet(self, value: object, scale: str, *, metric: object) -> tuple[Scalar, Scalar, Scalar]: ...
-    def diagnostic_effects_for_study(self, *args: object, **kwargs: object) -> Mapping[str, object]: ...
+def display_effect_source(
+    unit: AnalysisUnit, metric: str | None, arm_key: tuple[str, ...], arm_names: Sequence[str],
+) -> EffectSource:
+    selected = unit.calculator_source(metric, arm_key)
+    if selected is not None:
+        return selected
+    return _source_from_raw(unit.get_raw_data_for_arms(arm_names))
 
 
-def _checked_bridge(value: object) -> ScaleBridge:
-    if not isinstance(value, ScaleBridge):
-        raise TypeError("analysis boundary requires a scale bridge")
-    return value
+def _source_from_raw(raw: Sequence[object]) -> EffectSource:
+    return "derived_preview" if any(value not in (None, "") for value in raw) else "entered"
 
 
+@dataclass(frozen=True, slots=True)
+class FitCovariate:
+    id: str
+    name: str
+    data_type: int
 
 
-
-def make_display_scale_converter(
-    bridge: object, data_type: object, effect: str | None, n1: object = None
-) -> Callable[[object], object]:
-    """Build the calculation-to-display conversion for one outcome family."""
-    if data_type in RATIO_DATA_TYPES:
-        def ratio_to_display(value):
-            if value in (None, ""):
-                return None
-            return math.exp(float(cast(str | Buffer | SupportsFloat | SupportsIndex, value)))
-        return ratio_to_display
-    checked = _checked_bridge(bridge)
-    if data_type == BINARY:
-        return lambda value: checked.binary_convert_scale(
-            value, effect, convert_to="display.scale", n1=n1
-        )
-    if data_type == CONTINUOUS:
-        return lambda value: checked.continuous_convert_scale(
-            value, effect, convert_to="display.scale"
-        )
-    if data_type == DIAGNOSTIC:
-        return lambda value: checked.diagnostic_convert_scale(
-            value, effect, convert_to="display.scale"
-        )
-    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+@dataclass(frozen=True, slots=True)
+class FitStudy:
+    id: RowId
+    label: str
+    year: int | None
+    raw: tuple[object, ...]
+    effects: tuple[tuple[object, object], ...]
+    covariates: tuple[object, ...]
+    prefer_entered: bool
+    ratio: tuple[object, ...] = ()
 
 
-def to_calculation_scale(
-    bridge: object,
-    value: object,
-    data_type: object,
-    effect: str | None,
-    n1: object = None,
-) -> object:
-    """Convert a user-facing value to the backend's calculation scale."""
-    if data_type in RATIO_DATA_TYPES:
-        if value in (None, ""):
+@dataclass(frozen=True, slots=True)
+class FitSelection:
+    source_metric: str | None
+    metrics: tuple[str, ...]
+    studies: tuple[FitStudy, ...]
+    covariates: tuple[FitCovariate, ...]
+
+    def raw_for_fit(self) -> Sequence[Sequence[object]] | None:
+        if any(row.prefer_entered for row in self.studies):
             return None
-        if not isinstance(value, (str, int, float)):
-            raise TypeError("A numerical ratio is required.")
-        return math.log(float(value))
-    checked = _checked_bridge(bridge)
-    if data_type == BINARY:
-        return checked.binary_convert_scale(
-            value, effect, convert_to="calc.scale", n1=n1
-        )
-    if data_type == CONTINUOUS:
-        return checked.continuous_convert_scale(value, effect, convert_to="calc.scale")
-    if data_type == DIAGNOSTIC:
-        return checked.diagnostic_convert_scale(value, effect, convert_to="calc.scale")
-    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+        return _complete_fit_raw_rows([row.raw for row in self.studies], self.source_metric)
+
+    def effects_for(self, metric: str) -> tuple[tuple[object, object], ...]:
+        index = self.metrics.index(metric)
+        return tuple(row.effects[index] for row in self.studies)
 
 
-def calculate_raw_effects(
-    bridge: object,
-    data_type: object,
-    effect: str | None,
-    raw_data: Sequence[object],
-    confidence_level: float,
-) -> tuple[tuple[Scalar, Scalar, Scalar], object] | dict[str, tuple[Scalar, Scalar, Scalar]]:
-    """Calculate backend effects from one study's raw data."""
-    checked = _checked_bridge(bridge)
-    if data_type == BINARY:
-        return _binary_raw_effect(checked, effect, raw_data, confidence_level)
-    if data_type == CONTINUOUS:
-        return _continuous_raw_effect(checked, effect, raw_data, confidence_level)
-    if data_type == DIAGNOSTIC:
-        return _diagnostic_raw_effect(checked, raw_data, confidence_level)
-    raise ValueError(f"Unsupported outcome type: {data_type!r}")
+class FitModel(Protocol):
+    @property
+    def current_sheet(self) -> Sheet | None: ...
+
+    @property
+    def current_effect(self) -> str | None: ...
+
+    @property
+    def confidence_multiplier(self) -> float: ...
 
 
-def _effect_triplet(checked: ScaleBridge, result: object, effect: str | None) -> tuple[Scalar, Scalar, Scalar]:
-    if result is None:
-        return (None, None, None)
-    return checked.effect_triplet(result, "calc_scale", metric=effect)
-
-
-def _binary_raw_effect(
-    checked: ScaleBridge,
-    effect: str | None,
-    raw_data: Sequence[object],
-    confidence_level: float,
-) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    e1, n1 = raw_data[:2]
-    if effect in BINARY_TWO_ARM_METRICS:
-        e2, n2 = raw_data[2:]
-        result = checked.effect_for_study(e1, n1, e2, n2, metric=effect, confidence_level=confidence_level)
-    else:
-        result = checked.effect_for_study(e1, n1, two_arm=False, metric=effect, confidence_level=confidence_level)
-    return _effect_triplet(checked, result, effect), n1
-
-
-def _continuous_raw_effect(
-    checked: ScaleBridge,
-    effect: str | None,
-    raw_data: Sequence[object],
-    confidence_level: float,
-) -> tuple[tuple[Scalar, Scalar, Scalar], object]:
-    n1, m1, sd1 = raw_data[:3]
-    if effect in CONTINUOUS_TWO_ARM_METRICS:
-        n2, m2, sd2 = raw_data[3:]
-        result = checked.continuous_effect_for_study(
-            n1, m1, sd1, n2=n2, m2=m2, sd2=sd2, metric=effect, confidence_level=confidence_level
-        )
-    else:
-        result = checked.continuous_effect_for_study(
-            n1, m1, sd1, two_arm=False, metric=effect, confidence_level=confidence_level
-        )
-    return _effect_triplet(checked, result, effect), n1
-
-
-def _diagnostic_raw_effect(
-    checked: ScaleBridge,
-    raw_data: Sequence[object],
-    confidence_level: float,
-) -> dict[str, tuple[Scalar, Scalar, Scalar]]:
-    tp, fn, fp, tn = raw_data
-    results = checked.diagnostic_effects_for_study(
-        tp, fn, fp, tn, metrics=DIAGNOSTIC_METRICS, confidence_level=confidence_level
+def capture_fit_selection(
+    model: FitModel,
+    metrics: Sequence[str],
+    *,
+    covariates: Sequence[Mapping[str, object]] | None = None,
+    studies: Sequence[StudyRow] | None = None,
+) -> FitSelection:
+    """Capture backend inputs from canonical rows before calling the worker."""
+    sheet = model.current_sheet
+    if sheet is None:
+        raise ValueError("Select an outcome before preparing analysis inputs.")
+    metrics = tuple(metrics)
+    source_metric = model.current_effect if sheet.data_type == DIAGNOSTIC else metrics[0]
+    arm_key = comparison_key(sheet, source_metric)
+    arm_names = tuple(arm.name for arm in sheet.arms)
+    confidence = model.confidence_multiplier
+    descriptors = tuple(
+        FitCovariate(cast(str, cov["id"]), str(cov["name"]), cast(int, cov["data_type"]))
+        for cov in (sheet.covariates if covariates is None else covariates)
     )
-    return {
-        metric: checked.effect_triplet(results[metric], "calc_scale", metric=metric)
-        for metric in DIAGNOSTIC_METRICS
-    }
+    selected_ids = None if studies is None else {study.id for study in studies}
+    rows = (
+        _capture_fit_study(row, metrics, source_metric, arm_key, arm_names, confidence, descriptors, sheet.data_type)
+        for row in sheet.rows if row.include and (selected_ids is None or row.id in selected_ids)
+    )
+    return FitSelection(source_metric, metrics, tuple(rows), descriptors)
+
+
+def _capture_fit_study(
+    row: StudyRow, metrics: tuple[str, ...], source_metric: str | None,
+    arm_key: tuple[str, ...], arm_names: tuple[str, ...], confidence: float,
+    covariates: tuple[FitCovariate, ...], data_type: int,
+) -> FitStudy:
+    unit = row.analysis_unit
+    raw = unit.get_raw_data_for_arms(arm_names)
+    selected_source = unit.calculator_source(source_metric, arm_key)
+    if data_type in RATIO_DATA_TYPES:
+        record = unit.ratio_input(arm_names)
+        record.validate()
+        source = record.selected_source(raw, metric=metrics[0])
+        ratio = tuple(source if name == "source" else getattr(record, name) for name in RATIO_FIELDS)
+        effects = tuple((None, None) for _ in metrics)
+    else:
+        ratio = ()
+        source = selected_source if selected_source is not None else _source_from_raw(raw)
+        effects = tuple(unit.get_effect_and_se_for_source(source, metric, arm_key, confidence) for metric in metrics)
+    return FitStudy(
+        row.id, row.label, row.year, tuple(raw), effects,
+        tuple(row.covariate_values.get(cov.id) for cov in covariates),
+        selected_source == "entered", ratio,
+    )
 
 
 def raw_data_is_complete(raw_data: Sequence[object]) -> bool:
@@ -208,7 +182,13 @@ def fit_raw_rows(
         for study in studies
     ):
         return None
-    arm_fields = _FIRST_ARM_FIELDS.get(metric)
+    return _complete_fit_raw_rows(raw_rows, metric)
+
+
+def _complete_fit_raw_rows(
+    raw_rows: Sequence[Sequence[object]], metric: str | None,
+) -> Sequence[Sequence[object]] | None:
+    arm_fields = _FIRST_ARM_FIELDS.get(metric) if metric is not None else None
     if arm_fields is not None:
         raw_rows = [row[:arm_fields] for row in raw_rows]
     return raw_rows if all(raw_data_is_complete(row) for row in raw_rows) else None

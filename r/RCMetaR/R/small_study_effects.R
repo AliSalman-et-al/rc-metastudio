@@ -327,7 +327,6 @@
     if (diagnostic) params$funnels <- "deeks"
     derived <- .small.study.reconstruct(om.data, metric, params)
     eligibility <- .small.study.eligibility(om.data, params, prepared=derived)
-    # Eligibility owns the sole study-set decision for an executed analysis.
     keep <- logical(length(derived$y))
     keep[eligibility$included.indices] <- TRUE
     if (!any(keep)) stop("Small-study effects analysis requires finite effects and standard errors.")
@@ -711,8 +710,6 @@
     output$sections <- .small.study.sections(output, plots)
     plots$failures <- NULL
     result <- c(output, plots)
-    # Reconstruction always evaluates the metafor pooled model and the meta
-    # native model used to determine eligible procedures, even if none runs.
     versions <- prepared$eligibility$package.versions
     packages <- list(metafor=as.character(numeric_version(versions[["metafor"]])), meta=versions[["meta"]])
     attr(result, "rcms.execution") <- list(packages=packages, inference=character())
@@ -781,8 +778,6 @@
             method.incr=method.incr, common=TRUE, random=TRUE, method.tau="REML", level=.small.study.meta.level(confidence.level)
         ))
     }
-    # Effect-only data have no raw model representation, so metagen is the
-    # package-native generic model for the entered log effects.
     meta::metagen(TE=y, seTE=se, studlab=names(y), sm=metric, common=TRUE, random=TRUE, method.tau="REML", level=.small.study.meta.level(confidence.level))
 }
 
@@ -1533,7 +1528,6 @@ rcmetar.warm.small.study.effects <- function() {
     ratio <- .small.study.funnel.ratio(params)
     args <- .small.study.funnel.args(settings, center, se[keep], ratio)
     if (identical(settings$kind, "trimfill")) {
-        # Draw the augmented data, retaining which studies were filled by meta.
         args$pch <- ifelse(params$trimfill.imputed[keep], 1L, settings$point.symbol)
     }
     do.call(metafor::funnel, c(list(model), args))

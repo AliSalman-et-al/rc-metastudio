@@ -25,8 +25,6 @@ def owned_process(
     grace_seconds: float = 5,
 ) -> Generator[subprocess.Popen[bytes]]:
     windows = os.name == "nt"
-    # Assign the job before the command can start a child (including Python's
-    # Windows virtual environment redirector launching the real interpreter).
     create_suspended = 0x00000004
     process = subprocess.Popen(
         command,

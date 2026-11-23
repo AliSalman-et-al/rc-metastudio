@@ -57,7 +57,7 @@ def _muted_label(text: str = "") -> QLabel:
 class TrialSequentialAnalysisDialog(QDialog):
     def __init__(
         self, model: DatasetTableModel, parent: QWidget, *,
-        saved: TsaOptions, on_result: Callable[[AnalysisResult, ManuscriptReport], None],
+        request: TsaRequest, on_result: Callable[[AnalysisResult, ManuscriptReport], None],
         on_settings_saved: Callable[[TsaOptions], None],
         service: TsaService | None = None,
     ) -> None:
@@ -68,7 +68,8 @@ class TrialSequentialAnalysisDialog(QDialog):
         self.on_result = on_result
         self.on_settings_saved = on_settings_saved
         self.service = service or TsaService()
-        self.base_request = TsaRequest.from_sheet(model, saved)
+        self.base_request = request
+        saved = request.options
         self.default_inputs: dict[QLineEdit, tuple[QLabel, QPushButton]] = {}
         self.entered_inputs: set[QLineEdit] = set()
         self.binary = self.base_request.family == "binary"

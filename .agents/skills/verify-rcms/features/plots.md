@@ -77,6 +77,11 @@ The `subgroup-image` and `subgroup-image-dark-large` drives run meantime by trea
   snapshot, method, metric, inference and display settings. Running creates a new
   result with its own plot files; Cancel preserves the original. This also works
   after opening another project in the main window. No persistent history is kept.
+- Figure settings from an open Results window continue to save to the same outcome
+  across project undo and redo. Opening an archive starts a new attachment identity,
+  even for the same file. The retained Windows attachment proof applies a real
+  plot edit after undo and redo, reopens the same archive, and reruns the old
+  result before checking that its figure edits stay local.
 - New forest analyses use Default; saved style choices are preserved. RevMan
   includes weights and available raw arm totals. **Study order** in
   setup and the forest editor changes only row positions: table order, year,

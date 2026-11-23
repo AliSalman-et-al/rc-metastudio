@@ -83,7 +83,6 @@ def run(app, window, work, record):
                 expected_effect, expected_se = expected['estimate'], expected['se']
             else:
                 expression = f'metafor::conv.wald(out={expected["estimate"]},ci.lb={expected["lower"]},ci.ub={expected["upper"]},level={expected["confidence"]},transf=log)'
-                # Direct public conversion, independently from RCMS's source-selection adapter.
                 reference = json.loads(str(r_oracle.evaluate('jsonlite::toJSON('+expression+',digits=16)')[0]))[0]
                 expected_effect, expected_se = reference['yi'], math.sqrt(reference['vi'])
             derived = fit.evaluate('c(result$input_data@y[1], result$input_data@SE[1])')
@@ -123,7 +122,7 @@ def run(app, window, work, record):
                     if mode == 'ratio':
                         from statistics import NormalDist
                         from zipfile import ZipFile
-                        from rc_metastudio.results.report import write_docx
+                        from rc_metastudio.results.report_export import write_docx
 
                         fitted_lower = math.exp(expected_effect - NormalDist().inv_cdf(.975) * expected_se)
                         displayed = format(Decimal(f'{fitted_lower:.1e}'), 'f')

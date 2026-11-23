@@ -3,28 +3,31 @@
 """Qt table model for the current sheet."""
 from rc_metastudio.domain_ids import RowId, SheetId
 
-import copy
+from collections.abc import Sequence
+from copy import deepcopy
+from dataclasses import dataclass, field
 import math
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio.analysis import identity as analysis_identity
-from rc_metastudio import name_validation, qt_text, r_runtime
+from rc_metastudio import name_validation, qt_text
 from rc_metastudio.workspace import editing as workspace_editing
 from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES
 from rc_metastudio.ratio_data import RATIO_FIELDS
 
-from rc_metastudio.project.model import Dataset, StudyRow
+from rc_metastudio.project.model import Dataset, Sheet, StudyRow
 from rc_metastudio.project.study import AnalysisUnit
 import uuid
 from rc_metastudio.analysis.study_selection import (
+    comparison_key, display_effect_source,
     fit_raw_rows,
     has_study_entered_data,
     included_studies_have_effects,
     raw_data_is_complete,
     )
-from rc_metastudio.analysis.catalog import CONTINUOUS, DIAGNOSTIC, ONE_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis.catalog import CONTINUOUS, DIAGNOSTIC, ONE_ARM_METRICS
 from rc_metastudio.analysis.validation import DEFAULT_CONFIDENCE_LEVEL, EMPTY_VALS
 from rc_metastudio.results.formatting import NUM_DIGITS
 from rc_metastudio.workspace.columns import (
@@ -35,9 +38,28 @@ from rc_metastudio.workspace.column_identity import (
     WorkspaceColumnIdentity,
 )
 
-# number of (empty) rows in the spreadsheet to show
-# following the last study.
 TRAILING_EMPTY_ROW_COUNT = 20
+
+type _CellPosition = tuple[int, int]
+type _CellEdits = tuple[_CellPosition | None, list[_CellPosition]]
+
+
+@dataclass(slots=True)
+class _SheetEditDraft:
+    sheet: Sheet
+    context: workspace_editing.WorkspaceEditingContext
+    order: list[int]
+    blank: StudyRow | None
+    errors: list[str] = field(default_factory=list)
+    last_error: str | None = None
+    accepted: bool = False
+
+    def study_at(self, row: int) -> StudyRow | None:
+        if row < len(self.order):
+            return self.sheet.rows[self.order[row]]
+        return self.blank if row == len(self.order) else None
+
+
 def _editable_data(value=None):
     if value is None:
         return ""
@@ -67,6 +89,7 @@ class DatasetTableModel(QAbstractTableModel):
     """Expose dataset studies and analysis units through Qt's table model API."""
 
     workspaceEditCommitted = pyqtSignal()
+    currentSheetChanged = pyqtSignal(object)
     dataError = pyqtSignal(str)
     confLevelChanged = pyqtSignal()
     INCLUDE_STUDY = INCLUDE_COLUMN
@@ -87,38 +110,42 @@ class DatasetTableModel(QAbstractTableModel):
         return self.dataset.sheet(self.current_sheet_id) if self.current_sheet_id else None
 
     def set_current_sheet(self, sheet_id: SheetId, *, refresh_previews: bool = False) -> None:
-        candidate = type(self)(
-            dataset=self.dataset, add_blank_study=False, current_sheet_id=sheet_id,
-        )
-        candidate.editing_service = self.editing_service
-        candidate._refresh_effect_display(refresh_previews)
-        self._adopt_projection(candidate)
+        sheet = self.dataset.sheet(sheet_id)
+        state = self._sheet_view_state(sheet)
+        confidence = workspace_editing.ConfidenceSettings(state.confidence_level, state.confidence_multiplier)
+        context = workspace_editing.WorkspaceEditingContext.for_sheet(sheet, state.current_effect, confidence)
+        if refresh_previews:
+            self.editing_service.update_effect_previews(sheet.rows, context, update_inclusion=False)
+        self.editing_service.recalculate_display_scale(sheet.rows, context)
+
+        self.beginResetModel()
+        try:
+            self._install_sheet_projection(state, sheet)
+            self.currentSheetChanged.emit(sheet_id)
+        finally:
+            self.endResetModel()
         self.confLevelChanged.emit()
 
-    def _adopt_projection(self, candidate: "DatasetTableModel") -> None:
-        self.beginResetModel()
-        self.dataset = candidate.dataset
-        self.view_state = candidate.view_state
-        self.columns = candidate.columns
-        self.RAW_DATA = candidate.RAW_DATA
-        self.OUTCOMES = candidate.OUTCOMES
-        self._display_studies = candidate._display_studies
-        self._blank_study = candidate._blank_study
-        self.endResetModel()
+    def _sheet_view_state(self, sheet) -> workspace_editing.WorkspaceViewState:
+        settings = sheet.settings if sheet else {}
+        confidence = self.editing_service.confidence_settings(
+            settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL)
+        )
+        return workspace_editing.WorkspaceViewState(
+            sheet.id if sheet else None, workspace_editing.selected_metric(sheet),
+            confidence.level, confidence.multiplier,
+        )
 
-    def _configure_sheet(self, sheet_id: SheetId | None, *, add_blank_study: bool = False) -> None:
-        self.current_sheet_id = sheet_id
-        sheet = self.current_sheet
+    def _install_sheet_projection(
+        self, state: workspace_editing.WorkspaceViewState, sheet, *, add_blank_study: bool = False,
+    ) -> None:
+        self.view_state = state
         self._blank_study = None
         self._display_studies = list(sheet.rows) if sheet else []
         if add_blank_study and sheet:
             self._blank_study = self._empty_entry_row()
             self._display_studies.append(self._blank_study)
         self.update_column_indices()
-        settings = sheet.settings if sheet else {}
-        self.current_effect = workspace_editing.selected_metric(sheet)
-        confidence = settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL)
-        self._set_display_confidence(self.editing_service.confidence_settings(confidence))
 
     dataset: Dataset
 
@@ -159,16 +186,17 @@ class DatasetTableModel(QAbstractTableModel):
     def __init__(
         self, dataset: Dataset | None = None, add_blank_study: bool = True,
         *, current_sheet_id: SheetId | None = None,
+        editing_service: workspace_editing.WorkspaceEditingService | None = None,
     ):
         super().__init__()
 
-        self.view_state = workspace_editing.WorkspaceViewState()
-        self.editing_service = workspace_editing.WorkspaceEditingService()
+        self.editing_service = editing_service if editing_service is not None else workspace_editing.WorkspaceEditingService()
         self.dataset = dataset if dataset is not None else Dataset()
         if current_sheet_id is None and self.dataset.sheets:
             current_sheet_id = self.dataset.sheets[0].id
         self._blank_study: StudyRow | None
-        self._configure_sheet(current_sheet_id, add_blank_study=add_blank_study)
+        sheet = self.dataset.sheet(current_sheet_id) if current_sheet_id else None
+        self._install_sheet_projection(self._sheet_view_state(sheet), sheet, add_blank_study=add_blank_study)
         self.NUM_DIGITS = NUM_DIGITS
 
     def reset_model(self, *, refresh_previews: bool = False) -> None:
@@ -202,7 +230,7 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _empty_entry_row(self) -> StudyRow:
         sheet = self.current_sheet
-        unit = AnalysisUnit(sheet, arm_names=self.arm_names, arm_stable_ids=[arm.id for arm in sheet.arms])
+        unit = AnalysisUnit(sheet)
         return StudyRow(RowId(uuid.uuid4().hex), "", unit, include=False)
 
     def _sync_display_studies(self, *, notify=False):
@@ -233,7 +261,7 @@ class DatasetTableModel(QAbstractTableModel):
 
 
     def update_column_indices(self):
-        self.columns = sheet_columns(self.get_current_data_type(False), self.get_current_data_subtype())
+        self.columns = sheet_columns(self.current_data_type, self.get_current_data_subtype())
         self.RAW_DATA = list(self.columns.raw_sections)
         self.OUTCOMES = list(self.columns.effect_sections)
 
@@ -268,8 +296,7 @@ class DatasetTableModel(QAbstractTableModel):
         if column in self.RAW_DATA:
             return self._raw_cell_data(index, role, study)
         if column in self.OUTCOMES:
-            from rc_metastudio import r_runtime
-            if not r_runtime.is_ready():
+            if not self.editing_service.backend_ready():
                 return ""
             return self._outcome_cell_data(index, role, study)
         if self._is_covariate_column(column):
@@ -290,7 +317,7 @@ class DatasetTableModel(QAbstractTableModel):
             return str(value)
         try:
             raw = self.columns.raw[adjusted_index]
-            if self.get_current_data_type(False) == CONTINUOUS and not raw.field.count:
+            if self.current_data_type == CONTINUOUS and not raw.field.count:
                 return str(self.format_float(value))
             return round(value, self.NUM_DIGITS)
         except (TypeError, ValueError):
@@ -301,7 +328,7 @@ class DatasetTableModel(QAbstractTableModel):
             return ""
         unit = study.analysis_unit
         outcome_index = index.column() - self.OUTCOMES[0]
-        if self.get_current_data_type(get_str=False) in RATIO_DATA_TYPES:
+        if self.current_data_type in RATIO_DATA_TYPES:
             return self._ratio_outcome_cell_data(unit, outcome_index, role)
         source, metric, comparison, values, position = self._display_effect(study, outcome_index)
         return self._effect_cell_data(
@@ -319,7 +346,7 @@ class DatasetTableModel(QAbstractTableModel):
             position %= 3
         getter = (
             unit.get_display_effect_and_se_for_source
-            if self.get_current_data_type(False) == CONTINUOUS
+            if self.current_data_type == CONTINUOUS
             and self.get_current_data_subtype() == "generic_effect"
             else unit.get_display_effect_and_ci_for_source
         )
@@ -395,7 +422,7 @@ class DatasetTableModel(QAbstractTableModel):
     def _effect_tooltip(self, index, study):
         if index.column() not in self.OUTCOMES or not self._outcome_cell_is_available(study):
             return None
-        if self.get_current_data_type(get_str=False) in RATIO_DATA_TYPES:
+        if self.current_data_type in RATIO_DATA_TYPES:
             return self._ratio_effect_tooltip(index) if index.column() in self.OUTCOMES[:3] else None
         return self._derived_effect_tooltip(index)
 
@@ -465,7 +492,7 @@ class DatasetTableModel(QAbstractTableModel):
         return None
 
     def get_current_arm_key(self):
-        return workspace_editing.comparison_key(self.current_sheet, self.current_effect)
+        return comparison_key(self.current_sheet, self.current_effect)
 
     def _editable_field(self, column: int) -> EditableField | None:
         sheet = self.current_sheet
@@ -478,11 +505,9 @@ class DatasetTableModel(QAbstractTableModel):
         )
 
     def _display_effect_source(self, analysis_unit):
-        selected = analysis_unit.calculator_source(self.current_effect, self.get_current_arm_key())
-        if selected is not None:
-            return selected
-        raw_data = analysis_unit.get_raw_data_for_arms(self.arm_names)
-        return "derived_preview" if any(value not in (None, "") for value in raw_data) else "entered"
+        return display_effect_source(
+            analysis_unit, self.current_effect, self.get_current_arm_key(), self.arm_names,
+        )
 
     def _publish_workspace_edit(self, index):
         column = index.column()
@@ -503,7 +528,6 @@ class DatasetTableModel(QAbstractTableModel):
         changed_top_left = self.index(index.row(), changed_first_column)
         changed_bottom_right = self.index(index.row(), changed_last_column)
         role_values = [int(item) for item in roles]
-        # Publish durable history before a visual observer can reenter the model.
         self.workspaceEditCommitted.emit()
         self.dataChanged.emit(changed_top_left, changed_bottom_right, role_values)
 
@@ -533,7 +557,7 @@ class DatasetTableModel(QAbstractTableModel):
             return workspace_editing.CellRejection("This cell is read-only.")
         row_order = self._canonical_display_order() if field in ("name", "year") else None
         rejection = self.editing_service.apply_edit(
-            self.dataset, canonical_row, field, self._editing_context(), value, row_order=row_order,
+            self.current_sheet, canonical_row, field, self._editing_context(), value, row_order=row_order,
         )
         if rejection is not None:
             return rejection
@@ -556,57 +580,133 @@ class DatasetTableModel(QAbstractTableModel):
         return None
 
     def paste_cells(self, first_row, columns, values) -> int:
-        """Stage clipboard edits against the visible row order and publish them together."""
-        candidate = type(self)(
-            dataset=copy.deepcopy(self.dataset), add_blank_study=False,
-            current_sheet_id=self.current_sheet_id,
+        sheet = self.current_sheet
+        if sheet is None:
+            raise ValueError("Select an outcome before pasting study data.")
+        fields = [self._editable_field(column) for column in columns[:len(values[0])]]
+        if "include" in fields:
+            include_at = fields.index("include")
+            values = [list(row) for row in values]
+            for row in values:
+                checked, valid = _parse_inclusion(row[include_at])
+                if valid:
+                    row[include_at] = checked
+        rows, order, skipped = self.editing_service.prepare_paste(
+            sheet, self._editing_context(), self._canonical_display_order(), first_row, fields, values,
         )
-        by_id = {study.id: study for study in candidate.current_sheet.rows}
-        candidate._display_studies = [by_id[study_id] for study_id in self.get_ordered_study_ids()]
-        sheet = candidate.current_sheet
-        row_order = candidate._canonical_display_order()
-        identity_edits = {}
-        for row, cells in enumerate(values, start=first_row):
-            fields = {("name" if column == self.NAME else "year"): value
-                      for column, value in zip(columns, cells) if column in (self.NAME, self.YEAR)}
-            if fields:
-                identity_edits[row_order[row] if row < len(row_order) else row] = fields
-        rejection, skipped = candidate.editing_service.edit_study_identities(
-            sheet, identity_edits, row_order=row_order, skip_invalid_year=True,
+        self._publish_prepared_rows(sheet, rows, order, None, reset=True)
+        return skipped
+
+    def clear_cells(self, indexes: Sequence[QModelIndex]) -> bool:
+        targets = list(dict.fromkeys(
+            (index.row(), index.column()) for index in indexes if self.flags(index) & Qt.ItemFlag.ItemIsEditable
+        ))
+        if not targets:
+            return False
+        self._apply_selected_cells([(None, targets)], reset=True)
+        return True
+
+    def fill_cells(self, indexes: Sequence[QModelIndex]) -> None:
+        columns: dict[int, list[int]] = {}
+        for index in indexes:
+            if self._valid_edit_index(index):
+                columns.setdefault(index.column(), []).append(index.row())
+        groups: list[_CellEdits] = []
+        for column, rows in sorted(columns.items()):
+            first, *targets = sorted(rows)
+            if targets:
+                groups.append(((first, column), [(row, column) for row in targets]))
+        self._apply_selected_cells(groups, reset=False)
+
+    def _apply_selected_cells(self, groups: Sequence[_CellEdits], *, reset: bool) -> None:
+        sheet = self.current_sheet
+        if sheet is None or not groups:
+            return
+        draft = _SheetEditDraft(
+            deepcopy(sheet), self._editing_context(), self._canonical_display_order(), self._blank_study,
+        )
+        for source, targets in groups:
+            value = "" if source is None else self._draft_cell_value(draft, source)
+            for row, column in targets:
+                if source is None or self._fill_target_is_editable(draft, row, column):
+                    self._apply_draft_cell(draft, row, column, value)
+        if reset:
+            self.editing_service.recalculate_display_scale(draft.sheet.rows, draft.context)
+        if draft.accepted or reset:
+            self._publish_prepared_rows(sheet, draft.sheet.rows, draft.order, draft.blank, reset=reset)
+        for message in draft.errors:
+            self._reject_edit(message)
+        if draft.accepted or draft.errors:
+            self.last_data_error = draft.last_error
+
+    def _draft_cell_value(self, draft: _SheetEditDraft, cell: _CellPosition) -> object:
+        row, column = cell
+        study = draft.study_at(row)
+        if study is None or column == self.INCLUDE_STUDY:
+            return None
+        if study is draft.blank:
+            return ""
+        return self._display_data(self.index(row, column), Qt.ItemDataRole.EditRole, study)
+
+    def _fill_target_is_editable(self, draft: _SheetEditDraft, row: int, column: int) -> bool:
+        study = draft.study_at(row)
+        return column != self.INCLUDE_STUDY and not self._outcome_is_read_only(
+            column, None if study is draft.blank else study,
+        )
+
+    def _apply_draft_cell(self, draft: _SheetEditDraft, row: int, column: int, value: object) -> None:
+        canonical = draft.order[row] if row < len(draft.order) else row
+        editable = self._editable_field(column)
+        old_count = len(draft.sheet.rows)
+        rejection = (
+            workspace_editing.CellRejection("This cell is read-only.")
+            if editable is None else self.editing_service.apply_edit(
+                draft.sheet, canonical, editable, draft.context, value, row_order=draft.order,
+            )
         )
         if rejection is not None:
-            raise ValueError(rejection.message)
-        candidate._sync_display_studies()
-        skipped += candidate._apply_paste_values(first_row, columns, values)
-        candidate.recalculate_display_scale()
-        self._adopt_projection(candidate)
-        self.workspaceEditCommitted.emit()
-        return skipped
+            draft.last_error = rejection.message
+            draft.errors.append(rejection.message)
+            return
+        draft.accepted = True
+        draft.last_error = None
+        if canonical >= old_count:
+            draft.order.extend(range(old_count, len(draft.sheet.rows)))
+            draft.blank = self._empty_entry_row()
+
+    def _publish_prepared_rows(
+        self, sheet: Sheet, rows: list[StudyRow], order: Sequence[int],
+        blank: StudyRow | None, *, reset: bool,
+    ) -> None:
+        if self.current_sheet is not sheet:
+            raise ValueError("The selected outcome changed before the edit was complete.")
+        visible = [rows[index] for index in order]
+        if blank is not None:
+            visible.append(blank)
+        inserted = len(visible) - len(self._display_studies)
+        if reset:
+            self.beginResetModel()
+        elif inserted > 0:
+            first = self.rowCount()
+            self.beginInsertRows(QModelIndex(), first, first + inserted - 1)
+        try:
+            for study in rows:
+                study.analysis_unit.sheet = sheet
+            sheet.rows[:] = rows
+            self._display_studies = visible
+            self._blank_study = blank
+            self.workspaceEditCommitted.emit()
+        finally:
+            if reset:
+                self.endResetModel()
+            elif inserted > 0:
+                self.endInsertRows()
+        if not reset:
+            self.dataChanged.emit(self.index(0, 0), self.index(self.rowCount() - 1, self.columnCount() - 1))
 
     def _canonical_display_order(self) -> list[int]:
         positions = {study.id: row for row, study in enumerate(self.current_sheet.rows)}
         return [positions[study_id] for study_id in self.get_ordered_study_ids()]
-
-    def _apply_paste_values(self, first_row, columns, values) -> int:
-        skipped = 0
-        for row, cells in enumerate(values, start=first_row):
-            for column, value in zip(columns, cells):
-                if column in (self.NAME, self.YEAR):
-                    continue
-                index = self.index(row, column)
-                if (
-                    self.get_current_data_type(False) in RATIO_DATA_TYPES
-                    and column in self.OUTCOMES[:3]
-                    and not self.flags(index) & Qt.ItemFlag.ItemIsEditable
-                ):
-                    raise ValueError("Calculated ratios cannot be pasted over. Click the study row number to edit its original inputs.")
-                rejection = self._apply_cell(index, value)
-                if rejection is None:
-                    continue
-                if rejection.kind != "number":
-                    raise ValueError(rejection.message)
-                skipped += 1
-        return skipped
 
     def _valid_edit_index(self, index):
         return (
@@ -687,7 +787,7 @@ class DatasetTableModel(QAbstractTableModel):
             return WorkspaceColumnIdentity("fixed", (fixed[section],))
 
         outcome_type = (
-            self.get_current_data_type(False) or "none"
+            self.current_data_type or "none"
         )
         outcome_subtype = (
             self.get_current_data_subtype() or "none"
@@ -713,9 +813,6 @@ class DatasetTableModel(QAbstractTableModel):
     def flags(self, index):
         if not self._valid_edit_index(index):
             return Qt.ItemFlag.NoItemFlags
-        from rc_metastudio import r_runtime
-        if not r_runtime.is_ready() and index.column() in self.OUTCOMES:
-            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         if index.column() == self.INCLUDE_STUDY:
             if not self._study_has_entered_data(index.row()):
                 return Qt.ItemFlag(
@@ -726,17 +823,24 @@ class DatasetTableModel(QAbstractTableModel):
                 | Qt.ItemFlag.ItemIsEnabled
                 | Qt.ItemFlag.ItemIsSelectable
             )
-        if self.get_current_data_type(get_str=False) in RATIO_DATA_TYPES and index.column() in self.OUTCOMES[:3] and index.row() < len(self._display_studies) and self._outcome_cell_is_available(self._study_for_row(index.row())):
-            unit = self.get_current_analysis_unit_for_study(index.row())
-            record = unit.ratio_input(self.arm_names)
-            try:
-                raw_source = record.selected_source(unit.get_raw_data_for_arms(self.arm_names), metric=self.current_effect) == "raw"
-            except ValueError:
-                raw_source = False
-            if raw_source or record.scale == "log":
-                return QAbstractTableModel.flags(self, index)
+        study = self._study_for_row(index.row()) if index.row() < len(self._display_studies) else None
+        if self._outcome_is_read_only(index.column(), study):
+            return QAbstractTableModel.flags(self, index)
         return Qt.ItemFlag(
             QAbstractTableModel.flags(self, index) | Qt.ItemFlag.ItemIsEditable
+        )
+
+    def _outcome_is_read_only(self, column: int, study: StudyRow | None) -> bool:
+        if column not in self.OUTCOMES:
+            return False
+        if not self.editing_service.backend_ready():
+            return True
+        return (
+            column in self.OUTCOMES[:3]
+            and self.current_data_type in RATIO_DATA_TYPES
+            and study is not None
+            and self._outcome_cell_is_available(study)
+            and not workspace_editing.ratio_effect_is_editable(study.analysis_unit, self.arm_names, self.current_effect)
         )
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -775,10 +879,7 @@ class DatasetTableModel(QAbstractTableModel):
     def rename_arm(self, old_arm_name, new_arm_name):
         arm = next(candidate_arm for candidate_arm in self.current_sheet.arms if candidate_arm.name == old_arm_name)
         arm.name = new_arm_name
-        for row in self.current_sheet.rows:
-            row.analysis_unit.rename_arm(old_arm_name, new_arm_name)
         self._blank_study = None
-        self._sync_display_studies()
         self.reset_model()
 
     def add_covariate(self, covariate_name, covariate_type, covariate_values=None, stable_id=None):
@@ -815,7 +916,7 @@ class DatasetTableModel(QAbstractTableModel):
         self.endResetModel()
 
     def _outcome_sort_value(self, study: StudyRow, position: int):
-        if self.get_current_data_type(False) in RATIO_DATA_TYPES:
+        if self.current_data_type in RATIO_DATA_TYPES:
             unit = study.analysis_unit
             if position < 3:
                 return self._ratio_display_values(unit)[position]
@@ -848,26 +949,30 @@ class DatasetTableModel(QAbstractTableModel):
         return raw[position] if position < len(raw) else None
 
 
-    def get_current_data_type(self, get_str=True):
-        value = self.current_sheet.data_type if self.current_sheet else None
-        return TYPE_TO_STR_DICT.get(value) if get_str and value is not None else value
+    @property
+    def current_data_type(self) -> int | None:
+        sheet = self.current_sheet
+        return sheet.data_type if sheet is not None else None
 
-    def get_current_data_subtype(self):
-        return self.current_sheet.sub_type if self.current_sheet else None
+    def get_current_family(self) -> str | None:
+        sheet = self.current_sheet
+        return sheet.family if sheet is not None else None
+
+    def get_current_data_subtype(self) -> str | None:
+        sheet = self.current_sheet
+        return sheet.sub_type if sheet is not None else None
 
     def is_diagnostic(self):
-        return self.get_current_data_type(False) == DIAGNOSTIC
+        return self.current_data_type == DIAGNOSTIC
 
     def update_row_effect_previews(self, row: int) -> None:
         study = self._study_for_row(row)
-        self.editing_service.update_effect_previews_if_possible(study, self._editing_context())
+        self.editing_service.update_effect_previews((study,), self._editing_context(), update_inclusion=True)
         self.recalculate_display_scale(study)
         self.dataChanged.emit(self.index(row, 0), self.index(row, self.columnCount() - 1), [])
 
     def hydrate_derived_previews(self):
         """Populate transient raw-data results without changing inclusion."""
-        if not r_runtime.is_ready():
-            return
         if (
             self.current_outcome_name is None
             or self.current_sheet_id is None
@@ -921,7 +1026,7 @@ class DatasetTableModel(QAbstractTableModel):
         arm_key = self.get_current_arm_key()
         effect = effect or self.current_effect
         analysis_unit = self._get_canonical_analysis_unit(study_index)
-        if self.get_current_data_type(get_str=False) in RATIO_DATA_TYPES:
+        if self.current_data_type in RATIO_DATA_TYPES:
             raw = analysis_unit.get_raw_data_for_arms(self.arm_names)
             return analysis_unit.ratio_input(self.arm_names).ready(raw, metric=effect)
 
@@ -972,7 +1077,7 @@ class DatasetTableModel(QAbstractTableModel):
 
         When ``effect`` is omitted, use the currently selected effect.
         """
-        if self.get_current_data_type(get_str=False) in RATIO_DATA_TYPES:
+        if self.current_data_type in RATIO_DATA_TYPES:
             return all(
                 self.study_has_point_est(index, effect=effect)
                 for index, study in enumerate(self.current_sheet.rows) if study.include
@@ -1016,25 +1121,9 @@ class DatasetTableModel(QAbstractTableModel):
 
     def recalculate_display_scale(self, edited_study: StudyRow | None = None):
         sheet = self.current_sheet
-        if sheet is None or sheet.data_type in RATIO_DATA_TYPES or not r_runtime.is_ready():
-            return
-        arm_key = self.get_current_arm_key()
-        metrics = ("Sens", "Spec") if sheet.data_type == DIAGNOSTIC else (self.current_effect,)
-        rows = sheet.rows if edited_study is None else (edited_study,)
-        for metric in metrics:
-            if metric is None:
-                continue
-            for study in rows:
-                unit = study.analysis_unit
-                n1 = self._raw_value(study, 1) if metric == "PFT" else None
-                unit.calculate_display_effect_and_ci(
-                    metric, arm_key,
-                    self.editing_service.display_scale_converter(sheet.data_type, metric, n1),
-                    confidence_level=self.confidence_level,
-                    confidence_multiplier=self.confidence_multiplier,
-                    check_if_necessary=True,
-                    source=self._display_effect_source(unit),
-                )
+        if sheet is not None:
+            rows = sheet.rows if edited_study is None else (edited_study,)
+            self.editing_service.recalculate_display_scale(rows, self._editing_context())
 
     def set_confidence_level(self, confidence_level):
         settings = self.editing_service.confidence_settings(confidence_level)

@@ -25,15 +25,26 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
     if (leave.one.out) c(list(full.fit), fits) else c(fits, list(full.fit))
 }
 
-.rcmetar.sequential.method <- function(data, method, params, leave.one.out=FALSE) {
+.rcmetar.sequential.plan <- function(data, params, workflow) {
+    leave.one.out <- identical(workflow, "leave-one-out")
+    if (!leave.one.out) {
+        params$cum_sequence_index <- rcmetar.cumulative.sequence(data, params$cum_sequence)
+        data <- get.subset(data, params$cum_sequence_index)
+    }
+    list(data=data, params=params, workflow=workflow, has.overall=leave.one.out,
+         labels=rcmetar.sequential.labels(rcmetar.study.labels(data), workflow, leave.one.out))
+}
+
+.rcmetar.sequential.method <- function(plan, method, params) {
+    data <- plan$data
     selected <- .rcmetar.method.registry()[[method]]
     fit <- function(subset) selected$overall(selected$fit(subset, params))
     result <- NULL
-    fits <- .rcmetar.sequential.fits(data, leave.one.out, fit, {
+    fits <- .rcmetar.sequential.fits(data, plan$has.overall, fit, {
         result <- selected$fit(data, params)
         selected$overall(result)
     })
-    if (!leave.one.out) dim(fits) <- length(fits)
+    if (!plan$has.overall) dim(fits) <- length(fits)
     list(result=result, fits=fits)
 }
 
@@ -77,16 +88,17 @@ cum_meta_analysis_ref = 'Cumulative Meta-Analysis: Lau, Joseph, et al. "Cumulati
 cum.ma.binary <- function(fname, binary.data, params){
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
 
-    params$cum_sequence_index <- rcmetar.cumulative.sequence(binary.data, params$cum_sequence)
-    binary.data <- get.subset(binary.data, params$cum_sequence_index)
+    plan <- .rcmetar.sequential.plan(binary.data, params, "cumulative")
+    params <- plan$params
+    binary.data <- plan$data
 
     suppressed_params <- params
     suppressed_params$supress.output <- TRUE
-    sequence <- .rcmetar.sequential.method(binary.data, fname, suppressed_params)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     cum.results <- sequence$fits
 
-    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "cumulative", FALSE)
+    study.names <- plan$labels
     metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
@@ -94,10 +106,10 @@ cum.ma.binary <- function(fname, binary.data, params){
                          binary.fixed.mh      = cumul.rma.mh.value.info(),
                          binary.fixed.peto    = cumul.rma.mh.value.info(),
                          binary.random        = cumul.rma.uni.value.info())
-    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow="cumulative", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), "cumulative"))
+    cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="binary", workflow=plan$workflow, sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), plan$workflow))
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
+    plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params.cum, cum.results, plan$workflow, study.names, has.overall=plan$has.overall)
     plot <- .rcmetar.publish.repeated.forest(binary.data, res, params, plot.data)
     plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
     images <- c("Cumulative forest plot"=plot$path)
@@ -388,13 +400,14 @@ plot.custom.boot <- function(boot.out, title="Bootstrap histogram", ci.lb, ci.ub
 loo.ma.binary <- function(fname, binary.data, params){
     if (!("BinaryData" %in% class(binary.data))) stop("Binary data expected.")
 
+    plan <- .rcmetar.sequential.plan(binary.data, params, "leave-one-out")
     suppressed_params <- params
     suppressed_params$supress.output <- TRUE
-    sequence <- .rcmetar.sequential.method(binary.data, fname, suppressed_params, leave.one.out=TRUE)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     loo.results <- sequence$fits
 
-    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(binary.data), "leave-one-out", TRUE)
+    study.names <- plan$labels
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
@@ -402,8 +415,8 @@ loo.ma.binary <- function(fname, binary.data, params){
 			binary.fixed.mh      = loo.rma.mh.value.info(),
 			binary.fixed.peto    = loo.rma.mh.value.info(),
 			binary.random        = loo.rma.uni.value.info())
-	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow="leave-one-out", sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), "leave-one-out", TRUE))
-    plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
+	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="binary", workflow=plan$workflow, sample.sizes=rcmetar.forest.subset.sample.sizes(rcmetar.pft.sample.sizes(binary.data, params), plan$workflow, plan$has.overall))
+    plot.data <- rcmetar.build.sequential.metafor.bundle(binary.data, params, loo.results, plan$workflow, study.names, has.overall=plan$has.overall)
     plot <- .rcmetar.publish.repeated.forest(binary.data, loo.results, params, plot.data)
     plot.params.paths <- c("Leave-one-out forest plot"=plot$prefix)
     images <- c("Leave-one-out forest plot"=plot$path)
@@ -427,19 +440,20 @@ loo.ma.binary <- function(fname, binary.data, params){
 cum.ma.continuous <- function(fname, cont.data, params){
     if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
-    params$cum_sequence_index <- rcmetar.cumulative.sequence(cont.data, params$cum_sequence)
-    cont.data <- get.subset(cont.data, params$cum_sequence_index)
+    plan <- .rcmetar.sequential.plan(cont.data, params, "cumulative")
+    params <- plan$params
+    cont.data <- plan$data
 
     suppressed_params <- params
     suppressed_params$supress.output <- TRUE
-    sequence <- .rcmetar.sequential.method(cont.data, fname, suppressed_params)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     cum.results <- sequence$fits
     params$fp_show_col3 <- FALSE
     params$fp_show_col4 <- FALSE
     params$fp_col1_str <- "Study added"
 
-    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "cumulative", FALSE)
+    study.names <- plan$labels
 
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
@@ -447,10 +461,10 @@ cum.ma.continuous <- function(fname, cont.data, params){
 						 continuous.fixed  = cumul.rma.uni.value.info(),
 	                     continuous.random = cumul.rma.uni.value.info())
 
-	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="continuous", workflow="cumulative")
+	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="continuous", workflow=plan$workflow)
     params.cum <- params
     params.cum$fp_col1_str <- "Study added"
-    plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
+    plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params.cum, cum.results, plan$workflow, study.names, has.overall=plan$has.overall)
     plot <- .rcmetar.publish.repeated.forest(cont.data, cum.results, params, plot.data)
     plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
     images <- c("Cumulative forest plot"=plot$path)
@@ -477,23 +491,24 @@ cum.ma.continuous <- function(fname, cont.data, params){
 cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 	if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
-    params$cum_sequence_index <- rcmetar.cumulative.sequence(diagnostic.data, params$cum_sequence)
-    diagnostic.data <- get.subset(diagnostic.data, params$cum_sequence_index)
+    plan <- .rcmetar.sequential.plan(diagnostic.data, params, "cumulative")
+    params <- plan$params
+    diagnostic.data <- plan$data
 
     suppressed_params <- params
     suppressed_params$create.plot <- FALSE
     suppressed_params$write.to.file <- FALSE
-    sequence <- .rcmetar.sequential.method(diagnostic.data, fname, suppressed_params)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     cum.results <- sequence$fits
 
-	study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "cumulative", FALSE)
+	study.names <- plan$labels
 	metric.name <- pretty.metric.name(as.character(suppressed_params$measure))
 	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
-	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic", workflow="cumulative")
+	cum.disp <- create.overall.display(res=cum.results, study.names, params, model.title, data.type="diagnostic", workflow=plan$workflow)
 	params.cum <- params
 	params.cum$fp_col1_str <- "Study added"
-	plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, "cumulative", study.names, has.overall=FALSE)
+	plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params.cum, cum.results, plan$workflow, study.names, has.overall=plan$has.overall)
 	plot <- .rcmetar.publish.repeated.forest(diagnostic.data, res, params, plot.data)
 	plot.params.paths <- c("Cumulative forest plot"=plot$prefix)
 	images <- c("Cumulative forest plot"=plot$path)
@@ -513,21 +528,22 @@ cum.ma.diagnostic <- function(fname, diagnostic.data, params){
 loo.ma.continuous <- function(fname, cont.data, params){
     if (!("ContinuousData" %in% class(cont.data))) stop("Continuous data expected.")
 
+    plan <- .rcmetar.sequential.plan(cont.data, params, "leave-one-out")
     suppressed_params <- params
     suppressed_params$supress.output <- TRUE
-    sequence <- .rcmetar.sequential.method(cont.data, fname, suppressed_params, leave.one.out=TRUE)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     loo.results <- sequence$fits
 
-    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(cont.data), "leave-one-out", TRUE)
+    study.names <- plan$labels
     params$data.type <- "continuous"
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
 	model.title <- .rcmetar.repeated.model.title(fname, metric.name)
 	value.info <- switch(fname,
 			continuous.fixed  = loo.rma.uni.value.info(),
 			continuous.random = loo.rma.uni.value.info())
-	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="continuous", workflow="leave-one-out")
-    plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
+	loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="continuous", workflow=plan$workflow)
+    plot.data <- rcmetar.build.sequential.metafor.bundle(cont.data, params, loo.results, plan$workflow, study.names, has.overall=plan$has.overall)
     plot <- .rcmetar.publish.repeated.forest(cont.data, loo.results, params, plot.data)
     plot.params.paths <- c("Leave-one-out forest plot"=plot$prefix)
     images <- c("Leave-one-out forest plot"=plot$path)
@@ -660,21 +676,22 @@ get.cov <- function(om.data, cov.name) {
 loo.ma.diagnostic <- function(fname, diagnostic.data, params){
     if (!("DiagnosticData" %in% class(diagnostic.data))) stop("Diagnostic data expected.")
 
+    plan <- .rcmetar.sequential.plan(diagnostic.data, params, "leave-one-out")
     suppressed_params <- params
     suppressed_params$create.plot <- FALSE
     suppressed_params$write.to.file <- FALSE
-    sequence <- .rcmetar.sequential.method(diagnostic.data, fname, suppressed_params, leave.one.out=TRUE)
+    sequence <- .rcmetar.sequential.method(plan, fname, suppressed_params)
     res <- sequence$result
     loo.results <- sequence$fits
     res.overall <- loo.results[[1L]]
 
-    study.names <- rcmetar.sequential.labels(rcmetar.study.labels(diagnostic.data), "leave-one-out", TRUE)
+    study.names <- plan$labels
     metric.name <- pretty.metric.name(as.character(params$measure), params$metric.label)
     model.title <- paste0(.rcmetar.method.pretty.names(fname)$pretty.name, "\n\nEffect measure: ", metric.name)
-    loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic", workflow="leave-one-out")
+    loo.disp <- create.overall.display(res=loo.results, study.names, params, model.title, data.type="diagnostic", workflow=plan$workflow)
 
     if (!identical(params$create.plot, FALSE)) {
-        plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params, loo.results, "leave-one-out", study.names, has.overall=TRUE)
+        plot.data <- rcmetar.build.sequential.metafor.bundle(diagnostic.data, params, loo.results, plan$workflow, study.names, has.overall=plan$has.overall)
         plot <- .rcmetar.publish.repeated.forest(diagnostic.data, loo.results, params, plot.data)
         plot.params.paths <- c("Forest plot"=plot$prefix)
         images <- c("Leave-one-out forest plot"=plot$path)

@@ -67,7 +67,6 @@ def check_annotation_spacing(view, *, style="default"):
             boxes = sorted(text_box(node)[:2] for node in row)
             assert all(b[0]-a[1] >= 2 for a,b in zip(boxes, boxes[1:])), ("raw annotation gap", "".join(estimate.itertext()), boxes)
 
-        # Include the pooled label and footer.
         for node in nodes:
             text = "".join(node.itertext())
             if not (text.startswith(("Random-effects model", "Fixed-effect model", "(", "Test for overall effect", "Heterogeneity:"))):
@@ -246,7 +245,6 @@ def check_bubble_ticks(view, metric, record):
         frames = [rect.attrib for clip in svg.iter("{http://www.w3.org/2000/svg}clipPath")
                   if clip.attrib["id"] == clip_id for rect in clip]
         assert len(frames) == 1, frames
-        # Full-width dashed guides must stay inside the actual panel.
         frame = frames[0]
         top, bottom = float(frame["y"]), float(frame["y"]) + float(frame["height"])
         for node in svg.iter("{http://www.w3.org/2000/svg}line"):

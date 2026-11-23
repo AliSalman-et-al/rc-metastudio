@@ -133,7 +133,6 @@ def _calls_configure(statement: ast.stmt) -> bool:
 def _class_registers(target: ast.ClassDef | None, role: str) -> bool:
     if target is None:
         return False
-    # Match the first definition, as the original scan did.
     initializer = next((node for node in target.body if isinstance(node, ast.FunctionDef) and node.name == "__init__"), None)
     configure = next((node for node in target.body if isinstance(node, ast.FunctionDef) and node.name == "_configure_window"), None)
     if initializer is None:

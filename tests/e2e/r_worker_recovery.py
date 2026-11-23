@@ -11,6 +11,7 @@ from time import monotonic, perf_counter, sleep
 from unittest.mock import patch
 
 import psutil
+from PyQt6 import sip
 from PyQt6.QtCore import QEventLoop, Qt, QTimer
 from PyQt6.QtWidgets import QDialog, QMessageBox, QProgressDialog, QPushButton
 from rc_metastudio.r_worker import CalculatorJob
@@ -92,7 +93,9 @@ def _open_with_error(app, window, candidate, record_step, during_job):
     def observe():
         nonlocal acted
         for widget in app.topLevelWidgets():
-            if isinstance(widget, QProgressDialog) and widget.isVisible() and not acted:
+            if sip.isdeleted(widget):
+                continue
+            if not acted and isinstance(widget, QProgressDialog) and widget.isVisible():
                 acted = True
                 during_job(widget)
             if isinstance(widget, QMessageBox) and widget.isVisible():

@@ -68,7 +68,7 @@ def _common_plot_params(path):
 def _analysis_output_path(filename):
     from rc_metastudio import settings
 
-    return settings.analysis_output_path(filename)
+    return (settings.analysis_scratch().ensure() / filename).as_posix()
 
 
 def comprehensive_golden_baseline_manifest(root_dir=None, timestamp=None):

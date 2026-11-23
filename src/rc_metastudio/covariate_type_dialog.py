@@ -107,7 +107,7 @@ class CovariateTypeModel(QAbstractTableModel):
         while new_name in existing:
             new_name = f"{base_name} {suffix}"
             suffix += 1
-        guessed_vals = self.guess_at_values()  # try and infer sensible values
+        guessed_vals = self.guess_at_values()
         self.new_covariate = dict(id=uuid.uuid4().hex, name=new_name, data_type=self.new_data_type)
 
         self.dataset.covariates.append(self.new_covariate)
@@ -121,7 +121,7 @@ class CovariateTypeModel(QAbstractTableModel):
     def guess_at_values(self):
         covariate_values = self.covariate_values(
             self.covariate
-        )  # original values
+        )
         guessed_vals_d = self.vals_to_new_vals(covariate_values)
 
         studies_to_guessed_vals = {}
@@ -147,7 +147,6 @@ class CovariateTypeModel(QAbstractTableModel):
         return mapping
 
     def _to_alphabet_str(self, x):
-        # base conversion.
         alphabet = string.ascii_lowercase
         alpha_str = ""
         x_left = x
@@ -208,7 +207,7 @@ class CovariateTypeModel(QAbstractTableModel):
 
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         del parent
-        return 3  # study, orig_val, new_val
+        return 3
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         # don't allow users to mess with the original
@@ -217,8 +216,7 @@ class CovariateTypeModel(QAbstractTableModel):
             column = index.column()
 
             if column == self.NEW_VAL:
-                # then a (new) covariate value has been edited.
-                study = self.preview_rows[index.row()]  # associated study
+                study = self.preview_rows[index.row()]
                 new_value, converted_ok = _new_covariate_value(
                     self.new_covariate, value
                 )

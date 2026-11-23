@@ -493,7 +493,7 @@ def smoke(
     """Launch a visible native Qt6 form and return user-observable evidence."""
     module_path, resource_path = generate(build_root)
     from contextlib import redirect_stdout
-    from scripts.verify import ensure_typing
+    from scripts.verification_evidence import ensure_typing
     # The smoke CLI stdout is a JSON contract consumed by package tooling.
     with redirect_stdout(sys.stderr):
         ensure_typing(build_root.resolve(), dict(os.environ))

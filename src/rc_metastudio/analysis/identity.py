@@ -42,7 +42,7 @@ def result_identity(model, workflow, metric, model_label, parameters, confidence
         details.append(f"Subgroups defined by {parameters.get('cov_name', 'selected covariate')}. Use the test of subgroup differences to compare groups.")
     elif workflow == "meta-regression":
         details.append("Moderators: " + ", ".join(moderators))
-        if model.get_current_data_type() != "diagnostic":
+        if model.get_current_family() != "diagnostic":
             details.append("Bubble size increases with model weight; sizes are rescaled for legibility and do not show exact relative weights.")
     effect = model.current_effect
     if effect in {"OR", "RR", "HR", "IRR"}:
@@ -89,13 +89,13 @@ def dataset_label(model):
         "smd": "Two-arm continuous", "reg_coef": "Regression coefficient",
         "generic_effect": "Entered effect estimate", "hazard_ratio": "Time-to-event",
         "incidence_rate_ratio": "Event rates",
-    }.get(model.get_current_data_subtype(), str(model.get_current_data_type() or "Dataset").title())
+    }.get(model.get_current_data_subtype(), str(model.get_current_family() or "Dataset").title())
 
 
 def dataset_identity(model, metric=None, *, include_type=True):
     comparison = model.current_effect in analysis_catalog.TWO_ARM_METRICS
     groups = " / ".join(model.arm_names if comparison else model.arm_names[:1])
-    group_label = "Index test" if model.get_current_data_type() == "diagnostic" else "Comparison" if comparison else "Arm"
+    group_label = "Index test" if model.get_current_family() == "diagnostic" else "Comparison" if comparison else "Arm"
     data_type = dataset_label(model)
     labels = [model.current_sheet.name]
     if include_type:
@@ -104,11 +104,11 @@ def dataset_identity(model, metric=None, *, include_type=True):
     if quantity and model.current_effect != "Mean" and quantity.casefold() != data_type.casefold():
         labels.append(quantity)
     context = []
-    default_name = "Index test" if model.get_current_data_type() == "diagnostic" else "Group"
+    default_name = "Index test" if model.get_current_family() == "diagnostic" else "Group"
     if comparison or groups != default_name:
         context.append(f"{group_label}: {groups}")
     return " · ".join(labels) + ("\n" + " · ".join(context) if context else "")
 
 
 def plot_caption(model, caption=None):
-    return caption or dataset_identity(model, include_type=model.get_current_data_type() != "binary").rstrip("\n")
+    return caption or dataset_identity(model, include_type=model.get_current_family() != "binary").rstrip("\n")

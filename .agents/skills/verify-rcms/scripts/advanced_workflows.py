@@ -71,7 +71,6 @@ def modal(app, kind, drive, launch):
 
 
 def raw_rows(window):
-    # Canonical study order, independent of the table's current sort.
     return [list(row) for row in window.model.get_current_raw_data()]
 
 
@@ -174,7 +173,6 @@ def compare_authority(view, expected, family, record, metric=None):
 
 
 def options(app, window, family, record):
-    # Independent inference and variance choices must survive the dialog boundary.
     for estimator, inference in (("REML", "knha"), ("PM", "t"), ("ML", "adhoc")):
         scenario = {
             "binary": "analysis-amino-binary-cumulative",
@@ -374,7 +372,6 @@ def zero_cells(app, window, record):
     ]
     assert "study values do not define a finite effect" in model.data(model.index(0, model.OUTCOMES[0]), QtCore.Qt.ItemDataRole.ToolTipRole)
     record("smd-not-estimable", window, raw=raw_rows(window)[0])
-    # The same means still define an ordinary mean difference.
     metric_action(window.menuMetric, "MD").trigger()
     assert math.isfinite(float(model.data(model.index(0, model.OUTCOMES[0]))))
     record("md-estimable-with-supplied-sd", window)
@@ -555,7 +552,6 @@ def plots(app, window, family, record, *, view=None):
             if control is not None and control.isVisible():
                 text = control.text() or control.placeholderText()
                 if heading == "figure_caption":
-                    # Captions allow 1000 characters in a screen-bounded line edit.
                     control.setFocus()
                     key_click(control, QtCore.Qt.Key.Key_Home)
                     assert control.cursorPosition() == 0
@@ -1264,7 +1260,7 @@ def calculators(app, window, mode, record):
                 assert dialog_state() == state_before
 
                 def accept_choice(choice):
-                    click(app, choice.choice1_btn)
+                    click(app, choice.findChild(QtWidgets.QRadioButton, "choice1_btn"))
                     click(
                         app,
                         choice.buttonBox.button(
@@ -1425,6 +1421,8 @@ def calculators(app, window, mode, record):
             if mode == "onearm-proportion":
                 combo.setCurrentIndex(combo.findData("PFT"))
                 app.processEvents()
+                assert not dialog.raw_data_table.isRowHidden(0)
+                assert dialog.raw_data_table.isRowHidden(1)
                 a, n = dialog.analysis_unit.get_raw_data_for_arm(dialog.arm_names[0])
                 expected = r_oracle.evaluate(
                     f"local({{e <- metafor::escalc(measure='PFT', xi={a}, ni={n}); "
@@ -1479,8 +1477,6 @@ def calculators(app, window, mode, record):
         if family == "continuous" and not entered:
             if mode == "pre-post":
                 dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("summary"))
-            # Each precision class is committed through the real delegate. The last
-            # values persist through Cancel, undo/redo, save/reopen and a public fit.
             samples = ("0.00001", "1e12", "0,12345678901234566", "1.2345678901234567e-8")
             for value in samples:
                 cell(dialog.simple_table, 0, 2, value)
@@ -1496,7 +1492,6 @@ def calculators(app, window, mode, record):
             if mode not in {"onearm-mean", "pre-post"}:
                 cell(dialog.simple_table, 1, 2, "1e12")
                 assert dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[5] == 1e12
-            # Generated group intervals must describe the edited mean and SD.
             n, mean, sd = dialog.analysis_unit.get_raw_data_for_arms(dialog.arm_names)[:3]
             headers = dialog.get_column_header_strs()
             z = NormalDist().inv_cdf(.975)
@@ -1775,7 +1770,6 @@ def calculators(app, window, mode, record):
                 if invalid_input == "empty":
                     click(app, dialog.clear_button)
                 else:
-                    # Keep the entered interval but introduce incomplete counts.
                     cell(dialog.two_by_two_table, 0, 0, 1)
                 click(
                     app,
@@ -1859,7 +1853,6 @@ def table_covariates(app, window, record):
     model = window.model
     table.scrollTo(window.model.index(0, window.model.NAME))
     app.processEvents()
-    # A real header context event reaches sorting, including identity preservation.
     header = table.horizontalHeader()
     position = QtCore.QPoint(
         header.sectionViewportPosition(model.NAME)
@@ -2101,7 +2094,6 @@ def shell(app, window, record):
     record("native-normal-text-contrast", window, measured_pairs=contrasts,
            scope="Qt active palette pairs on this host; excludes inactive controls and screen-reader qualification")
 
-    # Startup must maximize even after a previous normal or full-screen session.
     window.showNormal()
     window.resize(700, 500)
     wait_for_state(lambda: not window.isMaximized() and not window.isFullScreen() and window.size() == QtCore.QSize(700, 500))

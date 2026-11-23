@@ -18,6 +18,8 @@ historical evidence. Use [CONTEXT.md](../../CONTEXT.md) for domain terms.
 | [0010: HR and IRR](0010-distinguish-hazard-and-incidence-rate-ratios.md) | Measures, selected sources, confidence and zero handling |
 | [0011: Trial sequential analysis](0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md) | Authority exception, owned formulas, defaults and references |
 | [0012: Persistent R worker](0012-supervise-a-persistent-r-worker.md) | Process isolation, job protocol, cancellation and publication |
+| [0013: Figure geometry and export](0013-keep-figure-geometry-and-export-units.md) | Analysis coordinates, SVG compatibility and print layout |
+| [0014: Native windows and editors](0014-preserve-native-window-and-editor-contracts.md) | Qt geometry, event delivery and draft transactions |
 
 The documentation cleanup consolidated sixteen earlier records into the first ten. The eleventh records trial sequential analysis.
 Git retains their original text and numbering; historical audit/oracle records

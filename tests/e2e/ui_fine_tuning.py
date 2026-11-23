@@ -30,7 +30,7 @@ def rendered_text(widget, rect):
 
 def funnel_clip_evidence(view, artifact, work):
     from rc_metastudio.results.window import _opaque_svg_renderer
-    from rc_metastudio.results.report import figure_source
+    from rc_metastudio.results.report_export import figure_source
 
     svg = Path(artifact.display_path())
     assert svg.suffix == '.svg', 'Funnels must use vector Results artifacts'

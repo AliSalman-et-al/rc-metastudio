@@ -1,4 +1,3 @@
-# Refit retained application inputs with public packages, independently of report formatting.
 args <- commandArgs(trailingOnly=TRUE)
 library(RCMetaR)
 root <- args[[1]]

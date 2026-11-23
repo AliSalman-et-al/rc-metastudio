@@ -697,8 +697,8 @@ def _surface_factories() -> dict[str, SurfaceFactory]:
 
     def covariate_factory():
         import copy
-        from rc_metastudio.project import archive as project_format, adapter as project_adapter
-        sheet = project_adapter.project_to_dataset(project_format.load_project(ROOT / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms").project).sheets[0]
+        from rc_metastudio.project.adapter import load_runtime_project
+        sheet = load_runtime_project(ROOT / "sample_projects/Binary - Aminoglycoside dosing, Barza 1996.rcms").dataset.sheets[0]
         covariate = {"id": "native-dose", "name": "Dose", "data_type": 1}
         sheet.covariates.append(covariate)
         for index, row in enumerate(sheet.rows):
@@ -1231,12 +1231,11 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
     controller = getattr(window, "_adaptive_window_controller", None)
     if not isinstance(controller, adaptive_window.AdaptiveWindowController):
         raise RuntimeError("remaining surface has no live adaptive controller")
-    state = controller.state
-    policy = state.policy
+    policy = controller.policy
     if policy.application_owns_geometry:
         owner = (
             "application"
-            if state.role is adaptive_window.WindowRole.TRANSIENT
+            if controller.role is adaptive_window.WindowRole.TRANSIENT
             else "application-first-use"
         )
     else:
@@ -1246,7 +1245,7 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
         "archetype": policy.archetype.value,
         "first_use_behavior": policy.first_use_behavior.value,
         "geometry_owner": owner,
-        "role": state.role.name,
+        "role": controller.role.name,
     }
 
 

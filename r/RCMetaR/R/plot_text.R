@@ -57,7 +57,6 @@ rcmetar.forest.year.suffix <- "( \\([12][0-9]{3}\\)|,? [12][0-9]{3})$"
 
 rcmetar.forest.wrap.line <- function(text, width, measure, keep.word=FALSE) {
     breaks <- gregexpr(" +|(?<=[-\u2013])", text, perl=TRUE)[[1L]]
-    # Keep a trailing year together with the token that introduces it.
     year <- regexpr(paste0("\\S+", rcmetar.forest.year.suffix), text, perl=TRUE)[[1L]]
     if (year > 0L) breaks <- breaks[breaks <= year]
     ends <- sort(unique(c(breaks[breaks > 1L] - 1L, nchar(text))))

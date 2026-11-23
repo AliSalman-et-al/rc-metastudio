@@ -13,9 +13,6 @@ on:
 permissions:
   contents: read
 
-env:
-  RCMS_CRAN_REPO: https://packagemanager.posit.co/cran/2026-11-13
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'schedule' && 'nightly' || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -118,6 +115,10 @@ jobs:
           "from scripts.verify import run_code_health; import os;
           run_code_health(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'],
           reuse_baseline=os.environ['BASELINE_CACHE_HIT'] == 'true')"
+      - name: Enforce comment ratchet
+        env:
+          COMPARISON_BASE: ${{ steps.base.outputs.sha }}
+        run: uv run --no-sync python scripts/check_comments.py --base "$COMPARISON_BASE"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
@@ -230,6 +231,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - uses: ./.github/actions/setup-rcms
+        id: setup
         with:
           hosted-r: ${{ matrix.platform != 'linux' }}
           qt-rcc: 'true'
@@ -239,10 +241,8 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: artifacts/r-default-library-cache
-          key: r-default-evidence-v2-${{ matrix.target }}-r-4.6.2-public-ppm-2026-11-13-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'scripts/verify_rcmetar_r_default.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION') }}
+          key: r-default-evidence-v2-${{ matrix.target }}-r-${{ steps.setup.outputs.r-version }}-public-ppm-${{ steps.setup.outputs.r-snapshot }}-${{ hashFiles('scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py', 'scripts/r_verification_support.py', 'scripts/verify_rcmetar_r_default.py', 'config/r-dependencies.json', 'r/RCMetaR/DESCRIPTION') }}
 
-      # Windows runs the shared Python and golden contracts. macOS validates
-      # the installed R worker; Linux validates native xcb with R evidence skipped.
       - name: Run Platform-Neutral Python Verification
         if: ${{ matrix.platform == 'windows' }}
         shell: powershell
@@ -278,19 +278,20 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: ./.github/actions/setup-rcms
+        id: setup
         with:
           hosted-r: 'true'
       - name: Cache pinned R dependency library
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/pinned-r/dependencies/library
-          key: pinned-r-v2-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
+          key: pinned-r-v2-windows-x64-${{ steps.setup.outputs.r-version }}-${{ hashFiles('config/r-dependencies.json', 'scripts/install-r-deps.R', 'scripts/r_binary_policy.R', 'scripts/r_dependency_policy.py') }}
       - name: Cache RCMetaR source archive and installation
         id: rcmetar-cache
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: build/pinned-r/source
-          key: pinned-rcmetar-v2-windows-x64-4.6.2-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
+          key: pinned-rcmetar-v2-windows-x64-${{ steps.setup.outputs.r-version }}-${{ hashFiles('config/r-dependencies.json', 'scripts/install-rcmetar-source.R', 'r/RCMetaR/**') }}
       - name: Install and verify pinned binary dependencies
         run: |
           $env:R_LIBS_USER = (New-Item -ItemType Directory -Force build/pinned-r/dependencies/library).FullName

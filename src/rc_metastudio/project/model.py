@@ -1,9 +1,11 @@
 """Project-owned sheets with independent study rows."""
 from collections.abc import Mapping
-from dataclasses import dataclass, field
-from typing import Literal
-from rc_metastudio.domain_ids import SheetId, RowId, ArmId
-from rc_metastudio.project.study import AnalysisUnit
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
+from typing import Literal, Self
+from rc_metastudio.analysis.catalog import TYPE_TO_STR_DICT
+from rc_metastudio.domain_ids import SheetId, RowId
+from rc_metastudio.project.study import AnalysisUnit, Arm
 
 PooledModel = Literal["fixed-mh", "fixed-iv", "peto", "random"]
 
@@ -50,11 +52,6 @@ class PooledAnalysis:
 
 
 @dataclass
-class Arm:
-    id: ArmId
-    name: str
-
-@dataclass
 class StudyRow:
     id: RowId
     label: str
@@ -72,13 +69,17 @@ class Sheet:
     name: str
     data_type: int
     sub_type: str | None = None
-    family: str = "binary"
     arms: list[Arm] = field(default_factory=list)
     covariates: list[dict] = field(default_factory=list)
     settings: dict = field(default_factory=dict)
     rows: list[StudyRow] = field(default_factory=list)
-    # The last fit supplies TSA defaults for this open sheet without editing the project.
-    last_meta_analysis: PooledAnalysis | None = field(default=None, repr=False, compare=False)
+
+    def copy_for_study_edit(self) -> Self:
+        return replace(self, arms=deepcopy(self.arms), rows=[])
+
+    @property
+    def family(self) -> str:
+        return TYPE_TO_STR_DICT[self.data_type]
 
     def effect_direction_arms(self) -> tuple[str, str]:
         """The arms favoured below and above the null, in that order."""

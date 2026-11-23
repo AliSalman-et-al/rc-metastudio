@@ -281,7 +281,10 @@ class CalculatorService:
         result = r_operations.continuous_effect_for_study(n1, m1, sd1, se1, n2, m2, sd2, se2, metric=metric, two_arm=two_arm, confidence_level=confidence_level)
         return _effect_data(result, "continuous_effect_for_study")
 
-    def diagnostic_effects_for_study(self, tp: Numeric, fn: Numeric, fp: Numeric, tn: Numeric, *, metrics: Sequence[str] = ("Spec", "Sens"), confidence_level: float = 95.0) -> DiagnosticData:
+    def diagnostic_effects_for_study(
+        self, tp: Numeric | None, fn: Numeric | None, fp: Numeric | None, tn: Numeric | None,
+        *, metrics: Sequence[str] = ("Spec", "Sens"), confidence_level: float = 95.0,
+    ) -> DiagnosticData:
         result = r_operations.diagnostic_effects_for_study(tp, fn, fp, tn, metrics=metrics, confidence_level=confidence_level)
         return _diagnostic_data(result, "diagnostic_effects_for_study")
 

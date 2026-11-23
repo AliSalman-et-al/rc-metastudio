@@ -179,7 +179,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             + 2 * self.content_scroll.frameWidth()
             + scrollbar.sizeHint().width()
         )
-        # The input controls scroll; the persistent readout and footer stay visible.
         minimum_width = (
             self.buttonBox.minimumSizeHint().width()
             + margins.left()
@@ -341,7 +340,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.current_item_data = self._get_int(currentRow, currentColumn)
 
     def _count_editor_committed(self, editor):
-        # Recommitting unchanged valid text does not emit cellChanged.
         if isinstance(editor, QLineEdit) and self.cell_data_invalid(editor.text()) is None:
             self._mark_table_consistent()
 
@@ -364,8 +362,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.inconsistencyLabel.setText(str(message))
         style_inline_error(self.inconsistencyLabel)
         self.inconsistencyLabel.setVisible(True)
-        # The rejected edit has already been rolled back to a valid state, so
-        # acceptance must remain available while the inline guidance is shown.
         required(
             self.buttonBox.button(QDialogButtonBox.StandardButton.Ok),
             "diagnostic calculator OK button",
@@ -408,7 +404,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             ) from exc
 
     def cell_data_invalid(self, celldata_string):
-        # ignore blank entries
         if calculator_controls.cell_text_is_blank(celldata_string):
             return None
 
@@ -479,7 +474,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         old_prevalence = self._get_prevalence_str()
 
         try:
-            # Test if entered data is valid (a number)
             warning_msg = self.cell_data_invalid(
                 required(
                     self.two_by_two_table.item(row, col),
@@ -499,16 +493,16 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             self._mark_table_consistent()
         except Exception as e:
             msg = e.args[0]
-            QMessageBox.warning(self, "Invalid test counts", msg)  # popup warning
+            QMessageBox.warning(self, "Invalid test counts", msg)
             self.restore_analysis_unit_and_table(
                 old_analysis_unit, old_table, old_prevalence
-            )  # brings things back to the way they were
+            )
             self._mark_table_invalid(msg)
-            return  # and leave
+            return
 
         try:
-            self._update_analysis_unit()  # 2x2 table --> analysis_unit
-            self.impute_effects_in_analysis_unit()  # effects   --> analysis_unit
+            self._update_analysis_unit()
+            self.impute_effects_in_analysis_unit()
             self.set_current_effect()
         except Exception as e:
             msg = "Could not compute study effects from the edited raw data: %s" % e
@@ -610,12 +604,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             )
         if not metrics:
             return
-        # Missing counts are never used for a requested metric. The unused side
-        # uses neutral positive placeholders so it cannot trigger a continuity
-        # correction in the available component. Stored missing counts stay blank.
         ests_and_cis = self.calculator.diagnostic_effects_for_study(
-            tp if tp is not None else 1, fn if fn is not None else 1,
-            fp if fp is not None else 1, tn if tn is not None else 1,
+            tp, fn, fp, tn,
             metrics=metrics, confidence_level=self.confidence_level,
         )
         for metric in metrics:
@@ -653,7 +643,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 self._set_val(row, col, imputed_dict[field])
                 raw_data_index = DIAG_FIELDS_TO_RAW_INDICES[field]
 
-                # Preserve blanks while storing the imputed count.
                 self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[
                     raw_data_index
                 ] = (
@@ -664,7 +653,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def _update_analysis_unit(self):
         """Copy the table values to the analysis unit."""
-        raw_dict = self.get_raw_diagnostic_data()  # values are floats or None
+        raw_dict = self.get_raw_diagnostic_data()
         for field in raw_dict.keys():
             i = DIAG_FIELDS_TO_RAW_INDICES[field]
             self.analysis_unit.get_raw_data_for_arm(self.arm_names[0])[i] = raw_dict[
@@ -834,9 +823,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             params = self._get_table_values()
             computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
             if computed_params:
-                self._set_vals(computed_params)  # computed --> table widget
+                self._set_vals(computed_params)
 
-            # Compute prevalence if possible
             if (computed_params["c1sum"] not in EMPTY_VALS) and (
                 computed_params["total"] not in EMPTY_VALS
             ):

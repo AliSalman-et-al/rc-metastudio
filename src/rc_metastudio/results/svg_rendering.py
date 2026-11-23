@@ -2,17 +2,22 @@
 """Adapt R's rectangular SVG clips for Qt without changing exported artwork."""
 
 import gzip
+import io
 import re
 from pathlib import Path
+from typing import BinaryIO, cast
 from xml.etree import ElementTree as ET
 
 
 _FONT_STACK = re.compile(r"""(font-family\s*:\s*)("[^"]*"|'[^']*'|[^,;}]+)\s*,[^;}]+""", re.IGNORECASE)
 
 
+def _open_svg(path: str | Path) -> BinaryIO | gzip.GzipFile:
+    return gzip.open(path, "rb") if str(path).lower().endswith(".svgz") else open(path, "rb")
+
+
 def svg_bytes_for_qt(path: str | Path) -> bytes:
-    opener = gzip.open if str(path).lower().endswith(".svgz") else open
-    with opener(path, "rb") as source:
+    with _open_svg(path) as source:
         svg = source.read()
     if b"clip-path" not in svg and b"font-family" not in svg.lower():
         return svg
@@ -32,8 +37,28 @@ def svg_bytes_for_qt(path: str | Path) -> bytes:
     return ET.tostring(root, encoding="utf-8")
 
 
+def svg_text_points_per_inch(path: str | Path, height_per_width: float) -> float:
+    """Measure the smallest SVG font against the physical export viewport."""
+    with _open_svg(path) as source:
+        svg = source.read()
+    view_width, view_height = _view_box_size(io.BytesIO(svg))
+    sizes = map(float, re.findall(rb"font-size:\s*([\d.]+)px", svg))
+    return min(sizes, default=0.0) * 72 * min(1 / view_width, height_per_width / view_height)
+
+
+def svg_view_box_size(path: str | Path) -> tuple[float, float]:
+    with _open_svg(path) as source:
+        return _view_box_size(source)
+
+
+def _view_box_size(source: BinaryIO | gzip.GzipFile) -> tuple[float, float]:
+    with_root = ET.iterparse(source, events=("start",))
+    _, root = cast(tuple[str, ET.Element], next(with_root))
+    _, _, width, height = map(float, root.attrib["viewBox"].replace(",", " ").split())
+    return width, height
+
+
 def _normalize_font_stacks(root: ET.Element, namespace: str) -> None:
-    # Qt resolves a bare family name and can then apply its own glyph fallback.
     def primary(match: re.Match[str]) -> str:
         return match[1] + match[2].strip(" \"'")
 
@@ -47,7 +72,6 @@ def _normalize_font_stacks(root: ET.Element, namespace: str) -> None:
 
 
 def _normalize_canvas_size(root: ET.Element, namespace: str) -> None:
-    # Qt treats svglite's percentage canvas as 100 SVG units, not the viewBox.
     if view_box := root.get("viewBox"):
         _, _, canvas_width, canvas_height = view_box.split()
         for canvas in root.findall(f"{{{namespace}}}g[@class='svglite']/{{{namespace}}}rect"):
@@ -76,9 +100,6 @@ def _clip_group(parent, node, rectangle, index, namespace):
         parent.remove(node)
         return
     identifier = f"rcms-clip-{index}"
-    # Qt ignores clipPath, but clips symbol viewports with QPainter. Keep
-    # that viewport at the origin, then translate back to R's coordinates.
-    # Unlike SVG masks, this stays vector at print resolution and high zoom.
     symbol = ET.Element(f"{{{namespace}}}symbol", {
         "id": identifier, "viewBox": f"0 0 {width} {height}",
         "width": width, "height": height, "overflow": "hidden",

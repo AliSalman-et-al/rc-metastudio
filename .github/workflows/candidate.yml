@@ -57,7 +57,6 @@ jobs:
         run: python scripts/delivery.py init --version "$VERSION" --commit "$SOURCE_SHA" --repository "$REPOSITORY" --trust-profile "$TRUST_PROFILE" --output candidate/release-set.json
       - name: Resolve candidate build targets
         id: targets
-        # Historical protected-master revisions also supply this registry.
         run: |
           matrix="$(jq -c '{include: [.targets | to_entries[] | {
             target: .key, runner: .value.runner, architecture: .value.architecture,
@@ -122,7 +121,6 @@ jobs:
         if: startsWith(matrix.target, 'macos-') && hashFiles('.github/actions/setup-rcms/action.yml') == ''
         shell: bash
         run: |
-          # Candidate builds can select a protected-master revision before this tool moved.
           if [ -f scripts/macos_rcc.py ]; then
             resolver=(scripts/macos_rcc.py)
           else
@@ -150,7 +148,6 @@ jobs:
         env:
           ARCHITECTURE: ${{ matrix.architecture }}
         run: |
-          # Older protected-master sources predate the independent caches.
           if [ -f scripts/macos_build_cache.py ]; then
             uv run --no-project python scripts/macos_build_cache.py "$ARCHITECTURE"
           fi
@@ -269,7 +266,6 @@ jobs:
           ARTIFACT: ${{ matrix.artifact }}
         run: |
           set -euo pipefail
-          # The selected historical source may predate this workflow's recorder.
           recorder=candidate/recorder
           mkdir -p "$recorder/scripts" "$recorder/delivery"
           git fetch --no-tags --depth=1 origin "$WORKFLOW_SHA"

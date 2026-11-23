@@ -260,7 +260,6 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
                 action_item.setStatusTip(str(dataset))
                 action_item.setData(str(dataset))
                 qm.addAction(action_item)
-                # Bind each action now to avoid late-binding the final dataset.
                 action_item.triggered[bool].connect(
                     app_error_handler.safe_slot(
                         lambda _checked=False, action_item=action_item: (
@@ -723,7 +722,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             return False
         error_tab = self.preview_grp_box
         try:
-            headers, rows = self._preview_source()
+            headers, rows, worksheet = self._preview_source()
             info = self.wizard().require_dataset_info()
             data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
             columns = sheet_columns(data_type, info["sub_type"])
@@ -731,7 +730,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             mapping = self._selected_mapping(columns, single_arm=info["arms"] == "one")
             error_tab = self.preview_grp_box
             notices: list[str] = []
-            result = self._normalize_preview(headers, rows, mapping, columns, notices)
+            result = self._normalize_preview(headers, rows, worksheet, mapping, columns, notices)
             if not result.rows:
                 self.import_status.setText("No study rows found. Add rows beneath the header row, then select the file again.")
                 return False
@@ -746,20 +745,24 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _preview_source(self):
         try:
+            path = required(self.file_path, "selected import path")
+            worksheet = (
+                csv_import.read_xlsx_worksheet(path, self.worksheet_combo.currentText())
+                if Path(path).suffix.lower() == ".xlsx" else None
+            )
             headers, rows = csv_import.read_rows(
-                required(self.file_path, "selected import path"),
+                worksheet if worksheet is not None else path,
                 has_headers=self._has_headers(), from_excel=self._is_from_excel(),
                 delimiter=self._get_delimter(), quotechar=self._get_quotechar(),
-                worksheet=self.worksheet_combo.currentText(),
             )
         except Exception:
             self._update_column_mapping([])
             raise
         self._update_column_mapping(headers)
         self._show_preview(headers, rows)
-        return headers, rows
+        return headers, rows, worksheet
 
-    def _selected_mapping(self, columns: SheetColumns, *, single_arm: bool) -> tuple[int, ...] | None:
+    def _selected_mapping(self, columns: SheetColumns, *, single_arm: bool) -> csv_import.ColumnMapping | None:
         mapping = tuple(control.currentData() for control in self.mapping_controls)
         if not mapping:
             return None
@@ -769,7 +772,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         effects_complete = all(mapping[i] is not None for i in effect_columns)
         if any(mapping[i] is None for i in IMPORT_IDENTITY_COLUMNS) or not (raw_complete or effects_complete):
             raise csv_import.CsvImportError(self._missing_mapping_message(mapping, raw_columns, effect_columns))
-        return tuple(-1 if index is None else index for index in mapping)
+        return mapping
 
     def _missing_mapping_message(
         self, mapping: tuple[int | None, ...], raw_columns: Sequence[int], effect_columns: range,
@@ -784,19 +787,11 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         return f"Missing {noun}: {detail}."
 
     def _normalize_preview(
-        self, headers: list[str], rows: list[list[str]],
-        mapping: tuple[int, ...] | None, columns: SheetColumns, notices: list[str],
+        self, headers: list[str], rows: list[list[str]], worksheet: csv_import.XlsxWorksheet | None,
+        mapping: csv_import.ColumnMapping | None, columns: SheetColumns, notices: list[str],
     ) -> csv_import.CsvImportResult:
-        file_path = required(self.file_path, "selected import path")
-        if Path(file_path).suffix.lower() == ".xlsx":
-            # A mapped workbook year may be a date, and mapped numeric cells
-            # forbid Excel error values. The raw preview has no column roles.
-            parse = partial(
-                csv_import.parse_csv, file_path,
-                from_excel=self._is_from_excel(), delimiter=self._get_delimter(),
-                quotechar=self._get_quotechar(), worksheet=self.worksheet_combo.currentText(),
-                notices=notices,
-            )
+        if worksheet is not None:
+            parse = partial(csv_import.parse_csv, worksheet, from_excel=True, notices=notices)
         else:
             parse = partial(csv_import.normalize_csv_input, headers, rows)
         return parse(
@@ -992,7 +987,6 @@ class OutcomeNamePage(MainWizardPage, _ui_outcome_name_page.Ui_WizardPage):
         self.outcome_name_LineEdit.selectAll()
 
     def cleanupPage(self) -> None:
-        # QWizard's default resets registered fields on Back; keep the user's draft.
         pass
 
     def arm_names(self):

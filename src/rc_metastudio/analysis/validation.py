@@ -10,7 +10,7 @@ from typing import SupportsFloat, SupportsIndex, SupportsInt, cast
 from rc_metastudio.qt_text import parse_decimal
 
 
-EMPTY_VALS = ("", None)  # these indicate an empty row/cell
+EMPTY_VALS = ("", None)
 
 
 def within_absolute_tolerance(x, y):
@@ -18,7 +18,7 @@ def within_absolute_tolerance(x, y):
     return abs(x - y) < threshold
 
 
-DEFAULT_CONFIDENCE_LEVEL = 95.0  # (normal 95% CI)
+DEFAULT_CONFIDENCE_LEVEL = 95.0
 
 
 CONFIDENCE_LEVEL_MIN = 0.0

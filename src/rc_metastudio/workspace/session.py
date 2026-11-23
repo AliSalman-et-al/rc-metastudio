@@ -7,13 +7,15 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-from collections.abc import Callable
-from dataclasses import dataclass
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
+from dataclasses import dataclass, replace
 from pathlib import Path
+from uuid import UUID, uuid4
 
 from rc_metastudio.project import archive as project_format
 from rc_metastudio.project import adapter as project_adapter
-from rc_metastudio.project.model import Dataset, Sheet
+from rc_metastudio.project.model import Dataset, PooledAnalysis, Sheet
 from rc_metastudio.domain_ids import SheetId
 from rc_metastudio.project.archive import (
     ProjectDocument,
@@ -33,8 +35,13 @@ class WorkspaceTransaction:
     depth: int = 1
 
 
+@dataclass(frozen=True, slots=True)
+class SheetAttachment:
+    lineage: UUID
+    sheet_id: SheetId
+
+
 def _document_digest(document: ProjectDocument) -> str:
-    # The active sheet is persisted navigation, not a document edit.
     payload = json.dumps(
         document.project,
         sort_keys=True,
@@ -89,22 +96,47 @@ class WorkspaceSession:
             return
         current_digest = self._runtime_digest()
         assert self._checkpoint is not None
-        if current_digest == self._checkpoint_digest():
+        if self._runtime.lineage == self._checkpoint.lineage and current_digest == self._checkpoint_digest():
             return
         sheet_id = originating_sheet or self._runtime.current_sheet_id
-        self._record_before(RuntimeProject(self._checkpoint.dataset, sheet_id))
-        self._checkpoint = copy.deepcopy(self._runtime)
-        self._checkpoint.current_sheet_id = sheet_id
+        before_sheet_id = sheet_id if self._runtime.lineage == self._checkpoint.lineage else self._checkpoint.current_sheet_id
+        self._record_before(replace(self._checkpoint, current_sheet_id=before_sheet_id))
+        self._checkpoint = copy.deepcopy(replace(self._runtime, current_sheet_id=sheet_id))
 
-    def edit_sheet(self, sheet: Sheet | None, operation: Callable[[Sheet], None]) -> bool:
-        """Apply a result-window edit if its source sheet is still part of this project."""
-        if sheet is None or self._runtime is None or not any(
-            live is sheet for live in self._runtime.dataset.sheets
-        ):
+    def attach_sheet(self, sheet: Sheet | None) -> SheetAttachment | None:
+        runtime = self._runtime
+        if sheet is not None and runtime is not None and any(live is sheet for live in runtime.dataset.sheets):
+            return SheetAttachment(runtime.lineage, sheet.id)
+        return None
+
+    def attached_sheet(self, attachment: SheetAttachment | None) -> Sheet | None:
+        runtime = self._runtime
+        if attachment is None or runtime is None or attachment.lineage != runtime.lineage:
+            return None
+        return next((sheet for sheet in runtime.dataset.sheets if sheet.id == attachment.sheet_id), None)
+
+    def edit_sheet(self, attachment: SheetAttachment | None, operation: Callable[[Sheet], None]) -> bool:
+        sheet = self.attached_sheet(attachment)
+        if sheet is None:
             return False
         operation(sheet)
         self.checkpoint(originating_sheet=sheet.id)
         return True
+
+    def last_pooled_fit(self, sheet: Sheet) -> PooledAnalysis | None:
+        if self.attach_sheet(sheet) is None:
+            return None
+        assert self._runtime is not None
+        return self._runtime.last_pooled_fits.get(sheet.id)
+
+    def record_pooled_fit(self, sheet: Sheet, fit: PooledAnalysis) -> None:
+        if self.attach_sheet(sheet) is not None:
+            assert self._runtime is not None
+            self._runtime.last_pooled_fits[sheet.id] = fit
+
+    def discard_pooled_fit(self, sheet_id: SheetId) -> None:
+        if self._runtime is not None:
+            self._runtime.last_pooled_fits.pop(sheet_id, None)
 
     def _record_before(self, before: RuntimeProject) -> None:
         self._history.append(before)
@@ -119,6 +151,23 @@ class WorkspaceSession:
         """Selection is navigation, not a separate undoable edit."""
         if self._runtime is not None:
             self._runtime.current_sheet_id = sheet_id
+
+    @contextmanager
+    def change(self, restore: InstallRuntime) -> Generator[None]:
+        """Commit one operation, restoring the installed view if it fails."""
+        self.begin_change()
+        try:
+            yield
+            self.end_change()
+        except BaseException as error:
+            runtime = self.abort_change()
+            if runtime is None:
+                raise
+            try:
+                restore(runtime)
+            except Exception as restore_error:
+                error.add_note(f"Workspace adapter restoration also failed: {restore_error}")
+            raise
 
     def begin_change(self) -> None:
         """Start one atomic UI operation."""
@@ -154,7 +203,7 @@ class WorkspaceSession:
         )
         assert self._runtime is not None
         self._checkpoint = copy.deepcopy(self._runtime)
-        if checkpoint_digest != current_digest:
+        if checkpoint.lineage != self._runtime.lineage or checkpoint_digest != current_digest:
             self._record_before(checkpoint)
         self._transaction = None
 
@@ -201,7 +250,7 @@ class WorkspaceSession:
         """
         self._require_idle()
         destination = Path(path)
-        candidate = project_adapter.runtime_from_loaded_project(project_format.load_project(destination))
+        candidate = project_adapter.load_runtime_project(destination)
         checkpoint = copy.deepcopy(candidate)
         saved_digest = _document_digest(project_adapter.runtime_project_to_document(candidate))
         self._install_runtime(candidate, checkpoint, install)
@@ -215,6 +264,7 @@ class WorkspaceSession:
         undo_previous: bool = False,
     ) -> None:
         self._require_idle()
+        candidate = replace(candidate, lineage=uuid4())
         previous = copy.deepcopy(self._runtime) if undo_previous else None
         checkpoint = copy.deepcopy(candidate)
         self._install_runtime(candidate, checkpoint, install)

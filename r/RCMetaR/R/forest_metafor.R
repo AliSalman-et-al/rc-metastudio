@@ -105,7 +105,6 @@ rcmetar.raw.values.complete <- function(values) {
     length(values) > 0 && all(is.finite(values))
 }
 
-# Compact only presentation strings; raw matrices still own full-precision totals.
 rcmetar.compact.numeric.labels <- function(labels) {
     labels <- as.character(labels)
     values <- suppressWarnings(as.numeric(labels))
@@ -274,8 +273,6 @@ rcmetar.metafor.plot.fields <- function(om.data, params, y, lb, ub, sample.sizes
     effects <- list(ES=y, LL=lb, UL=ub)
     finite <- is.finite(y) & is.finite(lb) & is.finite(ub)
     plot.range <- calc.plot.range(lapply(effects, function(values) values[finite]), plot.options)
-    # Resolved defaults describe the current drawing, not explicit user edits.
-    # Persisting them makes the next regeneration freeze or double-transform it.
     changed.params <- plot.options$changed.params
     changed.params$fp_xlabel <- NULL
     list(
@@ -308,7 +305,6 @@ rcmetar.build.sequential.metafor.bundle <- function(om.data, params, results, va
     if (params$fp_col1_str %in% c("Study or Subgroup", "Study added", "Study added (k)")) {
         params$fp_col1_str <- if (variant == "cumulative") "Study added" else "Study omitted"
     }
-    # Earlier saved cumulative plots embedded the step count in each label.
     if (variant == "cumulative" && legacy.labels) labels <- mapply(function(label, i)
         sub(paste0(" \\(k = ", i, "\\)$"), "", label), labels, seq_along(labels), USE.NAMES=FALSE)
 
@@ -686,7 +682,6 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
     half.width <- graphics::strwidth(labels, cex=cex) / 2
     gap <- graphics::strwidth("    ", cex=cex)
     chosen <- integer(0)
-    # Keep the null tick when it is visible.
     priority <- order(ticks != null, abs(ticks), ticks, na.last=TRUE)
     for (index in priority) {
         if (!length(chosen) || all(abs(ticks[index] - ticks[chosen]) > half.width[index] + half.width[chosen] + gap)) {

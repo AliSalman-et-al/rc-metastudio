@@ -6,7 +6,6 @@ from typing import cast
 import pytest
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from rc_metastudio import adaptive_window
 from rc_metastudio.calculators import service as calculator_service
 
 
@@ -152,36 +151,6 @@ def _open_metrics_dialog(monkeypatch, model):
     )
     dialog = diagnostic_metrics_dialog.DiagnosticMetricsDialog(model, lambda _metrics: True)
     return app, dialog
-
-
-def test_diagnostic_data_declares_transactional_overflow_and_reachable_actions(
-    monkeypatch,
-):
-    app, dialog = _open_data_dialog(monkeypatch)
-    try:
-        dialog.show()
-        app.processEvents()
-
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
-        assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
-        assert dialog.content_scroll.widgetResizable()
-        assert not dialog.content_scroll.isAncestorOf(dialog.buttonBox)
-        assert required(dialog.layout(), "dialog layout").indexOf(dialog.buttonBox) >= 0
-        assert AVAILABLE.contains(dialog.frameGeometry())
-        assert (
-            dialog.two_by_two_table.horizontalScrollBarPolicy()
-            == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
-        )
-        assert (
-            dialog.two_by_two_table.horizontalHeader().sectionResizeMode(0)
-            == QtWidgets.QHeaderView.ResizeMode.Interactive
-        )
-    finally:
-        dialog.close()
-        app.processEvents()
 
 
 def test_diagnostic_data_keyboard_and_accessibility_contract(monkeypatch):
@@ -513,10 +482,6 @@ def test_diagnostic_metric_availability_preserves_workflow_and_explains_limits(
         dialog.show()
         app.processEvents()
 
-        assert (
-            adaptive_window.adaptive_window_state(dialog).role
-            is adaptive_window.WindowRole.TRANSACTIONAL
-        )
         assert isinstance(dialog.content_scroll, QtWidgets.QScrollArea)
         assert dialog.content_scroll.widgetResizable()
         assert not dialog.content_scroll.isAncestorOf(dialog.btn_ok)

@@ -181,7 +181,6 @@ def fixed_result_number(value: float, digits: int, *, preserve_positive: bool = 
 
 def format_effect_number(value: float, digits: int) -> str:
     if value != 0 and abs(value) < 10 ** (-digits):
-        # Keep `digits` significant figures so a small value stays nonzero.
         required = math.ceil(-math.log10(abs(value))) + max(1, digits) - 1
         formatted = f"{value:.{required}f}" if required <= 6 else f"{value:.{max(1, digits)}e}"
         mantissa, separator, exponent = formatted.partition("e")
@@ -200,8 +199,8 @@ def sentence_case_title(title: str) -> str:
         core = word.strip("()[],:;'’")
         head = core.split("-")[0]
         return (core.removesuffix("'s").removesuffix("’s") in _TITLE_PROPER_NAMES
-                or any(c.isupper() for c in core[1:])  # acronyms, DerSimonian, ML
-                or (len(head) == 1 and head.isupper()))  # I-squared, H-squared
+                or any(c.isupper() for c in core[1:])
+                or (len(head) == 1 and head.isupper()))
     return " ".join(word if index == 0 or keep(word) else word.lower()
                     for index, word in enumerate(str(title).split()))
 

@@ -44,7 +44,6 @@ def _run_packaged(
 ):
     command = [str(executable), *arguments]
     child_environment = environment.copy()
-    # Keep the helper's source and host library paths out of the packaged process.
     child_environment.pop("PYTHONPATH", None)
     child_environment.pop("LD_LIBRARY_PATH", None)
     try:

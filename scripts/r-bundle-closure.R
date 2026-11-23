@@ -1,4 +1,3 @@
-# Compute from this build's installed metadata, never a hand-maintained package list.
 args <- commandArgs(TRUE)
 lib <- normalizePath(args[[1]])
 db <- installed.packages(lib.loc=lib)

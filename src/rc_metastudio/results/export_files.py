@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from PyQt6.QtCore import QEventLoop, QThread, QTimer, Qt
 from PyQt6.QtWidgets import QApplication, QProgressDialog
 
-from rc_metastudio import r_worker
+from rc_metastudio.foreground_operation import OperationCancelled, foreground_operation
 
 
 @contextmanager
@@ -39,8 +39,7 @@ def compose_export(write: Callable[[], None]) -> None:
     if not isinstance(app, QApplication):
         write()
         return
-    app.setProperty("rcmsExportInProgress", True)
-    try:
+    with foreground_operation():
         thread = _ExportWriter(write)
         loop = QEventLoop()
         thread.finished.connect(loop.quit)
@@ -60,14 +59,12 @@ def compose_export(write: Callable[[], None]) -> None:
         dialog.hide()
         dialog.deleteLater()
         if cancelled:
-            raise r_worker.RJobCancelled("The export was cancelled.")
+            raise OperationCancelled("The export was cancelled.")
         if thread.error is not None:
             raise thread.error
-    finally:
-        app.setProperty("rcmsExportInProgress", False)
 
 
 def check_export_cancelled() -> None:
     thread = QThread.currentThread()
     if thread is not None and thread.isInterruptionRequested():
-        raise r_worker.RJobCancelled("The export was cancelled.")
+        raise OperationCancelled("The export was cancelled.")

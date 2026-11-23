@@ -95,14 +95,13 @@ def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_pa
     build_root = tmp_path / "qt6-verification"
     receipt = tmp_path / "typing.json"
     r_home = tmp_path / "selected-R"
-    monkeypatch.delenv("RCMS_QT6_BUILD_ROOT", raising=False)
-    monkeypatch.setattr(source_verifier, "DEFAULT_BUILD_ROOT", build_root)
+    monkeypatch.setenv("RCMS_QT6_BUILD_ROOT", str(build_root))
     monkeypatch.setattr(
         source_verifier, "prepare_qt_environment",
         lambda root: {"RCMS_QT6_BUILD_ROOT": str(root), "RCMS_R_HOME": str(tmp_path / "ambient-R")},
     )
     checked_roots = []
-    monkeypatch.setattr(source_verifier, "run_typing", lambda root: checked_roots.append(root) or receipt)
+    monkeypatch.setattr(stack_verifier, "run_typing", lambda root: checked_roots.append(root) or receipt)
     monkeypatch.setattr(stack_verifier, "resolve_rscript", lambda name: r_home / "bin" / name)
     monkeypatch.setattr(r_verification_support, "resolve_r_home", lambda *_args: r_home)
     monkeypatch.setattr(r_verification_support, "resolve_r_exe", lambda *_args: r_home / "bin/R")
@@ -118,7 +117,7 @@ def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_pa
         assert checked_roots == [build_root]
         assert env["RCMS_QT6_BUILD_ROOT"] == str(build_root)
         if "tests/e2e" in command:
-            assert env[source_verifier.TYPING_RECEIPT_ENV] == str(receipt)
+            assert env[stack_verifier.TYPING_RECEIPT_ENV] == str(receipt)
             assert env["RCMS_RSCRIPT"] == str(r_home / "bin/Rscript")
             assert env["R_HOME"] == env["RCMS_R_HOME"] == str(r_home)
             raise CheckedDesktop
@@ -140,7 +139,7 @@ def test_r_verifiers_preserve_symlinked_python_identity(monkeypatch, tmp_path):
         pytest.skip(f"symlink creation is unavailable: {exc}")
     expected_python = str(venv_python.absolute())
     monkeypatch.setattr(source_verifier, "prepare_qt_environment", lambda _root: dict(os.environ))
-    monkeypatch.setattr(source_verifier, "run_typing", lambda _root: tmp_path / "typing.json")
+    monkeypatch.setattr(stack_verifier, "run_typing", lambda _root: tmp_path / "typing.json")
 
     class StopAfterFirstChild(Exception):
         pass

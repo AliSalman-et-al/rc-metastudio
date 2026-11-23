@@ -6,16 +6,37 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import copy
-from collections.abc import Iterable
-from typing import Literal
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Literal, Protocol
 from rc_metastudio.domain_ids import ArmId
-import uuid
 
 from rc_metastudio.analysis import catalog as analysis_catalog, validation as analysis_validation
 from rc_metastudio.ratio_data import RatioInput
 
 DIAGNOSTIC = analysis_catalog.DIAGNOSTIC
 EffectSource = Literal["entered", "derived_preview"]
+
+
+@dataclass
+class Arm:
+    id: ArmId
+    name: str
+
+
+class _StudyOwner(Protocol):
+    @property
+    def data_type(self) -> int: ...
+
+    @property
+    def sub_type(self) -> str | None: ...
+
+    @property
+    def arms(self) -> Sequence[Arm]: ...
+
+    @property
+    def settings(self) -> Mapping[str, object]: ...
+
+    def copy_for_study_edit(self) -> _StudyOwner: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,10 +54,8 @@ class AnalysisUnit:
 
     def __init__(
         self,
-        sheet,
+        sheet: _StudyOwner,
         raw_data=None,
-        arm_names=None,
-        arm_stable_ids=None,
         *,
         present_raw_arms: set[ArmId] | None = None,
     ):
@@ -50,39 +69,36 @@ class AnalysisUnit:
         # An old archive can omit the measurement slots for a declared arm.
         self.present_raw_arms = present_raw_arms
 
-        if arm_names is None:
-            arm_names = analysis_catalog.default_arm_names(sheet.data_type, sheet.sub_type)
-
-        self._arms_by_id = {}
-
         try:
             self.raw_data_length = analysis_catalog.RAW_FIELDS_PER_ARM[sheet.data_type]
         except KeyError:
             raise ValueError(f"Unrecognized outcome data type: {sheet.data_type!r}") from None
 
-        raw_data = raw_data or [[""] * self.raw_data_length for _ in arm_names]
+        raw_data = raw_data or [[""] * self.raw_data_length for _ in sheet.arms]
 
         self.entered_effects = {}
         self._entered_display = {}
         self.derived_effect_previews = {}
         self.ratio_inputs: dict[tuple[ArmId, ...], RatioInput] = {}
 
-        identities = arm_stable_ids or [None] * len(arm_names)
-        for name, values, identity in zip(arm_names, raw_data, identities, strict=True):
-            arm = StudyArmData(name, values, stable_id=identity)
-            self._arms_by_id[arm.stable_id] = arm
+        self._arms_by_id = {
+            arm.id: StudyArmData(values, arm.id)
+            for arm, values in zip(sheet.arms, raw_data, strict=True)
+        }
 
     @property
-    def arms_by_id(self):
+    def arms_by_id(self) -> dict[ArmId, StudyArmData]:
         return self._arms_by_id
 
     @property
-    def arms(self):
-        return {arm.name: arm for arm in self._arms_by_id.values()}
+    def arms(self) -> dict[str, StudyArmData]:
+        names = {arm.id: arm.name for arm in self.sheet.arms}
+        return {names[identity]: data for identity, data in self._arms_by_id.items()}
 
     def copy_for_edit(self) -> "AnalysisUnit":
-        """Copy measurements without copying their owning sheet and its rows."""
-        return copy.deepcopy(self, {id(self.sheet): self.sheet})
+        """Copy the study and capture the arm declarations used by the editor."""
+        owner = self.sheet.copy_for_study_edit()
+        return copy.deepcopy(self, {id(self.sheet): owner})
 
     def adopt_calculated_state(self, candidate: "AnalysisUnit") -> None:
         """Publish a validated candidate while preserving this unit's identity.
@@ -256,25 +272,14 @@ class AnalysisUnit:
             return self._entered_display.setdefault((effect, arm_comparison), {})
         return self._effect_entry_for_update(source, effect, arm_comparison)
 
-    def set_display_effect_for_source(
-        self, source: EffectSource, effect, arm_comparison, value
+    def set_display_effect_and_ci(
+        self, source: EffectSource, effect, arm_comparison,
+        estimate, lower, upper, standard_error, *, confidence_level,
     ):
-        self._display_for_update(source, effect, arm_comparison)["display_est"] = value
-
-    def set_display_lower_for_source(
-        self, source: EffectSource, effect, arm_comparison, lower
-    ):
-        self._display_for_update(source, effect, arm_comparison)["display_lower"] = lower
-
-    def set_display_upper_for_source(
-        self, source: EffectSource, effect, arm_comparison, upper
-    ):
-        self._display_for_update(source, effect, arm_comparison)["display_upper"] = upper
-
-    def set_display_se_for_source(
-        self, source: EffectSource, effect, arm_comparison, se
-    ):
-        self._display_for_update(source, effect, arm_comparison)["display_se"] = se
+        self._display_for_update(source, effect, arm_comparison).update(
+            display_est=estimate, display_lower=lower, display_upper=upper,
+            display_se=standard_error, display_conf_level=confidence_level,
+        )
 
     def calculate_display_effect_and_ci(
         self,
@@ -288,10 +293,9 @@ class AnalysisUnit:
         source: EffectSource,
     ):
         if self.get_effect_for_source(source, effect, arm_comparison).estimate is None:
-            entry = self._display_for_update(source, effect, arm_comparison)
-            for field in ("display_est", "display_lower", "display_upper", "display_se"):
-                entry[field] = None
-            entry["display_conf_level"] = confidence_level
+            self.set_display_effect_and_ci(
+                source, effect, arm_comparison, None, None, None, None, confidence_level=confidence_level,
+            )
             return
         if None in [confidence_level, confidence_multiplier]:
             raise ValueError("confidence level and multiplier must be specified")
@@ -316,24 +320,11 @@ class AnalysisUnit:
         display_estimate, display_lower, display_upper = [
             convert_to_display_scale(x) for x in [est, lower, upper]
         ]
-        se = self.get_se(source, effect, arm_comparison, confidence_multiplier)
-        display_standard_error = se
-
-        self.set_display_effect_for_source(
-            source, effect, arm_comparison, display_estimate
+        standard_error = self.get_se(source, effect, arm_comparison, confidence_multiplier)
+        self.set_display_effect_and_ci(
+            source, effect, arm_comparison, display_estimate, display_lower, display_upper,
+            standard_error, confidence_level=confidence_level,
         )
-        self.set_display_lower_for_source(
-            source, effect, arm_comparison, display_lower
-        )
-        self.set_display_upper_for_source(
-            source, effect, arm_comparison, display_upper
-        )
-        self.set_display_se_for_source(
-            source, effect, arm_comparison, display_standard_error
-        )
-        self._display_for_update(source, effect, arm_comparison)[
-            "display_conf_level"
-        ] = confidence_level
 
     def get_display_effect_for_source(self, source: EffectSource, effect, arm_comparison):
         return self._cached_display(source, effect, arm_comparison).get("display_est")
@@ -447,8 +438,6 @@ class AnalysisUnit:
     def set_derived_effect_preview(
         self, effect, arm_comparison, est, lower, upper, confidence_multiplier
     ):
-        # Raw-data calculations are previews.  They must not overwrite values
-        # explicitly entered by the user or values published by a meta-analysis.
         self.set_effect_for_source(
             "derived_preview",
             effect,
@@ -510,9 +499,6 @@ class AnalysisUnit:
         return entry.estimate, entry.lower, entry.upper
 
 
-    def rename_arm(self, old_name, new_name):
-        self.arms[old_name].name = new_name
-
     def get_raw_data_for_arm(self, arm_name):
         return self.arms[arm_name].raw_data
 
@@ -535,7 +521,6 @@ class AnalysisUnit:
             self.set_raw_data_for_arm(arm, raw_data_list[i])
 
 class StudyArmData:
-    def __init__(self, name, raw_data, stable_id=None):
-        self.name = name
+    def __init__(self, raw_data, stable_id: ArmId):
         self.raw_data = raw_data
-        self.stable_id = ArmId(stable_id or uuid.uuid4().hex)
+        self.stable_id = stable_id

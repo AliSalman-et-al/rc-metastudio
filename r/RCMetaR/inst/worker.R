@@ -46,8 +46,6 @@ local({
         ))
         size <- nchar(body, type="bytes")
         if (size > limit) stop("The R worker response exceeds the 16 MiB frame limit.", call.=FALSE)
-        # R's stdout is text-only. JSON escapes control bytes, and useBytes
-        # preserves UTF-8 without locale conversion.
         while (sink.number() > 0L) sink()
         on.exit(sink(stderr()))
         writeLines(paste0(magic, sprintf("%08x", size), body), stdout(), sep="", useBytes=TRUE)
@@ -131,8 +129,10 @@ local({
             binary_effect=do.call(rcmetar.binary.study.effect, args),
             continuous_effect=do.call(rcmetar.continuous.study.effect, args),
             diagnostic_effect={
-                args$metrics <- unlist(args$metrics, use.names=FALSE)
-                do.call(rcmetar.diagnostic.study.effects, args)
+                counts <- list(TP=args$tp, FN=args$fn, TN=args$tn, FP=args$fp)
+                metrics <- unlist(args$metrics, use.names=FALSE)
+                conf.level <- RCMetaR:::validate.conf.level(args$conf.level)
+                RCMetaR:::.rcmetar.diagnostic.study.effects(counts, metrics, conf.level)
             },
             scale={
                 if (isTRUE(job$vector)) {
@@ -193,9 +193,12 @@ local({
     catalog <- function(job) {
         if (job$type == "available_methods") {
             data <- RCMetaR:::.rcmetar.worker.data(job$family, job$columns)
-            return(lapply(job$metrics, function(metric) {
+            choices <- lapply(job$metrics, function(metric) {
                 as.list(rcmetar.available.methods(job$family, data, metric, job$workflow))
-            }))
+            })
+            registry <- RCMetaR:::.rcmetar.method.registry()
+            requires.counts <- names(Filter(function(method) method$requires.counts, registry))
+            return(list(choices=choices, requires_counts=as.list(requires.counts)))
         }
         if (job$type == "plot_capabilities")
             return(wire_value(rcmetar.analysis.plot.capabilities(job$family, job$method, job$workflow)))

@@ -205,23 +205,21 @@ ratio.subgroup <- function(data, request, suppressed) {
 }
 
 ratio.sequential <- function(data, request, suppressed) {
-    params <- request$params
+    plan <- .rcmetar.sequential.plan(data, request$params, request$workflow)
+    data <- plan$data
+    params <- plan$params
     method <- request$method
-    if (request$workflow == "cumulative") {
-        params$cum_sequence_index <- rcmetar.cumulative.sequence(data, params$cum_sequence)
-        data <- get.subset(data, params$cum_sequence_index)
-    }
     n <- length(data@study.names)
     plot <- NULL
-    loo <- request$workflow == "leave-one-out"
+    loo <- plan$has.overall
     if (loo && n < 2) stop("Leave-one-out needs at least two studies.")
     fit <- function(subset) ratio.fit(subset, suppressed, method)
     fits <- .rcmetar.sequential.fits(data, loo, fit, fit(data))
-    labels <- rcmetar.sequential.labels(rcmetar.study.labels(data), request$workflow, loo)
+    labels <- plan$labels
     model.title <- paste(pretty.metric.name(data@metric),
         if (loo) "Leave-one-out meta-analysis" else "Cumulative meta-analysis")
-    disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=request$workflow)
-    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, request$workflow, labels, has.overall=loo)
+    disp <- create.overall.display(fits, labels, params, model.title, .rcmetar.data.type(data), workflow=plan$workflow)
+    if (!isTRUE(params$supress.output)) plot <- rcmetar.build.sequential.metafor.bundle(data, params, fits, plan$workflow, labels, has.overall=loo)
     result <- list("Sequential summary"=disp,
         res=construct.sequential.res.output(fits, cumul.rma.uni.value.info(), replacements=list(estimate="b")))
     title <- if (loo) "Leave-one-out forest plot" else "Cumulative forest plot"

@@ -2,14 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Stable data-family IDs, supported metrics and default arm names."""
 
+from dataclasses import dataclass
 from typing import Literal
 
 AnalysisFamily = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
 REITSMA_METHOD = "diagnostic.reitsma"
-RAW_COUNT_METHODS = frozenset({
-    "binary.fixed.mh", "binary.fixed.peto", "diagnostic.fixed.mh",
-    "diagnostic.fixed.peto", "event_rates.mh", REITSMA_METHOD,
-})
+
+
+@dataclass(frozen=True, slots=True)
+class AvailableMethod:
+    label: str
+    requires_raw_counts: bool = False
 
 BINARY_TWO_ARM_METRICS = ["OR", "RD", "RR", "AS", "YUQ", "YUY"]
 

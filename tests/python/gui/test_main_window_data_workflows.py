@@ -7,7 +7,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.path.abspath("src"))
 
 import pytest
-from rc_metastudio import automation
+from rc_metastudio import automation, r_operations
 from PyQt6.QtWidgets import QApplication
 from qt_test_support import key_click, metric_action, required
 
@@ -88,12 +88,12 @@ def test_data_table_delete_and_backspace_clear_selected_cells(monkeypatch):
         table.paste_contents(model.index(0, model.NAME), [[_variant("Alpha")]])
 
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "binary_convert_scale",
             lambda value, *args, **kwargs: value,
         )
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "effect_for_study",
             lambda *args, **kwargs: {"calc_scale": (0.5, 0.25, 1.0)},
         )
@@ -277,29 +277,17 @@ def test_inclusion_edit_undo_redo_restores_semantics_selection_and_dirty_state()
         _close_without_prompt(app, window)
 
 
-def test_toolbar_copy_without_a_selection_is_a_no_op(monkeypatch):
-    from rc_metastudio import app_error_handler
-
+def test_toolbar_copy_without_a_selection_preserves_clipboard(preserve_clipboard):
     app, window = automation.start_automation()
     try:
         _create_binary_dataset(window)
         table = window.tableView
         table.clearSelection()
         assert table.selectionModel().selectedIndexes() == []
-
-        errors = []
-        monkeypatch.setattr(
-            app_error_handler,
-            "handle_exception",
-            lambda exc_type, exc_value, exc_traceback, parent=None: errors.append(
-                exc_value
-            ),
-        )
-
+        app.clipboard().setText("Existing clipboard text")
         window.action_copy.trigger()
         app.processEvents()
-
-        assert errors == []
+        assert app.clipboard().text() == "Existing clipboard text"
     finally:
         _close_without_prompt(app, window)
 
@@ -316,7 +304,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
         table.paste_contents(model.index(0, model.NAME), [[_variant("Kinderman")]])
 
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "diagnostic_convert_scale",
             lambda value, *args, **kwargs: value,
         )
@@ -332,7 +320,7 @@ def test_diagnostic_complete_paste_recomputes_sens_spec_confidence_intervals(
             }
 
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "diagnostic_effects_for_study",
             diagnostic_effects_for_study,
         )
@@ -395,12 +383,12 @@ def test_diagnostic_partial_paste_clears_stale_sens_spec_confidence_intervals(
         window.data_dirtied()
 
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "diagnostic_convert_scale",
             lambda value, *args, **kwargs: value,
         )
         monkeypatch.setattr(
-            window.model.editing_service.bridge,
+            r_operations,
             "diagnostic_effects_for_study",
             lambda *args, **kwargs: {
                 "Sens": {"calc_scale": (0.800, 0.490, 0.943)},

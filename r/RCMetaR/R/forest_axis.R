@@ -28,8 +28,6 @@ rcmetar.forest.display.values <- function(bundle, values) {
     rcmetar.bundle.transform(bundle)$display.scale(values, ni=bundle$sample_sizes)
 }
 
-# Project coordinates only. Statistical objects and their sampling variances stay
-# on the fitted scale; PFT studies use their own N and summaries its harmonic mean.
 rcmetar.forest.axis.values <- function(bundle, values) {
     if (!rcmetar.forest.natural.axis(bundle)) return(values)
     rcmetar.forest.display.values(bundle, values)

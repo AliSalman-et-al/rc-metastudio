@@ -1,4 +1,3 @@
-# Python
 *.py[cod]
 __pycache__/
 .venv/
@@ -15,7 +14,6 @@ __pycache__/
 coverage.xml
 htmlcov/
 
-# R
 .RData
 .Rhistory
 .Rproj.user/
@@ -28,19 +26,16 @@ HSROC_2.0.5.tar.gz
 RCMetaR_*.tar.gz
 RCMetaR_*.zip
 
-# IDEs
 .project
 .pydevproject
 .settings/
 .idea/
 *.swp
 
-# OS files
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# Build products and generated Qt files
 /build/
 /dist/
 /dist.zip
@@ -55,13 +50,10 @@ Desktop.ini
 /src/rc_metastudio/forms/ui_*.py
 /src/rc_metastudio/forms/icons_rc.py
 
-# Generated verification receipts, captures, dependency caches, and release bundles
 /artifacts/
 
-# Local agent scratch files
 /.tmp/
 .agents/*
-# Preserve the repository's verification skill and its supporting files.
 !.agents/skills/
 .agents/skills/*
 !.agents/skills/verify-rcms/

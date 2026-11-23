@@ -72,7 +72,7 @@ def run(app, window, scenario, record):
 
     modal(app, main_wizard.MainWizard, create, window.action_new_dataset.trigger)
     model = window.model
-    assert model.get_current_data_type() == family
+    assert model.get_current_family() == family
     assert model.current_effect == metric
     assert [c for c in model.OUTCOMES if not window.tableView.isColumnHidden(c)] == model.OUTCOMES[:3]
     ys, ses = [], []
@@ -215,7 +215,6 @@ def run(app, window, scenario, record):
     model.current_sheet.arms.reverse()
     assert model.get_current_analysis_unit_for_study(11).ratio_input(groups) == reopened
 
-    # Import the exported original inputs through the production CSV preview.
     csv_path = work / f"{metric}.csv"
     columns = [model.NAME, model.YEAR, *model.RAW_DATA, *model.OUTCOMES]
     with csv_path.open("w", encoding="utf-8-sig", newline="") as stream:
@@ -319,7 +318,6 @@ def run(app, window, scenario, record):
     assert float(model.data(model.index(11, model.OUTCOMES[0]))) == round(math.exp(ys[-1]), model.NUM_DIGITS)
     record("ratio-log-effect-se-entered", window, estimate=ys[-1], log_se=ses[-1])
 
-    # Public-package input is constructed independently from the entered fixture.
     prefix = "e <- data.frame(yi=c(" + ",".join(map(str, ys)) + "), vi=c(" + ",".join(str(se**2) for se in ses) + ")); "
     vector = lambda column: "c(" + ",".join(str(row[column]) for row in raws) + ")"
     if not hazard:
@@ -513,7 +511,6 @@ def run(app, window, scenario, record):
                 actual = sequential_comparison(view, workflow, expected)
             record("ratio-mh-workflow-metafor-comparison", view, workflow=workflow, actual=actual, expected=expected)
             view.close(); app.processEvents()
-        # Restore mixed sources before saving the durable inspection fixture.
         for i in range(8,12):
             assert model.setData(model.index(i, model.OUTCOMES[6]), "reported")
     assert window.save(destination=project_path)
@@ -546,7 +543,7 @@ def verify_bundled_sample(app, window, hazard, record):
     def check_inputs():
         model = window.model
         assert len(model.current_sheet.rows) == len(rows)
-        assert model.current_effect == metric and model.get_current_data_type() == family
+        assert model.current_effect == metric and model.get_current_family() == family
         assert all(study.include for study in model.current_sheet.rows)
         for i, row in enumerate(rows):
             study = model.current_sheet.rows[i]

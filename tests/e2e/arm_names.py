@@ -128,7 +128,6 @@ def run(app, window, work, record):
                 record("round5-arm-csv-mapping", wizard, case=case, spelling=spelling)
             wizard.reject()
     window.workspace.mark_saved()
-    # Frozen legacy input remains intentional test data, separate from bundled examples.
     legacy = work / "legacy-input-arm-names.rcms"
     legacy.write_bytes((Path(__file__).resolve().parents[1] / "fixtures/legacy-projects/amino.rcms").read_bytes())
     original = legacy.read_bytes()
