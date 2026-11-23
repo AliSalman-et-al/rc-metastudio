@@ -387,6 +387,9 @@ def ready_key(lane: str, selection: str, toolchain: dict[str, object]) -> str:
 
 
 def run_ready_lane(lane: str, selection: str, action: Callable[[], None], args: argparse.Namespace) -> None:
+    if lane.startswith("desktop-"):
+        action()
+        return
     toolchain = ready_toolchain(args)
     key = ready_key(lane, selection, toolchain)
     cache = REPO_ROOT / "artifacts/verification/ready" / lane

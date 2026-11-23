@@ -164,8 +164,6 @@ def lane_reads(path: str, lane: str) -> bool:
     shared = matches(path, ("src/*", "r/*", "tests/fixtures/*", "tests/python/fixtures/*"))
     if lane == "checks":
         return affected.r_checks or shared or matches(path, ("tests/python/fast/test_packaged_summary_identity.py",))
-    if lane.startswith("desktop-"):
-        return bool(affected.desktop) or shared
     return lane in affected.jobs or shared or (
         lane == SOURCE and path.startswith(("tests/python/fast/", "tests/packaging/contract/"))
     )

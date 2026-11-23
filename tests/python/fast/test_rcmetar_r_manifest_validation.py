@@ -107,7 +107,7 @@ def test_standalone_r_stack_hands_selected_inputs_to_desktop(monkeypatch, tmp_pa
     monkeypatch.setattr(r_verification_support, "resolve_r_exe", lambda *_args: r_home / "bin/R")
     monkeypatch.setattr(r_verification_support, "load_binary_dependency_policy", lambda _root: {"repository": "fixed"})
     monkeypatch.setattr(stack_verifier, "ensure_dependency_library", lambda *_args: tmp_path / "library")
-    monkeypatch.setattr(stack_verifier, "built_RCMetaR_tarball", lambda _work: tmp_path / "archive.tar.gz")
+    monkeypatch.setattr(stack_verifier, "install_stack_source", lambda *_args: tmp_path / "archive.tar.gz")
     monkeypatch.delenv("RCMS_CRAN_REPO", raising=False)
 
     class CheckedDesktop(Exception):
