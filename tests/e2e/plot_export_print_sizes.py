@@ -21,6 +21,17 @@ from rc_metastudio.results.window import ResultsWindow
 from tests.python.gui.qt_test_support import metric_action, required, wait
 
 
+EXPECTED_LABELS = {
+    "regression": {"Absolute latitude", "Risk ratio", "Regression line"},
+    "funnel": {"Mean difference", "Standard error (outcome scale)", "No effect"},
+    "contour_funnel": {"Mean difference", "Standard error (outcome scale)", "Analysis CI 95%."},
+    "trimfill_funnel": {"Odds ratio", "Standard error of log odds ratio", "Observed", "Imputed"},
+    "deeks_funnel": {"Deeks effective-sample-size funnel", "Log diagnostic odds ratio"},
+    "sroc": {"False positive rate", "Sensitivity", "Confidence region", "Joint prediction region"},
+    "trial_sequential": {"Cumulative statistical information", "Cumulative Z-curve", "Conventional boundary"},
+}
+
+
 def pdf_observations(path: Path, width: float, height: float) -> dict:
     pdf = import_module("pymupdf")
     with pdf.open(path) as document:
@@ -100,7 +111,8 @@ def run(app, window, work, root, record, analyze):
         editor.accept()
         assert not editor.isVisible()
 
-    def export(view, name, width, *, blocked=False):
+    def export(view, kind, style, width, *, blocked=False):
+        name = f"{kind}-{style}"
         destination = work / f"{name}-{width:.2f}.pdf"
         dimensions = []
 
@@ -115,6 +127,8 @@ def run(app, window, work, root, record, analyze):
                    warning=dialog.legibility_warning.text(), error=dialog.raster_limit.text())
             if enabled == blocked:
                 failures.append((name, width, "unexpected Save state", enabled))
+            if blocked and not enabled:
+                assert dialog.raster_limit.isVisible() and "fit at this size" in dialog.raster_limit.text()
             if blocked or not enabled:
                 dialog.reject()
             else:
@@ -130,6 +144,8 @@ def run(app, window, work, root, record, analyze):
             record("print-export-pdf", figure=name, width=width, exports={"pdf": str(destination)}, **observed)
             if observed["min_font_pt"] < 6 or observed["outside"] or observed["overlaps"]:
                 failures.append((name, width, observed))
+            if missing := EXPECTED_LABELS[kind] - set(observed["labels"]):
+                failures.append((name, width, "missing labels", sorted(missing)))
 
     def check_plots(view, kinds):
         for kind in kinds:
@@ -141,9 +157,9 @@ def run(app, window, work, root, record, analyze):
             for style in ("default", "bmj"):
                 modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
                 for width in (2.60, 5.39):
-                    export(view, f"{kind}-{style}", width)
+                    export(view, kind, style, width)
             if kind == "sroc":
-                export(view, kind, .75, blocked=True)
+                export(view, kind, "bmj", .75, blocked=True)
                 for style, expected in (("default", {"#2f5597", "#b45f06"}), ("revman", {"#000000"}),
                                         ("bmj", {"#5f4c9a"}), ("custom", {"#5f4c9a", "#a11159"})):
                     modal(app, editor, lambda dialog: pick_style(dialog, style), view.edit_plot_action.trigger)
