@@ -422,7 +422,6 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         panel <- graphics::par("usr")
         ticks <- rcmetar.bubble.axis.ticks(bundle, panel[3:4])
         if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
-        # metafor's built-in grid uses base axis breaks, even for custom axes.
         if (ratio.grid) {
             graphics::abline(h=ticks, v=x.ticks, col="grey80", lty="dotted")
         }
