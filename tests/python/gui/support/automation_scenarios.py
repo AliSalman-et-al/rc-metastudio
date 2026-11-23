@@ -85,7 +85,7 @@ def start_shell_failure_smoke(stage):
 
     module = type("MainWindowModule", (), {"MainWindow": meta_factory})
     try:
-        _, window = compose_application(app=app, interactive=True,
+        _, window = compose_application(app=app, startup="desktop",
                                         main_window_loader=module, r_loader=r_loader)
     except _InjectedStartupFailure:
         if stage != "meta-form":

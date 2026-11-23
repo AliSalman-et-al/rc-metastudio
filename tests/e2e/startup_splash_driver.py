@@ -148,13 +148,13 @@ with patch.object(launch.settings, "get_base_path", return_value=str(output / "a
             patch.object(r_worker, "expected_source", return_value=(version, "0" * 64)),
             patch.object(MainWindow, "_show_analysis_backend_error", observed_error),
         ):
-            _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
+            _, window = launch.compose_application(app=app, startup="desktop", phase_callback=observe)
     elif args.workflow_failure:
         pins = dict(r_worker.runtime_versions(), RCMSMissingWorkflowPackage="1.0.0")
         with patch.object(r_worker, "runtime_versions", return_value=pins):
-            _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
+            _, window = launch.compose_application(app=app, startup="desktop", phase_callback=observe)
     else:
-        _, window = launch.compose_application(app=app, interactive=True, phase_callback=observe)
+        _, window = launch.compose_application(app=app, startup="desktop", phase_callback=observe)
     try:
         if capture_failures:
             raise capture_failures[0]

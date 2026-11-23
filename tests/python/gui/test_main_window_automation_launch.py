@@ -335,7 +335,8 @@ def test_startup_smoke_opens_positional_project_without_wizard(monkeypatch, tmp_
         def deleteLater(self):
             pass
 
-        def open(self, project_path):
+        def open(self, project_path, *, raise_on_error):
+            assert raise_on_error
             assert self.workspace.saved
             assert Path(project_path).read_bytes() == Path(sample_project).read_bytes()
             opened.append(project_path)

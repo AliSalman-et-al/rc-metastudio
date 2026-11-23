@@ -60,6 +60,36 @@ def _configure_qsettings_identity(qapp: QtWidgets.QApplication) -> None:
     qapp.setApplicationName("RCMetaStudio")
 
 
+@pytest.mark.parametrize("entry", ["desktop-driver", "startup-project-smoke"])
+def test_automation_reports_invalid_r_home_without_waiting_for_a_dialog(tmp_path: Path, entry: str):
+    missing_r = tmp_path / "missing-r"
+    environment = {
+        **os.environ,
+        "QT_QPA_PLATFORM": "offscreen",
+        "RCMS_QT6_BUILD_ROOT": os.environ.get("RCMS_QT6_BUILD_ROOT", str(ROOT / "build/qt6-verification")),
+        "RCMS_R_HOME": str(missing_r),
+        "PYTHONPATH": os.pathsep.join((str(ROOT), str(ROOT / "src"))),
+        "APPDATA": str(tmp_path),
+        "LOCALAPPDATA": str(tmp_path),
+        "XDG_DATA_HOME": str(tmp_path),
+    }
+    if entry == "desktop-driver":
+        arguments = [str(ROOT / "tests/e2e/desktop_driver.py"), "doctor", str(tmp_path)]
+    else:
+        project = ROOT / "tests/fixtures/desktop-projects/continuous.rcms"
+        arguments = ["-m", "rc_metastudio", "--automation-startup-project-smoke", str(project)]
+    command = [
+        sys.executable, str(ROOT / "scripts/run_with_timeout.py"),
+        "--timeout-seconds", "15", "--label", entry, "--", sys.executable, *arguments,
+    ]
+    (tmp_path / "command.json").write_text(json.dumps(command), encoding="utf-8")
+    completed = subprocess.run(command, cwd=tmp_path, env=environment, capture_output=True, text=True, timeout=30)
+    (tmp_path / "stdout.log").write_text(completed.stdout, encoding="utf-8")
+    (tmp_path / "stderr.log").write_text(completed.stderr, encoding="utf-8")
+    assert completed.returncode == 1, completed.stdout + completed.stderr
+    assert "Invalid RCMS_R_HOME" in completed.stderr and "missing-r" in completed.stderr
+
+
 def test_shell_success_and_failures_release_qt_objects_and_directory_with_fatal_warnings():
     environment = os.environ.copy()
     environment["QT_QPA_PLATFORM"] = "offscreen"
