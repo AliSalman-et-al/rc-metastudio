@@ -96,7 +96,8 @@ rcmetar.forest.panel.height <- function(plan) {
 rcmetar.forest.margins <- function(plan) {
     if (!is.null(plan$footer$axis)) return(c(.2, 0, if (identical(plan$headers$spanning, FALSE)) .08 else .36, 0))
     bottom <- if (plan$device$direction_lines > 0) 2.2 + .85 * plan$device$direction_lines else 1.8
-    c(.2 * bottom, 0, if (plan$rows$manual_sequential_labels || !length(plan$headers$groups)) .18 else .28, 0)
+    top <- if (plan$rows$manual_sequential_labels) .2 else if (isTRUE(plan$device$sparse_export)) .18 else .28
+    c(.2 * bottom, 0, top, 0)
 }
 
 rcmetar.forest.width.budget <- function(bundle, fixed.width, cex) {
@@ -264,6 +265,8 @@ rcmetar.forest.default.device.metrics <- function(bundle, cex=8 / 12) {
         c(budget, list(
             cex=cex,
             bg="white",
+            sparse_export=!is.null(bundle$target_width) && !length(bundle$ilab$columns) &&
+                !identical(bundle$forest_variant, "subgroup"),
             column_widths=column.widths,
             group_widths=group.widths,
             column_gap=column.gap,
@@ -390,7 +393,6 @@ rcmetar.forest.default.layout.preflight <- function(bundle, style="default") {
         headers=list(
             show=rcmetar.param.is.true(bundle$params, "fp_show_headers", TRUE),
             study=rcmetar.metafor.study.header(bundle),
-            groups=names(layout$group.xpos),
             effect=if (rows$manual_sequential_labels) rcmetar.metafor.effect.header(bundle) else size$effect_header
         ),
         footer=list(inference=inference),
