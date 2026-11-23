@@ -1231,12 +1231,11 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
     controller = getattr(window, "_adaptive_window_controller", None)
     if not isinstance(controller, adaptive_window.AdaptiveWindowController):
         raise RuntimeError("remaining surface has no live adaptive controller")
-    state = controller.state
-    policy = state.policy
+    policy = controller.policy
     if policy.application_owns_geometry:
         owner = (
             "application"
-            if state.role is adaptive_window.WindowRole.TRANSIENT
+            if controller.role is adaptive_window.WindowRole.TRANSIENT
             else "application-first-use"
         )
     else:
@@ -1246,7 +1245,7 @@ def _observe_window_contract(window: QtWidgets.QWidget) -> dict[str, object]:
         "archetype": policy.archetype.value,
         "first_use_behavior": policy.first_use_behavior.value,
         "geometry_owner": owner,
-        "role": state.role.name,
+        "role": controller.role.name,
     }
 
 
