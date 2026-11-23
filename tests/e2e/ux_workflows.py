@@ -248,7 +248,7 @@ def _run(app, window, work, root, record, analyze):
     from xml.etree import ElementTree
     svg = " ".join(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().itertext())
     nodes = list(ElementTree.parse(next(iter(view.results.display_images.values()))).getroot().iter("{http://www.w3.org/2000/svg}text"))
-    directions = [node for node in nodes if "Favors" in "".join(node.itertext())]
+    directions = [node for node in nodes if "Favours" in "".join(node.itertext())]
     assert len(directions) == 2
     def box(node):
         import re
@@ -329,7 +329,7 @@ def _run(app, window, work, root, record, analyze):
 
 
     for arm in window.model.arm_names:
-        assert "Favors" in svg and arm in svg
+        assert "Favours" in svg and arm in svg
     assert view.result_identity.isVisible()
     assert view._fit_width_active
     for width in (900, 796):
