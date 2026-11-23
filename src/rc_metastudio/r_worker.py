@@ -131,6 +131,7 @@ class PlotRenderJob(TypedDict):
     include_title: bool
     outline_text: bool
     width: float | None
+    height: float | None
     dpi: int | None
     page_height: float | None
 

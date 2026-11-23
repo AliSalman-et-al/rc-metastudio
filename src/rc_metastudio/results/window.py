@@ -1708,6 +1708,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             artifact.export_formats(), geometry.width, geometry.height, self,
             resizable=bool(artifact.params_path), text_per_inch=geometry.text_per_inch,
             forest_geometry=geometry.forest_measurement,
+            check_layout=geometry.check_layout,
             native_dpi=geometry.native_dpi,
         )
         return dialog.selection() if dialog.exec() else None

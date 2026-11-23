@@ -20,7 +20,7 @@ from PyQt6.QtSvg import QSvgRenderer
 
 from rc_metastudio import r_operations
 from rc_metastudio.results.export_files import check_export_cancelled, compose_export, staged_output
-from rc_metastudio.results.svg_rendering import svg_bytes_for_qt, svg_text_points_per_inch, svg_view_box_size
+from rc_metastudio.results.svg_rendering import plot_text_layout_issue, svg_bytes_for_qt, svg_text_points_per_inch, svg_view_box_size
 from rc_metastudio.results.plot_capabilities import PlotCapability, PlotRegenerator, uses_forest_layout
 from rc_metastudio.results.plot_geometry import A4_CONTENT_HEIGHT_INCHES
 
@@ -32,6 +32,7 @@ class PlotExportGeometry:
     native_dpi: int = 96
     text_per_inch: tuple[float, float] = (0.0, 0.0)
     forest_measurement: Callable[[float, bool], tuple[float, float] | None] | None = None
+    check_layout: Callable[[float, bool], None] | None = None
 
 
 class PlotServiceError(RuntimeError):
@@ -62,6 +63,10 @@ class PlotService:
             return PlotExportGeometry(width, height, forest_measurement=partial(
                 r_operations.forest_export_dimensions, params_path,
             ))
+        if capability.regenerator != "forest":
+            return PlotExportGeometry(width, height, check_layout=partial(
+                self._check_publication_layout, params_path, capability.regenerator, height / width,
+            ))
         with tempfile.TemporaryDirectory(prefix="rcms-export-size-") as directory:
             untitled = Path(directory) / "untitled.svg"
             self.export(regenerator=capability.regenerator, params_path=params_path, output_path=str(untitled),
@@ -69,6 +74,19 @@ class PlotService:
             text_per_inch = (svg_text_points_per_inch(untitled, 1 / ratio),
                              svg_text_points_per_inch(path, 1 / ratio))
         return PlotExportGeometry(width, height, text_per_inch=text_per_inch)
+
+    def _check_publication_layout(self, params_path: str, regenerator: PlotRegenerator,
+                                  height_per_width: float, width: float, include_title: bool) -> None:
+        with tempfile.TemporaryDirectory(prefix="rcms-export-size-") as directory:
+            source = Path(directory) / "plot.svg"
+            paths = r_operations.render_plot_bundle(
+                params_path, regenerator, str(source), width=width, height=width * height_per_width,
+                include_title=include_title, outline_text=False,
+            )
+            if not paths:
+                raise PlotServiceError("Plot layout is unavailable.")
+            if issue := plot_text_layout_issue(source):
+                raise PlotServiceError(issue)
 
     def load_params(self, params_path: str) -> dict[str, object] | None:
         """Load persisted plot parameters, returning ``None`` when unavailable."""
@@ -135,6 +153,15 @@ class PlotService:
                      paginate_pdf: bool = True) -> None:
         """Render at publication dimensions without changing analysis state."""
         regenerator = capability.regenerator
+        if regenerator not in ("forest", "none"):
+            with staged_output(output_path) as temporary:
+                paths = r_operations.render_plot_bundle(
+                    params_path, regenerator, str(temporary), width=width, height=height, dpi=dpi,
+                    include_title=include_title,
+                )
+                if not paths:
+                    raise PlotServiceError(f"Stored {regenerator} plot bundle is incomplete: {params_path}")
+            return
         forest_layout = uses_forest_layout(capability.plot_kind)
         if geometry is None and forest_layout:
             geometry = r_operations.forest_export_dimensions(params_path, width, include_title)

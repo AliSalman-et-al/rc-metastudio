@@ -178,6 +178,7 @@ local({
                 job$output, job$stage),
             plot_render=as.list(rcmetar.render.plot.bundle(
                 job$prefix, job$regenerator, job$output, width=job$width,
+                height=job$height,
                 dpi=if (is.null(job$dpi)) 600L else job$dpi,
                 page_height=job$page_height, include_title=job$include_title,
                 outline_text=job$outline_text)),

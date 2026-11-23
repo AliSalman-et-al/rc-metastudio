@@ -59,6 +59,17 @@ rcmetar.plot.export.dpi <- function(size) {
     600
 }
 
+rcmetar.plot.device.size <- function(size, width, height, dpi) {
+    if (!is.null(width) && !is.null(height)) {
+        size$width <- width
+        size$height <- height
+        size$caption.in.height <- TRUE
+        size$caption.cex <- .85
+    }
+    size$dpi <- dpi %||% size$dpi
+    size
+}
+
 rcmetar.plot.pixel.size <- function(size) {
     dpi <- rcmetar.plot.export.dpi(size)
     c(

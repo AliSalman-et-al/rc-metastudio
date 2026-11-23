@@ -559,12 +559,12 @@ def forest_export_dimensions(prefix: str, width: float, include_title: bool) -> 
 
 def render_plot_bundle(prefix: str, regenerator: str, output: str,
                        *, include_title: bool = True, outline_text: bool = True,
-                       width: float | None = None, dpi: int | None = None,
+                       width: float | None = None, height: float | None = None, dpi: int | None = None,
                        page_height: float | None = None) -> tuple[str, ...]:
     result = _worker_plot({
         "type": "plot_render", "prefix": prefix, "regenerator": regenerator, "output": output,
         "include_title": include_title, "outline_text": outline_text,
-        "width": width, "dpi": dpi, "page_height": page_height,
+        "width": width, "height": height, "dpi": dpi, "page_height": page_height,
     })
     if result is None:
         return ()

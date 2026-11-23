@@ -354,11 +354,13 @@ rcmetar.reitsma.plot.data <- function(fit, diagnostic.data, level, extrapolate=F
     auc <- auc.capture$value
     geometry.warnings <- c(geometry.warnings,
         rcmetar.reitsma.operation.messages(auc.capture, "SROC AUC"))
+    preset <- rcmetar.default.plot.accent(params$fp_style %||% "default", "forest")
     style <- list(
-        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% "#2f5597"),
-        confidence.color=as.character(params$fp_confidence_color %||% "#2f5597"),
-        prediction.color=as.character(params$fp_prediction_color %||% "#b45f06"),
-        accent.color=as.character(params$fp_accent_color %||% "#2f5597"),
+        curve.color=as.character(params$fp_curve_color %||% params$fp_accent_color %||% preset),
+        confidence.color=as.character(params$fp_confidence_color %||% preset),
+        prediction.color=as.character(params$fp_prediction_color %||%
+            if (preset == "#2f5597") "#b45f06" else preset),
+        accent.color=as.character(params$fp_accent_color %||% preset),
         point.size.multiplier=as.numeric(params$fp_point_size_multiplier %||% 1),
         digits=as.integer(params$digits %||% 3),
         show.confidence=isTRUE(params$fp_show_confidence %||% TRUE),
@@ -436,7 +438,7 @@ rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sa
         mean.size <- mean(sample.size)
         for (value in values) {
             labels <- c(labels, sprintf("Study sample size (n=%g)", value))
-            colors <- c(colors, "grey35"); ltys <- c(ltys, 0); pchs <- c(pchs, as.numeric(style$point.pch %||% 21))
+            colors <- c(colors, style$accent.color %||% "#2f5597"); ltys <- c(ltys, 0); pchs <- c(pchs, as.numeric(style$point.pch %||% 21))
             pt.cex <- c(pt.cex, multiplier * sqrt(value / mean.size)); pt.bg <- c(pt.bg, "white")
         }
     }
@@ -487,8 +489,9 @@ rcmetar.sroc.label.positions <- function(x, y, labels, cex, markers, marker.cex,
     placed
 }
 
-rcmetar.reitsma.draw <- function(plot.data, outpath) {
-    size <- list(width=7, height=6, dpi=600, bg="white")
+rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dpi=600) {
+    size <- rcmetar.plot.device.size(list(width=7, height=6, bg="white"), width, height, dpi)
+    compact <- !is.null(height) && size$width < 6
     style <- plot.data$style
     if (is.null(style)) style <- list()
     scalar.bool <- function(x, default) if (is.null(x)) default else isTRUE(x)
@@ -539,7 +542,8 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
     marker.cex <- rep_len(size.multiplier * if (identical(style$marker.area, "sample-size") ||
         scalar.bool(style$point.area.by.sample.size, FALSE))
         sqrt(plot.data$sample.size / mean(plot.data$sample.size)) else 1, nrow(markers))
-    margins <- c(1.02, .82, .82, .42)
+    margins <- if (compact) c(.52, .48, .26, .13) else c(1.02, .82, .82, .42)
+    if (compact && count > 0) margins[1L] <- .70
     draw.auc.caption <- function() {
         if (scalar.bool(style$show.auc, TRUE) && !is.null(plot.data$auc$pAUC)) {
             digits <- as.integer(style$digits %||% 3L)
@@ -566,7 +570,7 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
             }
             if (count > length(chosen))
                 graphics::mtext(sprintf("Study labels shown: %d of %d", length(chosen), count),
-                                side=1, line=3.8, cex=label.cex)
+                                side=1, line=if (compact) 2.75 else 3.8, cex=label.cex)
         }
         draw.auc.caption()
         legend.spec <- plot.data$legend %||% rcmetar.reitsma.legend.spec(
@@ -579,13 +583,26 @@ rcmetar.reitsma.draw <- function(plot.data, outpath) {
                              pt.cex=legend.spec$pt.cex, pt.bg=legend.spec$pt.bg, cex=.8, bty="n")
         }
     }
+    marker.limits <- function(limits, axis, lower, upper) {
+        inset <- (.075 * max(c(1, marker.cex)) + .01) / graphics::par("pin")[axis]
+        automatic <- c(identical(lower %||% "[default]", "[default]"),
+                       identical(upper %||% "[default]", "[default]"))
+        if (!any(automatic)) return(limits)
+        if (inset * sum(automatic) >= 1) stop("The study markers need more plot area.", call.=FALSE)
+        limits + c(-1, 1) * automatic * diff(limits) * inset / (1 - inset * sum(automatic))
+    }
     draw <- function() {
         graphics::par(mai=margins, xaxs="i", yaxs="i")
-        plot(plot.data$fpr, plot.data$sensitivity, xlim=xlim, ylim=ylim, xaxt="n", yaxt="n",
-             xlab=as.character(style$xlabel %||% "False positive rate"),
-             ylab=as.character(style$ylabel %||% "Sensitivity"), pch=as.integer(style$point.pch %||% 21), bg="white",
-             col=accent.color,
-             cex=marker.cex)
+        if (compact) graphics::par(mgp=c(1.7, .5, 0), mex=.68, tcl=-.25, cex.axis=.75, cex.lab=.8)
+        graphics::plot.new()
+        graphics::plot.window(
+            marker.limits(xlim, 1L, style$plot.lb, style$plot.ub),
+            marker.limits(ylim, 2L, style$y.plot.lb, style$y.plot.ub))
+        graphics::title(xlab=as.character(style$xlabel %||% "False positive rate"),
+                        ylab=as.character(style$ylabel %||% "Sensitivity"))
+        graphics::box()
+        points(plot.data$fpr, plot.data$sensitivity, pch=as.integer(style$point.pch %||% 21),
+               bg="white", col=accent.color, cex=marker.cex)
         axis(1, at=axis.ticks(style$xticks %||% "[default]", xlim))
         axis(2, at=axis.ticks(style$yticks %||% "[default]", ylim))
         if (!is.null(plot.data$curve)) lines(plot.data$curve[,1], plot.data$curve[,2], lwd=2, col=curve.color, lty=as.integer(style$curve.lty %||% 1))
