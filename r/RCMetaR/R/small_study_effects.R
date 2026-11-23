@@ -1588,6 +1588,22 @@ rcmetar.warm.small.study.effects <- function() {
                         side=1, line=4.3, adj=0, cex=.8)
 }
 
+.small.study.draw.funnel.notes <- function(om.data, params, settings) {
+    analysis.level <- display.confidence.level(params)
+    if (!settings$kind %in% c("deeks", "contour") && settings$show.region &&
+            settings$sampling.level != analysis.level) {
+        graphics::mtext(sprintf("%g%% sampling region; analysis CI %g%%.",
+            settings$sampling.level, analysis.level), side=1, line=4.3, adj=0, cex=.8)
+    }
+    if (!is.null(settings$xlim)) {
+        x <- .small.study.funnel.x(om.data, params)
+        hidden <- sum(x < settings$xlim[[1L]] | x > settings$xlim[[2L]], na.rm=TRUE)
+        if (hidden > 0) graphics::mtext(sprintf("%d %s outside the displayed bounds.",
+            hidden, if (hidden == 1L) "study falls" else "studies fall"),
+            side=1, line=5.3, adj=0, cex=.8)
+    }
+}
+
 rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.path=NULL, dpi=120,
                                                   width=NULL, height=NULL) {
     path <- output.path %||% tempfile("small-study-funnel-", tmpdir=rcmetar.scratch.path(), fileext=".svg")
@@ -1615,19 +1631,7 @@ rcmetar.regenerate.small.study.funnel <- function(om.data, res, params, output.p
             .small.study.draw.contour.funnel(om.data, res, params, settings, y, se, keep)
         else .small.study.draw.standard.funnel(om.data, res, params, settings, y, se, keep)
         if (compact) graphics::mtext(ylab, side=2, line=4.5, cex=.75, las=0)
-        analysis.level <- display.confidence.level(params)
-        if (!settings$kind %in% c("deeks", "contour") && settings$show.region &&
-                settings$sampling.level != analysis.level) {
-            graphics::mtext(sprintf("%g%% sampling region; analysis CI %g%%.",
-                settings$sampling.level, analysis.level), side=1, line=4.3, adj=0, cex=.8)
-        }
-        if (!is.null(settings$xlim)) {
-            x <- .small.study.funnel.x(om.data, params)
-            hidden <- sum(x < settings$xlim[[1L]] | x > settings$xlim[[2L]], na.rm=TRUE)
-            if (hidden > 0) graphics::mtext(sprintf("%d %s outside the displayed bounds.",
-                hidden, if (hidden == 1L) "study falls" else "studies fall"),
-                side=1, line=5.3, adj=0, cex=.8)
-        }
+        .small.study.draw.funnel.notes(om.data, params, settings)
     }, caption=params$plot_caption)
     path
 }

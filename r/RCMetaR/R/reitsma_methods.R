@@ -432,9 +432,7 @@ rcmetar.reitsma.legend.spec <- function(style, curve, confidence, prediction, sa
     if (marker.scaled && scalar.bool(style$show.marker.legend, FALSE) &&
             length(sample.size) && all(is.finite(sample.size))) {
         values <- sort(unique(range(sample.size)))
-        values <- if (length(values) == 1L) values else values[c(1L, length(values))]
-        multiplier <- as.numeric(style$point.size.multiplier %||% 1)
-        if (!is.finite(multiplier) || multiplier <= 0) multiplier <- 1
+        multiplier <- rcmetar.point.size.multiplier(list(fp_point_size_multiplier=style$point.size.multiplier))
         mean.size <- mean(sample.size)
         for (value in values) {
             labels <- c(labels, sprintf("Study sample size (n=%g)", value))
@@ -490,6 +488,8 @@ rcmetar.sroc.label.positions <- function(x, y, labels, cex, markers, marker.cex,
 }
 
 rcmetar.reitsma.draw <- function(plot.data, outpath, width=NULL, height=NULL, dpi=600) {
+    if (!is.list(plot.data) || !identical(plot.data$kind, "sroc"))
+        stop("SROC plot data expected.", call.=FALSE)
     size <- rcmetar.plot.device.size(list(width=7, height=6, bg="white"), width, height, dpi)
     compact <- !is.null(height) && size$width < 6
     style <- plot.data$style

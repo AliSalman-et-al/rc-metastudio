@@ -351,6 +351,9 @@ rcmetar.bubble.tick.labels <- function(bundle, ticks) {
 }
 
 rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL, dpi=NULL) {
+    if (!rcmetar.is.metafor.bubble.bundle(bundle)) {
+        stop("Meta-regression bubble plots require a fitted meta-regression plot.", call.=FALSE)
+    }
     size <- rcmetar.plot.device.size(rcmetar.bubble.measure.device(bundle), width, height, dpi)
     display.path <- rcmetar.plot.display_path_for_bundle(bundle, outpath, "bp")
     if (is.null(display.path) && is.null(dpi)) size$dpi <- 600
