@@ -81,8 +81,6 @@ You can copy a formatted citation or export BibTeX, RIS, or EndNote directly fro
 
 Use the version-specific DOI from the Zenodo record for the release you used. Machine-readable citation metadata are in [CITATION.cff](CITATION.cff).
 
-> `[PLACEHOLDER: Authors to confirm final author list, affiliations, and ORCIDs in CITATION.cff and .zenodo.json before JOSS submission, and add the JOSS paper citation/DOI once published.]`
-
 ## License and origins
 
 RC MetaStudio is developed and maintained by Research Consultancy (RC). It is an independently maintained rewrite of OpenMeta[Analyst], whose original authors and institutions retain attribution for their work and are not affiliated with or endorsing RC MetaStudio.
