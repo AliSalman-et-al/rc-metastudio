@@ -364,6 +364,8 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
         legend.cex <- .9
         graphics::par(mgp=c(1.65, .45, 0), tcl=-.25)
         args <- rcmetar.bubble.style.args(bundle)
+        ratio.grid <- bundle$bp_style == "default" && metric.is.log.scale(bundle$params$measure)
+        args$grid <- args$grid && !ratio.grid
         ylim <- rcmetar.bubble.ylim(bundle)
         automatic.ticks <- is.null(bundle$params$bp_yticks) || identical(bundle$params$bp_yticks[1], "[default]")
         at <- if (automatic.ticks) NULL else rcmetar.bubble.axis.ticks(bundle, ylim)
@@ -418,13 +420,16 @@ rcmetar.draw.metafor.bubble <- function(bundle, outpath, width=NULL, height=NULL
             }
         )
         panel <- graphics::par("usr")
+        ticks <- rcmetar.bubble.axis.ticks(bundle, panel[3:4])
+        if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
+        if (ratio.grid) {
+            graphics::abline(h=ticks, v=x.ticks, col="grey80", lty="dotted")
+        }
         rcmetar.bubble.draw.refline(rcmetar.bubble.refline(bundle, panel[3:4]))
-        ticks <- rcmetar.bubble.axis.ticks(bundle, graphics::par("usr")[3:4])
         labels <- rcmetar.bubble.tick.labels(bundle, ticks)
         graphics::axis(2, at=ticks, labels=labels, las=1)
         graphics::mtext(bundle$ylabel, side=2, cex=size$cex,
                         line=title.offset / graphics::par("csi"))
-        if (!length(x.ticks)) x.ticks <- graphics::axTicks(1)
         graphics::axis(1, at=x.ticks, labels=rcmetar.compact.numeric.labels(
             vapply(x.ticks, format, character(1), trim=TRUE, scientific=FALSE)))
         rcmetar.bubble.draw.legend(bundle, args, legend.cex)

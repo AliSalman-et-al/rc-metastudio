@@ -1249,6 +1249,46 @@
           }
         }
       }
+    },
+    {
+      "id": "issue-650-default-ratio-regression-gridlines",
+      "status": "accepted",
+      "ids": [
+        "amino-binary-meta-regression"
+      ],
+      "affected_workflows": [
+        "amino-binary-meta-regression"
+      ],
+      "reason": "Issue #650 aligns the Default regression grid with the labeled ratio ticks.",
+      "approved_by": "Issue #650 gridline alignment request",
+      "approved_at": "2026-11-24",
+      "before_behavior": "Horizontal gridlines use base graphics breaks on the log-effect scale.",
+      "after_behavior": "Major gridlines use the tick locations on both displayed axes.",
+      "follow_up": "The Colditz desktop workflow compares the grid with the rendered ticks. The frozen numerical and artifact contracts remain the comparison authority.",
+      "accepted_classifications": [
+        "text_artifact_drift"
+      ],
+      "accepted_details": [
+        "Artifact Regression Plot descriptor or content changed under the same-platform exact artifact policy (Windows)."
+      ],
+      "accepted_artifacts": {
+        "Regression Plot": {
+          "before": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "d12a54c6938c372da271fc624a3c58329d8a88a18652efb73062ae05962d5669",
+            "metadata": {}
+          },
+          "after": {
+            "label": "Regression Plot",
+            "name": "reg.png",
+            "type": "png",
+            "sha256": "e00fa65ceef5ab2455319c367133cd8106831fd37153aebe607147325389d548",
+            "metadata": {}
+          }
+        }
+      }
     }
   ]
 }

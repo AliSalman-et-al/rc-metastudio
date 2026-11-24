@@ -6,6 +6,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+from unittest.mock import patch
+from xml.etree import ElementTree
 
 from PyQt6 import QtCore, QtWidgets
 from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDialog
@@ -103,7 +105,8 @@ def run(app, window, work, root, record, analyze, *, example):
         record_results(view, "pooled", observed, references, metric=metric, method=method, estimator=estimator,
                        inference=inference, correction=correction)
 
-    def repeated(workflow, metric, method, *, factor="", moderators=(), formula="", estimator="REML"):
+    def repeated(workflow, metric, method, *, factor="", moderators=(), formula="", estimator="REML",
+                 check_plot=None):
         diagnostic = example == "kearon"
         regression = workflow == "meta-regression"
         if not diagnostic:
@@ -141,6 +144,8 @@ def run(app, window, work, root, record, analyze, *, example):
                metric=metric, estimator=estimator, factor=factor, moderators=moderators)
         accept(setup, setup.buttonBox)
         view = visible(ResultsWindow)
+        if check_plot is not None:
+            check_plot(view)
         roles = {"estimate": "estimate", "lower_bound": "ci_lower", "upper_bound": "ci_upper"}
         if regression and diagnostic:
             actual = {}
@@ -280,6 +285,40 @@ def run(app, window, work, root, record, analyze, *, example):
                        required_information_size=required_information_size)
 
     if example == "colditz":
+        def check_figure_3a(view):
+            title, = view.results.display_images
+            artifact = view.plot_artifact(title)
+            png = work / "figure-3a-regression.png"
+            with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(png), "")):
+                view.save_image_as(artifact, format="png")
+            assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+            svg = ElementTree.parse(artifact.image_path)
+            lines = svg.findall(".//{http://www.w3.org/2000/svg}line")
+            grid = [line for line in lines if "stroke-dasharray:" in line.get("style", "")
+                    and "stroke: #CCCCCC;" in line.get("style", "")]
+            horizontal = [line for line in grid if line.attrib["y1"] == line.attrib["y2"]]
+            vertical = [line for line in grid if line.attrib["x1"] == line.attrib["x2"]]
+            assert horizontal and vertical, "Default regression plot is missing its grid"
+            left, bottom = horizontal[0].attrib["x1"], vertical[0].attrib["y1"]
+            y_ticks = sorted(float(line.attrib["y1"]) for line in lines
+                             if line.attrib["x1"] == left and float(line.attrib["x2"]) < float(left)
+                             and line.attrib["y1"] == line.attrib["y2"])
+            x_ticks = sorted(float(line.attrib["x1"]) for line in lines
+                             if line.attrib["y1"] == bottom and float(line.attrib["y2"]) > float(bottom)
+                             and line.attrib["x1"] == line.attrib["x2"])
+            y_grid = sorted(float(line.attrib["y1"]) for line in horizontal)
+            x_grid = sorted(float(line.attrib["x1"]) for line in vertical)
+            labels = [label.text for label in svg.findall(".//{http://www.w3.org/2000/svg}text")
+                      if label.get("text-anchor") == "end"]
+            record("published-bcg-rr-regression", view, sample=filename,
+                   plots=dict(view.results.display_images), exports={"Figure 3A": str(png)},
+                   labels=labels, y_ticks=y_ticks, y_grid=y_grid, x_ticks=x_ticks, x_grid=x_grid)
+            assert labels == ["0.2", "0.5", "1"]
+            assert x_ticks and x_grid == x_ticks, (x_grid, x_ticks)
+            assert len(y_ticks) == len(labels) and y_grid == y_ticks, (y_grid, y_ticks)
+
+        repeated("meta-regression", "RR", "binary.random", moderators=["Absolute latitude"],
+                 formula="latitude", check_plot=check_figure_3a)
         for metric in ("OR", "RR", "RD", "AS", "YUQ", "YUY"):
             pooled(metric, "binary.fixed.inv.var")
             pooled(metric, "binary.random", estimator="REML")
