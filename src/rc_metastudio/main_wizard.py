@@ -1037,9 +1037,9 @@ Page_Welcome, Page_DataType, Page_ChooseMetric, Page_OutcomeName, Page_CsvImport
 class MainWizard(QWizard):
     def __init__(self, parent=None, path: WizardPath | None = None, recent_datasets=None, existing_outcome_names=()):
         super(MainWizard, self).__init__(parent)
-        self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
         self.setSizeGripEnabled(True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
+        self._configure_wizard_style()
         self.setOption(QWizard.WizardOption.NoBackButtonOnStartPage, True)
         self.setButtonLayout(
             [
@@ -1086,6 +1086,12 @@ class MainWizard(QWizard):
             if page is None:
                 raise RuntimeError(f"MainWizard is missing registered page {page_id}")
             page.completeChanged.connect(self._schedule_default_action_sync)
+
+    def _configure_wizard_style(self) -> None:
+        """Give Qt a native window so switching from Aero clears its header button."""
+        if self.wizardStyle() == QWizard.WizardStyle.AeroStyle:
+            self.winId()
+        self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
 
     def import_file(self, path):
         suffix = Path(path).suffix.lower()
