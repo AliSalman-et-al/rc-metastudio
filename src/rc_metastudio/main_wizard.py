@@ -1088,8 +1088,11 @@ class MainWizard(QWizard):
             page.completeChanged.connect(self._schedule_default_action_sync)
 
     def _configure_wizard_style(self) -> None:
-        """Give Qt a native window so switching from Aero clears its header button."""
-        if self.wizardStyle() == QWizard.WizardStyle.AeroStyle:
+        """Clear Aero's header button using a handle from the native Windows plugin."""
+        if (
+            QApplication.platformName() == "windows"
+            and self.wizardStyle() == QWizard.WizardStyle.AeroStyle
+        ):
             self.winId()
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
 
