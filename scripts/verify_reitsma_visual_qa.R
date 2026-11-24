@@ -1,8 +1,5 @@
 #!/usr/bin/env Rscript
 
-# Maintained Reitsma visual release evidence. The harness exercises the
-# package's analysis/rendering entry points and checks SVG semantics, not merely
-# that a file happened to be written.
 args <- commandArgs(trailingOnly=TRUE)
 if (length(args) > 1L) stop("usage: verify_reitsma_visual_qa.R [OUTPUT_ROOT]", call.=FALSE)
 root <- if (length(args) == 1L) normalizePath(args[[1]], winslash="/", mustWork=FALSE) else
@@ -33,8 +30,6 @@ qa_load_reitsma <- function() {
     return(invisible(package.path))
   }
 
-  # Source mode is intentionally retained for a developer running this file
-  # directly.  The integrated release verifier always selects installed mode.
   library.roots <- c(file.path(repo, "build", "current-r-library"), file.path(repo, "build", "current-package", "dist", "RCMetaStudio", "R", "library"))
   .libPaths(c(library.roots[dir.exists(library.roots)], .libPaths()))
   if (requireNamespace("pkgload", quietly=TRUE)) {

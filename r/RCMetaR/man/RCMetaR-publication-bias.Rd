@@ -1,4 +1,3 @@
-% Generated for RCMetaR's guided small-study effects interface.
 \name{RCMetaR-publication-bias}
 \alias{rcmetar.run.small.study.effects}
 \alias{rcmetar.regenerate.small.study.funnel}

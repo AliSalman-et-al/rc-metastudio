@@ -19,7 +19,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
 
-# Evidence transcripts are decoded as UTF-8 by verify_rcms on every platform.
 for stream in (sys.stdout, sys.stderr):
     assert isinstance(stream, io.TextIOWrapper)
     stream.reconfigure(encoding="utf-8")
@@ -332,8 +331,7 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
     dialog.method_cbo_box.setCurrentIndex(index)
     app.processEvents()
     if confidence is not None or estimator is not None or parameters:
-        sys.path.insert(0, str(ROOT / '.agents/skills/verify-rcms/scripts'))
-        from analysis_matrix import set_parameter
+        from tests.e2e.dialog_interaction import set_parameter
         if confidence is not None:
             set_parameter(app, dialog, 'conf.level', confidence)
         if estimator is not None:
@@ -356,7 +354,6 @@ def analyze(app, window, method, *, digits=3, confidence=None, estimator=None, v
     precision.setValue(digits)
     QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
     app.processEvents()
-    # Diagnostic method panels can rebuild their shared controls on this turn.
     precision = precision_control()
     record_step("analysis-layout", dialog)
     if dialog.data_type == "diagnostic":
@@ -575,7 +572,7 @@ def sample_analysis(app, window, sample):
                 f"metafor::transf.iarcsin(asin(sqrt({events}/{total})) + "
                 f"c(0, -1, 1) * qnorm(.975) / (2 * sqrt({total})))"))
             assert values[1] <= values[0] <= values[2], (raw, values)
-            assert all(abs(a - b) < 1e-12 for a, b in zip(values, expected)), (raw, values, expected)
+            assert all(abs(a - b) < 1e-12 for a, b in zip(values, expected, strict=True)), (raw, values, expected)
             checked.append(dict(raw=raw, values=values, expected=expected))
         assert len(checked) >= 3, checked
         record_step("pas-boundary-intervals", window, rows=checked)
@@ -850,7 +847,7 @@ def sheets_swap(app, window):
                 precise.append(receipt)
                 if iteration == 1:
                     before = precise[0]
-                    assert all(math.isclose(x,y,abs_tol=1e-6) for x,y in zip(receipt,[-before[0],-before[2],-before[1],before[3]])), precise
+                    assert all(math.isclose(x,y,abs_tol=1e-6) for x,y in zip(receipt, [-before[0], -before[2], -before[1], before[3]], strict=True)), precise
                 record_step("swap-direct-metafor", view, metric=metric, iteration=iteration, observed=receipt)
             sections = parsed_numeric_sections(view.results)
             summary = sections["Summary"]
@@ -918,11 +915,10 @@ def sheets(app, window):
     from rc_metastudio import r_operations
     from tests.e2e.sheet_navigation import check as check_navigation
     check_navigation(app, window, ROOT, WORK, record_step)
-    # Non-unit sampling variance exposes variance/SE confusion in raw IRR previews.
     code = 'local({e <- metafor::escalc("IRR", x1i=4, t1i=100, x2i=9, t2i=120, add=.5, to="only0", drop00=TRUE); c(e$yi, e$yi-qnorm(.975)*sqrt(e$vi), e$yi+qnorm(.975)*sqrt(e$vi))})'
     expected = [float(x) for x in r_oracle.evaluate(code)]
     actual = r_operations.study_effect_previews([[4, 100, 9, 120]], "event_rates", "IRR", ("IRR",), 95)[0][0][:3]
-    assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected)), (actual, expected)
+    assert all(a is not None and abs(a-e) < 1e-10 for a, e in zip(actual, expected, strict=True)), (actual, expected)
     record_step("irr-preview-authority", window, raw=[4,100,9,120], confidence=95,
                 r_code=code, expected=expected, actual=actual)
 
@@ -1316,8 +1312,7 @@ def editing(app, window):
 
 
 def xlsx_import(app, window):
-    sys.path.insert(0, str(ROOT / ".agents/skills/verify-rcms/scripts"))
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
     from rc_metastudio import main_wizard
     assert window.open(str(ROOT / "tests/fixtures/desktop-projects/amino.rcms"), raise_on_error=True)
     original_palette = app.palette()
@@ -1445,7 +1440,7 @@ def xlsx_import(app, window):
         writer.writerow([c.value for c in sheet[1]])
         writer.writerows(rows)
     from rc_metastudio.importing.tabular import parse_csv
-    equivalent = parse_csv(csv_path, expected_headers=page.required_header_labels, has_headers=True, from_excel=True, header_aliases=page._legacy_header_aliases())
+    equivalent = parse_csv(csv_path, expected_headers=page.required_header_labels, has_headers=True, from_excel=True, header_aliases=page.import_plan.header_aliases)
     assert len(payload.rows) == 2
     assert payload == equivalent
     from rc_metastudio.project.adapter import dataset_to_project
@@ -1740,13 +1735,14 @@ def plot_edit(app, window):
             assert not saved["fp_show_col1"] and not saved["fp_show_col2"]
             record_step("bmj-columns-hidden", view)
             dialog.x_lbl_le.setText("Discard this draft")
-        except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
+        except Exception as error:
             callback_errors.append(error)
         finally:
             dialog.reject()
 
     QtCore.QTimer.singleShot(0, edit)
-    view.edit_plot(artifact, view._svg_plot_items[0])
+    view.nav_tree.setCurrentItem(view.nav_tree.topLevelItem(0))
+    view.edit_plot_action.trigger()
     assert not callback_errors, callback_errors
     assert (
         view.plot_service.load_params(artifact.params_path)["fp_xlabel"]
@@ -1823,7 +1819,7 @@ def small_study_effects(app, window):
                 mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
             assert len(observed_progress) == 1
             assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
-        except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
+        except Exception as error:
             callback_errors.append(error)
         finally:
             dialog.reject()
@@ -2048,7 +2044,7 @@ def calculator(app, window, family):
                 family=family,
             )
             mouse_click(required(button), QtCore.Qt.MouseButton.LeftButton)
-        except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
+        except Exception as error:
             traceback.print_exc()
             callback_errors.append(error)
             dialog.reject()
@@ -2096,7 +2092,6 @@ def calculator(app, window, family):
     for key in ("raw_data", "entered_effects", "ratio_inputs"):
         actual = saved_row[key]
         if key == "entered_effects":
-            # Visiting a previously unused metric creates an empty effect slot.
             actual = [effect for effect in actual if any(value is not None for value in effect["values"].values())]
         assert float_bits(actual) == float_bits(baseline[key]), key
     assert window.open(window.workspace.path, raise_on_error=True)
@@ -2246,7 +2241,6 @@ def hillclimb(app, window):
         failures = []
         timer = QtCore.QTimer(app)
         def callback():
-            # The worker can yield to Qt during preview. Drive the dialog after Show.
             if not any(isinstance(w, cls) and w.isVisible() for w in app.topLevelWidgets()):
                 return
             timer.stop()
@@ -2471,8 +2465,14 @@ def subgroup_image(app, window, scenario):
     results = view.results
     view.close()
     app.processEvents()
-    with patch.object(results_window.ResultsWindow, "create_plot_item", side_effect=OSError("forced plot-load failure")):
-        window.analysis(results)
+    from dataclasses import replace
+
+    missing = str(WORK / "no-such-plot.svg")
+    without_plot_files = replace(results, sections=tuple(
+        replace(section, value=missing, display_image=missing) if section.kind == "image" else section
+        for section in results.sections
+    ))
+    window.analysis(without_plot_files)
     failed = visible_result(results_window.ResultsWindow)
     assert failed.manuscript_text.toPlainText()
     assert any("Could not load plot" in item.toPlainText()

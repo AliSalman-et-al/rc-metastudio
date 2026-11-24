@@ -313,7 +313,6 @@ def _r_function_span(tokens: list[tuple[str, int]], start: int) -> tuple[int, in
     if tokens[opening][0] == "{":
         closing = _r_delimited_end(tokens, opening, "{", "}")
         return None if closing is None else (opening + 1, closing - 1)
-    # A single expression ends at its enclosing delimiter or a top-level newline.
     depth = 0
     for position in range(opening, len(tokens)):
         token, line = tokens[position]
@@ -883,8 +882,6 @@ def python_import_graph(root: Path, paths: list[str], config: HealthConfig, revi
             try:
                 source = run_git(root, "show", f"{revision}:{relative}")
             except CodeHealthError:
-                # A new source file has no baseline revision; it is still
-                # measured at head and simply contributes no baseline edge.
                 continue
         tree = ast.parse(source, filename=relative)
         imports = [node for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))]

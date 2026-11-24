@@ -94,7 +94,7 @@ def check_endpoints(path, axis_ticks, geometry, natural, ratio):
 
 def run(app, window, work, record, family):
     from analysis_matrix import run as matrix
-    from advanced_workflows import modal, click
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.results.plot_editor import EditPlotDialog
     baseline = bool(os.environ.get('RCMS_AXIS_BASELINE'))
     cases = [('analysis-data-onearm-proportion', metric) for metric in ('PLO','PAS','PFT','PLN')] if family == 'proportions' else [
@@ -173,8 +173,6 @@ def run(app, window, work, record, family):
                 if adjustable:
                     reruns.append((section.title, artifact.title, measure, other, ratio))
 
-            # Check each plot's original defaults before changing the analysis
-            # settings, which can apply the selected scale to sibling plots.
             for section_title, plot_title, measure, other, ratio in reruns:
                 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
                 from rc_metastudio.results.window import ResultsWindow

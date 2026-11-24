@@ -4,9 +4,9 @@ from collections.abc import Callable
 from dataclasses import replace
 
 from rc_metastudio.analysis.validation import DEFAULT_CONFIDENCE_LEVEL
+from rc_metastudio.importing.field_plan import ImportFieldPlan
 from rc_metastudio.importing.tabular import CsvImportResult
 from rc_metastudio.project.model import Sheet
-from rc_metastudio.workspace.columns import FIRST_IMPORT_COLUMN, sheet_columns
 from rc_metastudio.workspace.editing import (
     WorkspaceEditingContext,
     WorkspaceEditingService,
@@ -18,13 +18,14 @@ from rc_metastudio.workspace.editing import (
 def populate_imported_sheet(
     sheet: Sheet,
     source: CsvImportResult,
+    plan: ImportFieldPlan,
     editing: WorkspaceEditingService,
     on_row_loaded: Callable[[int], None],
 ) -> list[str]:
     for name, data_type in zip(source.covariate_names, source.covariate_types, strict=True):
         add_covariate(sheet, name, data_type)
-    columns = sheet_columns(sheet.data_type, sheet.sub_type)
-    sections = range(FIRST_IMPORT_COLUMN, columns.first_covariate + len(sheet.covariates))
+    columns = plan.columns
+    sections = (*plan.sections, *range(columns.first_covariate, columns.first_covariate + len(sheet.covariates)))
     fields = [columns.editable_field(section, sheet.covariates) for section in sections]
     identities = {name: fields.index(name) for name in ("name", "year")}
     confidence = editing.confidence_settings(sheet.settings.get("confidence_level", DEFAULT_CONFIDENCE_LEVEL))

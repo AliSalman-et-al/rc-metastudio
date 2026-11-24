@@ -3,10 +3,6 @@
 
 rcmetar.plot.text.input.limit <- 80L
 
-rcmetar.draw.panel.caption <- function(text, cex=.8, line=.3) {
-    graphics::mtext(text, side=3, line=line, cex=cex)
-}
-
 rcmetar.is.plot.default.text <- function(value) {
     if (is.null(value) || length(value) == 0L || is.na(value[[1L]])) {
         return(TRUE)

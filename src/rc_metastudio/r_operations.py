@@ -19,12 +19,14 @@ from rc_metastudio.study_effect_shapes import (
     normalize_diagnostic_effects,
     normalize_effect_result,
 )
-from rc_metastudio.analysis.catalog import AvailableMethod, CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT
+from rc_metastudio.analysis.catalog import AvailableMethod, CONTINUOUS, ONE_ARM_METRICS, TWO_ARM_METRICS, TYPE_TO_STR_DICT, analysis_workflow
 from rc_metastudio.analysis.validation import EMPTY_VALS, normalize_confidence_level_params, validate_confidence_level
 from rc_metastudio.analysis.study_selection import (
     FitModel, FitSelection, capture_fit_selection, raw_data_is_complete,
 )
 from rc_metastudio.ratio_data import RATIO_FIELDS
+
+from rc_metastudio.analysis.request import AnalysisRequest
 
 
 def get_r_library_paths():
@@ -145,7 +147,7 @@ def get_analysis_plot_capabilities(
 ) -> list[Mapping[str, object]]:
     result = _worker_catalog({
         "type": "plot_capabilities", "family": str(data_type), "method": str(method_name),
-        "workflow": _normalize_rcmetar_workflow(workflow),
+        "workflow": analysis_workflow(workflow),
     })
     if not isinstance(result, list) or any(not isinstance(item, Mapping) for item in result):
         raise ValueError("The R worker returned invalid plot capabilities.")
@@ -355,56 +357,27 @@ def run_trial_sequential_analysis(
         return fields, sections
 
 
-def _normalize_rcmetar_workflow(workflow):
-    if workflow is None:
-        return "standard"
-    workflow = str(workflow)
-    known_workflows = {
-        "standard",
-        "cumulative",
-        "leave-one-out",
-        "subgroup",
-        "bootstrap",
-        "meta-regression",
-    }
-    if workflow not in known_workflows:
-        raise ValueError("Unknown RCMetaR workflow: %s" % workflow)
-    return workflow
-
-
-def run_model_analysis(table_model, request, *, covs_to_include=None, studies=None):
+def run_model_analysis(
+    table_model, request: AnalysisRequest, *, covs_to_include=None, studies=None,
+) -> AnalysisResult:
     """Convert this frozen model and execute it on the R worker."""
-    family, _, metric, workflow, params = _validated_versioned_request(request)
-    if workflow in {"standard", "cumulative", "leave-one-out", "subgroup"} and (
-        metric in TWO_ARM_METRICS
-    ) and table_model.current_sheet is not None:
+    wire_request = request.to_mapping()
+    if (
+        request.workflow in {"standard", "cumulative", "leave-one-out", "subgroup"}
+        and request.metric in TWO_ARM_METRICS
+        and table_model.current_sheet is not None
+    ):
         below, above = table_model.current_sheet.effect_direction_arms()
-        params = {**params, "fp_direction_left": f"Favours {below}" if below else "",
-                  "fp_direction_right": f"Favours {above}" if above else ""}
-        request = {**request, "params": params}
-    columns = _analysis_columns(table_model, family, metric, covs_to_include=covs_to_include, studies=studies)
-    return _worker_fit("fit", family, columns, request)
-
-
-def _validated_versioned_request(
-    request: Mapping[str, object],
-) -> tuple[str, str, str, object, Mapping[str, object]]:
-    if request.get("version") != 1 or type(request.get("version")) is not int:
-        raise ValueError("unsupported analysis request version")
-    return (
-        _required_request_text(request, "data_type"),
-        _required_request_text(request, "method"),
-        _required_request_text(request, "metric"),
-        _required_request_text(request, "workflow"),
-        _request_params(request),
+        wire_request["params"] = {
+            "measure": request.metric,
+            **request.parameter_values(),
+            "fp_direction_left": f"Favours {below}" if below else "",
+            "fp_direction_right": f"Favours {above}" if above else "",
+        }
+    columns = _analysis_columns(
+        table_model, request.data_type, request.metric, covs_to_include=covs_to_include, studies=studies,
     )
-
-
-def _required_request_text(request: Mapping[str, object], name: str) -> str:
-    value = request.get(name)
-    if not isinstance(value, str) or not value:
-        raise ValueError("analysis request %s must be non-empty text" % name)
-    return value
+    return _worker_fit("fit", request.data_type, columns, wire_request)
 
 
 def _worker_job(
@@ -461,29 +434,27 @@ def _worker_fit(
         return result
 
 
-def _worker_diagnostic_fit(requests, columns) -> AnalysisResult:
+def _worker_diagnostic_fit(requests: Sequence[AnalysisRequest], columns) -> AnalysisResult:
     try:
-        return _worker_fit("diagnostic_fit", "diagnostic", columns, _validated_versioned_requests(requests))
+        return _worker_fit("diagnostic_fit", "diagnostic", columns, [request.to_mapping() for request in requests])
     except ValueError as error:
         raise DiagnosticExecutionError(str(error)) from error
 
 
-def _request_params(request: Mapping[str, object]) -> Mapping[str, object]:
-    params = request.get("params")
-    if not isinstance(params, Mapping):
-        raise TypeError("analysis request params must be a mapping")
-    return {str(key): value for key, value in params.items()}
-
-
 def run_model_diagnostic_analysis(
-    model: object, requests: list[Mapping[str, object]],
-) -> object:
+    model: object, requests: Sequence[AnalysisRequest],
+) -> AnalysisResult:
     """Prepare the diagnostic inputs and run the requested fits in one transaction."""
-    metrics = [_required_request_text(request, "metric") for request in requests]
+    if not requests:
+        raise ValueError("at least one analysis request is required")
+    first = requests[0]
+    if any(request.data_type != first.data_type or request.workflow != first.workflow for request in requests):
+        raise DiagnosticExecutionError("one execution cannot mix analysis workflows")
+    metrics = [request.metric for request in requests]
     inputs = capture_fit_selection(cast(FitModel, model), tuple(dict.fromkeys(("Sens", *metrics))))
     if inputs.raw_for_fit() is not None:
         return _worker_diagnostic_fit(requests, _diagnostic_data_arguments(inputs))
-    if any(request.get("method") == "diagnostic.reitsma" for request in requests):
+    if any(request.method == "diagnostic.reitsma" for request in requests):
         raise ValueError(
             "Reitsma bivariate model requires complete TP/FN/FP/TN counts; "
             "entered diagnostic effects cannot be used for this method."
@@ -499,33 +470,6 @@ def run_model_diagnostic_analysis(
             f"each selected effect measure. Missing entered estimates for: {', '.join(missing)}."
         )
     return _worker_diagnostic_fit(requests, [_diagnostic_data_arguments(inputs, metric=metric) for metric in metrics])
-
-
-def _validated_versioned_requests(
-    requests: list[Mapping[str, object]],
-) -> list[dict[str, object]]:
-    if not requests:
-        raise ValueError("at least one analysis request is required")
-    first = _validated_versioned_request(requests[0])
-    data_type, _, _, workflow, _ = first
-    validated: list[dict[str, object]] = []
-    for request in requests:
-        current_data_type, method, metric, current_workflow, values = (
-            _validated_versioned_request(request)
-        )
-        if current_data_type != data_type or current_workflow != workflow:
-            raise ValueError("one execution cannot mix analysis workflows")
-        validated.append(
-            {
-                "version": 1,
-                "data_type": current_data_type,
-                "method": method,
-                "metric": metric,
-                "params": dict(values),
-                "workflow": current_workflow,
-            }
-        )
-    return validated
 
 
 def load_plot_parameters(prefix: str) -> object:

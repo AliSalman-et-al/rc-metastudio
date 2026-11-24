@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Continuous outcome data entry dialog."""
 
-# This dialog edits the analysis unit directly because most displayed fields
-# are transient imputation inputs rather than stored raw data.
 from collections.abc import Sequence
 from contextlib import ExitStack
 from dataclasses import dataclass
@@ -11,7 +9,7 @@ from typing import TYPE_CHECKING, TypeGuard, cast
 
 from rc_metastudio.qt_layout import configure_context_label, style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
-from PyQt6.QtGui import QAction, QKeySequence, QPalette
+from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -33,7 +31,7 @@ from rc_metastudio.calculators import (
     effect_readout as calculator_effect_readout,
 )
 
-from rc_metastudio import app_error_handler
+from rc_metastudio import input_text, app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio.calculators.service import (
     BackCalculationResult,
@@ -194,6 +192,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.setup_clear_button_palettes()
         self.initialize_form()
         self._field_history = calculator_edit_history.TransientEditHistory()
+        self._field_history.bind_shortcuts(self)
 
         self._active_input_mode = "estimate" if self.analysis_unit.sheet.sub_type in {"reg_coef", "generic_effect"} or self.analysis_unit.calculator_source(self.current_effect, self.arm_key) == "entered" else "summary"
         self.update_raw_data()
@@ -263,7 +262,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             confidence_multiplier=self.confidence_multiplier,
         )
         if mode == "pre-post":
-            # Selecting a method does not replace an existing arm summary.
             self.impute_pre_post_data(self.g1_pre_post_table, 0)
             self.impute_pre_post_data(self.g2_pre_post_table, 1)
             self.update_effect_from_raw_data()
@@ -533,19 +531,6 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
             )
         )
 
-        undo = QAction(self)
-        redo = QAction(self)
-        undo.setShortcut(QKeySequence.StandardKey.Undo)
-        redo.setShortcut(QKeySequence.StandardKey.Redo)
-        self.addAction(undo)
-        self.addAction(redo)
-        undo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.undo(), parent=self)
-        )
-        redo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.redo(), parent=self)
-        )
-
     def _populate_effect_data(self):
         metric_family = (
             CONTINUOUS_ONE_ARM_METRICS
@@ -755,7 +740,7 @@ class ContinuousDataDialog(QDialog, _ui_continuous_data_dialog.Ui_ContinuousData
         self.impute_data()
 
     def _cell_data_not_valid(self, celldata_string, cell_header=None):
-        if calculator_controls.cell_text_is_blank(celldata_string):
+        if input_text.is_blank(celldata_string):
             return None
 
         try:

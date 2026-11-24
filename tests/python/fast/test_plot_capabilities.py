@@ -1,6 +1,5 @@
 import pytest
 
-from rc_metastudio.results import plot_capabilities
 from rc_metastudio.results.contract import parse_analysis_result
 
 
@@ -18,15 +17,16 @@ def descriptor(**overrides):
 
 def test_validate_result_requires_one_descriptor_per_plot_artifact():
     with pytest.raises(ValueError, match="missing.*Forest Plot"):
-        plot_capabilities.validate_result(
-            {"images": {"Forest Plot": "forest.svg"}, "plot_capabilities": {}}
+        parse_analysis_result(
+            {"version": 1, "sections": [], "images": {"Forest Plot": "forest.svg"}, "plot_capabilities": {}}
         )
 
 
 def test_validate_result_rejects_unknown_capability_values():
     with pytest.raises(ValueError, match="plot_kind"):
-        plot_capabilities.validate_result(
+        parse_analysis_result(
             {
+                "version": 1, "sections": [],
                 "images": {"Forest Plot": "forest.svg"},
                 "image_params_paths": {"Forest Plot": "forest-data"},
                 "plot_capabilities": {
@@ -36,8 +36,9 @@ def test_validate_result_rejects_unknown_capability_values():
         )
 
     with pytest.raises(ValueError, match="composition"):
-        plot_capabilities.validate_result(
+        parse_analysis_result(
             {
+                "version": 1, "sections": [],
                 "images": {"Forest Plot": "forest.svg"},
                 "plot_capabilities": {
                     "Forest Plot": descriptor(
@@ -50,8 +51,9 @@ def test_validate_result_rejects_unknown_capability_values():
 
 def test_validate_result_requires_plot_data_for_editable_artifacts():
     with pytest.raises(ValueError, match="missing plot data.*Forest Plot"):
-        plot_capabilities.validate_result(
+        parse_analysis_result(
             {
+                "version": 1, "sections": [],
                 "images": {"Forest Plot": "forest.svg"},
                 "plot_capabilities": {"Forest Plot": descriptor()},
             }
@@ -102,8 +104,9 @@ def test_analysis_result_parser_validates_all_boundary_fields():
 
 def test_editable_plot_kind_requires_a_compatible_regenerator():
     with pytest.raises(ValueError, match="does not support plot kind"):
-        plot_capabilities.validate_result(
+        parse_analysis_result(
             {
+                "version": 1, "sections": [],
                 "images": {"Regression Plot": "regression.svg"},
                 "image_params_paths": {"Regression Plot": "regression-data"},
                 "plot_capabilities": {

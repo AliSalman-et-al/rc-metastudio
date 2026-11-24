@@ -1,5 +1,3 @@
-# A heterogeneous subgroup can have a wider pooled CI than every study and the
-# overall fit. Both ends must stay inside the automatic forest axis.
 test_that("automatic subgroup axes contain every pooled confidence interval", {
   yi <- c(-10, 10, -1, 1)
   groups <- lapply(split(yi, c("A", "A", "B", "B")), function(values) {

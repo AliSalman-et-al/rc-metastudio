@@ -71,7 +71,7 @@ def _valid_source_provenance(value: object, source_commit: str) -> bool:
         value.get("schema_version") == 1
         and value.get("head_sha") == source_commit
         and value.get("working_tree") in {"clean", "dirty"}
-        and _valid_sha256(value.get("worktree_sha256"))
+        and smoke_contract.valid_sha256(value.get("worktree_sha256"))
     )
 
 
@@ -692,7 +692,7 @@ def _validate_windows_probe_r(r: dict, probe_path, app_root: Path) -> None:
         )
     reported_shared_hash = r.get("shared_library_sha256")
     if reported_shared_hash is not None and (
-        not _valid_sha256(reported_shared_hash)
+        not smoke_contract.valid_sha256(reported_shared_hash)
         or reported_shared_hash != sha256_file(app_root / "R/bin/x64/R.dll")
     ):
         raise DeploymentInspectionError(
@@ -848,7 +848,11 @@ def _validate_windows_smoke(smoke: dict, log_text: str) -> None:
     workflows = smoke.get("workflows", {})
     scales = smoke.get("scales", [])
     variants = workflows.get("locale_variants", [])
-    if len(variants) == 2 and variants[0].get("svg_sha256") != variants[1].get("svg_sha256"):
+    if (
+        isinstance(variants, list) and len(variants) == 2
+        and all(isinstance(item, dict) for item in variants)
+        and variants[0].get("svg_sha256") != variants[1].get("svg_sha256")
+    ):
         raise DeploymentInspectionError(
             f"packaged smoke evidence is incomplete: locale SVG byte hashes differ: {variants}"
         )
@@ -885,10 +889,10 @@ def _windows_workflow_valid(
         expected_summary is not None,
         workflows.get("expected_normalized_summary_sha256") == expected_summary,
         workflows.get("normalized_summary_sha256") == expected_summary,
-        _valid_sha256(workflows.get("raw_summary_sha256")),
-        _valid_sha256_map(workflows.get("svg_sha256")),
-        _valid_locale_variants(workflows.get("locale_variants")),
-        _valid_sample_projects(workflows.get("sample_projects")),
+        smoke_contract.valid_sha256(workflows.get("raw_summary_sha256")),
+        smoke_contract.valid_sha256_map(workflows.get("svg_sha256")),
+        smoke_contract.locale_variants(workflows.get("locale_variants")) is not None,
+        smoke_contract.sample_hashes(workflows.get("sample_projects")) is not None,
         smoke.get("execution") == {
             "automation_exit_code": 0,
             "positional_user_entry_exit_code": 0,
@@ -926,7 +930,7 @@ def _windows_log_markers_valid(log_text: str) -> bool:
 def _validate_windows_extracted_smoke(extracted: dict, log_text: str) -> None:
     if (
         extracted.get("passed") is not True
-        or not _valid_sample_projects(extracted.get("workflows", {}).get("sample_projects"))
+        or smoke_contract.sample_hashes(extracted.get("workflows", {}).get("sample_projects")) is None
         or extracted.get("execution", {}).get("positional_user_entry_exit_code") != 0
         or extracted.get("execution", {}).get("clean_exit") is not True
         or smoke_contract.STARTUP_PROJECT_PASSED not in log_text
@@ -937,83 +941,8 @@ def _validate_windows_extracted_smoke(extracted: dict, log_text: str) -> None:
         )
 
 
-def _valid_locale_variants(variants: object) -> bool:
-    if (
-        not isinstance(variants, list)
-        or len(variants) != 2
-        or not all(isinstance(item, dict) for item in variants)
-    ):
-        return False
-    typed_variants = cast(list[dict[str, object]], variants)
-    if [item.get("locale") for item in typed_variants] != ["en_US", "de_DE"]:
-        return False
-    if "." not in str(typed_variants[0].get("input")) or "," not in str(
-        typed_variants[1].get("input")
-    ):
-        return False
-    return (
-        typed_variants[0].get("canonical_value")
-        == typed_variants[1].get("canonical_value")
-        and typed_variants[0].get("normalized_summary_sha256")
-        == typed_variants[1].get("normalized_summary_sha256")
-        and _valid_sha256(typed_variants[0].get("normalized_summary_sha256"))
-        and typed_variants[0].get("raw_summary_sha256")
-        == typed_variants[1].get("raw_summary_sha256")
-        and _valid_sha256(typed_variants[0].get("raw_summary_sha256"))
-        and typed_variants[0].get("svg_sha256")
-        == typed_variants[1].get("svg_sha256")
-        and _valid_sha256_map(typed_variants[0].get("svg_sha256"))
-    )
-
-
-def _valid_sha256_map(value: object) -> bool:
-    return (
-        isinstance(value, dict)
-        and bool(value)
-        and all(
-            isinstance(label, str)
-            and bool(label)
-            and isinstance(digest, str)
-            and len(digest) == 64
-            and all(character in "0123456789abcdef" for character in digest)
-            for label, digest in value.items()
-        )
-    )
-
-
-def _valid_sha256(value: object) -> bool:
-    return (
-        isinstance(value, str)
-        and len(value) == 64
-        and all(character in "0123456789abcdef" for character in value)
-    )
-
-
 def _string_keyed_dict(value: object) -> TypeGuard[dict[str, object]]:
     return isinstance(value, dict) and all(isinstance(key, str) for key in value)
-
-
-def _valid_sample_projects(value: object) -> bool:
-    if not _string_keyed_dict(value):
-        return False
-    records = value.get("projects")
-    return (
-        value.get("passed") is True
-        and _valid_sha256(value.get("manifest_sha256"))
-        and isinstance(records, list)
-        and bool(records)
-        and len({item.get("project") for item in records if _string_keyed_dict(item)})
-        == len(records)
-        and all(
-            _string_keyed_dict(item)
-            and isinstance(item.get("project"), str)
-            and cast(str, item.get("project", "")).endswith(".rcms")
-            and _valid_sha256(item.get("sha256"))
-            and _valid_sha256(item.get("semantic_sha256"))
-            and item.get("opened_in_packaged_application") is True
-            for item in records
-        )
-    )
 
 
 def finalize_smoke_evidence(path: Path, log_path: Path) -> dict:

@@ -45,7 +45,7 @@ def header_action(app, window, covariate_id, label, record):
 
 
 def check_sort_and_rename(app, window, covariate_id, record):
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
     from rc_metastudio.edit_name_dialogs import EditCovariateNameDialog
 
     def rows():

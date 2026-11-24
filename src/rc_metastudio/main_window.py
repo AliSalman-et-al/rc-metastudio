@@ -40,7 +40,6 @@ from rc_metastudio.workspace import table_model as dataset_table_model
 from rc_metastudio.analysis import catalog as analysis_catalog
 
 from rc_metastudio.project import model as analysis_dataset
-from rc_metastudio.analysis import requests as analysis_adapter
 from rc_metastudio.analysis import identity as analysis_identity
 from rc_metastudio import app_error_handler
 from rc_metastudio.app_error_handler import connect_action
@@ -52,6 +51,7 @@ from rc_metastudio import name_validation
 from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project import archive as project_format
 from rc_metastudio.importing import tabular as csv_import
+from rc_metastudio.importing.field_plan import ImportFieldPlan
 from rc_metastudio.importing.materialize import populate_imported_sheet
 from rc_metastudio.workspace import editing as workspace_editing
 from rc_metastudio.settings import (
@@ -197,11 +197,11 @@ class SheetTabBar(QtWidgets.QTabBar):
         self._updating_palette = True
         try:
             palette = QtWidgets.QApplication.palette()
-            self._apply_tab_palette(palette)
+            self.apply_tab_palette(palette)
         finally:
             self._updating_palette = False
 
-    def _apply_tab_palette(self, palette: QtGui.QPalette) -> None:
+    def apply_tab_palette(self, palette: QtGui.QPalette) -> None:
         window_color = palette.color(QtGui.QPalette.ColorRole.Window)
         text = palette.color(QtGui.QPalette.ColorRole.WindowText)
         base = palette.color(QtGui.QPalette.ColorRole.Base).name()
@@ -239,6 +239,22 @@ class SheetTabBar(QtWidgets.QTabBar):
         if a1 is not None and a1.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
             self.changeEvent(a1)
         return super().eventFilter(a0, a1)
+
+    def allocate_width(self, strip_width: int, reserve_grid_scrollbar: bool) -> int:
+        metrics = self.fontMetrics()
+        em = metrics.height()
+        add_extent = max(em + 10, self.sizeHint().height())
+        natural_width = sum(
+            min(28 * em, metrics.horizontalAdvance(self.tabText(index)) + 24)
+            for index in range(self.count())
+        )
+        reserved = add_extent + (16 * em if reserve_grid_scrollbar else 0)
+        limit = (28 if natural_width <= strip_width - reserved else 12) * em
+        if self._tab_width_limit != limit:
+            self._tab_width_limit = limit
+            self.apply_tab_palette(QtWidgets.QApplication.palette())
+        self.setMinimumSize(self.sizeHint())
+        return add_extent
 
     def tabSizeHint(self, index):
         size = super().tabSizeHint(index)
@@ -290,7 +306,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.analysis_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.analysis_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.analysis_button.setMenu(self.menuAnalysis)
-        self.analysis_button.setAccessibleName("Analyses")
         self.analysis_button.setAccessibleDescription("Choose an analysis. Unavailable analyses explain their prerequisites in the menu.")
         self.analysis_button.setToolTip("Choose an analysis")
         self.analysis_button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -714,7 +729,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         connect_action(self.action_import_csv, self._import_data)
 
     def _pooled_analysis_actions(self) -> tuple[
-        tuple[QAction, analysis_adapter.AnalysisWorkflow | None, str, int], ...
+        tuple[QAction, analysis_catalog.AnalysisWorkflow | None, str, int], ...
     ]:
         return (
             (self.action_go, None, "Meta-analysis", 1),
@@ -728,7 +743,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self.confidence_button.setAccessibleName(f"Outcome confidence level, {confidence_level:g}%")
 
     def _launch_analysis(
-        self, analysis_type: analysis_adapter.AnalysisWorkflow | None = None,
+        self, analysis_type: analysis_catalog.AnalysisWorkflow | None = None,
         *, covariate: str | None = None,
     ) -> None:
         external_params = {"cov_name": covariate} if covariate is not None else None
@@ -778,9 +793,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         show_analysis = self._result_handler()
         settings = trial_sequential_analysis.TSA_SETTINGS
         saved = trial_sequential_analysis.TsaOptions.from_mapping(sheet.settings.get(settings, {}))
-        model = dataset_table_model.DatasetTableModel(
-            dataset=copy.deepcopy(self.model.dataset), add_blank_study=False, current_sheet_id=sheet.id,
-        )
+        model = self.model.snapshot_for_analysis()
         base_request = trial_sequential_analysis.TsaRequest.from_sheet(
             model, saved, fit=self.workspace.last_pooled_fit(sheet),
         )
@@ -1171,8 +1184,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._commit_model_operation(lambda: self.model.rename_covariate(orig_cov_name, new_cov))
 
     def delete_covariate(self, covariate):
-        # Synchronize direct model edits made by an adapter before publishing
-        # the next atomic workspace change.
         self.data_dirtied()
         self._commit_model_operation(lambda: self.model.remove_covariate(covariate))
 
@@ -1223,10 +1234,19 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._update_workspace_guidance()
         self.refresh_analysis_actions()
 
-    def _update_swap_arms_enabled(self):
+    def _swappable_sheet(self) -> analysis_dataset.Sheet | None:
         sheet = self.model.current_sheet
-        self.action_swap_arms.setEnabled(bool(sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS))
-        self.effect_direction_menu.setEnabled(self.action_swap_arms.isEnabled())
+        if (
+            sheet is None or sheet.family == "diagnostic" or len(sheet.arms) != 2
+            or self.model.current_effect in analysis_catalog.ONE_ARM_METRICS
+        ):
+            return None
+        return sheet
+
+    def _update_swap_arms_enabled(self):
+        enabled = self._swappable_sheet() is not None
+        self.action_swap_arms.setEnabled(enabled)
+        self.effect_direction_menu.setEnabled(enabled)
 
     def _populate_effect_direction(self) -> None:
         self.effect_direction_menu.clear()
@@ -1250,11 +1270,9 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._update_project_identity()
 
     def _swap_sheet_arms(self):
-        sheet = self.model.current_sheet
-        if sheet and sheet.family != "diagnostic" and len(sheet.arms) == 2 and self.model.current_effect not in analysis_catalog.ONE_ARM_METRICS:
-            def swap():
-                sheet.arms.reverse()
-            self._sheet_change(sheet.id, swap)
+        sheet = self._swappable_sheet()
+        if sheet is not None:
+            self._sheet_change(sheet.id, sheet.arms.reverse)
 
     def _setup_sheet_strip(self):
         self.sheet_name_edit = None
@@ -1328,7 +1346,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.timeout.connect(self._update_sheet_strip)
         self.sheet_tabs.stripPaletteChanged.connect(self._apply_sheet_strip_palette)
         self.sheet_tabs.resized.connect(lambda: QtCore.QTimer.singleShot(0, self._scroll_to_sheet_tab))
-        self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
+        self.sheet_tabs.apply_tab_palette(QtWidgets.QApplication.palette())
         scroll.rangeChanged.connect(self._schedule_sheet_strip_update)
         scroll.valueChanged.connect(self._sheet_scroll_changed)
         self._schedule_sheet_strip_update()
@@ -1344,19 +1362,10 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
         self._sheet_strip_timer.start(0)
 
     def _update_sheet_strip(self):
-        extent = max(self.sheet_tabs.fontMetrics().height() + 10, self.sheet_tabs.sizeHint().height())
+        extent = self.sheet_tabs.allocate_width(
+            self.sheet_strip.width(), self.sheet_grid_scrollbar.isVisible(),
+        )
         self.add_sheet_button.setFixedSize(extent, extent)
-        em = self.sheet_tabs.fontMetrics().height()
-        natural_width = sum(min(28 * em, self.sheet_tabs.fontMetrics().horizontalAdvance(self.sheet_tabs.tabText(index)) + 24)
-                            for index in range(self.sheet_tabs.count()))
-        reserved = extent
-        if self.sheet_grid_scrollbar.isVisible():
-            reserved += 16 * em
-        limit = (28 if natural_width <= self.sheet_strip.width() - reserved else 12) * em
-        if getattr(self.sheet_tabs, "_tab_width_limit", None) != limit:
-            self.sheet_tabs._tab_width_limit = limit
-            self.sheet_tabs._apply_tab_palette(QtWidgets.QApplication.palette())
-        self.sheet_tabs.setMinimumSize(self.sheet_tabs.sizeHint())
         self.sheet_tab_content.resize(self.sheet_tab_content.sizeHint())
         self.sheet_tab_scroll.setFixedHeight(self.sheet_tab_content.sizeHint().height())
         self.sheet_tab_scroll.setMaximumWidth(self.sheet_tab_content.sizeHint().width())
@@ -1441,7 +1450,6 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 if name != sheet.name:
                     self._sheet_change(sheet.id, lambda: setattr(sheet, "name", name))
         finally:
-            # A preview refresh can pump Qt events before the editor's key event returns.
             edit.deleteLater()
 
     def _add_sheet(self):
@@ -1634,9 +1642,11 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
             self._start_unnamed_project(analysis_dataset.Dataset(sheets=[sheet]))
 
         else:
-            self._install_csv_import(wizard_data["outcome_info"], wizard_data["csv_data"])
+            self._install_csv_import(wizard_data["outcome_info"], wizard_data["csv_data"], wizard_data["csv_plan"])
 
-    def _install_csv_import(self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportResult):
+    def _install_csv_import(
+        self, dataset_info: main_wizard.DatasetInfo, csv_data: csv_import.CsvImportResult, plan: ImportFieldPlan,
+    ):
         sheet = self._sheet_from_dataset_info(dataset_info)
         dataset = analysis_dataset.Dataset(sheets=[sheet])
         progress = ImportProgressDialog(self, len(csv_data.rows))
@@ -1648,7 +1658,7 @@ class MainWindow(QtWidgets.QMainWindow, _ui_main_window.Ui_MainWindow):
                 progress.progress_bar.setValue(completed)
                 progress.progress_bar.repaint()
             warnings = populate_imported_sheet(
-                sheet, csv_data, self.model.editing_service, show_progress,
+                sheet, csv_data, plan, self.model.editing_service, show_progress,
             )
         finally:
             progress_dialog.dispose(progress)

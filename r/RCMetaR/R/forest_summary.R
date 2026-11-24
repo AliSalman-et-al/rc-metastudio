@@ -235,7 +235,6 @@ rcmetar.overall.test.heading <- function(res, params) {
 rcmetar.draw.forest.header <- function(x, y, label, adj=0.5) {
     if (!nzchar(label)) return(invisible(NULL))
     lines <- strsplit(label, "\n", fixed=TRUE)[[1]]
-    # Separate baselines using device text metrics; row coordinates shrink with k.
     leading <- graphics::strheight("Mg", units="user") * 1.8
     positions <- y + ((length(lines) - 1) / 2 - seq_along(lines) + 1) * leading
     graphics::text(x, positions, lines, adj=adj)
@@ -285,7 +284,6 @@ rcmetar.forest.header.ylim <- function(plan, rule.y) {
         footer <- graphics::strheight("M", units="inches", cex=plan$typography$cex, font=font) *
             (2.2 * (plan$device$direction_lines + 1) + 1) / graphics::par("pin")[[2]]
         if (fraction + footer >= 1) stop("Device is too short for the measured forest footer.")
-        # Solve header and footer clearance together in the final device's units.
         span <- max(span, (rule.y + 4.1 - (plan$rows$axis_offset %||% 0)) / (1 - fraction - footer))
     }
     ylim[[2]] <- max(ylim[[2]], rule.y + fraction * span)

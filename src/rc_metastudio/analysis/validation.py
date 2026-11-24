@@ -7,7 +7,7 @@ from collections.abc import Buffer
 from statistics import NormalDist
 from typing import SupportsFloat, SupportsIndex, SupportsInt, cast
 
-from rc_metastudio.qt_text import parse_decimal
+from rc_metastudio.input_text import parse_decimal
 
 
 EMPTY_VALS = ("", None)
@@ -167,7 +167,6 @@ def parse_plot_bound(bound: str | int | float | None) -> float | bool:
 
 def is_float_convertible(value: object) -> bool:
     try:
-        # The conversion probes unknown user input and catches unsupported protocols.
         float(cast(str | Buffer | SupportsFloat | SupportsIndex, value))
         return True
     except (TypeError, ValueError):

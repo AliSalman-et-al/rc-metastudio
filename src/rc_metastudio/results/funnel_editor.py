@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QColorDialog, QDialog, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 
-from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio import adaptive_window, app_error_handler, input_text
 from rc_metastudio.qt_layout import protect_scroll_settings, align_field_columns, add_color_swatch, style_inline_error
 from rc_metastudio.qt_object_guard import required
 from rc_metastudio.results.plot_style_controls import plot_color
@@ -492,7 +492,7 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
         self.background_color_edit.setText(preset.background_color)
 
     def _choose_color(self, edit, button, title):
-        initial = QColor(qt_text.to_native_text(edit.text()))
+        initial = QColor(input_text.to_native_text(edit.text()))
         color = QColorDialog.getColor(
             initial if initial.isValid() else QColor("black"), self, title
         )
@@ -549,14 +549,14 @@ class FunnelPlotEditorDialog(QDialog, Ui_FunnelPlotEditorDialog):
             "funnel.sampling.conf.level": self.sampling_confidence_spin.value(),
             "funnel.sampling.region.visible": self.sampling_region_check.isChecked(),
             "funnel.include.tau2": self.include_tau2_check.isChecked(),
-            "funnel.contour.levels": qt_text.to_native_text(
+            "funnel.contour.levels": input_text.to_native_text(
                 self.contour_levels_edit.text()
             ),
-            "funnel.xlab": qt_text.to_native_text(plot_text_value(self.x_label_edit)),
-            "funnel.ylab": qt_text.to_native_text(plot_text_value(self.y_label_edit)),
-            "funnel.xlim.lower": qt_text.to_native_text(self.x_lower_edit.text()),
-            "funnel.xlim.upper": qt_text.to_native_text(self.x_upper_edit.text()),
-            "funnel.xticks": qt_text.to_native_text(self.x_ticks_edit.text()),
+            "funnel.xlab": input_text.to_native_text(plot_text_value(self.x_label_edit)),
+            "funnel.ylab": input_text.to_native_text(plot_text_value(self.y_label_edit)),
+            "funnel.xlim.lower": input_text.to_native_text(self.x_lower_edit.text()),
+            "funnel.xlim.upper": input_text.to_native_text(self.x_upper_edit.text()),
+            "funnel.xticks": input_text.to_native_text(self.x_ticks_edit.text()),
             "funnel.xaxis.natural": True,
             "funnel.outpath": self._funnel_outpath,
         }

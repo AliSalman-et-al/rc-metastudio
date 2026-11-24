@@ -161,7 +161,7 @@ def check_artwork(path, case, style, contract, *, percent=False):
 
 
 def run(app, window, work, record, case):
-    from advanced_workflows import click, modal
+    from tests.e2e.dialog_interaction import click, modal
 
     path = input_project(work, case)
     assert window.open(str(path), raise_on_error=True)
@@ -573,8 +573,6 @@ def run(app, window, work, record, case):
         modal(app, TrialSequentialAnalysisDialog, lambda dialog: rerun(dialog, "effect"), view.change_settings_action.trigger)
         entered_rows = view._report_tables[0].rows
         assert "Primary (entered)" in view._report_tables[1].rows[0][0]
-        # Change the live sheet before a rerun. The result must still use the
-        # original study snapshot, while a later Save includes the live edit.
         assert window.model.setData(window.model.index(0, window.model.NAME), "Edited in source sheet")
         assert window.save(destination=saved)
         started = perf_counter()

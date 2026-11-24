@@ -223,7 +223,7 @@ def test_diagnostic_multi_metric_failure_keeps_independent_results(monkeypatch):
         )
 
         def run_metric(requests, data):
-            assert [request["metric"] for request in requests] == ["Sens", "NLR", "PLR", "DOR"]
+            assert [request.metric for request in requests] == ["Sens", "NLR", "PLR", "DOR"]
             texts = {"Sens Error": "Reitsma bivariate model failed to converge"}
             texts.update({f"{metric} Summary": f"{metric} ok" for metric in ("NLR", "PLR", "DOR")})
             images = {f"{metric} Forest plot": f"{metric.lower()}.png" for metric in ("NLR", "PLR", "DOR")}
@@ -334,7 +334,7 @@ def test_diagnostic_direct_effects_build_analysis_data_per_metric(monkeypatch):
             return {"y": [-0.1] if metric == "Sens" else [0.7], "SE": [0.2]}
 
         def run_metric(requests, metric_data):
-            multi_calls.append([request["params"]["measure"] for request in requests])
+            multi_calls.append([request.metric for request in requests])
             assert [entry["y"] for entry in metric_data] == [[-0.1], [0.7]]
             texts = {f"{metric} Summary": "ok" for metric in multi_calls[-1]}
             return {

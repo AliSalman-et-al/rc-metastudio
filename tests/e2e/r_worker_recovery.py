@@ -167,8 +167,6 @@ def _check_protocol(app, window, work, record_step, r_worker):
         assert r_worker._runtime_paths() == (program, script)
     source = script.read_text(encoding="utf-8")
     injected = work / "worker-protocol-probe.R"
-    # This test-only worker exercises real fd 1, an extra sink and a progress
-    # frame adjacent to the terminal frame, without adding an eval job.
     source = source.replace('request$job <- decode_wire(request$job)', '''
             if (request$id == 1L) {
                 Sys.sleep(11)

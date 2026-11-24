@@ -24,8 +24,6 @@ def test_nonempty_results_require_explicit_versioned_sections():
     {"paragraphs": [], "tables": [{"title": "Estimate", "headers": ["Effect", "CI"], "rows": [["1.2"]]}]},
 ])
 def test_malformed_report_cannot_misalign_or_silently_coerce_result_cells(report):
-    # Boundary failures outside ordinary E2E: nontext prose/cells, missing headers,
-    # and mismatched row widths could change the meaning of a statistical table.
     with pytest.raises(ValueError, match="report"):
         parse_analysis_result({"version": 1, "texts": {"summary": "raw output"},
             "sections": [{"id": "text:summary", "kind": "text", "order": 0,

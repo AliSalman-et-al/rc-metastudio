@@ -668,8 +668,6 @@ rcmetar.forest.paginate <- function(bundle, plan, height, first.height=height) {
             next.panel <- candidate
         }
         if (last == length(studies) - 1L) {
-            # Keep the last two together. If this panel is already the tail,
-            # preserve the indivisible block even on an undersized page.
             last <- if (last > first) last - 1L else last + 1L
             next.panel <- panel(first, last)
         }

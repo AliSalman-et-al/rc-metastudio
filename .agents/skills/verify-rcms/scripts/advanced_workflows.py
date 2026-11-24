@@ -14,162 +14,22 @@ from unittest.mock import patch
 from analysis_matrix import run as matrix
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtSvg import QSvgRenderer
-from typing import cast
 
 from tests.python.gui.qt_test_support import key_click, key_clicks, metric_action, mouse_click, wait
 
+from tests.e2e.analysis_result_checks import authority, compare_authority
 from tests.e2e.desktop_scenarios import PLOT_PRODUCERS
+from tests.e2e.dialog_interaction import click, modal, set_parameter
 from tests.e2e.plot_observations import load_saved_analysis
+from tests.e2e.plot_workflow_support import export_formats
 from tests.sample_projects import SAMPLE_FILES
 
 
 ROOT = Path(__file__).resolve().parents[4]
 
 
-def click(app, widget):
-    assert widget.isEnabled(), widget.objectName()
-    mouse_click(widget, QtCore.Qt.MouseButton.LeftButton)
-    app.processEvents()
-
-
-def modal(app, kind, drive, launch):
-    errors = []
-    completed = []
-
-    def ready():
-        dialog = app.activeModalWidget()
-        if not isinstance(dialog, kind):
-            QtCore.QTimer.singleShot(10, ready)
-            return
-        if isinstance(dialog, QtWidgets.QMessageBox):
-            dialog.setProperty("verificationExpectedMessage", True)
-        try:
-            drive(dialog)
-        except Exception as error:  # noqa: BLE001 - propagate Qt callback failures after the modal loop.
-            traceback.print_exc()
-            errors.append(error)
-            dialog.reject()
-        finally:
-            completed.append(True)
-
-    # Register before launch: the watchdog may run before ready sees the warning.
-    expecting_message = kind is QtWidgets.QMessageBox
-    previous_expectation = app.property("verificationExpectingMessageBox")
-    if expecting_message:
-        app.setProperty("verificationExpectingMessageBox", True)
-    try:
-        QtCore.QTimer.singleShot(0, ready)
-        launch()
-        deadline = QtCore.QDeadlineTimer(5000)
-        while not completed and not deadline.hasExpired():
-            wait(10)
-        assert completed, ("modal did not open", kind)
-        assert not errors, errors
-    finally:
-        if expecting_message:
-            app.setProperty("verificationExpectingMessageBox", previous_expectation)
-
-
 def raw_rows(window):
     return [list(row) for row in window.model.get_current_raw_data()]
-
-
-def authority(
-    window,
-    family,
-    estimator,
-    inference,
-    confidence,
-    correction="only0",
-    entered=None,
-    metric=None,
-):
-    """Public metafor reconstruction uses observed input, never RCMS preparation."""
-
-    rows = raw_rows(window)
-    vector = lambda i: (
-        "c("
-        + ",".join("NA_real_" if row[i] in (None, "") else str(row[i]) for row in rows)
-        + ")"
-    )
-    metric = metric or window.model.current_effect
-    if family == "binary":
-        expression = (
-            f'metafor::escalc("{metric}", xi={vector(0)}, ni={vector(1)}, add=.5, to="{correction}")'
-            if metric in {"PR", "PLN", "PLO", "PAS", "PFT"}
-            else f'metafor::escalc("{metric}", ai={vector(0)}, n1i={vector(1)}, ci={vector(2)}, n2i={vector(3)}, add=.5, to="{correction}", drop00=FALSE)'
-        )
-    elif family == "continuous":
-        expression = (
-            f'metafor::escalc("MN", ni={vector(0)}, mi={vector(1)}, sdi={vector(2)})'
-            if metric == "Mean"
-            else f'metafor::escalc("{metric}", n1i={vector(0)}, m1i={vector(1)}, sd1i={vector(2)}, n2i={vector(3)}, m2i={vector(4)}, sd2i={vector(5)})'
-        )
-    elif metric in {"Sens", "Spec"}:
-        events, other = (0, 1) if metric == "Sens" else (3, 2)
-        correction_mask = f"({vector(0)}*{vector(1)}*{vector(2)}*{vector(3)} == 0)"
-        expression = f'metafor::escalc("PLO", xi={vector(events)}+.5*{correction_mask}, ni={vector(events)}+{vector(other)}+{correction_mask}, add=0)'
-    else:
-        expression = f'metafor::escalc("OR", ai={vector(0)}, bi={vector(1)}, ci={vector(2)}, di={vector(3)}, add=.5, to="only0", drop00=FALSE)'
-    override = (
-        ""
-        if entered is None
-        else f"e$yi[1] <- {entered[0]}; e$vi[1] <- {entered[1] ** 2}; "
-    )
-    point, lower, upper = "as.numeric(f$b)", "f$ci.lb", "f$ci.ub"
-    if metric == "PFT":
-        point, lower, upper = (
-            f"metafor::transf.ipft.hm({value}, targs=list(ni={vector(1)}))"
-            for value in (point, lower, upper)
-        )
-    result = r_oracle.evaluate(
-        "{ e <- "
-        + expression
-        + "; "
-        + override
-        + 'f <- metafor::rma.uni(e$yi, vi=e$vi, method="'
-        + estimator
-        + '", test="'
-        + inference
-        + '", level='
-        + str(confidence)
-        + f"); jsonlite::toJSON(list(estimate={point}, lower_bound={lower}, upper_bound={upper}, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }}"
-    )
-    return json.loads(str(result[0]))
-
-
-def compare_authority(view, expected, family, record, metric=None):
-    from tests.analysis_regression.golden.support.golden_analysis import (
-        parsed_numeric_sections,
-    )
-
-    sections = parsed_numeric_sections(view.results)
-    diagnostic_summaries = {
-        "Sens": "Sensitivity summary", "Spec": "Specificity summary",
-        "DOR": "Diagnostic odds ratio summary",
-    }
-    actual = sections[diagnostic_summaries[metric or "DOR"] if family == "diagnostic" else "Summary"]
-    for key, value in expected.items():
-        observed_key = (
-            "calculation_scale." + key
-            if (family == "diagnostic" or (family == "binary" and metric not in {"PR", "PFT"}))
-            and key in ("estimate", "lower_bound", "upper_bound", "standard_error")
-            else key
-        )
-        assert observed_key in actual, (observed_key, actual)
-        assert abs(actual[observed_key] - value) <= 1e-6 + 1e-12, (
-            key,
-            actual[observed_key],
-            value,
-        )
-    record(
-        "nondefault-public-authority",
-        view,
-        actual=actual,
-        expected=expected,
-        oracle="metafor::escalc + rma.uni",
-        tolerance=1e-6,
-    )
 
 
 def options(app, window, family, record):
@@ -239,7 +99,6 @@ def confidence_inclusion(app, window, record):
         for w in app.topLevelWidgets()
         if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible()
     )
-    from analysis_matrix import set_parameter
 
     set_parameter(app, dialog, "digits", 6)
     set_parameter(app, dialog, "rm.method", "DL")
@@ -361,7 +220,6 @@ def zero_cells(app, window, record):
     view.close()
     window.workspace.mark_saved()
 
-    # One participant per group leaves no residual degrees of freedom for SMD.
     assert window.open(str(ROOT / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     metric_action(window.menuMetric, "SMD").trigger()
     model = window.model
@@ -525,8 +383,6 @@ def plots(app, window, family, record, *, view=None):
             upper.setText(original_bounds[1])
             if family == "regression":
                 original_ticks = dialog.x_ticks_le.text()
-                # This fixture uses publication year, not latitude. Keep its
-                # fitted range while checking zero as a numeric moderator tick.
                 dialog.x_ticks_le.setText("0,1990,2000")
                 click(app, dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Apply))
                 record("bubble-zero-moderator-tick", dialog, error=dialog._commit_error.text())
@@ -736,7 +592,7 @@ def plots(app, window, family, record, *, view=None):
                     pos=menu.actionGeometry(action).center(),
                 )
                 chosen.append(action_text)
-            except Exception as error:  # noqa: BLE001 - propagate Qt callback failures.
+            except Exception as error:
                 traceback.print_exc()
                 errors.append(error)
                 menu.close()
@@ -860,8 +716,6 @@ def plots(app, window, family, record, *, view=None):
         assert "Caption-only accepted edit" in caption_export.read_text()
         record("funnel-caption-only-persisted", view, family=family, exports={"svg": str(caption_export)})
 
-        # The missing bundle contains different data from the live R globals.
-        # Presence validation must fail before any component is loaded.
         from rc_metastudio.results.plot_service import PlotServiceError
         import shutil
         incomplete = Path(sys.argv[2]) / (family + "-incomplete")
@@ -897,102 +751,6 @@ def plots(app, window, family, record, *, view=None):
 
             modal(app, FunnelPlotEditorDialog, capture_funnel_styles, lambda: context("Edit plot…"))
     view.close()
-
-
-def export_formats(app, view, directory, family, record, invoke=None, *, include_title=False):
-    directory.mkdir(parents=True, exist_ok=True)
-    if invoke is None:
-        if view._selected_plot() is None:
-            assert view._last_plot_item is not None
-            view.nav_tree.setCurrentItem(view._last_plot_item)
-            app.processEvents()
-        assert view.export_plot_action.isEnabled()
-        def invoke(extension, _label):
-            view.export_plot_action.trigger()
-            app.processEvents()
-    files = {}
-    for extension, action_label in (
-        ("pdf", "PDF"),
-        ("png", "PNG"),
-        ("tiff", "TIFF"),
-        ("svg", "SVG"),
-    ):
-        destination = directory / (family + "." + extension)
-        with patch.object(
-            QtWidgets.QFileDialog,
-            "getSaveFileName",
-            return_value=(str(destination), ""),
-        ) as picker:
-            from rc_metastudio.results.plot_export import PlotExportDialog
-            def accept_export(dialog):
-                assert not dialog.include_title.isChecked()
-                dialog.include_title.setChecked(include_title)
-                dialog.format_control.setCurrentIndex(dialog.format_control.findData(extension))
-                record('export-options', dialog, format=extension, dimensions=dialog.dimensions())
-                dialog.accept()
-            modal(app, PlotExportDialog, accept_export, lambda: invoke(extension, action_label))
-        assert picker.call_args is not None
-        name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
-        assert f"*.{extension}" in name_filter, (extension, name_filter)
-        assert destination.is_file(), destination
-        rendered_pages: list[QtGui.QImage] = []
-        if extension == "svg":
-            renderer = QSvgRenderer(str(destination))
-            assert renderer.isValid()
-            rendered = QtGui.QImage(400, 400, QtGui.QImage.Format.Format_RGB32)
-            rendered.fill(QtCore.Qt.GlobalColor.white)
-            painter = QtGui.QPainter(rendered)
-            renderer.render(painter)
-            painter.end()
-            rendered_pages.append(rendered)
-        elif extension == "pdf":
-            from PyQt6.QtPdf import QPdfDocument
-
-            document = QPdfDocument(view)
-            assert document.load(str(destination)) == QPdfDocument.Error.None_
-            assert document.pageCount() > 0
-            a4 = QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4).sizePoints()
-            for page in range(document.pageCount()):
-                if document.pageCount() > 1:
-                    assert document.pagePointSize(page).toSize() == a4
-                rendered_pages.append(document.render(page, QtCore.QSize(400, 400)))
-            document.close()
-        else:
-            from PIL import Image
-
-            with Image.open(destination) as image:
-                assert image.width > 100 and image.height > 100
-                if extension == "tiff":
-                    dpi = tuple(float(value) for value in image.info.get("dpi", ()))
-                    record("publication-raster-resolution", view, family=family,
-                           pixels=image.size, dpi=dpi, exports={extension: str(destination)})
-                    assert len(dpi) == 2 and min(dpi) >= 600, (family, "Publication TIFF is below 600 dpi", dpi)
-                assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
-                image.load()
-                assert (
-                    min(
-                        channel[0]
-                        for channel in cast(tuple[tuple[int, int], ...],
-                            image.resize((256, 256)).convert("RGB").getextrema())
-                    )
-                    < 200
-                )
-        for rendered in rendered_pages:
-            assert not rendered.isNull()
-            assert any(
-                rendered.pixelColor(x, y).lightness() < 200
-                for x in range(0, 400, 4)
-                for y in range(0, 400, 4)
-            ), "Export contains no visible plot content"
-        files[extension] = str(destination)
-        record(
-            "family-export-decoded",
-            view,
-            family=family,
-            format=extension,
-            exports={extension: str(destination)},
-        )
-    return files
 
 
 def calculators(app, window, mode, record):
@@ -1322,7 +1080,6 @@ def calculators(app, window, mode, record):
                 assert math.isclose(float(field.text()), value, abs_tol=0.0001)
             if family in {"binary", "continuous"}:
                 for mode_name in (("summary", "pre-post") if family == "continuous" else ("counts",)):
-                    # A mode shortcut can arrive while the last editor still has focus.
                     dialog.effect_text_box.setFocus()
                     key_click(dialog.effect_text_box, QtCore.Qt.Key.Key_A, QtCore.Qt.KeyboardModifier.ControlModifier)
                     key_clicks(dialog.effect_text_box, str(values[0]))
@@ -1645,7 +1402,6 @@ def calculators(app, window, mode, record):
 
     modal(app, kind, cancel, launch)
     assert entered_values() == accepted_entered
-    # Compare actual raw/entered values rather than mutable state-object identity.
     assert (
         list(
             window.model.get_current_analysis_unit_for_study(0).get_raw_data_for_arms(
@@ -1723,7 +1479,6 @@ def calculators(app, window, mode, record):
         for w in app.topLevelWidgets()
         if isinstance(w, analysis_setup_dialog.AnalysisSetupDialog) and w.isVisible()
     )
-    from analysis_matrix import set_parameter
 
     method = family + ".random"
     setup.method_cbo_box.setCurrentIndex(setup.method_cbo_box.findData(method))
@@ -1912,7 +1667,6 @@ def table_covariates(app, window, record):
         covariates=[(c["name"], c["data_type"]) for c in window.model.current_sheet.covariates],
         studies=list(identities.values()),
     )
-    from analysis_matrix import set_parameter
 
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window

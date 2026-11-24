@@ -60,7 +60,6 @@ def main():
                     ],
                 ]
             )
-        # The full R-stack lane already exercises the desktop qualification selection via pytest.
         if not args.full:
             commands.append([sys.executable, "-m", "pytest", "tests/e2e", "-n", "auto", "--durations=10"])
         scenarios = ("doctor",)

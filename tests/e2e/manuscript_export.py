@@ -277,7 +277,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     assert "3 studies with no events in either arm were retained with this correction." in view.manuscript.methods, view.manuscript.methods
     record('manuscript-double-zero', view, methods=view.manuscript.methods)
     close_result(view)
-    # Real result Methods must describe where correction enters each estimator.
     for method in ("binary.fixed.mh", "binary.fixed.peto"):
         window.workspace.mark_saved()
         assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
@@ -444,8 +443,6 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
         close_result(view)
         from rc_metastudio.results.window import ResultsWindow
         for cycle in range(3):
-            # Leave a real close/deferred-delete pending across the next save
-            # dialog, as opposed to only testing explicit harness disposal.
             previous = ResultsWindow(result, parent=window)
             previous.show()
             previous.resize(previous.width() + 1, previous.height())
@@ -495,7 +492,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
     close_result(view)
 
     sys.path.insert(0, str(root / ".agents/skills/verify-rcms/scripts"))
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import analyze_existing
     for workflow in ('subgroup', 'meta-regression'):
         window.workspace.mark_saved()
         assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)

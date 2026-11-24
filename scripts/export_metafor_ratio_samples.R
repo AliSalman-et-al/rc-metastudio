@@ -1,4 +1,3 @@
-# Export the unmodified example tables used by metafor; do not scrape HTML.
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) == 1L)
 if (nzchar(Sys.getenv("RCMS_R_LIBS"))) .libPaths(Sys.getenv("RCMS_R_LIBS"))

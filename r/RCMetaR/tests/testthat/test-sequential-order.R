@@ -1,6 +1,3 @@
-# Failure modes: input order confused with display order, lost study identity,
-# heterogeneity taken from the full fit, dropped package rows counted as steps,
-# and regeneration refitting or losing the user's column choice.
 sequential_params <- function() list(measure="OR", conf.level=95, digits=3,
     rm.method="REML", inference.method="z", fp_style="default",
     fp_outpath=tempfile(fileext=".svg"), fp_xticks="[default]",

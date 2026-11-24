@@ -630,8 +630,6 @@ test_that("RevMan X-axis footer labels align to the plotted effect axis", {
   expect_equal(diagnostic.bundle$style_blocks$favours_right, "")
 })
 
-# Failure modes: wide/translated axes can cross a fixed text column; an edited
-# axis label can be discarded by RevMan; directions can share the label's row.
 test_that("RevMan keeps the CI text left of wide and translated plot ranges", {
   fixture <- metafor_binary_fixture()
   fixture$params$fp_style <- "revman"
@@ -1631,7 +1629,6 @@ test_that("forest regeneration state rejects unsupported parameter overrides", {
 })
 
 test_that("sequential regeneration rejects invalid overall presence at its boundary", {
-  # Failure modes: missing, unknown, vector-valued or non-logical row identity.
   for (flag in list(NULL, NA, c(TRUE, FALSE), 1, "TRUE")) {
     expect_error(rcmetar.forest.regeneration.state("leave-one-out",
       results=list(list(b=0)), labels="Study omitted: A", has.overall=flag),

@@ -249,7 +249,7 @@ def test_dpr_raster_uses_device_independent_dimensions_for_viewport_fit(qapp, tm
         item = results_window.ResponsivePixmapItem(source)
         item.setPixmap(source)
         window.scene.addItem(item)
-        window._raster_plot_items.append(item)
+        window._layout_items.append(item)
 
         window._refit_raster_plot_items()
 
@@ -417,7 +417,6 @@ def test_plot_editor_omits_unedited_default_axis_label_sentinel(
         ("Cumulative Forest Plot", "cumulative_forest", "forest", True, True),
         ("Leave-one-out Forest Plot", "leave_one_out_forest", "forest", True, True),
         ("Subgroup Forest Plot", "subgroup_forest", "forest", True, True),
-        ("Diagnostic Forest Plot", "forest", "forest", True, True),
         ("Meta-Regression Bubble Plot", "regression", "regression", True, True),
         ("A title without a plot hint", "forest", "forest", True, True),
         ("Forest Plot", "other", "none", False, True),
@@ -430,7 +429,15 @@ def test_plot_context_menu_follows_capabilities_and_available_data(
     from rc_metastudio.results import window as results_window
 
     _use_isolated_settings(tmp_path)
-    window = results_window.ResultsWindow(_empty_results())
+    plot_path = tmp_path / "plot.svg"
+    plot_path.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="60"/>', encoding="utf-8")
+    window = results_window.ResultsWindow(_analysis_result({
+        "images": {title: str(plot_path)},
+        "image_params_paths": {title: str(tmp_path / "plot-params")} if has_params else {},
+        "plot_capabilities": {title: _plot_capability(
+            plot_kind=plot_kind, regenerator=regenerator, editable=editable, styleable=regenerator != "none",
+        )},
+    }))
     captured = []
 
     class Event:
@@ -447,19 +454,12 @@ def test_plot_context_menu_follows_capabilities_and_available_data(
             [action.text() for action in menu.actions()]
         ),
     )
-    artifact = results_window.PlotArtifact(
-        title,
-        str(tmp_path / "plot.svg"),
-        _plot_capability_model(plot_kind=plot_kind, regenerator=regenerator, editable=editable),
-        params_path=str(tmp_path / "plot-params") if has_params else None,
-    )
     try:
-        window._make_context_menu(artifact, None)(Event())
+        [plot] = window._svg_plot_items
+        plot.contextMenuEvent(Event())
         expected = ["Export plot…"]
         if editable:
             expected.insert(0, "Edit plot…")
-        if not has_params:
-            expected = ["Export plot…"]
         assert captured == [expected]
     finally:
         _dispose(window, qapp)

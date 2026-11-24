@@ -128,8 +128,6 @@ def test_xlsx_unmapped_date_year(tmp_path: Path) -> None:
 
 
 def test_headerless_xlsx_keeps_first_study_and_converts_its_year(tmp_path: Path) -> None:
-    # Failure modes: consuming a study as a header, and skipping first-row
-    # date/error handling because worksheet row zero is assumed to be a header.
     from datetime import datetime
     from openpyxl import Workbook
 
@@ -149,7 +147,6 @@ def test_headerless_xlsx_keeps_first_study_and_converts_its_year(tmp_path: Path)
 
 
 def test_xlsx_second_open_failure_closes_first_workbook(tmp_path, monkeypatch):
-    # A second open may fail after the formula workbook acquired a ZIP handle.
     import openpyxl
     from rc_metastudio.importing.tabular import read_xlsx
 
@@ -180,7 +177,6 @@ def test_xlsx_second_open_failure_closes_first_workbook(tmp_path, monkeypatch):
 
 
 def test_xlsx_rejects_excessive_worksheet_extent_before_materializing(tmp_path):
-    # Formatting or one distant cell must not allocate a giant rectangular grid.
     from openpyxl import Workbook
     from rc_metastudio.importing.tabular import read_xlsx
 

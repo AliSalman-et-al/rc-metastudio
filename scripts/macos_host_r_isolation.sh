@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Stateful, same-filesystem isolation of the build host's installed R.framework.
 
 RCMS_HOST_R_STATE="idle"
 RCMS_HOST_R_SOURCE=""

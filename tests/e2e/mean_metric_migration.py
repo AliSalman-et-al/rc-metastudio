@@ -65,7 +65,7 @@ def open_mean_sample(app, window, record, root, work):
     assert [row.analysis_unit.get_raw_data_for_arm(arm) for row in sheet.rows] == measurements
     before = dataset_to_project(window.model.dataset)
     from PyQt6 import QtWidgets
-    from advanced_workflows import click, modal
+    from tests.e2e.dialog_interaction import click, modal
     from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
 
     def inspect_calculator(dialog):

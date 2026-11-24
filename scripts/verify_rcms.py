@@ -21,7 +21,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.verification_evidence import (
-    DESKTOP_TOOL_PATHS_ENV, desktop_environment, external_tools, passed_evidence, remember_evidence, source_digest,
+    DESKTOP_TOOL_PATHS_ENV, desktop_environment, external_tools, file_digest, passed_evidence, remember_evidence, source_digest,
     verification_launch_inputs, verified_typing,
 )
 from tests.e2e.desktop_scenarios import SCENARIOS
@@ -47,18 +47,14 @@ def run_metadata(scenario: str, native: bool) -> dict[str, object]:
         "tracked_diff_sha256": hashlib.sha256(
             git_output("diff", "HEAD", "--binary").encode()
         ).hexdigest(),
-        "driver_sha256": hashlib.sha256(
-            (ROOT / "tests/e2e/desktop_driver.py").read_bytes()
-        ).hexdigest(),
+        "driver_sha256": file_digest(ROOT / "tests/e2e/desktop_driver.py"),
         "workflow_files_sha256": {
-            path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            path.relative_to(ROOT).as_posix(): file_digest(path)
             for path in sorted((ROOT / "tests/e2e").iterdir())
             if path.is_file() and path.suffix in {".py", ".json"}
         },
         "skill_files_sha256": {
-            path.relative_to(ROOT).as_posix(): hashlib.sha256(
-                path.read_bytes()
-            ).hexdigest()
+            path.relative_to(ROOT).as_posix(): file_digest(path)
             for path in sorted((ROOT / ".agents/skills/verify-rcms").rglob("*"))
             if path.is_file() and path.suffix in {".py", ".R", ".md", ".yaml"}
         },
@@ -74,7 +70,7 @@ def write_manifest(evidence: Path, record: dict[str, object]) -> None:
     record["files"] = [
         {
             "path": path.relative_to(evidence).as_posix(),
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "sha256": file_digest(path),
         }
         for path in sorted(evidence.rglob("*"))
         if path.is_file()

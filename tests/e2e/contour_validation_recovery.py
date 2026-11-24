@@ -5,7 +5,7 @@ from PyQt6 import QtWidgets
 
 
 def run(app, window, work, record):
-    from advanced_workflows import modal, click
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.results import window as results_window
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     root = Path(__file__).resolve().parents[2]

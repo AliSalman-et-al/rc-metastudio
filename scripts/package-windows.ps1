@@ -258,8 +258,6 @@ function Stage-AuthenticatedOfficialR {
     )
     $registrySnapshots = Save-CurrentUserRInstallerState -BackupRoot "$rStage.registry-backup"
     try {
-        # The watchdog owns this installer process tree; its timeout transcript
-        # and the installer's own log survive registry restoration in finally.
         $previousErrorActionPreference = $ErrorActionPreference
         try {
             # Windows PowerShell otherwise turns native stderr into an early

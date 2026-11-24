@@ -459,9 +459,6 @@ def test_diagnostic_reitsma_meta_regression_hides_legacy_controls_for_factor_and
         assert dialog.regression_model_group.isHidden()
         assert not dialog.fixed_effects_radio.isVisible()
         assert len(dialog.covs_and_check_boxes) == 2
-        # A factor moderator cannot use the bubble-plot controls. Selecting it
-        # alongside the continuous moderator also proves multiple moderators
-        # do not re-enable the obsolete plot path.
         dialog.covs_and_check_boxes[1][1].setChecked(True)
         assert not dialog.plot_tab.isEnabled()
     finally:
@@ -570,9 +567,6 @@ def test_method_parameters_variants_stay_bounded_and_stable(qapp, monkeypatch):
                 assert dialog.plot_tab.isEnabled() is False
 
             if getattr(dialog, "_combined_diagnostic", False):
-                # Combined diagnostic dialogs intentionally expose shared
-                # method parameters in their dedicated panel. Their local
-                # method box need not contain a second enum control.
                 continue
 
             enum_control = dialog.parameter_grp_box.findChild(QtWidgets.QComboBox)
@@ -1068,7 +1062,7 @@ observed = []
 backend_calls = []
 execution_data_calls = []
 backend.run_model_analysis = lambda model, request, **kwargs: backend_calls.append(
-    [request["method"], request["params"]["conf.level"]]
+    [request.method, request.parameter_values()["conf.level"]]
 ) or {"version": 1, "texts": {}, "sections": []}
 for locale, text in (
     (QtCore.QLocale(QtCore.QLocale.Language.English), "90.5"),

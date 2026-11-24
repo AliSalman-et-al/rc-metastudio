@@ -65,8 +65,6 @@ def check_headers(source, names):
     assert headings, source
     for heading in headings:
         assert heading['box'][1] - caption_bottom >= 6, ('header/caption clearance', source, heading, caption_bottom)
-    # Match contiguous wrapped lines in the heading block, excluding the caption:
-    # the caption also contains the full name and must not mask truncation.
     for name in names:
         words = name.split()
         candidates = [m for m in headings if m['text'].split() and m['text'].split()[0] == words[0]]
@@ -119,7 +117,6 @@ def check_direction_ink_gap(source, directions, width, height):
     size = float(required(re.search(r'font-size:\s*([\d.]+)', directions[0].attrib['style']))[1])
     baseline = float(directions[0].attrib['y'])
     null = sum(float(node.attrib['x']) for node in directions) / 2
-    # Resolve tiny fitted text without allocating a full high-resolution page.
     scale = max(4, math.ceil(16 / size))
     top = baseline - size * .8
     left_edge = null - size * 2
@@ -157,8 +154,6 @@ def check_forest_footer(source, expected_directions=None):
     first = min(float(node.attrib['y']) for node in directions)
     for node in texts:
         text = ''.join(node.itertext())
-        # Axis titles and direction lines follow ticks; numeric tick labels are
-        # excluded, as are the footer's heterogeneity/test sentences to the left.
         y = float(node.attrib['y'])
         if y < first - 25 or not text.strip() or re.fullmatch(r'[-−+\d.,%eE ]+', text):
             continue
@@ -202,8 +197,6 @@ def check_contour_colours(source):
     ratios = {(point, band): (max(luminance(point), luminance(band)) + .05) /
               (min(luminance(point), luminance(band)) + .05)
               for point in points for band in regions}
-    # The original blue/grey palette has 1.8:1 minimum contrast; the darkened
-    # #666666 band falls below this and must not silently return.
     assert min(ratios.values()) >= 1.8, (source, ratios)
     return ratios
 

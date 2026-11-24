@@ -1,5 +1,3 @@
-# Compare RCMS estimators with independently constructed public package calls.
-# Run from the repository root with the manifest-pinned R library selected.
 options(warn=1)
 args <- commandArgs(trailingOnly=TRUE)
 stopifnot(length(args) %in% c(1L, 2L))
@@ -47,7 +45,6 @@ check <- function(data, method, p, reference, id) {
     actual=lapply(actual[fields], as.numeric), expected=lapply(reference[fields], as.numeric))
   cat("PASS", id, "\n")
 }
-# Fixed, nonzero study-level data; effect reconstruction does not reuse RCMS helpers.
 a <- c(4,6,3,62,33,180,8,12,21,9,15,40)
 b <- c(119,300,228,13536,5036,1361,35,60,75,50,45,80)
 c <- c(11,29,11,248,47,372,10,20,30,14,10,60)
@@ -114,7 +111,6 @@ for (metric in c("MD","SMD","Mean","entered-estimates")) {
     check(data,method,p,ref,paste(metric,method))
   }
 }
-# Small k distinguishes t-based fixed continuous inference from z.
 for (inference in c("t", "knha", "adhoc")) {
   p <- params("Mean"); p$inference.method <- inference
   ref <- metafor::rma.uni(effects$yi, vi=effects$vi, method="FE", test=inference, level=95)
@@ -158,8 +154,6 @@ for (heterogeneity in c("HE","DL","HS","HSk","SJ","ML","REML","EB","PM","PMM")) 
     check(data,"binary.random",p,ref,paste(heterogeneity,inference,"90% CI"))
   }
 }
-# Failure modes: subgroup tests must use displayed subgroup SEs, with separate
-# tau estimates for random subgroups, rather than a shared-tau moderator fit.
 group <- rep(c("A", "B"), each=6)
 effects <- metafor::escalc("OR", ai=a, bi=b, ci=c, di=d)
 for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto", "binary.random")) {
@@ -179,7 +173,6 @@ for (method in c("binary.fixed.inv.var", "binary.fixed.mh", "binary.fixed.peto",
   cat(method, "RCMS",actual$QM,"meta",expected,"difference",actual$QM-expected,"\n")
   rows[[length(rows)+1L]] <- list(case=paste(method,"subgroup"), passed=TRUE, actual=actual$QM, expected=expected)
 }
-# BCG latitude split: DL/REML must agree with meta's separate-tau subgroup Q.
 bcg <- metadat::dat.bcg
 g <- ifelse(bcg$ablat >= 35, "High", "Low")
 ef <- metafor::escalc("RR", ai=tpos,bi=tneg,ci=cpos,di=cneg,data=bcg)
@@ -221,7 +214,6 @@ for (workflow in c("cum.ma.continuous","loo.ma.continuous")) {
   }
 }
 rows[[length(rows)+1L]] <- list(case="continuous fixed subgroup, sequential and regression",passed=TRUE)
-# Binary failure modes: wrong subset, estimator, moderator, or effect scale.
 for (method in c("binary.fixed.inv.var", "binary.random")) {
   a <- c(4,6,3,62,33,180); b <- c(119,300,228,13536,5036,1361)
   c <- c(11,29,11,248,47,372); d <- c(128,274,209,12619,5761,1079)
@@ -248,8 +240,6 @@ for (method in c("binary.fixed.inv.var", "binary.random")) {
   }
   rows[[length(rows)+1L]] <- list(case=paste(method,"binary sequential and regression"),passed=TRUE)
 }
-# Zero-cell failure modes: corrected pooled counts, dropped double-zero rows,
-# and different counts reaching sequential/subgroup refits.
 a <- c(0,0,6,3,19); n1 <- c(20,30,27,59,164)
 c <- c(5,0,9,7,13); n2 <- c(20,30,27,64,152)
 for (metric in c("OR","RR")) {
@@ -262,8 +252,6 @@ for (metric in c("OR","RR")) {
   cat("ZERO MH",metric,"metafor",as.numeric(ref$b),ref$ci.lb,ref$ci.ub,"meta",m$TE.common,m$lower.common,m$upper.common,"\n")
   stopifnot(abs(as.numeric(ref$b)-m$TE.common)<1e-6,
     abs(ref$ci.lb-m$lower.common)<1e-6,abs(ref$ci.ub-m$upper.common)<1e-6)
-  # Pooled coefficients/intervals are the contract; metafor drops double-zero
-  # from its pooled k by default, while individual display rows remain retained.
   result <- RCMetaR:::binary.fixed.mh(data,p)
   actual <- RCMetaR:::binary.fixed.mh.overall(result)
   for (field in c("b","se","ci.lb","ci.ub")) close(actual[[field]],ref[[field]],paste("zero MH",metric,field))

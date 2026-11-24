@@ -69,7 +69,6 @@ def run(app, window, work, root, record, analyze):
     assert raster_images == 0, ('PDF forest was rasterized', raster_images)
     record('split-forest-pdf', view, pdf=str(path), pages=checked, raster_images=raster_images)
 
-    # Empty plot viewports must hide their contents, including in Qt.
     figure = view.manuscript.figures[0]
     source = Path(figure.display_image or figure.value)
     tree = ET.parse(source)

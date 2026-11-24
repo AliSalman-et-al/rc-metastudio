@@ -1,6 +1,4 @@
 test_that("newly reported prediction bounds follow public metafor across inference choices", {
-  # Failure obligations: wrong scale, CI mistaken for PI, wrong confidence level,
-  # inference silently changed, or a prediction presented for a fixed-effect fit.
   data <- new("BinaryData", y=c(-1.2, -.4, .1, .9, 1.4, .3),
               SE=c(.3, .4, .25, .35, .5, .2), study.names=letters[1:6])
   for (test in c("z", "t", "knha", "adhoc")) {
@@ -328,8 +326,6 @@ regression_display_fixture <- function(method = "REML", inference.method = "z", 
 }
 
 test_that("unavailable regression heterogeneity fields do not discard the analysis", {
-  # A missing package field must stay unavailable, not shorten the numeric array
-  # and turn an otherwise usable model into a display-construction error.
   fixture <- regression_display_fixture()
   for (field in c("tau2", "se.tau2", "I2", "H2", "R2")) {
     fit <- fixture$MAResults

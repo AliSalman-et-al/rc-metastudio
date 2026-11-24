@@ -97,7 +97,6 @@ def _append_iv_row(sheet, outcome, record, study, metric, level):
 
 
 def _append_diagnostic_tests(root, dataset, studies, not_imported):
-    # Verified against Bristol's RevMan 5.3.5 DTA workshop review.
     for test in root.findall('ANALYSES_AND_DATA/TESTS/TEST'):
         name = test.findtext('NAME', 'Unnamed test')
         records = test.findall('TEST_DATA/TEST_DATA_ENTRY')

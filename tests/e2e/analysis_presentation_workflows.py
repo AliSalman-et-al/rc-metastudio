@@ -14,6 +14,7 @@ from tests.e2e.analysis_result_checks import (
     check_standard_heterogeneity,
     check_subgroup,
 )
+from tests.e2e.dialog_interaction import analyze_existing
 from tests.e2e.plot_geometry_checks import (
     check_annotation_spacing,
     check_bubble_ticks,
@@ -24,52 +25,6 @@ from tests.e2e.plot_geometry_checks import (
 )
 from tests.e2e.plot_observations import load_serialized_object
 from tests.sample_projects import SAMPLE_FILES
-
-
-def analyze_existing(app, window, workflow, method, record, parameters=None, *, covariates=('Dose',)):
-    from PyQt6 import QtCore, QtWidgets
-    from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
-    from rc_metastudio.results import window as results_window
-    from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
-    from analysis_matrix import set_parameter
-    from tests.python.gui.qt_test_support import mouse_click
-
-    def visible(kind):
-        return next(w for w in app.topLevelWidgets() if isinstance(w, kind) and w.isVisible())
-
-    action = {"standard": window.action_go, "cumulative": window.action_cum_ma,
-              "leave-one-out": window.action_loo_ma, "subgroup": window.action_subgroup_ma,
-              "meta-regression": window.action_meta_regression}[workflow]
-    action.trigger()
-    app.processEvents()
-    if workflow == "subgroup":
-        subgroup = visible(SubgroupAnalysisDialog)
-        subgroup.covariate_combo_box.setCurrentIndex(subgroup.covariate_combo_box.findText("Group"))
-        mouse_click(subgroup.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
-    dialog = visible(analysis_setup_dialog.AnalysisSetupDialog)
-    if workflow == "meta-regression":
-        for covariate, checkbox in dialog.covs_and_check_boxes:
-            checkbox.setChecked(covariate["name"] in covariates)
-    else:
-        dialog.method_cbo_box.setCurrentIndex(dialog.method_cbo_box.findData(method))
-    app.processEvents()
-    for key, value in {"digits": 6, **(parameters or {})}.items():
-        set_parameter(app, dialog, key, value)
-    from tests.e2e.keyboard_navigation import keyboard_traversal
-    parameter_controls = [control for control in dialog.current_widgets if control.focusPolicy() & QtCore.Qt.FocusPolicy.TabFocus]
-    keyboard_traversal(app, dialog, [dialog.method_cbo_box, *parameter_controls,
-                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok),
-                       dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)], record, "setup")
-    if workflow == "meta-regression":
-        from tests.e2e.keyboard_navigation import keyboard_dialog_pages
-        keyboard_dialog_pages(app, dialog, record)
-    record("round3-configured", dialog, workflow=workflow, method=method, parameters=dialog.current_param_vals)
-    mouse_click(dialog.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok), QtCore.Qt.MouseButton.LeftButton)
-    app.processEvents()
-    view = visible(results_window.ResultsWindow)
-    view.resize(1500, 850)
-    app.processEvents()
-    return view
 
 
 def run(app, window, work, record, scenario):
@@ -169,7 +124,7 @@ def run(app, window, work, record, scenario):
                         assert len(items) == 1, (title, items)
                         view.nav_tree.setCurrentItem(items[0])
                         if digits in (3, 6):
-                            from advanced_workflows import export_formats
+                            from tests.e2e.plot_workflow_support import export_formats
                             export_formats(app, view, work, family + "-" + style + "-" + str(digits) + "-" + title, record)
                         record("round4-annotations", view, family=family, digits=digits, style=style,
                                title=title, metric=metric, plots={title: path})
@@ -181,7 +136,7 @@ def run(app, window, work, record, scenario):
                     view.deleteLater()
                     app.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
         if selected_family in {"generic-effect", "reg-coef"}:
-            from advanced_workflows import modal
+            from tests.e2e.dialog_interaction import modal
             from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
             def inspect_calculator(dialog):
                 label = "Entered effect estimate" if selected_family == "generic-effect" else "Coefficient"
@@ -197,7 +152,7 @@ def run(app, window, work, record, scenario):
             from unittest.mock import patch
             from rc_metastudio import main_wizard
             from PyQt6 import QtWidgets
-            from advanced_workflows import click
+            from tests.e2e.dialog_interaction import click
             wizard = main_wizard.MainWizard(path="csv_import")
             wizard.set_dataset_info(dict(arms="one", data_type="continuous", sub_type="generic_effect",
                                          effect="Mean", metric_choices=[], name="Entered estimates"))
@@ -239,7 +194,7 @@ def run(app, window, work, record, scenario):
                 view = run_analysis_case(app, window, "analysis-data-twoarm-mean", record, keep_results=True,
                               workflow_override=workflow, parameters={"digits": 6, "fp_style": style})
                 check_sequential(view, workflow, record)
-                from advanced_workflows import export_formats
+                from tests.e2e.plot_workflow_support import export_formats
                 export_formats(app, view, work, workflow + "-" + style, record)
                 if workflow == "cumulative":
                     check_excluding_null(app, view, record)
@@ -406,8 +361,6 @@ def run(app, window, work, record, scenario):
                     assert next(t for s in view.results.sections for t in s.tables if t.title == "Leave-one-out results").rows[0][0] == "All studies"
             view.close()
         if family == "event_rates":
-            # Only one included study has treated events. Omitting it leaves a
-            # non-estimable MH fit while all other omission identities remain.
             for row in range(len(model.get_studies(False))):
                 assert model.setData(model.index(row, model.RAW_DATA[0]), "3" if row == 0 else "0")
             view = analyze_existing(app, window, "leave-one-out", "event_rates.mh", record)

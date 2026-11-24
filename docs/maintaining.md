@@ -267,26 +267,40 @@ uv run python -m coverage report
 
 ## Code health and unused code
 
-### Comment ratchet
+### Source comment lint
 
-Record implementation rationale in [architecture decisions](adr/README.md).
+Remove source comments that repeat the implementation. Use names, types, or
+tests to express rules the code owns. Keep public API contracts, licensing
+notices, and verified constraints imposed by a dependency, platform, or
+protocol. Record broader implementation rationale in [architecture decisions](adr/README.md).
+
 Run `uv run python scripts/check_comments.py --base HEAD` for working-tree
-edits, or give it the target branch revision to check committed work. CI
-uses the pull request target revision or the previous push revision.
+edits. Use the target branch revision to include committed work. CI uses the
+pull request target revision or the previous push revision.
 
-Each existing comment permits one occurrence of the same text in the same
-path. Line shifts preserve allowances. Duplicates, edits and comments in
-new paths fail the check. Once a deletion reaches the target branch, its
-allowance disappears with it. A file move therefore clears its allowances.
+The lint checks the entire supported working tree for inline diagnostic
+suppressions, including Python type ignores, Ruff and Flake8 `noqa`, Bandit
+`nosec`, TypeScript ignores, and ESLint disables. Existing directives also
+fail. A scoped Ruff `E402` import-order exception is subject to the same
+rules as ordinary comments.
+
+Each ordinary comment in the comparison revision allows one occurrence of
+the same text in the same path. Line shifts preserve allowances. A duplicate,
+edit, or move counts as a new comment and fails the check. Once a deletion
+reaches the target branch, the allowance disappears. Review determines
+whether remaining prose documents a real constraint.
 
 The check covers Python and PyInstaller specs, R and Rd, shell, PowerShell,
-JavaScript, YAML, TOML and XML-based resources, plus Git attributes, Git
-ignore rules and the R namespace. It scans supported Bash, PowerShell and
-Python steps and github-script JavaScript in GitHub workflows and composite
-actions. Generated, ignored local output stays outside the worktree check.
-First-line interpreter declarations, file-header SPDX notices and Roxygen
-package inputs are allowed as source metadata. Existing tool suppressions
-and layout-audit directives remain subject to the ratchet.
+JavaScript and TypeScript, including JSX and TSX, YAML, TOML, and XML-based
+resources. It also covers Git attributes, Git ignore rules, the R namespace,
+and supported scripts in GitHub workflows and composite actions. Git-ignored
+local output stays outside the check.
+
+The scanner allows first-line interpreter declarations, SPDX headers,
+Roxygen input and generated Rd headers, version annotations on SHA-pinned
+GitHub actions, and the exact `// prettier-ignore` formatter directive.
+Existing Qt layout-audit annotations remain subject to the ratchet and
+are checked separately by the [layout audit](../scripts/audit_qt_layout_contracts.py).
 
 ### Complexity, coupling, and churn (`scripts/code_health.py`)
 

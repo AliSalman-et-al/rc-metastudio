@@ -295,9 +295,6 @@ def quarantine(
         opt_r = [value for value in loads if value.startswith("/opt/R/")]
         if opt_r:
             allowed_opt_r[str(record["relative_path"])] = opt_r
-    # External X11/Tcl edges are permitted only inside declared product
-    # exclusions. Upstream may add or remove incidental edges within those
-    # surfaces without changing this product invariant.
     excluded_machos = {
         "library/tcltk/libs/tcltk.so",
         "modules/R_X11.so",
@@ -446,8 +443,6 @@ def finalize(
             raise ProfileError(f"optional R surface was reintroduced: {relative}")
     roots, builtin, manifest_sha256 = manifest_roots(manifest_path)
     if runtime_closure is not None:
-        # Installation policy includes build/test tools that are not shipped.
-        # Use the same installed-metadata closure that governed staged pruning.
         roots = runtime_closure.read_text(encoding="utf-8").splitlines()
         if "RCMetaR" not in roots:
             raise ProfileError("runtime closure does not contain RCMetaR")

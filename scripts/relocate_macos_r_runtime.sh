@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Relocate one *private* copied R.framework.  The caller supplies the locked
-# interpreter so every discovery and normalization step is reproducible.
 set -euo pipefail
 
 resources=""; expected_arch=""; python_exe=""; allowed_root=""; normalizer=""

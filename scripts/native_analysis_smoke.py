@@ -11,6 +11,7 @@ from typing import Callable, cast
 
 from PyQt6 import QtCore, QtWidgets, sip
 
+from rc_metastudio.analysis.request import AnalysisRequest
 from rc_metastudio.results.contract import AnalysisResult
 from rc_metastudio.qt6_ui import prepare_generated_ui_imports
 
@@ -146,10 +147,10 @@ def main() -> int:
     calls = []
     returned_results = []
 
-    def run_backend(model: object, request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def run_backend(model: object, request: AnalysisRequest, **kwargs: object) -> dict[str, object]:
         assert model is configuration.model
         assert not kwargs
-        calls.append(dict(request))
+        calls.append(request.to_mapping())
         result = {
             "version": 1,
             "texts": {"Summary": "ok"},

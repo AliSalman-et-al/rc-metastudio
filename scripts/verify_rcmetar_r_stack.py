@@ -163,8 +163,6 @@ def ensure_dependency_library(
 
 
 def verify_dependency_closure(root: Path, rscript: Path, env: dict[str, str]) -> None:
-    # Search only the target and the selected R's own runtime packages. Never
-    # let an ambient site library fill a hole in the copied dependency cache.
     expression = """
     target <- Sys.getenv("R_LIBS")
     .libPaths(c(target, .Library), include.site=FALSE)
@@ -316,10 +314,6 @@ def verify_reitsma_visual_evidence(
     stable SHA-256 values. PDFs are intentionally checked through their
     normalized semantic contract because producers may embed timestamps.
     """
-    # The release gate must exercise the package that was just built and
-    # installed above.  The visual script deliberately supports a source mode
-    # for local development, but this integrated gate must never silently fall
-    # back to pkgload::load_all() from the workspace.
     visual_env = dict(env)
     visual_env["RCMS_REITSMA_VISUAL_QA_MODE"] = "installed"
     visual_env["RCMS_REITSMA_VISUAL_QA_LIBRARY"] = env["R_LIBS"]
@@ -519,8 +513,6 @@ def verify(args: argparse.Namespace) -> None:
 
             run([python, "-m", "pytest", "tests/r_stack",
                  "tests/python/fast/test_packaged_summary_identity.py"], cwd=root, env=env)
-        # Fresh offscreen children can overlap within the measured memory budget.
-        # The E2E hook reserves host capacity; native drives remain separate/serial.
         desktop_command = [
             python, "-m", "pytest", "tests/e2e", "-n", args.desktop_workers,
             "-q", "--durations=10",

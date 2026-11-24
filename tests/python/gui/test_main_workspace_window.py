@@ -210,8 +210,6 @@ def test_added_covariate_keeps_identity_and_width_through_undo_redo(qapp):
 
 
 def test_failed_workspace_operation_restores_model_and_existing_history(qapp):
-    # A late failure must restore data, history and adapter binding, and a
-    # later successful operation must remain undoable.
     from rc_metastudio import main_window
 
     window = main_window.MainWindow()

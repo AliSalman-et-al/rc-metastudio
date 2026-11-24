@@ -11,51 +11,9 @@ from pathlib import Path
 from tests.python.gui.qt_test_support import metric_action, mouse_click, wait
 
 from tests.e2e.desktop_scenarios import DATA_TYPES as DATA_TYPES, FIXED, GOLDEN
+from tests.e2e.dialog_interaction import set_parameter
 from tests.e2e.plot_observations import load_serialized_object
 from tests.sample_projects import SAMPLE_FILES
-
-
-def set_parameter(app, dialog, key, value):
-    from PyQt6 import QtWidgets
-
-    from rc_metastudio.analysis.method_labels import parameter_display_label
-
-    if key == "fp_style":
-        from rc_metastudio.results.plot_defaults import PLOT_STYLE_LABELS
-        dialog.style_cbo.setCurrentText(PLOT_STYLE_LABELS[value])
-        app.processEvents()
-        return
-
-    plot_controls = {"bp_plot_lb": dialog.plot_lb_le, "bp_plot_ub": dialog.plot_ub_le,
-                     "fp_plot_lb": dialog.plot_lb_le, "fp_plot_ub": dialog.plot_ub_le,
-                     "fp_show_col3": dialog.show_3, "fp_show_col4": dialog.show_4}
-    if key in plot_controls:
-        control = plot_controls[key]
-        if isinstance(control, QtWidgets.QCheckBox):
-            control.setChecked(str(value).upper() == "TRUE")
-        else:
-            control.setText(str(value))
-        app.processEvents()
-        return
-    label = parameter_display_label(key, dialog.param_d.get(key))
-    controls = [
-        w.buddy()
-        for w in dialog.findChildren(QtWidgets.QLabel)
-        if w.text().casefold() == label.casefold() and w.buddy() is not None
-    ]
-    assert controls, (key, label)
-    control = controls[0]
-    if isinstance(control, QtWidgets.QComboBox):
-        index = control.findData(value)
-        assert index >= 0, (key, value)
-        control.setCurrentIndex(index)
-    elif isinstance(control, QtWidgets.QCheckBox):
-        control.setChecked(str(value).upper() == "TRUE")
-    elif isinstance(control, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-        control.setValue(value)
-    else:
-        control.setText(str(value))
-    app.processEvents()
 
 
 def run(
@@ -178,8 +136,6 @@ def run(
             for w in view.scene.items()
             if isinstance(w, QtWidgets.QGraphicsTextItem)
         )
-        # Figure pages contain figures; full structured text remains in the
-        # report, table view and exports, without duplicated scene printouts.
         for section in view.results.sections:
             if section.kind == "text" and section.source_key == "Weights":
                 assert section.value.strip() not in rendered
@@ -358,7 +314,7 @@ def run(
                         deferred_name = group_names[0].strip()
                         record('single-arm-default-naming', wizard, rename_after_create=deferred_name)
                 click(wizard.button(QtWidgets.QWizard.WizardButton.FinishButton))
-            except Exception as error:  # noqa: BLE001 - propagate modal callback failures after exec.
+            except Exception as error:
                 callback_errors.append(error)
                 wizard.reject()
 
@@ -371,7 +327,7 @@ def run(
         assert window.model.current_outcome_name == "Verification outcome Δ"
         model = window.model
         if deferred_name and deferred_name != model.arm_names[0]:
-            from advanced_workflows import modal
+            from tests.e2e.dialog_interaction import modal
             from rc_metastudio.edit_name_dialogs import EditArmNameDialog
 
             def rename(dialog):
@@ -388,7 +344,6 @@ def run(
             if raw is not None:
                 columns = list(model.RAW_DATA)
                 if name.startswith("onearm-"):
-                    # Workspace keeps both groups; a one-arm metric consumes the first.
                     assert len(columns) == 2 * len(raw), (columns, raw)
                     columns = columns[: len(raw)]
                 else:
@@ -443,7 +398,7 @@ def run(
             from tests.e2e.mean_metric_migration import open_mean_sample
             mean_source, participant_count = open_mean_sample(app, window, record, root, work)
         if name == "generic-effect":
-            from advanced_workflows import modal
+            from tests.e2e.dialog_interaction import modal
             from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
             observations = []
             for se in (.1, 0.0):
@@ -534,7 +489,7 @@ def run(
                     )
                 )
                 assert not dialog.failure_label.isVisible(), dialog.failure_label.text()
-            except Exception as error:  # noqa: BLE001 - propagate modal callback failures after exec.
+            except Exception as error:
                 callback_errors.append(error)
                 dialog.reject()
 

@@ -40,7 +40,6 @@ class AdaptiveComboBox(QComboBox):
     """Choice control with one native-safe popup measurement/clamp path."""
 
     def minimumSizeHint(self) -> QSize:
-        # Keep complete choices in the preferred hint and popup, but let forms shrink.
         size = super().minimumSizeHint()
         size.setWidth(0)
         return size

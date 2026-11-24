@@ -11,8 +11,8 @@ from tests.python.gui.qt_test_support import required
 
 def run(app, window, work, record):
     from analysis_matrix import DATA_TYPES, run as matrix
-    from advanced_workflows import click, modal
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import click, modal
+    from tests.e2e.dialog_interaction import analyze_existing
     from tests.e2e.analysis_result_checks import check_report
     from rc_metastudio import main_wizard
     from rc_metastudio.calculators.binary_dialog import BinaryDataDialog

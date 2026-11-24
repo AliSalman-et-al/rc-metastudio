@@ -75,7 +75,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         em <- graphics::par("ps")/72 * graphics::par("cex") * cex
         spacing <- 1.2 * em
         baseline <- x + graphics::xinch(.27*em + spacing*(seq_along(lines) - mean(seq_along(lines))))
-        # Anchor to the baseline so glyph height cannot move either rotated line.
         graphics::text(baseline, center, lines, adj=c(.5, 0), srt=90, cex=cex, col=col, xpd=NA)
         arrow.x <- x - graphics::xinch(.13)
         start <- center - direction*graphics::yinch(.06)
@@ -243,8 +242,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
     graphics::axis(1, at=at[keep], labels=FALSE)
     graphics::axis(1, at=label.at[keep], labels=axis$labels[keep], las=style$las, font=1,
                    gap.axis=0, tick=FALSE)
-    # At narrow print widths the wider Z range can pack nine labels into
-    # the same height. Fit them to the tick spacing.
     y.tick.cex <- min(panel$axis.cex, .97 * step / graphics::yinch(graphics::par("ps")/72 * size$cex))
     graphics::axis(2, at=yticks, labels=tick.labels, las=style$las, font=1, gap.axis=0, cex.axis=y.tick.cex)
     graphics::segments(0, -limit, 0, limit)
@@ -326,8 +323,6 @@ rcmetar.tsa.plot.data <- function(om.data, res, params) {
         graphics::text(center, -limit, "//", col=theme$text.col, cex=1, xpd=NA)
     }
     outside <- which(finite & abs(looks$z) > limit)
-    # Leave clearance from the axis stroke so the off-panel symbol reads
-    # as a triangle even for plots dominated by one very large study.
     off.panel.y <- function(z) sign(z) * (limit + graphics::yinch(.03))
     triangle <- max(.085, median.marker * marker.inches)
     for (i in outside) {

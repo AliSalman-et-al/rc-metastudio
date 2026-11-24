@@ -33,7 +33,7 @@ def run_headers(app, window, work, record):
             measurements = [measurement for source in (path, str(export))
                             for measurement in (check_headers(source, names) + check_forest_footer(source, expected_directions=tuple("Favours " + name for name in names)))]
             if len(names[0]) > 80:
-                from advanced_workflows import export_formats
+                from tests.e2e.plot_workflow_support import export_formats
                 export_formats(app, view, work / ('headers-' + style + '-' + str(len(names[1]))),
                                'full-arm', record)
             view.report_action.setChecked(False)

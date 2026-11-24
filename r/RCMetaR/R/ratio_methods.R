@@ -1,4 +1,3 @@
-# Hazard and incidence rate ratios use log effects and log-scale uncertainty.
 #' Preserve hazard or incidence rate ratio study inputs
 #'
 #' Construct the original-input container for generic log-ratio analyses.

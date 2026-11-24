@@ -200,9 +200,6 @@ def _audit_table(text: str, source: str, section: str) -> list[dict[str, str]]:
                 )
             )
 
-    # These are the stable table contracts emitted by RCMetaR.  Checking the
-    # semantic headers catches truncation without trying to parse narrative
-    # prose or infer arbitrary whitespace columns.
     normalized = text.lower()
     def has_header(header: str) -> bool:
         return bool(re.search(r"\b%s\b" % re.escape(header), normalized))
@@ -261,9 +258,6 @@ def _audit_text(
             findings.append(_finding("internal-key", source, "Raw dotted backend field key is visible in result text.", section))
     for match in _LABELED_DUMP.finditer(value):
         label = match.group(1).lower()
-        # Publication Bias deliberately discloses the package and exact call
-        # under curated method details.  A raw geometry/vector dump is never
-        # a display contract; only the compact dimensions sentence is safe.
         if (
             allow_method_metadata
             and label in {"package", "package.version", "call"}

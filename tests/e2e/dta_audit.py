@@ -14,7 +14,7 @@ from rc_metastudio.analysis.diagnostic_metrics_dialog import DiagnosticMetricsDi
 def check_fixed_workflow(app, window, workflow, record):
     import json
     import math
-    from analysis_matrix import set_parameter
+    from tests.e2e.dialog_interaction import set_parameter
     from rc_metastudio.results.window import ResultsWindow
     from tests.e2e.report_retention import assert_report
 
@@ -139,7 +139,7 @@ def check_small_study_threshold(app, window, record, *, system_clipboard=True):
         window.action_go.trigger()
         app.processEvents()
         setup = next(w for w in app.topLevelWidgets() if isinstance(w, AnalysisSetupDialog) and w.isVisible())
-        from analysis_matrix import set_parameter
+        from tests.e2e.dialog_interaction import set_parameter
         set_parameter(app, setup, 'inference.method', 'knha')
         button = setup.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         assert button is not None

@@ -30,7 +30,6 @@ def _recover(outputs: dict[Path, bytes], published: list[Path], recovery: Path) 
 
 
 def _publish(outputs: dict[Path, bytes]) -> None:
-    # Keep recovery bytes on disk until every binding has been replaced.
     originals = {path: path.read_bytes() for path in outputs}
     recovery = Path(tempfile.mkdtemp(prefix=".golden-refresh-", dir=next(iter(outputs)).parent))
     published = []
@@ -54,7 +53,6 @@ def _refresh_case(row: dict, changes: list[dict], capture: Path, members: dict[s
     current = json.loads((capture / "captures" / (row["id"] + ".json")).read_text(encoding="utf-8"))
     if current["status"] != "success":
         raise ValueError(f"Failed capture: {row['id']}")
-    # The original numerical outputs remain the oracle, including exceptions.
     reviewed = [item["detail"] for item in changes if item["id"] == row["id"]]
     for detail in reviewed:
         if detail.startswith("Text section ") and detail.endswith(" changed."):

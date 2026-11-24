@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QMessageBox, QVBoxLayout,
 )
 
-from rc_metastudio import adaptive_window, qt_text
+from rc_metastudio import adaptive_window, input_text
 from rc_metastudio.analysis.catalog import ALL_METRIC_NAMES
 from rc_metastudio.analysis.validation import normal_confidence_multiplier
 from rc_metastudio.calculators.controls import add_study_context
@@ -210,7 +210,7 @@ class RatioDataDialog(QDialog):
 
     @staticmethod
     def _number(text):
-        value, valid = qt_text.parse_decimal(text)
+        value, valid = input_text.parse_decimal(text)
         if not valid:
             raise ValueError("Enter a finite number using a decimal point or decimal comma.")
         return value

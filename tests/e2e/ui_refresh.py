@@ -88,11 +88,10 @@ def drive(app, window, work, record):
 
 
 def run(app, window, work, root, record, analyze):
-    import sys
     from unittest.mock import patch
     from rc_metastudio.results.plot_export import PlotExportDialog
-    sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
-    from advanced_workflows import export_formats, modal
+    from tests.e2e.plot_workflow_support import export_formats
+    from tests.e2e.dialog_interaction import modal
     drive(app, window, work, record)
     assert window.open(str(root / 'tests/fixtures/desktop-projects/amino.rcms'), raise_on_error=True)
     view = analyze(app, window, 'binary.random')

@@ -92,8 +92,6 @@ try {
         return
     }
 
-    # Core owns every GUI module except the five deliberately isolated
-    # RemainingSurfaces modules, in one process with one QApplication owner.
     uv run pytest -W error @coreGuiTests
     if ($LASTEXITCODE -ne 0) { throw "Qt6 core GUI tests failed." }
     if ($Section -eq "Full") {

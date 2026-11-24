@@ -18,7 +18,7 @@ import math
 import uuid
 from typing import Literal, Protocol, SupportsFloat, SupportsIndex, cast
 
-from rc_metastudio import name_validation, qt_text
+from rc_metastudio import name_validation, input_text
 from rc_metastudio import r_runtime, r_operations
 from rc_metastudio.analysis.catalog import (
     BINARY, BINARY_ONE_ARM_METRICS, CONTINUOUS, CONTINUOUS_ONE_ARM_METRICS, DIAGNOSTIC,
@@ -155,8 +155,8 @@ def _edited_study_name(original: str, fields: Mapping[str, object]) -> str:
 
 
 def _parse_study_identity_year(value: object) -> int | None:
-    text = qt_text.to_native_text(value)
-    if qt_text.is_blank(text):
+    text = input_text.to_native_text(value)
+    if input_text.is_blank(text):
         return 0
     try:
         return int(text)
@@ -280,7 +280,7 @@ class WorkspaceEditingService:
         if row >= len(sheet.rows):
             return CellRejection("Enter a study name first.")
         study = sheet.rows[row]
-        if not study.label.strip() and not qt_text.is_blank(value):
+        if not study.label.strip() and not input_text.is_blank(value):
             return CellRejection("Enter a study name first.")
         if isinstance(field, (RawCell, OutcomeCell)):
             return self._edit_measurement(study, field, context, value)
@@ -372,7 +372,7 @@ class WorkspaceEditingService:
     def _edit_ratio_input(self, study, position: int, context, value):
         unit = study.analysis_unit
         field = RATIO_FIELDS[position]
-        text = qt_text.to_native_text(value).strip()
+        text = input_text.to_native_text(value).strip()
         try:
             parsed = text
             if field in ("estimate", "lower", "upper", "se", "confidence"):
@@ -617,7 +617,7 @@ class WorkspaceEditingService:
         context: WorkspaceEditingContext,
         value: object,
     ) -> CellRejection | None:
-        number, valid = qt_text.parse_optional_decimal(value)
+        number, valid = input_text.parse_optional_decimal(value)
         if not valid:
             return CellRejection("Enter a number.", kind="number")
         columns = sheet_columns(context.data_type, context.outcome_subtype).raw
@@ -635,7 +635,7 @@ class WorkspaceEditingService:
     def _edit_outcome(
         self, study: StudyRow, position: int, context: WorkspaceEditingContext, value: object,
     ) -> CellRejection | None:
-        display_value, valid = qt_text.parse_optional_decimal(value)
+        display_value, valid = input_text.parse_optional_decimal(value)
         if not valid:
             return CellRejection("Enter a number.", kind="number")
         if display_value is not None:
@@ -717,8 +717,8 @@ class WorkspaceEditingService:
 
     def _edit_covariate(self, study: StudyRow, field: CovariateCell, value: object) -> CellRejection | None:
         if field.data_type == FACTOR:
-            converted = qt_text.to_native_text(value)
-        elif qt_text.is_blank(value):
+            converted = input_text.to_native_text(value)
+        elif input_text.is_blank(value):
             converted = None
         else:
             converted, valid = self._number(value)
@@ -729,8 +729,8 @@ class WorkspaceEditingService:
 
     @staticmethod
     def _number(value: object) -> tuple[float | None, bool]:
-        text, valid = qt_text.normalize_decimal_text(value)
-        if not valid or qt_text.is_blank(text):
+        text, valid = input_text.normalize_decimal_text(value)
+        if not valid or input_text.is_blank(text):
             return None, False
         try:
             return float(text), True

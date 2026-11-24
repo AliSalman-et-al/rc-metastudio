@@ -16,7 +16,6 @@ def run(app, window, ROOT, WORK, record_step):
     rscript = desktop_rscript()
     source = ROOT / 'tests/fixtures/rm5/Fleiss1993.rm5'
     original = ET.parse(source).getroot()
-    # Synthetic counts in the structure observed in Bristol's real DTA review.
     dta_source = ROOT / 'tests/fixtures/rm5/dta-derived.rm5'
     dta_xml = ET.parse(dta_source).getroot()
     for case in ('missing-count', 'zero-counts'):
@@ -346,7 +345,6 @@ def run(app, window, ROOT, WORK, record_step):
             for key, value in expected.items():
                 assert math.isclose(full_precision[key], value, rel_tol=0, abs_tol=1e-6), (key, full_precision, expected)
         else:
-            # This display check does not claim SMD numerical parity (see the review).
             for key, value in expected.items():
                 assert actual[key] == round(value, 1 if key == 'i_squared' else 2), (key, actual, expected)
         view.close()

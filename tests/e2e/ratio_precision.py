@@ -13,9 +13,9 @@ from tests.sample_projects import SAMPLE_FILES
 
 
 def run(app, window, work, record):
-    from advanced_workflows import modal, click
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import analyze_existing
     from tests.fit_observations import observe_fit
     root = Path(__file__).resolve().parents[2]
     for metric, sample, modes in (

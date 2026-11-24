@@ -170,7 +170,6 @@ app_root="$dist_root/RCMetaStudio"
 mkdir -p "$archive_root"
 cp -a "$app_root" "$archive_root/RCMetaStudio"
 cp -a "$r_home" "$archive_root/R"
-# Resolve the installed closure before pruning only the staged runtime.
 R_HOME="$r_home" R_LIBS="$r_library" R_LIBS_USER="$r_library" \
 LD_LIBRARY_PATH="$r_home/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$r_home/bin/Rscript" "$repo_root/scripts/r-bundle-closure.R" "$r_library" "$qualification_root/r-closure.txt"

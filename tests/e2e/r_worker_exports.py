@@ -7,7 +7,7 @@ from time import perf_counter
 from unittest.mock import patch
 from zipfile import ZipFile
 
-from advanced_workflows import modal
+from tests.e2e.dialog_interaction import modal
 import psutil
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QPushButton

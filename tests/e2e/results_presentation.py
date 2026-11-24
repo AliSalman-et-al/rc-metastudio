@@ -32,7 +32,6 @@ def check_values_export(view, work, record, label):
             assert (float(exported['Value']) if exported['Value'] else None) == q.value
             assert (float(exported['Level']) if exported['Level'] else None) == q.level
         record('results-values-export', view, analysis=label, table=table.title, path=str(path), values=rows)
-    # Renaming presentation labels must not affect primary-row routing.
     from dataclasses import replace
     from rc_metastudio.results.report import ManuscriptReport
     renamed = replace(view.results, sections=tuple(replace(s, tables=tuple(

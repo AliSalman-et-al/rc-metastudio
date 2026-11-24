@@ -56,7 +56,7 @@ runs:
       uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
       with:
         path: build/qt-rcc
-        key: qt-rcc-6.12.0-windows-x64-219d1b86def3be418e31d704572bc4acc91b2ec373c65595c9fb12b42bf098dc
+        key: qt-rcc-windows-x64-${{ hashFiles('scripts/qt6_build_impl.py') }}
 
     - name: Resolve locked macOS Qt SDK metadata
       if: inputs.qt-rcc == 'true' && runner.os == 'macOS'

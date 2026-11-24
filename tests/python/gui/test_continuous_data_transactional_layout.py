@@ -551,8 +551,6 @@ def test_continuous_major_variant_behavior_matrix(monkeypatch, variant):
             dialog.effect_combo_box.setCurrentIndex(smd_index)
             dialog.input_mode_combo.setCurrentIndex(dialog.input_mode_combo.findData("pre-post"))
             app.processEvents()
-            # Explicit input-mode changes fit their content; subsequent edits
-            # must keep that settled geometry stable.
             settled = QtCore.QRect(dialog.frameGeometry())
             dialog.correlation_pre_post.selectAll()
             key_clicks(dialog.correlation_pre_post, "0.5")

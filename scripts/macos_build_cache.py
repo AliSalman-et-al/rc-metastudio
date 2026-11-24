@@ -18,8 +18,6 @@ def cache_keys(root: Path, toolchain: str, architecture: str) -> tuple[str, str]
 
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
     lock = tomllib.loads((root / "uv.lock").read_text(encoding="utf-8"))
-    # The editable application is installed fresh. Its version has no bearing
-    # on the SDK or the cached third-party wheel built against it.
     del project["project"]["version"]
     for package in lock["package"]:
         if package["source"].get("editable") == ".":

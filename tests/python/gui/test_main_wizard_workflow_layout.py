@@ -503,8 +503,6 @@ finally:
             "bounded": True,
         }
 def test_closing_csv_wizard_cancels_queued_entry_scroll_reset(qapp, monkeypatch):
-    # A user can close the page before its queued layout finishes. A callback
-    # into the deleted scrollbar must not reach the application error handler.
     import sys
     from PyQt6 import sip
     from rc_metastudio import main_wizard

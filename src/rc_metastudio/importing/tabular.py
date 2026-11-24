@@ -348,7 +348,6 @@ def _infer_covariates(
 
 
 def _covariate_type(values: Iterable[str]) -> str:
-    # An all-missing column remains numeric until a nonnumeric value is supplied.
     for value in values:
         if not value.strip():
             continue
@@ -392,7 +391,6 @@ def _xlsx_metadata(path, sheet, selected, row_numbers, columns, notices):
         elif tag == "col":
             hidden_columns.update(i for i in columns if int(attrs["min"]) <= i + 1 <= int(attrs["max"]))
 
-    # Event parsing retains no worksheet XML tree or second normal workbook.
     parser = expat.ParserCreate(namespace_separator="}")
     parser.StartElementHandler = inspect_element
     with ZipFile(path) as archive, archive.open(sheet._worksheet_path) as stream:

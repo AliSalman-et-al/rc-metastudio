@@ -22,8 +22,8 @@ from tests.python.gui.qt_test_support import metric_action, required, wait
 
 
 def run(app, window, work, root, record, analyze, *, example):
-    from advanced_workflows import modal
-    from analysis_matrix import set_parameter
+    from tests.e2e.dialog_interaction import modal
+    from tests.e2e.dialog_interaction import set_parameter
 
     samples = root / "sample_projects"
     manifest = json.loads((samples / "manifest.json").read_text(encoding="utf-8"))

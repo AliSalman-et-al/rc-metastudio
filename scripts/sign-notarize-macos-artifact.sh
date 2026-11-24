@@ -262,7 +262,6 @@ for attempt in 1 2 3; do
     validation_status=$?
   fi
   cat "$validation_log" | tee -a "$verification_result"
-  # Retry only CloudKit timeouts or connection loss, never invalid tickets.
   if [ "$validation_status" -ne 68 ] ||
      ! grep -Eq 'NSURLErrorDomain Code=-(1001|1005)([^0-9]|$)' "$validation_log" ||
      [ "$attempt" -eq 3 ]; then

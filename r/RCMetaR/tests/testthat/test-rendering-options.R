@@ -1,4 +1,3 @@
-# Public R boundaries not reachable through the paired-limit GUI controls.
 r02.path <- function(name) {
   root <- Sys.getenv("RCMS_RENDERING_EVIDENCE", unset=tempdir())
   dir.create(root, recursive=TRUE, showWarnings=FALSE)

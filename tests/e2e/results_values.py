@@ -18,10 +18,8 @@ from tests.sample_projects import SAMPLE_FILES
 def run(app, window, work, root, record, analyze):
     from rc_metastudio import r_operations
     from rc_metastudio.results.r_presentation import _structured_matrix
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import analyze_existing
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
-    # Failure obligations at the real R/Python boundary: residue and tiny values,
-    # infinities, missingness and bounded P must survive without display parsing.
     edge = r_oracle.evaluate_result_vector('''local({
       x <- rbind(c("Estimate", "Lower", "Upper", "P", "Unavailable"),
                  c("0.000", "0.000", "Inf", "< 0.001", "Not estimable"))

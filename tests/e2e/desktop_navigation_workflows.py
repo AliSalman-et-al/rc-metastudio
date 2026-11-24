@@ -10,7 +10,7 @@ from tests.e2e.keyboard_navigation import keyboard_dialog_pages, keyboard_traver
 
 def run(app, window, work, root, record, analyze):
     from rc_metastudio import main_wizard, settings
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
 
     window.start()
     app.processEvents()

@@ -63,8 +63,6 @@ def check(app, window, root, work, record):
     record('sheet-navigation-edit-undo-redo-and-reopened', window,
            saved_sheet_id=window.model.current_sheet_id, project_unchanged=True)
 
-    # Availability must follow the active sheet through edits, navigation and
-    # undo, rather than the row count of the first sheet installed in the UI.
     populated_index = 1
     tabs.setCurrentIndex(0)
     sheet = window.model.current_sheet

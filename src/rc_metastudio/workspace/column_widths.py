@@ -24,7 +24,6 @@ class WorkspaceColumnWidthController(QObject):
             if isinstance(saved_widths, WorkspaceColumnWidthState)
             else WorkspaceColumnWidthState(saved_widths)
         )
-        # Widths loaded from settings represent an explicit user choice.
         self._user_widths = set(self._widths)
         self._applying = False
         table.horizontalHeader().sectionResized.connect(self._section_resized)

@@ -468,7 +468,6 @@ def _apply_scoped_exceptions(rows, exceptions, reference_by_id, current_by_id):
             before = reference_by_id[row["id"]].get("texts", {}).get(section)
             after = current_by_id[row["id"]].get("texts", {}).get(section)
             binding = exception.get("accepted_texts", {}).get(section)
-            # The documented inference addition has one value for these default-z cases.
             if exception.get("id") == "inference-method-output-section":
                 binding = {"before": None, "after": "Normal approximation"}
             bound = binding is not None and binding == {"before": before, "after": after}
@@ -496,8 +495,6 @@ def _reviewed_scale_labels(before, after, case_id):
                      ("SE of t²", "SE of τ²"),
                      ("Residual heterogeneity (t)", "Residual heterogeneity (τ)")):
         reviewed = reviewed.replace(old, new)
-    # Wider labels realign the same printed table cells; retain line order,
-    # every scientific token and every number, including non-oracle prose.
     return [line.split() for line in reviewed.splitlines()] == [line.split() for line in after.splitlines()]
 
 

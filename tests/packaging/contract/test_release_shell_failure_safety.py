@@ -27,7 +27,6 @@ def run(tmp_path, script, extra=None):
     stdout = tmp_path / 'stdout.log'
     stderr = tmp_path / 'stderr.log'
     with stdout.open('w', encoding='utf-8') as out, stderr.open('w', encoding='utf-8') as err:
-        # This is a failure-recovery check, so allow for MSYS and Python startup under CI load.
         result = subprocess.run(command, stdout=out, stderr=err,
                                 env={**os.environ, **(extra or {})}, timeout=120)
     with receipt.open('a', encoding='utf-8') as log:

@@ -11,9 +11,9 @@ from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project.archive import (
     JsonObject, ProjectDocument, ProjectFormatError, load_project, migrate_to_latest, save_project,
 )
-from tests.python.fast.test_project_format import (
-    _first_sheet, _first_study, _group_project, _legacy_group_project, _legacy_state,
-    _object, _objects,
+from tests.project_fixtures import (
+    first_sheet, first_study, group_project, legacy_group_project, legacy_state,
+    object_record, object_records,
 )
 
 
@@ -24,36 +24,36 @@ VALUES: JsonObject = {"est": 1.5, "lower": 1.1, "upper": 1.9, "SE": .2,
 
 
 def _legacy_unit(project):
-    source = _object(project["dataset"])
-    return _objects(_objects(source["studies"])[0]["analysis_units"])[0]
+    source = object_record(project["dataset"])
+    return object_records(object_records(source["studies"])[0]["analysis_units"])[0]
 
 
 def _document(version, metric):
     if version == 3:
-        project = _group_project("continuous", "generic_effect", [["", "", ""], ["", "", ""]])
-        sheet = _first_sheet(project)
-        for index, arm in enumerate(_objects(sheet["arms"]), 1):
+        project = group_project("continuous", "generic_effect", [["", "", ""], ["", "", ""]])
+        sheet = first_sheet(project)
+        for index, arm in enumerate(object_records(sheet["arms"]), 1):
             arm["name"] = f"Tx {index}"
         sheet["settings"] = {"metric": metric, "metric_choices": [metric],
                              "analysis": {"parameters": {"measure": metric}},
                              "summary": {"effect": metric, "metric_choices": [metric]},
                              "axis_label": "Custom Tx Mean label"}
-        _first_study(project)["entered_effects"] = [
-            {"metric": metric, "arms": [_objects(sheet["arms"])[0]["id"]], "values": copy.deepcopy(VALUES)}
+        first_study(project)["entered_effects"] = [
+            {"metric": metric, "arms": [object_records(sheet["arms"])[0]["id"]], "values": copy.deepcopy(VALUES)}
         ]
         state = {"schema_version": 3, "current_sheet_id": "sheet"}
     else:
-        project = _legacy_group_project("continuous", "generic_effect", [["", "", ""], ["", "", ""]])
+        project = legacy_group_project("continuous", "generic_effect", [["", "", ""], ["", "", ""]])
         project["schema_version"] = version
-        source = _object(project["dataset"])
-        for index, arm in enumerate(_objects(_legacy_unit(project)["groups"]), 1):
+        source = object_record(project["dataset"])
+        for index, arm in enumerate(object_records(_legacy_unit(project)["groups"]), 1):
             arm["name"] = f"Tx {index}"
         source["summary"] = {"arms": "one", "data_type": "continuous", "sub_type": "generic_effect",
                              "effect": metric, "metric_choices": [metric], "name": "Outcome"}
         _legacy_unit(project)["entered_effects"] = {
             metric: {"Tx 1": copy.deepcopy(VALUES)}
         }
-        state = _legacy_state()
+        state = legacy_state()
         state.update(schema_version=version, active_outcome="Outcome", active_follow_up="first",
                      active_groups=["Tx 1", "Tx 2"], active_effect=metric)
     return project, state
@@ -80,15 +80,15 @@ def test_mean_archive_migration_preserves_values_and_canonicalizes_resave(tmp_pa
     path = tmp_path / "legacy-mean.rcms"
     _archive(path, version, project, state)
     document = load_project(path)
-    sheet = _first_sheet(document.project)
-    settings = _object(sheet["settings"])
+    sheet = first_sheet(document.project)
+    settings = object_record(sheet["settings"])
     assert settings["metric"] == "Mean"
     assert settings["metric_choices"] == ["Mean"]
-    assert _object(settings["summary"])["effect"] == "Mean"
-    entry = _objects(_first_study(document.project)["entered_effects"])[0]
+    assert object_record(settings["summary"])["effect"] == "Mean"
+    entry = object_records(first_study(document.project)["entered_effects"])[0]
     assert entry["metric"] == "Mean"
     assert entry["values"] == VALUES
-    assert [arm["name"] for arm in _objects(sheet["arms"])] == ["Tx 1", "Tx 2"]
+    assert [arm["name"] for arm in object_records(sheet["arms"])] == ["Tx 1", "Tx 2"]
     save_project(path, document.project, document.state)
     assert load_project(path) == document
     assert migrate_to_latest(3, document.project, document.state) == (document.project, document.state)
@@ -110,7 +110,7 @@ def test_direct_mean_document_and_writer_use_canonical_metrics_without_mutating_
     assert direct.sheets[0].settings["metric"] == "Mean"
     path = tmp_path / "direct-save.rcms"
     save_project(path, project, state)
-    assert _object(_first_sheet(load_project(path).project)["settings"])["metric"] == "Mean"
+    assert object_record(first_sheet(load_project(path).project)["settings"])["metric"] == "Mean"
     assert (project, state) == original
 
 
@@ -122,15 +122,15 @@ def test_alias_collision_is_rejected_without_overwriting_an_existing_project(tmp
     original = destination.read_bytes()
     project, state = _document(version, "Mean")
     if version == 3:
-        entries = _objects(_first_study(project)["entered_effects"])
+        entries = object_records(first_study(project)["entered_effects"])
         conflicting = copy.deepcopy(entries[0])
         conflicting["metric"] = "TX Mean"
-        _object(conflicting["values"])["est"] = 99.
+        object_record(conflicting["values"])["est"] = 99.
         entries.append(conflicting)
         with pytest.raises(ProjectFormatError, match="duplicate|conflict"):
             save_project(destination, project, state)
     else:
-        entries = _object(_legacy_unit(project)["entered_effects"])
+        entries = object_record(_legacy_unit(project)["entered_effects"])
         entries["TX Mean"] = {"Tx 1": dict(VALUES, est=99.)}
     source = tmp_path / "conflicting.rcms"
     _archive(source, version, project, state)

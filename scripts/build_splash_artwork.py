@@ -25,8 +25,7 @@ def bez(p0, p1, p2, p3, t):
 
 bez = cast(Any, bez)
 
-# ---- Forest plot: a column of square stars whose horizontal diffraction flares are the whiskers
-ROWS = [  # (estimate x, y, half CI width, square size)
+ROWS = [
     (351, 74, 50, 7), (381, 106, 46, 9), (326, 138, 40, 11),
     (370, 170, 50, 9), (338, 202, 38, 12), (398, 234, 62, 6),
 ]
@@ -43,7 +42,6 @@ for x, y, hw, s in ROWS:
 forest = "\n        ".join(forest)
 
 
-# ---- Meta-regression: a comet whose straight tail is the regression line; weighted square stars around it
 def star(cx, cy, sz):
     return (
         f'<circle cx="{cx}" cy="{cy}" r="{sz*1.2:.1f}" fill="url(#starGlow)"/>'
@@ -61,7 +59,6 @@ for t, r in [(0.1, 4), (0.22, 8), (0.36, 5), (0.47, 11), (0.6, 6), (0.71, 9)]:
     roids.append(star(round(x, 1), round(y, 1), r))
     roid_pos.append((x, y, r))
 roids = "\n        ".join(roids)
-# The comet's head is a meteor: an irregular rock glowing hot on its leading edge
 mr = random.Random(11)
 meteor = []
 for i in range(11):
@@ -71,7 +68,6 @@ for i in range(11):
 meteor = " ".join(meteor)
 
 
-# ---- Funnel plot: clusters of pines (studies), tight under the summit and spreading toward the foot
 CLUSTERS = [(163, 262, 3), (139, 271, 2), (171, 293, 3), (125, 318, 2), (186, 337, 3),
             (110, 360, 3), (156, 372, 4), (207, 388, 3), (90, 403, 4), (232, 414, 3)]
 tr = random.Random(5)
@@ -91,13 +87,12 @@ def pine(x, y, h):
 
 for cx, cy, n in CLUSTERS:
     h = 6.5 + (cy - 220) * .036
-    for k in sorted(range(n), key=lambda k: k % 2):  # back row first
+    for k in sorted(range(n), key=lambda k: k % 2):
         x = cx + (k - (n - 1) / 2) * h * .42 + tr.uniform(-.6, .6)
         y = cy + (k % 2) * h * .12 + tr.uniform(-.4, .4)
         trees.append(pine(x, y, h * tr.uniform(.8, 1.15)))
 trees = "".join(trees)
 
-# ---- SROC: a trail that climbs steeply from the near corner, then levels off toward the horizon
 L = ((0, 600), (12, 522), (58, 478), (194, 462)), ((194, 462), (316, 450), (420, 446), (520, 443))
 R = ((520, 449), (420, 452), (320, 458), (206, 471)), ((206, 471), (92, 486), (54, 530), (46, 600))
 TRAIL = (f"M{L[0][0][0]},{L[0][0][1]} C{L[0][1][0]},{L[0][1][1]} {L[0][2][0]},{L[0][2][1]} {L[0][3][0]},{L[0][3][1]} "
@@ -115,11 +110,9 @@ for seg, t, w in [(0, .25, 9), (0, .7, 6), (1, .1, 4.5), (1, .4, 3.5), (1, .7, 2
     )
 glints = "".join(glints)
 sx, sy = bez(*MID[0], .47)
-# A footbridge where the river climbs steeply, carrying the Funnel Peak path to the near bank
 BW, BE = bez(*L[0], .5), bez(*R[1], .5)
 BW, BE = (BW[0] - 4, BW[1] - 1), (BE[0] + 4, BE[1] + 1)
 
-# ---- Foreground pines: tiered silhouettes, rim-lit on the side facing the sun (left)
 def big_pine(x, top, base, w):
     h = base - top
     out = [f'<rect x="{x-1.8}" y="{base - h*.08:.1f}" width="3.6" height="{600 - base + h*.08:.1f}" fill="#070926"/>']
@@ -132,7 +125,6 @@ def big_pine(x, top, base, w):
 
 fg_pines = big_pine(404, 474, 562, 24) + big_pine(494, 454, 560, 26) + big_pine(448, 436, 552, 30)
 
-# ---- Astronomer's chart: a faint ecliptic with ticks, and asterism lines between the forest stars
 def quad(p0, p1, p2, t):
     return tuple((1-t)**2*a + 2*(1-t)*t*b + t*t*c for a, b, c in zip(p0, p1, p2))
 E0, E1, E2 = (-10, 150), (250, 30), (530, 150)
@@ -166,7 +158,6 @@ html = f"""<!doctype html>
   .art svg {{ display: block; }}
   .logo {{ position: absolute; left: 52px; top: 92px; width: 320px; }}
   .p {{ position: absolute; left: 56px; right: 40px; margin: 0; }}
-  /* Runtime text (drawn by the app at startup, not part of the artwork PNG) */
   .version {{ top: 200px; font-size: 14px; line-height: 20px; color: #4f5a76; }}
   .legal   {{ top: 266px; font-size: 13.5px; line-height: 21px; color: #4f5a76; }}
   .status  {{ top: 352px; font-size: 15px; line-height: 20px; font-weight: 500; }}
@@ -238,14 +229,12 @@ html = f"""<!doctype html>
         <circle cx="262" cy="290" r="1" opacity=".4"/><circle cx="470" cy="120" r="1" opacity=".5"/>
       </g>
 
-      <!-- Celestial chart: ecliptic arc with degree ticks, and faint asterism lines -->
       <g fill="none" stroke="#e8ddff" stroke-opacity=".13" stroke-width=".7">
         <path d="M{E0[0]},{E0[1]} Q{E1[0]},{E1[1]} {E2[0]},{E2[1]}"/>
         <path d="{ticks}"/>
       </g>
       <polyline points="{asterism}" fill="none" stroke="#dfe5ff" stroke-opacity=".14" stroke-width=".6"/>
 
-      <!-- Meta-regression: a comet whose straight tail is the regression line, asteroids sized by weight in its wake -->
       <polygon points="{TAIL0[0]-4},{TAIL0[1]-10} {HEAD[0]+2},{HEAD[1]-4} {HEAD[0]-2},{HEAD[1]+4} {TAIL0[0]+6},{TAIL0[1]+10}" fill="url(#cometTail)" opacity=".45"/>
       <polygon points="{TAIL0[0]},{TAIL0[1]-1} {HEAD[0]+1},{HEAD[1]-1.6} {HEAD[0]-1},{HEAD[1]+1.6} {TAIL0[0]},{TAIL0[1]+1}" fill="url(#cometTail)"/>
       <circle cx="{HEAD[0]+5}" cy="{HEAD[1]-4}" r="16" fill="url(#ember)" opacity=".55"/>
@@ -257,34 +246,27 @@ html = f"""<!doctype html>
         {roids}
       </g>
 
-      <!-- Forest plot: square stars with flares for whiskers, hanging on the sun's ray -->
       <rect x="367" y="40" width="6" height="360" fill="url(#ray)"/>
       <g>
         {forest}
       </g>
 
-      <!-- Pooled diamond: the setting sun -->
       <circle cx="370" cy="398" r="230" fill="url(#sunGlow)"/>
       <polygon points="300,398 370,366 440,398 370,430" fill="url(#sun)"/>
 
-      <!-- Funnel plot: the mountain, with tree clusters tight at the summit and spreading toward its foot -->
       <polygon points="150,196 -40,470 340,470" fill="url(#mtn)"/>
-      <!-- contour-enhanced funnel bands: lightest inside, stepping darker outward -->
       <polygon points="150,196 4,470 296,470" fill="#8a90ee" fill-opacity=".11"/>
       <polygon points="150,196 46,470 254,470" fill="#8a90ee" fill-opacity=".12"/>
       <polygon points="150,196 88,470 212,470" fill="#a0a6ff" fill-opacity=".14"/>
-      <!-- shaded right half keeps the form -->
       <polygon points="150,196 150,470 340,470" fill="#05082a" fill-opacity=".26"/>
       <g fill="none" stroke="#c9ccff" stroke-opacity=".1" stroke-width=".6" stroke-linecap="round">
                 <path d="M70,380 l16,-6 M42,430 l20,-5 M98,350 l10,-3 M176,300 l14,6 M196,380 l18,7 M226,420 l14,6"/>
       </g>
-      <!-- snow cap -->
       <polygon points="150,196 167,220.5 162,226 158,223 153,236 148,227 142,232 138,225 133,229 130.7,224" fill="#aeb2f2"/>
       <polygon points="150,196 167,220.5 162,226 158,223 153,236 152,214" fill="#05082a" fill-opacity=".28"/>
       <polygon points="150,196 340,470 328,470" fill="#ff9a5a" fill-opacity=".12"/>
       <g>{trees}</g>
 
-      <!-- Far hills and distant tree line -->
       <path d="M0,452 C 80,430 160,446 250,440 C 340,434 420,418 520,428 L520,600 L0,600 Z" fill="#1a1d5e"/>
       <g fill="#14174f">
         <polygon points="232,428 226,446 238,446"/><polygon points="246,424 239,446 253,446"/>
@@ -295,7 +277,6 @@ html = f"""<!doctype html>
       <rect x="0" y="420" width="520" height="70" fill="url(#mist)"/>
       <path d="M0,480 C 60,470 200,462 520,470 L520,600 L0,600 Z" fill="url(#ground)"/>
 
-      <!-- SROC: the river, reflecting the sky; star glints are the studies, the brightest is the summary point -->
       <path d="{TRAIL}" fill="url(#trail)"/>
       <path d="M{MID[0][0][0]},{MID[0][0][1]} C{MID[0][1][0]},{MID[0][1][1]} {MID[0][2][0]},{MID[0][2][1]} {MID[0][3][0]},{MID[0][3][1]} C{MID[1][1][0]},{MID[1][1][1]} {MID[1][2][0]},{MID[1][2][1]} {MID[1][3][0]},{MID[1][3][1]}" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="2" filter="url(#soft)"/>
       <path d="{TRAIL}" fill="none" stroke="#0a0d3a" stroke-opacity=".35" stroke-width="1"/>
@@ -311,7 +292,6 @@ html = f"""<!doctype html>
         <circle r="1" fill="#fff6dc"/>
       </g>
 
-      <!-- Shrubs and grass tufts in the near foreground -->
       <defs>
         <g id="shrub">
           <path d="M-14,0 L-12.6,-4 L-11,-2.4 L-9.4,-8 L-7,-3.2 L-5,-10.6 L-2.4,-4.2 L0,-12 L2.4,-4.6 L4.8,-10 L6.8,-3.6 L9,-8.2 L10.8,-3 L12.6,-5.6 L14,0 Z" fill="#141a52"/>
@@ -328,7 +308,6 @@ html = f"""<!doctype html>
       <use href="#tuft" transform="translate(342,586) scale(1.1)"/>
 
       <g transform="translate(236,534) scale(1.75) translate(-240,-511)">
-      <!-- The researcher's camp -->
       <circle cx="212" cy="514" r="22" fill="url(#ember)" opacity=".55"/>
       <g>
         <ellipse cx="212" cy="519" rx="6.5" ry="1.6" fill="#05072a" fill-opacity=".5"/>
@@ -338,7 +317,6 @@ html = f"""<!doctype html>
         <path d="M212,512.4 C213.4,514 213.6,515.6 212,517.2 C210.4,515.6 210.6,514 212,512.4 Z" fill="#ffd27a"/>
         <circle cx="214.5" cy="507" r=".45" fill="#ffd27a"/><circle cx="210.6" cy="504.6" r=".35" fill="#ffb347"/>
       </g>
-      <!-- Log seat by the fire -->
       <g transform="translate(198,521)">
         <ellipse cx="0" cy=".5" rx="7" ry="1" fill="#05072a" fill-opacity=".45"/>
         <rect x="-6" y="-2.8" width="12" height="3.2" rx="1.6" fill="#6a4632"/>
@@ -346,14 +324,12 @@ html = f"""<!doctype html>
         <ellipse cx="6" cy="-1.2" rx="1" ry="1.6" fill="#c9905e"/>
         <path d="M-4,-1 h6" stroke="#4a3022" stroke-width=".3"/>
       </g>
-      <!-- Open star atlas on the grass -->
       <g transform="translate(225,526) rotate(-6) scale(1.35)">
         <path d="M-6,0 L0,1 L0,-3.4 L-6,-4.4 Z" fill="#f1e4c8"/><path d="M6,0 L0,1 L0,-3.4 L6,-4.4 Z" fill="#e2d2b2"/>
         <g fill="#3a3f8e"><circle cx="-4" cy="-2.6" r=".35"/><circle cx="-2.2" cy="-1.4" r=".35"/><circle cx="-1" cy="-2.8" r=".3"/></g>
         <path d="M-4,-2.6 L-2.2,-1.4 L-1,-2.8" stroke="#3a3f8e" stroke-width=".2" fill="none"/>
         <path d="M1.6,-2.8 h3 M1.6,-1.8 h2.4 M1.6,-.8 h2.8" stroke="#8a7a62" stroke-width=".25"/>
       </g>
-      <!-- Celestial globe on a stand -->
       <g transform="translate(294,506.8) scale(1.55)">
         <ellipse cx="0" cy=".2" rx="3" ry=".5" fill="#05072a" fill-opacity=".45"/>
         <path d="M-2,0 h4 M0,0 v-1.6" stroke="#8a6a3e" stroke-width=".7" stroke-linecap="round"/>
@@ -363,28 +339,23 @@ html = f"""<!doctype html>
         <circle cx="-1" cy="-5.4" r=".25" fill="#fff6dc"/><circle cx=".9" cy="-3.6" r=".25" fill="#fff6dc"/><circle cx="1.2" cy="-5.6" r=".2" fill="#fff6dc"/>
       </g>
 
-      <!-- Crate -->
       <g>
         <ellipse cx="282" cy="513.8" rx="10.5" ry="1.4" fill="#05072a" fill-opacity=".45"/>
         <rect x="274.5" y="502.5" width="15" height="11" rx=".6" fill="#6a4632"/>
         <rect x="274.5" y="502.5" width="5" height="11" fill="#ff9a5a" fill-opacity=".2"/>
         <path d="M274.5,506.2 h15 M274.5,509.9 h15" stroke="#3a2820" stroke-width=".4"/>
         <path d="M275.3,502.5 v11 M288.7,502.5 v11" stroke="#4a3022" stroke-width=".6"/>
-        <!-- mug -->
         <rect x="276.4" y="499.6" width="2.6" height="2.9" rx=".35" fill="#e8e2d4"/>
         <path d="M279,500.3 a.8,.9 0 0 1 0,1.6" fill="none" stroke="#e8e2d4" stroke-width=".4"/>
-        <!-- stethoscope: earpieces resting on the lid, tubing hanging in a loop, chest piece at the side -->
         <path d="M279.6,502.2 h4.2" stroke="#c9cede" stroke-width=".8" stroke-linecap="round"/>
         <circle cx="280" cy="502.3" r=".45" fill="#2a2e44"/><circle cx="283.4" cy="502.3" r=".45" fill="#2a2e44"/>
         <path d="M281.7,502.5 C281.6,507.4 284.6,509.4 286.4,506.6 C287.4,505 287.8,503.2 287.8,502.5" fill="none" stroke="#2a2e44" stroke-width="1.25" stroke-linecap="round"/>
         <path d="M287.8,502.5 C289.4,504.4 290.4,507.6 290.2,509.6" fill="none" stroke="#2a2e44" stroke-width="1.15" stroke-linecap="round"/>
         <circle cx="290.2" cy="511" r="1.8" fill="#d4d8e6" stroke="#7d8298" stroke-width=".35"/>
-        <!-- lantern -->
         <circle cx="286.4" cy="499.8" r="6" fill="url(#lamp)" opacity=".75"/>
         <path d="M285,502.5 h2.8 l-.3,-3.8 h-2.2 Z" fill="#ffd27a"/>
         <path d="M284.8,498.7 h3.2 M285.4,498.7 q1,-1.7 2,0 M284.8,502.5 h3.2" stroke="#2a2030" stroke-width=".45" fill="none"/>
       </g>
-      <!-- Clipboard with a tiny forest plot, leaning on the crate -->
       <g transform="translate(272.4,513.6) rotate(-10) scale(1.35)">
         <rect x="-2.6" y="-7.4" width="5.2" height="7.4" rx=".4" fill="#8a6248"/>
         <rect x="-2.1" y="-6.6" width="4.2" height="6.2" fill="#f4eee2"/>
@@ -393,7 +364,6 @@ html = f"""<!doctype html>
         <path d="M.2,-6 v4.6" stroke="#2c3170" stroke-width=".15"/>
         <path d="M-.5,-1.2 l.6,-.4 l.6,.4 l-.6,.4 Z" fill="#ff7a12"/>
       </g>
-      <!-- Sextant standing on its arc -->
       <g transform="translate(296,518.6) rotate(-6) scale(.9)" stroke-linecap="round">
         <path d="M0,-11 L-5,-1.4 M0,-11 L5,-1.4" stroke="#c9a05a" stroke-width=".8"/>
         <path d="M-5.2,-1.6 Q0,1.2 5.2,-1.6" fill="none" stroke="#e0bb6e" stroke-width="1.2"/>
@@ -403,21 +373,17 @@ html = f"""<!doctype html>
         <rect x="-1" y="-11.6" width="2" height="1.2" rx=".2" fill="#9fb6d8"/>
         <circle cx="0" cy="-11" r=".8" fill="#e0bb6e"/>
       </g>
-      <!-- A researcher in a white coat at the end of the path, eye to a brass telescope on a tripod -->
       <g transform="translate(240,511) scale(1.3)" stroke-linecap="round" stroke-linejoin="round">
         <ellipse cx="8" cy=".4" rx="12" ry="1.3" fill="#05072a" fill-opacity=".45"/>
-        <!-- tripod and tapered telescope -->
         <path d="M14,-27.6 L9.5,0 M14,-27.6 L14.6,.3 M14,-27.6 L19.5,0" stroke="#8a6a4a" stroke-width=".8"/>
         <path d="M14,-27.4 L14,-28.4" stroke="#3a2a24" stroke-width="1.6"/>
         <polygon points="6.8,-25.3 21.8,-34.6 23.2,-32.2 7.6,-23.9" fill="#9a7646"/>
         <path d="M7,-24.9 L22.2,-33.9" stroke="#f0d39a" stroke-opacity=".7" stroke-width=".45"/>
         <path d="M21.75,-31.2 L20.25,-33.8" stroke="#5a4226" stroke-width="1.2"/>
         <path d="M7.2,-24.6 L6.2,-24" stroke="#1a1428" stroke-width="1.1"/>
-        <!-- legs and shoes -->
         <path d="M-1.6,-7.8 L-1.9,-.7 M2.4,-7.8 L2.8,-.7" stroke="#6a7098" stroke-width="1.9"/>
         <path d="M3.2,-7.8 L3.6,-.9" stroke="#e8b48a" stroke-opacity=".55" stroke-width=".45"/>
         <path d="M-3,-.4 h2.4 M2,-.4 h2.6" stroke="#4a2e22" stroke-width="1.2"/>
-        <!-- neck, then the coat over it -->
         <path d="M2.7,-22.8 L2.4,-21" stroke="#d9a884" stroke-width="1.3"/>
         <path d="M-1.4,-21.4 C-2.4,-21 -2.8,-18 -2.9,-14 L-3.8,-7.6 L4.8,-7.6 L4.2,-14 C4.1,-17.5 4.4,-20.6 3.4,-21.5 Q1,-22.2 -1.4,-21.4 Z" fill="#eef0f7"/>
         <path d="M3.4,-21.5 C4.4,-20.6 4.1,-17.5 4.2,-14 L4.8,-7.6 L3.6,-7.6 L3.1,-14 C3,-17.5 3.2,-20.4 2.6,-21.4 Z" fill="#ffc890" fill-opacity=".7"/>
@@ -428,11 +394,9 @@ html = f"""<!doctype html>
         </g>
         <path d="M1.3,-21.3 L1.6,-17.2" stroke="#3a6ad6" stroke-width=".3"/>
         <rect x="1" y="-17.4" width="1.3" height="1.6" rx=".2" fill="#e8f0ff" stroke="#3a6ad6" stroke-width=".2"/>
-        <!-- head with ear and hair, eye at the eyepiece -->
         <circle cx="3.6" cy="-25.2" r="2.4" fill="#d9a884"/>
         <ellipse cx="3" cy="-25" rx=".5" ry=".7" fill="#c08a68"/>
         <path d="M1.3,-24.6 C1,-27.4 4.6,-28.4 6,-26.4 C4.8,-26.9 3.6,-26.6 3.4,-25.6 C3.2,-24.7 2.6,-23.6 1.6,-23.4 Z" fill="#1a1428"/>
-        <!-- near arm: elbow dropped, hand steadying the tube -->
         <path d="M2.6,-20.4 L6.6,-20.2 L9.6,-26" fill="none" stroke="#b9bfd2" stroke-width="2.1"/>
         <path d="M2.6,-20.4 L6.6,-20.2 L9.6,-26" fill="none" stroke="#eef0f7" stroke-width="1.6"/>
         <circle cx="10" cy="-26.4" r=".85" fill="#d9a884"/>
@@ -440,9 +404,7 @@ html = f"""<!doctype html>
 
       </g>
 
-      <!-- Foreground forest -->
       {fg_pines}
-      <!-- Foreground knoll under the pines -->
       <path d="M318,600 C 352,580 410,568 470,570 C 492,571 510,574 520,576 L520,600 Z" fill="#0b0e3a"/>
       <path d="M326,595 C 358,579 410,569 470,571 C 492,572 510,575 520,577" fill="none" stroke="#3a3f9e" stroke-opacity=".45" stroke-width="1"/>
       <g>
