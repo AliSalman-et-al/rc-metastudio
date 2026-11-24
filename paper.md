@@ -1,5 +1,5 @@
 ---
-title: 'RC MetaStudio: open-source software for advanced meta-analysis'
+title: "RC MetaStudio: open-source software for advanced meta-analysis"
 tags:
   - meta-analysis
   - evidence synthesis
@@ -32,6 +32,7 @@ affiliations:
 date: 23 November 2026
 bibliography: docs/paper.bib
 ---
+
 # Summary
 
 Meta-analysis combines quantitative results across independent primary studies
@@ -82,7 +83,7 @@ port their workflows.
 
 Graphical meta-analysis tools fall into four groups: specialized review suites,
 general statistics programs, commercial software, and focused tools (Table
-\ref{tbl:comparison}). RevMan Web supports review authoring
+\ref{tbl:comparison}). RevMan Web supports Cochrane review authoring
 [@cochrane2023revmanweb], figures [@revmanfigure], and linked reporting
 [@revmanreport]. Yet it lacks methods Cochrane's own handbook describes and
 recommends, including meta-regression [@deeks2024ch10] and funnel-asymmetry
@@ -103,20 +104,20 @@ Unit (CTU) TSA program [@thorlund2017] pairs pooling with sequential testing.
 MetaXL [@metaxl] pools pairwise data and exports to Stata for meta-regression,
 while Meta-Mar [@metamar] covers pairwise analyses and meta-regression.
 
-| Software | Free | Open source | Installable app | Pairwise | Meta-reg. | Biv. DTA | TSA |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| RC MetaStudio | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| RevMan Web [@cochrane2023revmanweb; @cochranekb] | subscription | ✗ | ✗ | ✓ | ✗ | plots only | ✗ |
-| JASP [@bartos2026; @jaspcoverage] | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
-| jamovi [@jamovimodules] | ✓ (core) | ✓ | ✓ (core) | ✓ (MetaJam, MAJOR) | ✓ (MetaJam) | ✓ (OncoPath) | ✗ |
-| CMA v4 [@cma] | ✗ | ✗ | Windows only | ✓ | ✓ | ✗ | ✗ |
-| Stata 19 [@stata] | ✗ | ✗ | ✓ | ✓ | ✓ | user-written only | user-written only |
-| MetaXL 5.3 [@metaxl] | ✓ | ✗ | Excel add-in | ✓ | Stata export | ✗ | ✗ |
-| Meta-Mar [@metamar] | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
-| MetaDTA / Meta-DiSc 2.0 [@freeman2019; @plana2022] | ✓ (both) | ✓ (both) | ✗ | ✗ | ✗ | ✓ (both) | ✗ |
-| CTU TSA [@thorlund2017] | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| Software                                           |     Free     | Open source | Installable app |      Pairwise      |  Meta-reg.   |     Biv. DTA      |        TSA        |
+| -------------------------------------------------- | :----------: | :---------: | :-------------: | :----------------: | :----------: | :---------------: | :---------------: |
+| RC MetaStudio                                      |      ✓       |      ✓      |        ✓        |         ✓          |      ✓       |         ✓         |         ✓         |
+| RevMan Web [@cochrane2023revmanweb; @cochranekb]   | subscription |      ✗      |        ✗        |         ✓          |      ✗       |    plots only     |         ✗         |
+| JASP [@bartos2026; @jaspcoverage]                  |      ✓       |      ✓      |        ✓        |         ✓          |      ✓       |         ✗         |         ✗         |
+| jamovi [@jamovimodules]                            |   ✓ (core)   |      ✓      |    ✓ (core)     | ✓ (MetaJam, MAJOR) | ✓ (MetaJam)  |   ✓ (OncoPath)    |         ✗         |
+| CMA v4 [@cma]                                      |      ✗       |      ✗      |  Windows only   |         ✓          |      ✓       |         ✗         |         ✗         |
+| Stata 19 [@stata]                                  |      ✗       |      ✗      |        ✓        |         ✓          |      ✓       | user-written only | user-written only |
+| MetaXL 5.3 [@metaxl]                               |      ✓       |      ✗      |  Excel add-in   |         ✓          | Stata export |         ✗         |         ✗         |
+| Meta-Mar [@metamar]                                |      ✓       |      ✓      |        ✗        |         ✓          |      ✓       |         ✗         |         ✗         |
+| MetaDTA / Meta-DiSc 2.0 [@freeman2019; @plana2022] |   ✓ (both)   |  ✓ (both)   |        ✗        |         ✗          |      ✗       |     ✓ (both)      |         ✗         |
+| CTU TSA [@thorlund2017]                            |      ✓       |      ✗      |        ✓        |         ✓          |      ✗       |         ✗         |         ✓         |
 
-Table: Software comparison (evidence record: `docs/research/feature-comparison.md`). Symbols: ✓, available; ✗, not available; text cells note partial or qualified support. Parentheses specify scope: jamovi core or module names, or "(both)" for the two diagnostic apps. Abbreviations: Biv. DTA, bivariate diagnostic test accuracy (SROC and regions); CMA, Comprehensive Meta-Analysis; CTU, Copenhagen Trial Unit; Meta-reg., multi-moderator meta-regression; Pairwise, pooling two-group comparisons across studies; SROC, summary receiver operating characteristic; TSA, trial sequential analysis.\label{tbl:comparison}
+Table: Software comparison. Symbols: ✓, available; ✗, not available; text cells note partial or qualified support. Parentheses specify scope: jamovi core or module names, or "(both)" for the two diagnostic apps. Abbreviations: Biv. DTA, bivariate diagnostic test accuracy; CMA, Comprehensive Meta-Analysis; CTU, Copenhagen Trial Unit; Meta-reg., multi-moderator meta-regression; Pairwise, pooling two-group comparisons across studies; TSA, trial sequential analysis.\label{tbl:comparison}
 
 No maintained tool offered a suitable base to close this gap. RevMan Web, CMA,
 Stata, MetaXL, and CTU TSA are closed source, and the open-source alternatives
@@ -147,9 +148,9 @@ separate window with plots, tables, and draft Methods and Results text.
 
 ![RC MetaStudio 0.7.1 interface. (A) Welcome screen with recent projects. (B) New-project wizard, data-type step. (C) Workspace for aminoglycoside-dosing data [@barza1996]: per-arm counts, derived odds ratios, and two outcome tabs (Clinical failure, Nephrotoxicity). Abbreviations: CI, confidence interval; OR, odds ratio.\label{fig:interface}](paper-figures/figure-1-interface.png){ width=100% }
 
-The interface uses Python 3 and Qt 6 via PyQt6 [@pyqt6], delegating statistical
-computation to a bundled R runtime [@rcore2026] with version-pinned CRAN
-packages. Reviewers install only RC MetaStudio, with no separate R setup; every
+The interface uses Python 3.14.10 and Qt 6.12.0 via PyQt6 [@pyqt6], delegating statistical
+computation to a bundled R 4.6.2 runtime [@rcore2026] with version-pinned CRAN
+packages. Reviewers install only RC MetaStudio, with no separate R setup, and every
 copy runs those pinned packages and produces the same results. Wrapping
 established packages, rather than writing new estimators, gives reviewers a
 consistent interface while keeping the statistical core modular, so back-end
@@ -172,21 +173,21 @@ published formulas for heterogeneity-adjusted required information size
 [@wetterslev2017; @thorlund2017], penalized Z-curves [@lan2003; @hu2007], and
 TSA-adjusted confidence intervals [@wetterslev2017; @thorlund2017].
 
-| Area | Supported options | R package |
-| --- | --- | --- |
-| Data types and measures | One-arm proportions (raw, log, logit, arcsine, Freeman–Tukey), means, regression coefficients, and entered effects; two-arm binary (odds ratio, risk ratio, risk difference, arcsine difference, and Yule's Q and Y), continuous (mean difference, standardized mean difference), hazard ratio, and raw or reported incidence rate ratio; diagnostic 2×2 counts (sensitivity, specificity, positive and negative likelihood ratios, and diagnostic odds ratio). | `metafor`, `mada` |
-| Pooling and $\tau^2$ estimators | Fixed-effect inverse variance, Mantel–Haenszel (binary and raw incidence rate ratio), and Peto; random effects with ten $\tau^2$ estimators: REML (default), DerSimonian–Laird, Paule–Mandel, median-unbiased Paule–Mandel, empirical Bayes, Sidik–Jonkman, maximum likelihood, Hedges, Hunter–Schmidt, and small-sample-corrected Hunter–Schmidt. | `metafor` |
-| Inference and intervals | Normal approximation, $t$, Knapp–Hartung, and modified Knapp–Hartung confidence intervals; random-effects prediction intervals; configurable confidence level. | `metafor` |
-| Pairwise follow-up analyses | Subgroup analysis with $Q$ difference test; cumulative analysis (table, year, or effect order); leave-one-out analysis (table, year, effect, or $I^2$ order); fixed- and random-effects meta-regression with numeric, categorical, and multiple moderators. | `metafor` |
-| Small-study effects | Egger, mixed-effects Egger, Begg, Harbord, Peters, Rücker, Pustejovsky–Rodgers, and Deeks asymmetry tests; ordinary, contour-enhanced, and Deeks funnels; trim-and-fill (L0 and R0 estimators); precision-limit extrapolation. | `meta`, `metafor` |
-| Diagnostic accuracy | Count-based Reitsma bivariate model (REML or maximum likelihood) with summary operating points, SROC curve, confidence and joint prediction regions, SROC AUC and partial AUC, sampled likelihood ratios and diagnostic odds ratio, diagnostic $I^2$, and additive bivariate meta-regression; univariate diagnostic models. | `mada`, `metafor` |
-| Trial sequential analysis | Risk ratio, odds ratio, risk difference, Peto odds ratio, mean difference, and reported hazard ratio; $D^2$ or $I^2$ heterogeneity-adjusted required information size; Lan–DeMets O'Brien–Fleming and Pocock spending boundaries; non-binding futility boundaries; penalized Z-curve; TSA-adjusted confidence intervals; anticipated-effect sensitivity table. | `metafor`, `gsDesign`, `RCMetaR` |
+| Area                            | Supported options                                                                                                                                                                                                                                                                                                                                                                                                                                               | R package                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Data types and measures         | One-arm proportions (raw, log, logit, arcsine, Freeman–Tukey), means, regression coefficients, and entered effects; two-arm binary (odds ratio, risk ratio, risk difference, arcsine difference, and Yule's Q and Y), continuous (mean difference, standardized mean difference), hazard ratio, and raw or reported incidence rate ratio; diagnostic 2×2 counts (sensitivity, specificity, positive and negative likelihood ratios, and diagnostic odds ratio). | `metafor`, `mada`                |
+| Pooling and $\tau^2$ estimators | Fixed-effect inverse variance, Mantel–Haenszel (binary and raw incidence rate ratio), and Peto; random effects with ten $\tau^2$ estimators: REML (default), DerSimonian–Laird, Paule–Mandel, median-unbiased Paule–Mandel, empirical Bayes, Sidik–Jonkman, maximum likelihood, Hedges, Hunter–Schmidt, and small-sample-corrected Hunter–Schmidt.                                                                                                              | `metafor`                        |
+| Inference and intervals         | Normal approximation, $t$, Knapp–Hartung, and modified Knapp–Hartung confidence intervals; random-effects prediction intervals; configurable confidence level.                                                                                                                                                                                                                                                                                                  | `metafor`                        |
+| Pairwise follow-up analyses     | Subgroup analysis with $Q$ difference test; cumulative analysis (table, year, or effect order); leave-one-out analysis (table, year, effect, or $I^2$ order); fixed- and random-effects meta-regression with numeric, categorical, and multiple moderators.                                                                                                                                                                                                     | `metafor`                        |
+| Small-study effects             | Egger, mixed-effects Egger, Begg, Harbord, Peters, Rücker, Pustejovsky–Rodgers, and Deeks asymmetry tests; ordinary, contour-enhanced, and Deeks funnels; trim-and-fill (L0 and R0 estimators); precision-limit extrapolation.                                                                                                                                                                                                                                  | `meta`, `metafor`                |
+| Diagnostic accuracy             | Count-based Reitsma bivariate model (REML or maximum likelihood) with summary operating points, SROC curve, confidence and joint prediction regions, SROC AUC and partial AUC, sampled likelihood ratios and diagnostic odds ratio, diagnostic $I^2$, and additive bivariate meta-regression; univariate diagnostic models.                                                                                                                                     | `mada`, `metafor`                |
+| Trial sequential analysis       | Risk ratio, odds ratio, risk difference, Peto odds ratio, mean difference, and reported hazard ratio; $D^2$ or $I^2$ heterogeneity-adjusted required information size; Lan–DeMets O'Brien–Fleming and Pocock spending boundaries; non-binding futility boundaries; penalized Z-curve; TSA-adjusted confidence intervals; anticipated-effect sensitivity table.                                                                                                  | `metafor`, `gsDesign`, `RCMetaR` |
 
 Table: Statistical options and features in RC MetaStudio (see `docs/user-guide.md`). Abbreviations: AUC, area under the curve; $D^2$, diversity; $I^2$, percentage of variability due to heterogeneity; $Q$, Cochran's heterogeneity statistic; REML, restricted maximum likelihood; SROC, summary receiver operating characteristic; $\tau^2$, between-study variance; TSA, trial sequential analysis.\label{tbl:methods}
 
 Across all methods, `RCMetaR` formats outputs into a standard set of tables,
 draft text, and plots. R draws journal-ready figures from the fitted model in
-memory, so reviewers can use *Edit plot* to switch between Default, BMJ, and
+memory, so reviewers can use _Edit plot_ to switch between Default, BMJ, and
 RevMan styles (Figure \ref{fig:forest}) or adjust labels, colors, axes, and
 study order without refitting. The same path produces follow-up pairwise
 figures (Figure \ref{fig:pairwise}) and bivariate SROC and TSA monitoring plots
@@ -202,7 +203,7 @@ Word (`.docx`).
 
 # Research impact statement
 
-The Research Council of Pakistan has run meta-analysis workshops since 2016. A
+Our team has run meta-analysis workshops since 2016. A
 decade of training meta-analysts, from beginners to experienced reviewers,
 informed RC MetaStudio's design. About 500 students have used the program, and
 their day-to-day feedback has refined the software.
