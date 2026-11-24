@@ -5,7 +5,6 @@ import importlib.metadata
 import json
 import os
 import platform
-import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -21,7 +20,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BUILD_ROOT = ROOT / "build/qt6-verification"
 CACHE = ROOT / "artifacts/verification/rcms/cache"
 R_PATH_VARIABLES = ("R_HOME", "R_LIBS", "R_LIBS_USER", "R_LIBS_SITE", "LD_LIBRARY_PATH")
-PDF_TOOLS = ("pdfimages", "pdfinfo", "pdftohtml", "pdftoppm", "pdftotext")
 DESKTOP_TOOL_PATHS_ENV = "RCMS_E2E_TOOL_PATHS"
 TYPING_RECEIPT_ENV = "RCMS_TYPING_RECEIPT"
 EVIDENCE_ENVIRONMENT = (
@@ -196,21 +194,14 @@ print(json.dumps({name: os.environ.get(name) for name in names}))
     ))
 
 
-def _resolve_external_tool(name: str, env: dict[str, str]) -> Path | None:
-    if name == "Rscript":
-        return resolve_rscript(name, env)
-    command = shutil.which(name, path=env.get("PATH"))
-    return Path(command).resolve() if command else None
-
-
-def desktop_tool_executable(name: str) -> str:
+def desktop_rscript() -> str:
     bindings = os.environ.get(DESKTOP_TOOL_PATHS_ENV)
     if bindings is not None:
-        path = json.loads(bindings).get(name)
+        path = json.loads(bindings).get("Rscript")
     else:
-        path = _resolve_external_tool(name, dict(os.environ))
+        path = resolve_rscript("Rscript", dict(os.environ))
     if path is None:
-        raise FileNotFoundError(f"{name} is required for this desktop workflow")
+        raise FileNotFoundError("Rscript is required for this desktop workflow")
     return str(path)
 
 
@@ -218,11 +209,8 @@ def external_tools(env: dict[str, str], runtime: dict[str, str | None] | None = 
     if runtime is None:
         runtime = _runtime_environment(env)
     effective_env = env | {name: value for name, value in runtime.items() if value is not None}
-    identities: dict[str, dict[str, str] | None] = {}
-    for name in (*PDF_TOOLS, "Rscript"):
-        path = _resolve_external_tool(name, effective_env)
-        identities[name] = {"path": str(path), "sha256": file_digest(path)} if path and path.is_file() else None
-    return identities
+    path = resolve_rscript("Rscript", effective_env)
+    return {"Rscript": {"path": str(path), "sha256": file_digest(path)} if path and path.is_file() else None}
 
 
 def verification_context(env: dict[str, str]) -> dict[str, object]:

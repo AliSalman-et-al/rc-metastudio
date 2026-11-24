@@ -8,7 +8,7 @@ import shutil
 import sys
 import math
 import subprocess
-from scripts.verification_evidence import desktop_tool_executable
+from scripts.verification_evidence import desktop_rscript
 from pathlib import Path
 from tests.e2e.results_presentation import check_values_export
 from tests.fit_observations import observe_fit
@@ -153,7 +153,7 @@ def run(app, window, work, root, record, analyze):
                                     parameters={'digits': 3, 'conf.level': 90, **({'inference.method': 'knha'} if workflow == 'subgroup-t' else {})},
                                     covariates=('Group',) if workflow == 'adjusted-means' else ('Dose',))
         inspect(view, workflow, fit)
-    rscript = desktop_tool_executable('Rscript')
+    rscript = desktop_rscript()
     command = [rscript, str(root / 'tests/e2e/results_values_reference.R'), str(work)]
     (work / 'public-reference-command.json').write_text(json.dumps(command), encoding='utf-8')
     process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8')

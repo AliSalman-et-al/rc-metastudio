@@ -22,13 +22,13 @@ from uuid import uuid4
 if __package__:
     from scripts import package_input_policy, r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
-    from scripts.verification_evidence import DEFAULT_BUILD_ROOT, PDF_TOOLS, VerificationError, configured_build_root, file_digest, run_typing
+    from scripts.verification_evidence import DEFAULT_BUILD_ROOT, VerificationError, configured_build_root, file_digest, run_typing
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from scripts import package_input_policy
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
-    from verification_evidence import DEFAULT_BUILD_ROOT, PDF_TOOLS, VerificationError, configured_build_root, file_digest, run_typing
+    from verification_evidence import DEFAULT_BUILD_ROOT, VerificationError, configured_build_root, file_digest, run_typing
 
 
 def discover_repo_root(start: Path | None = None) -> Path:
@@ -360,7 +360,7 @@ def ready_desktop(part: str, scenarios: str, args: argparse.Namespace) -> None:
 def ready_toolchain(args: argparse.Namespace) -> dict[str, object]:
     env = dict(os.environ)
     rscript = r_support.resolve_rscript(selected_rscript(args))
-    tools = [shutil.which(name) for name in ("git", "uv", "node", "bash", "powershell", "rcc", "xvfb-run", *PDF_TOOLS)]
+    tools = [shutil.which(name) for name in ("git", "uv", "node", "bash", "powershell", "rcc", "xvfb-run")]
     executables = {Path(path).resolve() for path in tools if path} | {Path(sys.executable).resolve()}
     if rscript:
         executables.add(rscript.resolve())

@@ -468,7 +468,7 @@ plot's fills and identify both guides. The forest editor is used to replace
 one direction label and clear the other before a second export.
 The driver also checks that the undersized
 dialog disables Save and verifies the SROC marker and palette geometry in SVG.
-The driver controls the file-picker destination. Rendering requires Poppler.
+The driver controls the file-picker destination. The locked development environment supplies the PDF renderer.
 
 The TSA desktop scenarios retain the actual preflight, report, plot bundle,
 render and editor steps. `tsa-peto` uses the default TSA design on BCG after a

@@ -1,9 +1,8 @@
 """Outcome/arm naming through the real wizard, model, calculators and output."""
 import csv
-import subprocess
 from pathlib import Path
 from unittest.mock import patch
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import pdf_text
 from xml.etree import ElementTree as ET
 
 from PyQt6 import QtCore, QtWidgets
@@ -54,7 +53,7 @@ def run(app, window, work, record):
             if family.startswith("twoarm"):
                 assert comparison in view.results.identity, view.results.identity
                 assert " vs ".join(expected) in view.result_facts.accessibleDescription(), view.result_facts.accessibleDescription()
-                exported = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', str(work / 'round3-report.pdf'), '-'], text=True, encoding='utf-8')
+                exported = pdf_text(work / 'round3-report.pdf')
                 assert comparison in ' '.join(exported.split()), exported
                 if family.endswith("proportion"):
                     assert "equal odds in "+" and ".join(expected) in text, text

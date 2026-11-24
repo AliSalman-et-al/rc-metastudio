@@ -4,33 +4,31 @@ from dataclasses import asdict
 import hashlib
 import json
 import re
-import subprocess
 from pathlib import Path
 import sys
 import unicodedata
 from unittest.mock import patch
 from uuid import uuid4
-import xml.etree.ElementTree as ET
 
 from docx import Document
 from PyQt6.QtWidgets import QApplication, QFileDialog
 from PyQt6.QtGui import QTextCursor, QTextDocument, QTextTable
 from rc_metastudio.results.report_export import write_docx, write_pdf
 from rc_metastudio.qt_object_guard import required
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import PdfPageWords, PdfWord, pdf_text, pdf_words
 
 
 def numeric_tokens(text):
     return re.findall(r"(?<![\w.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?(?![\w.])", text)
 
 
-def _pdf_line(words: list[ET.Element]) -> list[ET.Element]:
-    top = float(words[0].attrib['yMin'])
-    return [word for word in words if abs(float(word.attrib['yMin']) - top) < .01]
+def _pdf_line(words: list[PdfWord]) -> list[PdfWord]:
+    top = words[0].top
+    return [word for word in words if abs(word.top - top) < .01]
 
 
-def _restore_page_cell(previous: list[ET.Element], visible: list[ET.Element],
-                       clipped: list[ET.Element]) -> None:
+def _restore_page_cell(previous: list[PdfWord], visible: list[PdfWord],
+                       clipped: list[PdfWord]) -> None:
     # A clipped duplicate identifies a cell continued from the previous page.
     # Move its first visible line beside that exact prefix, ahead of sibling
     # cells, only when both text and horizontal coordinates identify the row.
@@ -38,46 +36,47 @@ def _restore_page_cell(previous: list[ET.Element], visible: list[ET.Element],
         return
     clipped = _pdf_line(clipped)
     continuation = _pdf_line(visible)
-    left = float(clipped[0].attrib['xMin'])
-    if abs(float(continuation[0].attrib['xMin']) - left) >= .01:
+    left = clipped[0].left
+    if abs(continuation[0].left - left) >= .01:
         return
-    if float(continuation[0].attrib['yMin']) > 2 * (float(continuation[0].attrib['yMax']) - float(continuation[0].attrib['yMin'])):
+    if continuation[0].top > 2 * (continuation[0].bottom - continuation[0].top):
         return
-    expected = [(w.text, w.attrib['xMin']) for w in clipped]
-    observed = [(w.text, w.attrib['xMin']) for w in previous]
+    expected = [(w.text, w.left) for w in clipped]
+    observed = [(w.text, w.left) for w in previous]
     for start in range(len(previous) - len(clipped) - 1, -1, -1):
         end = start + len(clipped)
-        if observed[start:end] != expected:
+        if any(text != other or abs(x - other_x) >= .01
+               for (text, x), (other, other_x) in zip(expected, observed[start:end])):
             continue
         sibling = previous[end]
-        if abs(float(sibling.attrib['yMin']) - float(previous[start].attrib['yMin'])) >= .01:
+        if abs(sibling.top - previous[start].top) >= .01:
             return
-        if max(float(w.attrib['xMax']) for w in continuation) >= float(sibling.attrib['xMin']):
+        if max(w.right for w in continuation) >= sibling.left:
             return
         previous[end:end] = continuation
         del visible[:len(continuation)]
         return
 
 
-def _restore_header_units(words: list[ET.Element], visible: list[ET.Element],
-                          previous_page: list[ET.Element], previous_height: float) -> None:
+def _restore_header_units(words: list[PdfWord], visible: list[PdfWord],
+                          previous_page: list[PdfWord], previous_height: float) -> None:
     if not previous_page or not visible:
         return
     continuation = _pdf_line(visible)
-    if not all(re.fullmatch(r'\([^()]+\)', word.text or '') for word in continuation):
+    if not all(re.fullmatch(r'\([^()]+\)', word.text) for word in continuation):
         return
-    line_height = float(continuation[0].attrib['yMax']) - float(continuation[0].attrib['yMin'])
-    if float(continuation[0].attrib['yMin']) > 2 * line_height:
+    line_height = continuation[0].bottom - continuation[0].top
+    if continuation[0].top > 2 * line_height:
         return
-    last_y = max(float(word.attrib['yMin']) for word in previous_page)
+    last_y = max(word.top for word in previous_page)
     if previous_height - last_y > 4 * line_height:
         return
-    last_line = [word for word in previous_page if abs(float(word.attrib['yMin']) - last_y) < .01]
+    last_line = [word for word in previous_page if abs(word.top - last_y) < .01]
     insertions = []
     for unit in continuation:
-        center = (float(unit.attrib['xMin']) + float(unit.attrib['xMax'])) / 2
+        center = (unit.left + unit.right) / 2
         matches = [word for word in last_line
-                   if abs((float(word.attrib['xMin']) + float(word.attrib['xMax'])) / 2 - center) < .01]
+                   if abs((word.left + word.right) / 2 - center) < .01]
         if len(matches) != 1:
             return
         insertions.append((words.index(matches[0]) + 1, unit))
@@ -88,15 +87,14 @@ def _restore_header_units(words: list[ET.Element], visible: list[ET.Element],
     del visible[:len(continuation)]
 
 
-def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
-    words = []
-    previous_page = []
+def _ordered_pdf_text(pages: list[PdfPageWords], table_headers=()) -> str:
+    words: list[PdfWord] = []
+    previous_page: list[PdfWord] = []
     previous_height = 0.0
-    for page in ET.fromstring(bbox).iter('{http://www.w3.org/1999/xhtml}page'):
-        width, height = float(page.attrib['width']), float(page.attrib['height'])
+    for width, height, page_words in pages:
         visible, clipped = [], []
-        for word in page.iter('{http://www.w3.org/1999/xhtml}word'):
-            x, y, right, bottom = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'xMax', 'yMax'))
+        for word in page_words:
+            x, y, right, bottom, _ = word
             if 0 <= x <= right <= width and 0 <= y <= bottom <= height:
                 visible.append(word)
             elif 0 <= x <= right <= width and y < 0 < bottom:
@@ -105,7 +103,7 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
         _restore_header_units(words, visible, previous_page, previous_height)
         # A printed table repeats its complete header at a continuation page.
         # Remove only an exact page-prefix header already seen on an earlier page.
-        history = ' '.join(word.text or '' for word in words)
+        history = ' '.join(word.text for word in words)
         current_table = re.split(r'\bTable\s+\d+\.\s', history)[-1]
         for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
             expected = re.findall(r'\w+|[^\w\s]', ' '.join(headers))
@@ -113,7 +111,7 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
                 continue
             tokens = []
             for count, word in enumerate(visible, 1):
-                tokens.extend(re.findall(r'\w+|[^\w\s]', word.text or ''))
+                tokens.extend(re.findall(r'\w+|[^\w\s]', word.text))
                 if len(tokens) >= len(expected):
                     break
             if tokens == expected and ' '.join(expected) in ' '.join(re.findall(r'\w+|[^\w\s]', current_table)):
@@ -124,8 +122,7 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
     text = []
     previous = None
     for word in words:
-        x, y, bottom = (float(word.attrib[key]) for key in ('xMin', 'yMin', 'yMax'))
-        value = word.text or ''
+        x, y, _, bottom, value = word
         if (previous is not None and re.fullmatch(r'[+-]?\d+\.\d+', text[-1])
                 and value.isascii() and value.isdigit()
                 and abs(x - previous[0]) < .01 and -1 <= y - previous[1] <= .5):
@@ -136,13 +133,11 @@ def _ordered_pdf_text(bbox: str, table_headers=()) -> str:
     return ' '.join(text)
 
 
-def visible_pdf_text(path, table_headers=()):
-    raw = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', str(path), '-'], text=True, encoding="utf-8")
-    path.with_name('pdf-raw.txt').write_text(raw, encoding="utf-8")
-    bbox = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-raw', '-bbox', str(path), '-'], text=True, encoding="utf-8")
-    path.with_name('pdf-bbox.xhtml').write_text(bbox, encoding="utf-8")
-    return _ordered_pdf_text(bbox, table_headers)
-
+def visible_pdf_text(path: Path, table_headers=()) -> str:
+    path.with_name('pdf-raw.txt').write_text(pdf_text(path), encoding="utf-8")
+    pages = pdf_words(path)
+    path.with_name('pdf-bbox.json').write_text(json.dumps(pages, ensure_ascii=False), encoding="utf-8")
+    return _ordered_pdf_text(pages, table_headers)
 
 
 def capture(view, directory, *, system_clipboard=True):
