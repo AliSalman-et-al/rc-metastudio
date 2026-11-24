@@ -1,5 +1,6 @@
 ---
 title: "RC MetaStudio: open-source software for advanced meta-analysis"
+short-title: RC MetaStudio for Advanced Meta-Analysis
 tags:
   - meta-analysis
   - evidence synthesis
@@ -11,6 +12,7 @@ authors:
   - name: Ali Salman
     orcid: 0009-0001-1102-226X
     corresponding: true
+    email: alisalman.et.al@gmail.com
     affiliation: 1
   - name: Kaneez Fatima
     affiliation: 2
@@ -104,20 +106,20 @@ Unit (CTU) TSA program [@thorlund2017] pairs pooling with sequential testing.
 MetaXL [@metaxl] pools pairwise data and exports to Stata for meta-regression,
 while Meta-Mar [@metamar] covers pairwise analyses and meta-regression.
 
-| Software                                           |     Free     | Open source | Installable app |      Pairwise      |  Meta-reg.   |     Biv. DTA      |        TSA        |
-| -------------------------------------------------- | :----------: | :---------: | :-------------: | :----------------: | :----------: | :---------------: | :---------------: |
-| RC MetaStudio                                      |      ✓       |      ✓      |        ✓        |         ✓          |      ✓       |         ✓         |         ✓         |
-| RevMan Web [@cochrane2023revmanweb; @cochranekb]   | subscription |      ✗      |        ✗        |         ✓          |      ✗       |    plots only     |         ✗         |
-| JASP [@bartos2026; @jaspcoverage]                  |      ✓       |      ✓      |        ✓        |         ✓          |      ✓       |         ✗         |         ✗         |
-| jamovi [@jamovimodules]                            |   ✓ (core)   |      ✓      |    ✓ (core)     | ✓ (MetaJam, MAJOR) | ✓ (MetaJam)  |   ✓ (OncoPath)    |         ✗         |
-| CMA v4 [@cma]                                      |      ✗       |      ✗      |  Windows only   |         ✓          |      ✓       |         ✗         |         ✗         |
-| Stata 19 [@stata]                                  |      ✗       |      ✗      |        ✓        |         ✓          |      ✓       | user-written only | user-written only |
-| MetaXL 5.3 [@metaxl]                               |      ✓       |      ✗      |  Excel add-in   |         ✓          | Stata export |         ✗         |         ✗         |
-| Meta-Mar [@metamar]                                |      ✓       |      ✓      |        ✗        |         ✓          |      ✓       |         ✗         |         ✗         |
-| MetaDTA / Meta-DiSc 2.0 [@freeman2019; @plana2022] |   ✓ (both)   |  ✓ (both)   |        ✗        |         ✗          |      ✗       |     ✓ (both)      |         ✗         |
-| CTU TSA [@thorlund2017]                            |      ✓       |      ✗      |        ✓        |         ✓          |      ✗       |         ✗         |         ✓         |
+| Software                                           |     Free     | Open source | Installable app |       Pairwise       |   Meta-reg.   |      Biv. DTA     |        TSA        |
+| -------------------------------------------------- | :----------: | :---------: | :-------------: | :------------------: | :-----------: | :---------------: | :---------------: |
+| RC MetaStudio                                      |     Yes      |     Yes     |       Yes       |         Yes          |      Yes      |        Yes        |        Yes        |
+| RevMan Web [@cochrane2023revmanweb; @cochranekb]   | subscription |      No     |        No       |         Yes          |       No      |     plots only    |         No        |
+| JASP [@bartos2026; @jaspcoverage]                  |     Yes      |     Yes     |       Yes       |         Yes          |      Yes      |         No        |         No        |
+| jamovi [@jamovimodules]                            |  Yes (core)  |     Yes     |    Yes (core)   | Yes (MetaJam, MAJOR) | Yes (MetaJam) |   Yes (OncoPath)  |         No        |
+| CMA v4 [@cma]                                      |      No      |      No     |   Windows only  |         Yes          |      Yes      |         No        |         No        |
+| Stata 19 [@stata]                                  |      No      |      No     |       Yes       |         Yes          |      Yes      | user-written only | user-written only |
+| MetaXL 5.3 [@metaxl]                               |     Yes      |      No     |   Excel add-in  |         Yes          |  Stata export |         No        |         No        |
+| Meta-Mar [@metamar]                                |     Yes      |     Yes     |        No       |         Yes          |      Yes      |         No        |         No        |
+| MetaDTA / Meta-DiSc 2.0 [@freeman2019; @plana2022] |  Yes (both)  |  Yes (both) |        No       |          No          |       No      |     Yes (both)    |         No        |
+| CTU TSA [@thorlund2017]                            |     Yes      |      No     |       Yes       |         Yes          |       No      |         No        |        Yes        |
 
-Table: Software comparison. Symbols: ✓, available; ✗, not available; text cells note partial or qualified support. Parentheses specify scope: jamovi core or module names, or "(both)" for the two diagnostic apps. Abbreviations: Biv. DTA, bivariate diagnostic test accuracy; CMA, Comprehensive Meta-Analysis; CTU, Copenhagen Trial Unit; Meta-reg., multi-moderator meta-regression; Pairwise, pooling two-group comparisons across studies; TSA, trial sequential analysis.\label{tbl:comparison}
+Table: Software comparison. Yes indicates availability, No indicates lack of support, and other entries describe partial or qualified support. Parentheses specify scope: jamovi core or module names, or "(both)" for the two diagnostic apps. Abbreviations: Biv. DTA, bivariate diagnostic test accuracy; CMA, Comprehensive Meta-Analysis; CTU, Copenhagen Trial Unit; Meta-reg., multi-moderator meta-regression; Pairwise, pooling two-group comparisons across studies; TSA, trial sequential analysis.\label{tbl:comparison}
 
 No maintained tool offered a suitable base to close this gap. RevMan Web, CMA,
 Stata, MetaXL, and CTU TSA are closed source, and the open-source alternatives
@@ -145,8 +147,10 @@ variances, or P values; completes partial counts; and reconstructs pre–post
 summaries from a paired correlation. From the Analysis menu, reviewers
 configure the model and options in one setup dialog. Output appears in a
 separate window with plots, tables, and draft Methods and Results text.
+Figure \ref{fig:interface} shows the workspace with data from Barza et al.’s
+meta-analysis of aminoglycoside dosing [@barza1996].
 
-![RC MetaStudio 0.7.1 interface. (A) Welcome screen with recent projects. (B) New-project wizard, data-type step. (C) Workspace for aminoglycoside-dosing data [@barza1996]: per-arm counts, derived odds ratios, and two outcome tabs (Clinical failure, Nephrotoxicity). Abbreviations: CI, confidence interval; OR, odds ratio.\label{fig:interface}](paper-figures/figure-1-interface.png){ width=100% }
+![RC MetaStudio 0.7.1 interface. (A) Welcome screen with recent projects. (B) New-project wizard, data-type step. (C) Workspace for aminoglycoside-dosing data: per-arm counts, derived odds ratios, and two outcome tabs (Clinical failure, Nephrotoxicity). Abbreviations: CI, confidence interval; OR, odds ratio.\label{fig:interface}](paper-figures/figure-1-interface.png){ width=100% }
 
 The interface uses Python 3.14.10 and Qt 6.12.0 via PyQt6 [@pyqt6], delegating statistical
 computation to a bundled R 4.6.2 runtime [@rcore2026] with version-pinned CRAN
@@ -194,12 +198,16 @@ figures (Figure \ref{fig:pairwise}) and bivariate SROC and TSA monitoring plots
 (Figure \ref{fig:diagnostic}). Figures export as PDF, SVG, PNG, or TIFF at
 chosen dimensions and resolution; numeric tables as CSV; and reports as PDF or
 Word (`.docx`).
+Figures \ref{fig:forest} and \ref{fig:pairwise} use the 13 BCG trials from
+Colditz et al. [@colditz1994]. Figure \ref{fig:diagnostic} uses deep venous
+thrombosis data from Kearon et al. [@kearon1998] for the SROC curve and head
+and neck cancer data from Pignon et al. [@pignon2000] for the TSA plot.
 
-![Random-effects forest plot of risk ratios for the 13 BCG trials [@colditz1994] in the three built-in styles: (A) Default, (B) BMJ, and (C) RevMan. All panels share one REML fit with normal-approximation 95% CIs (pooled RR 0.49, 95% CI 0.34 to 0.70); only style differs. Figures \ref{fig:forest} to \ref{fig:diagnostic} were exported from RC MetaStudio 0.7.1. Abbreviations: BCG, bacille Calmette–Guérin; CI, confidence interval; df, degrees of freedom; $I^2$, percentage of variability due to heterogeneity; IV, inverse variance; $Q$ and $\chi^2$, Cochran's heterogeneity statistic; REML, restricted maximum likelihood; RR, risk ratio; $\tau^2$, between-study variance; TPT, Tuberculosis Prevention Trial.\label{fig:forest}](paper-figures/figure-2-forest.pdf){ width=100% }
+![Random-effects forest plot of risk ratios for the 13 BCG trials in the three built-in styles: (A) Default, (B) BMJ, and (C) RevMan. All panels share one REML fit with normal-approximation 95% CIs (pooled RR 0.49, 95% CI 0.34 to 0.70); only style differs. Figures \ref{fig:forest} to \ref{fig:diagnostic} were exported from RC MetaStudio 0.7.1. Abbreviations: BCG, bacille Calmette–Guérin; CI, confidence interval; df, degrees of freedom; $I^2$, percentage of variability due to heterogeneity; IV, inverse variance; $Q$ and $\chi^2$, Cochran's heterogeneity statistic; REML, restricted maximum likelihood; RR, risk ratio; $\tau^2$, between-study variance; TPT, Tuberculosis Prevention Trial.\label{fig:forest}](paper-figures/figure-2-forest.pdf){ width=100% }
 
 ![Follow-up analyses of the BCG trials in Figure \ref{fig:forest} (Default style). (A) Meta-regression of risk ratios on absolute latitude; circle size reflects study weight. (B) Contour-enhanced funnel plot; shading indicates P value regions around no effect (solid line at 1), and the dashed line marks the common-effect (fixed-effect) estimate. Abbreviations: BCG, bacille Calmette–Guérin; CI, confidence interval.\label{fig:pairwise}](paper-figures/figure-3-pairwise.pdf){ width=100% }
 
-![Diagnostic and trial sequential analyses (Default style). (A) Reitsma SROC curve for noninvasive diagnosis of deep venous thrombosis [@kearon1998] with study points, summary point, confidence region, and joint prediction region. (B) TSA of hazard ratios for chemotherapy in head and neck cancer [@pignon2000]; the horizontal axis shows inverse-variance statistical information (sum of inverse variances of the log HRs), not participant counts. The cumulative Z-curve crosses the conventional boundary first, then the lower monitoring boundary at 42% of RIS with the Bavaria 89 trial (circled). Abbreviations: AUC, area under the curve; HR, hazard ratio; RIS, required information size; SROC, summary receiver operating characteristic; TSA, trial sequential analysis.\label{fig:diagnostic}](paper-figures/figure-4-diagnostic-sequential.pdf){ width=100% }
+![Diagnostic and trial sequential analyses (Default style). (A) Reitsma SROC curve for noninvasive diagnosis of deep venous thrombosis with study points, summary point, confidence region, and joint prediction region. (B) TSA of hazard ratios for chemotherapy in head and neck cancer; the horizontal axis shows inverse-variance statistical information (sum of inverse variances of the log HRs), not participant counts. The cumulative Z-curve crosses the conventional boundary first, then the lower monitoring boundary at 42% of RIS with the Bavaria 89 trial (circled). Abbreviations: AUC, area under the curve; HR, hazard ratio; RIS, required information size; SROC, summary receiver operating characteristic; TSA, trial sequential analysis.\label{fig:diagnostic}](paper-figures/figure-4-diagnostic-sequential.pdf){ width=100% }
 
 # Research impact statement
 
