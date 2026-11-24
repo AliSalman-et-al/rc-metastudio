@@ -33,73 +33,73 @@ Appendix A.
 
 Only shipped behaviour is listed. Citations are `file:line` in this
 repository at the 0.7.0 documentation state (CHANGELOG
-[0.7.0](../../CHANGELOG.md#L5), commit `cbf78a6a`).
+[0.7.0](../../CHANGELOG.md), commit `cbf78a6a`).
 
 ### 1.1 Data entry and data types
 
 | Feature | Source |
 | --- | --- |
-| Spreadsheet-style outcome sheets; a project holds several independent outcome sheets, each with its own rows, data type, arm names, covariates and settings | [README.md:8](../../README.md#L8), [user-guide.md:12](../user-guide.md#L12) |
-| One-arm proportions (events, total) with measures `PR`, `PLN`, `PLO`, `PAS`, `PFT` | [user-guide.md:23](../user-guide.md#L23) |
-| One-arm means (N, mean, SD; or mean, SE, N via calculator) | [user-guide.md:24](../user-guide.md#L24) |
-| Reported regression coefficient with CI, and entered effect estimate with SE (generic inverse variance on the supplied scale) | [user-guide.md:25-26](../user-guide.md#L25) |
-| Two-arm binary counts, or entered effect; `OR`, `RR`, `RD`, `AS`, `YUQ`, `YUY` | [user-guide.md:27](../user-guide.md#L27) |
-| Two-arm continuous (N, mean, SD per arm, or entered effect); `MD`, `SMD` | [user-guide.md:28](../user-guide.md#L28) |
-| Hazard ratios as a distinct data type: HR with CI (with source confidence level) or log HR with SE | [user-guide.md:29](../user-guide.md#L29), [user-guide.md:41](../user-guide.md#L41), [ADR-0010](../adr/0010-distinguish-hazard-and-incidence-rate-ratios.md) |
-| Incidence rate ratios from events and person-time per arm, or reported IRR with CI or log IRR with SE; raw and reported studies may be mixed in one sheet | [user-guide.md:29](../user-guide.md#L29), [user-guide.md:42-43](../user-guide.md#L42) |
-| Diagnostic test accuracy counts (`TP`, `FN`, `FP`, `TN`) or univariate estimates; `Sens`, `Spec`, `PLR`, `NLR`, `DOR` | [user-guide.md:30](../user-guide.md#L30) |
-| Numeric and categorical study-level covariates, convertible between the two | [user-guide.md:35](../user-guide.md#L35) |
-| Editable arm names, arm swap, and declared benefit direction used in labels, reports and one-sided TSA | [user-guide.md:33](../user-guide.md#L33) |
-| Sheet-level confidence level with per-analysis override; source confidence level of entered intervals is kept | [user-guide.md:34](../user-guide.md#L34), [CHANGELOG.md:117](../../CHANGELOG.md#L117) |
-| Undo/redo of the last 100 committed edits | [user-guide.md:14](../user-guide.md#L14) |
-| Nine bundled published sample projects with cited source tables | [sample_projects/README.md:5-15](../../sample_projects/README.md#L5), [CHANGELOG.md:7](../../CHANGELOG.md#L7) |
+| Spreadsheet-style outcome sheets; a project holds several independent outcome sheets, each with its own rows, data type, arm names, covariates and settings | [README.md:8](../../README.md), [user-guide.md:12](../user-guide.md) |
+| One-arm proportions (events, total) with measures `PR`, `PLN`, `PLO`, `PAS`, `PFT` | [user-guide.md:23](../user-guide.md) |
+| One-arm means (N, mean, SD; or mean, SE, N via calculator) | [user-guide.md:24](../user-guide.md) |
+| Reported regression coefficient with CI, and entered effect estimate with SE (generic inverse variance on the supplied scale) | [user-guide.md:25-26](../user-guide.md) |
+| Two-arm binary counts, or entered effect; `OR`, `RR`, `RD`, `AS`, `YUQ`, `YUY` | [user-guide.md:27](../user-guide.md) |
+| Two-arm continuous (N, mean, SD per arm, or entered effect); `MD`, `SMD` | [user-guide.md:28](../user-guide.md) |
+| Hazard ratios as a distinct data type: HR with CI (with source confidence level) or log HR with SE | [user-guide.md:29](../user-guide.md), [user-guide.md:41](../user-guide.md), [ADR-0010](../adr/0010-distinguish-hazard-and-incidence-rate-ratios.md) |
+| Incidence rate ratios from events and person-time per arm, or reported IRR with CI or log IRR with SE; raw and reported studies may be mixed in one sheet | [user-guide.md:29](../user-guide.md), [user-guide.md:42-43](../user-guide.md) |
+| Diagnostic test accuracy counts (`TP`, `FN`, `FP`, `TN`) or univariate estimates; `Sens`, `Spec`, `PLR`, `NLR`, `DOR` | [user-guide.md:30](../user-guide.md) |
+| Numeric and categorical study-level covariates, convertible between the two | [user-guide.md:35](../user-guide.md) |
+| Editable arm names, arm swap, and declared benefit direction used in labels, reports and one-sided TSA | [user-guide.md:33](../user-guide.md) |
+| Sheet-level confidence level with per-analysis override; source confidence level of entered intervals is kept | [user-guide.md:34](../user-guide.md), [CHANGELOG.md:117](../../CHANGELOG.md) |
+| Undo/redo of the last 100 committed edits | [user-guide.md:14](../user-guide.md) |
+| Nine bundled published sample projects with cited source tables | [sample_projects/README.md:5-15](../../sample_projects/README.md), [CHANGELOG.md:7](../../CHANGELOG.md) |
 
 Stated limits: no HR reconstruction from Kaplan–Meier curves, log-rank
 statistics or IPD, and no Poisson GLMMs
-([user-guide.md:46](../user-guide.md#L46)).
+([user-guide.md:46](../user-guide.md)).
 
 ### 1.2 Calculators
 
 | Feature | Source |
 | --- | --- |
-| Per-study calculator that derives effect estimates and SEs from reported statistics, completes partial counts and reconstructs missing summaries | [user-guide.md:32](../user-guide.md#L32) |
-| Continuous calculator inputs include N, mean, SD, SE, variance, CI bounds and P value | [continuous_dialog.py:58-77](../../src/rc_metastudio/calculators/continuous_dialog.py#L58) |
-| Pre/post continuous inputs with a paired correlation | [user-guide.md:32](../user-guide.md#L32) |
-| Reported HR/IRR entry as ratio with CI or log ratio with SE, with conversion between formats | [user-guide.md:41](../user-guide.md#L41) |
+| Per-study calculator that derives effect estimates and SEs from reported statistics, completes partial counts and reconstructs missing summaries | [user-guide.md:32](../user-guide.md) |
+| Continuous calculator inputs include N, mean, SD, SE, variance, CI bounds and P value | [continuous_dialog.py:58-77](../../src/rc_metastudio/calculators/continuous_dialog.py) |
+| Pre/post continuous inputs with a paired correlation | [user-guide.md:32](../user-guide.md) |
+| Reported HR/IRR entry as ratio with CI or log ratio with SE, with conversion between formats | [user-guide.md:41](../user-guide.md) |
 
 ### 1.3 Import and export
 
 | Feature | Source |
 | --- | --- |
-| CSV import with column mapping, custom delimiter and quote character | [user-guide.md:54](../user-guide.md#L54) |
-| Excel `.xlsx` import (up to 100,000 rows, 512 columns, 1,000,000 cells; cached formula values) | [user-guide.md:55](../user-guide.md#L55) |
-| RevMan 5 `.rm5` import with a review step listing mapped methods and items not imported (prose, references, risk-of-bias tables, graphs) | [user-guide.md:68-86](../user-guide.md#L68) |
-| Figure export to PDF, SVG, PNG or TIFF with physical size and DPI | [user-guide.md:182](../user-guide.md#L182), [README.md:43](../../README.md#L43) |
-| Report export to PDF or Word `.docx`; section copying | [user-guide.md:183](../user-guide.md#L183) |
-| Results tables copied, or exported as formatted CSV or as unrounded values CSV with scales and confidence levels | [user-guide.md:184](../user-guide.md#L184), [CHANGELOG.md:66](../../CHANGELOG.md#L66) |
-| Citation export (BibTeX, RIS, EndNote) | [user-guide.md:189](../user-guide.md#L189) |
+| CSV import with column mapping, custom delimiter and quote character | [user-guide.md:54](../user-guide.md) |
+| Excel `.xlsx` import (up to 100,000 rows, 512 columns, 1,000,000 cells; cached formula values) | [user-guide.md:55](../user-guide.md) |
+| RevMan 5 `.rm5` import with a review step listing mapped methods and items not imported (prose, references, risk-of-bias tables, graphs) | [user-guide.md:68-86](../user-guide.md) |
+| Figure export to PDF, SVG, PNG or TIFF with physical size and DPI | [user-guide.md:182](../user-guide.md), [README.md:43](../../README.md) |
+| Report export to PDF or Word `.docx`; section copying | [user-guide.md:183](../user-guide.md) |
+| Results tables copied, or exported as formatted CSV or as unrounded values CSV with scales and confidence levels | [user-guide.md:184](../user-guide.md), [CHANGELOG.md:66](../../CHANGELOG.md) |
+| Citation export (BibTeX, RIS, EndNote) | [user-guide.md:189](../user-guide.md) |
 
 ### 1.4 Analyses
 
 | Feature | Source |
 | --- | --- |
-| Fixed-effect inverse variance, Mantel–Haenszel and Peto where eligible; random effects (REML default) | [user-guide.md:98](../user-guide.md#L98), [analysis_contracts.R:141](../../r/RCMetaR/R/analysis_contracts.R#L141) |
-| τ² estimators `REML`, `DL`, `PM`, `PMM`, `EB`, `SJ`, `ML`, `HE`, `HS`, `HSk` | [user-guide.md:98](../user-guide.md#L98) |
-| Inference by normal approximation, t, Knapp–Hartung or modified Knapp–Hartung | [user-guide.md:98](../user-guide.md#L98), [analysis_contracts.R:254-261](../../r/RCMetaR/R/analysis_contracts.R#L254) |
-| Prediction interval for random-effects pooled estimates (forest summary label; optional on bubble plots) | [forest_summary.R:167-179](../../r/RCMetaR/R/forest_summary.R#L167), [bubble_metafor.R:279](../../r/RCMetaR/R/bubble_metafor.R#L279) |
-| Mantel–Haenszel for raw IRR (fixed, sequential and subgroup fits) | [user-guide.md:44-45](../user-guide.md#L44) |
-| Cumulative meta-analysis ordered by table, publication year or study effect, with progress and cancellation | [user-guide.md:103-117](../user-guide.md#L103), [CHANGELOG.md:9](../../CHANGELOG.md#L9) |
-| Leave-one-out analysis with an all-studies reference row, ordered by table, year, pooled effect or I² after omission | [user-guide.md:119-125](../user-guide.md#L119) |
-| Subgroup analysis on a categorical covariate with a subgroup-difference Q test | [user-guide.md:160](../user-guide.md#L160) |
-| Meta-regression with numeric, categorical and multiple moderators (fixed or random effects) | [user-guide.md:161](../user-guide.md#L161) |
-| Small-study effects: test choice by data family (Egger, Begg, mixed-effects Egger, Harbord, Peters, Rücker, Pustejovsky–Rodgers; Deeks for diagnostic counts), configurable minimum k | [user-guide.md:167](../user-guide.md#L167), [small_study_effects.R:100-157](../../r/RCMetaR/R/small_study_effects.R#L100) |
-| Ordinary and contour-enhanced funnels, trim-and-fill (side and L0/R0 estimator), precision-limit extrapolation, Deeks effective-sample-size funnel | [user-guide.md:168](../user-guide.md#L168) |
-| Count-based Reitsma bivariate DTA model (`mada`), summary operating points, SROC curve, joint prediction region, SROC AUC and partial AUC, sampled LR and DOR, diagnostic I² | [user-guide.md:99](../user-guide.md#L99), [ADR-0004:3-13](../adr/0004-use-mada-reitsma-for-joint-diagnostic-models.md#L3) |
-| Additive Reitsma bivariate meta-regression with likelihood-ratio moderator tests and separate sensitivity/specificity coefficient plots | [user-guide.md:161](../user-guide.md#L161), [CHANGELOG.md:235](../../CHANGELOG.md#L235) |
-| Trial sequential analysis for RR, OR, RD, Peto OR, MD and reported HR: required information size with D² or I² adjustment, Lan–DeMets O'Brien–Fleming or Pocock boundaries, non-binding futility wedge, penalised Z-curve, TSA-adjusted CIs, sensitivity table | [trial-sequential-analysis.md:19-51](../trial-sequential-analysis.md#L19), [trial-sequential-analysis.md:70-82](../trial-sequential-analysis.md#L70), [ADR-0011:37-39](../adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md#L37) |
+| Fixed-effect inverse variance, Mantel–Haenszel and Peto where eligible; random effects (REML default) | [user-guide.md:98](../user-guide.md), [analysis_contracts.R:141](../../r/RCMetaR/R/analysis_contracts.R) |
+| τ² estimators `REML`, `DL`, `PM`, `PMM`, `EB`, `SJ`, `ML`, `HE`, `HS`, `HSk` | [user-guide.md:98](../user-guide.md) |
+| Inference by normal approximation, t, Knapp–Hartung or modified Knapp–Hartung | [user-guide.md:98](../user-guide.md), [analysis_contracts.R:254-261](../../r/RCMetaR/R/analysis_contracts.R) |
+| Prediction interval for random-effects pooled estimates (forest summary label; optional on bubble plots) | [forest_summary.R:167-179](../../r/RCMetaR/R/forest_summary.R), [bubble_metafor.R:279](../../r/RCMetaR/R/bubble_metafor.R) |
+| Mantel–Haenszel for raw IRR (fixed, sequential and subgroup fits) | [user-guide.md:44-45](../user-guide.md) |
+| Cumulative meta-analysis ordered by table, publication year or study effect, with progress and cancellation | [user-guide.md:103-117](../user-guide.md), [CHANGELOG.md:9](../../CHANGELOG.md) |
+| Leave-one-out analysis with an all-studies reference row, ordered by table, year, pooled effect or I² after omission | [user-guide.md:119-125](../user-guide.md) |
+| Subgroup analysis on a categorical covariate with a subgroup-difference Q test | [user-guide.md:160](../user-guide.md) |
+| Meta-regression with numeric, categorical and multiple moderators (fixed or random effects) | [user-guide.md:161](../user-guide.md) |
+| Small-study effects: test choice by data family (Egger, Begg, mixed-effects Egger, Harbord, Peters, Rücker, Pustejovsky–Rodgers; Deeks for diagnostic counts), configurable minimum k | [user-guide.md:167](../user-guide.md), [small_study_effects.R:100-157](../../r/RCMetaR/R/small_study_effects.R) |
+| Ordinary and contour-enhanced funnels, trim-and-fill (side and L0/R0 estimator), precision-limit extrapolation, Deeks effective-sample-size funnel | [user-guide.md:168](../user-guide.md) |
+| Count-based Reitsma bivariate DTA model (`mada`), summary operating points, SROC curve, joint prediction region, SROC AUC and partial AUC, sampled LR and DOR, diagnostic I² | [user-guide.md:99](../user-guide.md), [ADR-0004:3-13](../adr/0004-use-mada-reitsma-for-joint-diagnostic-models.md) |
+| Additive Reitsma bivariate meta-regression with likelihood-ratio moderator tests and separate sensitivity/specificity coefficient plots | [user-guide.md:161](../user-guide.md), [CHANGELOG.md:235](../../CHANGELOG.md) |
+| Trial sequential analysis for RR, OR, RD, Peto OR, MD and reported HR: required information size with D² or I² adjustment, Lan–DeMets O'Brien–Fleming or Pocock boundaries, non-binding futility wedge, penalised Z-curve, TSA-adjusted CIs, sensitivity table | [trial-sequential-analysis.md:19-51](../trial-sequential-analysis.md), [trial-sequential-analysis.md:70-82](../trial-sequential-analysis.md), [ADR-0011:37-39](../adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md) |
 
 Not offered: TSA for SMD and IRR
-([trial-sequential-analysis.md:123-126](../trial-sequential-analysis.md#L123)).
+([trial-sequential-analysis.md:123-126](../trial-sequential-analysis.md)).
 No multilevel/multivariate, Bayesian, network, selection-model or PET-PEESE
 analysis appears in the user guide or in `r/RCMetaR/R`; RCMetaR contains
 permutation helpers ([permutation.R](../../r/RCMetaR/R/permutation.R)) with
@@ -109,20 +109,20 @@ no caller in `src/rc_metastudio`, so they are not a shipped feature.
 
 | Feature | Source |
 | --- | --- |
-| Forest, bubble, funnel, SROC, coefficient and TSA figures | [user-guide.md:179](../user-guide.md#L179) |
-| Plot editor: Default, BMJ and RevMan styles, labels, captions, colours, axis limits, point scaling; redrawn in R without refitting | [user-guide.md:181](../user-guide.md#L181), [CHANGELOG.md:10](../../CHANGELOG.md#L10) |
-| Multi-page forest export | [CHANGELOG.md:10](../../CHANGELOG.md#L10) |
-| TSA monitoring plot with participant or information axis, RIS line, futility region and optional penalised curve | [trial-sequential-analysis.md:84-115](../trial-sequential-analysis.md#L84) |
+| Forest, bubble, funnel, SROC, coefficient and TSA figures | [user-guide.md:179](../user-guide.md) |
+| Plot editor: Default, BMJ and RevMan styles, labels, captions, colours, axis limits, point scaling; redrawn in R without refitting | [user-guide.md:181](../user-guide.md), [CHANGELOG.md:10](../../CHANGELOG.md) |
+| Multi-page forest export | [CHANGELOG.md:10](../../CHANGELOG.md) |
+| TSA monitoring plot with participant or information axis, RIS line, futility region and optional penalised curve | [trial-sequential-analysis.md:84-115](../trial-sequential-analysis.md) |
 
 ### 1.6 Reports
 
 | Feature | Source |
 | --- | --- |
-| Formatted text report: Methods, Results, numerical tables, numbered references citing RC MetaStudio and the R packages, model configuration | [user-guide.md:183](../user-guide.md#L183), [CHANGELOG.md:39-41](../../CHANGELOG.md#L39) |
-| Rerun with changed settings replaces the result only after a successful fit | [user-guide.md:185](../user-guide.md#L185) |
+| Formatted text report: Methods, Results, numerical tables, numbered references citing RC MetaStudio and the R packages, model configuration | [user-guide.md:183](../user-guide.md), [CHANGELOG.md:39-41](../../CHANGELOG.md) |
+| Rerun with changed settings replaces the result only after a successful fit | [user-guide.md:185](../user-guide.md) |
 
 The 0.5.1 entry "structured Summary of findings"
-([CHANGELOG.md:125](../../CHANGELOG.md#L125)) has no matching code in
+([CHANGELOG.md:125](../../CHANGELOG.md)) has no matching code in
 `src/rc_metastudio` or `r/RCMetaR` (no match for "of findings", "GRADE" or
 "certainty"), so it is not counted as a shipped feature.
 
@@ -130,23 +130,23 @@ The 0.5.1 entry "structured Summary of findings"
 
 | Feature | Source |
 | --- | --- |
-| `.rcms` v3 project: ZIP of three JSON members with hashes; stores data, covariates and analysis settings; migrates v1/v2 | [project-format.md:3-21](../project-format.md#L3), [user-guide.md:13](../user-guide.md#L13) |
-| Validated reading, atomic saving, deterministic output for the same content | [project-format.md:27-33](../project-format.md#L27) |
-| Statistics delegated to named, version-pinned R packages (metafor 5.2-1, meta 8.5-0, mada 0.5.12, gsDesign 3.11.0) with a dated binary snapshot and hashes | [README.md:47-54](../../README.md#L47), [ADR-0001](../adr/0001-delegate-statistical-decisions-to-authority-packages.md), [config/r-dependencies.json](../../config/r-dependencies.json) |
-| Tutorial R script that reproduces the BCG example directly with metafor | [README.md:35](../../README.md#L35) |
+| `.rcms` v3 project: ZIP of three JSON members with hashes; stores data, covariates and analysis settings; migrates v1/v2 | [project-format.md:3-21](../project-format.md), [user-guide.md:13](../user-guide.md) |
+| Validated reading, atomic saving, deterministic output for the same content | [project-format.md:27-33](../project-format.md) |
+| Statistics delegated to named, version-pinned R packages (metafor 5.2-1, meta 8.5-0, mada 0.5.12, gsDesign 3.11.0) with a dated binary snapshot and hashes | [README.md:47-54](../../README.md), [ADR-0001](../adr/0001-delegate-statistical-decisions-to-authority-packages.md), [config/r-dependencies.json](../../config/r-dependencies.json) |
+| Tutorial R script that reproduces the BCG example directly with metafor | [README.md:35](../../README.md) |
 
 RC MetaStudio does not export analysis code. Results are output files, not
-saved in the project ([user-guide.md:13](../user-guide.md#L13)).
+saved in the project ([user-guide.md:13](../user-guide.md)).
 
 ### 1.8 Platform
 
 | Feature | Source |
 | --- | --- |
-| Free, GPL-3.0-or-later | [README.md:8](../../README.md#L8), [README.md:90](../../README.md#L90) |
-| Desktop packages for Windows x64, Apple silicon macOS 14+ and Ubuntu 24.04 x86_64, each bundling Python, Qt 6 and R 4.6.2 | [README.md:16-22](../../README.md#L16), [ADR-0009](../adr/0009-support-qualified-release-platforms.md) |
-| Signed and notarised macOS release; checksums and CycloneDX SBOMs | [README.md:24](../../README.md#L24) |
-| System, Light and Dark themes | [user-guide.md:15](../user-guide.md#L15) |
-| Independently maintained rewrite of OpenMeta[Analyst] | [README.md:88](../../README.md#L88) |
+| Free, GPL-3.0-or-later | [README.md:8](../../README.md), [README.md:90](../../README.md) |
+| Desktop packages for Windows x64, Apple silicon macOS 14+ and Ubuntu 24.04 x86_64, each bundling Python, Qt 6 and R 4.6.2 | [README.md:16-22](../../README.md), [ADR-0009](../adr/0009-support-qualified-release-platforms.md) |
+| Signed and notarised macOS release; checksums and CycloneDX SBOMs | [README.md:24](../../README.md) |
+| System, Light and Dark themes | [user-guide.md:15](../user-guide.md) |
+| Independently maintained rewrite of OpenMeta[Analyst] | [README.md:88](../../README.md) |
 
 ## 2. Comparison matrix
 
@@ -291,13 +291,13 @@ No source contradicts the next four, but each has unverified cells.
 Word these as "not documented by the other tools checked".
 
 3. **Trial sequential analysis for hazard ratios** (A17). CTU TSA has no HR
-   measure ([trial-sequential-analysis-methods.md:134](trial-sequential-analysis-methods.md#L134)).
+   measure ([trial-sequential-analysis-methods.md:134](trial-sequential-analysis-methods.md)).
    JASP, jamovi, MetaXL, Meta-Essentials, MetaDTA / Meta-DiSc 2.0 and
    OpenMeta[Analyst] have no TSA. Meta-Mar is "?" because its feature page
    does not claim to be complete. RevMan Web, outside the free set, is
    also "?". The R package tsahr does TSA for hazard ratios, so the claim
    holds only for applications with a graphical interface
-   ([ADR-0011:32-33](../adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md#L32)).
+   ([ADR-0011:32-33](../adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md)).
 4. **Direct RevMan 5 `.rm5` import** (I3). JASP, MetaDTA / Meta-DiSc 2.0 and
    OpenMeta[Analyst] have no such importer (✗). CTU TSA reads RevMan data
    only through a CSV converter, and only for dichotomous outcomes
@@ -610,9 +610,9 @@ Version checked: CTU Trial Sequential Analysis 0.9.5.10 Beta with its 2017 user 
 
 Sources:
 
-- **T1**: TSA 0.9.5.10 Beta `TSA manual.pdf` (Thorlund K et al., User manual for Trial Sequential Analysis, Copenhagen Trial Unit 2017), printed page numbers; cited in [trial-sequential-analysis-methods.md:15](trial-sequential-analysis-methods.md#L15)
+- **T1**: TSA 0.9.5.10 Beta `TSA manual.pdf` (Thorlund K et al., User manual for Trial Sequential Analysis, Copenhagen Trial Unit 2017), printed page numbers; cited in [trial-sequential-analysis-methods.md:15](trial-sequential-analysis-methods.md)
 - **T2**: TSA 0.9.5.10 Beta `license_agreement.pdf`
-- **T3**: TSA 0.9.5.10 Beta `samples/High perioperative oxygen SSI.TSA` ([trial-sequential-analysis-methods.md:16](trial-sequential-analysis-methods.md#L16))
+- **T3**: TSA 0.9.5.10 Beta `samples/High perioperative oxygen SSI.TSA` ([trial-sequential-analysis-methods.md:16](trial-sequential-analysis-methods.md))
 - **T4**: [docs/research/trial-sequential-analysis-methods.md](trial-sequential-analysis-methods.md)
 - **T5**: [docs/adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md](../adr/0011-implement-trial-sequential-analysis-over-metafor-and-gsdesign.md)
 
