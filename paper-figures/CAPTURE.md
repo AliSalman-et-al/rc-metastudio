@@ -13,8 +13,40 @@ Use a dedicated worktree at the recorded revision. Copy
 `paper-figures` directory. The native workflow uses isolated Qt settings
 and redirects the save picker to a staging directory.
 
-- **Figure 1.** Run `capture_rcms.py workspace` (via `capture_rcms.ps1`). It
-  opens the Barza 1996 sample and saves `figure-1-workspace.png`.
+- **Figure 1.** Captured on Windows x64 at
+  `9e7c2fba373883c73d7edc2f45de8b26c9fd7a3f` with Qt 6.12.0 and R 4.6.2.
+  Copy `capture_rcms.py` and the assembler into the capture worktree's
+  `paper-figures` directory. Set up that worktree's Python, R library, and
+  generated Qt forms, then point `RCMS_R_HOME`, `RCMS_R_LIBS` and
+  `RCMS_QT6_BUILD_ROOT` at them. Run from the worktree root in PowerShell
+  with PyMuPDF installed in its capture environment. The script creates and
+  removes `C:\Reviews`, which must be absent before capture.
+
+  ```powershell
+  $env:PYTHONPATH = "$PWD;$PWD/.agents/skills/verify-rcms/scripts"
+  $env:QT_QPA_PLATFORM = 'windows'
+  $env:QT_SCALE_FACTOR = '1.16'
+  $env:RCMS_PAPER_OUTPUT = (Resolve-Path paper-figures).Path
+  $env:RCMS_ANALYSIS_SCRATCH_DIR = (New-Item -ItemType Directory -Force build/joss-figure-1-analysis).FullName
+  .venv/Scripts/python.exe paper-figures/capture_rcms.py interface
+  .venv/Scripts/python.exe paper-figures/assemble_default_figures.py figure-1-interface
+  ```
+
+  The scale factor gives a 1.45 device-pixel ratio on the 1920 × 1080
+  capture display at 125% Windows scaling. Choose a scale that leaves
+  the entire window and wizard visible on the capture display. The script
+  uses fresh Qt settings and light theme. It opens and saves four bundled
+  sample copies under a temporary `C:\Reviews` directory for panel A
+  (`figure-1a-welcome.png`). It reopens Barza 1996, auto-fits the columns,
+  widens the study-name column and aligns the viewport to whole rows.
+  Panel B (`figure-1b-new-project.png`) opens **New project** from Welcome
+  and captures the live desktop cropped to the untitled main window with
+  the data-type page visible. Panel C (`figure-1c-workspace.png`) shows the Barza
+  spreadsheet with both outcome tabs visible.
+  The three 1856 × 950 px panels are stacked at full width in
+  `figure-1-interface.png` and `figure-1-interface.pdf` so the workspace
+  headings and wizard choices stay readable. The legacy
+  `figure-1-workspace.png` can still be captured with `workspace`.
 - **Figure 2.** Open the bundled Colditz 1994 BCG sample. Run the 13 trials
   as a random-effects risk ratio with REML, 95% CI and normal (`z`)
   inference. From that single Results window export Default (A), BMJ (B)
@@ -43,7 +75,8 @@ pagination controls as well as the export dimensions.
 
 ## Assembly and review
 
-The assembled PDF embeds each original vector panel at 1:1. Panels are
+The assembled PDFs embed original plot panels at 1:1 and Figure 1's
+captures at their native pixel dimensions at 300 dpi. Panels are
 stacked vertically and share a 4 mm left margin with the visible edges of
 the 28 pt Helvetica Bold labels. Each label has its own band above the
 panel. A 6 mm gutter separates the previous panel from the next label

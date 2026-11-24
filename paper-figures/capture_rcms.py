@@ -1,6 +1,8 @@
 """Capture JOSS inputs through the Windows Qt workspace and Results controls."""
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
+from shutil import copyfile
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 import json
 import os
@@ -25,8 +27,9 @@ from rc_metastudio.results.window import ResultsWindow
 from tests.python.gui.qt_test_support import metric_action
 from analysis_matrix import set_parameter
 
-OUT = Path(__file__).resolve().parent
-BUILD = OUT / ".build"
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUT = Path(os.environ.get("RCMS_PAPER_OUTPUT", SCRIPT_DIR)).resolve()
+BUILD = SCRIPT_DIR / ".build"
 OK = W.QDialogButtonBox.StandardButton.Ok
 
 
@@ -266,6 +269,162 @@ PANELS = {
     "e": ("trial_sequential", "Pignon 2000", "Pignon 2000", "fig2e_tsa", 2.60),
 }
 
+def prepare_workspace(window, width=1180, height=700):
+    assert "Barza 1996" in window.windowTitle()
+    table = window.tableView
+    window.action_auto_fit_columns.trigger()
+    window.setFixedSize(width, height)
+    app.processEvents()
+    table.setColumnWidth(1, table.columnWidth(1) + 90)
+    if width > 1180:
+        for column in window.model.RAW_DATA:
+            table.setColumnWidth(column, table.columnWidth(column) + (width - 1180) // 4)
+    remainder = table.viewport().height() % table.rowHeight(0)
+    window.setFixedSize(width, window.height() - remainder)
+    app.processEvents()
+    table.scrollToTop()
+    table.horizontalScrollBar().setValue(0)
+    table.clearSelection()
+    table.setCurrentIndex(C.QModelIndex())
+    window.menuBar().setFocus()
+    app.processEvents()
+    model = table.model()
+    tabs = [window.sheet_tabs.tabText(i) for i in range(window.sheet_tabs.count())]
+    headers = [model.headerData(i, C.Qt.Orientation.Horizontal)
+               for i in range(model.columnCount()) if not table.isColumnHidden(i)]
+    assert tabs == ["Clinical failure", "Nephrotoxicity"], tabs
+    assert "OR" in headers and sum(label.endswith((" events", " total")) for label in headers) == 4, headers
+    log("workspace", tabs=tabs, headers=headers, rows=model.rowCount())
+
+
+def save_capture(stem, window, pixmap):
+    scale = window.devicePixelRatio()
+    expected = (round(window.width() * scale), round(window.height() * scale))
+    assert (pixmap.width(), pixmap.height()) == expected, (stem, pixmap.size(), expected)
+    assert pixmap.save(str(OUT / f"{stem}.png")), stem
+    log("capture", panel=stem, width=pixmap.width(), height=pixmap.height(), dpr=scale,
+        window=[window.width(), window.height()])
+
+
+def capture_interface():
+    from rc_metastudio.main_wizard import MainWizard, Page_DataType
+    from rc_metastudio.settings import get_recent_files
+
+    citations = ("Pignon 2000", "Kearon 1998", "Colditz 1994", "Barza 1996")
+    sample_dir = Path.cwd() / "sample_projects"
+    review_dir = Path("C:/Reviews")
+    with ExitStack() as cleanup:
+        review_dir.mkdir()
+        cleanup.callback(review_dir.rmdir)
+        recent = []
+        for citation in citations:
+            source, = sample_dir.glob(f"*{citation}.rcms")
+            path = review_dir / f"{citation}.rcms"
+            cleanup.callback(path.unlink, missing_ok=True)
+            copyfile(source, path)
+            assert window.open(str(path), raise_on_error=True), path
+            assert window.save() is True, path
+            recent.append(str(path))
+            log("recent project opened and saved", sample=source.name, copy=path)
+
+        assert get_recent_files() == recent, get_recent_files()
+        assert window.open(recent[-1], raise_on_error=True)
+        window.setWindowFlag(C.Qt.WindowType.WindowStaysOnTopHint, True)
+        window.showNormal()
+        app.processEvents()
+        available = window.screen().availableGeometry()
+        frame_height = window.frameGeometry().height() - window.height()
+        prepare_workspace(window, width=1280, height=min(700, available.height() - frame_height - 6))
+        frame = window.frameGeometry()
+        window.move(available.center() - C.QPoint(frame.width() // 2, frame.height() // 2))
+        assert available.contains(window.frameGeometry()), (available, window.frameGeometry())
+
+        welcome = type(window)()
+        try:
+            welcome.setWindowFlag(C.Qt.WindowType.WindowStaysOnTopHint, True)
+            welcome.setFixedSize(window.size())
+            welcome.move(window.pos())
+            welcome.start()
+            QTest.qWait(350)
+            assert welcome.start_page.isVisible() and welcome.workspace.path is None and welcome.model.current_sheet is None
+            layout = welcome.start_page.recent_layout
+            displayed = [layout.itemAtPosition(i, 1).widget().text() for i in range(len(recent))]
+            assert displayed == recent[::-1], displayed
+            log("welcome", rendered_paths=displayed)
+            save_capture("figure-1a-welcome", welcome, welcome.grab())
+
+            def capture_wizard(dialog):
+                assert dialog.currentId() == Page_DataType
+                screen = welcome.screen()
+                origin = welcome.mapToGlobal(C.QPoint())
+                client = C.QRect(origin, welcome.size())
+                frame_height = dialog.frameGeometry().height() - dialog.height()
+                dialog.resize(dialog.width(), min(dialog.height(), client.height() - frame_height - 16))
+                frame = dialog.frameGeometry()
+                dialog.move(client.center() - C.QPoint(frame.width() // 2, frame.height() // 2))
+                dialog.raise_()
+                dialog.activateWindow()
+                QTest.qWait(500)
+                scroll = dialog.currentPage().pageScrollArea.verticalScrollBar()
+                assert scroll.maximum() == 0, ("wizard choices require scrolling", scroll.maximum())
+                assert client.contains(dialog.frameGeometry()), (client, dialog.frameGeometry())
+                desktop = screen.grabWindow(0)
+                scale = desktop.devicePixelRatio()
+                offset = origin - screen.geometry().topLeft()
+                region = C.QRect(round(offset.x() * scale), round(offset.y() * scale),
+                                 round(welcome.width() * scale), round(welcome.height() * scale))
+                assert desktop.rect().contains(region), (desktop.rect(), region)
+                save_capture("figure-1b-new-project", welcome, desktop.copy(region))
+                log("wizard", title=dialog.windowTitle(), page=dialog.currentId(),
+                    capture="native desktop cropped to Welcome client", background=welcome.windowTitle())
+                dialog.reject()
+
+            with modal(MainWizard, capture_wizard):
+                welcome.start_page.create_button.click()
+        finally:
+            welcome.close()
+
+        window.raise_()
+        window.activateWindow()
+        QTest.qWait(350)
+        save_capture("figure-1c-workspace", window, window.grab())
+
+
+def capture_interface_run():
+    global app, window
+    BUILD.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(prefix="figure-1-", dir=BUILD) as state:
+        C.QSettings.setDefaultFormat(C.QSettings.Format.IniFormat)
+        C.QSettings.setPath(C.QSettings.Format.IniFormat, C.QSettings.Scope.UserScope, state)
+        with patch("rc_metastudio.settings.get_base_path", return_value=str(Path(state) / "appdata")):
+            app, window = automation.start_automation()
+            from rc_metastudio import r_worker
+
+            screen = window.screen()
+            runtime = r_worker.current_worker().runtime_info()
+            log("runtime", platform=app.platformName(), qt=C.qVersion(), r=runtime["version"],
+                dpi=window.devicePixelRatio(), screen=screen.size(), available=screen.availableSize())
+            try:
+                theme, = [a.menu() for a in window.menuView.actions() if a.text() == "Theme"]
+                light, = [a for a in theme.actions() if a.text() == "Light"]
+                light.trigger()
+                capture_interface()
+            finally:
+                window.close()
+                app.processEvents()
+                r_worker.current_worker().close()
+                app.quit()
+
+
+if sys.argv[1:] == ["interface"]:
+    try:
+        capture_interface_run()
+    except Exception:
+        traceback.print_exc()
+        raise SystemExit(1)
+    raise SystemExit(0)
+
+
 C.QSettings.setDefaultFormat(C.QSettings.Format.IniFormat)
 C.QSettings.setPath(C.QSettings.Format.IniFormat, C.QSettings.Scope.UserScope, str(BUILD))
 with patch("rc_metastudio.settings.get_base_path", return_value=str(BUILD / "appdata")):
@@ -276,28 +435,8 @@ with patch("rc_metastudio.settings.get_base_path", return_value=str(BUILD / "app
         from PyQt6.QtGui import QShortcut, QKeySequence
 
         def grab():
-            assert "Barza 1996" in window.windowTitle()
-            table = window.tableView
-            window.action_auto_fit_columns.trigger()
-            window.setFixedSize(1180, 700)
-            app.processEvents()
-            table.setColumnWidth(1, table.columnWidth(1) + 90)
-            body = table.viewport().height()
-            row_height = table.rowHeight(0)
-            window.setFixedSize(1180, window.height() - body % row_height)
-            app.processEvents()
-            table.scrollToTop()
-            table.horizontalScrollBar().setValue(0)
-            table.clearSelection()
-            table.setCurrentIndex(C.QModelIndex())
-            window.menuBar().setFocus()
-            app.processEvents()
-            pixmap = window.grab()
-            assert pixmap.save(str(OUT / "figure-1-workspace.png"))
-            log("workspace capture", width=pixmap.width(), height=pixmap.height(),
-                dpr=pixmap.devicePixelRatio(),
-                columns=[(i, table.columnWidth(i)) for i in range(table.model().columnCount())
-                         if not table.isColumnHidden(i)])
+            prepare_workspace(window)
+            save_capture("figure-1-workspace", window, window.grab())
 
         shortcut = QShortcut(QKeySequence("F8"), window)
         shortcut.activated.connect(grab)
