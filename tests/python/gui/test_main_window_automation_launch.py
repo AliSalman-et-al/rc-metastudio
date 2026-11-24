@@ -213,9 +213,6 @@ def test_open_project_preserves_main_window_state_without_duplicate_windows(
             if isinstance(widget, main_window.MainWindow) and widget.isVisible()
         ]
 
-        # The automation shell begins with an empty unsaved dataset. This test is
-        # about replacing that dataset in the same window, so authorize the open
-        # without driving the separate interactive save-confirmation contract.
         _mark_workspace_saved(window)
         project_path = _sample_project_path("amino.rcms")
         project = project_format.load_project(project_path).project
@@ -1205,8 +1202,8 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
         assert initial_width <= viewport_width
 
         write_svg(800, 400)
-        artifact = window.plot_artifact('Forest Plot')
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
+        entry = next(iter(window._plots.values()))
+        window._refresh_plot_item(entry, str(plot_path))
         app.processEvents()
         app.processEvents()
 
@@ -1219,7 +1216,7 @@ def test_results_window_refits_svg_plot_after_in_place_regenerate(tmp_path):
 
 
         write_svg(400, 100)
-        window._refresh_plot_item(plot_item, artifact, str(plot_path))
+        window._refresh_plot_item(entry, str(plot_path))
         app.processEvents()
 
 
@@ -1313,9 +1310,8 @@ def test_results_window_applies_forest_edits_to_selected_variant_artifact(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        artifact = window.plot_artifact(title)
-
-        window.edit_plot(artifact, plot_item)
+        window.nav_tree.setCurrentItem(window.nav_tree.topLevelItem(0))
+        window.edit_plot_action.trigger()
         app.processEvents()
 
         assert calls == [("dialog", {"fp_col1_str": "Study"}, str(image_path))]
@@ -1644,10 +1640,11 @@ def test_apply_regression_plot_edits_rebuilds_and_redraws_bubble_plot(
             for item in window.scene.items()
             if isinstance(item, results_window._svg_item_class())
         )
-        artifact = window.plot_artifact('Regression Plot')
+        entry = next(iter(window._plots.values()))
+        artifact = entry.artifact
 
-        window._apply_plot_edits(edits, artifact, plot_item)
-        window._apply_plot_edits(edits, artifact, plot_item)
+        window._apply_plot_edits(entry, edits)
+        window._apply_plot_edits(entry, edits)
         app.processEvents()
 
         assert artifact.display_image_path == display_path
@@ -1866,8 +1863,9 @@ def test_edit_plot_apply_regenerates_plot_without_accepting_dialog(
         )
 
         artifact = window.plot_artifact('Forest Plot')
-        window.edit_plot(artifact, plot_item=plot_item)
-        window.edit_plot(artifact, plot_item=plot_item)
+        window.nav_tree.setCurrentItem(window.nav_tree.topLevelItem(0))
+        window.edit_plot_action.trigger()
+        window.edit_plot_action.trigger()
         app.processEvents()
 
         assert artifact.display_image_path == display_path
@@ -2291,8 +2289,8 @@ def test_storage_boundary_conversion_preserves_all_row_identities(tmp_path):
     from rc_metastudio.covariate_type_dialog import CovariateTypeDialog
     from rc_metastudio.project.adapter import project_to_dataset, dataset_to_project, document_to_runtime_project
     from rc_metastudio.project.archive import save_project, load_project
-    from tests.python.fast.test_project_format import _group_project
-    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    from tests.project_fixtures import group_project
+    project = group_project("binary", None, [[1, 10], [2, 10]])
     sheet = project["sheets"][0]
     sheet["covariates"] = [dict(id="dose", name="Dose", data_type=1)]
     original = sheet["rows"][0]

@@ -1256,7 +1256,6 @@ def _observe_capture_close(
     app.processEvents()
     if surface_id not in {"import-progress", "shared-progress"}:
         return not window.isVisible()
-    # The operation owns completion; gestures must not release its modality.
     close_blocked = window.isVisible() and app.activeModalWidget() is window
     for event_type in (QtCore.QEvent.Type.KeyPress, QtCore.QEvent.Type.KeyRelease):
         QtCore.QCoreApplication.sendEvent(window, QtGui.QKeyEvent(
@@ -1289,8 +1288,6 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
     QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
     QtCore.QSettings.setPath(QtCore.QSettings.Format.IniFormat, QtCore.QSettings.Scope.UserScope, str(evidence_root / "settings" / uuid4().hex))
     app = app_error_handler.get_or_create_application([])
-    # Evidence failures must terminate the gate, never block behind the app's
-    # interactive unexpected-error dialog.
     sys.excepthook = sys.__excepthook__
     if app.platformName() not in ({"offscreen"} if _offscreen() else {"windows", "cocoa"}):
         raise RuntimeError("remaining-surface smoke requires qwindows or cocoa")
@@ -1348,17 +1345,8 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 "height": round(frame.height() * dpr),
             }
             close_observation = _observe_capture_close(app, window, surface_id)
-            # Finish the capture instance before action probes construct their
-            # own top-level windows. Keeping a captured QWizard alive while two
-            # more MainWizard trees were created caused an intermittent Windows
-            # native fast-fail (0xC0000409) despite each evidence surface already
-            # having its own process.
-            actions = _observe_actions(
-                app, factory, surface_id
-            )
             records[surface_id] = {
                 "accessibility": accessible,
-                "actions": actions,
                 "application_owns_geometry": observed_contract[
                     "application_owns_geometry"
                 ],
@@ -1383,6 +1371,7 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
                 None, QtCore.QEvent.Type.DeferredDelete
             )
             app.processEvents()
+        records[surface_id]["actions"] = _observe_actions(app, factory, surface_id)
     from scripts.validate_adaptive_layout_evidence import source_identity
     record = {
         "qpa": app.platformName(),
@@ -1400,7 +1389,6 @@ def _capture_surface(scale: float, evidence_root: Path, surface_id: str) -> None
 
 
 def _run_scale(scale: float, evidence_root: Path) -> None:
-    # Retain interrupted/successful captures before this scale writes new pixels.
     previous = [path for path in (_record_path(evidence_root, scale), evidence_root / ("scale-%s" % _scale_label(scale))) if path.exists()]
     if previous:
         archive = evidence_root / ".previous-attempts" / uuid4().hex

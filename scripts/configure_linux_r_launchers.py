@@ -9,7 +9,6 @@ if marker not in text:
     raise SystemExit("unexpected Posit R launcher; cannot make it relocatable")
 tail = text[text.index("usage=\"") :]
 header = '''#!/bin/bash
-# Relocatable wrapper for the private R runtime.
 r_script_dir=${0%/*}
 R_HOME_DIR="$(CDPATH= cd -- "$r_script_dir/.." && pwd)"
 if test -n "${R_HOME}" && test "${R_HOME}" != "${R_HOME_DIR}"; then

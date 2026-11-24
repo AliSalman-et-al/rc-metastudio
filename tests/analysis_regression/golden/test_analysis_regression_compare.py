@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 
 from rc_metastudio import __version__
 from rc_metastudio.results.contract import parse_analysis_result
-from tests.analysis_regression.golden.support.analysis_regression_compare import (  # noqa: E402
+from tests.analysis_regression.golden.support.analysis_regression_compare import (
     ACCEPTED_EXCEPTION,
     CAPTURE_ERROR,
     MISSING_OUTPUT,
@@ -29,7 +29,7 @@ from tests.analysis_regression.golden.support.analysis_regression_compare import
 )
 
 sys.path.insert(0, os.path.abspath("scripts"))
-import verify_golden_compatibility  # noqa: E402 - scripts path bootstrap
+import verify_golden_compatibility
 
 
 def _typed_result(
@@ -964,6 +964,7 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
 ):
     from tests.analysis_regression.golden.support import headless_analysis
     from rc_metastudio.analysis import requests as analysis_adapter
+    from rc_metastudio.analysis.request import make_analysis_request
 
     class DiagnosticBackend:
         def __init__(self):
@@ -971,8 +972,8 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
 
         def run(self, requests, data):
             assert data["TP"] and data["FP"] and data["TN"] and data["FN"]
-            method_names = [request["method"] for request in requests]
-            parameter_values = [request["params"] for request in requests]
+            method_names = [request.method for request in requests]
+            parameter_values = [request.parameter_values() for request in requests]
             self.runs.append((method_names, parameter_values))
             return _empty_result()
 
@@ -992,14 +993,14 @@ def test_headless_diagnostic_batch_preserves_per_request_confidence(
     case = headless_analysis.HeadlessAnalysisCase(
         str(Path(__file__).resolve().parents[2] / "fixtures/desktop-projects/lymph.rcms"),
         (
-            analysis_adapter.make_analysis_request(
+            make_analysis_request(
                 data_type='diagnostic',
                 workflow='standard',
                 method="diagnostic.random",
                 metric="Sens",
                 parameters=parameters[0],
             ),
-            analysis_adapter.make_analysis_request(
+            make_analysis_request(
                 data_type='diagnostic',
                 workflow='standard',
                 method="diagnostic.reitsma",

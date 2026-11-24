@@ -6,6 +6,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TypeAlias
 
+from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtWidgets import QWidget
+
+from rc_metastudio.app_error_handler import connect_action
+
 
 EditState: TypeAlias = tuple[object, ...]
 
@@ -26,6 +31,16 @@ class TransientEditHistory:
     def __init__(self) -> None:
         self._edits: list[_FieldEdit] = []
         self._applied_edit_count = 0
+
+    def bind_shortcuts(self, owner: QWidget) -> None:
+        for key, command in (
+            (QKeySequence.StandardKey.Undo, self.undo),
+            (QKeySequence.StandardKey.Redo, self.redo),
+        ):
+            action = QAction(owner)
+            action.setShortcut(key)
+            owner.addAction(action)
+            connect_action(action, command, parent=owner)
 
     def record(
         self,

@@ -206,16 +206,15 @@ def test_legacy_covariate_identity_and_widths_are_deterministic_across_loads(qap
     def legacy_model():
         from rc_metastudio.project import adapter as project_adapter
         from rc_metastudio.project.archive import migrate_to_latest
-        from tests.python.fast.test_project_adapter import _legacy_multi_arm_project
-        from tests.python.fast.test_project_format import _legacy_state
-        project = _legacy_multi_arm_project("binary")
+        from tests.project_fixtures import legacy_multi_arm_project, legacy_state
+        project = legacy_multi_arm_project("binary")
         dataset = project["dataset"]
         assert isinstance(dataset, dict)
         dataset["covariates"] = [{"name": "Age", "data_type": 1, "stable_id": None}]
         studies = dataset["studies"]
         assert isinstance(studies, list) and isinstance(studies[0], dict)
         studies[0]["covariates"] = {"Age": None}
-        migrated, _ = migrate_to_latest(1, project, _legacy_state())
+        migrated, _ = migrate_to_latest(1, project, legacy_state())
         return dataset_table_model.DatasetTableModel(
             dataset=project_adapter.project_to_dataset(migrated), add_blank_study=False)
 

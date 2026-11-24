@@ -29,8 +29,8 @@ def check_report(app, view, work, record):
     assert copied.startswith("Methods\n"), copied
     for paragraph in (view.manuscript.methods, view.manuscript.results):
         assert report_numbers(paragraph).replace("\u00a0", " ") in copied.replace("\u00a0", " ")
-    from tests.e2e.manuscript_export import assert_manuscript_tables
-    assert_manuscript_tables(view)
+    from tests.e2e.report_retention import assert_report
+    assert_report(view)
 
     if "Omission-only fits:" in view.results.details:
         assert copied.count("Omission-only fits:") == 1, copied
@@ -69,6 +69,7 @@ def check_fixed_references(view, record, method="IV"):
 
 def check_standard_heterogeneity(view, record):
     tables = [t for s in view.results.sections for t in s.tables if t.title.endswith("Heterogeneity")]
+    assert tables, "Expected heterogeneity tables for standard analysis"
     for table, (title, path) in zip(tables, view.results.display_images.items(), strict=True):
         load_serialized_object(str(view.params_paths[title]) + ".plotdata")
         expected = json.loads(str(list(r_oracle.evaluate('''jsonlite::toJSON(local({
@@ -78,7 +79,8 @@ def check_standard_heterogeneity(view, record):
                random=!direct$method %in% c("FE", "EE", "CE"))
         }), auto_unbox=TRUE, digits=16)'''))[0]))
         assert table.headers == ("Q", "df", "P value", "I²") + (("τ²",) if expected["random"] else ()), table
-        for cell, key in zip(table.rows[0], ("Q", "df", "p", "I2", "tau2")):
+        keys = ("Q", "df", "p", "I2") + (("tau2",) if expected["random"] else ())
+        for cell, key in zip(table.rows[0], keys, strict=True):
             if cell.startswith("<"):
                 assert expected[key] < _display_number(cell[1:]), (cell, expected)
             else:
@@ -179,3 +181,101 @@ def check_subgroup(view, record):
                 compare(row[2], transform(expected["upper"]), 5.01e-7)
         record("round3-subgroup-public-reference", view, title=title, expected=reference,
                tables={name: dict(headers=t.headers, rows=t.rows) for name, t in tables.items()}, plots={title: path})
+
+
+def authority(
+    window,
+    family,
+    estimator,
+    inference,
+    confidence,
+    correction="only0",
+    entered=None,
+    metric=None,
+):
+    """Public metafor reconstruction uses observed input, never RCMS preparation."""
+
+    rows = window.model.get_current_raw_data()
+    vector = lambda i: (
+        "c("
+        + ",".join("NA_real_" if row[i] in (None, "") else str(row[i]) for row in rows)
+        + ")"
+    )
+    metric = metric or window.model.current_effect
+    if family == "binary":
+        expression = (
+            f'metafor::escalc("{metric}", xi={vector(0)}, ni={vector(1)}, add=.5, to="{correction}")'
+            if metric in {"PR", "PLN", "PLO", "PAS", "PFT"}
+            else f'metafor::escalc("{metric}", ai={vector(0)}, n1i={vector(1)}, ci={vector(2)}, n2i={vector(3)}, add=.5, to="{correction}", drop00=FALSE)'
+        )
+    elif family == "continuous":
+        expression = (
+            f'metafor::escalc("MN", ni={vector(0)}, mi={vector(1)}, sdi={vector(2)})'
+            if metric == "Mean"
+            else f'metafor::escalc("{metric}", n1i={vector(0)}, m1i={vector(1)}, sd1i={vector(2)}, n2i={vector(3)}, m2i={vector(4)}, sd2i={vector(5)})'
+        )
+    elif metric in {"Sens", "Spec"}:
+        events, other = (0, 1) if metric == "Sens" else (3, 2)
+        correction_mask = f"({vector(0)}*{vector(1)}*{vector(2)}*{vector(3)} == 0)"
+        expression = f'metafor::escalc("PLO", xi={vector(events)}+.5*{correction_mask}, ni={vector(events)}+{vector(other)}+{correction_mask}, add=0)'
+    else:
+        expression = f'metafor::escalc("OR", ai={vector(0)}, bi={vector(1)}, ci={vector(2)}, di={vector(3)}, add=.5, to="only0", drop00=FALSE)'
+    override = (
+        ""
+        if entered is None
+        else f"e$yi[1] <- {entered[0]}; e$vi[1] <- {entered[1] ** 2}; "
+    )
+    point, lower, upper = "as.numeric(f$b)", "f$ci.lb", "f$ci.ub"
+    if metric == "PFT":
+        point, lower, upper = (
+            f"metafor::transf.ipft.hm({value}, targs=list(ni={vector(1)}))"
+            for value in (point, lower, upper)
+        )
+    result = r_oracle.evaluate(
+        "{ e <- "
+        + expression
+        + "; "
+        + override
+        + 'f <- metafor::rma.uni(e$yi, vi=e$vi, method="'
+        + estimator
+        + '", test="'
+        + inference
+        + '", level='
+        + str(confidence)
+        + f"); jsonlite::toJSON(list(estimate={point}, lower_bound={lower}, upper_bound={upper}, standard_error=f$se, p_value=f$pval, q=f$QE, heterogeneity_p_value=f$QEp, tau_squared=f$tau2), auto_unbox=TRUE, digits=16) }}"
+    )
+    return json.loads(str(result[0]))
+
+
+def compare_authority(view, expected, family, record, metric=None):
+    from tests.analysis_regression.golden.support.golden_analysis import (
+        parsed_numeric_sections,
+    )
+
+    sections = parsed_numeric_sections(view.results)
+    diagnostic_summaries = {
+        "Sens": "Sensitivity summary", "Spec": "Specificity summary",
+        "DOR": "Diagnostic odds ratio summary",
+    }
+    actual = sections[diagnostic_summaries[metric or "DOR"] if family == "diagnostic" else "Summary"]
+    for key, value in expected.items():
+        observed_key = (
+            "calculation_scale." + key
+            if (family == "diagnostic" or (family == "binary" and metric not in {"PR", "PFT"}))
+            and key in ("estimate", "lower_bound", "upper_bound", "standard_error")
+            else key
+        )
+        assert observed_key in actual, (observed_key, actual)
+        assert abs(actual[observed_key] - value) <= 1e-6 + 1e-12, (
+            key,
+            actual[observed_key],
+            value,
+        )
+    record(
+        "nondefault-public-authority",
+        view,
+        actual=actual,
+        expected=expected,
+        oracle="metafor::escalc + rma.uni",
+        tolerance=1e-6,
+    )

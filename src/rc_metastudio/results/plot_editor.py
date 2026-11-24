@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from rc_metastudio import adaptive_window, app_error_handler, qt_text
+from rc_metastudio import adaptive_window, app_error_handler, input_text
 from rc_metastudio.analysis import identity as analysis_identity
 from rc_metastudio.results import plot_capabilities
 from rc_metastudio.results.plot_defaults import BUBBLE_STYLE_ACCENTS, FOREST_ARM_LABELS, PLOT_STYLE_ACCENTS
@@ -175,7 +175,6 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.default_layout.addWidget(self.show_i2, self.default_layout.rowCount(), 0, 1, 2)
 
     def _request_sequence_rerun(self):
-        # Draft appearance goes into the new setup; Cancel leaves this result intact.
         self.reject()
         self.rerun_requested.emit()
 
@@ -552,7 +551,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         self.show_summary_line.setChecked(
             self._bool_param("fp_show_summary_line", True)
         )
-        self._image_path = qt_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
+        self._image_path = input_text.to_native_text(self._scalar(image_path or self._params.get(self._param_name("outpath"), "")))
         self.point_size_multiplier.setValue(
             self._float_param(self._param_name("point_size_multiplier"), 1.0)
         )
@@ -649,7 +648,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
 
     @staticmethod
     def _automatic_value(widget):
-        return qt_text.to_native_text(widget.text()) or "[default]"
+        return input_text.to_native_text(widget.text()) or "[default]"
 
     def _scalar(self, value):
         if isinstance(value, (list, tuple)) and value:
@@ -678,7 +677,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
         return "%s_%s" % ("bp" if self.plot_type == "regression" else "fp", suffix)
 
     def _direction_params(self) -> dict[str, str]:
-        return {key: qt_text.to_native_text(plot_text_value(field)).strip()
+        return {key: input_text.to_native_text(plot_text_value(field)).strip()
                 for key, field in self.direction_fields.items()}
 
     def plot_params(self):
@@ -689,13 +688,13 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             "fp_show_i2": self.show_i2.isChecked(),
             "fp_study_order": self.study_order.currentData() if self.plot_type != "cumulative_forest" else "table",
             "fp_show_col1": self.show_1.isChecked(),
-            "fp_col1_str": qt_text.to_native_text(plot_text_value(self.col1_str_edit)),
+            "fp_col1_str": input_text.to_native_text(plot_text_value(self.col1_str_edit)),
             "fp_show_col2": self.show_2.isChecked(),
-            "fp_col2_str": qt_text.to_native_text(plot_text_value(self.col2_str_edit)) or "[default]",
+            "fp_col2_str": input_text.to_native_text(plot_text_value(self.col2_str_edit)) or "[default]",
             "fp_show_col3": self.show_3.isChecked(),
-            "fp_col3_str": qt_text.to_native_text(plot_text_value(self.col3_str_edit)),
+            "fp_col3_str": input_text.to_native_text(plot_text_value(self.col3_str_edit)),
             "fp_show_col4": self.show_4.isChecked(),
-            "fp_col4_str": qt_text.to_native_text(plot_text_value(self.col4_str_edit)),
+            "fp_col4_str": input_text.to_native_text(plot_text_value(self.col4_str_edit)),
             "fp_show_raw_counts": self.show_raw_counts.isChecked(),
             "fp_show_weight": self.show_weight.isChecked(),
             "fp_show_headers": self.show_headers.isChecked(),
@@ -740,7 +739,7 @@ class EditPlotDialog(QDialog, Ui_EditPlotDialog):
             self._sync_sroc_marker_legend()
             params.update(
                 {
-                    "fp_ylabel": qt_text.to_native_text(plot_text_value(self.sroc_ylabel)),
+                    "fp_ylabel": input_text.to_native_text(plot_text_value(self.sroc_ylabel)),
                     "fp_sroc_plot_lb": self._automatic_value(self.sroc_y_lower),
                     "fp_sroc_plot_ub": self._automatic_value(self.sroc_y_upper),
                     "fp_sroc_yticks": self._automatic_value(self.sroc_y_ticks),

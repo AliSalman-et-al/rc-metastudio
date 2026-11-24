@@ -14,7 +14,7 @@ from tests.e2e.plot_observations import load_serialized_object
 
 def run_groups(app, window, work, record):
     from analysis_matrix import run as matrix
-    from advanced_workflows import modal, click
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio import __version__
     from rc_metastudio.about_legal_dialog import AboutLegalDialog
     from tests.e2e.analysis_result_checks import check_report
@@ -50,7 +50,7 @@ def run_groups(app, window, work, record):
     assert old_style == 'default'
     from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
     from rc_metastudio.results.window import ResultsWindow
-    from analysis_matrix import set_parameter
+    from tests.e2e.dialog_interaction import set_parameter
     window.action_go.trigger()
     app.processEvents()
     setup = next(w for w in app.topLevelWidgets() if isinstance(w,AnalysisSetupDialog) and w.isVisible())

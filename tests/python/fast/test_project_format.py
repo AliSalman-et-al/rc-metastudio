@@ -26,6 +26,10 @@ from rc_metastudio.project.archive import (
     JsonObject,
     JsonValue,
 )
+from tests.project_fixtures import (
+    first_sheet, first_study, group_project, legacy_group_project, legacy_state, object_record, object_records,
+)
+
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -48,108 +52,15 @@ def _minimal_state() -> JsonObject:
     return {"schema_version": CURRENT_FORMAT_VERSION, "current_sheet_id": None}
 
 
-def _legacy_group_project(
-    family: str, subtype: str | None, raw_values: list[list[JsonValue]]
-) -> JsonObject:
-    data_type = {"binary": 0, "continuous": 1, "diagnostic": 2}[family]
-    return {
-        "schema_version": 1,
-        "dataset": {
-            "analysis_family": family,
-            "covariates": [],
-            "is_diagnostic": family == "diagnostic",
-            "notes": "",
-            "outcomes": [
-                {
-                    "data_type": data_type,
-                    "follow_ups": ["first"],
-                    "name": "Outcome",
-                    "sub_type": subtype,
-                }
-            ],
-            "studies": [
-                {
-                    "analysis_units": [
-                        {
-                            "entered_effects": {},
-                            "follow_up": "first",
-                            "groups": [
-                                {
-                                    "id": index,
-                                    "name": f"Arm {index + 1}",
-                                    "raw_data": raw,
-                                }
-                                for index, raw in enumerate(raw_values)
-                            ],
-                            "outcome": "Outcome",
-                        }
-                    ],
-                    "covariates": {},
-                    "id": 0,
-                    "include": True,
-                    "manually_excluded": False,
-                    "name": "Study",
-                    "notes": "",
-                    "sample_size": None,
-                    "year": 2026,
-                }
-            ],
-            "summary": None,
-            "title": "Group contract",
-        },
-    }
-
-
-def _group_project(family, subtype, raw_values):
-    arms = [{"id": f"arm:{i}", "name": f"Arm {i + 1}"} for i in range(len(raw_values))]
-    return {"schema_version": CURRENT_FORMAT_VERSION, "title": "Group contract", "notes": "",
-            "sheets": [{"id": "sheet", "name": "Outcome", "family": family,
-                        "data_type": {"binary": 0, "continuous": 1, "diagnostic": 2}[family],
-                        "sub_type": subtype, "arms": arms, "settings": {}, "covariates": [],
-                        "rows": [{"id": "row", "label": "Study", "year": 2026,
-                                  "sample_size": None, "include": True, "manually_excluded": False,
-                                  "notes": "", "covariates": {}, "entered_effects": [], "ratio_inputs": [],
-                                  "raw_data": {arm["id"]: raw for arm, raw in zip(arms, raw_values)}}]}]}
-
-
-def _legacy_state():
-    return {"schema_version": 1, "active_outcome": None, "active_follow_up": None,
-            "active_groups": [], "active_effect": None, "confidence_level": 95.0}
-
-
-def _first_sheet(project):
-    return _objects(project["sheets"])[0]
-
-
 def _snapshot_project(name: str) -> JsonObject:
     snapshot = json.loads((SNAPSHOT_DIR / f"{name}.json").read_text("utf-8"))
-    return migrate_to_latest(1, {"schema_version": 1, "dataset": snapshot["dataset"]}, _legacy_state())[0]
+    return migrate_to_latest(1, {"schema_version": 1, "dataset": snapshot["dataset"]}, legacy_state())[0]
 
 
 def _json_bytes(value: object) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode(
         "utf-8"
     )
-
-
-def _object(value: JsonValue) -> JsonObject:
-    """Narrow a JSON value at a test mutation/read boundary."""
-
-    if not isinstance(value, dict):
-        raise AssertionError("expected JSON object")
-    return value
-
-
-def _objects(value: JsonValue) -> list[JsonObject]:
-    """Narrow a JSON array whose members are objects."""
-
-    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
-        raise AssertionError("expected JSON object array")
-    return cast(list[JsonObject], value)
-
-
-def _first_study(project: JsonObject) -> JsonObject:
-    return _objects(_first_sheet(project)["rows"])[0]
 
 
 def _write_archive(path: Path, members: list[tuple[str, bytes]]) -> None:
@@ -191,9 +102,9 @@ def _replace_raw_member(path: Path, member: str, payload: bytes) -> None:
 
 
 def _first_populated_raw(project: JsonObject) -> list[JsonValue]:
-    for sheet in _objects(project["sheets"]):
-        for row in _objects(sheet["rows"]):
-            for raw in _object(row["raw_data"]).values():
+    for sheet in object_records(project["sheets"]):
+        for row in object_records(sheet["rows"]):
+            for raw in object_record(row["raw_data"]).values():
                 if not isinstance(raw, list):
                     raise AssertionError("expected raw-data array")
                 if any(value not in (None, "") for value in raw):
@@ -254,9 +165,9 @@ def test_project_schema_rejects_unknown_fields_and_invalid_types(
 
 @pytest.mark.parametrize(("mutation", "message"), [
     (lambda project: project["sheets"].append(copy.deepcopy(project["sheets"][0])), "duplicate identity"),
-    (lambda project: cast(dict, _first_study(project)["raw_data"]).update(missing=[1, 10]), "raw data reference undeclared arm"),
+    (lambda project: cast(dict, first_study(project)["raw_data"]).update(missing=[1, 10]), "raw data reference undeclared arm"),
     (lambda project: _first_populated_raw(project).__setitem__(slice(None), [1.0]), "raw-data arity"),
-    (lambda project: cast(list, _first_study(project)["entered_effects"]).append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
+    (lambda project: cast(list, first_study(project)["entered_effects"]).append({"metric": "OR", "arms": ["missing"], "values": {}}), "comparison references undeclared arm"),
 ], ids=["duplicate-sheet", "raw-arm-reference", "raw-arity", "comparison-reference"])
 def test_semantic_validation_rejects_invalid_domain_relationships(tmp_path, mutation, message):
     project = _snapshot_project("amino.rcms")
@@ -287,7 +198,7 @@ def test_subtypes_preserve_valid_multi_group_analysis_units(
     raw_values: list[list[JsonValue]],
 ) -> None:
     destination = tmp_path / f"{family}-multi-arm.rcms"
-    project = _group_project(family, subtype, raw_values)
+    project = group_project(family, subtype, raw_values)
 
     save_project(destination, project, _minimal_state())
 
@@ -309,7 +220,7 @@ def test_group_subtype_contract_rejects_too_few_or_forbidden_extra_groups(
     subtype: str | None,
     raw_values: list[list[JsonValue]],
 ) -> None:
-    project = _group_project(family, subtype, raw_values)
+    project = group_project(family, subtype, raw_values)
 
     with pytest.raises(ProjectFormatError, match="group count conflicts with subtype"):
         save_project(tmp_path / "invalid-groups.rcms", project, _minimal_state())
@@ -323,7 +234,7 @@ def test_schema_rejects_values_outside_the_domain_vocabulary(
     tmp_path: Path, field: str, value: JsonValue
 ) -> None:
     project = _snapshot_project("amino.rcms")
-    outcome = _first_sheet(project)
+    outcome = first_sheet(project)
     outcome[field] = value
 
     with pytest.raises(ProjectFormatError, match=field):
@@ -339,16 +250,16 @@ def test_schema_rejects_values_outside_the_domain_vocabulary(
 ], ids=["row-identifier", "arm-identifier", "covariate-identifier", "cross-family-metric", "numeric-domain"])
 def test_semantic_validation_enforces_domain_identity_family_and_numeric_contracts(tmp_path, sample, mutation, message):
     project = _snapshot_project(sample)
-    mutation(_first_sheet(project))
+    mutation(first_sheet(project))
     with pytest.raises(ProjectFormatError, match=message):
         save_project(tmp_path / "invalid-domain.rcms", project, _minimal_state())
 
 
 
 def test_typed_snapshot_relationships_do_not_depend_on_editable_labels():
-    project = _group_project("binary", "proportions", [[1, 10], [2, 20]])
+    project = group_project("binary", "proportions", [[1, 10], [2, 20]])
     before = project_adapter.project_to_dataset(project)
-    sheet = _first_sheet(project)
+    sheet = first_sheet(project)
     sheet["name"] = "Renamed outcome"
     sheet["rows"][0]["label"] = "Renamed study"
     sheet["arms"][0]["name"] = "Renamed treatment"
@@ -375,21 +286,21 @@ def test_v1_schema_rejects_internal_identity_fields(
 ) -> None:
     destination = tmp_path / "identity-field.rcms"
     save_project(destination, _minimal_project(), _minimal_state())
-    project = _legacy_group_project("binary", "proportions", [[1, 10], [2, 20]])
-    _replace_json_member(destination, "state.json", _legacy_state())
+    project = legacy_group_project("binary", "proportions", [[1, 10], [2, 20]])
+    _replace_json_member(destination, "state.json", legacy_state())
     manifest = json.loads(_members(destination)["manifest.json"])
     manifest["format_version"] = 1
     _replace_json_member(destination, "manifest.json", manifest)
-    dataset = _object(project["dataset"])
+    dataset = object_record(project["dataset"])
     if path[0] == "outcomes":
-        target = _objects(dataset["outcomes"])[0]
+        target = object_records(dataset["outcomes"])[0]
     elif path[0] == "studies":
-        target = _objects(dataset["studies"])[0]
+        target = object_records(dataset["studies"])[0]
     elif path[0] == "analysis_units":
-        target = _objects(_objects(dataset["studies"])[0]["analysis_units"])[0]
+        target = object_records(object_records(dataset["studies"])[0]["analysis_units"])[0]
     else:
-        target = _objects(
-            _objects(_objects(dataset["studies"])[0]["analysis_units"])[0]["groups"]
+        target = object_records(
+            object_records(object_records(dataset["studies"])[0]["analysis_units"])[0]["groups"]
         )[0]
     target[path[1]] = ["identity"] if path[1] == "follow_up_ids" else "identity"
     _replace_json_member(destination, "project.json", project)
@@ -468,12 +379,12 @@ def test_writer_and_domain_validation_normalize_numeric_conversion_overflow(
         validate_project_semantics(document.project, document.state)
 
     oversized_project = _snapshot_project("amino.rcms")
-    _first_study(oversized_project)["year"] = 10**5000
+    first_study(oversized_project)["year"] = 10**5000
     with pytest.raises(ProjectFormatError, match="portable JSON numeric range"):
         save_project(tmp_path / "oversized.rcms", oversized_project, _minimal_state())
 
     nonfinite_project = _snapshot_project("amino.rcms")
-    _first_study(nonfinite_project)["sample_size"] = float("inf")
+    first_study(nonfinite_project)["sample_size"] = float("inf")
     with pytest.raises(ProjectFormatError, match="finite JSON number"):
         save_project(tmp_path / "nonfinite.rcms", nonfinite_project, _minimal_state())
 
@@ -483,7 +394,7 @@ def test_study_sample_size_requires_a_finite_positive_integer_on_save_and_load(
 ) -> None:
     for invalid in (0, -1, 1.5):
         project = _snapshot_project("amino.rcms")
-        _first_study(project)["sample_size"] = invalid
+        first_study(project)["sample_size"] = invalid
         with pytest.raises(ProjectFormatError, match="positive integer"):
             save_project(
                 tmp_path / f"save-sample-size-{invalid}.rcms", project, _minimal_state()
@@ -492,13 +403,13 @@ def test_study_sample_size_requires_a_finite_positive_integer_on_save_and_load(
         destination = tmp_path / f"load-sample-size-{invalid}.rcms"
         valid = _snapshot_project("amino.rcms")
         save_project(destination, valid, _minimal_state())
-        _first_study(valid)["sample_size"] = invalid
+        first_study(valid)["sample_size"] = invalid
         _replace_json_member(destination, "project.json", valid)
         with pytest.raises(ProjectFormatError, match="positive integer"):
             load_project(destination)
 
     valid = _snapshot_project("amino.rcms")
-    _first_study(valid)["sample_size"] = 10.0
+    first_study(valid)["sample_size"] = 10.0
     destination = tmp_path / "valid-sample-size.rcms"
     save_project(destination, valid, _minimal_state())
     assert load_project(destination).project == valid
@@ -1040,7 +951,7 @@ def test_frozen_desktop_fixtures_preserve_migrated_semantics_and_round_trip(
             return value
         expected_dataset = current_labels(snapshot["dataset"])
         expected_project, expected_state = migrate_to_latest(1,
-            {"schema_version": 1, "dataset": expected_dataset}, _legacy_state())
+            {"schema_version": 1, "dataset": expected_dataset}, legacy_state())
         assert _sheet_semantics(loaded.project) == _sheet_semantics(expected_project)
         assert loaded.state == expected_state
         reconstructed = project_adapter.project_to_dataset(loaded.project)
@@ -1054,10 +965,10 @@ def test_frozen_desktop_fixtures_preserve_migrated_semantics_and_round_trip(
 
 @pytest.mark.parametrize("bad_input", [{"unexpected": 1}, {"estimate": "bad"}, {"estimate": True}, {"confidence": None}, {"scale": "invalid"}, {"estimate": -1}, {"lower": 2, "upper": 1}])
 def test_storage_boundary_rejects_invalid_ratio_archive(tmp_path, bad_input):
-    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    project = group_project("binary", None, [[1, 10], [2, 10]])
     path = tmp_path / "ratio.rcms"
     save_project(path, project, _minimal_state())
-    sheet = _first_sheet(project)
+    sheet = first_sheet(project)
     sheet["rows"][0]["ratio_inputs"] = [{"arms": [a["id"] for a in sheet["arms"]], "input": bad_input}]
     _replace_json_member(path, "project.json", project)
     with pytest.raises(ProjectFormatError, match="ratio"):
@@ -1066,10 +977,10 @@ def test_storage_boundary_rejects_invalid_ratio_archive(tmp_path, bad_input):
 
 @pytest.mark.parametrize("kind", ["entered_effects", "ratio_inputs"])
 def test_storage_boundary_rejects_duplicate_hydration_keys(tmp_path, kind):
-    project = _group_project("binary", None, [[1, 10], [2, 10]])
+    project = group_project("binary", None, [[1, 10], [2, 10]])
     path = tmp_path / "duplicate.rcms"
     save_project(path, project, _minimal_state())
-    sheet = _first_sheet(project)
+    sheet = first_sheet(project)
     arms = [a["id"] for a in sheet["arms"]]
     entry = dict(arms=arms, metric="OR", values={"est": 1.0}) if kind == "entered_effects" else dict(arms=arms, input={})
     sheet["rows"][0][kind] = [entry, copy.deepcopy(entry)]
@@ -1083,7 +994,7 @@ def test_storage_boundary_rejects_malformed_covariate(tmp_path, covariate):
     project = _minimal_project()
     path = tmp_path / "covariate.rcms"
     save_project(path, project, _minimal_state())
-    _first_sheet(project)["covariates"] = [covariate]
+    first_sheet(project)["covariates"] = [covariate]
     _replace_json_member(path, "project.json", project)
     with pytest.raises(ProjectFormatError, match="covariate"):
         load_project(path)
@@ -1094,7 +1005,7 @@ def test_storage_boundary_rejects_malformed_settings_arms(tmp_path, arms):
     project = _minimal_project()
     path = tmp_path / "arms.rcms"
     save_project(path, project, _minimal_state())
-    _object(_first_sheet(project)["settings"])["arms"] = arms
+    object_record(first_sheet(project)["settings"])["arms"] = arms
     _replace_json_member(path, "project.json", project)
     with pytest.raises(ProjectFormatError, match="arms?|arm"):
         load_project(path)
@@ -1102,10 +1013,10 @@ def test_storage_boundary_rejects_malformed_settings_arms(tmp_path, arms):
 
 @pytest.mark.parametrize("version", [1, 2])
 def test_storage_boundary_legacy_string_summary_reopens(tmp_path, version):
-    project = _legacy_group_project("binary", None, [[1, 10], [2, 10]])
-    state = _legacy_state()
+    project = legacy_group_project("binary", None, [[1, 10], [2, 10]])
+    state = legacy_state()
     project["schema_version"] = state["schema_version"] = version
-    _object(project["dataset"])["summary"] = "Original summary text"
+    object_record(project["dataset"])["summary"] = "Original summary text"
     path = tmp_path / "legacy.rcms"
     save_project(path, _minimal_project(), _minimal_state())
     _replace_json_member(path, "project.json", project)
@@ -1114,6 +1025,6 @@ def test_storage_boundary_legacy_string_summary_reopens(tmp_path, version):
     manifest["format_version"] = version
     _replace_json_member(path, "manifest.json", manifest)
     document = load_project(path)
-    assert _object(_first_sheet(document.project)["settings"])["summary"] == "Original summary text"
+    assert object_record(first_sheet(document.project)["settings"])["summary"] == "Original summary text"
     save_project(path, document.project, document.state)
     assert load_project(path) == document

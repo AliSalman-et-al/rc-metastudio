@@ -285,8 +285,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._plot_defaults: dict[str, dict[str, object]] = {}
         self._save_plot_override = save_plot_override
         self._explicit_fit_width = False
-        self._svg_plot_items = []
-        self._raster_plot_items = []
         self._refitting_svg_plots = False
         self._refitting_viewport_items = False
         self._viewport_refit_pending = False
@@ -321,7 +319,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         restored_state = restore_results_window_state(self)
         self._restored_splitter_proportions = restored_state.splitter_proportions
         self.add_offset = 5
-        self.borders = []
         self.plot_service = plot_service or PlotService()
         self._change_settings = change_settings
         self._prepared_manuscript = manuscript
@@ -374,7 +371,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._setup_report_controls(source_sheet_name)
         for entry in self._plots.values():
             if entry.scene_item is not None:
-                self._restore_plot_override(entry.artifact, entry.scene_item)
+                self._restore_plot_override(entry)
 
     def _load_result(self, results: AnalysisResult) -> None:
         self.results = results = normalize_analysis_result(results)
@@ -385,20 +382,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         section, = (section for section in results.sections if section.kind == "image")
         artifact = PlotArtifact.from_section(section)
         entry = self._plots[section.semantic_id]
-        _, _, plot = self.create_plot_item(artifact, self.position())
+        plot = self._create_plot_item(artifact, self.position())
         previous = entry.scene_item
         if previous is not None:
             self._layout_items.remove(previous)
-            if previous in self._svg_plot_items:
-                self._svg_plot_items.remove(previous)
-            if previous in self._raster_plot_items:
-                self._raster_plot_items.remove(previous)
             self.scene.removeItem(previous)
         entry.scene_item = plot
         entry.artifact = artifact
+        plot.contextMenuEvent = self._make_context_menu(entry)
         self._load_result(results)
         self._plot_defaults.pop(artifact.title, None)
-        self._restore_plot_override(artifact, plot)
+        self._restore_plot_override(entry)
         self.manuscript = manuscript
         self._refresh_manuscript_theme()
         self._load_report_tables()
@@ -1108,9 +1102,9 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self._change_settings(plot_parameters, self)
 
     def _edit_selected_plot(self):
-        selected = self._selected_plot()
-        if selected is not None:
-            self.edit_plot(*selected)
+        entry = self._plot_entry(self.nav_tree.currentItem())
+        if entry is not None:
+            self._edit_plot(entry)
 
     def add_result_sections(self):
         for section in sorted(self.results.sections, key=lambda item: item.order):
@@ -1124,20 +1118,17 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         entry = _PlotEntry(artifact, qt_item)
         self._plots[section.semantic_id] = entry
         try:
-            _, _, plot_item = self.create_plot_item(artifact, self.position())
+            plot_item = self._create_plot_item(artifact, self.position())
         except Exception as error:
             app_error_handler.log_exception(type(error), error, error.__traceback__)
             self.add_title("Could not load plot. Text results are still available.")
             return
 
         entry.scene_item = plot_item
+        plot_item.contextMenuEvent = self._make_context_menu(entry)
 
     def plot_artifact(self, source_key):
-        section = next(
-            section for section in self.results.sections
-            if section.kind == "image" and section.source_key == source_key
-        )
-        return PlotArtifact.from_section(section)
+        return next(entry.artifact for entry in self._plots.values() if entry.artifact.title == source_key)
 
     def generate_pixmap(self, image):
         pixmap = QPixmap(image)
@@ -1280,7 +1271,6 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             selected = self._selected_plot()
             if selected is not None:
                 self._last_plot_item = item
-            # Tables also unchecks the action; a no-op value change cannot select the page.
             self.report_action.blockSignals(True)
             self.report_action.setChecked(selected is None)
             self.report_action.blockSignals(False)
@@ -1394,6 +1384,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
             self._size_result_table_columns()
         return super(ResultsWindow, self).eventFilter(watched, event)
 
+    @property
+    def _svg_plot_items(self):
+        return tuple(item for item in self._layout_items if isinstance(item, _svg_item_class()))
+
+    @property
+    def _raster_plot_items(self):
+        return tuple(item for item in self._layout_items if isinstance(item, ResponsivePixmapItem))
+
     def _refit_svg_plot_items(self):
         if self._refitting_svg_plots:
             return
@@ -1499,7 +1497,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.graphics_view.setScene(None)
         self.deleteLater()
 
-    def create_pixmap_item(self, pixmap, position, artifact):
+    def _create_pixmap_item(self, pixmap, position, artifact):
         item = ResponsivePixmapItem(QPixmap(artifact.image_path))
         item.setData(0, artifact.plot_kind)
         item.source_path = artifact.image_path
@@ -1522,13 +1520,11 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.clearSelection()
         self.scene.addItem(item)
         self._outline_plot_paper(item)
-        self._raster_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
 
-        item.contextMenuEvent = self._make_context_menu(artifact, item)
 
-        return (item.boundingRect().size(), position, item)
+        return item
 
     def _outline_plot_paper(self, item):
         outline = QGraphicsRectItem(item.boundingRect().adjusted(.5, .5, -.5, -.5), item)
@@ -1537,18 +1533,18 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         outline.setPen(pen)
         outline.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
 
-    def create_plot_item(self, artifact, position):
+    def _create_plot_item(self, artifact, position):
         if artifact.has_vector_display():
-            svg_item = self.create_svg_item(artifact, position)
+            svg_item = self._create_svg_item(artifact, position)
             if svg_item is not None:
                 return svg_item
 
         pixmap = self.generate_pixmap(artifact.image_path)
         if pixmap.isNull():
             raise ValueError("Plot image could not be decoded")
-        return self.create_pixmap_item(pixmap, position, artifact)
+        return self._create_pixmap_item(pixmap, position, artifact)
 
-    def create_svg_item(self, artifact, position):
+    def _create_svg_item(self, artifact, position):
         renderer = _opaque_svg_renderer(artifact.display_path(), self)
         if not renderer.isValid():
             return None
@@ -1575,15 +1571,14 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         self.scene.clearSelection()
         self.scene.addItem(item)
         self._outline_plot_paper(item)
-        self._svg_plot_items.append(item)
         self._layout_items.append(item)
         item.setPos(position)
-        item.contextMenuEvent = self._make_context_menu(artifact, item)
 
-        return (item.boundingRect().size(), position, item)
+        return item
 
-    def _make_context_menu(self, artifact, plot_item):
+    def _make_context_menu(self, entry: _PlotEntry):
         def _graphics_item_context_menu(event):
+            artifact = entry.artifact
             context_menu = QMenu(self)
             if artifact.capability.editable:
                 if plot_capabilities.option_groups(artifact.plot_kind):
@@ -1597,7 +1592,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                     action.setWhatsThis("Edit this figure's appearance.")
                     action.triggered.connect(
                         app_error_handler.safe_slot(
-                            lambda _checked=False: self.edit_plot(artifact, plot_item),
+                            lambda _checked=False: self._edit_plot(entry),
                             parent=self,
                         )
                     )
@@ -1611,9 +1606,10 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         return _graphics_item_context_menu
 
-    def edit_plot(self, artifact, plot_item):
+    def _edit_plot(self, entry: _PlotEntry) -> None:
+        artifact = entry.artifact
         regenerator = artifact.capability.regenerator
-        if regenerator == "none":
+        if regenerator == "none" or not artifact.params_path:
             return
         plot_params = self.plot_service.load_params(artifact.params_path)
         if plot_params is None:
@@ -1621,7 +1617,7 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
         defaults = self._plot_defaults.setdefault(artifact.title, plot_params)
 
         def commit(parameters: dict[str, object]) -> None:
-            self._apply_plot_edits(parameters, artifact, plot_item)
+            self._apply_plot_edits(entry, parameters)
 
         if regenerator == "funnel":
             dialog = FunnelPlotEditorDialog(
@@ -1641,21 +1637,25 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
 
         dialog.exec()
 
-    def _restore_plot_override(self, artifact, plot_item):
+    def _restore_plot_override(self, entry: _PlotEntry) -> None:
+        artifact = entry.artifact
         params = self._plot_overrides.get(artifact.title)
         if params and artifact.params_path:
             defaults = self.plot_service.load_params(artifact.params_path)
             if defaults is not None:
                 self._plot_defaults[artifact.title] = defaults
-                self._apply_plot_edits(params, artifact, plot_item, persist=False)
+                self._apply_plot_edits(entry, params, persist=False)
 
-    def _apply_plot_edits(self, updated_params, artifact, plot_item, *, persist=True):
+    def _apply_plot_edits(self, entry: _PlotEntry, updated_params, *, persist=True):
+        artifact = entry.artifact
         regenerator = artifact.capability.regenerator
         output_parameter = {
             "forest": "fp_outpath", "regression": "bp_outpath",
             "sroc": "fp_outpath", "funnel": "funnel.outpath", "trial_sequential": "fp_outpath",
         }[regenerator]
         outpath = updated_params.get(output_parameter) or artifact.image_path
+        if not artifact.params_path:
+            raise ValueError("Editable plot has no saved parameters.")
         self.plot_service.apply_edits(
             regenerator=regenerator, params_path=artifact.params_path,
             updated_params=updated_params, output_path=outpath,
@@ -1672,37 +1672,38 @@ class ResultsWindow(QMainWindow, Ui_ResultsWindow):
                              or name.startswith(("fp_", "bp_", "funnel.")))}
             self._plot_overrides[artifact.title] = overrides
             self._save_plot_override(artifact.title, overrides)
-        self._refresh_plot_item(plot_item, artifact, outpath)
+        self._refresh_plot_item(entry, outpath)
 
-    def _refresh_plot_item(self, plot_item, artifact, outpath):
+    def _refresh_plot_item(self, entry: _PlotEntry, outpath):
+        artifact, plot_item = entry.artifact, entry.scene_item
+        if plot_item is None:
+            return
+        refreshed_artifact = PlotArtifact(
+            artifact.title,
+            outpath,
+            artifact.capability,
+            params_path=artifact.params_path,
+            display_path=(
+                outpath if artifact.display_image_path == artifact.image_path else artifact.display_image_path
+            ),
+        )
+        if isinstance(plot_item, _svg_item_class()) and refreshed_artifact.has_vector_display():
+            renderer = _opaque_svg_renderer(refreshed_artifact.display_path(), self)
+            if not renderer.isValid():
+                return
+            plot_item.setSharedRenderer(renderer)
+            self.scene.update()
+        elif isinstance(plot_item, ResponsivePixmapItem):
+            source_pixmap = QPixmap(outpath)
+            if source_pixmap.isNull():
+                return
+            plot_item.replace_source(source_pixmap)
+            plot_item.source_path = outpath
+        else:
+            return
 
-        if plot_item is not None:
-            refreshed_artifact = PlotArtifact(
-                artifact.title,
-                outpath,
-                artifact.capability,
-                params_path=artifact.params_path,
-                display_path=(
-                    outpath
-                    if artifact.display_image_path == artifact.image_path
-                    else artifact.display_image_path
-                ),
-            )
-            if (
-                isinstance(plot_item, _svg_item_class())
-                and refreshed_artifact.has_vector_display()
-            ):
-                renderer = _opaque_svg_renderer(refreshed_artifact.display_path(), self)
-                if renderer.isValid():
-                    plot_item.setSharedRenderer(renderer)
-                    self._schedule_viewport_refit()
-                    self.scene.update()
-            elif isinstance(plot_item, ResponsivePixmapItem):
-                source_pixmap = QPixmap(outpath)
-                if not source_pixmap.isNull():
-                    plot_item.replace_source(source_pixmap)
-                    plot_item.source_path = outpath
-                    self._schedule_viewport_refit()
+        entry.artifact = refreshed_artifact
+        self._schedule_viewport_refit()
 
     def _plot_export_options(self, artifact):
         from rc_metastudio.results.plot_export import PlotExportDialog

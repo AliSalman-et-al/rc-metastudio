@@ -1,5 +1,3 @@
-# Exercise production forest rendering with the same wide font on measuring and
-# output devices. Inputs and SVGs remain in the supplied evidence directory.
 args <- commandArgs(trailingOnly=TRUE)
 output <- normalizePath(args[[1]], mustWork=TRUE)
 suppressPackageStartupMessages(library(RCMetaR))

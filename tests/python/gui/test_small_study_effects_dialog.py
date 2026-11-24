@@ -164,8 +164,6 @@ def test_dialog_form_surfaces_never_introduce_horizontal_scrollbars(
                 scroll_area.horizontalScrollBar(), "horizontal scrollbar"
             ).maximum() == 0
 
-        # The long tau² option is a useful sentinel for the original defect:
-        # it must remain wholly reachable in the content viewport.
         checkbox = dialog.include_tau2_check
         style = required(checkbox.style(), "checkbox style")
         indicator_width = style.pixelMetric(

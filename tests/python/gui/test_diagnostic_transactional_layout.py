@@ -491,8 +491,6 @@ def test_diagnostic_metric_availability_preserves_workflow_and_explains_limits(
         if model.raw_available:
             assert dialog.availability_label.isHidden()
             assert dialog.btn_cancel.text() == "Cancel"
-            # The joint Sensitivity/Specificity path is the default, while
-            # univariate DOR/LR remain explicit, available requests.
             assert dialog.chk_box_lr.isEnabled()
             assert dialog.chk_box_dor.isEnabled()
             assert not dialog.chk_box_lr.isChecked()

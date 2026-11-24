@@ -75,9 +75,11 @@ def option_groups(plot_kind: str) -> frozenset[str]:
     return rule[1] if rule is not None else frozenset()
 
 
-def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
-    images = _string_mapping(result.get("images"), "images")
-    descriptors = _descriptor_mapping(result.get("plot_capabilities"))
+def validate_capabilities(
+    images: Mapping[str, str],
+    descriptors: Mapping[str, Mapping[str, object]],
+    params_paths: Mapping[str, str],
+) -> dict[str, PlotCapability]:
     missing = sorted(set(images) - set(descriptors))
     extra = sorted(set(descriptors) - set(images))
     if missing:
@@ -92,9 +94,6 @@ def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
     normalized = {
         title: _validate_descriptor(title, descriptors[title]) for title in images
     }
-    params_paths = _string_mapping(
-        result.get("image_params_paths"), "image_params_paths"
-    )
     missing_params = sorted(
         title
         for title, descriptor in normalized.items()
@@ -108,38 +107,7 @@ def validate_result(result: Mapping[str, object]) -> dict[str, PlotCapability]:
     return normalized
 
 
-def _string_mapping(value: object, label: str) -> dict[str, str]:
-    if value is None or value == [] or value == ():
-        return {}
-    if not isinstance(value, dict):
-        raise ValueError(f"{label} must be a mapping")
-    normalized: dict[str, str] = {}
-    for key, item in value.items():
-        if not isinstance(key, str) or not isinstance(item, str):
-            raise ValueError(f"{label} keys and values must be text")
-        normalized[key] = item
-    return normalized
-
-
-def _descriptor_mapping(value: object) -> dict[str, dict[str, object]]:
-    if value is None or value == [] or value == ():
-        return {}
-    if not isinstance(value, dict):
-        raise ValueError("plot_capabilities must be a mapping")
-    normalized: dict[str, dict[str, object]] = {}
-    for key, item in value.items():
-        if not isinstance(key, str) or not isinstance(item, dict):
-            raise ValueError("plot capability entries must be named mappings")
-        descriptor: dict[str, object] = {}
-        for field, field_value in item.items():
-            if not isinstance(field, str):
-                raise ValueError("plot capability field names must be text")
-            descriptor[field] = field_value
-        normalized[key] = descriptor
-    return normalized
-
-
-def _validate_descriptor(title: str, descriptor: dict[str, object]) -> PlotCapability:
+def _validate_descriptor(title: str, descriptor: Mapping[str, object]) -> PlotCapability:
     _validate_descriptor_fields(title, descriptor)
     editable, styleable = _descriptor_flags(title, descriptor)
     if descriptor["composition"] != "single":
@@ -150,9 +118,7 @@ def _validate_descriptor(title: str, descriptor: dict[str, object]) -> PlotCapab
     return PlotCapability(plot_kind, editable, styleable, regenerator)
 
 
-def _validate_descriptor_fields(title: str, descriptor: dict[str, object]) -> None:
-    if not isinstance(descriptor, dict):
-        raise ValueError("Plot capability descriptor for %s must be a mapping" % title)
+def _validate_descriptor_fields(title: str, descriptor: Mapping[str, object]) -> None:
     missing = [field for field in REQUIRED_FIELDS if field not in descriptor]
     extra = sorted(set(descriptor) - set(REQUIRED_FIELDS))
     if missing or extra:
@@ -162,7 +128,7 @@ def _validate_descriptor_fields(title: str, descriptor: dict[str, object]) -> No
         )
 
 
-def _descriptor_flags(title: str, descriptor: dict[str, object]) -> tuple[bool, bool]:
+def _descriptor_flags(title: str, descriptor: Mapping[str, object]) -> tuple[bool, bool]:
     editable = descriptor["editable"]
     styleable = descriptor["styleable"]
     if not isinstance(editable, bool):

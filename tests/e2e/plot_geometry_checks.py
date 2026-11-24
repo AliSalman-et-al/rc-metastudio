@@ -188,7 +188,7 @@ def check_sequential(view, workflow, record):
 
 
 def check_excluding_null(app, view, record):
-    from advanced_workflows import click, modal
+    from tests.e2e.dialog_interaction import click, modal
     from PyQt6 import QtWidgets
     from rc_metastudio.results.plot_editor import EditPlotDialog
 

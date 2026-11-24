@@ -16,9 +16,6 @@ INCLUDE_COLUMN, STUDY_COLUMN, YEAR_COLUMN = range(3)
 FIXED_LABELS = ("Include", "Study name", "Year")
 FIXED_TOOLTIPS = ("Include this study in analyses", "Name to identify the study", "Year of publication")
 FIRST_RAW_COLUMN = len(FIXED_LABELS)
-FIRST_IMPORT_COLUMN = STUDY_COLUMN
-IMPORT_YEAR_COLUMN = YEAR_COLUMN - FIRST_IMPORT_COLUMN
-IMPORT_IDENTITY_COLUMNS = range(FIRST_RAW_COLUMN - FIRST_IMPORT_COLUMN)
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,40 +177,6 @@ class SheetColumns:
                 metric=metric, confidence=confidence,
             )
         return None
-
-    def import_labels(self, arms: Sequence[str], metric: str | None, *, legacy: bool = False) -> list[str]:
-        return [
-            self.label(section, arms, metric, legacy=legacy)
-            for section in range(FIRST_IMPORT_COLUMN, self.first_covariate)
-            if section not in self.effect_sections
-            or self.effects[section - self.first_effect].import_default is None
-        ]
-
-    def optional_import_headers(self) -> dict[str, str]:
-        return {
-            effect.label: effect.import_default
-            for effect in self.effects
-            if effect.label is not None and effect.import_default is not None
-        }
-
-    def import_count_columns(self) -> set[int]:
-        return {
-            section - FIRST_IMPORT_COLUMN
-            for section, raw in zip(self.raw_sections, self.raw, strict=True)
-            if raw.field.count
-        }
-
-    def import_raw_columns(self, single_arm: bool) -> tuple[int, ...]:
-        return tuple(
-            section - FIRST_IMPORT_COLUMN
-            for section, raw in zip(self.raw_sections, self.raw, strict=True)
-            if not single_arm or raw.arm_index != 1
-        )
-
-    @property
-    def first_import_effect(self) -> int:
-        return self.first_effect - FIRST_IMPORT_COLUMN
-
 
 _SORT_TOOLTIP = "\nRight-click the header to sort studies by this column."
 _BINARY_RAW = (

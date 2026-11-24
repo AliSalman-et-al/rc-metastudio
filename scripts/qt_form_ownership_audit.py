@@ -9,9 +9,6 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 
-# Each canonical form has one owner that registers its window role. Specialized
-# subclasses inherit that contract. Wizard pages likewise inherit it from
-# MainWizard and are intentionally absent here.
 TOP_LEVEL_FORM_INVENTORY = {
     "about_legal.ui": (("about_legal_dialog.py", "AboutLegalDialog", "TRANSACTIONAL"),),
     "binary_data_dialog.ui": (

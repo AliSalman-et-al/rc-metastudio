@@ -69,8 +69,6 @@ rcmetar.study.result.values <- function(data, params, fit, grouped.indices=NULL)
     effects <- rcmetar.fitted.study.effects(data, params, fit)
     indices <- seq_len(n)
   } else {
-    # Subgroup study rows show the prepared effects. The overall fit supplies
-    # weights, while each subgroup's independently fitted result has its own row.
     yi <- as.numeric(data@y)
     half.width <- as.numeric(data@SE) * get.mult.from.conf.level(params$conf.level)
     effects <- list(yi=yi, ci.lb=yi - half.width, ci.ub=yi + half.width)

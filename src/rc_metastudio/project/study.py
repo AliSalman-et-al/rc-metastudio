@@ -66,7 +66,6 @@ class AnalysisUnit:
         """
         self.is_diagnostic = sheet.data_type == DIAGNOSTIC
         self.sheet = sheet
-        # An old archive can omit the measurement slots for a declared arm.
         self.present_raw_arms = present_raw_arms
 
         try:
@@ -264,7 +263,6 @@ class AnalysisUnit:
             cached = self._entered_display.get((effect, arm_comparison))
             if cached is not None:
                 return cached
-        # Old archives can carry a display result in the entered-effect record.
         return self._read_effect_entry(source, effect, arm_comparison)
 
     def _display_for_update(self, source: EffectSource, effect, arm_comparison):
@@ -515,8 +513,6 @@ class AnalysisUnit:
         return raw_data
 
     def set_raw_data_for_arms(self, arms, raw_data_list):
-        # note: raw_data_list should be a *nested list*, where entry
-        # i is the raw data for arms[i].
         for i, arm in enumerate(arms):
             self.set_raw_data_for_arm(arm, raw_data_list[i])
 

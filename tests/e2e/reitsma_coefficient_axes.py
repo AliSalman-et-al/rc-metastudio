@@ -10,8 +10,10 @@ from tests.e2e.plot_observations import load_saved_analysis
 
 
 def run_coefficients(app, window, work, record):
-    from analysis_matrix import run as matrix, set_parameter
-    from advanced_workflows import modal, click, export_formats
+    from tests.e2e.dialog_interaction import set_parameter
+    from analysis_matrix import run as matrix
+    from tests.e2e.plot_workflow_support import export_formats
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
     from rc_metastudio.results.plot_editor import EditPlotDialog

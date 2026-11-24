@@ -264,7 +264,6 @@ elif [ "$skip_dependency_install" -eq 0 ]; then
     --config-settings-package "pyqt6:--qmake-setting=QMAKE_APPLE_DEVICE_ARCHS=$architecture" \
     --config-settings-package "pyqt6:--jobs=1")
   python_exe="$repo_root/.venv/bin/python"
-  # Replace the wheel runtime with the source-built SDK used for the bindings.
   qt_sdk_root="$("$qt_qmake" -query QT_INSTALL_PREFIX)"
   qt_runtime_root="$("$python_exe" -c 'from pathlib import Path; import PyQt6; print(Path(PyQt6.__file__).resolve().parent / "Qt6")')"
   [ -d "$qt_sdk_root/lib/QtCore.framework" ] && [ -d "$qt_sdk_root/plugins" ] || { echo "Incomplete Qt SDK: $qt_sdk_root" >&2; exit 1; }
@@ -344,8 +343,6 @@ copy_tree "$source_r_framework" "$private_r_framework"
 r_runtime_root="$private_r_framework/Resources"
 [ -d "$r_runtime_root/bin" ] || { echo "Private staged R runtime is incomplete." >&2; exit 1; }
 
-# The profile evidence must survive the later bundle build, so establish its
-# qualification directory before touching the private runtime.
 if [ "$skip_clean" -eq 0 ]; then
   rm -rf "$dist_root" "$work_root"
 fi
@@ -547,8 +544,6 @@ if ! test_bundled_r_packages "$r_lib"; then
   exit 1
 fi
 
-# Resolve the official fontconfig aliases while all runtime resources are intact.
-# The pruning gate checks every remaining symlink, including these runtime links.
 "$python_exe" - "$r_framework" "$repo_root/scripts" <<'PYTHON'
 from pathlib import Path
 import sys
@@ -661,8 +656,6 @@ relocate_canonical_r_framework_main() {
   fi
 }
 
-# These retained records are the authoritative acquisition/build inputs for the
-# direct native production manifest; no installed library tree is reused.
 [ -s "$rcmetar_archive_path" ] || { echo "RCMetaR source archive was not retained." >&2; exit 1; }
 step "Canonicalizing the staged R framework before PyInstaller signing"
 canonicalize_r_framework "$r_framework"
@@ -746,8 +739,6 @@ step "Applying and verifying the replaceable ad-hoc app-bundle signature"
   --identity - \
   --inventory-output "$signing_inventory_path"
 codesign --verify --strict --deep --verbose=2 "$app_bundle"
-# Re-enumerate after the outer signature is finalized; this is deliberately
-# not a copy of the pre-final signing inventory.
 "$python_exe" "$repo_root/scripts/sign_macos_app.py" "$app_bundle" \
   --inventory-only --inventory-output "$post_sign_native_inventory_path"
 
@@ -813,7 +804,6 @@ PY
         if [ -f "$smoke_log_path" ]; then
           cp "$smoke_log_path" "$qualification_root/packaged-surface-${scale/./}.original-smoke.log"
         fi
-        # A debugger run retains the native stack without accepting a failed qualification.
         if QT_SCALE_FACTOR="$scale" \
           RCMS_PACKAGE_BASELINE_DPR="$baseline_dpr" \
           RCMS_AUTOMATION_SMOKE_LOG="$smoke_log_path" \

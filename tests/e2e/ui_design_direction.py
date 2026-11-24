@@ -197,7 +197,7 @@ def run(app, window, work, root, record, analyze):
             assert view.zoom_control.value() == automatic_zoom
             assert view.graphics_view.transform().m11() == 1
             record('direction-results-zoom-reset', view, automatic_zoom=automatic_zoom, manual_zoom=manual_zoom)
-            from advanced_workflows import modal
+            from tests.e2e.dialog_interaction import modal
             from rc_metastudio.results.plot_editor import EditPlotDialog
             def close_editor(dialog):
                 starts = [dialog.col1_str_edit.mapTo(dialog, QtCore.QPoint()).x(),

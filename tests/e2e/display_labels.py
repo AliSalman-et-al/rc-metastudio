@@ -83,8 +83,8 @@ def visible_label_inventory(widget, user_names=()):
 
 def run(app, window, record):
     from analysis_matrix import DATA_TYPES, run as matrix
-    from advanced_workflows import modal
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import modal
+    from tests.e2e.dialog_interaction import analyze_existing
     from rc_metastudio.calculators.binary_dialog import BinaryDataDialog
     from rc_metastudio.calculators.continuous_dialog import ContinuousDataDialog
     from rc_metastudio.calculators.diagnostic_dialog import DiagnosticDataDialog
@@ -95,7 +95,6 @@ def run(app, window, record):
 
     def check(text, surface):
         text = str(text).replace('&', '').strip()
-        # These are investigator text, never built-in vocabulary to rename.
         for name in window.model.arm_names:
             if name not in {'Group', 'Intervention', 'Control'}:
                 text = text.replace(name, '')

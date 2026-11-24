@@ -23,8 +23,9 @@ def run(app, window, scenario, record):
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
     from rc_metastudio.calculators.ratio_dialog import RatioDataDialog
-    from analysis_matrix import set_parameter
-    from advanced_workflows import modal, plots
+    from tests.e2e.dialog_interaction import set_parameter
+    from advanced_workflows import plots
+    from tests.e2e.dialog_interaction import modal
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
 
     hazard = scenario == "ratios-hr"
@@ -45,7 +46,6 @@ def run(app, window, scenario, record):
     def create(wizard):
         page = wizard.currentPage()
         assert isinstance(page, main_wizard.DataTypePage)
-        # HR/IRR must not appear under the diagnostic test-performance heading.
         assert page.multiArmDataTypesLayout.indexOf(page.time_rates_Button) >= 0
         assert page.diagnosticDataTypeLayout.indexOf(page.time_rates_Button) == -1
         assert page.time_rates_Button.text() == "Time-to-event\nand event rates"
@@ -129,8 +129,6 @@ def run(app, window, scenario, record):
     record("ratio-inputs-complete", window, family=family, raw=raws, log_effects=ys, log_ses=ses,
            source_confidence=90, selected_sources=["reported" if hazard or i >= 8 else "raw" for i in range(12)])
 
-    # The actual row gesture opens the dedicated calculator. Accept an unchanged,
-    # complete record, then prove Cancel preserves it.
     def calculator(dialog):
         assert dialog.fields["confidence"].text() == "90.0"
         assert dialog.fields["lower"].isVisible()
@@ -157,8 +155,6 @@ def run(app, window, scenario, record):
     reopened = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
     assert reopened == before
     record("ratio-project-reopened", window, project=str(project_path), input=vars(reopened))
-    # A deleted study must disappear from both the document and the displayed
-    # rows. Sorting must still delete the study actually named by the menu.
     for sorted_rows in (False, True):
         assert model.setData(model.index(12, model.NAME), "Study 13")
         assert model.setData(model.index(12, model.YEAR), "2032")
@@ -206,7 +202,6 @@ def run(app, window, scenario, record):
         model = window.model
         assert len(model.current_sheet.rows) == 12
         record("ratio-delete-reopened", window, study_count=12)
-    # Reverse the same comparison twice. Original source CI and SE must survive.
     groups = list(model.arm_names)
     model.current_sheet.arms.reverse()
     reverse = model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names)
@@ -242,8 +237,6 @@ def run(app, window, scenario, record):
     assert model.get_current_analysis_unit_for_study(11).ratio_input(model.arm_names) == reopened
     assert all(study.include for study in model.current_sheet.rows)
 
-    # A usual RCMS CSV needs only the visible inputs. Advanced source fields
-    # remain optional, and omitted fields must acquire documented defaults.
     simple_csv = work / f"{metric}-simple.csv"
     basic_columns = [model.NAME, model.YEAR, *model.RAW_DATA, *model.OUTCOMES[:3]]
     with simple_csv.open("w", encoding="utf-8-sig", newline="") as stream:
@@ -330,8 +323,6 @@ def run(app, window, scenario, record):
         model.add_covariate(name, kind, values)
     model.reset_model()
     window.refresh_analysis_actions()
-    # A visible rectangle crosses hidden input metadata. Copy/paste must reach
-    # the adjacent covariate, rather than corrupting the original CI settings.
     dose_column = model.columnCount()-1
     window.tableView.copy_contents_in_range(model.index(11, model.OUTCOMES[0]), model.index(11, dose_column), to_clipboard=True)
     assert len(app.clipboard().text().split("\t")) == 5
@@ -525,8 +516,8 @@ def verify_bundled_sample(app, window, hazard, record):
     from rc_metastudio.project.archive import load_project
     from rc_metastudio.analysis.subgroup_dialog import SubgroupAnalysisDialog
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
-    from analysis_matrix import set_parameter
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import set_parameter
+    from tests.e2e.dialog_interaction import modal
     from tests.analysis_regression.golden.support.golden_analysis import parsed_numeric_sections, _parse_result_table, _result_row_key
 
     root = Path(__file__).resolve().parents[4]

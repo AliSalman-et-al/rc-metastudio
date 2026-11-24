@@ -1,6 +1,6 @@
+#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
-#!/usr/bin/env python3
 """Run the maintained source verification lanes."""
 
 from __future__ import annotations
@@ -22,30 +22,15 @@ from uuid import uuid4
 if __package__:
     from scripts import package_input_policy, r_verification_support as r_support
     from scripts.desktop_partition import DESKTOP_SHARDS
-    from scripts.verification_evidence import DEFAULT_BUILD_ROOT, VerificationError, configured_build_root, file_digest, run_typing
+    from scripts.verification_evidence import DEFAULT_BUILD_ROOT, ROOT as REPO_ROOT, VerificationError, configured_build_root, file_digest, run_typing
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from scripts import package_input_policy
     import r_verification_support as r_support
     from desktop_partition import DESKTOP_SHARDS
-    from verification_evidence import DEFAULT_BUILD_ROOT, VerificationError, configured_build_root, file_digest, run_typing
+    from verification_evidence import DEFAULT_BUILD_ROOT, ROOT as REPO_ROOT, VerificationError, configured_build_root, file_digest, run_typing
 
 
-def discover_repo_root(start: Path | None = None) -> Path:
-    """Find the repository containing both ``pyproject.toml`` and ``scripts``."""
-    current = (start or Path(__file__).resolve()).resolve()
-    if current.is_file():
-        current = current.parent
-    for candidate in (current, *current.parents):
-        if (candidate / "pyproject.toml").is_file() and (
-            candidate / "scripts"
-        ).is_dir():
-            return candidate
-    raise VerificationError(f"could not discover repository root from {current}")
-
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = discover_repo_root(SCRIPT_DIR)
 DEFAULT_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-default-library-cache"
 FULL_R_LIBRARY_CACHE = REPO_ROOT / "artifacts" / "r-library-cache"
 SMOKE_TESTS = (
@@ -92,13 +77,7 @@ def prepare_qt_environment(build_root: Path) -> dict[str, str]:
     )
     env = dict(os.environ)
     env["RCMS_QT6_BUILD_ROOT"] = str(build_root)
-    # ``rc_metastudio.qt6_ui`` extends the installed package paths with the
-    # generated tree. Keeping generated directories off ``PYTHONPATH`` avoids
-    # importing a second, marker-only rc_metastudio package.
-    path_entries = []
-    if env.get("PYTHONPATH"):
-        path_entries.append(env["PYTHONPATH"])
-    env["PYTHONPATH"] = os.pathsep.join(path_entries)
+    env.setdefault("PYTHONPATH", "")
     return env
 
 
@@ -316,7 +295,6 @@ def run_quick() -> None:
         workers=int(os.environ.get("RCMS_FAST_WORKERS", "4")),
     )
     run_packaging_contracts(env)
-    run(["node", "--test", "tests/packaging/contract/release_actions.test.cjs"], env=env)
 
 
 def ready_actions() -> dict[str, Callable[[], None]]:

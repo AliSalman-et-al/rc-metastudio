@@ -486,7 +486,6 @@ rcmetar.metafor.subgroup.difference.test <- function(results) {
     if (length(results) < 2) return(NULL)
     yi <- vapply(results, function(res) as.numeric(res$b[[1]]), numeric(1))
     sei <- vapply(results, function(res) as.numeric(res$se[[1]]), numeric(1))
-    # A difference test requires every requested group to be estimable.
     if (any(!is.finite(yi)) || any(!is.finite(sei) | sei <= 0)) return(NULL)
     res <- metafor::rma.uni(yi=yi, sei=sei, method="FE")
     list(QM=res$QE, QMp=res$QEp, df=length(results)-1, test="z")
@@ -688,7 +687,6 @@ rcmetar.forest.spaced.ticks <- function(bundle, ticks, cex, alim) {
             chosen <- c(chosen, index)
         }
     }
-    # A central label can block both ends even when the two end labels fit.
     if (length(chosen) < 2 && length(ticks) >= 2 && !is.finite(null)) {
         ends <- c(which.min(ticks), which.max(ticks))
         if (diff(range(ticks)) > sum(half.width[ends]) + gap) chosen <- ends
@@ -823,13 +821,6 @@ rcmetar.metafor.effect.labels <- function(bundle) {
     labels[!is.finite(y) | !is.finite(lb) | !is.finite(ub)] <- "Not estimable"
     labels
 }
-
-rcmetar.metafor.heterogeneity.measure.label <- function(bundle) {
-    if (isTRUE(bundle$single_study)) return("")
-    rcmetar.forest.model.label(bundle$res)
-}
-
-
 
 rcmetar.metafor.wrap.header <- function(label, width=18) {
     label <- as.character(label)

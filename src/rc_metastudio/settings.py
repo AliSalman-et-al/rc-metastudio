@@ -11,7 +11,7 @@ import posixpath
 from dataclasses import dataclass
 from pathlib import Path
 from PyQt6 import QtCore, QtGui
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 from rc_metastudio.analysis.scratch import AnalysisScratch
 from rc_metastudio.workspace.column_identity import WorkspaceColumnWidthState
 
@@ -458,7 +458,7 @@ def _decode_recent_files(settings: QSettings) -> list[str]:
         settings.beginGroup(_RECENT_FILES_KEY)
         try:
             indexes = sorted(settings.childKeys(), key=int)
-            value = [qt_text.to_native_text(settings.value(key)) for key in indexes]
+            value = [input_text.to_native_text(settings.value(key)) for key in indexes]
         finally:
             settings.endGroup()
     elif isinstance(value, str):
@@ -511,7 +511,7 @@ def normalize_recent_files(recent_files, *, remove_missing=False):
     for raw_path in reversed(list(recent_files or ())):
         if raw_path in (None, ""):
             continue
-        path = _canonical_recent_file(qt_text.to_native_text(raw_path))
+        path = _canonical_recent_file(input_text.to_native_text(raw_path))
         if remove_missing and not os.path.isfile(path):
             continue
         key = _recent_file_key(path)

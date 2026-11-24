@@ -373,7 +373,9 @@ def parse_analysis_result(value: object) -> AnalysisResult:
         "sections": _section_metadata(source.get("sections")),
     }
 
-    capabilities = plot_capabilities.validate_result(raw)
+    capabilities = plot_capabilities.validate_capabilities(
+        raw["images"], raw["plot_capabilities"], raw["image_params_paths"],
+    )
     extra_display_images = sorted(set(raw["display_images"]) - set(raw["images"]))
     if extra_display_images:
         raise ValueError(

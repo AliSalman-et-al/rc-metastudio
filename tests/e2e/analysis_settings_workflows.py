@@ -14,7 +14,7 @@ from tests.e2e.plot_observations import load_saved_analysis, load_serialized_obj
 
 
 def run(app, window, root, record, analyze):
-    from advanced_workflows import modal, click
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.analysis import setup_dialog as analysis_setup_dialog
     from rc_metastudio.results import window as results_window
     from rc_metastudio.results.plot_editor import EditPlotDialog
@@ -119,7 +119,6 @@ def run(app, window, root, record, analyze):
     assert report.index("Pooled effect") < report.index("Model fit") < report.index("Study results")
     record("review-report-top", view, text=report)
 
-    # A result belongs to its original input even after the main window opens another project.
     assert window.open(str(root / "tests/fixtures/desktop-projects/continuous.rcms"), raise_on_error=True)
     for style, order in (("Default", "year"), ("RevMan", "year"), ("RevMan", "effect"), ("RevMan", "weight"), ("RevMan", "table")):
         view.change_settings_action.trigger()
@@ -285,7 +284,7 @@ def run(app, window, root, record, analyze):
     failed = setup()
     failed.method_cbo_box.setCurrentIndex(failed.method_cbo_box.findData('binary.random'))
     app.processEvents()
-    from analysis_matrix import set_parameter
+    from tests.e2e.dialog_interaction import set_parameter
     set_parameter(app, failed, 'rm.method', 'REML')
     mouse_click(required(failed.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok)), QtCore.Qt.MouseButton.LeftButton)
     app.processEvents()

@@ -21,7 +21,6 @@ BASH = shutil.which("bash") or "C:/Program Files/Git/bin/bash.exe"
 
 
 def release_proof_source(path):
-    # Also permits replay against the pre-fix definitions without touching Git.
     revision = os.environ.get("RELEASE_PROOF_REVISION")
     return (
         subprocess.check_output(
@@ -126,7 +125,7 @@ hdiutil() {
 )
 def test_input_classification_executes_workflow(tmp_path, old, new, event, draft, expected):
     workflow_jobs = workflow("fast-verification")["jobs"]
-    step = workflow_jobs["change-classifier"]["steps"][1]
+    step = next(step for step in workflow_jobs["change-classifier"]["steps"] if step.get("id") == "classify")
     git = f"function git() {{ if [[ \"$1\" == diff ]]; then printf '%s\\0' {old or new} {new}; fi; }}"
     result = shell_step(
         step,
@@ -153,7 +152,8 @@ def test_input_classification_executes_workflow(tmp_path, old, new, event, draft
 
 @pytest.mark.parametrize("selected,result,passes", [(False, "skipped", True), (True, "success", True), (True, "skipped", False), (True, "failure", False)])
 def test_verification_gate_requires_selected_jobs(tmp_path, selected, result, passes):
-    step = workflow("fast-verification")["jobs"]["fast-verification-gate"]["steps"][0]
+    steps = workflow("fast-verification")["jobs"]["fast-verification-gate"]["steps"]
+    step = next(step for step in steps if "JOB_RESULTS" in step.get("env", {}))
     required = dict.fromkeys(("change-classifier", "quick", "code-health"), {"result": "success"})
     observation = shell_step(step, tmp_path, {
         "toJSON(needs)": json.dumps(required | {"full-r-stack": {"result": result}}),

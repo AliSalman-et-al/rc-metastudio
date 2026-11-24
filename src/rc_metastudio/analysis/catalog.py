@@ -3,10 +3,21 @@
 """Stable data-family IDs, supported metrics and default arm names."""
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast, get_args
 
 AnalysisFamily = Literal["binary", "continuous", "diagnostic", "time_to_event", "event_rates"]
+AnalysisWorkflow = Literal[
+    "standard", "cumulative", "leave-one-out", "subgroup", "bootstrap", "meta-regression",
+]
 REITSMA_METHOD = "diagnostic.reitsma"
+
+
+def analysis_workflow(value: str | None) -> AnalysisWorkflow:
+    if value is None:
+        return "standard"
+    if value in get_args(AnalysisWorkflow):
+        return cast(AnalysisWorkflow, value)
+    raise ValueError(f"unsupported analysis workflow: {value!r}")
 
 
 @dataclass(frozen=True, slots=True)

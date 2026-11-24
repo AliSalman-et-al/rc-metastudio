@@ -1,7 +1,12 @@
 """Rendered labels, result-window disposal and retained-table observations."""
 
+from typing import cast
+from unittest.mock import patch
 from xml.etree import ElementTree as ET
-from PyQt6 import QtCore, QtWidgets, sip
+from PyQt6 import QtCore, QtGui, QtWidgets, sip
+from PyQt6.QtSvg import QSvgRenderer
+
+from tests.e2e.dialog_interaction import modal
 
 
 def labels(path):
@@ -53,3 +58,99 @@ def check_table_surface(app, view, work, record, title, label):
     with target.open(encoding='utf-8-sig',newline='') as stream:
         assert list(csv.reader(stream)) == [headers,*rows]
     record('reviewer-table-surface',view,title=title,label=label,headers=headers,rows=rows,export=str(target))
+
+
+def export_formats(app, view, directory, family, record, invoke=None, *, include_title=False):
+    directory.mkdir(parents=True, exist_ok=True)
+    if invoke is None:
+        if view._selected_plot() is None:
+            assert view._last_plot_item is not None
+            view.nav_tree.setCurrentItem(view._last_plot_item)
+            app.processEvents()
+        assert view.export_plot_action.isEnabled()
+        def invoke(extension, _label):
+            view.export_plot_action.trigger()
+            app.processEvents()
+    files = {}
+    for extension, action_label in (
+        ("pdf", "PDF"),
+        ("png", "PNG"),
+        ("tiff", "TIFF"),
+        ("svg", "SVG"),
+    ):
+        destination = directory / (family + "." + extension)
+        with patch.object(
+            QtWidgets.QFileDialog,
+            "getSaveFileName",
+            return_value=(str(destination), ""),
+        ) as picker:
+            from rc_metastudio.results.plot_export import PlotExportDialog
+            def accept_export(dialog):
+                assert not dialog.include_title.isChecked()
+                dialog.include_title.setChecked(include_title)
+                dialog.format_control.setCurrentIndex(dialog.format_control.findData(extension))
+                record('export-options', dialog, format=extension, dimensions=dialog.dimensions())
+                dialog.accept()
+            modal(app, PlotExportDialog, accept_export, lambda: invoke(extension, action_label))
+        assert picker.call_args is not None
+        name_filter = picker.call_args.args[3] if len(picker.call_args.args) > 3 else picker.call_args.kwargs.get("filter", "")
+        assert f"*.{extension}" in name_filter, (extension, name_filter)
+        assert destination.is_file(), destination
+        rendered_pages: list[QtGui.QImage] = []
+        if extension == "svg":
+            renderer = QSvgRenderer(str(destination))
+            assert renderer.isValid()
+            rendered = QtGui.QImage(400, 400, QtGui.QImage.Format.Format_RGB32)
+            rendered.fill(QtCore.Qt.GlobalColor.white)
+            painter = QtGui.QPainter(rendered)
+            renderer.render(painter)
+            painter.end()
+            rendered_pages.append(rendered)
+        elif extension == "pdf":
+            from PyQt6.QtPdf import QPdfDocument
+
+            document = QPdfDocument(view)
+            assert document.load(str(destination)) == QPdfDocument.Error.None_
+            assert document.pageCount() > 0
+            a4 = QtGui.QPageSize(QtGui.QPageSize.PageSizeId.A4).sizePoints()
+            for page in range(document.pageCount()):
+                if document.pageCount() > 1:
+                    assert document.pagePointSize(page).toSize() == a4
+                rendered_pages.append(document.render(page, QtCore.QSize(400, 400)))
+            document.close()
+        else:
+            from PIL import Image
+
+            with Image.open(destination) as image:
+                assert image.width > 100 and image.height > 100
+                if extension == "tiff":
+                    dpi = tuple(float(value) for value in image.info.get("dpi", ()))
+                    record("publication-raster-resolution", view, family=family,
+                           pixels=image.size, dpi=dpi, exports={extension: str(destination)})
+                    assert len(dpi) == 2 and min(dpi) >= 600, (family, "Publication TIFF is below 600 dpi", dpi)
+                assert image.crop((0, 0, 1, 1)).convert("RGB").getpixel((0, 0)) == (255, 255, 255)
+                image.load()
+                assert (
+                    min(
+                        channel[0]
+                        for channel in cast(tuple[tuple[int, int], ...],
+                            image.resize((256, 256)).convert("RGB").getextrema())
+                    )
+                    < 200
+                )
+        for rendered in rendered_pages:
+            assert not rendered.isNull()
+            assert any(
+                rendered.pixelColor(x, y).lightness() < 200
+                for x in range(0, 400, 4)
+                for y in range(0, 400, 4)
+            ), "Export contains no visible plot content"
+        files[extension] = str(destination)
+        record(
+            "family-export-decoded",
+            view,
+            family=family,
+            format=extension,
+            exports={extension: str(destination)},
+        )
+    return files

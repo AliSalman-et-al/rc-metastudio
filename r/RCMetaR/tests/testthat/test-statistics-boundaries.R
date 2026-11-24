@@ -13,7 +13,6 @@ statistics_params <- function(measure, ...) {
 
 test_that("MH study corrections follow the request without changing pooling policy", {
   for (zero in c(TRUE, FALSE)) for (target in c("only0", "all", "if0all", "none")) {
-    # A zero cell without correction has no finite log-OR study interval.
     if (zero && target == "none") next
     d <- rcmetar.create.binary.data(g1O1=c(if (zero) 0 else 2, 8, 3),
       g1O2=c(20,12,17), g2O1=c(5,6,4), g2O2=c(15,14,16),

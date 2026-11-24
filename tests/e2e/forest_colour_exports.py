@@ -52,9 +52,10 @@ def check_colours(path, colour='#2F5597', require_caps=True):
 
 def run_colours(app, window, work, record):
     from analysis_matrix import run as matrix
-    from advanced_workflows import export_formats, modal, click
+    from tests.e2e.plot_workflow_support import export_formats
+    from tests.e2e.dialog_interaction import modal, click
     from rc_metastudio.results.plot_editor import EditPlotDialog
-    from tests.e2e.analysis_presentation_workflows import analyze_existing
+    from tests.e2e.dialog_interaction import analyze_existing
     baseline = bool(os.environ.get('RCMS_REVIEWER_BASELINE'))
     cases = [('analysis-amino-binary-' + workflow, None) for workflow in ('cumulative','leave-one-out','subgroup')]
     cases += [('analysis-data-' + family, metric) for family,metric in

@@ -1,8 +1,3 @@
-# Failure list: the wrong data or order enters a look; the wrong sheet fit or
-# inference supplies Z; RIS uses the wrong scale, effect conversion, or variance;
-# heterogeneity inflates the wrong side; stopping boundaries re-spend alpha,
-# drop early data, or use a binding beta wedge; CIs or LIL use the wrong scale;
-# eligibility silently invents inputs; numeric output loses precision or units.
 
 tsa.binary <- function(a, c, n, m=n, years=seq_along(a) + 2000L, labels=seq_along(a)) {
   new("BinaryData", study.names=as.character(labels), years=as.integer(years),
@@ -140,7 +135,6 @@ test_that("Lan-DeMets bounds and the CTU wedge match published independent calcu
   expect_lt(max(abs(result$looks$futility.upper[2:4] - b[2:4])), .001)
   expect_true(all(is.na(result$looks$futility.upper[c(1, 5)])))
   expect_identical(result$summary$conclusion, "crossed-futility")
-  # At the first look RR = 1 and Var(log RR) = 2*(1/10 - 1/100).
   expect_equal(result$looks$adjusted.upper[1], exp(a[1]*sqrt(.18)), tolerance=2e-5)
   expect_equal(result$looks$ci.upper[1], 2.296858442325916)
   expect_true(is.na(tail(result$looks$adjusted.upper, 1)))
@@ -271,8 +265,6 @@ test_that("the LIL floors the log-log penalty and uses within-study precision", 
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", lil=TRUE))
   expect_equal(result$summary$lil.lambda, 2)
   expect_equal(result$looks$lil.z, result$looks$z/sqrt(2))
-  # The fixed-effect precisions are sums of reciprocal log-RR variances. Between-study variation
-  # lowers random-effects precision without lowering the log-log penalty.
   data <- tsa.binary(c(100, 65), c(50, 100), c(500, 500))
   result <- rcmetar.run.trial.sequential.analysis(data, tsa.request("RR", "random", lil=TRUE))
   info <- sum(1/(1/c(50, 65) + 1/100 - 2/500))

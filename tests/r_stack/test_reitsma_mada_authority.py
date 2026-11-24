@@ -55,9 +55,6 @@ _DRIVER = textwrap.dedent(
     diagnostic <- methods::new("DiagnosticData", TP=counts$TP, FN=counts$FN,
       TN=counts$TN, FP=counts$FP, study.names=letters[seq_len(nrow(counts))])
 
-    # Standard model: compare both the summary operating point and the model
-    # metadata with the public mada fit.  Tolerance is deliberately explicit
-    # rather than an exact-equality assertion across platform math libraries.
     public_fit <- mada::reitsma(counts, correction=.5,
       correction.control="all", method="reml")
     actual <- RCMetaR:::diagnostic.reitsma(diagnostic,
@@ -74,7 +71,6 @@ _DRIVER = textwrap.dedent(
     expected_sensitivity <- expected_latent("tsens", public_fit$alphasens)
     expected_fpr <- expected_latent("tfpr", public_fit$alphafpr)
     expected_specificity <- c(1 - expected_fpr[[3L]], 1 - expected_fpr[[2L]], 1 - expected_fpr[[1L]])
-    # The display orders each interval as estimate, lower, upper.
     close_enough(percent_values(point[["Summary sensitivity"]], "sensitivity")[c(1, 2, 3)],
       c(expected_sensitivity[2], expected_sensitivity[1], expected_sensitivity[3]), 1e-8,
       "summary sensitivity")
@@ -106,9 +102,6 @@ _DRIVER = textwrap.dedent(
       stop("seeded Reitsma ratio output is not repeatable")
     }
 
-    # Meta-regression: every coefficient is checked against the corresponding
-    # public mada fit, including the specificity sign change and factor
-    # reference row policy used by the researcher-facing report.
     reg_counts <- rbind(counts, data.frame(TP=21, FN=9, TN=72, FP=5),
                         data.frame(TP=33, FN=11, TN=91, FP=7))
     quality <- factor(c("A", "A", "B", "B", "A", "B", "A", "B"), levels=c("A", "B"))

@@ -28,7 +28,6 @@ else:
 
 PACKAGED_EDIT_VALUE = "Packaged Smoke – München"
 PACKAGED_ANALYSIS_METHOD = "binary.random"
-# The frozen summary identity predates the application's REML default.
 PACKAGED_ANALYSIS_ESTIMATOR = "DL"
 PACKAGED_PROCESS_TIMEOUT_SECONDS = 300
 

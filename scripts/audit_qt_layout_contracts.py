@@ -62,8 +62,6 @@ GUARDED_GEOMETRY_METHODS = {
     "setSceneRect",
 }
 
-# Every source exception is local, categorical, and documented immediately
-# above the call. Broad file or function exemptions are intentionally absent.
 SOURCE_EXCEPTION_RULES = {
     "adaptive-window-policy": {
         "paths": {"adaptive_window.py"},

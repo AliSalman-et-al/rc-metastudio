@@ -33,7 +33,7 @@ from rc_metastudio.calculators import diagnostic_dialog as diagnostic_data_dialo
 from rc_metastudio import app_error_handler
 from rc_metastudio.app_error_handler import connect_action
 from rc_metastudio import qt_layout
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 from rc_metastudio import row_padding
 from rc_metastudio.analysis.catalog import CONTINUOUS
 from rc_metastudio.domain_ids import SheetId
@@ -291,7 +291,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     action_rename, lambda: self.armRenameRequested.emit(arm_name),
                 )
                 context_menu.addAction(action_rename)
-            col_name = qt_text.to_native_text(
+            col_name = input_text.to_native_text(
                 model.headerData(column_clicked, Qt.Orientation.Horizontal)
             )
             action_sort = QAction("Sort studies by %s" % col_name, self)
@@ -421,14 +421,15 @@ class DatasetTableView(QtWidgets.QTableView):
         signal_blocker = QSignalBlocker(self.vert_header)
 
         try:
-            form = None
-            study_index = row
-            analysis_unit = self.model().get_current_analysis_unit_for_study(study_index).copy_for_edit()
-            arm_names = self.model().arm_names
-            current_effect = self.model().current_effect
-            arm_key = self.model().get_current_arm_key()
-            data_type = self.model().get_current_family()
-            study_name = self.model()._study_for_row(row).label
+            model = self.model()
+            sheet = model.current_sheet
+            study = model._study_for_row(row)
+            analysis_unit = study.analysis_unit.copy_for_edit()
+            arm_names = model.arm_names
+            current_effect = model.current_effect
+            arm_key = model.get_current_arm_key()
+            data_type = model.get_current_family()
+            study_name = study.label
 
             if data_type == "binary":
                 form = binary_data_dialog.BinaryDataDialog(
@@ -436,7 +437,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     arm_names,
                     arm_key,
                     current_effect,
-                    confidence_level=self.model().get_confidence_level(),
+                    confidence_level=model.get_confidence_level(),
                     parent=self,
                     study_name=study_name,
                 )
@@ -449,7 +450,7 @@ class DatasetTableView(QtWidgets.QTableView):
                     arm_names,
                     arm_key,
                     current_effect,
-                    confidence_level=self.model().get_confidence_level(),
+                    confidence_level=model.get_confidence_level(),
                     parent=self,
                     study_name=study_name,
                 )
@@ -458,16 +459,16 @@ class DatasetTableView(QtWidgets.QTableView):
                     analysis_unit,
                     arm_names,
                     arm_key,
-                    confidence_level=self.model().get_confidence_level(),
+                    confidence_level=model.get_confidence_level(),
                     parent=self,
                     study_name=study_name,
                 )
-            if form.exec():
-                model = self.model()
-
+            if form.exec() and self.model() is model and model.current_sheet is sheet:
                 def apply_calculator_result():
-                    model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
-                    model.update_row_effect_previews(study_index)
+                    study_index = model.row_for_study(study.id)
+                    if study_index is not None:
+                        model.set_current_analysis_unit_for_study(study_index, form.analysis_unit)
+                        model.update_row_effect_previews(study_index)
 
                 required(self.edit_transaction, "workspace edit transaction")(apply_calculator_result)
         finally:
@@ -535,7 +536,7 @@ class DatasetTableView(QtWidgets.QTableView):
                 current_index = self.model().createIndex(row, col)
                 cur_data = self.model().data(current_index, Qt.ItemDataRole.EditRole)
                 if cur_data is not None:
-                    cur_str = qt_text.to_native_text(cur_data)
+                    cur_str = input_text.to_native_text(cur_data)
                     current_row.append(cur_str)
                 else:
                     current_row.append("")
@@ -674,4 +675,4 @@ class StudyDelegate(QItemDelegate):
 
     def setEditorData(self, editor, index):
         text = index.model().data(index, Qt.ItemDataRole.EditRole)
-        editor.setText(qt_text.to_native_text(text))
+        editor.setText(input_text.to_native_text(text))

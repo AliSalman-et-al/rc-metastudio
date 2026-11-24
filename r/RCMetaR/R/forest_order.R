@@ -17,7 +17,6 @@ rcmetar.forest.display.order <- function(bundle) {
     bundle$display_order <- seq_len(n)
     key <- bundle$params$fp_study_order
     if (is.null(key) || identical(key, "table") || identical(bundle$forest_variant, "cumulative")) return(bundle)
-    # Subset fitting also builds ordinary bundles, which have no omission I².
     if (identical(key, "i2") && !identical(bundle$forest_variant, "leave-one-out")) return(bundle)
     values <- rcmetar.forest.order.values(bundle, key, n)
     if (length(values) != n) return(bundle)

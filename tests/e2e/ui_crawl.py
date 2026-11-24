@@ -68,8 +68,6 @@ def analysis_setup(driver, capture, missing):
     assert "17 eligible" in form.context_label.text(), form.context_label.text()
     capture("E-small-study", form)
     form.close()
-    # The open setup can outlive the study selection in the model. Exercise the
-    # real empty-selection failure rather than replacing the analysis service.
     form = AnalysisSetupDialog(driver.window.model, parent=driver.window, confidence_level=95)
     form.show()
     model = driver.window.model
@@ -192,8 +190,7 @@ def plots(driver, capture, missing):
             capture(f"G-{family}-forest-default-fit", view)
             if family == "binary":
                 import sys
-                sys.path.insert(0, str(driver.ROOT / ".agents/skills/verify-rcms/scripts"))
-                from advanced_workflows import modal
+                from tests.e2e.dialog_interaction import modal
                 from rc_metastudio.results.plot_editor import EditPlotDialog
                 for style in ("RevMan", "BMJ"):
                     def edit(dialog):
@@ -231,7 +228,6 @@ def plots(driver, capture, missing):
     for producer, kinds in producers:
         driver.window.workspace.mark_saved()
         right_trimfill = kinds[0][0] == "trim-and-fill-right"
-        # This visual drive also runs on desktops without system clipboard access.
         view = matrix(driver.app, driver.window, producer, lambda *args, **kwargs: None,
                       keep_results=True, trim_fill_side="Right" if right_trimfill else None,
                       system_clipboard=False)
@@ -507,9 +503,6 @@ def calculators(driver, capture, missing, prefix="D", families=None):
                 mode = form.input_mode_combo.currentData()
                 if prefix == "D" and isinstance(form, ContinuousDataDialog) and mode == "pre-post":
                     viewport = required(form.content_scroll.viewport())
-                    # Calculator content deliberately scrolls on bounded screens.
-                    # Prove each grid is reachable, rather than requiring both
-                    # grids to fit in the viewport at the same time.
                     for arm, table in enumerate((form.g1_pre_post_table, form.g2_pre_post_table), start=1):
                         form.content_scroll.ensureWidgetVisible(table, 0, 0)
                         driver.app.processEvents()

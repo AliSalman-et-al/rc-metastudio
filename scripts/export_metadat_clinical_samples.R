@@ -1,4 +1,3 @@
-# Export source tables unchanged from the pinned R library.
 args <- commandArgs(trailingOnly = TRUE)
 stopifnot(length(args) == 1L)
 if (nzchar(Sys.getenv("RCMS_R_LIBS"))) .libPaths(Sys.getenv("RCMS_R_LIBS"))

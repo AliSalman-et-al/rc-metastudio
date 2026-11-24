@@ -12,7 +12,7 @@ from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QIcon
 
 from rc_metastudio.analysis import identity as analysis_identity
-from rc_metastudio import name_validation, qt_text
+from rc_metastudio import name_validation, input_text
 from rc_metastudio.workspace import editing as workspace_editing
 from rc_metastudio.analysis.catalog import RATIO_DATA_TYPES
 from rc_metastudio.ratio_data import RATIO_FIELDS
@@ -91,7 +91,6 @@ class DatasetTableModel(QAbstractTableModel):
     workspaceEditCommitted = pyqtSignal()
     currentSheetChanged = pyqtSignal(object)
     dataError = pyqtSignal(str)
-    confLevelChanged = pyqtSignal()
     INCLUDE_STUDY = INCLUDE_COLUMN
     NAME = STUDY_COLUMN
     YEAR = YEAR_COLUMN
@@ -124,7 +123,6 @@ class DatasetTableModel(QAbstractTableModel):
             self.currentSheetChanged.emit(sheet_id)
         finally:
             self.endResetModel()
-        self.confLevelChanged.emit()
 
     def _sheet_view_state(self, sheet) -> workspace_editing.WorkspaceViewState:
         settings = sheet.settings if sheet else {}
@@ -199,6 +197,14 @@ class DatasetTableModel(QAbstractTableModel):
         self._install_sheet_projection(self._sheet_view_state(sheet), sheet, add_blank_study=add_blank_study)
         self.NUM_DIGITS = NUM_DIGITS
 
+    def snapshot_for_analysis(self) -> "DatasetTableModel":
+        """Detach the selected sheet so an analysis rerun keeps its original inputs."""
+        sheet = self.current_sheet
+        if sheet is None:
+            raise ValueError("Select an outcome before preparing analysis inputs.")
+        dataset = Dataset(self.dataset.title, self.dataset.notes, [deepcopy(sheet)])
+        return DatasetTableModel(dataset, add_blank_study=False, current_sheet_id=sheet.id)
+
     def reset_model(self, *, refresh_previews: bool = False) -> None:
         self.beginResetModel()
         try:
@@ -224,6 +230,9 @@ class DatasetTableModel(QAbstractTableModel):
 
     def _study_for_row(self, row):
         return self._display_studies[row]
+
+    def row_for_study(self, row_id: RowId) -> int | None:
+        return next((row for row, study in enumerate(self._display_studies) if study.id == row_id), None)
 
     def _is_blank_study(self, study):
         return study is self._blank_study
@@ -321,7 +330,7 @@ class DatasetTableModel(QAbstractTableModel):
                 return str(self.format_float(value))
             return round(value, self.NUM_DIGITS)
         except (TypeError, ValueError):
-            return qt_text.to_native_text(value)
+            return input_text.to_native_text(value)
 
     def _outcome_cell_data(self, index, role, study):
         if not self._outcome_cell_is_available(study):
@@ -417,7 +426,7 @@ class DatasetTableModel(QAbstractTableModel):
             value = ""
         if value != "" and covariate['data_type'] == CONTINUOUS:
             return str(value) if role == Qt.ItemDataRole.EditRole else self.format_float(value)
-        return qt_text.to_native_text(value)
+        return input_text.to_native_text(value)
 
     def _effect_tooltip(self, index, study):
         if index.column() not in self.OUTCOMES or not self._outcome_cell_is_available(study):
@@ -482,7 +491,7 @@ class DatasetTableModel(QAbstractTableModel):
         if not self._study_has_entered_data(index.row()):
             return None
         if index.column() in self.OUTCOMES:
-            return QColor(214, 169, 58, 80)  # Keep gold subtle enough for text in the native dark palette.
+            return QColor(214, 169, 58, 80)
         raw = self.columns.raw_column(index.column())
         if raw is not None and raw.arm_index == 1 and self.current_effect in ONE_ARM_METRICS:
             return QColor(Qt.GlobalColor.gray)
@@ -1134,7 +1143,6 @@ class DatasetTableModel(QAbstractTableModel):
     def _set_display_confidence(self, settings: workspace_editing.ConfidenceSettings) -> None:
         self.confidence_level = settings.level
         self.confidence_multiplier = settings.multiplier
-        self.confLevelChanged.emit()
 
     def get_confidence_level(self):
         return self.confidence_level

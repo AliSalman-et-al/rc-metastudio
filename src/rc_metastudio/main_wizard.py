@@ -59,13 +59,11 @@ from rc_metastudio.project.model import Dataset
 from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 from rc_metastudio import qt_layout
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 from rc_metastudio.importing import tabular as csv_import
 from rc_metastudio import name_validation
 from rc_metastudio.qt_object_guard import required
-from rc_metastudio.workspace.columns import (
-    IMPORT_IDENTITY_COLUMNS, IMPORT_YEAR_COLUMN, SheetColumns, sheet_columns,
-)
+from rc_metastudio.importing.field_plan import IDENTITY_COLUMNS, YEAR_IMPORT_COLUMN, ImportFieldPlan
 from rc_metastudio.settings import (
     get_default_open_directory,
     normalize_recent_files,
@@ -100,6 +98,7 @@ class ImportSheet(TypedDict):
     path: Literal["csv_import"]
     outcome_info: DatasetInfo
     csv_data: csv_import.CsvImportResult
+    csv_plan: ImportFieldPlan
 
 
 class NewSheet(TypedDict):
@@ -278,7 +277,7 @@ class WelcomePage(MainWizardPage, _ui_welcome_page.Ui_WizardPage):
         action = action_item or self.sender()
         if not isinstance(action, QAction):
             raise RuntimeError("recent-project selection requires a QAction sender")
-        self.wizard().open_project(qt_text.to_native_text(action.data() or action.text()))
+        self.wizard().open_project(input_text.to_native_text(action.data() or action.text()))
 
     def open_dataset(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -459,7 +458,7 @@ class ChooseMetricPage(MainWizardPage, _ui_choose_metric_page.Ui_WizardPage):
             self._update_metric_description()
 
     def _metric_choice_changed(self, newindex):
-        self.wizard().set_effect(qt_text.to_native_text(self.metric_cbo_box.itemData(newindex)))
+        self.wizard().set_effect(input_text.to_native_text(self.metric_cbo_box.itemData(newindex)))
         self._update_metric_description()
 
     def _update_metric_description(self):
@@ -606,7 +605,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if old.get("arms") == kind.arms and "groups" in old:
             info["groups"] = old["groups"]
         self.wizard().set_dataset_info(info)
-        self.required_header_labels = self._get_required_header_labels()
+        self.import_plan = self._make_import_plan()
         self._mapping_key = None
         self._rebuild_display()
 
@@ -626,7 +625,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._mapping_key = None
         self._reset_data()
 
-        self.required_header_labels = self._get_required_header_labels()
+        self.import_plan = self._make_import_plan()
         self.import_tabs.setCurrentIndex(0)
         self.select_file_btn.setFocus()
         self._entry_scroll_reset.start(0)
@@ -670,7 +669,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         if Path(selected_path).suffix.lower() not in (".csv", ".xlsx", ".xls"):
             QMessageBox.information(self, "Import data", "Choose a CSV or Excel (.xlsx) file.")
             return
-        self.file_path = qt_text.to_native_text(selected_path)
+        self.file_path = input_text.to_native_text(selected_path)
         self._mapping_key = None
 
         if self.file_path:
@@ -723,18 +722,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         error_tab = self.preview_grp_box
         try:
             headers, rows, worksheet = self._preview_source()
-            info = self.wizard().require_dataset_info()
-            data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
-            columns = sheet_columns(data_type, info["sub_type"])
             error_tab = self.mapping_table
-            mapping = self._selected_mapping(columns, single_arm=info["arms"] == "one")
+            mapping = self._selected_mapping()
             error_tab = self.preview_grp_box
             notices: list[str] = []
-            result = self._normalize_preview(headers, rows, worksheet, mapping, columns, notices)
+            result = self._normalize_preview(headers, rows, worksheet, mapping, notices)
             if not result.rows:
                 self.import_status.setText("No study rows found. Add rows beneath the header row, then select the file again.")
                 return False
-            self._show_ready_preview(result, columns, notices)
+            self._show_ready_preview(result, notices)
         except csv_import.CsvImportError as error:
             self.import_status.setText(str(error))
             self.import_tabs.setCurrentWidget(error_tab)
@@ -762,15 +758,15 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         self._show_preview(headers, rows)
         return headers, rows, worksheet
 
-    def _selected_mapping(self, columns: SheetColumns, *, single_arm: bool) -> csv_import.ColumnMapping | None:
+    def _selected_mapping(self) -> csv_import.ColumnMapping | None:
         mapping = tuple(control.currentData() for control in self.mapping_controls)
         if not mapping:
             return None
-        raw_columns = columns.import_raw_columns(single_arm)
-        effect_columns = range(columns.first_import_effect, len(mapping))
+        raw_columns = self.import_plan.raw_columns
+        effect_columns = self.import_plan.effect_columns
         raw_complete = bool(raw_columns) and all(mapping[i] is not None for i in raw_columns)
         effects_complete = all(mapping[i] is not None for i in effect_columns)
-        if any(mapping[i] is None for i in IMPORT_IDENTITY_COLUMNS) or not (raw_complete or effects_complete):
+        if any(mapping[i] is None for i in IDENTITY_COLUMNS) or not (raw_complete or effects_complete):
             raise csv_import.CsvImportError(self._missing_mapping_message(mapping, raw_columns, effect_columns))
         return mapping
 
@@ -780,7 +776,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         def missing(indices: Sequence[int]) -> str:
             return ", ".join(self.required_header_labels[i] for i in indices if mapping[i] is None)
 
-        identity = missing(IMPORT_IDENTITY_COLUMNS)
+        identity = missing(IDENTITY_COLUMNS)
         alternatives = " or ".join(text for text in (missing(raw_columns), missing(effect_columns)) if text)
         detail = "; ".join(text for text in (identity, alternatives) if text)
         noun = "column" if mapping.count(None) == 1 else "columns"
@@ -788,7 +784,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
 
     def _normalize_preview(
         self, headers: list[str], rows: list[list[str]], worksheet: csv_import.XlsxWorksheet | None,
-        mapping: csv_import.ColumnMapping | None, columns: SheetColumns, notices: list[str],
+        mapping: csv_import.ColumnMapping | None, notices: list[str],
     ) -> csv_import.CsvImportResult:
         if worksheet is not None:
             parse = partial(csv_import.parse_csv, worksheet, from_excel=True, notices=notices)
@@ -797,18 +793,18 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
         return parse(
             expected_headers=self.required_header_labels,
             has_headers=self._has_headers(),
-            year_column=IMPORT_YEAR_COLUMN,
-            optional_headers=columns.optional_import_headers(),
+            year_column=YEAR_IMPORT_COLUMN,
+            optional_headers=self.import_plan.optional_headers,
             column_mapping=mapping,
-            positional_width=columns.first_import_effect if columns.raw else None,
-            header_aliases=self._legacy_header_aliases(),
+            positional_width=self.import_plan.positional_width,
+            header_aliases=self.import_plan.header_aliases,
         )
 
     def _show_ready_preview(
-        self, result: csv_import.CsvImportResult, columns: SheetColumns, notices: list[str],
+        self, result: csv_import.CsvImportResult, notices: list[str],
     ) -> None:
         headers = list(result.headers or (*self.required_header_labels, *result.covariate_names))
-        self._show_preview(headers, result.rows, count_columns=columns.import_count_columns())
+        self._show_preview(headers, result.rows, count_columns=self.import_plan.count_columns)
         for column in range(len(self.required_header_labels), len(result.expected_headers)):
             self.preview_table.setColumnHidden(column, True)
         self.preview_table.resizeRowsToContents()
@@ -864,7 +860,7 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             return
         if not headers:
             return
-        aliases = self._legacy_header_aliases()
+        aliases = self.import_plan.header_aliases
         mapped_headers = [aliases.get(header.casefold(), header) for header in headers]
         self.mapping_table.setRowCount(len(self.required_header_labels))
         for row, field in enumerate(self.required_header_labels):
@@ -894,33 +890,16 @@ class CsvImportPage(MainWizardPage, _ui_csv_import_page.Ui_WizardPage):
             clear_inline_error(self.import_status)
             self.import_status.setText(f"Saved template: {Path(path).resolve()}")
 
-    def _legacy_header_aliases(self):
-        aliases = {header.casefold(): header for header in self.required_header_labels}
-        aliases["study"] = self.required_header_labels[0]
-        for old, current in zip(self._get_required_header_labels(legacy=True), self.required_header_labels, strict=True):
-            old = old.casefold()
-            aliases[old] = current
-            if old == "mean":
-                for name in analysis_catalog.LEGACY_MEAN_METRIC_NAMES:
-                    aliases[name.casefold()] = current
-            words = old.replace("#evts", "events").replace("#total", "total")
-            aliases[words] = current
-            for value in (old, words):
-                aliases[value.replace("tx a", "txa").replace("tx b", "txb")] = current
-                if value.startswith("tx a "):
-                    aliases.setdefault("tx " + value[5:], current)
-        return aliases
+    @property
+    def required_header_labels(self) -> list[str]:
+        return list(self.import_plan.required_headers)
 
-    def _get_required_header_labels(self, legacy=False):
-        dataset_info = self.wizard().require_dataset_info()
-        data_type = analysis_catalog.STR_TO_TYPE_DICT[required(dataset_info["data_type"], "import data type")]
-        data_subtype = dataset_info["sub_type"]
-        arms = ["Tx A", "Tx B"] if legacy else (
-            dataset_info.get("groups") or analysis_catalog.default_arm_names(data_type, data_subtype)
-        )
-        return sheet_columns(data_type, data_subtype).import_labels(
-            arms, dataset_info["effect"], legacy=legacy,
-        )
+    def _make_import_plan(self) -> ImportFieldPlan:
+        info = self.wizard().require_dataset_info()
+        data_type = analysis_catalog.STR_TO_TYPE_DICT[required(info["data_type"], "import data type")]
+        subtype = info["sub_type"]
+        arms = info.get("groups") or analysis_catalog.default_arm_names(data_type, subtype)
+        return ImportFieldPlan.for_sheet(data_type, subtype, arms, info["effect"], single_arm=info.get("arms") == "one")
 
     def csv_data(self) -> csv_import.CsvImportResult | None:
         return self._import_result
@@ -1133,8 +1112,6 @@ class MainWizard(QWizard):
 
     def sizeHint(self):
         hint = super().sizeHint()
-        # The workflow needs space for choices and preview before the central
-        # adaptive policy caps it to the available screen.
         hint.setWidth(max(hint.width(), self.fontMetrics().horizontalAdvance("M" * 72)))
         hint.setHeight(max(hint.height(), self.fontMetrics().lineSpacing() * 40))
         return hint
@@ -1273,11 +1250,12 @@ class MainWizard(QWizard):
         outcome_info["name"] = name_validation.normalize_name(self.field("outcomeName"))
         if path == "new_dataset":
             return {"path": path, "outcome_info": outcome_info}
+        page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
         if not outcome_info["name"]:
-            page = cast(CsvImportPage, required(self.page(Page_CsvImport), "CSV import page"))
             outcome_info["name"] = Path(required(page.file_path, "import path")).stem
         return {
             "path": path,
             "outcome_info": outcome_info,
-            "csv_data": required(self.get_csv_data(), "validated import preview"),
+            "csv_data": required(page.csv_data(), "validated import preview"),
+            "csv_plan": page.import_plan,
         }

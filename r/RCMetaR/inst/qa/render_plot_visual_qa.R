@@ -151,10 +151,6 @@ qa_write_visual_qa_matrix <- function(repo.root, output.root) {
   script <- file.path(repo.root, "r", "RCMetaR", "inst", "qa", "forest_contact_sheets.py")
   matrix.root <- file.path(output.root, "matrix")
   dir.create(matrix.root, recursive = TRUE, showWarnings = FALSE)
-  # The contact-sheet helper is raster-only. Reitsma's SVGs are still fully
-  # checked by its semantic harness and remain in the primary manifest; keep
-  # them out of this optional PNG overview rather than silently rasterizing
-  # them with a different renderer.
   matrix.manifest <- file.path(matrix.root, "manifest-raster.csv")
   manifest <- utils::read.csv(file.path(output.root, "manifest.csv"), stringsAsFactors=FALSE)
   utils::write.csv(manifest[grepl("\\.png$", manifest$image, ignore.case=TRUE), ], matrix.manifest, row.names=FALSE)

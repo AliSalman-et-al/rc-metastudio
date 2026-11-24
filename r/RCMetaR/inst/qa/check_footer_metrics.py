@@ -5,7 +5,6 @@ import os
 import subprocess
 from xml.etree import ElementTree as ET
 from tests.e2e.header_geometry import check_forest_footer
-# The shared geometry observer uses assertions; run it without optimization too.
 if sys.flags.optimize:
     environment = dict(os.environ)
     environment.pop("PYTHONOPTIMIZE", None)

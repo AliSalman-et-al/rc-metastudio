@@ -13,7 +13,7 @@ import traceback
 import zipfile
 
 from tests.analysis_regression.golden.support import headless_analysis
-from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio.analysis.request import make_analysis_request
 from rc_metastudio import application_metadata
 from rc_metastudio import r_operations, r_worker
 from rc_metastudio.results.contract import AnalysisResult
@@ -279,7 +279,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='binary',
                         workflow='standard',
                         method="binary.random",
@@ -312,7 +312,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='continuous',
                         workflow='standard',
                         method="continuous.random",
@@ -345,7 +345,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("lymph.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='diagnostic',
                         workflow='standard',
                         method="diagnostic.random",
@@ -370,7 +370,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='binary',
                         workflow='cumulative',
                         method="binary.random",
@@ -393,7 +393,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='binary',
                         workflow='leave-one-out',
                         method="binary.random",
@@ -418,7 +418,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='continuous',
                         workflow='cumulative',
                         method="continuous.random",
@@ -443,7 +443,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='continuous',
                         workflow='leave-one-out',
                         method="continuous.random",
@@ -466,7 +466,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='binary',
                         workflow='meta-regression',
                         method="meta.regression",
@@ -492,7 +492,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='continuous',
                         workflow='meta-regression',
                         method="meta.regression",
@@ -522,7 +522,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("amino.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='binary',
                         workflow='subgroup',
                         method="binary.random",
@@ -550,7 +550,7 @@ def curated_golden_bundles(root_dir=None):
             "case": headless_analysis.HeadlessAnalysisCase(
                 sample("continuous.rcms"),
                 (
-                    analysis_adapter.make_analysis_request(
+                    make_analysis_request(
                         data_type='continuous',
                         workflow='subgroup',
                         method="continuous.random",
@@ -579,15 +579,10 @@ def parsed_numeric_sections(result: AnalysisResult):
         values.update(_parse_weights(text))
         if values:
             parsed[name] = values
-    # Sequential tables now expose Step/k/I² explicitly. Keep comparing the
-    # frozen effect/interval/SE/P fields by study identity, independent of layout.
     roles = {'estimate': 'estimate', 'ci_lower': 'lower_bound', 'ci_upper': 'upper_bound',
              'se': 'standard_error', 'p': 'p_value'}
     for section in result.sections:
         for table in section.tables:
-            # These fields were frozen at different precisions from the current report.
-            # Compare the original projection of the live quantities, keeping the oracle
-            # values and tolerances independent of the user's display precision.
             values = parsed.get(section.title, {})
             if table.role in {'heterogeneity', 'coefficients'} and values:
                 for row, cells in zip(table.rows, table.quantities):
@@ -809,8 +804,6 @@ def capture_bundle(
     try:
         result = runner(bundle["case"])
         outputs = parsed_numeric_sections(result)
-        # These newly exposed subgroup fields have public-fit checks in the live
-        # audit. Keep them separate from the unchanged release numerical oracle.
         additional_outputs = {}
         if bundle["id"] == "continuous-subgroup":
             added = {f"heterogeneity.{group}.{field}"

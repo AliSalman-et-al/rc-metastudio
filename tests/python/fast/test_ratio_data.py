@@ -8,7 +8,7 @@ from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project.archive import load_project, save_project, CURRENT_FORMAT_VERSION
 from rc_metastudio.project.model import Arm, Sheet
 from rc_metastudio.project.study import AnalysisUnit
-from tests.python.fast.test_project_adapter import _multi_arm_project
+from tests.project_fixtures import multi_arm_project
 
 
 def _comparison_unit(data_type, raw_data=None):
@@ -47,7 +47,7 @@ def test_reverse_preserves_source_ci_and_log_se(scale):
 
 @pytest.mark.parametrize("arm_id", ["arm-reference", "arm|reference"])
 def test_ratio_inputs_survive_project_round_trip_renaming_and_reversal(tmp_path, inject_python_boundary, arm_id):
-    project = _multi_arm_project("binary")
+    project = multi_arm_project("binary")
     project["schema_version"] = CURRENT_FORMAT_VERSION
     sheet_doc = project["sheets"][0]
     sheet_doc.update(family="event_rates", data_type=6, sub_type="incidence_rate_ratio")

@@ -29,9 +29,6 @@ def _pdf_line(words: list[PdfWord]) -> list[PdfWord]:
 
 def _restore_page_cell(previous: list[PdfWord], visible: list[PdfWord],
                        clipped: list[PdfWord]) -> None:
-    # A clipped duplicate identifies a cell continued from the previous page.
-    # Move its first visible line beside that exact prefix, ahead of sibling
-    # cells, only when both text and horizontal coordinates identify the row.
     if not clipped or not visible:
         return
     clipped = _pdf_line(clipped)
@@ -80,8 +77,6 @@ def _restore_header_units(words: list[PdfWord], visible: list[PdfWord],
         if len(matches) != 1:
             return
         insertions.append((words.index(matches[0]) + 1, unit))
-    # Centered units can wrap onto the next page independently in several
-    # header cells. Exact column centers retain their original cell order.
     for index, unit in sorted(insertions, key=lambda entry: entry[0], reverse=True):
         words.insert(index, unit)
     del visible[:len(continuation)]
@@ -101,8 +96,6 @@ def _ordered_pdf_text(pages: list[PdfPageWords], table_headers=()) -> str:
                 clipped.append(word)
         _restore_page_cell(words, visible, clipped)
         _restore_header_units(words, visible, previous_page, previous_height)
-        # A printed table repeats its complete header at a continuation page.
-        # Remove only an exact page-prefix header already seen on an earlier page.
         history = ' '.join(word.text for word in words)
         current_table = re.split(r'\bTable\s+\d+\.\s', history)[-1]
         for headers in sorted(table_headers, key=lambda row: len(' '.join(row)), reverse=True):
@@ -343,8 +336,6 @@ def assert_exports(view, data, *, pdf_ordered=True):
                 for table in data['docx_tables']]
     assert observed == expected, (observed, expected)
     copied = (Path(data['directory']) / 'copy.txt').read_text(encoding="utf-8")
-    # PDF wraps URLs and hyphenated labels. Compare whole tables while preserving
-    # every digit, sign and punctuation mark across those physical line breaks.
     pdf = re.findall(r'\w+|[^\w\s]', unicodedata.normalize('NFKC', (Path(data['directory']) / 'pdf.txt').read_text(encoding="utf-8")))
     cursor = 0
     for number, (table, rows) in enumerate(zip(tables, expected, strict=True), 1):

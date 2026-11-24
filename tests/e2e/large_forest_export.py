@@ -7,7 +7,7 @@ from xml.etree import ElementTree
 
 from PyQt6 import QtCore, QtWidgets
 
-from advanced_workflows import modal
+from tests.e2e.dialog_interaction import modal
 
 from rc_metastudio import r_operations
 from rc_metastudio.foreground_operation import is_active

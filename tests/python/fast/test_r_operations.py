@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Ali Salman and RC MetaStudio contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
+from rc_metastudio.analysis.request import make_analysis_request
 from rc_metastudio.results.contract import parse_analysis_result
 from rc_metastudio.results.r_presentation import _text_section_metadata
 
@@ -81,8 +82,8 @@ def test_selected_study_columns_keep_canonical_row_order(monkeypatch):
 
     r_operations.run_model_analysis(
         model,
-        {"version": 1, "data_type": "binary", "method": "binary.random", "metric": "OR",
-         "workflow": "meta-regression", "params": {}},
+        make_analysis_request(data_type="binary", method="binary.random", metric="OR",
+                              workflow="meta-regression", parameters={}),
         covs_to_include=[dose], studies=list(reversed(sheet.rows)),
     )
 

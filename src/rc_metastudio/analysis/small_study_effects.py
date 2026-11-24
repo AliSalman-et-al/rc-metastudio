@@ -707,9 +707,6 @@ __all__ = [
 
 
 def _eligibility_methods(method_values: object) -> tuple[EligibilityMethod, ...]:
-    # The worker can scalarize a length-one list of named records to its record
-    # mapping.  Normalize that wire representation before validating the
-    # otherwise stable sequence contract.
     if isinstance(method_values, Mapping):
         method_values = (method_values,)
     if isinstance(method_values, (str, bytes)) or not isinstance(

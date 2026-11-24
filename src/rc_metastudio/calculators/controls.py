@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QWIDGETSIZE_MAX,
 )
 from rc_metastudio.analysis.validation import EMPTY_VALS, validate_confidence_interval_order
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 from rc_metastudio.qt_layout import configure_context_label
 
 
@@ -46,16 +46,16 @@ class NumericSummaryDelegate(QStyledItemDelegate):
     """Compact table painting; the editor and item retain round-trip-safe text."""
 
     def displayText(self, value, locale):
-        number, valid = qt_text.parse_decimal(value)
+        number, valid = input_text.parse_decimal(value)
         return format(number, ".6g") if valid else str(value)
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
-        if index.data(Qt.ItemDataRole.UserRole) is False and qt_text.parse_decimal(index.data())[1]:
+        if index.data(Qt.ItemDataRole.UserRole) is False and input_text.parse_decimal(index.data())[1]:
             option.backgroundBrush = QBrush(QColor(214, 169, 58, 80))
         header = index.model().headerData(index.column(), Qt.Orientation.Horizontal)
         if header in {"SE", "Variance", "Lower", "Upper"}:
-            number, valid = qt_text.parse_decimal(index.data())
+            number, valid = input_text.parse_decimal(index.data())
             if valid:
                 option.text = format_calculator_display_value(number)
 
@@ -65,7 +65,7 @@ class PrevalenceEdit(QLineEdit):
 
     def paintEvent(self, a0: QPaintEvent | None) -> None:
         event = a0
-        number, valid = qt_text.parse_decimal(self.text())
+        number, valid = input_text.parse_decimal(self.text())
         if self.hasFocus() or not valid:
             return super().paintEvent(event)
         option = QStyleOptionFrame()
@@ -81,14 +81,9 @@ class PrevalenceEdit(QLineEdit):
                          format_calculator_display_value(number))
 
 
-def cell_text_is_blank(value):
-    """Return whether Qt item text is blank."""
-    return qt_text.is_blank(value)
-
-
 def numeric_value(value):
     """Return finite interface numeric input using explicit decimal rules."""
-    number, valid = qt_text.parse_decimal(value)
+    number, valid = input_text.parse_decimal(value)
     if not valid:
         raise ValueError(
             "Enter a finite number using a decimal point or decimal comma."
@@ -96,6 +91,31 @@ def numeric_value(value):
     return number
 
 
+
+
+def count_cell_error(text: object) -> str | None:
+    if input_text.is_blank(text):
+        return None
+    try:
+        value = numeric_value(text)
+    except ValueError:
+        return "Enter a number."
+    if not value.is_integer():
+        return "Counts must be whole numbers."
+    if value < 0:
+        return "Counts cannot be negative."
+    return None
+
+
+COUNT_TABLE_CELLS = {
+    "c11": (0, 0), "c12": (0, 1), "c21": (1, 0), "c22": (1, 1),
+    "r1sum": (0, 2), "r2sum": (1, 2),
+    "c1sum": (2, 0), "c2sum": (2, 1), "total": (2, 2),
+}
+
+
+def read_count_table(read_count):
+    return {key: read_count(*cell) for key, cell in COUNT_TABLE_CELLS.items()}
 
 
 def compute_2x2_table_from_inner_counts(params):
@@ -221,13 +241,8 @@ def binary_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
     if metric in signed_unit_metrics:
         return ("-1." + ("0" * digits), "1." + ("0" * digits))
     if metric == "AS":
-        # Keep a signed-unit value in the semantic sample set. It is inside the
-        # arcsine domain and prevents native proportional fonts from making the
-        # field narrower than the signed-unit metrics when users switch scales.
         return ("-1.5708", "-1.0000", "1.5708")
     if metric in positive_ratio_metrics:
-        # Ratios are positive and unbounded, so use the exact text produced by
-        # the renderer at the largest accepted finite binary64 value.
         return (
             precision,
             format_calculator_display_value(sys.float_info.max, digits),
@@ -254,8 +269,6 @@ def diagnostic_effect_display_samples(metric, digits=CALC_NUM_DIGITS):
     precision = "0." + ("0" * digits)
     if metric in {"Sens", "Spec"}:
         return (precision, "1." + ("0" * digits))
-    # Diagnostic ratios are positive and unbounded. Keep common values visible;
-    # larger entries remain reachable through native line-edit navigation.
     return (precision, "9999." + ("9" * digits))
 
 

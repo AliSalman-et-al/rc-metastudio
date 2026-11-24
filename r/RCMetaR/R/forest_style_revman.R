@@ -246,8 +246,6 @@ rcmetar.draw.revman.forest <- function(bundle, plan) {
         header=FALSE,
         pch=15,
         psize=summary$psize,
-        # Draw marks once below: metafor can leave reversed whiskers outside alim
-        # when an entire interval lies beyond an explicitly narrowed axis.
         col=NA,
         annotate=FALSE,
         ylim=rcmetar.forest.header.ylim(plan, k + 1),

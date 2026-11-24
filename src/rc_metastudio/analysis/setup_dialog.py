@@ -28,7 +28,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Literal
 
-from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, qt_text, r_operations, r_worker
+from rc_metastudio import adaptive_controls, adaptive_window, app_error_handler, input_text, r_operations, r_worker
+from rc_metastudio.analysis.request import AnalysisRequest, make_analysis_request
 from rc_metastudio.analysis import (
     catalog as analysis_catalog,
     identity as analysis_identity,
@@ -353,9 +354,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 checkbox.setChecked(_bool_plot_param(parameters[name], True))
 
     def _change_settings_callback(self, source_sheet: "Sheet | None"):
-        from rc_metastudio.workspace.table_model import DatasetTableModel
-        model = DatasetTableModel(dataset=copy.deepcopy(self.model.dataset), add_blank_study=False)
-        model.set_current_sheet(self.model.current_sheet_id)
+        model = self.model.snapshot_for_analysis()
         saved_parameters = copy.deepcopy(self.current_param_vals)
         saved = dict(method=self.current_method, parameters=saved_parameters,
                      covariates=[cov['name'] for cov in self._selected_covariates()] if self.is_meta_regression else [],
@@ -522,8 +521,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             width += self.method_lbl.sizeHint().width()
         if hasattr(self, "gridLayout"):
             width += self.gridLayout.horizontalSpacing()
-        # The selector lives inside a tab page and its layout, not directly
-        # inside the scroll viewport. Include those in first-use sizing.
         margins = self.horizontalLayout.contentsMargins()
         width += margins.left() + margins.right()
         width += self.specs_tab.sizeHint().width() - self.methods_tab.sizeHint().width()
@@ -811,7 +808,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             method = REITSMA_METHOD
             parameters["fp_outpath"] = f"{self._fit_output_stem}.svg"
             parameters["joint.metrics"] = "Sens,Spec"
-        return analysis_adapter.make_analysis_request(
+        return make_analysis_request(
             data_type=self.data_type,
             workflow="meta-regression",
             method=method,
@@ -876,7 +873,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         """Execute the current settings and prepare the result for presentation."""
         return self._execute_requests(self.analysis_requests())
 
-    def _execute_requests(self, requests: Sequence[analysis_adapter.AnalysisRequest]) -> AnalysisResult:
+    def _execute_requests(self, requests: Sequence[AnalysisRequest]) -> AnalysisResult:
         sheet = self.model.current_sheet
         direction = ("", "")
         if (sheet is not None and requests and requests[0].data_type != "diagnostic"
@@ -898,7 +895,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _run_analysis(
         self, regression: Callable[[], AnalysisResult] | None = None, *,
-        regression_request: analysis_adapter.AnalysisRequest | None = None,
+        regression_request: AnalysisRequest | None = None,
     ):
         run_button = required(self.buttonBox.button(QDialogButtonBox.StandardButton.Ok), "Run analysis button")
         if not run_button.isEnabled():
@@ -948,7 +945,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         app_error_handler.log_exception(type(error), error, error.__traceback__)
         message = re.sub(r"^Error in .*?:\s*", "", str(error).strip(), count=1, flags=re.DOTALL)
         message = re.sub(r"(?m)^\w*(?:Error|Exception):\s*", "", message).strip()
-        # The input precheck should make this fallback unreachable for missing inputs.
         if "Processing terminated since k = 0" in message:
             message = "No study could contribute to this analysis. Check the study values and selected method."
         self._show_analysis_error(message or "The analysis could not be completed.",
@@ -966,7 +962,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         if details:
             self.analysis_error_toggle.setFocus()
 
-    def _missing_analysis_inputs(self, requests: Sequence[analysis_adapter.AnalysisRequest]) -> str:
+    def _missing_analysis_inputs(self, requests: Sequence[AnalysisRequest]) -> str:
         studies = self._manuscript_studies()
         if not studies:
             return ("No studies are included. Select Include for at least one study with complete data."
@@ -990,7 +986,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return ""
 
     def _describe_missing_request_inputs(
-        self, request: analysis_adapter.AnalysisRequest, selected_ids: set["RowId"],
+        self, request: AnalysisRequest, selected_ids: set["RowId"],
         ratio_input: bool, arm_inputs: str | None,
     ) -> list[str] | None:
         fields = [column for column in self.model.columns.raw if not column.hidden]
@@ -1011,7 +1007,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _missing_study_fields(
         self, index: int, study: "StudyRow", fields: list["RawColumn"],
-        request: analysis_adapter.AnalysisRequest, ratio_input: bool,
+        request: AnalysisRequest, ratio_input: bool,
     ) -> list["RawColumn"] | None:
         raw = self.model.get_current_raw_data_for_study(index)
         absent = [column for position, column in enumerate(fields)
@@ -1029,7 +1025,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _describe_study_fields(
         self, fields: list["RawColumn"], absent: list["RawColumn"], arm_inputs: str | None,
-        request: analysis_adapter.AnalysisRequest, ratio_input: bool,
+        request: AnalysisRequest, ratio_input: bool,
     ) -> str:
         if arm_inputs and absent and absent == fields and {column.arm_index for column in fields} == {0, 1}:
             parts = [f"{arm_inputs} for both arms"]
@@ -1058,7 +1054,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
         return parts
 
     def _pooled_fit_for_sheet(
-        self, requests: Sequence[analysis_adapter.AnalysisRequest],
+        self, requests: Sequence[AnalysisRequest],
         source_sheet: "Sheet | None",
     ) -> PooledAnalysis | None:
         if (
@@ -1288,7 +1284,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             self.current_param_vals["metric.label"] = self._result_metric_label()
             parameters = copy.deepcopy(self.current_param_vals)
             return (
-                analysis_adapter.make_analysis_request(
+                make_analysis_request(
                     data_type=self.data_type,
                     workflow=workflow,
                     method=self.current_method,
@@ -1606,12 +1602,12 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
             index = self._find_enum_item_index(control, spec.default)
             if index >= 0:
                 control.setCurrentIndex(index)
-            target[spec.name] = qt_text.to_native_text(control.currentData())
+            target[spec.name] = input_text.to_native_text(control.currentData())
         combo = control
         control.currentIndexChanged[int].connect(
             app_error_handler.safe_slot(
                 lambda index: target.__setitem__(
-                    spec.name, qt_text.to_native_text(combo.itemData(index))
+                    spec.name, input_text.to_native_text(combo.itemData(index))
                 ),
                 parent=self,
             )
@@ -1679,7 +1675,7 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _find_enum_item_index(self, cbo_box, value):
         for index in range(cbo_box.count()):
-            if qt_text.to_native_text(cbo_box.itemData(index)) == str(value):
+            if input_text.to_native_text(cbo_box.itemData(index)) == str(value):
                 return index
         return -1
 
@@ -1687,8 +1683,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
 
     def _configure_value_control(self, widget):
         adaptive_controls.configure_choice_control(widget, visible_characters=42)
-        # Screen-bounded dialogs may still shrink, but complete choices contribute
-        # to the initial size rather than being discarded by an Ignored policy.
         widget.setMinimumWidth(0)
         widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, widget.sizePolicy().verticalPolicy()
@@ -1792,8 +1786,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 label_width + text_width + combo.width() - field.width(),
                 label.minimumSizeHint().width() + combo.minimumSizeHint().width(),
             )
-            # The scroll body may already have expanded to this row's unwrapped
-            # minimum. Fit against the viewport rather than that expanded width.
             viewport = required(self.content_scroll_area.viewport(), "analysis viewport")
             page_margins = self.content_scroll_area_widget.width() - row_widget.width()
             available_width = min(layout.contentsRect().width(), viewport.width() - page_margins)
@@ -1842,7 +1834,6 @@ class AnalysisSetupDialog(QDialog, Ui_AnalysisSetupDialog):
                 continue
             self.current_defaults[name] = saved_value
 
-        # The application-level confidence setting overrides method defaults.
         self.current_defaults["conf.level"] = self.confidence_level
 
     def _local_diagnostic_parameters(self, specs):
@@ -2097,7 +2088,7 @@ def _float_plot_param(value, default):
 
 def _diagnostic_analysis_requests(
     specs_form: AnalysisSetupDialog, workflow: str,
-) -> tuple[analysis_adapter.AnalysisRequest, ...]:
+) -> tuple[AnalysisRequest, ...]:
     requests = []
     missing_metrics = []
 
@@ -2128,7 +2119,7 @@ def _diagnostic_analysis_requests(
         if joint is not None and diagnostic_metric == "Sens":
             param_vals["joint.metrics"] = "Sens,Spec"
 
-        requests.append(analysis_adapter.make_analysis_request(
+        requests.append(make_analysis_request(
             data_type=specs_form.data_type,
             workflow=workflow,
             method=method,
@@ -2150,7 +2141,7 @@ def _diagnostic_analysis_requests(
 
 
 def _text_value(widget):
-    return qt_text.to_native_text(plot_text_value(widget))
+    return input_text.to_native_text(plot_text_value(widget))
 
 
 def _diagnostic_pending_requests(specs_form):

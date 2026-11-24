@@ -1,4 +1,4 @@
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 
 
 ENTITY_LABELS = {
@@ -10,7 +10,7 @@ ENTITY_LABELS = {
 
 
 def normalize_name(value):
-    return qt_text.to_native_text(value).strip()
+    return input_text.to_native_text(value).strip()
 
 
 def required_message(entity):

@@ -24,7 +24,7 @@ def open_sample_menu_action(window, filename):
 
 
 def check_sample_saves(app, window, work, sample, number, record, picker):
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
 
     sample_button = required(window.start_page.findChild(QtWidgets.QPushButton, "empty_recent_sample"))
     assert sample_button.isVisible() and sample_button.menu() is window.sample_menu
@@ -113,8 +113,8 @@ def check_sample_saves(app, window, work, sample, number, record, picker):
         window.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
 
 def run(app, window, work, root, record, analyze):
-    from advanced_workflows import modal
-    from analysis_matrix import set_parameter
+    from tests.e2e.dialog_interaction import modal
+    from tests.e2e.dialog_interaction import set_parameter
     from tests.e2e.plot_observations import load_saved_analysis
     from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
 
@@ -140,7 +140,6 @@ def run(app, window, work, root, record, analyze):
     record("sample-file-menu", window.menu_file)
     window.menu_file.close()
 
-    # Keep the offscreen picker's filesystem model alive across sample windows.
     picker = QtWidgets.QFileDialog(window)
     picker.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog)
     picker.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)

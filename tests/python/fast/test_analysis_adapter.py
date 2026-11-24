@@ -8,7 +8,7 @@ import pytest
 from collections.abc import Mapping
 from typing import TypedDict
 
-from rc_metastudio.analysis.requests import make_analysis_request
+from rc_metastudio.analysis.request import make_analysis_request
 
 
 class RequestKwargs(TypedDict):
@@ -73,8 +73,8 @@ def test_blank_factor_moderator_requires_exclusion_confirmation(missing):
     from rc_metastudio.analysis import requests as analysis_adapter
     from rc_metastudio.project import adapter as project_adapter
     from rc_metastudio.workspace.table_model import DatasetTableModel
-    from tests.python.fast.test_project_adapter import _multi_arm_project
-    model = DatasetTableModel(dataset=project_adapter.project_to_dataset(_multi_arm_project('binary')), add_blank_study=False)
+    from tests.project_fixtures import multi_arm_project
+    model = DatasetTableModel(dataset=project_adapter.project_to_dataset(multi_arm_project('binary')), add_blank_study=False)
     row = model.current_sheet.rows[0]
     row.include = True
     row.covariate_values['moderator'] = missing

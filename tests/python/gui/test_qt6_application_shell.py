@@ -586,7 +586,11 @@ def test_cancelled_save_as_blocks_new_open_recent_and_import_for_unsaved_wizards
                 },
             }
             if source_path == "csv_import":
+                from rc_metastudio.importing.field_plan import ImportFieldPlan
                 from rc_metastudio.importing.tabular import CsvImportResult
+                result["csv_plan"] = ImportFieldPlan.for_sheet(
+                    0, "proportions", ("Group 1", "Group 2"), "OR", single_arm=False,
+                )
                 result["csv_data"] = CsvImportResult(
                     (), (("Unsaved study", "2024", "1", "10", "2", "12"),), (), (), (),
                 )

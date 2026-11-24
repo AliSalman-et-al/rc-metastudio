@@ -31,8 +31,6 @@ def _restore_updates(backups: dict[Path, Path], recovery: Path) -> None:
 
 
 def _write_updates(updates: dict[Path, str]) -> None:
-    # Keep exact recovery bytes until every write has succeeded. A failed
-    # rollback leaves this directory available for manual recovery.
     recovery = Path(tempfile.mkdtemp(prefix="rcms-version-recovery-"))
     backups = {path: recovery / str(index) for index, path in enumerate(updates)}
     for path, backup in backups.items():

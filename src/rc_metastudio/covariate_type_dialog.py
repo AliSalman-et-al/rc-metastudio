@@ -10,7 +10,7 @@ from rc_metastudio import app_error_handler
 from rc_metastudio import adaptive_window
 
 from rc_metastudio import qt_layout
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 
 if TYPE_CHECKING:
     import ui_covariate_type_dialog as _ui_covariate_type_dialog
@@ -31,8 +31,8 @@ def _to_double(value):
 
 def _new_covariate_value(covariate, value):
     if covariate["data_type"] == FACTOR:
-        return qt_text.to_native_text(value), True
-    if qt_text.to_native_text(value).strip() == "":
+        return input_text.to_native_text(value), True
+    if input_text.to_native_text(value).strip() == "":
         return None, True
     return _to_double(value)
 
@@ -191,11 +191,11 @@ class CovariateTypeModel(QAbstractTableModel):
                 return self.preview_rows[row].label
             elif column == self.ORIG_VAL:
                 if self.covariate["data_type"] == FACTOR:
-                    return qt_text.to_native_text(self.orig_cov_list[row])
+                    return input_text.to_native_text(self.orig_cov_list[row])
                 return self.orig_cov_list[row]
             elif column == self.NEW_VAL:
                 if self.new_covariate["data_type"] == FACTOR:
-                    return qt_text.to_native_text(self.new_cov_list[row])
+                    return input_text.to_native_text(self.new_cov_list[row])
                 return self.new_cov_list[row]
         elif role == Qt.ItemDataRole.TextAlignmentRole:
             return int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
@@ -210,8 +210,6 @@ class CovariateTypeModel(QAbstractTableModel):
         return 3
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # don't allow users to mess with the original
-        # covariate.
         if index.isValid() and 0 <= index.row() < len(self.preview_rows):
             column = index.column()
 

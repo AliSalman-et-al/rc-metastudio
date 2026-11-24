@@ -1415,16 +1415,16 @@ def _validate_surface_gate(
 
 def validate_packaged_workflow_evidence(evidence: dict) -> None:
     workflows = evidence.get("workflows", {})
-    locale_variants = workflows.get("locale_variants", [])
-    sample_projects = workflows.get("sample_projects", {})
-    sample_records = sample_projects.get("projects", [])
+    locale_variants = smoke_contract.locale_variants(workflows.get("locale_variants"))
     expected_summary = smoke_contract.EXPECTED_SUMMARY_SHA256_BY_SAMPLE.get(
         workflows.get("converted_sample")
     )
     valid = (
         _workflow_header_valid(evidence, workflows, expected_summary)
-        and _workflow_locale_valid(locale_variants)
-        and _workflow_samples_valid(sample_projects, sample_records)
+        and locale_variants is not None
+        and locale_variants[0].get("decimal_point") == "."
+        and locale_variants[1].get("decimal_point") == ","
+        and smoke_contract.sample_hashes(workflows.get("sample_projects")) is not None
     )
     if not valid:
         raise MacOSDeploymentInspectionError(
@@ -1452,89 +1452,9 @@ def _workflow_header_valid(
             expected_summary is not None,
             workflows.get("expected_normalized_summary_sha256") == expected_summary,
             workflows.get("normalized_summary_sha256") == expected_summary,
-            _valid_sha256(workflows.get("raw_summary_sha256")),
-            _valid_sha256_map(workflows.get("svg_sha256")),
+            smoke_contract.valid_sha256(workflows.get("raw_summary_sha256")),
+            smoke_contract.valid_sha256_map(workflows.get("svg_sha256")),
         )
-    )
-
-
-def _workflow_locale_valid(locale_variants: list) -> bool:
-    return (
-        _locale_inputs_valid(locale_variants)
-        and _locale_identity_valid(locale_variants)
-    )
-
-
-def _locale_inputs_valid(locale_variants: list) -> bool:
-    if [item.get("locale") for item in locale_variants] != ["en_US", "de_DE"]:
-        return False
-    en, de = locale_variants
-    return (
-        en.get("decimal_point") == "."
-        and de.get("decimal_point") == ","
-        and "." in str(en.get("input"))
-        and "," in str(de.get("input"))
-        and en.get("canonical_value") == de.get("canonical_value")
-    )
-
-
-def _locale_identity_valid(locale_variants: list) -> bool:
-    en, de = locale_variants
-    return (
-        en.get("normalized_summary_sha256") == de.get("normalized_summary_sha256")
-        and _valid_sha256(en.get("normalized_summary_sha256"))
-        and en.get("raw_summary_sha256") == de.get("raw_summary_sha256")
-        and _valid_sha256(en.get("raw_summary_sha256"))
-        and en.get("svg_sha256") == de.get("svg_sha256")
-        and _valid_sha256_map(en.get("svg_sha256"))
-    )
-
-
-def _workflow_samples_valid(sample_projects: dict, sample_records: object) -> bool:
-    return _sample_manifest_valid(sample_projects) and _sample_records_valid(
-        sample_records
-    )
-
-
-def _sample_manifest_valid(sample_projects: dict) -> bool:
-    return sample_projects.get("passed") is True and _valid_sha256(
-        sample_projects.get("manifest_sha256")
-    )
-
-
-def _sample_records_valid(sample_records: object) -> bool:
-    if not isinstance(sample_records, list) or not sample_records:
-        return False
-    typed_records = _typed_sample_records(cast(list[object], sample_records))
-    if typed_records is None:
-        return False
-    projects = {item.get("project") for item in typed_records}
-    return len(projects) == len(typed_records) and all(
-        _valid_sample_record(item) for item in typed_records
-    )
-
-
-def _typed_sample_records(
-    sample_records: list[object],
-) -> list[dict[str, object]] | None:
-    typed_records: list[dict[str, object]] = []
-    for item in sample_records:
-        if not _string_keyed_dict(item):
-            return None
-        typed_records.append(item)
-    return typed_records
-
-
-def _valid_sample_record(item: object) -> bool:
-    if not _string_keyed_dict(item):
-        return False
-    project = item.get("project")
-    return (
-        isinstance(project, str)
-        and project.endswith(".rcms")
-        and _valid_sha256(item.get("sha256"))
-        and _valid_sha256(item.get("semantic_sha256"))
-        and item.get("opened_in_packaged_application") is True
     )
 
 
@@ -1598,7 +1518,7 @@ def _validate_direct_input_inventory(payload: dict) -> tuple[dict, list[dict]]:
 
 
 def _valid_direct_record(record: object) -> bool:
-    if not _string_keyed_dict(record) or not _valid_sha256(record.get("sha256")):
+    if not _string_keyed_dict(record) or not smoke_contract.valid_sha256(record.get("sha256")):
         return False
     size = record.get("size")
     return isinstance(size, int) and not isinstance(size, bool) and size >= 0
@@ -1685,7 +1605,7 @@ def _valid_rcmetar_source(
         + source_commit
         + "/r/RCMetaR"
         and rcmetar.get("source_commit") == source_commit
-        and _valid_sha256(rcmetar.get("archive_sha256"))
+        and smoke_contract.valid_sha256(rcmetar.get("archive_sha256"))
         and _string_keyed_dict(archive)
         and archive.get("sha256") == rcmetar.get("archive_sha256")
     )
@@ -1696,7 +1616,7 @@ def _valid_direct_archive_record(archive: object) -> bool:
         return False
     size = archive.get("size")
     return (
-        _valid_sha256(archive.get("sha256"))
+        smoke_contract.valid_sha256(archive.get("sha256"))
         and isinstance(size, int)
         and not isinstance(size, bool)
         and size > 0
@@ -2165,27 +2085,6 @@ def inspect_archive(
     }
 
 
-def _valid_sha256_map(value: object) -> bool:
-    return (
-        isinstance(value, dict)
-        and bool(value)
-        and all(
-            isinstance(item, str)
-            and len(item) == 64
-            and all(char in "0123456789abcdef" for char in item)
-            for item in value.values()
-        )
-    )
-
-
-def _valid_sha256(value: object) -> bool:
-    return (
-        isinstance(value, str)
-        and len(value) == 64
-        and all(character in "0123456789abcdef" for character in value)
-    )
-
-
 def _string_keyed_dict(value: object) -> TypeGuard[dict[str, object]]:
     return isinstance(value, dict) and all(isinstance(key, str) for key in value)
 
@@ -2286,11 +2185,8 @@ def _validate_shipped_samples(deployment: dict, smoke: dict) -> None:
     manifest = next((item.get("sha256") for item in files
                      if item.get("path") == prefix + "manifest.json"), None)
     samples = smoke.get("workflows", {}).get("sample_projects", {})
-    records = samples.get("projects", [])
-    observed = {item.get("project"): item.get("sha256") for item in records}
-    if (not shipped or shipped != observed or len(records) != len(observed)
-            or samples.get("manifest_sha256") != manifest
-            or not _workflow_samples_valid(samples, records)):
+    observed = smoke_contract.sample_hashes(samples)
+    if not shipped or observed != shipped or samples.get("manifest_sha256") != manifest:
         raise MacOSDeploymentInspectionError("sample inventory differs from shipped deployment")
 
 

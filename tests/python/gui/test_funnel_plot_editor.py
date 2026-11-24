@@ -293,6 +293,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         params_path=str(base),
     )
     window = results_window.ResultsWindow(parse_analysis_result({"version": 1, "sections": []}))
+    entry = results_window._PlotEntry(artifact, results_window.QTreeWidgetItem())
     regenerate_count = [0]
 
     def prepare(_prefix, regenerator, changed, output, directory):
@@ -315,7 +316,7 @@ def test_funnel_editor_failed_second_apply_preserves_last_good_artifacts(
         {"funnel.kind": "ordinary", "funnel.point.size": 1.0},
         str(image_path),
         plot_type="funnel",
-        on_commit=lambda parameters: window._apply_plot_edits(parameters, artifact, None),
+        on_commit=lambda parameters: window._apply_plot_edits(entry, parameters),
     )
     try:
         dialog.show()
@@ -357,7 +358,10 @@ def test_funnel_editor_rejects_svgz_output_path(qapp, tmp_path):
     )
     try:
         with pytest.raises(ValueError, match="SVGZ output is not supported"):
-            window._apply_plot_edits(dialog.plot_params(), artifact, None)
+            window.plot_service.apply_edits(
+                regenerator="funnel", params_path="funnel",
+                updated_params=dialog.plot_params(), output_path=str(output),
+            )
         assert output.read_bytes() == b"previous export"
     finally:
         dialog.close()

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, Qt
-from PyQt6.QtGui import QAction, QBrush, QColor, QKeySequence, QPalette
+from PyQt6.QtGui import QBrush, QColor, QPalette
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -118,6 +118,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
         self.initialize_form()
         self.setup_back_calculation_feedback()
         self._field_history = calculator_edit_history.TransientEditHistory()
+        self._field_history.bind_shortcuts(self)
 
         self.raw_data_table.setVerticalHeaderLabels([str(name) for name in self.arm_names] + ["Total"])
         self.raw_data_table.setAccessibleDescription("Whole-number study counts for " + " and ".join(self.arm_names) + ".")
@@ -536,19 +537,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             app_error_handler.safe_slot(lambda: self.val_changed("upper"), parent=self)
         )
 
-        undo = QAction(self)
-        redo = QAction(self)
-        undo.setShortcut(QKeySequence.StandardKey.Undo)
-        redo.setShortcut(QKeySequence.StandardKey.Redo)
-        self.addAction(undo)
-        self.addAction(redo)
-        undo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.undo(), parent=self)
-        )
-        redo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.redo(), parent=self)
-        )
-
     def _populate_effect_data(self):
         metric_family = (
             BINARY_ONE_ARM_METRICS
@@ -763,22 +751,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
             raw_data[0] = events
             raw_data[1] = total
 
-    def _cell_data_not_valid(self, celldata_string):
-        if calculator_controls.cell_text_is_blank(celldata_string):
-            return None
-
-        try:
-            value = calculator_controls.numeric_value(celldata_string)
-        except ValueError:
-            return "Enter a number."
-
-        if not value.is_integer():
-            return "Counts must be whole numbers."
-
-        if value < 0:
-            return "Counts cannot be negative."
-        return None
-
     def restore_analysis_unit(self, old_analysis_unit):
         """Restores the analysis_unit data and resets the form"""
         self.analysis_unit = old_analysis_unit.copy_for_edit()
@@ -898,7 +870,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 if not self._raw_count_cell_is_editable(check_row, check_col):
                     continue
                 item = self.raw_data_table.item(check_row, check_col)
-                message = self._cell_data_not_valid(item.text()) if item is not None else None
+                message = calculator_controls.count_cell_error(item.text()) if item is not None else None
                 if message:
                     self._mark_table_invalid(message)
                     return False
@@ -915,20 +887,6 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
                 return False
         return True
 
-    def _get_table_values(self):
-        """Package table from 2x2 table in to a dictionary"""
-        vals_d = {}
-        vals_d["c11"] = self._get_int(0, 0)
-        vals_d["c12"] = self._get_int(0, 1)
-        vals_d["c21"] = self._get_int(1, 0)
-        vals_d["c22"] = self._get_int(1, 1)
-        vals_d["r1sum"] = self._get_int(0, 2)
-        vals_d["r2sum"] = self._get_int(1, 2)
-        vals_d["c1sum"] = self._get_int(2, 0)
-        vals_d["c2sum"] = self._get_int(2, 1)
-        vals_d["total"] = self._get_int(2, 2)
-        return vals_d
-
     def clear_column(self, col):
         """Clears out column in table and analysis_unit"""
         for row in range(3):
@@ -939,15 +897,8 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _set_vals(self, computed_d):
         """Sets values in table widget"""
         with QSignalBlocker(self.raw_data_table):
-            self._set_val(0, 0, computed_d["c11"])
-            self._set_val(0, 1, computed_d["c12"])
-            self._set_val(1, 0, computed_d["c21"])
-            self._set_val(1, 1, computed_d["c22"])
-            self._set_val(0, 2, computed_d["r1sum"])
-            self._set_val(1, 2, computed_d["r2sum"])
-            self._set_val(2, 0, computed_d["c1sum"])
-            self._set_val(2, 1, computed_d["c2sum"])
-            self._set_val(2, 2, computed_d["total"])
+            for key, (row, column) in calculator_controls.COUNT_TABLE_CELLS.items():
+                self._set_val(row, column, computed_d[key])
 
     def _set_val(self, row, col, val):
         if is_nan(val):
@@ -970,7 +921,7 @@ class BinaryDataDialog(QDialog, _ui_binary_data_dialog.Ui_BinaryDataDialog):
     def _update_data_table(self):
         """Fill in 2x2 table from other entries in the table"""
         with QSignalBlocker(self.raw_data_table):
-            params = self._get_table_values()
+            params = calculator_controls.read_count_table(self._get_int)
             computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
             for total_name in ("r1sum", "r2sum"):
                 row = 0 if total_name == "r1sum" else 1

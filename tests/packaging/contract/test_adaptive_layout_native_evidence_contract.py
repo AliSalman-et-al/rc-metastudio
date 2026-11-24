@@ -108,8 +108,6 @@ def _write_validator_fixture(tmp_path, validator, *, fractional_capture=False):
         "remembered_geometry": {"round_trip": True, "frame_matches": True, "state_matches": True, "saved_normalized_frame_geometry": {"x": 0, "y": 0, "width": 800, "height": 600}, "loaded_frame_geometry": {"x": 0, "y": 0, "width": 800, "height": 600}, "saved_state": {"maximized": False, "full_screen": False}, "loaded_state": {"maximized": False, "full_screen": False}},
         "platform_plugin": "windows",
         "scale_factor_environment": "1.0",
-        # This fixture exercises the Windows x64 release-evidence contract even
-        # when the contract suite itself runs on an Apple Silicon host.
         "machine": "x86_64",
         "surfaces": surfaces,
         "unavailable_scenarios": [],

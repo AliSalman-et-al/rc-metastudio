@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from rc_metastudio.qt_layout import style_inline_error
 from PyQt6.QtCore import QEvent, QObject, QSignalBlocker, QTimer, Qt
-from PyQt6.QtGui import QAction, QKeySequence, QPalette
+from PyQt6.QtGui import QPalette
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -112,6 +112,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         self.initialize_form()
         self.setup_back_calculation_feedback()
         self._field_history = calculator_edit_history.TransientEditHistory()
+        self._field_history.bind_shortcuts(self)
 
         self._update_raw_data()
         for field in (self.lower_text_box, self.upper_text_box, self.effect_text_box, self.prevalence_text_box):
@@ -321,26 +322,13 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
             )
         )
 
-        undo = QAction(self)
-        redo = QAction(self)
-        undo.setShortcut(QKeySequence.StandardKey.Undo)
-        redo.setShortcut(QKeySequence.StandardKey.Redo)
-        self.addAction(undo)
-        self.addAction(redo)
-        undo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.undo(), parent=self)
-        )
-        redo.triggered.connect(
-            app_error_handler.safe_slot(lambda _checked=False: self.redo(), parent=self)
-        )
-
     def on_two_by_two_table_currentCellChanged(
         self, currentRow, currentColumn, previousRow, previousColumn
     ):
         self.current_item_data = self._get_int(currentRow, currentColumn)
 
     def _count_editor_committed(self, editor):
-        if isinstance(editor, QLineEdit) and self.cell_data_invalid(editor.text()) is None:
+        if isinstance(editor, QLineEdit) and calculator_controls.count_cell_error(editor.text()) is None:
             self._mark_table_consistent()
 
     def setup_back_calculation_feedback(self):
@@ -403,22 +391,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 "Invalid diagnostic count: %r" % text
             ) from exc
 
-    def cell_data_invalid(self, celldata_string):
-        if calculator_controls.cell_text_is_blank(celldata_string):
-            return None
-
-        try:
-            value = calculator_controls.numeric_value(celldata_string)
-        except ValueError:
-            return "Enter a number."
-
-        if not value.is_integer():
-            return "Counts must be whole numbers."
-
-        if value < 0:
-            return "Counts cannot be negative."
-        return None
-
     def _is_empty(self, i, j):
         val = self.two_by_two_table.item(i, j)
         return val is None or val.text() == "" or val.text() is None
@@ -444,15 +416,8 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
     def _set_vals(self, computed_d):
         """Sets values in table widget"""
         with QSignalBlocker(self.two_by_two_table):
-            self._set_val(0, 0, computed_d["c11"])
-            self._set_val(0, 1, computed_d["c12"])
-            self._set_val(1, 0, computed_d["c21"])
-            self._set_val(1, 1, computed_d["c22"])
-            self._set_val(0, 2, computed_d["r1sum"])
-            self._set_val(1, 2, computed_d["r2sum"])
-            self._set_val(2, 0, computed_d["c1sum"])
-            self._set_val(2, 1, computed_d["c2sum"])
-            self._set_val(2, 2, computed_d["total"])
+            for key, (row, column) in calculator_controls.COUNT_TABLE_CELLS.items():
+                self._set_val(row, column, computed_d[key])
 
     def _get_prevalence_str(self):
         return str(self.prevalence_text_box.text())
@@ -474,7 +439,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         old_prevalence = self._get_prevalence_str()
 
         try:
-            warning_msg = self.cell_data_invalid(
+            warning_msg = calculator_controls.count_cell_error(
                 required(
                     self.two_by_two_table.item(row, col),
                     f"diagnostic table cell ({row}, {col})",
@@ -575,19 +540,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
 
     def get_total_subjects(self):
         return self._get_int(2, 2)
-
-    def _get_table_values(self):
-        vals_d = {}
-        vals_d["c11"] = self._get_int(0, 0)
-        vals_d["c12"] = self._get_int(0, 1)
-        vals_d["c21"] = self._get_int(1, 0)
-        vals_d["c22"] = self._get_int(1, 1)
-        vals_d["r1sum"] = self._get_int(0, 2)
-        vals_d["r2sum"] = self._get_int(1, 2)
-        vals_d["c1sum"] = self._get_int(2, 0)
-        vals_d["c2sum"] = self._get_int(2, 1)
-        vals_d["total"] = self._get_int(2, 2)
-        return vals_d
 
     def impute_effects_in_analysis_unit(self):
         counts = self.get_raw_diagnostic_data()
@@ -787,7 +739,6 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
                 self.two_by_two_table.setItem(field_index % 2, field_index // 2, item)
 
     def _populate_effect_cmbo_box(self):
-        # Back-calculation is currently supported for sensitivity/specificity.
         effects = BACK_CALCULATABLE_DIAGNOSTIC_EFFECTS
         with QSignalBlocker(self.effect_combo_box):
             from rc_metastudio.analysis.catalog import DIAGNOSTIC_METRIC_LABELS
@@ -820,7 +771,7 @@ class DiagnosticDataDialog(QDialog, _ui_diagnostic_data_dialog.Ui_DiagnosticData
         with ExitStack() as signal_blockers:
             for widget in self.entry_widgets:
                 signal_blockers.enter_context(QSignalBlocker(widget))
-            params = self._get_table_values()
+            params = calculator_controls.read_count_table(self._get_int)
             computed_params = calculator_controls.compute_2x2_table_from_inner_counts(params)
             if computed_params:
                 self._set_vals(computed_params)

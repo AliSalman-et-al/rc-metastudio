@@ -117,7 +117,6 @@ def table_editing_case(app, window, work, root, record, case):
         with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
             assert window.save_as()
         assert window.open(str(destination), raise_on_error=True)
-        # Visible sorting is transient; compare persistence by study label.
         assert sorted((row[window.model.NAME], row[year]) for row in cells()) == sorted((row[window.model.NAME], row[year]) for row in expected)
         record("table-reopened-" + case, window, project=str(destination), cells=cells())
     window.workspace.mark_saved()
@@ -605,7 +604,7 @@ def _run(app, window, work, root, record, analyze):
 
     import sys
     sys.path.insert(0, str(root / '.agents/skills/verify-rcms/scripts'))
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
     from analysis_matrix import run as matrix
     from rc_metastudio.results.plot_editor import EditPlotDialog
     window.workspace.mark_saved()
@@ -705,7 +704,10 @@ def workspace_safety_case(app, window, work, root, record, case):
     """Workspace-02 proofs use disposable projects and real Qt transactions."""
     import os
     from rc_metastudio import automation, main_window
+    from rc_metastudio.importing.field_plan import ImportFieldPlan
     from rc_metastudio.importing.tabular import CsvImportResult
+
+    csv_plan = ImportFieldPlan.for_sheet(0, "proportions", ("Group 1", "Group 2"), "OR", single_arm=False)
     from rc_metastudio.workspace.table_model import DatasetTableModel
     source = work / 'source.rcms'
     source.write_bytes((root / 'tests/fixtures/desktop-projects/amino.rcms').read_bytes())
@@ -741,7 +743,6 @@ def workspace_safety_case(app, window, work, root, record, case):
             window.redo()
             assert any(r.label == 'Later placeholder' for r in window.model.current_sheet.rows)
         else:
-            # Explicitly include the legitimate auto-blank presentation state.
             candidate = DatasetTableModel(dataset=copy.deepcopy(model.dataset), add_blank_study=True)
             observed = []
             candidate.rowsAboutToBeInserted.connect(lambda parent, first, last: observed.append(('before', candidate.rowCount(), first, last)))
@@ -767,7 +768,7 @@ def workspace_safety_case(app, window, work, root, record, case):
         assert window.open(str(destination), raise_on_error=True)
         assert window.model.current_effect == 'RR'
     elif case in ('csv', 'csv-failure'):
-        payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_data': CsvImportResult((), (('Imported study', '2020', '1', '10', '2', '20'),), (), (), ())}
+        payload = {'path': 'csv_import', 'outcome_info': {'arms': 'two', 'data_type': 'binary', 'sub_type': 'proportions', 'effect': 'OR', 'name': 'Imported'}, 'csv_plan': csv_plan, 'csv_data': CsvImportResult((), (('Imported study', '2020', '1', '10', '2', '20'),), (), (), ())}
         if case == 'csv-failure':
             from rc_metastudio.workspace.columns import RawCell
             from rc_metastudio.workspace.editing import WorkspaceEditingService
@@ -830,6 +831,7 @@ def workspace_safety_case(app, window, work, root, record, case):
         window._handle_wizard_results({
             "path": "csv_import",
             "outcome_info": {"data_type": "binary", "sub_type": "proportions", "effect": "OR", "name": "Imported"},
+            "csv_plan": csv_plan,
             "csv_data": CsvImportResult((), (("Progress study", "2022", "2", "10", "3", "20"),), (), (), ()),
         })
         assert during_writes == [(False, True, True)]

@@ -112,7 +112,7 @@ jobs:
           "from scripts.verify import run_code_health_with_trend; import os;
           run_code_health_with_trend(os.environ['COMPARISON_BASE'], os.environ['GITHUB_SHA'], os.environ['CODE_HEALTH_BASELINE'],
           reuse_baseline=os.environ['BASELINE_CACHE_HIT'] == 'true')"
-      - name: Enforce comment ratchet
+      - name: Enforce source comment lint
         env:
           COMPARISON_BASE: ${{ steps.base.outputs.sha }}
         run: uv run --no-sync python scripts/check_comments.py --base "$COMPARISON_BASE"

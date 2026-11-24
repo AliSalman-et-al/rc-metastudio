@@ -47,10 +47,6 @@ _TEST_LABELS = {
     "deeks": "Deeks",
 }
 
-# Publication-bias method names and eligibility explanations are researcher-
-# facing prose.  Keep enough logical width for those labels at high DPI while
-# allowing the adaptive-window policy to clamp the preferred size to a small
-# screen.
 SMALL_STUDY_EFFECTS_MIN_WIDTH = 560
 SMALL_STUDY_EFFECTS_PREFERRED_WIDTH = 700
 
@@ -287,9 +283,6 @@ class SmallStudyEffectsDialog(
         self._layout_controller = adaptive_window.register_adaptive_window(
             self, adaptive_window.WindowRole.TRANSACTIONAL
         )
-        # Install the readable-width contract after registration.  The shared
-        # helper also changes the layout constraint to preserve this explicit
-        # minimum across native QDialog's show-time adjustSize pass.
         adaptive_window.set_content_preferred_width(
             self,
             SMALL_STUDY_EFFECTS_MIN_WIDTH,
@@ -341,7 +334,7 @@ class SmallStudyEffectsDialog(
         request = self._preview_request()
         try:
             report = self.analysis_service.preview(self.model, request)
-        except Exception:  # noqa: BLE001 - Qt boundary remains recoverable
+        except Exception:
             self._eligibility_report = None
             self.context_label.setText(self._context_summary())
             self.automatic_test_label.setText(
@@ -541,7 +534,7 @@ class SmallStudyEffectsDialog(
             self.accept()
         except r_worker.RJobCancelled:
             run_button.setEnabled(True)
-        except Exception as error:  # noqa: BLE001 - Qt boundary remains recoverable
+        except Exception as error:
             self.failure_label.setText(str(error))
             self.failure_label.setVisible(True)
             app_error_handler.handle_exception(
@@ -550,11 +543,7 @@ class SmallStudyEffectsDialog(
             run_button.setEnabled(True)
 
     def _change_settings_callback(self, request: SmallStudyEffectsRequest, source_sheet):
-        import copy
-        from rc_metastudio.workspace.table_model import DatasetTableModel
-
-        model = DatasetTableModel(copy.deepcopy(self.model.dataset), add_blank_study=False,
-                                  current_sheet_id=self.model.current_sheet_id)
+        model = self.model.snapshot_for_analysis()
         parent, service, on_result = self.parentWidget(), self.analysis_service, self._on_result
 
         def reopen(_plot_parameters, origin):

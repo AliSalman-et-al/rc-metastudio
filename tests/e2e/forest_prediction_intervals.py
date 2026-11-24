@@ -52,7 +52,6 @@ def run_predictions(app, window, work, record):
                    measure=measure, workflow=workflow, style=style, reference=reference,
                    figure_text=figure, report=text, plots={artifact.title:artifact.display_path()})
             if not baseline:
-                # Sequential reports do not display PI rows; their forest footer uses the full fit.
                 if workflow in ('standard', 'subgroup'):
                     tables = [t for s in view.results.sections for t in s.tables if t.title == 'Prediction interval']
                     assert tables, (workflow, text)

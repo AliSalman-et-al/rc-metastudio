@@ -33,7 +33,6 @@ def prune_library(home: Path, keep: set[str]) -> None:
 
 def remove_development_aliases(home: Path, root: Path) -> None:
     removed_trees = (home / "include", home / "doc")
-    # Resolve the entire alias chain before unlinking any intermediate alias.
     aliases = [
         path for path in root.rglob("*")
         if path.is_symlink()

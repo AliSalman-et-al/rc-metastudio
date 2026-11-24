@@ -42,7 +42,6 @@ CHECKING_BOUNDARIES = "Checking boundary crossings…"
 
 class _DesignPercent(QDoubleSpinBox):
     def textFromValue(self, value: float) -> str:
-        # Preserve the original endpoints and any saved hundredths.
         decimals = 1 if value == round(value, 1) else 2
         return self.locale().toString(value, "f", decimals)
 

@@ -6,24 +6,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from typing import Literal, Protocol, TypeAlias, cast
+from typing import Protocol
 
-from rc_metastudio.qt_object_guard import required
 from rc_metastudio import r_operations
 from rc_metastudio.project import model as analysis_dataset
-from rc_metastudio.analysis.catalog import AnalysisFamily, FAMILY_METRICS
+from rc_metastudio.analysis.request import AnalysisParameter, AnalysisRequest, AnalysisValue
 from rc_metastudio.results.contract import AnalysisResult, parse_analysis_result
 
-
-AnalysisValue: TypeAlias = bool | int | float | str | None
-AnalysisWorkflow: TypeAlias = Literal[
-    "standard",
-    "cumulative",
-    "leave-one-out",
-    "subgroup",
-    "bootstrap",
-    "meta-regression",
-]
 
 class CovariateSelectionModel(Protocol):
     """Model operations required by covariate-qualified study selection."""
@@ -43,47 +32,6 @@ class MetaRegressionModel(Protocol):
 
 
 @dataclass(frozen=True)
-class AnalysisParameter:
-    """One normalized value passed to the R analysis boundary."""
-
-    name: str
-    value: AnalysisValue
-
-
-@dataclass(frozen=True)
-class AnalysisRequest:
-    """A complete, locale-independent analysis invocation."""
-
-    data_type: AnalysisFamily
-    workflow: AnalysisWorkflow
-    method: str
-    metric: str
-    parameters: tuple[AnalysisParameter, ...]
-    version: int = 1
-
-    def __post_init__(self) -> None:
-        if self.version != 1:
-            raise ValueError(f"unsupported analysis request version: {self.version}")
-        _required_text("metric", self.metric)
-
-    def to_mapping(self) -> dict[str, object]:
-        """Return the explicit wire representation consumed by RCMetaR."""
-        parameters = self.parameter_values()
-        parameters.setdefault("measure", self.metric)
-        return {
-            "version": self.version,
-            "data_type": self.data_type,
-            "workflow": self.workflow,
-            "method": self.method,
-            "metric": self.metric,
-            "params": parameters,
-        }
-
-    def parameter_values(self) -> dict[str, AnalysisValue]:
-        return {parameter.name: parameter.value for parameter in self.parameters}
-
-
-@dataclass(frozen=True)
 class StudySelectionResult:
     """Included studies that have values for every selected covariate."""
 
@@ -97,7 +45,8 @@ def select_studies_for_covariates(
     selected_covariates: Sequence[dict],
 ) -> StudySelectionResult:
     """Select included studies with complete values for selected covariates."""
-    required(model.current_sheet, "active sheet")
+    if model.current_sheet is None:
+        raise RuntimeError("Study selection requires an active sheet.")
     covariate_ids = [covariate["id"] for covariate in selected_covariates]
     studies = []
     excluded_study_names = []
@@ -109,73 +58,6 @@ def select_studies_for_covariates(
             excluded_study_names.append(str(study.label))
     return StudySelectionResult(
         tuple(studies), bool(excluded_study_names), tuple(excluded_study_names)
-    )
-
-
-def make_analysis_request(
-    *,
-    data_type: str,
-    workflow: str | None,
-    method: str,
-    metric: str,
-    parameters: Mapping[str, object],
-) -> AnalysisRequest:
-    """Validate and freeze values selected by a user-facing configuration."""
-    normalized_data_type = _analysis_family(data_type)
-    normalized_method = _required_text("analysis method", method)
-    normalized_workflow = _analysis_workflow(workflow or "standard")
-    normalized_metric = _required_text("effect measure", metric)
-    if normalized_metric not in FAMILY_METRICS[normalized_data_type]:
-        raise ValueError(
-            f"Effect measure {normalized_metric!r} is not valid for {normalized_data_type} analysis"
-        )
-    normalized_parameters = tuple(
-        AnalysisParameter(_required_text("parameter name", name), _native_value(value))
-        for name, value in sorted(parameters.items())
-    )
-    return AnalysisRequest(
-        data_type=normalized_data_type,
-        workflow=normalized_workflow,
-        method=normalized_method,
-        metric=normalized_metric,
-        parameters=normalized_parameters,
-    )
-
-
-def _required_text(label: str, value: object) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{label} must be a non-empty string")
-    return value
-
-
-def _analysis_family(value: object) -> AnalysisFamily:
-    if isinstance(value, str) and value in FAMILY_METRICS:
-        return cast(AnalysisFamily, value)
-    raise ValueError(f"unsupported analysis data family: {value!r}")
-
-
-def _analysis_workflow(value: object) -> AnalysisWorkflow:
-    if value == "standard":
-        return "standard"
-    if value == "cumulative":
-        return "cumulative"
-    if value == "leave-one-out":
-        return "leave-one-out"
-    if value == "subgroup":
-        return "subgroup"
-    if value == "bootstrap":
-        return "bootstrap"
-    if value == "meta-regression":
-        return "meta-regression"
-    raise ValueError(f"unsupported analysis workflow: {value!r}")
-
-
-def _native_value(value: object) -> AnalysisValue:
-    if value is None or isinstance(value, (bool, int, float, str)):
-        return value
-    raise TypeError(
-        "analysis parameters must be native bool, int, float, str, or None values; "
-        f"received {type(value).__name__}"
     )
 
 
@@ -200,12 +82,12 @@ def execute_analysis_requests(
     data_type = requests[0].data_type
     if data_type == "diagnostic":
         return _typed_result(r_operations.run_model_diagnostic_analysis(
-            model, [request.to_mapping() for request in requests]
+            model, requests
         ))
     if len(requests) != 1:
         raise ValueError("Standard execution requires exactly one request.")
     return _typed_result(r_operations.run_model_analysis(
-        model, requests[0].to_mapping(), **_conversion_kwargs(selected_covariates)
+        model, requests[0], **_conversion_kwargs(selected_covariates)
     ))
 
 
@@ -244,5 +126,5 @@ def execute_meta_regression_request(
         parameters=tuple(AnalysisParameter(name, value) for name, value in parameters.items()),
     )
     return _typed_result(r_operations.run_model_analysis(
-        model, regression_request.to_mapping(), **conversion_kwargs,
+        model, regression_request, **conversion_kwargs,
     ))

@@ -1,6 +1,6 @@
 """Lossless plot text and automatic-heading placeholders."""
 
-from rc_metastudio import qt_text
+from rc_metastudio import input_text
 
 PLOT_DEFAULT_TEXT_SENTINELS = frozenset(
     ("", "[default]", "<default>", "(default)", "default")
@@ -74,7 +74,7 @@ def plot_parameter_text_value(widget):
 
 def plot_axis_label_params(widget, prefix: str) -> dict[str, str | bool | None]:
     value = plot_parameter_text_value(widget)
-    text = qt_text.to_native_text(value) if value is not None else ""
+    text = input_text.to_native_text(value) if value is not None else ""
     return {
         f"{prefix}_xlabel": text or None,
         f"{prefix}_xlabel_literal": bool(text.strip()) and text.strip().casefold() in PLOT_DEFAULT_TEXT_SENTINELS,

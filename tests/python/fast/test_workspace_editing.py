@@ -10,8 +10,6 @@ from rc_metastudio.project.study import AnalysisUnit
 
 
 def test_single_arm_binary_preview_needs_no_fabricated_control(monkeypatch):
-    # A valid single-arm row must calculate without inventing control values;
-    # comparative metrics still require their complete second arm.
     arm = Arm(ArmId("reported"), "Treatment")
     sheet = Sheet(SheetId("sheet"), "Outcome", BINARY, arms=[arm])
     row = StudyRow(RowId("row"), "Study", AnalysisUnit(sheet, raw_data=[[4, 20]]))

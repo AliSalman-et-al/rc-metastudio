@@ -345,7 +345,7 @@ def sroc_observations(path: Path) -> dict:
 
 
 def run(app, window, work, root, record, analyze):
-    from advanced_workflows import modal
+    from tests.e2e.dialog_interaction import modal
 
     failures: list[tuple[object, ...]] = []
     default_sizes: dict[tuple[str, str], list[float]] = {}

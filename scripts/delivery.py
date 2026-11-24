@@ -97,8 +97,6 @@ def release_identity_digest(manifest: dict) -> str:
 
 
 def chain_identity_digest(manifest: dict) -> str:
-    # Promotion changes only channel/version. Reconstruct the initial identity
-    # from the recorded promotion, retaining every immutable source/policy field.
     identity = dict(manifest)
     for event in reversed(manifest["history"]):
         if event["event"] == "promoted":

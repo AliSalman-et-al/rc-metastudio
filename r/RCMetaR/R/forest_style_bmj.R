@@ -173,8 +173,6 @@ rcmetar.draw.bmj.direction <- function(bundle, footer, y, cex) {
     used <- sum(vapply(directions, function(lines)
         max(c(0, graphics::strwidth(lines, font=2, cex=cex))), numeric(1)))
     if (used + graphics::strwidth("M", font=2, cex=cex) >= width) {
-        # A narrow axis can be shorter than the longest word. Keep BMJ's
-        # directions underneath it and let them extend towards the page edges.
         footer$split.x <- footer$axis.x
         return(rcmetar.draw.forest.direction.blocks(bundle, footer, y, cex, font=2))
     }
@@ -761,7 +759,6 @@ rcmetar.draw.bmj.axis <- function(bundle, layout, cex, offset=0) {
     y.label <- y.axis - graphics::strheight("Mg", cex=cex) * 1.4
     graphics::segments(layout$alim[[1]], y.axis, layout$alim[[2]], y.axis, lwd=0.9, col="#a7a9ac")
     graphics::segments(ticks, y.axis, ticks, y.tick, lwd=0.8, col="#a7a9ac")
-    # Use a common baseline even when digit heights differ between glyphs.
     graphics::text(ticks, y.label,
                    labels, cex=cex, col="#111111", adj=c(0.5, 0))
     invisible(NULL)

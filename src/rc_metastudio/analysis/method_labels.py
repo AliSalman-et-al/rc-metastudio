@@ -30,8 +30,6 @@ _TOKEN_LABELS = {
 }
 
 _KNOWN_PARAMETER_VALUE_LABELS = {
-    # Keep estimator choices compact in constrained dialogs.  The raw codes
-    # remain the backend values and are standard statistical abbreviations.
     ("estimator", "REML"): "REML",
     ("estimator", "ML"): "ML",
     ("rm.method", "HE"): "Hedges–Olkin",

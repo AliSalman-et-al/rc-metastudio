@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from rc_metastudio.workspace import table_model as dataset_table_model
 from rc_metastudio.analysis import requests as analysis_adapter
+from rc_metastudio.analysis.request import AnalysisRequest
 from rc_metastudio.project import adapter as project_adapter
 from rc_metastudio.project import archive as project_format
 
@@ -10,7 +11,7 @@ from rc_metastudio.project import archive as project_format
 @dataclass(frozen=True)
 class HeadlessAnalysisCase:
     dataset_path: str
-    requests: tuple[analysis_adapter.AnalysisRequest, ...]
+    requests: tuple[AnalysisRequest, ...]
     covariates: tuple[dict, ...] = ()
 
 
