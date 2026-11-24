@@ -5,7 +5,7 @@ import subprocess
 import locale
 import xml.etree.ElementTree as ET
 from PyQt6 import QtCore, QtWidgets
-from scripts.verification_evidence import desktop_tool_executable
+from scripts.verification_evidence import desktop_rscript
 from tests.fit_observations import observe_fit
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.results.window import ResultsWindow
@@ -70,7 +70,7 @@ def run(app, window, ROOT, WORK, record_step):
     assert [s.settings['metric'] for s in imported.dataset.sheets] == ['HR', 'OR', 'MD']
     assert any('Custom score' in x for x in imported.not_imported)
     reference, pooled = WORK / 'giv-read.csv', WORK / 'giv-pooled.csv'
-    subprocess.run([desktop_tool_executable("Rscript"), str(ROOT / 'tests/e2e/rm5_reference.R'), str(reference_source), str(reference), str(pooled)], check=True)
+    subprocess.run([desktop_rscript(), str(ROOT / 'tests/e2e/rm5_reference.R'), str(reference_source), str(reference), str(pooled)], check=True)
     previous_locale = locale.setlocale(locale.LC_CTYPE)
     try:
         locale.setlocale(locale.LC_CTYPE, 'C')

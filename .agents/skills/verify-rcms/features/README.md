@@ -48,7 +48,7 @@ References are retained as a numbered prose section rather than a table.
 The manuscript export drive checks every prose paragraph in clipboard, PDF and DOCX
 and rejects developer-facing “Held” labels.
 Both manuscript scenarios set a dark text palette and a +6 pt UI font, and check exported PDF body,
-figure-caption and supplementary-heading colours through Poppler XML. Sample
+figure-caption and supplementary-heading colours through decoded PDF text spans. Sample
 PDF/DOCX filenames include spaces and Unicode. Amino PDF page/word geometry
 must match a default-UI-font export exactly; DOCX document/style XML must also
 match across UI fonts. Native file-picker overwrite and exhaustive export-format/theme combinations still need a

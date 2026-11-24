@@ -308,8 +308,7 @@ in `docs/cumulative-and-leave-one-out-design.md`; nearby passes do not establish
 ## Verify a trial sequential analysis change
 
 Configure the real Qt/R runtime and start with strict typing as described in
-[verify-rcms](../SKILL.md). Put Poppler’s
-`pdftotext` on PATH for the decoded report checks. From the repository root:
+[verify-rcms](../SKILL.md). The locked development environment supplies the PDF decoder. From the repository root:
 
 ```powershell
 uv run python scripts/build_qt6.py generate --build-root build/qt6-verification

@@ -5,9 +5,9 @@ import math
 import re
 """Reopen real manuscript exports and compare with the executed result."""
 from unittest.mock import patch
-import subprocess
+import json
 import unicodedata
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import pdf_line_colours, pdf_text, pdf_words
 from rc_metastudio import __version__
 from docx import Document
 from PyQt6 import QtWidgets, QtCore, QtTest, sip
@@ -69,14 +69,11 @@ def run(app, window, work, root, record, analyze, *, direct_write=False):
                     finally:
                         app.setFont(large_font)
                     if extension == 'pdf':
-                        layouts = [subprocess.check_output([desktop_tool_executable('pdftotext'), '-bbox', str(export), '-'])
-                                   for export in (path, baseline)]
-                        for export, layout in zip((path, baseline), layouts):
-                            pathlib.Path(export).with_suffix('.layout.html').write_bytes(layout)
-                        from xml.etree import ElementTree as ET
-                        pages = [ET.fromstring(layout).findall('.//{*}page') for layout in layouts]
-                        page_layouts = [[ET.tostring(page) for page in export] for export in pages]
-                        assert page_layouts[0] == page_layouts[1], 'PDF layout inherited the UI font'
+                        exports = (pathlib.Path(path), baseline)
+                        layouts = [pdf_words(export) for export in exports]
+                        for export, layout in zip(exports, layouts):
+                            export.with_suffix('.layout.json').write_text(json.dumps(layout, ensure_ascii=False), encoding='utf-8')
+                        assert layouts[0] == layouts[1], 'PDF layout inherited the UI font'
                     else:
                         from zipfile import ZipFile
                         with ZipFile(path) as large_doc, ZipFile(baseline) as default_doc:
@@ -293,7 +290,7 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
             path = work / (method + '.' + suffix)
             export_report(view, path, suffix)
             if suffix == 'pdf':
-                text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', str(path), '-'], text=True, encoding='utf-8')
+                text = pdf_text(path)
             else:
                 doc = Document(path)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
@@ -379,34 +376,28 @@ def _run(app, window, work, root, record, analyze, *, direct_write):
                 assert all(round(s.width / 36000) in (85, 170) for s in doc.inline_shapes)
                 text = '\n'.join(p.text for p in doc.paragraphs) + '\n' + '\n'.join(c.text for t in doc.tables for r in t.rows for c in r.cells)
             else:
-                text = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-layout', str(path), '-'], text=True, encoding='utf-8')
-                from xml.etree import ElementTree as ET
-                pdf_xml = subprocess.check_output([desktop_tool_executable('pdftohtml'), '-xml', '-stdout', str(path)])
-                (work / (sample + '-colours.xml')).write_bytes(pdf_xml)
-                pdf_pages = ET.fromstring(pdf_xml).findall('page')
-                colours = {font.attrib['id']: font.attrib['color'] for page in pdf_pages for font in page.findall('fontspec')}
+                text = pdf_text(path)
+                lines = pdf_line_colours(path)
+                (work / (sample + '-colours.json')).write_text(json.dumps(lines, ensure_ascii=False), encoding='utf-8')
                 checked = []
-                for page in pdf_pages:
-                    for line in page.findall('text'):
-                        content = ''.join(line.itertext())
-                        if content == 'Methods' or content.startswith(('Figure ', 'Supplementary details')):
-                            checked.append(content)
-                            assert colours[line.attrib['font']] == '#000000', (content, colours)
-                assert 'Methods' in checked and any(line.startswith('Figure ') for line in checked), checked
+                for content, colours in lines:
+                    if content == 'Methods' or content.startswith(('Figure ', 'Supplementary details')):
+                        checked.append(content)
+                        assert colours and all(colour == 0 for colour in colours), (content, colours)
+                assert 'Methods' in checked and 'Supplementary details' in checked, checked
+                assert any(line.startswith('Figure ') for line in checked), checked
                 numbers = re.findall(r'Table (\d+)\.', text)
                 assert numbers and len(numbers) == len(set(numbers)), numbers
-                from xml.etree import ElementTree as ET
-                bbox = subprocess.check_output([desktop_tool_executable('pdftotext'), '-enc', 'UTF-8', '-bbox', str(path), '-'])
-                (work / (sample + '-bbox.html')).write_bytes(bbox)
-                pages = ET.fromstring(bbox).findall('.//{*}page')
-                tables = [word for page in pages for word in page.findall('.//{*}word') if word.text == 'Table']
-                figures = [(page, word) for page in pages for word in page.findall('.//{*}word') if word.text == 'Figure']
+                pages = pdf_words(path)
+                (work / (sample + '-bbox.json')).write_text(json.dumps(pages, ensure_ascii=False), encoding='utf-8')
+                tables = [word for page in pages for word in page.words if word.text == 'Table']
+                figures = [(page, word) for page in pages for word in page.words if word.text == 'Figure']
                 assert tables and figures
-                table_height = float(tables[0].attrib['yMax']) - float(tables[0].attrib['yMin'])
+                table_height = tables[0].bottom - tables[0].top
                 for page, word in figures:
-                    figure_height = float(word.attrib['yMax']) - float(word.attrib['yMin'])
+                    figure_height = word.bottom - word.top
                     assert abs(figure_height - table_height) < 1, (sample, figure_height, table_height)
-                    assert 0 <= float(word.attrib['yMin']) < float(word.attrib['yMax']) <= float(page.attrib['height'])
+                    assert 0 <= word.top < word.bottom <= page.height
 
             assert 'favors' not in view.manuscript.results.lower()
             if sample == 'lymph':

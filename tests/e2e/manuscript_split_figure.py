@@ -2,11 +2,11 @@
 
 import copy
 from collections import Counter
+import json
 import re
-import subprocess
 from pathlib import Path
 from uuid import uuid4
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import pdf_image_count, pdf_words, render_pdf_page
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
@@ -35,41 +35,39 @@ def run(app, window, work, root, record, analyze):
     record('split-forest-analysis', view, input=str(fixture), rows=len(window.model.current_sheet.rows))
     path = work / 'tall-forest.pdf'
     write_pdf(view.manuscript, path)
-    xml = subprocess.check_output([desktop_tool_executable('pdftotext'), '-bbox', str(path), '-'])
-    (work / 'tall-forest-layout.xml').write_bytes(xml)
-    pages = ET.fromstring(xml).findall('.//{*}page')
+    pages = pdf_words(path)
+    (work / 'tall-forest-layout.json').write_text(json.dumps(pages, ensure_ascii=False), encoding='utf-8')
     checked = []
     study_rows = Counter()
     for number, page in enumerate(pages, 1):
-        words = page.findall('.//{*}word')
+        words = page.words
         captions = [word for word in words if word.text == 'Figure']
         if not captions:
             continue
-        tokens = [word.text or "" for word in words]
+        tokens = [word.text for word in words]
         panel_rows = [match[0] for token in tokens if (match := re.match(r"Row\d{3}\b", token))]
         assert len(panel_rows) >= 2, (number, "Figure page needs study rows")
         assert "Study" in tokens and "ratio" in tokens, (number, "Missing headers or axis")
         study_rows.update(panel_rows)
-        caption_top = max(float(word.attrib['yMin']) for word in captions)
-        caption_words = [word for word in words if abs(float(word.attrib['yMin']) - caption_top) < .5]
-        caption_bottom = max(float(word.attrib['yMax']) for word in caption_words)
-        prefix = work / f'tall-forest-page-{number}'
-        subprocess.run([desktop_tool_executable('pdftoppm'), '-f', str(number), '-l', str(number), '-singlefile',
-                        '-scale-to', '1400', '-png', str(path), str(prefix)], check=True)
-        image = QtGui.QImage(str(prefix.with_suffix('.png')))
+        caption_top = max(word.top for word in captions)
+        caption_words = [word for word in words if abs(word.top - caption_top) < .5]
+        caption_bottom = max(word.bottom for word in caption_words)
+        screenshot = work / f'tall-forest-page-{number}.png'
+        render_pdf_page(path, screenshot, number - 1, long_edge=1400)
+        image = QtGui.QImage(str(screenshot))
         assert not image.isNull()
-        first_row = round((caption_bottom + 4) * image.height() / float(page.attrib['height']))
+        first_row = round((caption_bottom + 4) * image.height() / page.height)
         colored = sum(image.pixelColor(x, y).value() < 245
                       for y in range(first_row, image.height()) for x in range(image.width()))
         assert colored == 0, (number, 'Figure spills below caption', colored)
         checked.append(dict(page=number, caption_top=caption_top, caption_bottom=caption_bottom,
-                            below_caption_pixels=colored, capture=str(prefix.with_suffix('.png'))))
+                            below_caption_pixels=colored, capture=str(screenshot)))
     assert len(checked) >= 2, 'Fixture must split its forest across pages'
     expected = Counter(f"Row{i:03}" for i in range(len(window.model.current_sheet.rows)))
     assert study_rows == expected, (expected - study_rows, study_rows - expected)
-    listing = subprocess.check_output([desktop_tool_executable('pdfimages'), '-list', str(path)], text=True)
-    assert len(listing.strip().splitlines()) == 2, 'PDF forest was rasterized'
-    record('split-forest-pdf', view, pdf=str(path), pages=checked, raster_images=0)
+    raster_images = pdf_image_count(path)
+    assert raster_images == 0, ('PDF forest was rasterized', raster_images)
+    record('split-forest-pdf', view, pdf=str(path), pages=checked, raster_images=raster_images)
 
     # Empty plot viewports must hide their contents, including in Qt.
     figure = view.manuscript.figures[0]

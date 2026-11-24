@@ -140,12 +140,11 @@ def test_desktop_preserves_private_workspace_and_recorded_tools(monkeypatch, tmp
     tool_dir = tmp_path / "oracles"
     tool_dir.mkdir()
     extension = ".exe" if sys.platform == "win32" else ""
-    paths = {name: tool_dir / (name + extension) for name in ("pdftotext", "Rscript")}
-    for path in paths.values():
-        path.write_bytes(path.name.encode())
-        path.chmod(0o755)
+    rscript = tool_dir / ("Rscript" + extension)
+    rscript.write_bytes(rscript.name.encode())
+    rscript.chmod(0o755)
     monkeypatch.setenv("PATH", "oracles")
-    monkeypatch.setenv("RCMS_RSCRIPT", str(paths["Rscript"].relative_to(tmp_path)))
+    monkeypatch.setenv("RCMS_RSCRIPT", str(rscript.relative_to(tmp_path)))
 
     def run_child(command, *, cwd, env, stdout, **_kwargs):
         assert cwd != tmp_path
@@ -153,8 +152,7 @@ def test_desktop_preserves_private_workspace_and_recorded_tools(monkeypatch, tmp
             child.chdir(cwd)
             child.setenv("RCMS_E2E_TOOL_PATHS", env["RCMS_E2E_TOOL_PATHS"])
             child.setenv("PATH", "")
-            for name, path in paths.items():
-                assert Path(evidence_store.desktop_tool_executable(name)) == path
+            assert Path(evidence_store.desktop_rscript()) == rscript
         (cwd / "result.bin").write_bytes(b"workflow artifact")
         stdout.write(b"WORKFLOW FAILED\n" if exit_code else b"WORKFLOW PASSED\n")
         return subprocess.CompletedProcess(command, exit_code)
@@ -168,9 +166,9 @@ def test_desktop_preserves_private_workspace_and_recorded_tools(monkeypatch, tmp
     assert artifact.read_bytes() == b"workflow artifact"
     assert {"path": "workflow/result.bin", "sha256": evidence_store.file_digest(artifact)} in manifest["files"]
     assert not list((tmp_path / "build/verification/rcms").iterdir())
-    recorded = manifest["external_tools"]
-    for name, path in paths.items():
-        assert recorded[name] == {"path": str(path), "sha256": evidence_store.file_digest(path)}
+    assert manifest["external_tools"] == {
+        "Rscript": {"path": str(rscript), "sha256": evidence_store.file_digest(rscript)}
+    }
 
 
 def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypatch, tmp_path, capsys):
@@ -191,11 +189,8 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
     executable_suffix = ".exe" if sys.platform == "win32" else ""
     tool_path = tmp_path / "oracles"
     tool_path.mkdir()
-    pdf_text = tool_path / ("pdftotext" + executable_suffix)
     rscript = tool_path / ("Rscript" + executable_suffix)
-    pdf_text.write_bytes(b"oracle build A")
     rscript.write_bytes(b"reference build A")
-    pdf_text.chmod(0o755)
     monkeypatch.setattr(evidence_store.subprocess, 'check_output', lambda *args, **kwargs: json.dumps({
         'PATH': str(tool_path),
         'R_ENVIRON': None, 'R_ENVIRON_USER': None, 'R_PROFILE': None, 'R_PROFILE_USER': None,
@@ -236,18 +231,16 @@ def test_desktop_reuses_only_intact_evidence_for_the_same_launch_inputs(monkeypa
     assert verify_rcms.main() == 0
     assert 'Reused passed evidence' in capsys.readouterr().out
 
-    for tool in (pdf_text, rscript):
-        original = tool.read_bytes()
-        tool.write_bytes(b"replacement bytes")
-        changed = evidence_store.verification_context(evidence_store.desktop_environment())
-        assert evidence_store.passed_evidence(changed, "doctor") is None
-        with pytest.raises(RuntimeError, match="Verification tools changed"):
-            verify_rcms.main()
-        tool.unlink()
-        missing = evidence_store.verification_context(evidence_store.desktop_environment())
-        assert evidence_store.passed_evidence(missing, "doctor") is None
-        tool.write_bytes(original)
-        tool.chmod(0o755)
+    original = rscript.read_bytes()
+    rscript.write_bytes(b"replacement bytes")
+    changed = evidence_store.verification_context(evidence_store.desktop_environment())
+    assert evidence_store.passed_evidence(changed, "doctor") is None
+    with pytest.raises(RuntimeError, match="Verification tools changed"):
+        verify_rcms.main()
+    rscript.unlink()
+    missing = evidence_store.verification_context(evidence_store.desktop_environment())
+    assert evidence_store.passed_evidence(missing, "doctor") is None
+    rscript.write_bytes(original)
 
     def fresh_drive(*args):
         raise RuntimeError('Fresh desktop command required')

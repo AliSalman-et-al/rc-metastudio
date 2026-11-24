@@ -349,17 +349,6 @@ jobs:
           hosted-r: 'true'
           qt-rcc: 'true'
 
-      - name: Install PDF text verification tool
-        if: ${{ matrix.part != 'checks' }}
-        run: |
-          choco install poppler --version=26.9.0 --yes --no-progress
-          if ($LASTEXITCODE -ne 0) { throw "Poppler installation failed." }
-          $pdfTool = Get-ChildItem "$env:ChocolateyInstall/lib/poppler/tools" -Filter pdftotext.exe -Recurse | Select-Object -First 1
-          if ($null -eq $pdfTool) { throw "Poppler pdftotext was not installed." }
-          $pdfTool.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          $env:Path = "$($pdfTool.DirectoryName);$env:Path"
-          Get-Command pdftotext -ErrorAction Stop
-
       - name: Retrieve the verified R library
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:

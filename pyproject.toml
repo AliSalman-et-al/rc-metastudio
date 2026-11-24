@@ -75,6 +75,7 @@ dev = [
     "radon==6.0.1",
     "ty==0.0.102",
     "vulture==2.16",
+    "pymupdf==1.28.2",
 ]
 
 [tool.ty.environment]

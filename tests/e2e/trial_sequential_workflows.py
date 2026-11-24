@@ -478,8 +478,6 @@ def run(app, window, work, record, case):
         for surface in ("copy", "pdf", "docx"):
             rendered = (Path(report["directory"]) / f"{surface}.txt").read_text(encoding="utf-8")
             assert comparison in " ".join(rendered.split()), rendered
-    # Poppler emits continuations of split HR cells in page order. DOCX,
-    # clipboard and CSV still compare every cell in table order.
     assert_exports(view, report, pdf_ordered=case != "hr")
     if case in ("bcg", "hr"):
         capture_sensitivity(view, record, case, report)

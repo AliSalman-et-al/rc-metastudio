@@ -94,7 +94,7 @@ a PR. It uses the merge base with `origin/master` and includes uncommitted
 changes and nonignored new files in test selection. Code health evaluates the
 committed `HEAD`, so commit the changes to include them in that check. Install
 Node.js, [pinned R](../config/r-dependencies.json), and the selected lane's native
-tools, including Poppler for desktop report scenarios.
+tools. The locked development environment supplies PyMuPDF for desktop PDF verification.
 
 ```powershell
 git fetch origin master

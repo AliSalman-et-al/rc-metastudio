@@ -3,7 +3,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from tests.python.gui.qt_test_support import required, wait
 from tests.sample_projects import SAMPLE_FILES
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import render_pdf_page
 
 
 def analysis_setup(driver, capture, missing):
@@ -132,12 +132,9 @@ def exports(driver, capture, missing, view):
     write_pdf(report, str(pdf))
     write_docx(report, str(docx))
     def render(path, detail, last=False):
-        info = subprocess.run([desktop_tool_executable("pdfinfo"), str(path)], check=True, capture_output=True, text=True).stdout
-        pages = int(next(line.split(":")[1] for line in info.splitlines() if line.startswith("Pages:")))
-        page = pages if last else 1
-        output = driver.WORK / detail
-        subprocess.run([desktop_tool_executable("pdftoppm"), "-f", str(page), "-l", str(page), "-scale-to", "1400", "-singlefile", "-png", str(path), str(output)], check=True, capture_output=True)
-        image = QtGui.QImage(str(output) + ".png")
+        output = driver.WORK / (detail + ".png")
+        render_pdf_page(path, output, -1 if last else 0, long_edge=1400)
+        image = QtGui.QImage(str(output))
         assert not image.isNull(), detail
         capture("I-" + detail, image)
     render(pdf, "manuscript-first")

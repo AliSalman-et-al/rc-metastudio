@@ -6,7 +6,6 @@ from itertools import combinations
 import math
 from pathlib import Path
 import re
-import subprocess
 from unittest.mock import patch
 from xml.etree import ElementTree as ET
 
@@ -14,7 +13,7 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTChar, LTContainer, LTCurve, LTLine, LTRect
 from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QDialogButtonBox, QFileDialog
-from scripts.verification_evidence import desktop_tool_executable
+from tests.e2e.pdf_inspection import render_pdf_page
 
 from rc_metastudio.analysis.setup_dialog import AnalysisSetupDialog
 from rc_metastudio.analysis.small_study_effects_dialog import SmallStudyEffectsDialog
@@ -411,8 +410,7 @@ def run(app, window, work, root, record, analyze):
         elif picker.called:
             assert destination.is_file(), destination
             png = destination.with_suffix(".png")
-            subprocess.run([desktop_tool_executable("pdftoppm"), "-r", "300", "-singlefile",
-                            "-png", str(destination), str(png.with_suffix(""))], check=True, capture_output=True)
+            render_pdf_page(destination, png, dpi=300)
             assert png.is_file()
             observed = pdf_observations(destination, *dimensions, kind)
             record("print-export-pdf", figure=name, width=width,
