@@ -4,8 +4,15 @@ All notable RC MetaStudio changes will be recorded in this file.
 
 ## Unreleased
 
+## 0.7.1 - 2026-11-24
+
 - Redraw regression, funnel, SROC and trial sequential plots at the selected export dimensions. The export dialog flags sizes that would clip or crowd labels or produce text below 6 pt.
+- Improved publication plot layout at journal widths, and fixed plot guides and forest-plot effect-direction labels.
 - Keep SROC study markers visible at 0 and 1. Apply the BMJ and RevMan palettes to curves, regions and markers, with custom colours available in the editor.
+- Default-style meta-regression gridlines now align with the displayed ratio ticks.
+- Fixed Mantel–Haenszel pooling now handles zero-cell studies as RevMan does.
+- Removed a stray Back arrow beside the heading on the first page of the Windows new-project wizard.
+- Added the JOSS paper, its figures and the software comparison record.
 
 ## 0.7.0 - 2026-11-21
 

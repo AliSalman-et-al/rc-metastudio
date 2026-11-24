@@ -1,9 +1,8 @@
 cff-version: 1.2.0
 message: "If you use RC MetaStudio in your research, please cite it using these metadata."
 type: software
-version: "0.7.0"
+version: "0.7.1"
 title: "RC MetaStudio: open-source desktop software for meta-analysis"
-# AUTHOR CONFIRMATION PENDING: author list, affiliations, and remaining ORCIDs.
 authors:
   - family-names: Salman
     given-names: Ali

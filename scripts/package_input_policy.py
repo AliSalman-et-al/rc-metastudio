@@ -79,7 +79,7 @@ def source_impact(path: str) -> PathImpact:
 def impact(path: str) -> PathImpact:
     if matches(path, BROAD):
         return ALL
-    if matches(path, ("*.md", "*.rst", "LICENSE*", "CITATION.cff", "docs/*", "artifacts/*")):
+    if matches(path, ("*.md", "*.rst", "LICENSE*", "CITATION.cff", "docs/*", "artifacts/*", "paper-figures/*")):
         return PathImpact()
     if matches(path, ("src/*", "*.ui")):
         return source_impact(path)
