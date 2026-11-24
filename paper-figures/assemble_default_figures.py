@@ -37,7 +37,6 @@ def main():
             y = 0
             for label, panel in zip("ABC", panels):
                 rect = panel[0].rect
-                # Align the visible glyph edge rather than the text origin.
                 bearing = font.glyph_bbox(ord(label)).x0 * LABEL_SIZE_PT
                 page.insert_text((LEFT_MARGIN - bearing, y + LABEL_BASELINE), label,
                                  fontname=LABEL_FONT, fontsize=LABEL_SIZE_PT)

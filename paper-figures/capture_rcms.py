@@ -76,7 +76,7 @@ def combo(widget, data):
 
 
 def sample(fragment, expected):
-    window.workspace.mark_saved()  # Discard session-only changes when moving to the next sample.
+    window.workspace.mark_saved()
     action, = [a for a in window.sample_menu.actions() if fragment in a.text()]
     action.trigger()
     app.processEvents()
@@ -171,7 +171,6 @@ def edit(view, kind, style, compact=False):
             d.show_legend.setChecked(False)
         elif kind == "sroc":
             combo(d.sroc_marker_area, "uniform")
-            # Show the complete markers whose estimates lie exactly on 0 or 1.
             for control in (d.plot_lb_le, d.sroc_y_lower):
                 control.setText("-0.02")
             for control in (d.plot_ub_le, d.sroc_y_upper):
@@ -214,7 +213,6 @@ def export(view, name, width):
             return
         accepted.append(True)
         d.save_button.click()
-    # Only the file picker is intercepted, to keep all writes under OUT.
     with patch.object(W.QFileDialog, "getSaveFileName", return_value=(str(path), "")):
         with modal(PlotExportDialog, configure):
             view.export_plot_action.trigger()
@@ -283,7 +281,6 @@ with patch("rc_metastudio.settings.get_base_path", return_value=str(BUILD / "app
             window.action_auto_fit_columns.trigger()
             window.setFixedSize(1180, 700)
             app.processEvents()
-            # Use the spare width for study names while keeping all numeric columns in view.
             table.setColumnWidth(1, table.columnWidth(1) + 90)
             body = table.viewport().height()
             row_height = table.rowHeight(0)

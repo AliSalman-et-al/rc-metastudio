@@ -83,8 +83,6 @@ def main(bmj_log):
             observed["dialog_mm"] = [round(value * 25.4, 3) for value in (width, height)]
         observed["page_mm"] = [round(value * 25.4 / 72, 3) for value in observed["page_pt"]]
         observations[name] = observed
-        # The observer reads fonts inside nested forms before the form transform.
-        # Measure panel font sizes directly on the original exports.
         if (name in PANELS and observed["min_font_pt"] < 6) or observed["outside"] or observed["overlaps"]:
             failures.append(name)
     print(json.dumps({

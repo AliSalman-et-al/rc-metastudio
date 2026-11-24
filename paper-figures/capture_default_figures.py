@@ -76,7 +76,7 @@ def combo(widget, data):
 
 
 def sample(fragment, expected):
-    window.workspace.mark_saved()  # Discard session-only changes when moving to the next sample.
+    window.workspace.mark_saved()
     action, = [a for a in window.sample_menu.actions() if fragment in a.text()]
     action.trigger()
     app.processEvents()
